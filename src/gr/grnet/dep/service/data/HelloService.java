@@ -1,4 +1,4 @@
-package gr.ebs.dep.service.data;
+package gr.grnet.dep.service.data;
 
 import javax.ejb.Stateless;
 

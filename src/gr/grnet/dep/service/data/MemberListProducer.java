@@ -1,6 +1,6 @@
-package gr.ebs.dep.service.data;
+package gr.grnet.dep.service.data;
 
-import gr.ebs.dep.service.model.Member;
+import gr.grnet.dep.service.model.User;
 
 import java.util.List;
 import javax.annotation.PostConstruct;
@@ -21,25 +21,25 @@ public class MemberListProducer {
    @Inject
    private EntityManager em;
 
-   private List<Member> members;
+   private List<User> members;
 
    // @Named provides access the return value via the EL variable name "members" in the UI (e.g.,
    // Facelets or JSP view)
    @Produces
    @Named
-   public List<Member> getMembers() {
+   public List<User> getMembers() {
       return members;
    }
 
-   public void onMemberListChanged(@Observes(notifyObserver = Reception.IF_EXISTS) final Member member) {
+   public void onMemberListChanged(@Observes(notifyObserver = Reception.IF_EXISTS) final User member) {
       retrieveAllMembersOrderedByName();
    }
 
    @PostConstruct
    public void retrieveAllMembersOrderedByName() {
       CriteriaBuilder cb = em.getCriteriaBuilder();
-      CriteriaQuery<Member> criteria = cb.createQuery(Member.class);
-      Root<Member> member = criteria.from(Member.class);
+      CriteriaQuery<User> criteria = cb.createQuery(User.class);
+      Root<User> member = criteria.from(User.class);
       // Swap criteria statements if you would like to try out type-safe criteria queries, a new
       // feature in JPA 2.0
       // criteria.select(member).orderBy(cb.asc(member.get(Member_.name)));

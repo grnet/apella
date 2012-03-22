@@ -1,6 +1,6 @@
-package gr.ebs.dep.server.servlet;
+package gr.grnet.dep.server.servlet;
 
-import gr.ebs.dep.service.data.HelloService;
+import gr.grnet.dep.service.data.HelloService;
 
 import java.io.IOException;
 import java.io.PrintWriter;

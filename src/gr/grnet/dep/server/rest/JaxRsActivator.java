@@ -1,4 +1,4 @@
-package gr.ebs.dep.server.rest;
+package gr.grnet.dep.server.rest;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;

@@ -1,7 +1,7 @@
-package gr.ebs.dep.server.rest;
+package gr.grnet.dep.server.rest;
 
-import gr.ebs.dep.service.data.HelloService;
-import gr.ebs.dep.service.model.Member;
+import gr.grnet.dep.service.data.HelloService;
+import gr.grnet.dep.service.model.User;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -34,7 +34,7 @@ public class MemberResourceRESTService {
    private Logger log;
 
    @GET
-   public List<Member> listAllMembers() {
+   public List<User> listAllMembers() {
       // Use @SupressWarnings to force IDE to ignore warnings about "genericizing" the results of
       // this query
       @SuppressWarnings("unchecked")
@@ -42,7 +42,7 @@ public class MemberResourceRESTService {
       // the @Entity class
       // as described in the named query blueprint:
       // https://blueprints.dev.java.net/bpcatalog/ee5/persistence/namedquery.html
-      final List<Member> results = em.createQuery("select m from Member m order by m.name").getResultList();
+      final List<User> results = em.createQuery("select m from User m order by m.lastname, m.firstname").getResultList();
       return results;
    }
    
@@ -56,8 +56,8 @@ public class MemberResourceRESTService {
 
    @GET
    @Path("/{id:[0-9][0-9]*}")
-   public Member lookupMemberById(@PathParam("id") long id) {
-	   Member member = em.find(Member.class, id);
+   public User lookupMemberById(@PathParam("id") long id) {
+	   User member = em.find(User.class, id);
       return member;
    }
 }
