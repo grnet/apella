@@ -2,37 +2,28 @@
 <project name="DEPElections" default="deploy" basedir=".">
 	<property file="build.properties" />
 	<property environment="env" />
-	<property name="deps.dir" value="${basedir}/dependencies"/>
-	
-	<property name="jboss.args" value="--server-config=standalone-full.xml" />
+	<property name="deps.dir" value="${basedir}/dependencies" />
 
-	<!-- Application server specific configuration -->
-	<property name="jboss-spec.dir" value="${basedir}/jboss" />
-	<property name="jboss-spec.conf.dir" value="${jboss-spec.dir}/conf" />
-	<property name="jboss-spec.configuration.dir" value="${jboss-spec.dir}/configuration" />
-	<property name="jboss-spec.deploy.dir" value="${jboss-spec.dir}/deploy" />
-	<property name="jboss.project" value="${basedir}/../jboss-conf/${jboss.version}" />
-	<property name="lib.dir" value="${basedir}/lib" />
+	<property name="jboss.args" value="--server-config=standalone-full.xml" />
 
 	<!-- Jboss dirs -->
 	<property name="jboss.home" value="${deps.dir}/jboss-as-${jboss.version}" />
-	<property name="jboss.filename" value="jboss-as-${jboss.version}.zip"/>
-	<property name="jboss.download.url" value="http://download.jboss.org/jbossas/${jboss.major.version}/jboss-as-${jboss.version}/jboss-as-${jboss.version}.zip"/>
-
+	<property name="jboss.filename" value="jboss-as-${jboss.version}.zip" />
+	<property name="jboss.download.url" value="http://download.jboss.org/jbossas/${jboss.major.version}/jboss-as-${jboss.version}/jboss-as-${jboss.version}.zip" />
 	<property name="jboss.bin.dir" value="${jboss.home}/bin" />
 	<property name="jboss.conf.dir" value="${jboss.home}/bin" />
 	<property name="jboss.configuration.dir" value="${jboss.home}/standalone/configuration" />
 	<property name="jboss.deploy.dir" value="${jboss.home}/standalone/deployments" />
 	<property name="jboss.modules.dir" value="${jboss.home}/modules" />
 
-	<!-- Source dirs -->
-	<property name="src.dir" value="${basedir}/src" />
-
-	<!-- MBeans -->
-	<property name="mbeans.dir" value="${basedir}/mbeans"/>
-	<property name="mbeans.meta-inf.dir" value="${mbeans.dir}/META-INF"/>
+	<!-- Application server specific configuration -->
+	<property name="jboss-spec.dir" value="${basedir}/jboss" />
+	<property name="jboss-spec.conf.dir" value="${jboss-spec.dir}/conf" />
+	<property name="jboss-spec.configuration.dir" value="${jboss-spec.dir}/configuration" />
+	<property name="jboss-spec.deploy.dir" value="${jboss-spec.dir}/deploy" />
 
 	<!-- Build dirs -->
+	<property name="src.dir" value="${basedir}/src" />
 	<property name="build.dir" value="${basedir}/bin" />
 	<property name="dist.ear" value="${ant.project.name}.ear" />
 
@@ -40,43 +31,41 @@
 	<property name="ear.lib.dir" value="${ear.dir}/lib" />
 
 	<property name="rest.dist.war" value="rest.war" />
-	<property name="rest.war.dir" value="${basedir}/restWar" />
+	<property name="rest.war.dir" value="${basedir}/rest.war" />
 	<property name="rest.war.lib.dir" value="${rest.war.dir}/WEB-INF/lib" />
 
-	<property name="mbeans.dist.file" value="${ant.project.name}-mbeans.sar"/>
+	<property name="services.dir" value="${basedir}/sar" />
+	<property name="services.meta-inf.dir" value="${services.dir}/META-INF" />
+	<property name="services.dist.sar" value="${ant.project.name}.sar" />
 
-	<!-- set classpath -->
+	<property name="www.dir" value="${basedir}/www" />
+	<property name="www.dist.war" value="depui.war" />
+
+	<!-- Classpath -->
 	<path id="project.class.path">
 		<pathelement path="${build.dir}" />
-
-		<fileset dir="${lib.dir}" includes="*.jar" />
-
 		<!-- Include everything and get it over with! -->
 		<fileset dir="${jboss.modules.dir}" includes="**/*.jar" />
-
-		<pathelement location="${jboss-spec.deploy.dir}/postgresql-8.4-701.jdbc4.jar" />
+		<fileset dir="${ear.lib.dir}" includes="**/*.jar" />
 	</path>
-	
-	<target name="check-dependencies" description="Checks if all dependencies are present">
-        <condition property="dependencies.present">
-            <and>
-                <available file="${jboss.home}" type="dir"/>
-            </and>
-        </condition>
-        <echo message="dependencies.present=${dependencies.present}"/>
-    </target>
 
-    <target name="fetch-dependencies" unless="dependencies.present" description="Fetch the dpendencies if not present" depends="check-dependencies">
-    	<mkdir dir="${deps.dir}"/>
-        <get src="${jboss.download.url}" dest="${deps.dir}/${jboss.filename}" usetimestamp="true"/>
-        <unzip src="${deps.dir}/${jboss.filename}" dest="${jboss.home}/.."/>
-    </target>
+	<target name="check-dependencies" description="Checks if all dependencies are present">
+		<condition property="dependencies.present">
+			<and>
+				<available file="${jboss.home}" type="dir" />
+			</and>
+		</condition>
+		<echo message="dependencies.present=${dependencies.present}" />
+	</target>
+
+	<target name="fetch-dependencies" unless="dependencies.present" description="Fetch the dpendencies if not present" depends="check-dependencies">
+		<mkdir dir="${deps.dir}" />
+		<get src="${jboss.download.url}" dest="${deps.dir}/${jboss.filename}" usetimestamp="true" />
+		<unzip src="${deps.dir}/${jboss.filename}" dest="${jboss.home}/.." />
+	</target>
 
 	<target name="install" depends="fetch-dependencies" description="Installs the configuration files of the application server">
 		<!--Install the app configuration-->
-		<copy todir="${jboss.conf.dir}" overwrite="true" failonerror="false">
-			<fileset dir="${jboss-spec.conf.dir}" />
-		</copy>
 		<copy todir="${jboss.configuration.dir}" overwrite="true" failonerror="false">
 			<fileset dir="${jboss-spec.configuration.dir}" />
 		</copy>
@@ -125,23 +114,34 @@
 				<include name="ejbs.jar" />
 				<include name="${adminapp.dist.war}" />
 				<include name="${rest.dist.war}" />
-				<include name="${mbeans.dist.file}"/>
+				<include name="${services.dist.sar}" />
 			</zipfileset>
 		</jar>
 	</target>
 
-
 	<target name="deploy" description="Deploy the project to the server">
+		<antcall target="deploy-ear" />
+		<antcall target="deploy-www" />
+	</target>
+
+	<target name="deploy-ear" description="Deploy the project to the server">
 		<antcall target="package-ear" />
 		<copy todir="${jboss.deploy.dir}/../" file="${build.dir}/${dist.ear}" />
 		<move todir="${jboss.deploy.dir}" file="${jboss.deploy.dir}/../${dist.ear}" />
 	</target>
 
-	<target name="redeploy" depends="package-ear" description="Redeploy the project to the server">
+	<target name="deploy-www" description="Deploy the www files to the server">
+		<sync todir="${jboss.deploy.dir}/${www.dist.war}">
+			<fileset dir="${www.dir}" />
+		</sync>
+		<touch file="${jboss.deploy.dir}/depui.war.dodeploy" />
+	</target>
+
+	<target name="redeploy-ear" depends="package-ear" description="Redeploy the project to the server">
 		<copy todir="${jboss.deploy.dir}" file="${build.dir}/${dist.ear}" overwrite="yes" />
 	</target>
 
-	<target name="undeploy" description="Undeploy the project from the server">
+	<target name="undeploy-ear" description="Undeploy the project from the server">
 		<delete file="${jboss.deploy.dir}/${dist.ear}" />
 	</target>
 
@@ -153,22 +153,21 @@
 
 	<target name="clean" description="Delete the contents of the bin and www directories">
 		<delete dir="${build.dir}" />
-		<delete dir="${rest.build.dir}" />
 	</target>
-	
-    <target name="clean-dependencies" depends="clean" description="Delete all downloaded dependencies">
-        <delete dir="${deps.dir}"/>
-    </target>
-	
+
+	<target name="clean-dependencies" depends="clean" description="Delete all downloaded dependencies">
+		<delete dir="${deps.dir}" />
+	</target>
+
 	<target name="run" description="Starts the server" depends="deploy">
-        <exec executable="${jboss.bin.dir}/run.sh" osfamily="unix">
-            <arg line="${jboss.args}"/>
-        </exec>
-		<exec executable="cmd" osfamily="windows">
-		    <arg value="/c"/>
-		    <arg value="${jboss.bin.dir}/standalone.bat"/>
-            <arg line="${jboss.args}"/>
+		<exec executable="${jboss.bin.dir}/run.sh" osfamily="unix">
+			<arg line="${jboss.args}" />
 		</exec>
-    </target>
+		<exec executable="cmd" osfamily="windows">
+			<arg value="/c" />
+			<arg value="${jboss.bin.dir}/standalone.bat" />
+			<arg line="${jboss.args}" />
+		</exec>
+	</target>
 
 </project>

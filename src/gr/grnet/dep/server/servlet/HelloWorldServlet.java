@@ -1,6 +1,6 @@
-package gr.ebs.dep.server.servlet;
+package gr.grnet.dep.server.servlet;
 
-import gr.ebs.dep.service.data.HelloService;
+import gr.grnet.dep.service.data.HelloService;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -29,20 +29,20 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/HelloWorld")
 public class HelloWorldServlet extends HttpServlet {
 
-   static String PAGE_HEADER = "<html><head /><body>";
+	static String PAGE_HEADER = "<html><head /><body>";
 
-   static String PAGE_FOOTER = "</body></html>";
+	static String PAGE_FOOTER = "</body></html>";
 
-   @EJB
-   HelloService helloService;
+	@EJB
+	HelloService helloService;
 
-   @Override
-   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-      PrintWriter writer = resp.getWriter();
-      writer.println(PAGE_HEADER);
-      writer.println("<h1>" + helloService.sayHello() + "</h1>");
-      writer.println(PAGE_FOOTER);
-      writer.close();
-   }
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		PrintWriter writer = resp.getWriter();
+		writer.println(PAGE_HEADER);
+		writer.println("<h1>" + helloService.sayHello() + "</h1>");
+		writer.println(PAGE_FOOTER);
+		writer.close();
+	}
 
 }

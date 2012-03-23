@@ -1,4 +1,4 @@
-package gr.ebs.dep.service.data;
+package gr.grnet.dep.service.data;
 
 import javax.ejb.Stateless;
 
@@ -6,8 +6,8 @@ import javax.ejb.Stateless;
 public class HelloService {
 
 	public String sayHello() {
-        String message = "Hello";
-        return message;
-    }
-	
+		String message = "Hello";
+		return message;
+	}
+
 }
