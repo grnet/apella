@@ -46,6 +46,8 @@
 		<pathelement path="${build.dir}" />
 		<!-- Include everything and get it over with! -->
 		<fileset dir="${jboss.modules.dir}" includes="**/*.jar" />
+
+		<pathelement location="${jboss-spec.deploy.dir}/postgresql-8.4-701.jdbc4.jar" />
 		<fileset dir="${ear.lib.dir}" includes="**/*.jar" />
 	</path>
 
