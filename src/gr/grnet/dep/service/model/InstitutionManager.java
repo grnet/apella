@@ -23,6 +23,11 @@ public class InstitutionManager extends Role {
    @ManyToOne(optional=false)
    private Institution institution;
 
+   
+   public InstitutionManager() {
+	   super();
+	   setDiscriminator(RoleDiscriminator.IM);
+   }
 
    
    public Institution getInstitution() {

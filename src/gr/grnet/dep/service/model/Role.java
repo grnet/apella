@@ -30,7 +30,11 @@ public abstract class Role implements Serializable {
 	enum RoleDiscriminator {
 		PD,
 		PF,
-		IM
+		IM,
+		DM,
+		IA,
+		MM,
+		CA
 	};
    
 	@Inject

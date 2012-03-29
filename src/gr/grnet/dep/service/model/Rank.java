@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 @Entity
-public class Institution {
+public class Rank {
 
 	@Id
 	@GeneratedValue
@@ -18,12 +18,12 @@ public class Institution {
 	@SuppressWarnings("unused")
 	@Version
 	private int version;
-
+	
 	@NotNull
 	@NotEmpty
 	private String name;
-
-
+	
+	
 
 	public Long getId() {
 		return id;
@@ -31,7 +31,7 @@ public class Institution {
 	public void setId(Long id) {
 		this.id = id;
 	}
-
+	
 	public String getName() {
 		return name;
 	}
@@ -39,5 +39,5 @@ public class Institution {
 		this.name = name;
 	}
 
-
+	
 }

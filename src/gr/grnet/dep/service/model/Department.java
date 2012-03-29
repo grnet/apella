@@ -1,18 +1,30 @@
 package gr.grnet.dep.service.model;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Version;
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotEmpty;
 
 @Entity
 public class Department {
 
 	@Id
+	@GeneratedValue
 	private Long id;
+	
+	@SuppressWarnings("unused")
+	@Version
+	private int version;
 	
 	private String school;
 
+	@NotNull
+	@NotEmpty
 	private String department;
 
 	@ManyToOne(optional=true)

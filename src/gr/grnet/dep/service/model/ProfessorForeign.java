@@ -18,13 +18,51 @@ public class ProfessorForeign extends Professor {
    @Transient
    private Logger logger;
 
-  
+   
+   private String rank;
+   
+   private String institution;
+   
+   private String department;
+   
+   private String subject;
+   
+   
+   
    public ProfessorForeign() {
 	   super();
 	   setDiscriminator(RoleDiscriminator.PF);
    }
 
 
+
+	public String getRank() {
+		return rank;
+	}
+	public void setRank(String rank) {
+		this.rank = rank;
+	}
+
+	public String getInstitution() {
+		return institution;
+	}
+	public void setInstitution(String institution) {
+		this.institution = institution;
+	}
+
+	public String getDepartment() {
+		return department;
+	}
+	public void setDepartment(String department) {
+		this.department = department;
+	}
+
+	public String getSubject() {
+		return subject;
+	}
+	public void setSubject(String subject) {
+		this.subject = subject;
+	}
    
   
 }
