@@ -1,0 +1,34 @@
+* {
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 18px;
+}
+
+.login form {
+	width: 250px;
+	padding: 20px;
+	border: 1px solid #270644;
+}
+
+.login input {
+	width: 230px;
+	background: #8a33c6;
+	padding: 6px;
+	margin-bottom: 10px;
+	border-top: 1px solid #ad64e0;
+	border-left: 0px;
+	border-right: 0px;
+	border-bottom: 0px;
+}
+
+.login input:hover {
+	background: #9d39e1;
+}
+
+.login input.submit {
+	width: 100px;
+	color: #fff;
+	text-transform: uppercase;
+	text-shadow: #000 1px 1px;
+	border-top: 1px solid #ad64e0;
+	margin-top: 10px;
+}
