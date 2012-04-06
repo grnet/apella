@@ -11,37 +11,50 @@ window.HeaderView = Backbone.View.extend({
 
 });
 
-window.LoginView = Backbone.View.extend({
+window.UserRegistrationView = Backbone.View.extend({
 	tagName : "div",
 
-	className : "login",
-
 	initialize : function() {
-		this.template = _.template(tpl.get('login'));
+		this.template = _.template(tpl.get('user-registration'));
+
+		this.model.bind('change', this.render);
 		_.bindAll(this, "render", "submit");
 	},
 
 	events : {
-		"submit" : "submit",
-		"click a#goToRegisterLink" : "goToRegister"
+		"submit form" : "submit",
 	},
 
 	render : function(eventName) {
-		$(this.el).html(this.template());
+		$(this.el).html(this.template);
 		return this;
 	},
 
 	submit : function(event) {
-		var username = $('form input[name=username]', this.el).val();
-		var password = $('form input[name=password]', this.el).val();
-		// Call function from Controller
-		console.log("Submit");
-		return false;
-	},
+		console.log("Clicked submit");
 
-	goToRegister : function(event) {
-		// Call function from Controller
-		console.log("Register");
+		var email = $('form input[name=email]', this.el).val();
+		var firstname = $('form input[name=firstname]', this.el).val();
+		var lastname = $('form input[name=lastname]', this.el).val();
+		var password = $('form input[name=password]', this.el).val();
+
+		// Validate
+
+		// Save to model
+		this.model.save({
+			"email" : email,
+			"firstname" : firstname,
+			"lastname" : lastname,
+			"password" : password,
+			success : function(model, resp) {
+				console.log("Succesful save");
+			},
+			error : function() {
+				console.log("Error saving");
+			}
+		});
+		
+		event.preventDefault();
 		return false;
 	}
 });
