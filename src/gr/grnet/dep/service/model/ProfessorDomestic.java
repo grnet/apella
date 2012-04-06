@@ -18,10 +18,23 @@ public class ProfessorDomestic extends Professor {
    @Inject
    @Transient
    private Logger logger;
+   
 
    @ManyToOne(optional=false)
    private Department department;
+   
+   @ManyToOne(optional=false)
+   private Rank rank;
+   
+   @ManyToOne(optional=false)
+   private Subject subject;
+   
+   private String fek;
+   
+   @ManyToOne
+   private FileHeader fekFile;
 
+   
    
    public ProfessorDomestic() {
 	   super();
@@ -35,5 +48,34 @@ public class ProfessorDomestic extends Professor {
 	public void setDepartment(Department department) {
 		this.department = department;
 	}
+
+	public Rank getRank() {
+		return rank;
+	}
+	public void setRank(Rank rank) {
+		this.rank = rank;
+	}
+
+	public Subject getSubject() {
+		return subject;
+	}
+	public void setSubject(Subject subject) {
+		this.subject = subject;
+	}
+
+	public String getFek() {
+		return fek;
+	}
+	public void setFek(String fek) {
+		this.fek = fek;
+	}
+
+	public FileHeader getFekFile() {
+		return fekFile;
+	}
+	public void setFekFile(FileHeader fekFile) {
+		this.fekFile = fekFile;
+	}
+
    
 }

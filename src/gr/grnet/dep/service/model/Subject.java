@@ -1,15 +1,13 @@
 package gr.grnet.dep.service.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Version;
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.NotEmpty;
 
 @Entity
-public class Institution {
+public class Subject {
 
 	@Id
 	@GeneratedValue
@@ -18,12 +16,11 @@ public class Institution {
 	@SuppressWarnings("unused")
 	@Version
 	private int version;
-
-	@NotNull
-	@NotEmpty
+	
+	@Column(nullable=false)
 	private String name;
-
-
+	
+	
 
 	public Long getId() {
 		return id;
@@ -31,7 +28,7 @@ public class Institution {
 	public void setId(Long id) {
 		this.id = id;
 	}
-
+	
 	public String getName() {
 		return name;
 	}
@@ -39,5 +36,5 @@ public class Institution {
 		this.name = name;
 	}
 
-
+	
 }
