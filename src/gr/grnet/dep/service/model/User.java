@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -13,6 +14,7 @@ import javax.inject.Inject;
 import javax.persistence.CascadeType;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
@@ -73,8 +75,15 @@ public class User implements Serializable {
 	@SuppressWarnings("unused")
 	private String password;
 
-	@OneToMany(mappedBy="user", cascade=CascadeType.ALL)
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="user", fetch=FetchType.EAGER)
 	private Set<Role> roles = new HashSet<Role>();
+	
+	private boolean active = true;
+	
+	@NotNull
+	private Date registrationDate;
+	
+	private Date lastLoginDate;
 
 
 
@@ -130,10 +139,32 @@ public class User implements Serializable {
 	public Set<Role> getRoles() {
 		return roles;
 	}
-
 	public void setRoles(Set<Role> roles) {
 		this.roles = roles;
 	}
+	
+	public boolean isActive() {
+		return active;
+	}
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+
+	public Date getRegistrationDate() {
+		return registrationDate;
+	}
+	public void setRegistrationDate(Date registrationDate) {
+		this.registrationDate = registrationDate;
+	}
+	
+	public Date getLastLoginDate() {
+		return lastLoginDate;
+	}
+	public void setLastLoginDate(Date lastLoginDate) {
+		this.lastLoginDate = lastLoginDate;
+	}
+
+	
 
 	public void addRole(Role role) {
 		roles.add(role);
@@ -144,6 +175,8 @@ public class User implements Serializable {
 		roles.remove(role);
 		role.setUser(null);
 	}
+
+	
 
 
 }

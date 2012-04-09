@@ -1,11 +1,13 @@
 package gr.grnet.dep.service.controller;
 
+import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Rank;
 import gr.grnet.dep.service.model.Subject;
 import gr.grnet.dep.service.model.User;
 
+import java.util.Date;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -57,6 +59,7 @@ public class MemberRegistration {
 		newUser.getBasicInfo().setFirstname("Aggelos");
 		newUser.getBasicInfo().setLastname("Lenis");
 		newUser.setUsername("anglen");
+		newUser.setRegistrationDate(new Date());
 		newUser.getContactInfo().setEmail("anglen@ebs.gr");
 		newUser.getContactInfo().setPhoneNumber("2106747631");
 		newUser.getContactInfo().getAddress().setStreet("Eftalioti");
@@ -70,6 +73,8 @@ public class MemberRegistration {
 		Subject subj = em.find(Subject.class, 1L);
 		pd.setSubject(subj);
 		newUser.addRole(pd);
+		Candidate can = new Candidate();
+		newUser.addRole(can);
 		em.persist(newUser);
 	}
 

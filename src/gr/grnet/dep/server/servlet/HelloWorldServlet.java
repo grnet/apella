@@ -1,6 +1,6 @@
 package gr.grnet.dep.server.servlet;
 
-import gr.grnet.dep.service.data.HelloService;
+import gr.grnet.dep.service.data.DEPService;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -19,7 +19,7 @@ import javax.servlet.http.HttpServletResponse;
  * 
  * <p>
  * The servlet is registered and mapped to /HelloServlet using the {@linkplain WebServlet
- * @HttpServlet}. The {@link HelloService} is injected by CDI.
+ * @HttpServlet}. The {@link DEPService} is injected by CDI.
  * </p>
  * 
  * @author Pete Muir
@@ -34,7 +34,7 @@ public class HelloWorldServlet extends HttpServlet {
 	static String PAGE_FOOTER = "</body></html>";
 
 	@EJB
-	HelloService helloService;
+	DEPService helloService;
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
