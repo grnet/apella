@@ -1,15 +1,23 @@
-<!DOCTYPE HTML>
+<!doctype html>
 <html>
-<head>
-<title>Backbone Cellar</title>
-<link rel="stylesheet" href="css/jquery-ui-1.8.18.custom.css" />
-<link rel="stylesheet" href="css/styles.css" />
 
+<head>
+
+<meta charset="UTF-8">
+<title>DEP Elections Registration</title>
+
+<link rel="icon" href="images/favicon.gif" type="image/x-icon" />
+<link rel="shortcut icon" href="images/favicon.gif" type="image/x-icon" />
+<link rel="stylesheet" type="text/css" href="css/jquery-ui-1.8.18.custom.css" />
+<link rel="stylesheet" type="text/css" href="css/styles.css" />
+
+<!--[if lt IE 9]>
+<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
 <script src="lib/jquery-1.7.1.js"></script>
 <script src="lib/jquery-ui-1.8.18.custom.js"></script>
 <script src="lib/underscore.js"></script>
 <script src="lib/backbone.js"></script>
-
 <script src="js/utils.js"></script>
 <script src="js/models.js"></script>
 <script src="js/views.js"></script>
@@ -18,8 +26,60 @@
 </head>
 
 <body>
-	<div id="header"></div>
-	<div id="content"></div>
+	<div class="bg">
+		<!--start container-->
+		<div class="container">
+			<!--start header-->
+			<header>
+				<!--start logo-->
+				<a href="#" id="logo"><img src="images/logo.png" width="180" height="43" alt="logo" /></a>
+				<!--end logo-->
+				<!--start menu-->
+				<nav>
+					<ul>
+						<li><a href="#" class="current">Home</a></li>
+						<li><a href="#">About us</a></li>
+						<li><a href="#">Services</a></li>
+						<li><a href="#">Portfolio</a></li>
+						<li><a href="#">News</a></li>
+						<li><a href="#">Contact</a></li>
+					</ul>
+				</nav>
+				<!--end menu-->
+				<!--start content-->
+				<div id="header-content"></div>
+				<!--end content-->
+				<!--end header-->
+			</header>
+			<div class="clearing"></div>
+			<!--start intro-->
+			<section id="intro">
+				<hgroup>
+					<h1>
+						"Simplicity is the ultimate sophistication"<span>- Leonardo da Vinci</span>
+					</h1>
+				</hgroup>
+			</section>
+			<div class="clearing"></div>
+			<!--end intro-->
+			<!--start holder-->
+			<section id="content"></section>
+			<!--end holder-->
+		</div>
+		<div class="clearing"></div>
+		<!--end container-->
+		<!--start footer-->
+		<footer>
+			<div class="container">
+				<div id="FooterTwo">© 2011 Minimalism</div>
+				<div id="FooterTree">
+					Valid html5, design and code by <a href="http://www.marijazaric.com">marija zaric - creative simplicity</a>
+				</div>
+			</div>
+		</footer>
+		<!--end footer-->
+	</div>
+	<!--end bg-->
+	<!-- Free template distributed by http://freehtml5templates.com -->
 </body>
-
 </html>

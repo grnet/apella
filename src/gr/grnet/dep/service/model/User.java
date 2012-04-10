@@ -6,6 +6,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ejb.EJBException;
@@ -27,7 +28,6 @@ import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.codec.binary.Base64;
-import org.jboss.logmanager.Level;
 
 @Entity
 @XmlRootElement

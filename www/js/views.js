@@ -1,18 +1,5 @@
-window.HeaderView = Backbone.View.extend({
-
-	initialize : function() {
-		this.template = _.template(tpl.get('header'));
-	},
-
-	render : function(eventName) {
-		$(this.el).html(this.template());
-		return this;
-	}
-
-});
-
 window.UserRegistrationView = Backbone.View.extend({
-	tagName : "div",
+	tagName : "article",
 
 	initialize : function() {
 		this.template = _.template(tpl.get('user-registration'));
@@ -26,7 +13,7 @@ window.UserRegistrationView = Backbone.View.extend({
 	},
 
 	render : function(eventName) {
-		$(this.el).html(this.template);
+		$(this.el).html(this.template(this.model.toJSON()));
 		return this;
 	},
 
@@ -45,16 +32,82 @@ window.UserRegistrationView = Backbone.View.extend({
 			"email" : email,
 			"firstname" : firstname,
 			"lastname" : lastname,
-			"password" : password,
+			"password" : password
+		}, {
 			success : function(model, resp) {
-				console.log("Succesful save");
+				/*
+				 * var popup = new PopupView({ type : "info", message :
+				 * "Success" }); popup.show();
+				 */
+				console.log(model);
+				console.log(resp);
 			},
-			error : function() {
-				console.log("Error saving");
+			error : function(model, resp, options) {
+				console.log("" + resp.status);
+				console.log(resp);
+				var popup = new PopupView({
+					type : "error",
+					message : "Error " + resp.status
+				});
+				popup.show();
 			}
 		});
-		
+
 		event.preventDefault();
 		return false;
+	}
+});
+
+window.UserVerificationView = Backbone.View.extend({
+	tagName : "article",
+
+	initialize : function() {
+		this.template = _.template(tpl.get('user-verification'));
+		this.model.bind('change', this.render);
+		_.bindAll(this, "render");
+	},
+
+	render : function(eventName) {
+		$(this.el).html(this.template(this.model.toJSON()));
+		return this;
+	}
+
+});
+
+window.PopupView = Backbone.View.extend({
+	tagName : "div",
+	className : "popup",
+
+	initialize : function() {
+		this.template = _.template(tpl.get('popup'));
+		_.bindAll(this, "render", "show", "close");
+	},
+
+	events : {},
+
+	render : function(eventName) {
+		$(this.el).html(this.template({
+			type : this.options.type,
+			message : this.options.message
+		}));
+		return this;
+	},
+
+	show : function() {
+		var self = this;
+		this.render();
+		$('body').append(this.el);
+		$('body').bind('click.popup', function(event) {
+			self.close();
+		});
+		$('body').bind('keypress.popup', function(event) {
+			self.close();
+		});
+	},
+
+	close : function() {
+		$('body').unbind('click.popup');
+		$('body').unbind('keypress.popup');
+		$(this.el).remove();
 	}
 });
