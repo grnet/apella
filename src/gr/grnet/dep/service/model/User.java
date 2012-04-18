@@ -14,7 +14,6 @@ import javax.inject.Inject;
 import javax.persistence.CascadeType;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
@@ -29,6 +28,7 @@ import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.codec.binary.Base64;
+import org.codehaus.jackson.map.annotate.JsonView;
 import org.jboss.logmanager.Level;
 
 @Entity
@@ -39,6 +39,11 @@ uniqueConstraints = {@UniqueConstraint(columnNames = "username"),
 public class User implements Serializable {
 	/** Default value included to remove warning. Remove or modify at will. **/
 	private static final long serialVersionUID = 1L;
+	
+	// define 2 json views
+	public static interface SimpleUserView {}; // shows a summary view of a User
+	public static interface DetailedUserView extends SimpleUserView {};
+	   
 
 	@Inject
 	@Transient
@@ -75,7 +80,7 @@ public class User implements Serializable {
 	@SuppressWarnings("unused")
 	private String password;
 
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="user", fetch=FetchType.EAGER)
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="user")
 	private Set<Role> roles = new HashSet<Role>();
 	
 	private boolean active = true;
@@ -135,14 +140,15 @@ public class User implements Serializable {
 			throw new EJBException(uee);
 		}
 	}
-
+	
+	@JsonView({ DetailedUserView.class })
 	public Set<Role> getRoles() {
 		return roles;
 	}
 	public void setRoles(Set<Role> roles) {
 		this.roles = roles;
 	}
-	
+
 	public boolean isActive() {
 		return active;
 	}
@@ -156,7 +162,7 @@ public class User implements Serializable {
 	public void setRegistrationDate(Date registrationDate) {
 		this.registrationDate = registrationDate;
 	}
-	
+
 	public Date getLastLoginDate() {
 		return lastLoginDate;
 	}

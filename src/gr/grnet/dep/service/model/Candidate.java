@@ -14,12 +14,20 @@ import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
+import org.codehaus.jackson.map.annotate.JsonView;
+
 @Entity
 @DiscriminatorValue("CA")
 public class Candidate extends Role {
 
 	/** Default value included to remove warning. Remove or modify at will. **/
 	private static final long serialVersionUID = 1L;
+	
+	
+	// define 2 json views
+	public static interface SimpleCandidateView {}; // shows a summary view of a Candidate
+	public static interface DetailedCandidateView extends SimpleCandidateView {};
+	
    
 	@Inject
 	@Transient
@@ -62,6 +70,7 @@ public class Candidate extends Role {
 		this.cv = cv;
 	}
 
+	@JsonView({ DetailedCandidateView.class })
 	public Set<FileHeader> getDegrees() {
 		return degrees;
 	}
@@ -69,6 +78,7 @@ public class Candidate extends Role {
 		this.degrees = degrees;
 	}
 
+	@JsonView({ DetailedCandidateView.class })
 	public Set<FileHeader> getPublications() {
 		return publications;
 	}
@@ -90,6 +100,7 @@ public class Candidate extends Role {
 		this.identity = identity;
 	}
 
+	@JsonView({ DetailedCandidateView.class })
 	public Set<Candidacy> getCandidacies() {
 		return candidacies;
 	}
