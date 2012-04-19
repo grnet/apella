@@ -17,6 +17,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 
 @Entity
@@ -74,6 +75,7 @@ public abstract class Role implements Serializable {
 		this.discriminator = discriminator;
 	}
 
+	@XmlTransient
 	public User getUser() {
 		return user;
 	}

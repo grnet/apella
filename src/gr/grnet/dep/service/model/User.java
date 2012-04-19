@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -28,6 +29,7 @@ import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.codec.binary.Base64;
+import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 @XmlRootElement
@@ -37,6 +39,11 @@ uniqueConstraints = {@UniqueConstraint(columnNames = "username"),
 public class User implements Serializable {
 	/** Default value included to remove warning. Remove or modify at will. **/
 	private static final long serialVersionUID = 1L;
+	
+	// define 2 json views
+	public static interface SimpleUserView {}; // shows a summary view of a User
+	public static interface DetailedUserView extends SimpleUserView {};
+	   
 
 	@Inject
 	@Transient
@@ -73,8 +80,15 @@ public class User implements Serializable {
 	@SuppressWarnings("unused")
 	private String password;
 
-	@OneToMany(mappedBy="user", cascade=CascadeType.ALL)
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="user")
 	private Set<Role> roles = new HashSet<Role>();
+	
+	private boolean active = true;
+	
+	@NotNull
+	private Date registrationDate;
+	
+	private Date lastLoginDate;
 
 
 
@@ -126,14 +140,37 @@ public class User implements Serializable {
 			throw new EJBException(uee);
 		}
 	}
-
+	
+	@JsonView({ DetailedUserView.class })
 	public Set<Role> getRoles() {
 		return roles;
 	}
-
 	public void setRoles(Set<Role> roles) {
 		this.roles = roles;
 	}
+
+	public boolean isActive() {
+		return active;
+	}
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+
+	public Date getRegistrationDate() {
+		return registrationDate;
+	}
+	public void setRegistrationDate(Date registrationDate) {
+		this.registrationDate = registrationDate;
+	}
+
+	public Date getLastLoginDate() {
+		return lastLoginDate;
+	}
+	public void setLastLoginDate(Date lastLoginDate) {
+		this.lastLoginDate = lastLoginDate;
+	}
+
+	
 
 	public void addRole(Role role) {
 		roles.add(role);
@@ -144,6 +181,8 @@ public class User implements Serializable {
 		roles.remove(role);
 		role.setUser(null);
 	}
+
+	
 
 
 }
