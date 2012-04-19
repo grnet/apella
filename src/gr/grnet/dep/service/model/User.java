@@ -7,6 +7,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ejb.EJBException;
@@ -29,7 +30,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.codec.binary.Base64;
 import org.codehaus.jackson.map.annotate.JsonView;
-import org.jboss.logmanager.Level;
 
 @Entity
 @XmlRootElement

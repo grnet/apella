@@ -9,9 +9,5 @@
 			<attribute name="owner.project.facets" value="java"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="var" path="JBOSS71/modules/org/codehaus/jackson/jackson-mapper-asl/main/jackson-mapper-asl-1.9.2.jar"/>
-	<classpathentry kind="var" path="JBOSS71/modules/org/codehaus/jackson/jackson-core-asl/main/jackson-core-asl-1.9.2.jar"/>
-	<classpathentry kind="var" path="JBOSS71/modules/org/codehaus/jackson/jackson-jaxrs/main/jackson-jaxrs-1.9.2.jar"/>
-	<classpathentry kind="var" path="JBOSS71/modules/org/codehaus/jackson/jackson-xc/main/jackson-xc-1.9.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
