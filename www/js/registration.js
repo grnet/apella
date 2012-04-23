@@ -6,7 +6,7 @@ var DEPRegistrationRouter = Backbone.Router.extend({
 	},
 
 	routes : {
-		"verification=:verificationNumber" : "showVerificationView",
+		"email=:email&verification=:verificationNumber" : "showVerificationView",
 		"profile=:role" : "showRegisterView"
 	},
 
@@ -30,10 +30,11 @@ var DEPRegistrationRouter = Backbone.Router.extend({
 		}
 	},
 
-	showVerificationView : function(verificationNumber) {
+	showVerificationView : function(email, verificationNumber) {
 		var self = this;
 
 		var userRegistration = new UserRegistration({
+			"email" : email,
 			"verificationNumber" : verificationNumber
 		});
 

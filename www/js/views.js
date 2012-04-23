@@ -1,11 +1,10 @@
 window.UserRegistrationView = Backbone.View.extend({
-	tagName : "article",
+	tagName : "div",
 
 	initialize : function() {
-		this.template = _.template(tpl.get('user-registration'));
-
-		this.model.bind('change', this.render);
 		_.bindAll(this, "render", "submit");
+		this.template = _.template(tpl.get('user-registration'));
+		this.model.bind('change', this.render);
 	},
 
 	events : {
@@ -18,15 +17,13 @@ window.UserRegistrationView = Backbone.View.extend({
 	},
 
 	submit : function(event) {
-		console.log("Clicked submit");
-
 		var email = $('form input[name=email]', this.el).val();
 		var firstname = $('form input[name=firstname]', this.el).val();
 		var lastname = $('form input[name=lastname]', this.el).val();
 		var password = $('form input[name=password]', this.el).val();
 
 		// Validate
-
+	
 		// Save to model
 		this.model.save({
 			"email" : email,
@@ -35,16 +32,12 @@ window.UserRegistrationView = Backbone.View.extend({
 			"password" : password
 		}, {
 			success : function(model, resp) {
-				/*
-				 * var popup = new PopupView({ type : "info", message :
-				 * "Success" }); popup.show();
-				 */
 				console.log(model);
 				console.log(resp);
+				$(this.el, "#messages").html("Η εγγραφή ολοκληρώθηκε, θα σας αποσταλεί e-mail........");
 			},
 			error : function(model, resp, options) {
 				console.log("" + resp.status);
-				console.log(resp);
 				var popup = new PopupView({
 					type : "error",
 					message : "Error " + resp.status
@@ -58,8 +51,50 @@ window.UserRegistrationView = Backbone.View.extend({
 	}
 });
 
+window.LoginView = Backbone.View.extend({
+	tagName : "div",
+
+	initialize : function() {
+		_.bindAll(this, "render", "login");
+		this.template = _.template(tpl.get('login'));
+		this.model.bind('change', this.render);
+	},
+
+	events : {
+		"submit form" : "login",
+	},
+
+	render : function(eventName) {
+		$(this.el).html(this.template(this.model.toJSON()));
+		return this;
+	},
+
+	login : function(event) {
+		var self = this;
+		var email = $('form input[name=email]', self.el).val();
+		var password = $('form input[name=password]', self.el).val();
+
+		// Save to model
+		self.model.login({
+			"email" : email,
+			"password" : password
+		}, {
+			success : function(model, resp) {
+				// Notify AppRouter to start Application (fill Header and handle history token)
+				self.model.trigger("user:loggedon");
+			},
+			error : function(model, resp, options) {
+				$(self.el, "#messages").html("Σφάλμα εισόδου");
+			}
+		});
+
+		event.preventDefault();
+		return false;
+	}
+});
+
 window.UserVerificationView = Backbone.View.extend({
-	tagName : "article",
+	tagName : "div",
 
 	initialize : function() {
 		this.template = _.template(tpl.get('user-verification'));
