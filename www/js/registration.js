@@ -10,12 +10,14 @@ var DEPRegistrationRouter = Backbone.Router.extend({
 		"profile=:role" : "showRegisterView"
 	},
 
-	allowedRoles : [ "professor", "helpdesk" ],
+	allowedRoles : [ "PROFESSOR_DOMESTIC", "PROFESSOR_FOREIGN", "INSTITUTION_MANAGER", "DEPARTMENT_MANAGER", "INSTITUTION_ASSISTANT", "MINISTRY_MANAGER", "CANDIDATE" ],
 
 	showRegisterView : function(role) {
 		if (_.indexOf(this.allowedRoles, role) >= 0) {
-			var userRegistration = new UserRegistration({
-				roles : [ role ]
+			var userRegistration = new User({
+				"roles" : [ {
+					"discriminator" : role,
+				} ]
 			});
 			var userRegistrationView = new UserRegistrationView({
 				model : userRegistration
@@ -33,8 +35,8 @@ var DEPRegistrationRouter = Backbone.Router.extend({
 	showVerificationView : function(email, verificationNumber) {
 		var self = this;
 
-		var userRegistration = new UserRegistration({
-			"email" : email,
+		var userRegistration = new User({
+			"username" : email,
 			"verificationNumber" : verificationNumber
 		});
 
@@ -47,14 +49,14 @@ var DEPRegistrationRouter = Backbone.Router.extend({
 				self.currentView = userVerificationView;
 			},
 			error : function(model, resp, options) {
-				console.log("" + resp.status);
+				console.log(resp.status);
 				console.log(resp);
 
 				$("#content").html("ΣΦΑΛΜΑ");
 				self.currentView = undefined;
 			}
 		});
-		return "";
+		return undefined;
 	}
 
 });

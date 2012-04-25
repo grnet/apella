@@ -1,17 +1,29 @@
-window.UserRegistration = Backbone.Model.extend({
-	url : "/dep/user",
+// User
+window.User = Backbone.Model.extend({
+	url : "/dep/rest/user",
 	defaults : {
-		email : "",
-		firstname : "",
-		lastname : "",
-		password : "",
-		roles : [],
-		verificationNumber : "",
-		verified : false
+		"id" : undefined,
+		"username" : undefined,
+		"basicInfo" : {
+			"firstname" : undefined,
+			"lastname" : undefined,
+		},
+		"contactInfo" : {
+			"address" : {
+				"street" : "",
+				"number" : "",
+				"zip" : "",
+				"city" : "",
+				"country" : ""
+			},
+			"email" : "",
+			"phoneNumber" : ""
+		},
+		"roles" : []
 	}
 });
 
-UserRegistration.prototype.verify = function(options) {
+User.prototype.verify = function(options) {
 	options = options ? _.clone(options) : {};
 	var model = this;
 	var success = options.success;
@@ -27,55 +39,17 @@ UserRegistration.prototype.verify = function(options) {
 	return (this.sync || Backbone.sync).call(this, 'verify', this, options);
 };
 
-UserRegistration.prototype.sync = function(method, model, options) {
-	console.log('method = ' + method);
-	console.log('model = ' + model.toJSON());
-	switch (method) {
-	case "verify":
-		// Default options, unless specified.
-		options || (options = {});
-		// Default JSON-request options.
-		var params = {
-			type : 'PUT',
-			dataType : 'json',
-			data : model.toJSON()
-		};
-
-		// Ensure that we have a URL.
-		if (!options.url) {
-			if (model.url) {
-				params.url = (_.isFunction(model.url) ? model.url() : model.url) + "/verify";
-			} else {
-				urlError();
-			}
-		}
-		// Make the request, allowing the user to override any Ajax options.
-		return $.ajax(_.extend(params, options));
-	default:
-		return (Backbone.sync).call(this, method, this, options);
-	}
-};
-
-window.User = Backbone.Model.extend({
-	url : "/dep/user",
-	defaults : {
-		id : "",
-		email : "",
-		firstname : "",
-		lastname : "",
-		roles : []
-	}
-});
-
 User.prototype.login = function(key, value, options) {
 	options = options ? _.clone(options) : {};
 	var model = this;
 	var success = options.success;
 	options.success = function(resp, status, xhr) {
-		if (!model.set(model.parse(resp, xhr), options))
+		if (!model.set(model.parse(resp, xhr), options)) {
 			return false;
-		if (success)
+		}
+		if (success) {
 			success(model, resp);
+		}
 	};
 	options.error = Backbone.wrapError(options.error, model, options);
 
@@ -92,8 +66,9 @@ User.prototype.login = function(key, value, options) {
 
 	// If we're "wait"-ing to set changed attributes, validate early.
 	if (options.wait) {
-		if (!this._validate(attrs, options))
+		if (!this._validate(attrs, options)) {
 			return false;
+		}
 		current = _.clone(this.attributes);
 	}
 
@@ -114,8 +89,9 @@ User.prototype.login = function(key, value, options) {
 			delete options.wait;
 			serverAttrs = _.extend(attrs || {}, serverAttrs);
 		}
-		if (!model.set(serverAttrs, options))
+		if (!model.set(serverAttrs, options)) {
 			return false;
+		}
 		if (success) {
 			success(model, resp);
 		} else {
@@ -127,8 +103,9 @@ User.prototype.login = function(key, value, options) {
 
 	var xhr = this.sync.call(this, 'login', this, options);
 
-	if (options.wait)
+	if (options.wait) {
 		this.set(current, silentOptions);
+	}
 
 	return xhr;
 };
@@ -137,6 +114,29 @@ User.prototype.sync = function(method, model, options) {
 	console.log('method = ' + method);
 	console.log(model.toJSON());
 	switch (method) {
+
+	case "verify":
+		// Default options, unless specified.
+		options || (options = {});
+		// Default JSON-request options.
+		var params = {
+			type : 'PUT',
+			dataType : 'json',
+			contentType : 'application/json',
+			data : JSON.stringify(model.toJSON())
+		};
+
+		// Ensure that we have a URL.
+		if (!options.url) {
+			if (model.url) {
+				params.url = (_.isFunction(model.url) ? model.url() : model.url) + "/verify";
+			} else {
+				urlError();
+			}
+		}
+		// Make the request, allowing the user to override any Ajax options.
+		return $.ajax(_.extend(params, options));
+
 	case "login":
 		// Default options, unless specified.
 		options || (options = {});
@@ -144,9 +144,9 @@ User.prototype.sync = function(method, model, options) {
 		var params = {
 			type : 'PUT',
 			dataType : 'json',
-			data : model.toJSON()
+			contentType : 'application/json',
+			data : JSON.stringify(model.toJSON())
 		};
-
 		// Ensure that we have a URL.
 		if (!options.url) {
 			if (model.url) {
@@ -157,6 +157,7 @@ User.prototype.sync = function(method, model, options) {
 		}
 		// Make the request, allowing the user to override any Ajax options.
 		return $.ajax(_.extend(params, options));
+		
 	default:
 		return (Backbone.sync).call(this, method, this, options);
 	}

@@ -1,21 +1,61 @@
 <h3>Registration Form</h3>
-<div style="float:left; width:40%">
-	<form onsubmit="return false">
-		<label for="email">E-Mail:</label>
-		<input type="email" name="email" required/>
-		<label for="firstname">Name:</label>
-		<input type="text" name="firstname" required/>
-		<label for="lastname">Surname:</label>
-		<input type="text" name="lastname" required/>
-		<label for="password">Password:</label>
-		<input type="password" name="password" required/>
+<p>Registration Form for ..... lorem ipsum dolor sit amet, consectetuer adipiscing elit. Donec molestie. Sed aliquam sem ut arcu. Phasellus sollicitudin. Vestibulum condimentum facilisis nulla. In hac habitasse platea dictumst. Nulla nonummy.</p>
+<p id="messages" class="notice"></p>
+<form onsubmit="return false">
+	<fieldset>
+		<legend>Account</legend>
+		<p>
+			<label for="username">E-Mail:</label>
+			<input type="email" name="username" />
+		</p>
+		<p>
+			<label for="firstname">Name:</label>
+			<input type="text" name="firstname" />
+		</p>
+		<p>
+			<label for="lastname">Surname:</label>
+			<input type="text" name="lastname" />
+		</p>
+		<p>
+			<label for="password">Password:</label>
+			<input type="password" name="password" />
+		</p>
+		<p>
+			<label for="confirm_password">Confirm Password:</label>
+			<input type="password" name="confirm_password" />
+		</p>
+	</fieldset>
+	<fieldset>
+		<legend>Contact Information</legend>
+		<p>
+			<label for="phoneNumber">Phone:</label>
+			<input type="text" name="phoneNumber" />
+		</p>
+	</fieldset>
+	<fieldset>
+		<legend>Address</legend>
+		<p>
+		<label for="address_street">Street:</label>
+		<input type="text" name="address_street" />
+		</p>
+		<p>
+		<label for="address_number">Street Number:</label>
+		<input type="text" name="address_number" />
+		</p>
+		<p>
+		<label for="address_zip">Zip:</label>
+		<input type="text" name="address_zip" />
+		</p>
+		<p>
+		<label for="address_city">City:</label>
+		<input type="text" name="address_city" />
+		</p>
+		<p>
+		<label for="address_country">Country:</label>
+		<input type="text" name="address_country" />
+		</p>
+	</fieldset>
+	<p>
 		<input type="submit" value="Register" name="submit" class="submit" />
-	</form>
-</div>
-<div style="float:left; width:60%">
-	<p>Registration Form for ..... lorem ipsum dolor sit amet, consectetuer
-	adipiscing elit. Donec molestie. Sed aliquam sem ut arcu. Phasellus
-	sollicitudin. Vestibulum condimentum facilisis nulla. In hac habitasse
-	platea dictumst. Nulla nonummy.</p>
-	<p id="messages" class="notice"></p>
-</div>
+	</p>
+</form>

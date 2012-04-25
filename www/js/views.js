@@ -13,28 +13,110 @@ window.UserRegistrationView = Backbone.View.extend({
 
 	render : function(eventName) {
 		$(this.el).html(this.template(this.model.toJSON()));
+
+		$("form", this.el).validate({
+			rules : {
+				username : {
+					required : true,
+					minlength : 2
+				},
+				firstname : "required",
+				lastname : "required",
+				password : {
+					required : true,
+					minlength : 5
+				},
+				confirm_password : {
+					required : true,
+					minlength : 5,
+					equalTo : "form input[name=password]"
+				},
+				phoneNumber : {
+					required : true,
+					number: true,
+					minlength : 10,
+					maxlength : 12,
+				},
+				address_street : "required",
+				address_number : "required",
+				address_zip : "required",
+				address_city : "required",
+				address_country : "required"
+			},
+			messages : {
+				firstname : "Please enter your firstname",
+				lastname : "Please enter your lastname",
+				username : {
+					required : "Please enter a username",
+					minlength : "Your username must consist of at least 2 characters"
+				},
+				password : {
+					required : "Please provide a password",
+					minlength : "Your password must be at least 5 characters long"
+				},
+				confirm_password : {
+					required : "Please provide a password",
+					minlength : "Your password must be at least 5 characters long",
+					equalTo : "Please enter the same password as above"
+				},
+				phoneNumber : {
+					required : "Please enter a phone number",
+					number: "Please enter only numbers",
+					minlength : "Phone number must be between 10 and 12 characters",
+					maxlength : "Phone number must be between 10 and 12 characters"
+				},
+				address_street : "Please enter a street",
+				address_number : "Please enter an address",
+				address_zip : "Please enter a zip code",
+				address_city : "Please enter a city",
+				address_country : "Please enter a country"
+			}
+		});
+
 		return this;
 	},
 
 	submit : function(event) {
-		var email = $('form input[name=email]', this.el).val();
+		var self = this;
+
+		// Read Input
+		var username = $('form input[name=username]', this.el).val();
 		var firstname = $('form input[name=firstname]', this.el).val();
 		var lastname = $('form input[name=lastname]', this.el).val();
 		var password = $('form input[name=password]', this.el).val();
+		var phoneNumber = $('form input[name=phoneNumber]', this.el).val();
+		var address_street = $('form input[name=address_street]', this.el).val();
+		var address_number = $('form input[name=address_number]', this.el).val();
+		var address_zip = $('form input[name=address_zip]', this.el).val();
+		var address_city = $('form input[name=address_city]', this.el).val();
+		var address_country = $('form input[name=address_country]', this.el).val();
 
 		// Validate
 
 		// Save to model
-		this.model.save({
-			"email" : email,
-			"firstname" : firstname,
-			"lastname" : lastname,
+		self.model.save({
+			"username" : username,
+			"basicInfo" : {
+				"firstname" : firstname,
+				"lastname" : lastname,
+			},
+			"contactInfo" : {
+				"address" : {
+					"street" : address_street,
+					"number" : address_number,
+					"zip" : address_zip,
+					"city" : address_city,
+					"country" : address_country
+				},
+				"email" : username,
+				"phoneNumber" : phoneNumber
+			},
 			"password" : password
 		}, {
 			success : function(model, resp) {
 				console.log(model);
 				console.log(resp);
-				$(this.el, "#messages").html("Η εγγραφή ολοκληρώθηκε, θα σας αποσταλεί e-mail........");
+				$("#messages", self.$el).html("Η εγγραφή ολοκληρώθηκε, θα σας αποσταλεί e-mail........");
 			},
 			error : function(model, resp, options) {
 				console.log("" + resp.status);
@@ -76,12 +158,14 @@ window.LoginView = Backbone.View.extend({
 
 		// Save to model
 		self.model.login({
-			"email" : email,
+			"username" : email,
 			"password" : password
 		}, {
 			success : function(model, resp) {
 				// Notify AppRouter to start Application (fill Header and handle
 				// history token)
+				console.log("Succesful Login");
+				console.log(resp);
 				var authToken = resp.getResponseHeader('X-Auth-Token');
 				self.model.trigger("user:loggedon", authToken);
 			},

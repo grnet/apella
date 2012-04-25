@@ -14,6 +14,8 @@ var AppRouter = Backbone.Router.extend({
 		self.data.loggedOnUser.fetch({
 			url : "/rest/user/loggedon",
 			success : function(model, resp) {
+				console.log("Succesful Login");
+				console.log(resp);
 				var authToken = resp.getResponseHeader('X-Auth-Token');
 				self.data.loggedOnUser.trigger("user:loggedon", authToken);
 				// Start Application

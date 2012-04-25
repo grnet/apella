@@ -254,30 +254,39 @@ p.notice {
 /***************************************************
 				   FORM
 ***************************************************/
-:invalid {
-	border-color: #e88;
-	box-shadow: 0 0 5px rgba(255, 0, 0, .8);
-}
-
-:required {
-	border-color: #88a;
-	box-shadow: 0 0 5px rgba(0, 0, 255, .5);
-}
-
 form {
 	margin-bottom: 15px;
 	margin-top: 5px;
 }
 
+form fieldset {
+	margin: 5px;
+	padding: 5px;
+}
+
+form legend {
+	padding: 2px;
+	font-size: 110%;
+}
+
 form label {
-	
+	float: left;
+	width: 15%;
+	text-align: right;
+	font-weight: bold;
+}
+
+form label.error {
+	float: none;
+	width: auto;
+	color: red;
 }
 
 form input {
-	display: block;
-	width: 75%;
+	width: 50%;
+	margin-left: 5px;
+	margin-right: 5px;
 	margin-bottom: 15px;
-	margin-top: 5px;
 	border: 1px solid #ccc;
 	outline: none;
 	border-radius: 5px;
@@ -285,8 +294,11 @@ form input {
 }
 
 form input[type=submit] {
-	background: none;
+	float: none;
+	width: 50%;
+	background : none;
 	padding: 10px;
+	background: none;
 }
 
 /***************************************************
