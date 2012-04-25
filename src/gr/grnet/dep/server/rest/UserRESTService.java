@@ -104,7 +104,8 @@ public class UserRESTService {
 		// 2. Copy User Fields
 		existingUser.setBasicInfo(user.getBasicInfo());
 		existingUser.setContactInfo(user.getContactInfo());
-		return existingUser;
+		
+		return get(existingUser.getId());
 	}
 
 	@DELETE
