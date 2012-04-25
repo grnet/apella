@@ -55,7 +55,7 @@ public class MemberRegistration {
 
 	@PostConstruct
 	public void initNewUser() {
-		newUser = new User();
+		/*newUser = new User();
 		newUser.getBasicInfo().setFirstname("Aggelos");
 		newUser.getBasicInfo().setLastname("Lenis");
 		newUser.setUsername("anglen");
@@ -75,7 +75,7 @@ public class MemberRegistration {
 		newUser.addRole(pd);
 		Candidate can = new Candidate();
 		newUser.addRole(can);
-		em.persist(newUser);
+		em.persist(newUser);*/
 	}
 
 }
