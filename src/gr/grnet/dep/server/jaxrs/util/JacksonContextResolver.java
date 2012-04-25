@@ -25,13 +25,14 @@ public class JacksonContextResolver implements ContextResolver<ObjectMapper> {
 			.configure(SerializationConfig.Feature.WRITE_DATES_AS_TIMESTAMPS, false)
 			.configure(SerializationConfig.Feature.WRITE_DATE_KEYS_AS_TIMESTAMPS, false);
 		
+
 		// Use Jackson annotations as primary; use JAXB annotation as fallback.
 		// See http://wiki.fasterxml.com/JacksonJAXBAnnotations
 		AnnotationIntrospector primaryIntrospector = new JacksonAnnotationIntrospector();
 	    AnnotationIntrospector secondaryIntropsector = new JaxbAnnotationIntrospector();
 	    AnnotationIntrospector pair = new AnnotationIntrospector.Pair(primaryIntrospector, secondaryIntropsector);
 		this.objectMapper.setAnnotationIntrospector(pair);
-
+		
 	}
 
 	public ObjectMapper getContext(Class<?> objectType) {

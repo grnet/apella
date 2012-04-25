@@ -9,7 +9,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
 @Entity
-@DiscriminatorValue("PD")
+@DiscriminatorValue("PROFESSOR_DOMESTIC")
 public class ProfessorDomestic extends Professor {
 
 /** Default value included to remove warning. Remove or modify at will. **/
@@ -38,7 +38,7 @@ public class ProfessorDomestic extends Professor {
    
    public ProfessorDomestic() {
 	   super();
-	   setDiscriminator(RoleDiscriminator.PD);
+		setDiscriminator(RoleDiscriminator.PROFESSOR_DOMESTIC);
    }
 
 

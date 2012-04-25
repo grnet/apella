@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 @Entity
-@DiscriminatorValue("MM")
+@DiscriminatorValue("MINISTRY_MANAGER")
 public class MinistryManager extends Role {
 
 	/** Default value included to remove warning. Remove or modify at will. **/
@@ -29,7 +29,7 @@ public class MinistryManager extends Role {
 
 	public MinistryManager() {
 		super();
-		setDiscriminator(RoleDiscriminator.MM);
+		setDiscriminator(RoleDiscriminator.MINISTRY_MANAGER);
 	}
 
 

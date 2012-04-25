@@ -23,7 +23,7 @@ window.UserRegistrationView = Backbone.View.extend({
 		var password = $('form input[name=password]', this.el).val();
 
 		// Validate
-	
+
 		// Save to model
 		this.model.save({
 			"email" : email,
@@ -80,11 +80,13 @@ window.LoginView = Backbone.View.extend({
 			"password" : password
 		}, {
 			success : function(model, resp) {
-				// Notify AppRouter to start Application (fill Header and handle history token)
-				self.model.trigger("user:loggedon");
+				// Notify AppRouter to start Application (fill Header and handle
+				// history token)
+				var authToken = resp.getResponseHeader('X-Auth-Token');
+				self.model.trigger("user:loggedon", authToken);
 			},
 			error : function(model, resp, options) {
-				$(self.el, "#messages").html("Σφάλμα εισόδου");
+				$("#messages", self.$el).html("Σφάλμα εισόδου");
 			}
 		});
 
@@ -145,4 +147,42 @@ window.PopupView = Backbone.View.extend({
 		$('body').unbind('keypress.popup');
 		$(this.el).remove();
 	}
+});
+
+window.MenuView = Backbone.View.extend({
+	tagName : "ul",
+
+	initialize : function() {
+		_.bindAll(this, "render", "logout");
+		this.model.bind('change', this.render);
+	},
+
+	events : {
+		"click a#logout" : "logout"
+	},
+
+	render : function(eventName) {
+		// Add Logout
+		$(this.el).append("<li><a id=\"logout\" href=\"#\">LOGOUT</a>");
+		// CREATE MENU BASED ON USER ROLES:
+		$(this.el).append("<li><a href=\"\#requests\">REQUESTS</a>");
+		$(this.el).append("<li><a href=\"\#profile\">PROFILE</a>");
+		$(this.el).append("<li><a href=\"\#\">ΗΟΜΕ</a>");
+
+		return this;
+	},
+
+	logout : function(event) {
+		// Remove X-Auth-Token
+		$.ajaxSetup({
+			headers : {}
+		});
+		console.log("Logging out");
+		// Send Redirect
+		window.location.href = window.location.pathname;
+
+		event.preventDefault;
+		return false;
+	}
+
 });

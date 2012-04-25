@@ -17,7 +17,7 @@ import javax.persistence.UniqueConstraint;
 import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
-@DiscriminatorValue("CA")
+@DiscriminatorValue("CANDIDATE")
 public class Candidate extends Role {
 
 	/** Default value included to remove warning. Remove or modify at will. **/
@@ -59,7 +59,7 @@ public class Candidate extends Role {
 
 	public Candidate() {
 		super();
-		setDiscriminator(RoleDiscriminator.CA);
+		setDiscriminator(RoleDiscriminator.CANDIDATE);
 	}
 
 

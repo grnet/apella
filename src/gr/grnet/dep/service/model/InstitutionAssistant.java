@@ -9,7 +9,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
 @Entity
-@DiscriminatorValue("IA")
+@DiscriminatorValue("INSTITUTION_ASSISTANT")
 public class InstitutionAssistant extends Role {
 
 	/** Default value included to remove warning. Remove or modify at will. **/
@@ -29,7 +29,7 @@ public class InstitutionAssistant extends Role {
 
 	public InstitutionAssistant() {
 		super();
-		setDiscriminator(RoleDiscriminator.IA);
+		setDiscriminator(RoleDiscriminator.INSTITUTION_ASSISTANT);
 	}
 
 

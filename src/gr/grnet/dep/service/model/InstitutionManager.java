@@ -9,7 +9,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
 @Entity
-@DiscriminatorValue("IM")
+@DiscriminatorValue("INSTITUTION_MANAGER")
 public class InstitutionManager extends Role {
 
 /** Default value included to remove warning. Remove or modify at will. **/
@@ -26,7 +26,7 @@ public class InstitutionManager extends Role {
    
    public InstitutionManager() {
 	   super();
-	   setDiscriminator(RoleDiscriminator.IM);
+		setDiscriminator(RoleDiscriminator.INSTITUTION_MANAGER);
    }
 
    

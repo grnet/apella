@@ -1,9 +1,4 @@
 /***************************************************
-	      minimalist by marija zaric
-	      template distributed by
-        http: //freehtml5templates.com
-***************************************************
-***************************************************
 			      Reset
 ***************************************************/
 html,body,div,span,h1,h2,h3,h4,h5,h6,p,ol,ul,li,form,label,legend,caption,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section,summary
@@ -222,17 +217,17 @@ h4 {
 	text-decoration: none;
 }
 
-#nav ul li a: hover {
-	color: #CC3333;
-}
-
-#nav ul li a.current {
+#nav ul li :hover {
 	color: #CC3333;
 }
 
 /***************************************************
 				   SPECIFIC
 ***************************************************/
+p.notice {
+	color: #FF0000
+}
+
 .button {
 	width: 66px;
 	height: 13px;
