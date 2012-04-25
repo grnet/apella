@@ -22,12 +22,12 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.codehaus.jackson.map.annotate.JsonView;
-import org.jboss.resteasy.spi.NoLogWebApplicationException;
 
 @Path("/user")
 @Stateless
@@ -59,7 +59,7 @@ public class UserRESTService {
 	@JsonView({DetailedUserView.class})
 	public User getLoggedOn(@HeaderParam("X-Auth-token") String authToken) {
 		if (authToken == null) {
-			throw new NoLogWebApplicationException(Status.UNAUTHORIZED);
+			throw new WebApplicationException(Status.UNAUTHORIZED);
 		}
 		return (User) em.createQuery(
 			"from User u " +
@@ -97,7 +97,7 @@ public class UserRESTService {
 	public User update(@PathParam("id") long id, User user) {
 		User existingUser = em.find(User.class, id);
 		if (existingUser == null) {
-			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+			throw new WebApplicationException(Status.NOT_FOUND);
 		}
 		//TODO: 1. Validate changes:
 
@@ -113,7 +113,7 @@ public class UserRESTService {
 	public void delete(@PathParam("id") long id) {
 		User existingUser = em.find(User.class, id);
 		if (existingUser == null) {
-			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+			throw new WebApplicationException(Status.NOT_FOUND);
 		}
 		//TODO: Validate:
 
@@ -161,10 +161,10 @@ public class UserRESTService {
 				.getSingleResult();
 			// Validate
 			if (!user.getVerificationNumber().equals(u.getVerificationNumber())) {
-				throw new NoLogWebApplicationException(Response.status(Status.FORBIDDEN).header("X-Error-Code", "wrong.verification").build());
+				throw new WebApplicationException(Response.status(Status.FORBIDDEN).header("X-Error-Code", "wrong.verification").build());
 			}
 			if (u.getVerified()) {
-				throw new NoLogWebApplicationException(Response.status(Status.FORBIDDEN).header("X-Error-Code", "already.verified").build());
+				throw new WebApplicationException(Response.status(Status.FORBIDDEN).header("X-Error-Code", "already.verified").build());
 			}
 
 			// Verify
@@ -173,7 +173,7 @@ public class UserRESTService {
 
 			return u;
 		} catch (NoResultException e) {
-			throw new NoLogWebApplicationException(Response.status(Status.NOT_FOUND).header("X-Error-Code", "wrong.username").build());
+			throw new WebApplicationException(Response.status(Status.NOT_FOUND).header("X-Error-Code", "wrong.username").build());
 		}
 	}
 }
