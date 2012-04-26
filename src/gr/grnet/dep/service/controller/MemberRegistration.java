@@ -1,13 +1,7 @@
 package gr.grnet.dep.service.controller;
 
-import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.Department;
-import gr.grnet.dep.service.model.ProfessorDomestic;
-import gr.grnet.dep.service.model.Rank;
-import gr.grnet.dep.service.model.Subject;
 import gr.grnet.dep.service.model.User;
 
-import java.util.Date;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -55,7 +49,9 @@ public class MemberRegistration {
 
 	@PostConstruct
 	public void initNewUser() {
-		/*newUser = new User();
+		/*Department department = em.find(Department.class, 1L);
+		Subject subj = em.find(Subject.class, 1L);
+		User newUser = new User();
 		newUser.getBasicInfo().setFirstname("Aggelos");
 		newUser.getBasicInfo().setLastname("Lenis");
 		newUser.setUsername("anglen");
@@ -66,16 +62,29 @@ public class MemberRegistration {
 		newUser.getContactInfo().getAddress().setNumber("3");
 		newUser.getContactInfo().getAddress().setZip("11525");
 		ProfessorDomestic pd = new ProfessorDomestic();
-		Department department = em.find(Department.class, 1L);
 		pd.setDepartment(department);
 		Rank rank = em.find(Rank.class, 1L);
 		pd.setRank(rank);
-		Subject subj = em.find(Subject.class, 1L);
 		pd.setSubject(subj);
 		newUser.addRole(pd);
 		Candidate can = new Candidate();
 		newUser.addRole(can);
 		em.persist(newUser);*/
+		
+		/*User user = em.find(User.class, 1L);
+		Candidate can = new Candidate();
+		user.addRole(can);
+		Position pos = new Position();
+		pos.setName("Front Desk Security");
+		pos.setDescription("Kickboxing services");
+		pos.setDepartment(department);
+		pos.setSubject(subj);
+		em.persist(pos);
+		Candidacy ccy = new Candidacy();
+		ccy.setDate(new Date());
+		ccy.setPosition(pos);
+		can.addCandidacy(ccy);
+		em.persist(user);*/
 	}
 
 }

@@ -1,6 +1,8 @@
 package gr.grnet.dep.service.model;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -103,5 +105,11 @@ public class Candidate extends Role {
 		this.candidacies = candidacies;
 	}
 
+	
+	public void addCandidacy(Candidacy candidacy) {
+		this.candidacies.add(candidacy);
+		candidacy.setCandidate(this);
+	}
+	
   
 }
