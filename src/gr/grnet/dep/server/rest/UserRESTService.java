@@ -1,11 +1,14 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.service.model.Role;
+import gr.grnet.dep.service.model.Role.SimpleRoleView;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.DetailedUserView;
 import gr.grnet.dep.service.model.User.SimpleUserView;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
@@ -176,4 +179,17 @@ public class UserRESTService {
 			throw new WebApplicationException(Response.status(Status.NOT_FOUND).header("X-Error-Code", "wrong.username").build());
 		}
 	}
+	
+	
+	@GET
+	@Path("/{id:[0-9][0-9]*}/roles")
+	@JsonView({SimpleRoleView.class})
+	public Set<Role> getRolesForUser(@PathParam("id") long id) {
+		User u = (User) em.createQuery(
+			"from User u join fetch u.roles where u.id=:id")
+			.setParameter("id", id)
+			.getSingleResult();
+		return u.getRoles();
+	}
+	
 }
