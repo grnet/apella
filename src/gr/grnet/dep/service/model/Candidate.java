@@ -23,11 +23,6 @@ public class Candidate extends Role {
 	/** Default value included to remove warning. Remove or modify at will. **/
 	private static final long serialVersionUID = 1L;
 	
-	
-	// define 2 json views
-	public static interface SimpleCandidateView {}; // shows a summary view of a Candidate
-	public static interface DetailedCandidateView extends SimpleCandidateView {};
-	
    
 	@Inject
 	@Transient
@@ -70,7 +65,7 @@ public class Candidate extends Role {
 		this.cv = cv;
 	}
 
-	@JsonView({ DetailedCandidateView.class })
+	@JsonView({ DetailedRoleView.class })
 	public Set<FileHeader> getDegrees() {
 		return degrees;
 	}
@@ -78,7 +73,7 @@ public class Candidate extends Role {
 		this.degrees = degrees;
 	}
 
-	@JsonView({ DetailedCandidateView.class })
+	@JsonView({ DetailedRoleView.class })
 	public Set<FileHeader> getPublications() {
 		return publications;
 	}
@@ -100,7 +95,7 @@ public class Candidate extends Role {
 		this.identity = identity;
 	}
 
-	@JsonView({ DetailedCandidateView.class })
+	@JsonView({ DetailedRoleView.class })
 	public Set<Candidacy> getCandidacies() {
 		return candidacies;
 	}

@@ -41,6 +41,15 @@ public abstract class Role implements Serializable {
 
 	/** Default value included to remove warning. Remove or modify at will. **/
 	private static final long serialVersionUID = 1L;
+	
+	
+	// define 2 json views
+	public static interface SimpleRoleView {
+	}; // shows a summary view of a Role
+
+	public static interface DetailedRoleView extends SimpleRoleView {
+	};
+	
 
 	enum RoleDiscriminator {
 		PROFESSOR_DOMESTIC,
