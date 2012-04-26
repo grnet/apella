@@ -160,11 +160,11 @@ public class UserRESTService {
 				.setParameter("username", user.getUsername())
 				.getSingleResult();
 			// Validate
-			if (!user.getVerificationNumber().equals(u.getVerificationNumber())) {
-				throw new WebApplicationException(Response.status(Status.FORBIDDEN).header("X-Error-Code", "wrong.verification").build());
-			}
-			if (u.getVerified()) {
+			if (u.getVerified()!=null && u.getVerified()) {
 				throw new WebApplicationException(Response.status(Status.FORBIDDEN).header("X-Error-Code", "already.verified").build());
+			}
+			if (user.getVerificationNumber()==null || !user.getVerificationNumber().equals(u.getVerificationNumber())) {
+				throw new WebApplicationException(Response.status(Status.FORBIDDEN).header("X-Error-Code", "wrong.verification").build());
 			}
 
 			// Verify
