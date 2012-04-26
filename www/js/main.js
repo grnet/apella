@@ -16,8 +16,7 @@ var AppRouter = Backbone.Router.extend({
 			success : function(model, resp) {
 				console.log("Succesful Login");
 				console.log(resp);
-				var authToken = resp.getResponseHeader('X-Auth-Token');
-				self.data.loggedOnUser.trigger("user:loggedon", authToken);
+				self.data.loggedOnUser.trigger("user:loggedon");
 				// Start Application
 				console.log("Fetch User success");
 				self.start();
@@ -40,12 +39,6 @@ var AppRouter = Backbone.Router.extend({
 		console.log("Start called");
 
 		self.data.loggedOnUser.off("user:loggedon", self.start);
-		// Add Authentication Header in all Ajax Requests
-		$.ajaxSetup({
-			headers : {
-				"X-Auth-Token" : authToken
-			}
-		});
 		// Create Header, Menu, and other side content and
 		// bind them to the same loggedOnUser model
 		var menuView = new MenuView({
@@ -71,8 +64,20 @@ var AppRouter = Backbone.Router.extend({
 	},
 
 	showHomeView : function() {
+		var self = this;
 		console.log("showHomeView");
-		$("#content").html("<h1>Home</h1>");
+		$("#content").empty();
+		if (self.data.loggedOnUser) {
+			var userView = new UserView({
+				model : self.data.loggedOnUser
+			});
+			$("#content").append(userView.render().el);
+			this.currentView = userView;
+			return userRegistrationView;
+		} else {
+			this.currentView = undefined;
+			return undefined;
+		}
 	},
 
 	showProfileView : function() {
@@ -87,7 +92,7 @@ var AppRouter = Backbone.Router.extend({
 });
 
 $(document).ready(function() {
-	tpl.loadTemplates([ "login", "popup" ], function() {
+	tpl.loadTemplates([ "login", "popup", "user" ], function() {
 		app = new AppRouter();
 	});
 });

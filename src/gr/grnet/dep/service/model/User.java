@@ -7,7 +7,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ejb.EJBException;
@@ -25,6 +24,7 @@ import javax.persistence.Version;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.codec.binary.Base64;
 import org.codehaus.jackson.map.annotate.JsonView;
@@ -130,22 +130,13 @@ public class User implements Serializable {
 		this.contactInfo = contactInfo;
 	}
 
+	@XmlTransient
 	public String getPassword() {
 		return password;
 	}
 
 	public void setPassword(String password) {
-		try {
-			MessageDigest md = MessageDigest.getInstance("SHA");
-			byte[] hash = md.digest(password.getBytes("ISO-8859-1"));
-			this.password = new String(Base64.encodeBase64(hash), "ISO-8859-1");
-		} catch (NoSuchAlgorithmException nsae) {
-			logger.log(Level.SEVERE, "", nsae);
-			throw new EJBException(nsae);
-		} catch (UnsupportedEncodingException uee) {
-			logger.log(Level.SEVERE, "", uee);
-			throw new EJBException(uee);
-		}
+		this.password = password;
 	}
 
 	@JsonView({DetailedUserView.class})
@@ -173,6 +164,7 @@ public class User implements Serializable {
 		this.registrationDate = registrationDate;
 	}
 
+	@XmlTransient
 	public Long getVerificationNumber() {
 		return verificationNumber;
 	}
@@ -207,12 +199,25 @@ public class User implements Serializable {
 		role.setUser(null);
 	}
 
+	@XmlTransient
 	public String getAuthToken() {
 		return authToken;
 	}
 
 	public void setAuthToken(String authToken) {
 		this.authToken = authToken;
+	}
+
+	public static String encodePassword(String password) {
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA");
+			byte[] hash = md.digest(password.getBytes("ISO-8859-1"));
+			return new String(Base64.encodeBase64(hash), "ISO-8859-1");
+		} catch (NoSuchAlgorithmException nsae) {
+			throw new EJBException(nsae);
+		} catch (UnsupportedEncodingException uee) {
+			throw new EJBException(uee);
+		}
 	}
 
 }
