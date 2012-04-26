@@ -1,5 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.User.DetailedUserView;
+
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -13,9 +15,20 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
+import javax.xml.bind.annotation.XmlTransient;
+
+import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 public class Candidacy {
+	
+	// define 2 json views
+	public static interface SimpleCandidacyView {
+	}; // shows a summary view of a Candidacy
+
+	public static interface DetailedCandidacyView extends SimpleCandidacyView {
+	};
+		
 
 	@Id
 	@GeneratedValue
@@ -50,6 +63,7 @@ public class Candidacy {
 		this.date = date;
 	}
 
+	@XmlTransient
 	public Candidate getCandidate() {
 		return candidate;
 	}
@@ -64,6 +78,7 @@ public class Candidacy {
 		this.position = position;
 	}
 
+	@JsonView({DetailedUserView.class})
 	public Set<FileBody> getFiles() {
 		return files;
 	}

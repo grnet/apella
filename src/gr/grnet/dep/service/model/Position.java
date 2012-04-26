@@ -17,6 +17,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -116,6 +117,7 @@ public class Position {
 		this.status = status;
 	}
 	
+	@XmlTransient
 	public Set<Candidacy> getCandidacies() {
 		return candidacies;
 	}

@@ -6,6 +6,8 @@ import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.DetailedUserView;
 import gr.grnet.dep.service.model.User.SimpleUserView;
 
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -26,9 +28,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 
@@ -44,6 +49,8 @@ public class UserRESTService {
 	@SuppressWarnings("unused")
 	@Inject
 	private Logger log;
+	
+	@Context UriInfo uriInfo;
 
 	@GET
 	@JsonView({SimpleUserView.class})
@@ -71,15 +78,32 @@ public class UserRESTService {
 			.getSingleResult();
 	}
 
+	
+	private List<URI> getRoleUris(User u) {
+		List<URI> list = new ArrayList<URI>();
+		UriBuilder builder = uriInfo.getBaseUriBuilder();
+		log.info(builder.clone().build(u.getId()).toString());
+		builder.path(RoleRESTService.class, "get");
+		for (Role r : u.getRoles()) {
+			UriBuilder clone = builder.clone();
+			URI uri = clone.build(r.getId());
+			list.add(uri);
+		}
+		return list;
+	}
+	
+	
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedUserView.class})
 	public User get(@PathParam("id") long id) {
-		return (User) em.createQuery(
+		User user = (User) em.createQuery(
 			"from User u join fetch u.roles " +
 				"where u.id=:id")
 			.setParameter("id", id)
 			.getSingleResult();
+		user.setRoleUris(getRoleUris(user));
+		return user;
 	}
 
 	@POST
@@ -191,5 +215,7 @@ public class UserRESTService {
 			.getSingleResult();
 		return u.getRoles();
 	}
+	
+	
 	
 }

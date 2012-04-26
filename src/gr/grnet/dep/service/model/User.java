@@ -2,10 +2,12 @@ package gr.grnet.dep.service.model;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -92,6 +94,9 @@ public class User implements Serializable {
 	private Boolean verified;
 
 	private Date lastLoginDate;
+	
+	@Transient
+	private List<URI> roleUris;
 
 	/**
 	 * This is set when user is loggedin
@@ -214,5 +219,17 @@ public class User implements Serializable {
 	public void setAuthToken(String authToken) {
 		this.authToken = authToken;
 	}
+
+	
+	public List<URI> getRoleUris() {
+		return roleUris;
+	}
+	
+	public void setRoleUris(List<URI> roleUris) {
+		this.roleUris = roleUris;
+	}
+	
+	
+	
 
 }
