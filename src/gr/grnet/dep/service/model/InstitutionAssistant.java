@@ -45,6 +45,14 @@ public class InstitutionAssistant extends Role {
 	}
 	public void setManager(InstitutionManager manager) {
 		this.manager = manager;
+	}
+
+
+	////////////////////////////////////////////////////////////////////////////
+	
+	
+	@Override
+	public void initializeCollections() {
 	}   
 
 }

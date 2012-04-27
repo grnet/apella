@@ -22,6 +22,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.codehaus.jackson.annotate.JsonSubTypes;
 import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.codehaus.jackson.annotate.JsonTypeInfo.As;
+import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -43,8 +44,11 @@ public abstract class Role implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	
-	// define 2 json views
-	public static interface SimpleRoleView {
+	// define 3 json views
+	public static interface IdRoleView {
+	}; // shows only id view of a Role
+	
+	public static interface SimpleRoleView extends IdRoleView {
 	}; // shows a summary view of a Role
 
 	public static interface DetailedRoleView extends SimpleRoleView {
@@ -90,6 +94,7 @@ public abstract class Role implements Serializable {
 		this.id = id;
 	}
 
+	@JsonView({ SimpleRoleView.class })
 	public RoleDiscriminator getDiscriminator() {
 		return discriminator;
 	}
@@ -106,5 +111,10 @@ public abstract class Role implements Serializable {
 	public void setUser(User user) {
 		this.user = user;
 	}
+	
+	
+	//////////////////////////////////////////////////////////
+	
+	public abstract void initializeCollections() ;
 
 }

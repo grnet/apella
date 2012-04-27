@@ -63,6 +63,14 @@ public class ProfessorForeign extends Professor {
 	public void setSubject(String subject) {
 		this.subject = subject;
 	}
+
+
+	////////////////////////////////////////////////////////////////////////////
+	
+
+	@Override
+	public void initializeCollections() {	
+	}
    
   
 }

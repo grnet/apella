@@ -77,5 +77,13 @@ public class ProfessorDomestic extends Professor {
 		this.fekFile = fekFile;
 	}
 
+
+	////////////////////////////////////////////////////////////////////////////
+	
+	
+	@Override
+	public void initializeCollections() {
+	}
+
    
 }

@@ -1,13 +1,11 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.service.model.Role;
-import gr.grnet.dep.service.model.Role.SimpleRoleView;
+import gr.grnet.dep.service.model.Role.IdRoleView;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.DetailedUserView;
 import gr.grnet.dep.service.model.User.SimpleUserView;
 
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -32,7 +30,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.codehaus.jackson.map.annotate.JsonView;
@@ -79,19 +76,6 @@ public class UserRESTService {
 	}
 
 	
-	private List<URI> getRoleUris(User u) {
-		List<URI> list = new ArrayList<URI>();
-		UriBuilder builder = uriInfo.getBaseUriBuilder();
-		log.info(builder.clone().build(u.getId()).toString());
-		builder.path(RoleRESTService.class, "get");
-		for (Role r : u.getRoles()) {
-			UriBuilder clone = builder.clone();
-			URI uri = clone.build(r.getId());
-			list.add(uri);
-		}
-		return list;
-	}
-	
 	
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
@@ -102,7 +86,6 @@ public class UserRESTService {
 				"where u.id=:id")
 			.setParameter("id", id)
 			.getSingleResult();
-		user.setRoleUris(getRoleUris(user));
 		return user;
 	}
 
@@ -207,7 +190,7 @@ public class UserRESTService {
 	
 	@GET
 	@Path("/{id:[0-9][0-9]*}/roles")
-	@JsonView({SimpleRoleView.class})
+	@JsonView({IdRoleView.class})
 	public Set<Role> getRolesForUser(@PathParam("id") long id) {
 		User u = (User) em.createQuery(
 			"from User u join fetch u.roles where u.id=:id")

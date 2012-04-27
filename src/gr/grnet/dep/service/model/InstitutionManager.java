@@ -35,6 +35,14 @@ public class InstitutionManager extends Role {
 	}
 	public void setInstitution(Institution institution) {
 		this.institution = institution;
+	}
+
+	
+	////////////////////////////////////////////////////////////////////////////
+	
+
+	@Override
+	public void initializeCollections() {
 	}   
   
 }

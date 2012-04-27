@@ -1,8 +1,6 @@
 package gr.grnet.dep.service.model;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -60,6 +58,7 @@ public class Candidate extends Role {
 	}
 
 
+	@JsonView({ SimpleRoleView.class })
 	public FileHeader getCv() {
 		return cv;
 	}
@@ -83,6 +82,7 @@ public class Candidate extends Role {
 		this.publications = publications;
 	}
 
+	@JsonView({ SimpleRoleView.class })
 	public FileHeader getMilitary1599() {
 		return military1599;
 	}
@@ -90,6 +90,7 @@ public class Candidate extends Role {
 		this.military1599 = military1599;
 	}
 
+	@JsonView({ SimpleRoleView.class })
 	public FileHeader getIdentity() {
 		return identity;
 	}
@@ -106,9 +107,20 @@ public class Candidate extends Role {
 	}
 
 	
+	///////////////////////////////////////////////////////////////////////////////
+	
+	
 	public void addCandidacy(Candidacy candidacy) {
 		this.candidacies.add(candidacy);
 		candidacy.setCandidate(this);
+	}
+
+
+	@Override
+	public void initializeCollections() {
+		getCandidacies().size();
+		getDegrees().size();
+		getPublications().size();
 	}
 	
   
