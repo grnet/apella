@@ -20,6 +20,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -114,6 +115,7 @@ public class UserRESTService {
 		user.setVerified(Boolean.FALSE);
 		// TODO: Create a verification generation algorithm
 		user.setVerificationNumber(System.currentTimeMillis());
+		user.setPassword(User.encodePassword(user.getPassword()));
 		em.persist(user);
 		return user;
 	}
@@ -129,6 +131,7 @@ public class UserRESTService {
 		//TODO: 1. Validate changes:
 
 		// 2. Copy User Fields
+		existingUser.setPassword(User.encodePassword(user.getPassword()));
 		existingUser.setBasicInfo(user.getBasicInfo());
 		existingUser.setContactInfo(user.getContactInfo());
 		
@@ -150,19 +153,21 @@ public class UserRESTService {
 
 	@PUT
 	@Path("/login")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@JsonView({DetailedUserView.class})
-	public Response login(User user) {
+	public Response login(@FormParam("username") String username, @FormParam("password") String password) {
 		try {
 			User u = (User) em.createQuery(
 				"from User u " +
 					"left join fetch u.roles " +
 					"where u.username = :username")
-				.setParameter("username", user.getUsername())
+				.setParameter("username", username)
 				.getSingleResult();
 
-			if (u.getPassword().equals(user.getPassword())) {
+			if (u.getPassword().equals(User.encodePassword(password))) {
 				//TODO: Create Token: 
 				u.setAuthToken("" + System.currentTimeMillis());
+
 				return Response.status(200)
 					.header("X-Auth-Token", u.getAuthToken())
 					.entity(u)

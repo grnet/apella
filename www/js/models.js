@@ -20,6 +20,18 @@ window.User = Backbone.Model.extend({
 			"phoneNumber" : ""
 		},
 		"roles" : []
+	},
+	parse : function(resp, xhr) {
+		// This is the only place we have access to xhr - response object
+		var authToken = xhr.getResponseHeader("X-Auth-Token");
+		if (authToken) {
+			$.ajaxSetup({
+				headers : {
+					"X-Auth-Token" : authToken
+				}
+			});
+		}
+		return resp;
 	}
 });
 
@@ -144,8 +156,7 @@ User.prototype.sync = function(method, model, options) {
 		var params = {
 			type : 'PUT',
 			dataType : 'json',
-			contentType : 'application/json',
-			data : JSON.stringify(model.toJSON())
+			data : model.toJSON()
 		};
 		// Ensure that we have a URL.
 		if (!options.url) {
@@ -157,7 +168,7 @@ User.prototype.sync = function(method, model, options) {
 		}
 		// Make the request, allowing the user to override any Ajax options.
 		return $.ajax(_.extend(params, options));
-		
+
 	default:
 		return (Backbone.sync).call(this, method, this, options);
 	}

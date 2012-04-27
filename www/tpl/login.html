@@ -1,11 +1,20 @@
 <h3>Login Form</h3>
 <div style="float:left; width:40%">
 	<form onsubmit="return false">
-		<label for="email">E-Mail:</label>
-		<input type="email" name="email" required/>
-		<label for="password">Password:</label>
-		<input type="password" name="password" required/>
-		<input type="submit" value="Login" name="submit" class="submit" />
+		<fieldset>
+			<p>
+				<label for="username">Username (email):</label>
+				<input type="email" name="username" />
+			</p>
+			<p>
+				<label for="password">Password:</label>
+				<input type="password" name="password" />
+			</p>
+		</fieldset>
+		<p>
+			<label for="submit">&nbsp;</label>
+			<input type="submit" value="Login" name="submit" class="submit" />
+		</p>
 	</form>
 </div>
 <div style="float:left; width:60%">
