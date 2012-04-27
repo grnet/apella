@@ -12,14 +12,11 @@ var AppRouter = Backbone.Router.extend({
 		// Get LoggedOnUser
 		self.data.loggedOnUser.on("user:loggedon", self.start);
 		self.data.loggedOnUser.fetch({
-			url : "/rest/user/loggedon",
+			url : "/dep/rest/user/loggedon",
 			success : function(model, resp) {
 				console.log("Succesful Login");
 				console.log(resp);
 				self.data.loggedOnUser.trigger("user:loggedon");
-				// Start Application
-				console.log("Fetch User success");
-				self.start();
 			},
 			error : function(model, resp, options) {
 				console.log("Fetch User Error");
@@ -73,7 +70,7 @@ var AppRouter = Backbone.Router.extend({
 			});
 			$("#content").append(userView.render().el);
 			this.currentView = userView;
-			return userRegistrationView;
+			return userView;
 		} else {
 			this.currentView = undefined;
 			return undefined;

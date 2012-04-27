@@ -59,13 +59,9 @@ p {
 	margin-top: 3px;
 }
 
-a,p a {
-	text-decoration: underline;
-	color: white;
-}
-
-a: hover {
-	color: white;
+a {
+	color: #FFFFFF;
+	text-decoration: none;
 }
 
 h1,h2,h3,h4,h5,h6 {
@@ -236,27 +232,29 @@ p.notice {
 	color: #FF0000
 }
 
-.button {
-	width: 66px;
-	height: 13px;
-	position: relative;
-	margin-top: 12px;
-	padding: 9px;
-	background-color: black;
-	display: inline-block;
-	color: white;
+a.button {
+	display : inline-block;
+	margin: 0px 2px;
+	padding: 2px 10px;
+	font-size: 14px;
+	background-color: #A08689;
+	border-bottom: 2px solid #CDB599;
+	border-right: 2px solid #CDB599;
+	border-top: 1px solid #CDB599;
+	border-left: 1px solid #CDB599;
+	
+}
+
+a.button:hover {
+	color: #000000;
 	cursor: pointer;
-	text-align: center;
-	text-decoration: none;
 }
 
-.button: hover {
-	background-color: #333333;
-}
-
-.button: active {
-	position: relative;
-	top: 1px;
+a.button:active {
+	border-bottom: 1px solid #CDB599;
+	border-right: 1px solid #CDB599;
+	border-top: 2px solid #CDB599;
+	border-left: 2px solid #CDB599;
 }
 
 /***************************************************
@@ -268,8 +266,8 @@ form {
 }
 
 form p {
-	margin : 0px;
-	padding : 0px 5px;
+	margin: 0px;
+	padding: 0px 5px;
 }
 
 form fieldset {
@@ -306,13 +304,6 @@ form input {
 	outline: none;
 	border-radius: 5px;
 	font-size: 20px;
-	
-}
-
-form input[type=submit] {
-	float: none;
-	background-color: #A08689;
-	padding: 10px 30px;
 }
 
 /***************************************************

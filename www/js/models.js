@@ -1,6 +1,8 @@
 // User
 window.User = Backbone.Model.extend({
-	url : "/dep/rest/user",
+	url : function() {
+		return "/dep/rest/user" + (this.id ? "/" + this.id : "");
+	},
 	defaults : {
 		"id" : undefined,
 		"username" : undefined,

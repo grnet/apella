@@ -3,18 +3,21 @@
 <p id="messages" class="notice"></p>
 <form onsubmit="return false">
 	<fieldset>
-		<legend>Account</legend>
+		<legend>Account <a id="edit" class="button">Edit</a></legend>
 		<p>
 			<label for="username">Username (email):</label>
-			<input type="email" name="username" />
+			<span><%= username %></span>
+			<input class="edit" type="email" name="username" value="<%= username %>"/>
 		</p>
 		<p>
 			<label for="firstname">Name:</label>
-			<input type="text" name="firstname" />
+			<span><%= basicInfo.firstname %></span>
+			<input type="text" name="firstname" value="<%= basicInfo.firstname %>"/>
 		</p>
 		<p>
 			<label for="lastname">Surname:</label>
-			<input type="text" name="lastname" />
+			<span><%= basicInfo.lastname %></span>
+			<input type="text" name="lastname" value="<%= basicInfo.lastname %>"/>
 		</p>
 		<p>
 			<label for="password">Password:</label>
@@ -28,35 +31,46 @@
 	<fieldset>
 		<legend>Contact Information</legend>
 		<p>
+			<label for="email">E-Mail:</label>
+			<span><%= contactInfo.email %></span>
+			<input type="text" name="email" value="<%= contactInfo.email %>"/>
+		</p>
+		<p>
 			<label for="phoneNumber">Phone:</label>
-			<input type="text" name="phoneNumber" />
+			<span><%= contactInfo.phoneNumber %></span>
+			<input type="text" name="phoneNumber" value="<%= contactInfo.phoneNumber %>"/>
 		</p>
 	</fieldset>
 	<fieldset>
 		<legend>Address</legend>
 		<p>
-		<label for="address_street">Street:</label>
-		<input type="text" name="address_street" />
+			<label for="address_street">Street:</label>
+			<span><%= contactInfo.address.street %></span>
+			<input type="text" name="address_street" value="<%= contactInfo.address.street %>"/>
 		</p>
 		<p>
-		<label for="address_number">Street Number:</label>
-		<input type="text" name="address_number" />
+			<label for="address_number">Street Number:</label>
+			<span><%= contactInfo.address.number %></span>
+			<input type="text" name="address_number" value="<%= contactInfo.address.number %>"/>
 		</p>
 		<p>
-		<label for="address_zip">Zip:</label>
-		<input type="text" name="address_zip" />
+			<label for="address_zip">Zip:</label>
+			<span><%= contactInfo.address.zip %></span>
+			<input type="text" name="address_zip" value="<%= contactInfo.address.zip %>"/>
 		</p>
 		<p>
-		<label for="address_city">City:</label>
-		<input type="text" name="address_city" />
+			<label for="address_city">City:</label>
+			<span><%= contactInfo.address.city %></span>
+			<input type="text" name="address_city" value="<%= contactInfo.address.city %>"/>
 		</p>
 		<p>
-		<label for="address_country">Country:</label>
-		<input type="text" name="address_country" />
+			<label for="address_country">Country:</label>
+			<span><%= contactInfo.address.country %></span>
+			<input type="text" name="address_country" value="<%= contactInfo.address.country %>"/>
 		</p>
 	</fieldset>
 	<p>
-		<label for="submit">&nbsp;</label>
-		<input type="submit" value="Register" name="submit" class="submit" />
+		<a id="save" class="button">Save</a>
+		<a id="cancel" class="button">Cancel</a>
 	</p>
 </form>

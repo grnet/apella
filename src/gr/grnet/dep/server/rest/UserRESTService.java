@@ -19,6 +19,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
@@ -31,6 +32,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
@@ -50,8 +52,9 @@ public class UserRESTService {
 	@SuppressWarnings("unused")
 	@Inject
 	private Logger log;
-	
-	@Context UriInfo uriInfo;
+
+	@Context
+	UriInfo uriInfo;
 
 	@GET
 	@JsonView({SimpleUserView.class})
@@ -68,18 +71,25 @@ public class UserRESTService {
 	@GET
 	@Path("/loggedon")
 	@JsonView({DetailedUserView.class})
-	public User getLoggedOn(@HeaderParam("X-Auth-token") String authToken) {
-		if (authToken == null) {
-			throw new WebApplicationException(Status.UNAUTHORIZED);
+	public Response getLoggedOn(@HeaderParam("X-Auth-token") String authToken, @CookieParam("_dep_a") String cookieAuthToken) {
+		if (authToken != null || cookieAuthToken != null) {
+			if (authToken == null) {
+				authToken = cookieAuthToken;
+			}
+			User u = (User) em.createQuery(
+				"from User u " +
+					"join fetch u.roles " +
+					"where u.authToken = :authToken")
+				.setParameter("authToken", authToken)
+				.getSingleResult();
+			return Response.status(200)
+				.header("X-Auth-Token", u.getAuthToken())
+				.entity(u)
+				.build();
 		}
-		return (User) em.createQuery(
-			"from User u " +
-				"join fetch u.roles " +
-				"where u.authToken = :authToken")
-			.getSingleResult();
+		return Response.status(Status.UNAUTHORIZED).build();
 	}
 
-	
 	private List<URI> getRoleUris(User u) {
 		List<URI> list = new ArrayList<URI>();
 		UriBuilder builder = uriInfo.getBaseUriBuilder();
@@ -92,8 +102,7 @@ public class UserRESTService {
 		}
 		return list;
 	}
-	
-	
+
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedUserView.class})
@@ -131,10 +140,12 @@ public class UserRESTService {
 		//TODO: 1. Validate changes:
 
 		// 2. Copy User Fields
-		existingUser.setPassword(User.encodePassword(user.getPassword()));
+		if (user.getPassword() != null) {
+			existingUser.setPassword(User.encodePassword(user.getPassword()));
+		}
 		existingUser.setBasicInfo(user.getBasicInfo());
 		existingUser.setContactInfo(user.getContactInfo());
-		
+
 		return get(existingUser.getId());
 	}
 
@@ -167,9 +178,11 @@ public class UserRESTService {
 			if (u.getPassword().equals(User.encodePassword(password))) {
 				//TODO: Create Token: 
 				u.setAuthToken("" + System.currentTimeMillis());
+				u = em.merge(u);
 
 				return Response.status(200)
 					.header("X-Auth-Token", u.getAuthToken())
+					.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, Integer.MAX_VALUE, false))
 					.entity(u)
 					.build();
 			} else {
@@ -192,10 +205,10 @@ public class UserRESTService {
 				.setParameter("username", user.getUsername())
 				.getSingleResult();
 			// Validate
-			if (u.getVerified()!=null && u.getVerified()) {
+			if (u.getVerified() != null && u.getVerified()) {
 				throw new WebApplicationException(Response.status(Status.FORBIDDEN).header("X-Error-Code", "already.verified").build());
 			}
-			if (user.getVerificationNumber()==null || !user.getVerificationNumber().equals(u.getVerificationNumber())) {
+			if (user.getVerificationNumber() == null || !user.getVerificationNumber().equals(u.getVerificationNumber())) {
 				throw new WebApplicationException(Response.status(Status.FORBIDDEN).header("X-Error-Code", "wrong.verification").build());
 			}
 
@@ -208,8 +221,7 @@ public class UserRESTService {
 			throw new WebApplicationException(Response.status(Status.NOT_FOUND).header("X-Error-Code", "wrong.username").build());
 		}
 	}
-	
-	
+
 	@GET
 	@Path("/{id:[0-9][0-9]*}/roles")
 	@JsonView({SimpleRoleView.class})
@@ -220,7 +232,5 @@ public class UserRESTService {
 			.getSingleResult();
 		return u.getRoles();
 	}
-	
-	
-	
+
 }

@@ -11,6 +11,9 @@ window.UserRegistrationView = Backbone.View.extend({
 	},
 
 	events : {
+		"click a#save" : function() {
+			$("form", this.el).submit();
+		},
 		"submit form" : "submit",
 		"blur form" : "resetForm",
 	},
@@ -156,6 +159,9 @@ window.LoginView = Backbone.View.extend({
 	},
 
 	events : {
+		"click a#save" : function() {
+			$("form", this.el).submit();
+		},
 		"submit form" : "login",
 		"blur form" : "resetForm"
 	},
@@ -298,22 +304,24 @@ window.MenuView = Backbone.View.extend({
 	},
 
 	render : function(eventName) {
-		// Add Logout
-		$(this.el).append("<li><a id=\"logout\" href=\"#\">LOGOUT</a>");
+		this.$el.empty();
 		// CREATE MENU BASED ON USER ROLES:
-		$(this.el).append("<li><a href=\"\#requests\">REQUESTS</a>");
-		$(this.el).append("<li><a href=\"\#profile\">PROFILE</a>");
-		$(this.el).append("<li><a href=\"\#\">ΗΟΜΕ</a>");
-
+		this.$el.append("<li><a href=\"\#\">ΗΟΜΕ</a>");
+		this.$el.append("<li><a href=\"\#profile\">PROFILE</a>");
+		this.$el.append("<li><a href=\"\#requests\">REQUESTS</a>");
+		// Add Logout
+		this.$el.append("<li><a id=\"logout\" href=\"#\">LOGOUT</a>");
 		return this;
 	},
 
 	logout : function(event) {
+		console.log("Logging out");
 		// Remove X-Auth-Token
 		$.ajaxSetup({
 			headers : {}
 		});
-		console.log("Logging out");
+		//Remove auth cookie
+		document.cookie = "_dep_a=-1;expires=0;path=/";
 		// Send Redirect
 		window.location.href = window.location.pathname;
 
@@ -330,14 +338,19 @@ window.UserView = Backbone.View.extend({
 	validator : undefined,
 
 	initialize : function() {
-		_.bindAll(this, "render", "submit", "resetForm");
+		_.bindAll(this, "render", "submit", "edit", "view");
 		this.template = _.template(tpl.get('user'));
 		this.model.bind('change', this.render);
 	},
 
 	events : {
+		"dblclick form" : "edit",
+		"click a#edit" : "edit",
+		"click a#cancel" : "view",
+		"click a#save" : function() {
+			$("form", this.el).submit();
+		},
 		"submit form" : "submit",
-		"blur form" : "resetForm",
 	},
 
 	render : function(eventName) {
@@ -352,11 +365,9 @@ window.UserView = Backbone.View.extend({
 				firstname : "required",
 				lastname : "required",
 				password : {
-					required : true,
 					minlength : 5
 				},
 				confirm_password : {
-					required : true,
 					minlength : 5,
 					equalTo : "form input[name=password]"
 				},
@@ -380,11 +391,9 @@ window.UserView = Backbone.View.extend({
 					minlength : "Your username must consist of at least 2 characters"
 				},
 				password : {
-					required : "Please provide a password",
 					minlength : "Your password must be at least 5 characters long"
 				},
 				confirm_password : {
-					required : "Please provide a password",
 					minlength : "Your password must be at least 5 characters long",
 					equalTo : "Please enter the same password as above"
 				},
@@ -401,6 +410,8 @@ window.UserView = Backbone.View.extend({
 				address_country : "Please enter a country"
 			}
 		});
+
+		this.view();
 
 		return this;
 	},
@@ -465,9 +476,23 @@ window.UserView = Backbone.View.extend({
 		return false;
 	},
 
-	resetForm : function(event) {
+	edit : function(event) {
+		$("form span", this.el).hide();
+		$("form a#edit", this.el).hide();
+		$("form input", this.el).show();
+		$("form a#save", this.el).show();
+		$("form a#cancel", this.el).show();
+	},
+
+	view : function(event) {
 		if (this.validator) {
 			this.validator.resetForm();
 		}
+		$("form a#save", this.el).hide();
+		$("form a#cancel", this.el).hide();
+		$("form input", this.el).hide();
+		$("form a#edit", this.el).show();
+		$("form span", this.el).show();
+
 	}
 });
