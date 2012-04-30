@@ -122,6 +122,16 @@ public class Candidate extends Role {
 		getDegrees().size();
 		getPublications().size();
 	}
-	
+
+
+	@Override
+	public Role copyFrom(Role otherRole) {
+		Candidate c = (Candidate) otherRole;
+		setCv(c.getCv());
+		setIdentity(c.getIdentity());
+		setMilitary1599(c.getMilitary1599());
+		return this;
+	}
+
   
 }

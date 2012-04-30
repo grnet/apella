@@ -43,6 +43,12 @@ public class InstitutionManager extends Role {
 
 	@Override
 	public void initializeCollections() {
+	}
+
+
+	@Override
+	public Role copyFrom(Role otherRole) {
+		return this;
 	}   
   
 }

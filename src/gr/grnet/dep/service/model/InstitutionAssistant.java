@@ -53,6 +53,12 @@ public class InstitutionAssistant extends Role {
 	
 	@Override
 	public void initializeCollections() {
+	}
+
+
+	@Override
+	public Role copyFrom(Role otherRole) {
+		return this;
 	}   
 
 }

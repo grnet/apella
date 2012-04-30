@@ -45,4 +45,10 @@ public class DepartmentManager extends Role {
 	public void initializeCollections() {
 	}
 
+
+	@Override
+	public Role copyFrom(Role otherRole) {
+		return this;
+	}
+
 }

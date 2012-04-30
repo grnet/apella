@@ -201,7 +201,7 @@ public class User implements Serializable {
 
 	public void addRole(Role role) {
 		roles.add(role);
-		role.setUser(this);
+		role.setUser(this.getId());
 	}
 
 	public void removeRole(Role role) {

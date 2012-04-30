@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -11,8 +12,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.Version;
@@ -82,9 +81,8 @@ public abstract class Role implements Serializable {
 	private RoleDiscriminator discriminator;
 
 	// Inverse to User
-	@ManyToOne
-	@JoinColumn(name = "user_id")
-	private User user;
+	@Column(name = "user_id")
+	private Long user;
 
 	public Long getId() {
 		return id;
@@ -103,12 +101,12 @@ public abstract class Role implements Serializable {
 		this.discriminator = discriminator;
 	}
 
-	@XmlTransient
-	public User getUser() {
+	@JsonView({ SimpleRoleView.class })
+	public Long getUser() {
 		return user;
 	}
 
-	public void setUser(User user) {
+	public void setUser(Long user) {
 		this.user = user;
 	}
 	
@@ -116,5 +114,7 @@ public abstract class Role implements Serializable {
 	//////////////////////////////////////////////////////////
 	
 	public abstract void initializeCollections() ;
+	
+	public abstract Role copyFrom(Role otherRole) ;
 
 }

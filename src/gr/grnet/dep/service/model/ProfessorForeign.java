@@ -72,5 +72,14 @@ public class ProfessorForeign extends Professor {
 	public void initializeCollections() {	
 	}
    
+	@Override
+	public Role copyFrom(Role otherRole) {
+		ProfessorForeign pf = (ProfessorForeign) otherRole;
+		setRank(pf.getRank());
+		setInstitution(pf.getInstitution());
+		setDepartment(pf.getDepartment());
+		setSubject(pf.getSubject());
+		return this;
+	}
   
 }
