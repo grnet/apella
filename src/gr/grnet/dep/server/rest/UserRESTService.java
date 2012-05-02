@@ -3,6 +3,7 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.security.RestSecurityInterceptor;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.IdRoleView;
+import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.DetailedUserView;
 import gr.grnet.dep.service.model.User.SimpleUserView;
@@ -49,15 +50,20 @@ public class UserRESTService {
 	private Logger log;
 	
 	@Context UriInfo uriInfo;
+	
+	@Context HttpServletRequest request;
 
 	@GET
 	@JsonView({SimpleUserView.class})
 	@SuppressWarnings("unchecked")
 	public List<User> getAll() {
+		User loggedOn = getLoggedOn();
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR))
+			throw new WebApplicationException(Status.FORBIDDEN);
+			
 		return (List<User>) em.createQuery(
 			"select distinct u from User u " +
-				"join fetch u.roles " +
-				"where u.active=true " +
+				"left join fetch u.roles " +
 				"order by u.basicInfo.lastname, u.basicInfo.firstname")
 			.getResultList();
 	}
@@ -65,7 +71,7 @@ public class UserRESTService {
 	@GET
 	@Path("/loggedon")
 	@JsonView({DetailedUserView.class})
-	public User getLoggedOn(@Context HttpServletRequest request) {
+	public User getLoggedOn() {
 		return (User) request.getAttribute("user");
 	}
 
@@ -75,6 +81,11 @@ public class UserRESTService {
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedUserView.class})
 	public User get(@PathParam("id") long id) {
+		User loggedOn = getLoggedOn();
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && 
+					loggedOn.getId()!=id)
+			throw new WebApplicationException(Status.FORBIDDEN);
+		
 		User user = (User) em.createQuery(
 			"from User u left join fetch u.roles " +
 				"where u.id=:id")
@@ -99,6 +110,11 @@ public class UserRESTService {
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedUserView.class})
 	public User update(@PathParam("id") long id, User user) {
+		User loggedOn = getLoggedOn();
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && 
+					loggedOn.getId()!=id)
+			throw new WebApplicationException(Status.FORBIDDEN);
+		
 		User existingUser = em.find(User.class, id);
 		if (existingUser == null) {
 			throw new WebApplicationException(Status.NOT_FOUND);
@@ -115,6 +131,11 @@ public class UserRESTService {
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}")
 	public void delete(@PathParam("id") long id) {
+		User loggedOn = getLoggedOn();
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && 
+					loggedOn.getId()!=id)
+			throw new WebApplicationException(Status.FORBIDDEN);
+		
 		User existingUser = em.find(User.class, id);
 		if (existingUser == null) {
 			throw new WebApplicationException(Status.NOT_FOUND);
@@ -186,6 +207,11 @@ public class UserRESTService {
 	@Path("/{id:[0-9][0-9]*}/roles")
 	@JsonView({IdRoleView.class})
 	public Set<Role> getRolesForUser(@PathParam("id") long id) {
+		User loggedOn = getLoggedOn();
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && 
+					loggedOn.getId()!=id)
+			throw new WebApplicationException(Status.FORBIDDEN);
+		
 		User u = (User) em.createQuery(
 			"from User u join fetch u.roles where u.id=:id")
 			.setParameter("id", id)
