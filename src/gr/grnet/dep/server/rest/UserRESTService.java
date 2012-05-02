@@ -1,5 +1,6 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.server.rest.security.RestSecurityInterceptor;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.IdRoleView;
 import gr.grnet.dep.service.model.User;
@@ -16,10 +17,10 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -64,15 +65,8 @@ public class UserRESTService {
 	@GET
 	@Path("/loggedon")
 	@JsonView({DetailedUserView.class})
-	public User getLoggedOn(@HeaderParam("X-Auth-token") String authToken) {
-		if (authToken == null) {
-			throw new WebApplicationException(Status.UNAUTHORIZED);
-		}
-		return (User) em.createQuery(
-			"from User u " +
-				"join fetch u.roles " +
-				"where u.authToken = :authToken")
-			.getSingleResult();
+	public User getLoggedOn(@Context HttpServletRequest request) {
+		return (User) request.getAttribute("user");
 	}
 
 	
@@ -82,7 +76,7 @@ public class UserRESTService {
 	@JsonView({DetailedUserView.class})
 	public User get(@PathParam("id") long id) {
 		User user = (User) em.createQuery(
-			"from User u join fetch u.roles " +
+			"from User u left join fetch u.roles " +
 				"where u.id=:id")
 			.setParameter("id", id)
 			.getSingleResult();
@@ -139,7 +133,7 @@ public class UserRESTService {
 			User u = (User) em.createQuery(
 				"from User u " +
 					"left join fetch u.roles " +
-					"where u.username = :username")
+					"where u.active=true and u.username = :username")
 				.setParameter("username", user.getUsername())
 				.getSingleResult();
 
@@ -147,7 +141,7 @@ public class UserRESTService {
 				//TODO: Create Token: 
 				u.setAuthToken("" + System.currentTimeMillis());
 				return Response.status(200)
-					.header("X-Auth-Token", u.getAuthToken())
+					.header(RestSecurityInterceptor.TOKEN_HEADER, u.getAuthToken())
 					.entity(u)
 					.build();
 			} else {
@@ -165,8 +159,8 @@ public class UserRESTService {
 		try {
 			User u = (User) em.createQuery(
 				"from User u " +
-					"join fetch u.roles " +
-					"where u.username = :username")
+					"left join fetch u.roles " +
+					"where u.active=true and u.username = :username")
 				.setParameter("username", user.getUsername())
 				.getSingleResult();
 			// Validate
