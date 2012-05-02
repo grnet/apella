@@ -1,7 +1,5 @@
 package gr.grnet.dep.service.model;
 
-import gr.grnet.dep.service.model.User.DetailedUserView;
-
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,8 +20,11 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Entity
 public class Candidacy {
 	
-	// define 2 json views
-	public static interface SimpleCandidacyView {
+	// define 3 json views
+	public static interface IdCandidacyView {
+	}; // shows only id view of a Candidacy
+	
+	public static interface SimpleCandidacyView extends IdCandidacyView {
 	}; // shows a summary view of a Candidacy
 
 	public static interface DetailedCandidacyView extends SimpleCandidacyView {
@@ -56,6 +57,7 @@ public class Candidacy {
 		return id;
 	}
 	
+	@JsonView(SimpleCandidacyView.class)
 	public Date getDate() {
 		return date;
 	}
@@ -71,6 +73,7 @@ public class Candidacy {
 		this.candidate = candidate;
 	}
 
+	@JsonView(SimpleCandidacyView.class)
 	public Position getPosition() {
 		return position;
 	}
@@ -78,7 +81,7 @@ public class Candidacy {
 		this.position = position;
 	}
 
-	@JsonView({DetailedUserView.class})
+	@JsonView({DetailedCandidacyView.class})
 	public Set<FileBody> getFiles() {
 		return files;
 	}

@@ -38,7 +38,7 @@ public class ProfessorDomestic extends Professor {
    
    public ProfessorDomestic() {
 	   super();
-		setDiscriminator(RoleDiscriminator.PROFESSOR_DOMESTIC);
+	   setDiscriminator(RoleDiscriminator.PROFESSOR_DOMESTIC);
    }
 
 
@@ -75,6 +75,22 @@ public class ProfessorDomestic extends Professor {
 	}
 	public void setFekFile(FileHeader fekFile) {
 		this.fekFile = fekFile;
+	}
+
+
+	////////////////////////////////////////////////////////////////////////////
+	
+	
+	@Override
+	public void initializeCollections() {
+	}
+
+
+	@Override
+	public Role copyFrom(Role otherRole) {
+		ProfessorDomestic pd = (ProfessorDomestic) otherRole;
+		setFek(pd.getFek());
+		return this;
 	}
 
    

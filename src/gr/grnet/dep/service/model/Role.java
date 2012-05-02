@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -11,8 +12,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.Version;
@@ -22,6 +21,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.codehaus.jackson.annotate.JsonSubTypes;
 import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.codehaus.jackson.annotate.JsonTypeInfo.As;
+import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -43,8 +43,11 @@ public abstract class Role implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	
-	// define 2 json views
-	public static interface SimpleRoleView {
+	// define 3 json views
+	public static interface IdRoleView {
+	}; // shows only id view of a Role
+	
+	public static interface SimpleRoleView extends IdRoleView {
 	}; // shows a summary view of a Role
 
 	public static interface DetailedRoleView extends SimpleRoleView {
@@ -78,9 +81,8 @@ public abstract class Role implements Serializable {
 	private RoleDiscriminator discriminator;
 
 	// Inverse to User
-	@ManyToOne
-	@JoinColumn(name = "user_id")
-	private User user;
+	@Column(name = "user_id")
+	private Long user;
 
 	public Long getId() {
 		return id;
@@ -90,6 +92,7 @@ public abstract class Role implements Serializable {
 		this.id = id;
 	}
 
+	@JsonView({ SimpleRoleView.class })
 	public RoleDiscriminator getDiscriminator() {
 		return discriminator;
 	}
@@ -98,13 +101,20 @@ public abstract class Role implements Serializable {
 		this.discriminator = discriminator;
 	}
 
-	@XmlTransient
-	public User getUser() {
+	@JsonView({ SimpleRoleView.class })
+	public Long getUser() {
 		return user;
 	}
 
-	public void setUser(User user) {
+	public void setUser(Long user) {
 		this.user = user;
 	}
+	
+	
+	//////////////////////////////////////////////////////////
+	
+	public abstract void initializeCollections() ;
+	
+	public abstract Role copyFrom(Role otherRole) ;
 
 }

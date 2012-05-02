@@ -12,6 +12,8 @@ import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.introspect.JacksonAnnotationIntrospector;
 import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 
+import com.fasterxml.jackson.module.hibernate.HibernateModule;
+
 // Customized {@code ContextResolver} implementation to pass ObjectMapper to use
 @Provider
 @Produces(MediaType.APPLICATION_JSON)
@@ -23,7 +25,10 @@ public class JacksonContextResolver implements ContextResolver<ObjectMapper> {
 		this.objectMapper = new ObjectMapper()
 			.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 			.configure(SerializationConfig.Feature.WRITE_DATES_AS_TIMESTAMPS, false)
-			.configure(SerializationConfig.Feature.WRITE_DATE_KEYS_AS_TIMESTAMPS, false);
+			.configure(SerializationConfig.Feature.WRITE_DATE_KEYS_AS_TIMESTAMPS, false)
+			;
+		
+		this.objectMapper.registerModule(new HibernateModule());
 		
 
 		// Use Jackson annotations as primary; use JAXB annotation as fallback.

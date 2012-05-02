@@ -37,4 +37,18 @@ public class DepartmentManager extends Role {
 		this.department = department;
 	}
 
+	
+	////////////////////////////////////////////////////////////////////////////
+	
+
+	@Override
+	public void initializeCollections() {
+	}
+
+
+	@Override
+	public Role copyFrom(Role otherRole) {
+		return this;
+	}
+
 }

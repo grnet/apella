@@ -63,6 +63,23 @@ public class ProfessorForeign extends Professor {
 	public void setSubject(String subject) {
 		this.subject = subject;
 	}
+
+
+	////////////////////////////////////////////////////////////////////////////
+	
+
+	@Override
+	public void initializeCollections() {	
+	}
    
+	@Override
+	public Role copyFrom(Role otherRole) {
+		ProfessorForeign pf = (ProfessorForeign) otherRole;
+		setRank(pf.getRank());
+		setInstitution(pf.getInstitution());
+		setDepartment(pf.getDepartment());
+		setSubject(pf.getSubject());
+		return this;
+	}
   
 }
