@@ -320,7 +320,7 @@ window.MenuView = Backbone.View.extend({
 		$.ajaxSetup({
 			headers : {}
 		});
-		//Remove auth cookie
+		// Remove auth cookie
 		document.cookie = "_dep_a=-1;expires=0;path=/";
 		// Send Redirect
 		window.location.href = window.location.pathname;
@@ -494,5 +494,173 @@ window.UserView = Backbone.View.extend({
 		$("form a#edit", this.el).show();
 		$("form span", this.el).show();
 
+	}
+});
+
+// RoleView
+window.RoleListView = Backbone.View.extend({
+	tagName : "div",
+
+	template : _.template("<div><ul class=\"list\"></ul></div><div class=\"details\"></div>"),
+
+	initialize : function() {
+		_.bindAll(this, "render", "add", "remove");
+		this.model.bind("reset", this.render, this);
+		this.model.bind("add", this.add, this);
+	},
+
+	events : {},
+
+	render : function(eventName) {
+		var self = this;
+		console.log("RoleListView render");
+
+		self.$el.html(this.template(this.model.toJSON()));
+
+		self.model.each(function(role) {
+			self.add(role);
+		});
+		return this;
+	},
+
+	add : function(role) {
+		console.log(role);
+		var roleListItemView = new RoleListItemView({
+			model : role
+		});
+		$("ul", this.el).append(roleListItemView.render().el);
+	}
+
+});
+
+window.RoleListItemView = Backbone.View.extend({
+	tagName : "li",
+
+	events : {
+		"click a" : "select"
+	},
+
+	initialize : function() {
+		_.bindAll(this, "render", "close", "select");
+		this.model.bind("change", this.render, this);
+		this.model.bind("destroy", this.close, this);
+	},
+
+	render : function(eventName) {
+		this.$el.html("<a href='#'>" + this.model.get("discriminator") + "_" + this.model.get("id") + "</a>");
+		return this;
+	},
+
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
+	},
+
+	select : function(event) {
+		var self = this;
+		var roleView = new RoleView({
+			model : self.model
+		});
+		$(".details", this.$el.parent.parent).html(roleView.render().el);
+		event.preventDefault;
+		return false;
+	}
+
+});
+
+window.RoleView = Backbone.View.extend({
+	tagName : "div",
+
+	validator : undefined,
+
+	initialize : function() {
+		console.log("RoleView:initialize");
+		_.bindAll(this, "render", "submit", "edit", "view");
+		this.template = _.template(tpl.get('role'));
+		this.model.bind('change', this.render);
+	},
+
+	events : {
+		"dblclick form" : "edit",
+		"click a#edit" : "edit",
+		"click a#cancel" : "view",
+		"click a#save" : function() {
+			$("form", this.el).submit();
+		},
+		"submit form" : "submit",
+	},
+
+	render : function(eventName) {
+		console.log("RoleView:render");
+		this.$el.html(this.template(this.model.toJSON()));
+		this.view();
+		return this;
+	},
+
+	submit : function(event) {
+		var self = this;
+
+		// Read Input
+		// var username = $('form input[name=username]', this.el).val();
+
+		// Validate
+
+		// Save to model
+		self.model.save({}, {
+			success : function(model, resp) {
+				console.log(model);
+				console.log(resp);
+				var popup = new PopupView({
+					type : "success",
+					message : "The role has been updated"
+				});
+				popup.show();
+			},
+			error : function(model, resp, options) {
+				console.log("" + resp.status);
+				var popup = new PopupView({
+					type : "error",
+					message : "Error " + resp.status
+				});
+				popup.show();
+			}
+		});
+
+		event.preventDefault();
+		return false;
+	},
+
+	edit : function(event) {
+		$("form span", this.el).hide();
+		$("form a#edit", this.el).hide();
+		$("form input", this.el).show();
+		$("form a#save", this.el).show();
+		$("form a#cancel", this.el).show();
+	},
+
+	view : function(event) {
+		if (this.validator) {
+			this.validator.resetForm();
+		}
+		$("form a#save", this.el).hide();
+		$("form a#cancel", this.el).hide();
+		$("form input", this.el).hide();
+		$("form a#edit", this.el).show();
+		$("form span", this.el).show();
+
+	},
+
+	remove : function() {
+		this.model.destroy({
+			success : function() {
+				console.log("Role Model destroyed");
+			}
+		});
+		return false;
+	},
+
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).empty();
 	}
 });

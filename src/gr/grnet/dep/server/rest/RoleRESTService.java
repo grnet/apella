@@ -2,9 +2,8 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
-import gr.grnet.dep.service.model.Role.SimpleRoleView;
-import gr.grnet.dep.service.model.User;
 
+import java.util.Collection;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
@@ -14,11 +13,13 @@ import javax.persistence.PersistenceContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
@@ -37,6 +38,24 @@ public class RoleRESTService {
 	@SuppressWarnings("unused")
 	@Inject
 	private Logger log;
+
+	@GET
+	@JsonView({DetailedRoleView.class})
+	public Collection<Role> getAll(@HeaderParam("X-Auth-Token") String authToken, @QueryParam("user") Long userID) {
+		if (userID != null) {
+			Collection<Role> roles = (Collection<Role>) em.createQuery(
+				"from Role r " +
+					"where r.user = :userID ")
+				.setParameter("userID", userID)
+				.getResultList();
+			for (Role r : roles) {
+				r.initializeCollections();
+			}
+			return roles;
+		} else {
+			throw new WebApplicationException(Status.BAD_REQUEST);
+		}
+	}
 
 	@GET
 	@Path("/{id:[0-9][0-9]*}")

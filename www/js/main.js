@@ -1,6 +1,7 @@
 var AppRouter = Backbone.Router.extend({
 	data : {
-		loggedOnUser : new User()
+		loggedOnUser : new User(),
+		roles : new Roles()
 	},
 
 	initialize : function() {
@@ -36,6 +37,10 @@ var AppRouter = Backbone.Router.extend({
 		console.log("Start called");
 
 		self.data.loggedOnUser.off("user:loggedon", self.start);
+
+		// Add necessary data
+		self.data.roles.references.user = self.data.loggedOnUser.get("id");
+
 		// Create Header, Menu, and other side content and
 		// bind them to the same loggedOnUser model
 		var menuView = new MenuView({
@@ -64,22 +69,27 @@ var AppRouter = Backbone.Router.extend({
 		var self = this;
 		console.log("showHomeView");
 		$("#content").empty();
-		if (self.data.loggedOnUser) {
-			var userView = new UserView({
-				model : self.data.loggedOnUser
-			});
-			$("#content").append(userView.render().el);
-			this.currentView = userView;
-			return userView;
-		} else {
-			this.currentView = undefined;
-			return undefined;
-		}
+		var userView = new UserView({
+			model : self.data.loggedOnUser
+		});
+		$("#content").append(userView.render().el);
+		this.currentView = userView;
+		return userView;
 	},
 
 	showProfileView : function() {
+		var self = this;
 		console.log("showProfileView");
-		$("#content").html("<h1>PROFILE</h1>");
+		$("#content").empty();
+		var roleListView = new RoleListView({
+			model : self.data.roles
+		});
+		$("#content").append(roleListView.render().el);
+		// Refresh roles from server
+		self.data.roles.fetch();
+
+		this.currentView = roleListView;
+		return roleListView;
 	},
 
 	showRequestsView : function() {
@@ -89,7 +99,7 @@ var AppRouter = Backbone.Router.extend({
 });
 
 $(document).ready(function() {
-	tpl.loadTemplates([ "login", "popup", "user" ], function() {
+	tpl.loadTemplates([ "login", "popup", "user", "role" ], function() {
 		app = new AppRouter();
 	});
 });

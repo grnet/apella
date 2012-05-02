@@ -175,3 +175,26 @@ User.prototype.sync = function(method, model, options) {
 		return (Backbone.sync).call(this, method, this, options);
 	}
 };
+
+// Role
+window.Role = Backbone.Model.extend({
+	url : function() {
+		return "/dep/rest/role" + (this.id ? "/" + this.id : "");
+	},
+	defaults : {
+		"id" : undefined,
+		"discriminator" : undefined,
+		"user" : undefined
+	}
+});
+
+window.Roles = Backbone.Collection.extend({
+	model : Role,
+	references : {
+		// A custom attribute to hold references
+		user : undefined
+	},
+	url : function() {
+		return "/dep/rest/role" + (this.references.user ? "?user=" + this.references.user : "");
+	}
+});
