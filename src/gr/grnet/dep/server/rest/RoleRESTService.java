@@ -2,6 +2,8 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
+import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.User;
 
 import java.util.Collection;
 import java.util.logging.Logger;
@@ -30,7 +32,7 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Stateless
 @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-public class RoleRESTService {
+public class RoleRESTService extends RESTService {
 
 	@PersistenceContext(unitName = "depdb")
 	private EntityManager em;
@@ -61,6 +63,18 @@ public class RoleRESTService {
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedRoleView.class})
 	public Role get(@PathParam("id") long id) {
+		User loggedOn = getLoggedOn();
+		boolean roleBelongsToUser = false;
+		for (Role r : loggedOn.getRoles()) {
+			if (r.getId() == id) {
+				roleBelongsToUser = true;
+				break;
+			}
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
+			&& !roleBelongsToUser)
+			throw new WebApplicationException(Status.FORBIDDEN);
+
 		Role r = (Role) em.createQuery(
 			"from Role r where r.id=:id")
 			.setParameter("id", id)
@@ -72,6 +86,11 @@ public class RoleRESTService {
 	@POST
 	@JsonView({DetailedRoleView.class})
 	public Role create(Role role) {
+		User loggedOn = getLoggedOn();
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
+			&& role.getUser() != loggedOn.getId())
+			throw new WebApplicationException(Status.FORBIDDEN);
+
 		em.persist(role);
 		return role;
 	}
@@ -85,6 +104,10 @@ public class RoleRESTService {
 			throw new WebApplicationException(Status.NOT_FOUND);
 		}
 
+		User loggedOn = getLoggedOn();
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
+			&& existingRole.getUser() != loggedOn.getId())
+			throw new WebApplicationException(Status.FORBIDDEN);
 		Role r = existingRole.copyFrom(role);
 
 		return get(r.getId());
@@ -97,7 +120,11 @@ public class RoleRESTService {
 		if (existingRole == null) {
 			throw new WebApplicationException(Status.NOT_FOUND);
 		}
-		//TODO: Validate:
+
+		User loggedOn = getLoggedOn();
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
+			&& existingRole.getUser() != loggedOn.getId())
+			throw new WebApplicationException(Status.FORBIDDEN);
 
 		//Do Delete:
 		em.remove(existingRole);

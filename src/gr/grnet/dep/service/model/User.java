@@ -1,5 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -188,6 +190,16 @@ public class User implements Serializable {
 		this.lastLoginDate = lastLoginDate;
 	}
 
+	public String getAuthToken() {
+		return authToken;
+	}
+
+	public void setAuthToken(String authToken) {
+		this.authToken = authToken;
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////
+
 	public void addRole(Role role) {
 		roles.add(role);
 		role.setUser(this.getId());
@@ -198,13 +210,12 @@ public class User implements Serializable {
 		role.setUser(null);
 	}
 
-	@XmlTransient
-	public String getAuthToken() {
-		return authToken;
-	}
-
-	public void setAuthToken(String authToken) {
-		this.authToken = authToken;
+	public boolean hasRole(RoleDiscriminator role) {
+		for (Role r : getRoles()) {
+			if (r.getDiscriminator() == role)
+				return true;
+		}
+		return false;
 	}
 
 	public static String encodePassword(String password) {

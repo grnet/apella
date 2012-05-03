@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -35,7 +36,8 @@ import org.codehaus.jackson.map.annotate.JsonView;
 	@JsonSubTypes.Type(value = DepartmentManager.class, name = "DEPARTMENT_MANAGER"),
 	@JsonSubTypes.Type(value = InstitutionAssistant.class, name = "INSTITUTION_ASSISTANT"),
 	@JsonSubTypes.Type(value = MinistryManager.class, name = "MINISTRY_MANAGER"),
-	@JsonSubTypes.Type(value = Candidate.class, name = "CANDIDATE")
+	@JsonSubTypes.Type(value = Candidate.class, name = "CANDIDATE"),
+	@JsonSubTypes.Type(value = Administrator.class, name = "ADMINISTRATOR")
 })
 public abstract class Role implements Serializable {
 
@@ -54,14 +56,15 @@ public abstract class Role implements Serializable {
 	};
 	
 
-	enum RoleDiscriminator {
+	public enum RoleDiscriminator {
 		PROFESSOR_DOMESTIC,
 		PROFESSOR_FOREIGN,
 		INSTITUTION_MANAGER,
 		DEPARTMENT_MANAGER,
 		INSTITUTION_ASSISTANT,
 		MINISTRY_MANAGER,
-		CANDIDATE
+		CANDIDATE,
+		ADMINISTRATOR
 	};
 
 	@Inject
@@ -81,6 +84,7 @@ public abstract class Role implements Serializable {
 	private RoleDiscriminator discriminator;
 
 	// Inverse to User
+	@Basic(optional=false)
 	@Column(name = "user_id")
 	private Long user;
 
