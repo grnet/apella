@@ -30,6 +30,17 @@ public abstract class Professor extends Role {
 	public void setActive(boolean active) {
 		this.active = active;
 	}
+	
+	
+	/////////////////////////////////////////////////////////////
+	
+	
+	@Override
+	public Role copyFrom(Role otherRole) {
+		Professor p = (Professor) otherRole;
+		setPosition(p.getPosition());
+		return this;
+	}
 
 
 }

@@ -88,6 +88,7 @@ public class ProfessorDomestic extends Professor {
 
 	@Override
 	public Role copyFrom(Role otherRole) {
+		super.copyFrom(otherRole);
 		ProfessorDomestic pd = (ProfessorDomestic) otherRole;
 		setFek(pd.getFek());
 		return this;
