@@ -1,6 +1,8 @@
 // UserRegistrationView
 window.UserRegistrationView = Backbone.View.extend({
 	tagName : "div",
+	
+	className : "box",
 
 	validator : undefined,
 
@@ -149,6 +151,8 @@ window.UserRegistrationView = Backbone.View.extend({
 // LoginView
 window.LoginView = Backbone.View.extend({
 	tagName : "div",
+	
+	className : "box",
 
 	validator : undefined,
 
@@ -237,6 +241,8 @@ window.LoginView = Backbone.View.extend({
 // UserVerificationView
 window.UserVerificationView = Backbone.View.extend({
 	tagName : "div",
+	
+	className : "box",
 
 	initialize : function() {
 		this.template = _.template(tpl.get('user-verification'));
@@ -254,6 +260,7 @@ window.UserVerificationView = Backbone.View.extend({
 // PopupView
 window.PopupView = Backbone.View.extend({
 	tagName : "div",
+	
 	className : "popup",
 
 	initialize : function() {
@@ -334,6 +341,8 @@ window.MenuView = Backbone.View.extend({
 // UserView
 window.UserView = Backbone.View.extend({
 	tagName : "div",
+	
+	className : "box",
 
 	validator : undefined,
 
@@ -500,41 +509,66 @@ window.UserView = Backbone.View.extend({
 // RoleView
 window.RoleListView = Backbone.View.extend({
 	tagName : "div",
-
-	template : _.template("<div><ul class=\"list\"></ul></div><div class=\"details\"></div>"),
+	
+	id : "rolelist",
+	
+	className : "sidebar",
+	
+	template : _.template("<ul class=\"list\"></ul><a class=\"button\" id=\"create\" href=\"#\">(+)</a></div>"),
 
 	initialize : function() {
-		_.bindAll(this, "render", "add", "remove");
-		this.model.bind("reset", this.render, this);
-		this.model.bind("add", this.add, this);
+		_.bindAll(this, "render", "add", "newRole");
+		this.collection.bind("reset", this.render, this);
+		this.collection.bind("add", this.add, this);
 	},
 
-	events : {},
+	events : {
+		"click a#create" : "newRole"
+	},
 
 	render : function(eventName) {
 		var self = this;
-		console.log("RoleListView render");
+		console.log("RoleListView:render");
 
-		self.$el.html(this.template(this.model.toJSON()));
+		self.$el.html(this.template(this.collection.toJSON()));
 
-		self.model.each(function(role) {
+		self.collection.each(function(role) {
 			self.add(role);
 		});
 		return this;
 	},
 
 	add : function(role) {
+		console.log("RoleListView:add");
 		console.log(role);
 		var roleListItemView = new RoleListItemView({
 			model : role
 		});
 		$("ul", this.el).append(roleListItemView.render().el);
+	},
+
+	newRole : function(event) {
+		var self = this;
+		console.log("RoleListView:newRole");
+		// Need Discriminator
+		var newRole = new Role({
+			discriminator : "CANDIDATE",
+			user : self.options.user
+		});
+		console.log(newRole);
+		this.collection.add(newRole);
+		newRole.trigger("select", event);
+
+		event.preventDefault();
+		return false;
 	}
 
 });
 
 window.RoleListItemView = Backbone.View.extend({
 	tagName : "li",
+	
+	id : "roleitem",
 
 	events : {
 		"click a" : "select"
@@ -544,10 +578,15 @@ window.RoleListItemView = Backbone.View.extend({
 		_.bindAll(this, "render", "close", "select");
 		this.model.bind("change", this.render, this);
 		this.model.bind("destroy", this.close, this);
+		this.model.bind("select", this.select, this);
 	},
 
 	render : function(eventName) {
-		this.$el.html("<a href='#'>" + this.model.get("discriminator") + "_" + this.model.get("id") + "</a>");
+		if (this.model.get("id")) {
+			this.$el.html("<a href='#'>" + this.model.get("discriminator") + "_" + this.model.get("id") + "</a>");
+		} else {
+			this.$el.html("<a href='#'>" + this.model.get("discriminator") + "*</a>");
+		}
 		return this;
 	},
 
@@ -561,7 +600,10 @@ window.RoleListItemView = Backbone.View.extend({
 		var roleView = new RoleView({
 			model : self.model
 		});
-		$(".details", this.$el.parent.parent).html(roleView.render().el);
+		$("#roleview", $("#content")).unbind();
+		$("#roleview", $("#content")).remove();
+		$("#content").append(roleView.render().el);
+
 		event.preventDefault;
 		return false;
 	}
@@ -570,6 +612,10 @@ window.RoleListItemView = Backbone.View.extend({
 
 window.RoleView = Backbone.View.extend({
 	tagName : "div",
+	
+	id : "roleview",
+	
+	className : "box",
 
 	validator : undefined,
 
@@ -577,13 +623,15 @@ window.RoleView = Backbone.View.extend({
 		console.log("RoleView:initialize");
 		_.bindAll(this, "render", "submit", "edit", "view");
 		this.template = _.template(tpl.get('role'));
-		this.model.bind('change', this.render);
+		this.model.bind('change', this.render, this);
+		this.model.bind("destroy", this.close, this);
 	},
 
 	events : {
 		"dblclick form" : "edit",
 		"click a#edit" : "edit",
 		"click a#cancel" : "view",
+		"click a#remove" : "remove",
 		"click a#save" : function() {
 			$("form", this.el).submit();
 		},
@@ -591,8 +639,14 @@ window.RoleView = Backbone.View.extend({
 	},
 
 	render : function(eventName) {
+		var self = this;
 		console.log("RoleView:render");
 		this.$el.html(this.template(this.model.toJSON()));
+		$("div", this.el).each(function() {
+			if ($(this).attr("id") !== self.model.get("discriminator")) {
+				$(this).remove();
+			}
+		});
 		this.view();
 		return this;
 	},
@@ -636,12 +690,14 @@ window.RoleView = Backbone.View.extend({
 		$("form input", this.el).show();
 		$("form a#save", this.el).show();
 		$("form a#cancel", this.el).show();
+		$("form a#remove", this.el).show();
 	},
 
 	view : function(event) {
 		if (this.validator) {
 			this.validator.resetForm();
 		}
+		$("form a#remove", this.el).hide();
 		$("form a#save", this.el).hide();
 		$("form a#cancel", this.el).hide();
 		$("form input", this.el).hide();
@@ -661,6 +717,6 @@ window.RoleView = Backbone.View.extend({
 
 	close : function() {
 		$(this.el).unbind();
-		$(this.el).empty();
+		$(this.el).remove();
 	}
 });

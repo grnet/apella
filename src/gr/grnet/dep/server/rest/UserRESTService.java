@@ -73,16 +73,20 @@ public class UserRESTService {
 			if (authToken == null) {
 				authToken = cookieAuthToken;
 			}
-			User u = (User) em.createQuery(
-				"from User u " +
-					"join fetch u.roles " +
-					"where u.authToken = :authToken")
-				.setParameter("authToken", authToken)
-				.getSingleResult();
-			return Response.status(200)
-				.header("X-Auth-Token", u.getAuthToken())
-				.entity(u)
-				.build();
+			try {
+				User u = (User) em.createQuery(
+					"from User u " +
+						"left join fetch u.roles " +
+						"where u.authToken = :authToken")
+					.setParameter("authToken", authToken)
+					.getSingleResult();
+				return Response.status(200)
+					.header("X-Auth-Token", u.getAuthToken())
+					.entity(u)
+					.build();
+			} catch (NoResultException e) {
+				return Response.status(Status.UNAUTHORIZED).build();
+			}
 		}
 		return Response.status(Status.UNAUTHORIZED).build();
 	}
@@ -105,6 +109,7 @@ public class UserRESTService {
 		user.setActive(Boolean.FALSE);
 		user.setRegistrationDate(new Date());
 		user.setVerified(Boolean.FALSE);
+		user.setPassword(User.encodePassword(user.getPassword()));
 		// TODO: Create a verification generation algorithm
 		user.setVerificationNumber(System.currentTimeMillis());
 		em.persist(user);

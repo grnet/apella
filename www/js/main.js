@@ -82,7 +82,8 @@ var AppRouter = Backbone.Router.extend({
 		console.log("showProfileView");
 		$("#content").empty();
 		var roleListView = new RoleListView({
-			model : self.data.roles
+			collection : self.data.roles,
+			user : self.data.loggedOnUser.get("id")
 		});
 		$("#content").append(roleListView.render().el);
 		// Refresh roles from server
