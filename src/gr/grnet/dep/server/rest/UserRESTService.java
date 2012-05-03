@@ -40,7 +40,7 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Stateless
 @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-public class UserRESTService {
+public class UserRESTService extends RESTService {
 
 	@PersistenceContext(unitName = "depdb")
 	private EntityManager em;
@@ -72,7 +72,7 @@ public class UserRESTService {
 	@Path("/loggedon")
 	@JsonView({DetailedUserView.class})
 	public User getLoggedOn() {
-		return (User) request.getAttribute("user");
+		return super.getLoggedOn();
 	}
 
 	
