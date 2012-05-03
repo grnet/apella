@@ -35,7 +35,7 @@ public class RestSecurityInterceptor implements PreProcessInterceptor, AcceptedB
 
 	@PersistenceContext(unitName = "depdb")
 	private EntityManager em;
-	
+
 	@Inject
 	private Logger logger;
 
@@ -50,12 +50,13 @@ public class RestSecurityInterceptor implements PreProcessInterceptor, AcceptedB
 		// It is UserRESTService
 		try {
 			// Allow UserRESTService.login method to pass through unauthenticated
-			Method loginMethod = UserRESTService.class.getMethod("login", new Class<?>[] {User.class});
+			Method loginMethod = UserRESTService.class.getMethod("login", new Class<?>[] {String.class, String.class});
 			// Allow UserRESTService.create method to pass through unauthenticated
 			Method createMethod = UserRESTService.class.getMethod("create", new Class<?>[] {User.class});
 			// Allow UserRESTService.verify method to pass through unauthenticated
 			Method verifyMethod = UserRESTService.class.getMethod("verify", new Class<?>[] {User.class});
-			if (method.equals(loginMethod) || method.equals(createMethod) || method.equals(verifyMethod)) return false;
+			if (method.equals(loginMethod) || method.equals(createMethod) || method.equals(verifyMethod))
+				return false;
 		} catch (SecurityException e) {
 			logger.log(Level.SEVERE, "", e);
 		} catch (NoSuchMethodException e) {
@@ -67,31 +68,37 @@ public class RestSecurityInterceptor implements PreProcessInterceptor, AcceptedB
 	@Override
 	public ServerResponse preProcess(HttpRequest request, ResourceMethod method) throws UnauthorizedException {
 
+		String authToken = null;
+
 		HttpHeaders headers = request.getHttpHeaders();
 		if (headers == null) {
 			throw new WebApplicationException(Status.UNAUTHORIZED);
 		}
+
 		List<String> tokens = headers.getRequestHeader(TOKEN_HEADER);
-		if (tokens == null) {
-			throw new WebApplicationException(Status.UNAUTHORIZED);
+		if (tokens != null) {
+			authToken = tokens.get(0);
 		}
 
-		String authToken = tokens.get(0);
+		if (authToken == null && headers.getCookies().containsKey("_dep_a")) {
+			authToken = headers.getCookies().get("_dep_a").getValue();
+		}
 
 		if (authToken == null) {
 			throw new WebApplicationException(Status.UNAUTHORIZED);
 		}
 
 		try {
-			User user = (User) em.createQuery("from User u left join fetch u.roles " +
-					"where u.active=true and u.authToken = :authToken")
-									.setParameter("authToken", authToken)
-									.getSingleResult();
+			User user = (User) em.createQuery(
+				"from User u left join fetch u.roles " +
+					"where u.active=true " +
+					"and u.authToken = :authToken")
+				.setParameter("authToken", authToken)
+				.getSingleResult();
 			request.setAttribute("user", user);
+			return null;
 		} catch (NoResultException e) {
 			throw new WebApplicationException(Status.UNAUTHORIZED);
 		}
-
-		return null;
 	}
 }
