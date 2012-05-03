@@ -1,10 +1,14 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.service.model.Role;
-import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.User;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
@@ -21,6 +25,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.codehaus.jackson.map.annotate.JsonView;
@@ -31,12 +36,76 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class RoleRESTService extends RESTService {
 
+	
+	private static final Set<Pair> forbiddenPairs;
+	static {
+		Set<Pair> aSet = new HashSet<Pair>();
+        aSet.add(new Pair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.CANDIDATE));
+        aSet.add(new Pair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.DEPARTMENT_MANAGER));
+        aSet.add(new Pair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.INSTITUTION_ASSISTANT));
+        aSet.add(new Pair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.INSTITUTION_MANAGER));
+        aSet.add(new Pair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.MINISTRY_MANAGER));
+        aSet.add(new Pair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.PROFESSOR_DOMESTIC));
+        aSet.add(new Pair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.PROFESSOR_FOREIGN));
+        forbiddenPairs = Collections.unmodifiableSet(aSet);
+    }
+	
+	private static class Pair {
+		RoleDiscriminator first;
+		RoleDiscriminator second;
+		
+		public Pair(RoleDiscriminator first, RoleDiscriminator second) {
+			this.first = first;
+			this.second = second;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((first == null) ? 0 : first.hashCode());
+			result = prime * result + ((second == null) ? 0 : second.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Pair other = (Pair) obj;
+			if (first != other.first)
+				return false;
+			if (second != other.second)
+				return false;
+			return true;
+		}	
+	}
+
+	
 	@PersistenceContext(unitName = "depdb")
 	private EntityManager em;
 
 	@SuppressWarnings("unused")
 	@Inject
 	private Logger log;
+	
+	
+	
+	private boolean isForbiddenPair(RoleDiscriminator first, RoleDiscriminator second) {
+		return forbiddenPairs.contains(new Pair(first, second))
+					|| forbiddenPairs.contains(new Pair(second, first));
+	}
+	
+	private boolean isIncompatibleRole(Role role, Collection<Role> roles) {
+		for (Role r: roles) {
+			if (isForbiddenPair(role.getDiscriminator(), r.getDiscriminator())) return true;
+		}
+		return false;
+	}
 
 
 	@GET
@@ -71,6 +140,11 @@ public class RoleRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
 					&& role.getUser()!=loggedOn.getId())
 			throw new WebApplicationException(Status.FORBIDDEN);
+		
+		if (isIncompatibleRole(role, loggedOn.getRoles())) {
+			throw new WebApplicationException(Response.status(Status.CONFLICT).
+						header("X-Error-Code", "incompatible.role").build());
+		}
 		
 		em.persist(role);
 		return role;
