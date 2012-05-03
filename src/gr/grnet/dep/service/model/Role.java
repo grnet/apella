@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -83,6 +84,7 @@ public abstract class Role implements Serializable {
 	private RoleDiscriminator discriminator;
 
 	// Inverse to User
+	@Basic(optional=false)
 	@Column(name = "user_id")
 	private Long user;
 

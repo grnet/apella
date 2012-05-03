@@ -4,16 +4,16 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Basic;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
-import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 
@@ -43,11 +43,15 @@ public class Candidacy {
 	@Temporal(TemporalType.TIMESTAMP)
 	Date date;
 
-	@ManyToOne(optional=false)
-	private Candidate candidate;
+	// Inverse to User
+	@Basic(optional=false)
+	@Column(name = "candidate_id")
+	private Long candidate;
 
-	@ManyToOne(optional=false)
-	private Position position;
+	// Inverse to Position
+	@Basic(optional=false)
+	@Column(name = "position_id")
+	private Long position;
 
 	@ManyToMany
 	private Set<FileBody> files = new HashSet<FileBody>();
@@ -65,19 +69,19 @@ public class Candidacy {
 		this.date = date;
 	}
 
-	@XmlTransient
-	public Candidate getCandidate() {
+	@JsonView(SimpleCandidacyView.class)
+	public Long getCandidate() {
 		return candidate;
 	}
-	public void setCandidate(Candidate candidate) {
+	public void setCandidate(Long candidate) {
 		this.candidate = candidate;
 	}
 
 	@JsonView(SimpleCandidacyView.class)
-	public Position getPosition() {
+	public Long getPosition() {
 		return position;
 	}
-	public void setPosition(Position position) {
+	public void setPosition(Long position) {
 		this.position = position;
 	}
 
