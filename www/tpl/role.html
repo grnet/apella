@@ -1,8 +1,9 @@
 <p id="messages" class="notice"></p>
+<% if (discriminator === "PROFESSOR_DOMESTIC") { %>
 <div id="PROFESSOR_DOMESTIC">
 	<form onsubmit="return false">
 		<fieldset>
-			<legend>Role <a id="edit" class="button">Edit</a></legend>
+			<legend>Role</legend>
 			<p>
 				<label for="username">ID:</label>
 				<span><%= id %></span>
@@ -21,10 +22,12 @@
 		</p>
 	</form>
 </div>
+<% } %>
+<% if (discriminator === "PROFESSOR_FOREIGN") { %>
 <div id="PROFESSOR_FOREIGN">
 	<form onsubmit="return false">
 		<fieldset>
-			<legend>Role <a id="edit" class="button">Edit</a></legend>
+			<legend>Role</legend>
 			<p>
 				<label for="username">ID:</label>
 				<span><%= id %></span>
@@ -43,10 +46,12 @@
 		</p>
 	</form>
 </div>
+<% } %>
+<% if (discriminator === "INSTITUTION_MANAGER") { %>
 <div id="INSTITUTION_MANAGER">
 	<form onsubmit="return false">
 		<fieldset>
-			<legend>Role <a id="edit" class="button">Edit</a></legend>
+			<legend>Role</legend>
 			<p>
 				<label for="username">ID:</label>
 				<span><%= id %></span>
@@ -65,10 +70,12 @@
 		</p>
 	</form>
 </div>
+<% } %>
+<% if (discriminator === "DEPARTMENT_MANAGER") { %>
 <div id="DEPARTMENT_MANAGER">
 	<form onsubmit="return false">
 		<fieldset>
-			<legend>Role <a id="edit" class="button">Edit</a></legend>
+			<legend>Role</legend>
 			<p>
 				<label for="username">ID:</label>
 				<span><%= id %></span>
@@ -87,10 +94,12 @@
 		</p>
 	</form>
 </div>
+<% } %>
+<% if (discriminator === "INSTITUTION_ASSISTANT") { %>
 <div id="INSTITUTION_ASSISTANT">
 	<form onsubmit="return false">
 		<fieldset>
-			<legend>Role <a id="edit" class="button">Edit</a></legend>
+			<legend>Role</legend>
 			<p>
 				<label for="username">ID:</label>
 				<span><%= id %></span>
@@ -109,12 +118,14 @@
 		</p>
 	</form>
 </div>
+<% } %>
+<% if (discriminator === "MINISTRY_MANAGER") { %>
 <div id="MINISTRY_MANAGER">
 	<form onsubmit="return false">
 		<fieldset>
-			<legend>Role <a id="edit" class="button">Edit</a></legend>
+			<legend>Role</legend>
 			<p>
-				<label for="username">ID:</label>
+				<label for="id">ID:</label>
 				<span><%= id %></span>
 				<input class="edit" type="text" name="id" value="<%= id %>"/>
 			</p>
@@ -131,20 +142,40 @@
 		</p>
 	</form>
 </div>
+<% } %>
+<% if (discriminator === "CANDIDATE") { %>
 <div id="CANDIDATE">
 	<form onsubmit="return false">
 		<fieldset>
-			<legend>Role <a id="edit" class="button">Edit</a></legend>
+			<legend>Candidate</legend>
 			<p>
-				<label for="username">ID:</label>
-				<span><%= id %></span>
-				<input class="edit" type="text" name="id" value="<%= id %>"/>
+				<label for="cv">Curiculum Vitae:</label>
+				<span>
+					<% if (typeof(cv) !== "undefined" && cv !== null) { %>
+					<%= cv.name  %>
+					<% } %>	
+				</span>
+				<span id="cv"></span>
 			</p>
-			<p>	
-				<label for="discriminator">Discriminator:</label>
-				<span><%= discriminator %></span>
-				<input class="edit" type="text" name="id" value="<%= discriminator %>"/>
+			<p>
+				<label for="identity">Identity:</label>
+				<span>
+					<% if (typeof(identity) !== "undefined" && identity !== null) { %>
+					<%= identity.name  %>
+					<% } %>
+				</span>
+				<span id="identity"></span>
 			</p>
+			<p>
+				<label for="military1599">Military1599:</label>
+				<span>
+					<% if (typeof(military1599) !== "undefined" && military1599 !== null) { %>
+					<%= military1599.name  %>
+					<% } %>
+				</span>
+				<span id="military1599"></span>
+			</p>
+			
 		</fieldset>
 		<p>
 			<a id="remove" class="button">Remove</a>
@@ -153,3 +184,4 @@
 		</p>
 	</form>
 </div>
+<% } %>

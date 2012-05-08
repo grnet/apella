@@ -15,18 +15,17 @@ import javax.persistence.PersistenceContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
 import org.codehaus.jackson.map.annotate.JsonView;
+import org.jboss.resteasy.spi.NoLogWebApplicationException;
 
 @Path("/role")
 @Stateless
@@ -43,7 +42,7 @@ public class RoleRESTService extends RESTService {
 
 	@GET
 	@JsonView({DetailedRoleView.class})
-	public Collection<Role> getAll(@HeaderParam("X-Auth-Token") String authToken, @QueryParam("user") Long userID) {
+	public Collection<Role> getAll(@QueryParam("user") Long userID) {
 		if (userID != null) {
 			Collection<Role> roles = (Collection<Role>) em.createQuery(
 				"from Role r " +
@@ -55,7 +54,7 @@ public class RoleRESTService extends RESTService {
 			}
 			return roles;
 		} else {
-			throw new WebApplicationException(Status.BAD_REQUEST);
+			throw new NoLogWebApplicationException(Status.BAD_REQUEST);
 		}
 	}
 
@@ -73,7 +72,7 @@ public class RoleRESTService extends RESTService {
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
 			&& !roleBelongsToUser)
-			throw new WebApplicationException(Status.FORBIDDEN);
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 
 		Role r = (Role) em.createQuery(
 			"from Role r where r.id=:id")
@@ -89,7 +88,7 @@ public class RoleRESTService extends RESTService {
 		User loggedOn = getLoggedOn();
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
 			&& role.getUser() != loggedOn.getId())
-			throw new WebApplicationException(Status.FORBIDDEN);
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 
 		em.persist(role);
 		return role;
@@ -101,13 +100,13 @@ public class RoleRESTService extends RESTService {
 	public Role update(@PathParam("id") long id, Role role) {
 		Role existingRole = em.find(Role.class, id);
 		if (existingRole == null) {
-			throw new WebApplicationException(Status.NOT_FOUND);
+			throw new NoLogWebApplicationException(Status.NOT_FOUND);
 		}
 
 		User loggedOn = getLoggedOn();
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
 			&& existingRole.getUser() != loggedOn.getId())
-			throw new WebApplicationException(Status.FORBIDDEN);
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 		Role r = existingRole.copyFrom(role);
 
 		return get(r.getId());
@@ -118,13 +117,13 @@ public class RoleRESTService extends RESTService {
 	public void delete(@PathParam("id") long id) {
 		Role existingRole = em.find(Role.class, id);
 		if (existingRole == null) {
-			throw new WebApplicationException(Status.NOT_FOUND);
+			throw new NoLogWebApplicationException(Status.NOT_FOUND);
 		}
 
 		User loggedOn = getLoggedOn();
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
 			&& existingRole.getUser() != loggedOn.getId())
-			throw new WebApplicationException(Status.FORBIDDEN);
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 
 		//Do Delete:
 		em.remove(existingRole);

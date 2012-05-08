@@ -28,7 +28,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
@@ -37,6 +36,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.codehaus.jackson.map.annotate.JsonView;
+import org.jboss.resteasy.spi.NoLogWebApplicationException;
 
 @Path("/user")
 @Stateless
@@ -63,7 +63,7 @@ public class UserRESTService extends RESTService {
 	public List<User> getAll() {
 		User loggedOn = getLoggedOn();
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR))
-			throw new WebApplicationException(Status.FORBIDDEN);
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 
 		return (List<User>) em.createQuery(
 			"select distinct u from User u " +
@@ -86,7 +86,7 @@ public class UserRESTService extends RESTService {
 		User loggedOn = getLoggedOn();
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
 			loggedOn.getId() != id)
-			throw new WebApplicationException(Status.FORBIDDEN);
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 
 		User user = (User) em.createQuery(
 			"from User u left join fetch u.roles " +
@@ -116,11 +116,11 @@ public class UserRESTService extends RESTService {
 		User loggedOn = getLoggedOn();
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
 			loggedOn.getId() != id)
-			throw new WebApplicationException(Status.FORBIDDEN);
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 
 		User existingUser = em.find(User.class, id);
 		if (existingUser == null) {
-			throw new WebApplicationException(Status.NOT_FOUND);
+			throw new NoLogWebApplicationException(Status.NOT_FOUND);
 		}
 		//TODO: 1. Validate changes:
 
@@ -140,11 +140,11 @@ public class UserRESTService extends RESTService {
 		User loggedOn = getLoggedOn();
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
 			loggedOn.getId() != id)
-			throw new WebApplicationException(Status.FORBIDDEN);
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 
 		User existingUser = em.find(User.class, id);
 		if (existingUser == null) {
-			throw new WebApplicationException(Status.NOT_FOUND);
+			throw new NoLogWebApplicationException(Status.NOT_FOUND);
 		}
 		//TODO: Validate:
 
@@ -196,10 +196,10 @@ public class UserRESTService extends RESTService {
 				.getSingleResult();
 			// Validate
 			if (u.getVerified() != null && u.getVerified()) {
-				throw new WebApplicationException(Response.status(Status.FORBIDDEN).header("X-Error-Code", "already.verified").build());
+				throw new NoLogWebApplicationException(Response.status(Status.FORBIDDEN).header("X-Error-Code", "already.verified").build());
 			}
 			if (user.getVerificationNumber() == null || !user.getVerificationNumber().equals(u.getVerificationNumber())) {
-				throw new WebApplicationException(Response.status(Status.FORBIDDEN).header("X-Error-Code", "wrong.verification").build());
+				throw new NoLogWebApplicationException(Response.status(Status.FORBIDDEN).header("X-Error-Code", "wrong.verification").build());
 			}
 
 			// Verify
@@ -208,7 +208,7 @@ public class UserRESTService extends RESTService {
 
 			return u;
 		} catch (NoResultException e) {
-			throw new WebApplicationException(Response.status(Status.NOT_FOUND).header("X-Error-Code", "wrong.username").build());
+			throw new NoLogWebApplicationException(Response.status(Status.NOT_FOUND).header("X-Error-Code", "wrong.username").build());
 		}
 	}
 
@@ -219,7 +219,7 @@ public class UserRESTService extends RESTService {
 		User loggedOn = getLoggedOn();
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
 			loggedOn.getId() != id)
-			throw new WebApplicationException(Status.FORBIDDEN);
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 
 		User u = (User) em.createQuery(
 			"from User u join fetch u.roles where u.id=:id")

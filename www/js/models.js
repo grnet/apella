@@ -1,5 +1,5 @@
 // User
-window.User = Backbone.Model.extend({
+App.User = Backbone.Model.extend({
 	url : function() {
 		return "/dep/rest/user" + (this.id ? "/" + this.id : "");
 	},
@@ -37,7 +37,7 @@ window.User = Backbone.Model.extend({
 	}
 });
 
-User.prototype.verify = function(options) {
+App.User.prototype.verify = function(options) {
 	options = options ? _.clone(options) : {};
 	var model = this;
 	var success = options.success;
@@ -53,7 +53,7 @@ User.prototype.verify = function(options) {
 	return (this.sync || Backbone.sync).call(this, 'verify', this, options);
 };
 
-User.prototype.login = function(key, value, options) {
+App.User.prototype.login = function(key, value, options) {
 	options = options ? _.clone(options) : {};
 	var model = this;
 	var success = options.success;
@@ -124,7 +124,7 @@ User.prototype.login = function(key, value, options) {
 	return xhr;
 };
 
-User.prototype.sync = function(method, model, options) {
+App.User.prototype.sync = function(method, model, options) {
 	console.log('method = ' + method);
 	console.log(model.toJSON());
 	switch (method) {
@@ -177,24 +177,40 @@ User.prototype.sync = function(method, model, options) {
 };
 
 // Role
-window.Role = Backbone.Model.extend({
+App.Role = Backbone.Model.extend({
 	url : function() {
 		return "/dep/rest/role" + (this.id ? "/" + this.id : "");
 	},
 	defaults : {
 		"id" : undefined,
 		"discriminator" : undefined,
-		"user" : undefined
+		"user" : undefined,
 	}
 });
 
-window.Roles = Backbone.Collection.extend({
-	model : Role,
-	references : {
-		// A custom attribute to hold references
-		user : undefined
-	},
+App.Roles = Backbone.Collection.extend({
+	model : App.Role,
+	user : undefined,
 	url : function() {
-		return "/dep/rest/role" + (this.references.user ? "?user=" + this.references.user : "");
+		return "/dep/rest/role" + (this.user ? "?user=" + this.user : "");
+	}
+});
+
+// File
+App.File = Backbone.Model.extend({
+	url : undefined,
+
+	defaults : {
+		"id" : undefined,
+		"name" : undefined,
+		"description" : undefined,
+		"currentBody" : {
+			"id" : undefined,
+			"mimeType" : undefined,
+			"originalFilename" : undefined,
+			"storedFilePath" : undefined,
+			"fileSize" : undefined,
+			"date" : undefined
+		}
 	}
 });

@@ -1,11 +1,8 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.service.model.Candidacy;
-import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
-import gr.grnet.dep.service.model.Candidacy.SimpleCandidacyView;
 import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
@@ -24,11 +21,11 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
 import org.codehaus.jackson.map.annotate.JsonView;
+import org.jboss.resteasy.spi.NoLogWebApplicationException;
 
 @Path("/candidacy")
 @Stateless
@@ -61,7 +58,7 @@ public class CandidacyRESTService extends RESTService {
 		User loggedOn = getLoggedOn();
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
 					&& cy.getUser()!=loggedOn.getId())
-			throw new WebApplicationException(Status.FORBIDDEN);
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 		
 		return c;
 	}
@@ -78,7 +75,7 @@ public class CandidacyRESTService extends RESTService {
 		User loggedOn = getLoggedOn();
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
 					&& cy.getUser()!=loggedOn.getId())
-			throw new WebApplicationException(Status.FORBIDDEN);
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 		
 		candidacy.setDate(new Date());
 		
@@ -93,7 +90,7 @@ public class CandidacyRESTService extends RESTService {
 	public Candidacy update(@PathParam("id") long id, Candidacy candidacy) {
 		Candidacy existingCandidacy = em.find(Candidacy.class, id);
 		if (existingCandidacy == null) {
-			throw new WebApplicationException(Status.NOT_FOUND);
+			throw new NoLogWebApplicationException(Status.NOT_FOUND);
 		}
 		Candidate cy = (Candidate) em.createQuery(
 					"from Candidate c where c.id=:id")
@@ -103,7 +100,7 @@ public class CandidacyRESTService extends RESTService {
 		User loggedOn = getLoggedOn();
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
 					&& cy.getUser()!=loggedOn.getId())
-			throw new WebApplicationException(Status.FORBIDDEN);
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 		
 		// So far there are no fields to update!
 		
@@ -116,7 +113,7 @@ public class CandidacyRESTService extends RESTService {
 	public void delete(@PathParam("id") long id) {
 		Candidacy existingCandidacy = em.find(Candidacy.class, id);
 		if (existingCandidacy == null) {
-			throw new WebApplicationException(Status.NOT_FOUND);
+			throw new NoLogWebApplicationException(Status.NOT_FOUND);
 		}
 		Candidate cy = (Candidate) em.createQuery(
 					"from Candidate c where c.id=:id")
@@ -126,7 +123,7 @@ public class CandidacyRESTService extends RESTService {
 		User loggedOn = getLoggedOn();
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
 					&& cy.getUser()!=loggedOn.getId())
-			throw new WebApplicationException(Status.FORBIDDEN);
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 
 		//Do Delete:
 		em.remove(existingCandidacy);

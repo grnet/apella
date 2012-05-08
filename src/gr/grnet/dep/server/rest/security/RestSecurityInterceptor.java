@@ -12,7 +12,6 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.Provider;
@@ -22,7 +21,7 @@ import org.jboss.resteasy.annotations.interception.ServerInterceptor;
 import org.jboss.resteasy.core.ResourceMethod;
 import org.jboss.resteasy.core.ServerResponse;
 import org.jboss.resteasy.spi.HttpRequest;
-import org.jboss.resteasy.spi.UnauthorizedException;
+import org.jboss.resteasy.spi.NoLogWebApplicationException;
 import org.jboss.resteasy.spi.interception.AcceptedByMethod;
 import org.jboss.resteasy.spi.interception.PreProcessInterceptor;
 
@@ -66,13 +65,13 @@ public class RestSecurityInterceptor implements PreProcessInterceptor, AcceptedB
 	}
 
 	@Override
-	public ServerResponse preProcess(HttpRequest request, ResourceMethod method) throws UnauthorizedException {
+	public ServerResponse preProcess(HttpRequest request, ResourceMethod method) throws NoLogWebApplicationException {
 
 		String authToken = null;
 
 		HttpHeaders headers = request.getHttpHeaders();
 		if (headers == null) {
-			throw new WebApplicationException(Status.UNAUTHORIZED);
+			throw new NoLogWebApplicationException(Status.UNAUTHORIZED);
 		}
 
 		List<String> tokens = headers.getRequestHeader(TOKEN_HEADER);
@@ -85,7 +84,7 @@ public class RestSecurityInterceptor implements PreProcessInterceptor, AcceptedB
 		}
 
 		if (authToken == null) {
-			throw new WebApplicationException(Status.UNAUTHORIZED);
+			throw new NoLogWebApplicationException(Status.UNAUTHORIZED);
 		}
 
 		try {
@@ -98,7 +97,7 @@ public class RestSecurityInterceptor implements PreProcessInterceptor, AcceptedB
 			request.setAttribute("user", user);
 			return null;
 		} catch (NoResultException e) {
-			throw new WebApplicationException(Status.UNAUTHORIZED);
+			throw new NoLogWebApplicationException(Status.UNAUTHORIZED);
 		}
 	}
 }
