@@ -1,6 +1,5 @@
 package gr.grnet.dep.server.rest;
 
-import gr.grnet.dep.server.rest.security.RestSecurityInterceptor;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.IdRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
@@ -11,18 +10,16 @@ import gr.grnet.dep.service.model.User.SimpleUserView;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -33,7 +30,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 import org.jboss.resteasy.spi.NoLogWebApplicationException;
@@ -44,24 +40,11 @@ import org.jboss.resteasy.spi.NoLogWebApplicationException;
 @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class UserRESTService extends RESTService {
 
-	@PersistenceContext(unitName = "depdb")
-	private EntityManager em;
-
-	@SuppressWarnings("unused")
-	@Inject
-	private Logger log;
-
-	@Context
-	UriInfo uriInfo;
-
-	@Context
-	HttpServletRequest request;
-
 	@GET
 	@JsonView({SimpleUserView.class})
 	@SuppressWarnings("unchecked")
-	public List<User> getAll() {
-		User loggedOn = getLoggedOn();
+	public List<User> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
+		User loggedOn = getLoggedOn(authToken);
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR))
 			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 
@@ -75,15 +58,29 @@ public class UserRESTService extends RESTService {
 	@GET
 	@Path("/loggedon")
 	@JsonView({DetailedUserView.class})
-	public User getLoggedOn() {
-		return super.getLoggedOn();
+	public Response getLoggedOn(@Context HttpServletRequest request) {
+		String authToken = request.getHeader(TOKEN_HEADER);
+		if (authToken == null) {
+			for (Cookie c : request.getCookies()) {
+				if (c.getName().equals("_dep_a")) {
+					authToken = c.getValue();
+					break;
+				}
+			}
+		}
+		User u = super.getLoggedOn(authToken);
+		return Response.status(200)
+			.header(TOKEN_HEADER, u.getAuthToken())
+			.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, Integer.MAX_VALUE, false))
+			.entity(u)
+			.build();
 	}
 
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedUserView.class})
-	public User get(@PathParam("id") long id) {
-		User loggedOn = getLoggedOn();
+	public User get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+		User loggedOn = getLoggedOn(authToken);
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
 			loggedOn.getId() != id)
 			throw new NoLogWebApplicationException(Status.FORBIDDEN);
@@ -98,7 +95,7 @@ public class UserRESTService extends RESTService {
 
 	@POST
 	@JsonView({DetailedUserView.class})
-	public User create(User user) {
+	public User create(@HeaderParam(TOKEN_HEADER) String authToken, User user) {
 		user.setActive(Boolean.FALSE);
 		user.setRegistrationDate(new Date());
 		user.setVerified(Boolean.FALSE);
@@ -112,8 +109,8 @@ public class UserRESTService extends RESTService {
 	@PUT
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedUserView.class})
-	public User update(@PathParam("id") long id, User user) {
-		User loggedOn = getLoggedOn();
+	public User update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, User user) {
+		User loggedOn = getLoggedOn(authToken);
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
 			loggedOn.getId() != id)
 			throw new NoLogWebApplicationException(Status.FORBIDDEN);
@@ -131,13 +128,13 @@ public class UserRESTService extends RESTService {
 		existingUser.setBasicInfo(user.getBasicInfo());
 		existingUser.setContactInfo(user.getContactInfo());
 
-		return get(existingUser.getId());
+		return existingUser;
 	}
 
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}")
-	public void delete(@PathParam("id") long id) {
-		User loggedOn = getLoggedOn();
+	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+		User loggedOn = getLoggedOn(authToken);
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
 			loggedOn.getId() != id)
 			throw new NoLogWebApplicationException(Status.FORBIDDEN);
@@ -171,7 +168,7 @@ public class UserRESTService extends RESTService {
 				u = em.merge(u);
 
 				return Response.status(200)
-					.header(RestSecurityInterceptor.TOKEN_HEADER, u.getAuthToken())
+					.header(TOKEN_HEADER, u.getAuthToken())
 					.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, Integer.MAX_VALUE, false))
 					.entity(u)
 					.build();
@@ -215,8 +212,8 @@ public class UserRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9][0-9]*}/roles")
 	@JsonView({IdRoleView.class})
-	public Set<Role> getRolesForUser(@PathParam("id") long id) {
-		User loggedOn = getLoggedOn();
+	public Set<Role> getRolesForUser(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+		User loggedOn = getLoggedOn(authToken);
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
 			loggedOn.getId() != id)
 			throw new NoLogWebApplicationException(Status.FORBIDDEN);
