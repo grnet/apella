@@ -3,16 +3,35 @@
 <div id="PROFESSOR_DOMESTIC">
 	<form onsubmit="return false">
 		<fieldset>
-			<legend>Role</legend>
+			<legend>Domestic Professor</legend>
 			<p>
-				<label for="username">ID:</label>
-				<span><%= id %></span>
-				<input class="edit" type="text" name="id" value="<%= id %>"/>
+				<label for="institution">Institution:</label>
+				<select name="institution" class="edit">
+				</select>
 			</p>
 			<p>
-				<label for="discriminator">Discriminator:</label>
-				<span><%= discriminator %></span>
-				<input class="edit" type="text" name="id" value="<%= discriminator %>"/>
+				<label for="rank">Rank:</label>
+				<textarea name="rank" class="edit" ><% if (!_.isUndefined(rank)) { %><%= rank.name %><% } %></textarea>
+			</p>
+			<p>
+				<label for="position">Position:</label>
+				<input name="position" class="edit" type="text" value="<%= position %>" />
+			</p>
+			<p>
+				<label for="subject">Subject (Γνωστικό Αντικείμενο):</label>
+				<textarea name="subject" class="edit"><% if (!_.isUndefined(subject)) { %><%= subject.name %><% } %></textarea>
+			</p>
+			<p>
+				<label for="fek">ΦΕΚ:</label>
+				<input name="fek" class="edit" type="text" value="<%= fek %>" />
+			</p>
+			<p>
+				<label for="fekSubject">ΦΕΚ Subject:</label>
+				<textarea name="fekSubject" class="edit"><% if (!_.isUndefined(fekSubject)) { %><%= fekSubject.name %><% } %></textarea>
+			</p>
+			<p>
+				<label for="fekFile">ΦΕΚ File:</label>
+				<span id="fekFile"></span>
 			</p>
 		</fieldset>
 		<p>
@@ -27,16 +46,22 @@
 <div id="PROFESSOR_FOREIGN">
 	<form onsubmit="return false">
 		<fieldset>
-			<legend>Role</legend>
+			<legend>Foreign Professor</legend>
 			<p>
-				<label for="username">ID:</label>
-				<span><%= id %></span>
-				<input class="edit" type="text" name="id" value="<%= id %>"/>
+				<label for="institution">Institution:</label>
+				<input name="institution" class="edit" type="text" value="<%= institution %>"/>
 			</p>
 			<p>
-				<label for="discriminator">Discriminator:</label>
-				<span><%= discriminator %></span>
-				<input class="edit" type="text" name="id" value="<%= discriminator %>"/>
+				<label for="position">Position:</label>
+				<input name="position" class="edit" type="text" value="<%= position %>" />
+			</p>
+			<p>
+				<label for="rank">Rank:</label>
+				<textarea name="rank" class="edit" ><% if (!_.isUndefined(rank)) { %><%= rank.name %><% } %></textarea>
+			</p>
+			<p>
+				<label for="subject">Subject (Γνωστικό Αντικείμενο):</label>
+				<textarea name="subject" class="edit"><% if (!_.isUndefined(subject)) { %><%= subject.name %><% } %></textarea>
 			</p>
 		</fieldset>
 		<p>
@@ -51,16 +76,11 @@
 <div id="INSTITUTION_MANAGER">
 	<form onsubmit="return false">
 		<fieldset>
-			<legend>Role</legend>
+			<legend>Institution Manager</legend>
 			<p>
-				<label for="username">ID:</label>
-				<span><%= id %></span>
-				<input class="edit" type="text" name="id" value="<%= id %>"/>
-			</p>
-			<p>
-				<label for="discriminator">Discriminator:</label>
-				<span><%= discriminator %></span>
-				<input class="edit" type="text" name="id" value="<%= discriminator %>"/>
+				<label for="institution">Institution:</label>
+				<select name="institution" class="edit" >
+				</select>
 			</p>
 		</fieldset>
 		<p>
@@ -75,16 +95,11 @@
 <div id="DEPARTMENT_MANAGER">
 	<form onsubmit="return false">
 		<fieldset>
-			<legend>Role</legend>
+			<legend>Department Manager</legend>
 			<p>
-				<label for="username">ID:</label>
-				<span><%= id %></span>
-				<input class="edit" type="text" name="id" value="<%= id %>"/>
-			</p>
-			<p>
-				<label for="discriminator">Discriminator:</label>
-				<span><%= discriminator %></span>
-				<input class="edit" type="text" name="id" value="<%= discriminator %>"/>
+				<label for="department">Department:</label>
+				<select name="department" class="edit" >
+				</select>
 			</p>
 		</fieldset>
 		<p>
@@ -99,16 +114,15 @@
 <div id="INSTITUTION_ASSISTANT">
 	<form onsubmit="return false">
 		<fieldset>
-			<legend>Role</legend>
+			<legend>Institution Assistant</legend>
 			<p>
-				<label for="username">ID:</label>
-				<span><%= id %></span>
-				<input class="edit" type="text" name="id" value="<%= id %>"/>
+				<label for="institution">Institution:</label>
+				<select name="institution" class="edit" >
+				</select>
 			</p>
 			<p>
-				<label for="discriminator">Discriminator:</label>
-				<span><%= discriminator %></span>
-				<input class="edit" type="text" name="id" value="<%= discriminator %>"/>
+				<label for="manager">Manager:</label>
+				<span><a id="view-manager">View</a></span>
 			</p>
 		</fieldset>
 		<p>
@@ -123,16 +137,14 @@
 <div id="MINISTRY_MANAGER">
 	<form onsubmit="return false">
 		<fieldset>
-			<legend>Role</legend>
+			<legend>Institution Assistant</legend>
 			<p>
-				<label for="id">ID:</label>
-				<span><%= id %></span>
-				<input class="edit" type="text" name="id" value="<%= id %>"/>
+				<label for="ministry">Ministry:</label>
+				<input name="ministry" class="edit" type="text" value="<%= ministry %>" />
 			</p>
-			<p>	
-				<label for="discriminator">Discriminator:</label>
-				<span><%= discriminator %></span>
-				<input class="edit" type="text" name="id" value="<%= discriminator %>"/>
+			<p>
+				<label for="manager">Manager:</label>
+				<span><a id="view-manager">View</a></span>
 			</p>
 		</fieldset>
 		<p>

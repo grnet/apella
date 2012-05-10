@@ -336,15 +336,16 @@ form label.error {
 	border-radius: 2px;
 }
 
-form input {
+form input, form select, form textarea {
 	display: inline-block;
+	width: 400px;
 	margin-left: 5px;
 	margin-right: 5px;
 	margin-bottom: 15px;
+	padding: 5px;
 	border: 1px solid #ccc;
 	outline: none;
 	border-radius: 5px;
-	font-size: 20px;
 }
 
 /***************************************************

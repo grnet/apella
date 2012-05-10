@@ -8,6 +8,7 @@ import gr.grnet.dep.service.model.User.DetailedUserView;
 import gr.grnet.dep.service.model.User.SimpleUserView;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -95,14 +96,21 @@ public class UserRESTService extends RESTService {
 
 	@POST
 	@JsonView({DetailedUserView.class})
-	public User create(@HeaderParam(TOKEN_HEADER) String authToken, User user) {
+	public User create(User user) {
+		Set<Role> roles = user.getRoles();
+
 		user.setActive(Boolean.FALSE);
 		user.setRegistrationDate(new Date());
 		user.setVerified(Boolean.FALSE);
 		user.setPassword(User.encodePassword(user.getPassword()));
-		// TODO: Create a verification generation algorithm
 		user.setVerificationNumber(System.currentTimeMillis());
+		user.setRoles(new HashSet<Role>());
 		em.persist(user);
+
+		for (Role r : roles) {
+			user.addRole(r);
+		}
+
 		return user;
 	}
 

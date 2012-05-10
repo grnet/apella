@@ -33,7 +33,7 @@ public class RoleRESTService extends RESTService {
 	@GET
 	@JsonView({DetailedRoleView.class})
 	public Collection<Role> getAll(@HeaderParam(TOKEN_HEADER) String authToken, @QueryParam("user") Long userID) {
-		User loggedOn = getLoggedOn(authToken);
+		getLoggedOn(authToken);
 		if (userID != null) {
 			Collection<Role> roles = (Collection<Role>) em.createQuery(
 				"from Role r " +
@@ -77,10 +77,9 @@ public class RoleRESTService extends RESTService {
 	@JsonView({DetailedRoleView.class})
 	public Role create(@HeaderParam(TOKEN_HEADER) String authToken, Role role) {
 		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
-			&& role.getUser() != loggedOn.getId())
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && role.getUser() != loggedOn.getId()) {
 			throw new NoLogWebApplicationException(Status.FORBIDDEN);
-
+		}
 		em.persist(role);
 		return role;
 	}
@@ -106,18 +105,21 @@ public class RoleRESTService extends RESTService {
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}")
 	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
-		Role existingRole = em.find(Role.class, id);
-		if (existingRole == null) {
+		User loggedOn = getLoggedOn(authToken);
+
+		Role role = em.find(Role.class, id);
+		// Validate:
+		if (role == null) {
 			throw new NoLogWebApplicationException(Status.NOT_FOUND);
 		}
-
-		User loggedOn = getLoggedOn(authToken);
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
-			&& existingRole.getUser() != loggedOn.getId())
+			&& role.getUser() != loggedOn.getId())
 			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 
-		//Do Delete:
-		em.remove(existingRole);
+		// Delete:
+		User user = em.find(User.class, role.getUser());
+		user.removeRole(role);
+		em.remove(role);
 	}
 
 }

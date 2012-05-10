@@ -66,7 +66,7 @@ App.User.prototype.login = function(key, value, options) {
 		}
 	};
 	options.error = Backbone.wrapError(options.error, model, options);
-
+	
 	var attrs, current;
 	// Handle both `("key", value)` and `({key: value})` -style calls.
 	if (_.isObject(key) || key == null) {
@@ -77,7 +77,7 @@ App.User.prototype.login = function(key, value, options) {
 		attrs[key] = value;
 	}
 	options = options ? _.clone(options) : {};
-
+	
 	// If we're "wait"-ing to set changed attributes, validate early.
 	if (options.wait) {
 		if (!this._validate(attrs, options)) {
@@ -85,7 +85,7 @@ App.User.prototype.login = function(key, value, options) {
 		}
 		current = _.clone(this.attributes);
 	}
-
+	
 	// Regular saves `set` attributes before persisting to the server.
 	var silentOptions = _.extend({}, options, {
 		silent : true
@@ -114,13 +114,13 @@ App.User.prototype.login = function(key, value, options) {
 	};
 	// Finish configuring and sending the Ajax request.
 	options.error = Backbone.wrapError(options.error, model, options);
-
+	
 	var xhr = this.sync.call(this, 'login', this, options);
-
+	
 	if (options.wait) {
 		this.set(current, silentOptions);
 	}
-
+	
 	return xhr;
 };
 
@@ -128,7 +128,7 @@ App.User.prototype.sync = function(method, model, options) {
 	console.log('method = ' + method);
 	console.log(model.toJSON());
 	switch (method) {
-
+	
 	case "verify":
 		// Default options, unless specified.
 		options || (options = {});
@@ -139,7 +139,7 @@ App.User.prototype.sync = function(method, model, options) {
 			contentType : 'application/json',
 			data : JSON.stringify(model.toJSON())
 		};
-
+		
 		// Ensure that we have a URL.
 		if (!options.url) {
 			if (model.url) {
@@ -150,7 +150,7 @@ App.User.prototype.sync = function(method, model, options) {
 		}
 		// Make the request, allowing the user to override any Ajax options.
 		return $.ajax(_.extend(params, options));
-
+		
 	case "login":
 		// Default options, unless specified.
 		options || (options = {});
@@ -170,7 +170,7 @@ App.User.prototype.sync = function(method, model, options) {
 		}
 		// Make the request, allowing the user to override any Ajax options.
 		return $.ajax(_.extend(params, options));
-
+		
 	default:
 		return (Backbone.sync).call(this, method, this, options);
 	}
@@ -182,9 +182,27 @@ App.Role = Backbone.Model.extend({
 		return "/dep/rest/role" + (this.id ? "/" + this.id : "");
 	},
 	defaults : {
+		// Common Fields
 		"id" : undefined,
 		"discriminator" : undefined,
 		"user" : undefined,
+		// Specific Fields
+		"institution" : undefined,
+		"department" : undefined,
+		"position" : undefined,
+		"rank" : undefined,
+		"subject" : undefined,
+		"fek" : undefined,
+		"fekSubject" : undefined,
+		"manager" : undefined,
+		"ministry" : undefined,
+		// Files:
+		"fekFile" : undefined,
+		"cv" : undefined,
+		"identity" : undefined,
+		"military1599" : undefined,
+	// "degrees" : [],
+	// "publications" : [],
 	}
 });
 
@@ -199,7 +217,7 @@ App.Roles = Backbone.Collection.extend({
 // File
 App.File = Backbone.Model.extend({
 	url : undefined,
-
+	
 	defaults : {
 		"id" : undefined,
 		"name" : undefined,
@@ -213,4 +231,33 @@ App.File = Backbone.Model.extend({
 			"date" : undefined
 		}
 	}
+});
+
+App.Institution = Backbone.Model.extend({
+	url : "/dep/rest/institution",
+	defaults : {
+		"id" : undefined,
+		"name" : undefined,
+	}
+});
+
+App.Institutions = Backbone.Collection.extend({
+	url : "/dep/rest/institution",
+	model : App.Institution
+});
+
+App.Department = Backbone.Model.extend({
+	url : "/dep/rest/department",
+	defaults : {
+		"id" : undefined,
+		"department" : undefined,
+		"school" : undefined,
+		"fullName" : undefined,
+		"institution" : undefined
+	}
+});
+
+App.Departments = Backbone.Collection.extend({
+	url : "/dep/rest/department",
+	model : App.Department
 });

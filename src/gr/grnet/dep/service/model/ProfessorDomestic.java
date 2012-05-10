@@ -12,39 +12,42 @@ import javax.persistence.Transient;
 @DiscriminatorValue("PROFESSOR_DOMESTIC")
 public class ProfessorDomestic extends Professor {
 
-/** Default value included to remove warning. Remove or modify at will. **/
-   private static final long serialVersionUID = 1L;
-   
-   @Inject
-   @Transient
-   private Logger logger;
-   
+	/** Default value included to remove warning. Remove or modify at will. **/
+	private static final long serialVersionUID = 1L;
 
-   @ManyToOne(optional=false)
-   private Department department;
-   
-   @ManyToOne(optional=false)
-   private Rank rank;
-   
-   @ManyToOne(optional=false)
-   private Subject subject;
-   
-   private String fek;
-   
-   @ManyToOne
-   private FileHeader fekFile;
+	@Inject
+	@Transient
+	private Logger logger;
 
-   
-   
-   public ProfessorDomestic() {
-	   super();
-	   setDiscriminator(RoleDiscriminator.PROFESSOR_DOMESTIC);
-   }
+	@ManyToOne(optional = false)
+	private Institution institution;
 
+	@ManyToOne(optional = false)
+	private Department department;
+
+	@ManyToOne(optional = false)
+	private Rank rank;
+
+	@ManyToOne(optional = false)
+	private Subject subject;
+
+	private String fek;
+
+	@ManyToOne(optional = false)
+	private Subject fekSubject;
+
+	@ManyToOne
+	private FileHeader fekFile;
+
+	public ProfessorDomestic() {
+		super();
+		setDiscriminator(RoleDiscriminator.PROFESSOR_DOMESTIC);
+	}
 
 	public Department getDepartment() {
 		return department;
 	}
+
 	public void setDepartment(Department department) {
 		this.department = department;
 	}
@@ -52,6 +55,7 @@ public class ProfessorDomestic extends Professor {
 	public Rank getRank() {
 		return rank;
 	}
+
 	public void setRank(Rank rank) {
 		this.rank = rank;
 	}
@@ -59,6 +63,7 @@ public class ProfessorDomestic extends Professor {
 	public Subject getSubject() {
 		return subject;
 	}
+
 	public void setSubject(Subject subject) {
 		this.subject = subject;
 	}
@@ -66,6 +71,7 @@ public class ProfessorDomestic extends Professor {
 	public String getFek() {
 		return fek;
 	}
+
 	public void setFek(String fek) {
 		this.fek = fek;
 	}
@@ -73,18 +79,16 @@ public class ProfessorDomestic extends Professor {
 	public FileHeader getFekFile() {
 		return fekFile;
 	}
+
 	public void setFekFile(FileHeader fekFile) {
 		this.fekFile = fekFile;
 	}
 
-
 	////////////////////////////////////////////////////////////////////////////
-	
-	
+
 	@Override
 	public void initializeCollections() {
 	}
-
 
 	@Override
 	public Role copyFrom(Role otherRole) {
@@ -93,5 +97,4 @@ public class ProfessorDomestic extends Professor {
 		return this;
 	}
 
-   
 }

@@ -1,11 +1,13 @@
-App = {};
+App = {
+	allowedRoles : [ "PROFESSOR_DOMESTIC", "PROFESSOR_FOREIGN", "INSTITUTION_MANAGER", "DEPARTMENT_MANAGER", "INSTITUTION_ASSISTANT", "MINISTRY_MANAGER", "CANDIDATE" ],
+};
 
 App.RegistrationRouter = Backbone.Router.extend({
 
 	initialize : function() {
 		_.extend(this, Backbone.Events);
 		_.bindAll(this, "showRegisterView", "showVerificationView");
-		
+
 		Backbone.history.start();
 	},
 
@@ -14,10 +16,8 @@ App.RegistrationRouter = Backbone.Router.extend({
 		"profile=:role" : "showRegisterView"
 	},
 
-	allowedRoles : [ "PROFESSOR_DOMESTIC", "PROFESSOR_FOREIGN", "INSTITUTION_MANAGER", "DEPARTMENT_MANAGER", "INSTITUTION_ASSISTANT", "MINISTRY_MANAGER", "CANDIDATE" ],
-
 	showRegisterView : function(role) {
-		if (_.indexOf(this.allowedRoles, role) >= 0) {
+		if (_.indexOf(App.allowedRoles, role) >= 0) {
 			var userRegistration = new App.User({
 				"roles" : [ {
 					"discriminator" : role,
@@ -146,7 +146,7 @@ App.Router = Backbone.Router.extend({
 		$("#content").empty();
 		var roleListView = new App.RoleListView({
 			collection : App.roles,
-			user: App.loggedOnUser.get("id")
+			user : App.loggedOnUser.get("id")
 		});
 		$("#content").append(roleListView.render().el);
 		// Refresh roles from server
