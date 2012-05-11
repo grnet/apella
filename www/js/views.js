@@ -685,8 +685,42 @@ App.RoleView = Backbone.View.extend({
 			} else {
 				$("#fekFile", self.$el).html("Press Save to enable uploading");
 			}
+			
+			this.validator = $("form", this.el).validate({
+				rules : {
+					institution : "required",
+					rank : "required",
+					position : "required",
+					subject : "required",
+					fek : "required",
+					fekSubject : "required"
+				},
+				messages : {
+					institution : "Please select an institution",
+					rank : "Please enter your rank",
+					position : "Please enter your position",
+					subject : "Please enter your subject",
+					fek : "Please enter the fek",
+					fekSubject : "Please enter the subject of the fek"
+				}
+			});
+			
 			break;
 		case "PROFESSOR_FOREIGN":
+			this.validator = $("form", this.el).validate({
+				rules : {
+					institution : "required",
+					rank : "required",
+					position : "required",
+					subject : "required",
+				},
+				messages : {
+					institution : "Please enter your institution",
+					rank : "Please enter your rank",
+					position : "Please enter your position",
+					subject : "Please enter your subject",
+				}
+			});
 			break;
 		case "INSTITUTION_MANAGER":
 			App.institutions = App.institutions ? App.institutions : new App.Institutions();
@@ -707,6 +741,14 @@ App.RoleView = Backbone.View.extend({
 						message : "Error " + resp.status
 					});
 					popup.show();
+				}
+			});
+			this.validator = $("form", this.el).validate({
+				rules : {
+					institution : "required"
+				},
+				messages : {
+					institution : "Please select an institution"
 				}
 			});
 			break;
@@ -732,6 +774,14 @@ App.RoleView = Backbone.View.extend({
 					popup.show();
 				}
 			});
+			this.validator = $("form", this.el).validate({
+				rules : {
+					institution : "required"
+				},
+				messages : {
+					institution : "Please select an institution"
+				}
+			});
 			break;
 		
 		case "DEPARTMENT_MANAGER":
@@ -755,9 +805,25 @@ App.RoleView = Backbone.View.extend({
 					popup.show();
 				}
 			});
+			this.validator = $("form", this.el).validate({
+				rules : {
+					department : "required"
+				},
+				messages : {
+					department : "Please select an institution"
+				}
+			});
 			break;
 		
 		case "MINISTRY_MANAGER":
+			this.validator = $("form", this.el).validate({
+				rules : {
+					ministry : "required"
+				},
+				messages : {
+					ministry : "Please select your ministry"
+				}
+			});
 			break;
 		}
 		
