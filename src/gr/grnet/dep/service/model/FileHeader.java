@@ -11,6 +11,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
@@ -79,6 +80,13 @@ public final class FileHeader implements Serializable {
 	 */
 	@ManyToOne
 	private FileBody currentBody;
+	
+	/**
+	 * The owner of this file.
+	 */
+	@ManyToOne(optional=false)
+	@JoinColumn(nullable=false)
+	private User owner;
 
 	
 
@@ -126,6 +134,14 @@ public final class FileHeader implements Serializable {
 		this.currentBody = currentBody;
 	}
 	
+	@JsonView({ DetailedFileHeaderView.class })
+	public User getOwner() {
+		return owner;
+	}
+	public void setOwner(User owner) {
+		this.owner = owner;
+	}
+	
 	
 
 	/**
@@ -153,8 +169,6 @@ public final class FileHeader implements Serializable {
 
 		currentBody = body;
 	}
-
-
 
 
 }

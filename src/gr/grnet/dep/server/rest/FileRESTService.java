@@ -1,9 +1,11 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.service.model.FileBody;
+import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.FileBody.DetailedFileBodyView;
 import gr.grnet.dep.service.model.FileHeader;
 import gr.grnet.dep.service.model.FileHeader.DetailedFileHeaderView;
+import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 
 import java.io.File;
@@ -38,6 +40,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.annotate.JsonView;
+import org.jboss.resteasy.spi.NoLogWebApplicationException;
 
 @Path("/file")
 @Stateless
@@ -121,13 +124,12 @@ public class FileRESTService extends RESTService {
 		String subPath =  getSubdirForId(id) + File.separator;
 		// Create if it does not exist
 		new File(savePath + File.separator + subPath).mkdirs();
-
 		
 		return subPath + File.separator + prefix + "-" + id + extension;
 	}
 	
 	
-	public FileBody uploadFile(HttpServletRequest request, FileHeader header) throws FileUploadException, IOException 
+	public FileBody uploadFile(User loggedOn, HttpServletRequest request, FileHeader header) throws FileUploadException, IOException 
 	{
 		FileBody body = null;
 		DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
@@ -143,9 +145,15 @@ public class FileRESTService extends RESTService {
 			} else {
 				body = new FileBody();
 				if (header==null) {
+					// Create
 					header = new FileHeader();
+					header.setOwner(loggedOn);
 					//header.setName(name);
 					//header.setDescription(description);
+				} else {
+					// Update
+					if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(header.getOwner().getId()))
+								throw new NoLogWebApplicationException(Status.FORBIDDEN);
 				}
 				header.addBody(body);
 				em.persist(header);
@@ -198,16 +206,14 @@ public class FileRESTService extends RESTService {
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedFileHeaderView.class})
 	public FileHeader get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+		User loggedOn = getLoggedOn(authToken);
 		FileHeader fh = (FileHeader) em.createQuery(
 			"from FileHeader fh left join fetch fh.bodies " +
 			"where fh.id=:id")
 			.setParameter("id", id)
 			.getSingleResult();
-//TODO: Security check		
-		/*User loggedOn = getLoggedOn();
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
-					&& cy.getUser()!=loggedOn.getId())
-			throw new WebApplicationException(Status.FORBIDDEN);*/
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(fh.getOwner().getId()))
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 		
 		return fh;
 	}
@@ -220,7 +226,8 @@ public class FileRESTService extends RESTService {
 	@JsonView({ DetailedFileBodyView.class })
 	public FileBody createFile(@HeaderParam(TOKEN_HEADER) String authToken, @Context HttpServletRequest request) throws FileUploadException, IOException 
 	{
-		return uploadFile(request, null);
+		User loggedOn = getLoggedOn(authToken);
+		return uploadFile(loggedOn, request, null);
 	}
 	
 	
@@ -231,8 +238,9 @@ public class FileRESTService extends RESTService {
 	@JsonView({ DetailedFileBodyView.class })
 	public FileBody updateBody(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long headerId, @Context HttpServletRequest request) throws FileUploadException, IOException 
 	{
+		User loggedOn = getLoggedOn(authToken);
 		FileHeader fh = (FileHeader) em.find(FileHeader.class, headerId);
-		return uploadFile(request, fh);
+		return uploadFile(loggedOn, request, fh);
 	}
 	
 	
