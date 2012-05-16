@@ -126,7 +126,7 @@ public final class FileHeader implements Serializable {
 		this.bodies = bodies;
 	}
 
-	@JsonView({ DetailedFileHeaderView.class })
+	@JsonView({ SimpleFileHeaderView.class })
 	public FileBody getCurrentBody() {
 		return currentBody;
 	}

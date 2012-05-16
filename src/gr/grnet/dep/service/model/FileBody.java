@@ -1,6 +1,6 @@
 package gr.grnet.dep.service.model;
 
-import gr.grnet.dep.service.model.FileHeader.DetailedFileHeaderView;
+import gr.grnet.dep.service.model.FileHeader.SimpleFileHeaderView;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -102,7 +102,7 @@ public final class FileBody implements Serializable {
 		this.id = id;
 	}
 
-	@JsonView({ DetailedFileHeaderView.class, SimpleFileBodyView.class })
+	@JsonView({ SimpleFileHeaderView.class, SimpleFileBodyView.class })
 	public int getVersion() {
 		return version;
 	}
@@ -118,7 +118,7 @@ public final class FileBody implements Serializable {
 		this.header = header;
 	}
 
-	@JsonView({ DetailedFileHeaderView.class, SimpleFileBodyView.class })
+	@JsonView({ SimpleFileHeaderView.class, SimpleFileBodyView.class })
 	public String getMimeType() {
 		return mimeType;
 	}
@@ -126,7 +126,7 @@ public final class FileBody implements Serializable {
 		this.mimeType = mimeType;
 	}
 
-	@JsonView({ DetailedFileHeaderView.class, SimpleFileBodyView.class })
+	@JsonView({ SimpleFileHeaderView.class, SimpleFileBodyView.class })
 	public String getOriginalFilename() {
 		return originalFilename;
 	}
@@ -142,7 +142,7 @@ public final class FileBody implements Serializable {
 		this.storedFilePath = storedFilePath;
 	}
 
-	@JsonView({ DetailedFileHeaderView.class, SimpleFileBodyView.class })
+	@JsonView({ SimpleFileHeaderView.class, SimpleFileBodyView.class })
 	public long getFileSize() {
 		return fileSize;
 	}
@@ -150,7 +150,7 @@ public final class FileBody implements Serializable {
 		this.fileSize = fileSize;
 	}
 	
-	@JsonView({ DetailedFileHeaderView.class, SimpleFileBodyView.class })
+	@JsonView({ SimpleFileHeaderView.class, SimpleFileBodyView.class })
 	public Date getDate() {
 		return date;
 	}
