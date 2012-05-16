@@ -1,14 +1,23 @@
 <h3>Login Form</h3>
-<div style="float:left; width:40%">
+<div class="box">
 	<form onsubmit="return false">
-		<label for="email">E-Mail:</label>
-		<input type="email" name="email" required/>
-		<label for="password">Password:</label>
-		<input type="password" name="password" required/>
-		<input type="submit" value="Login" name="submit" class="submit" />
+		<fieldset>
+			<p>
+				<label for="username">Username (email):</label>
+				<input type="email" name="username" />
+			</p>
+			<p>
+				<label for="password">Password:</label>
+				<input type="password" name="password" />
+			</p>
+		</fieldset>
+		<p>
+			<label for="submit">&nbsp;</label>
+			<a id="save" class="button">Login</a>
+		</p>
 	</form>
 </div>
-<div style="float:left; width:60%">
+<div class="box">
 	<p>Login Form for ..... lorem ipsum dolor sit amet, consectetuer
 	adipiscing elit. Donec molestie. Sed aliquam sem ut arcu. Phasellus
 	sollicitudin. Vestibulum condimentum facilisis nulla. In hac habitasse

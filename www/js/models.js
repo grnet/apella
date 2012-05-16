@@ -1,6 +1,8 @@
 // User
-window.User = Backbone.Model.extend({
-	url : "/dep/rest/user",
+App.User = Backbone.Model.extend({
+	url : function() {
+		return "/dep/rest/user" + (this.id ? "/" + this.id : "");
+	},
 	defaults : {
 		"id" : undefined,
 		"username" : undefined,
@@ -20,10 +22,22 @@ window.User = Backbone.Model.extend({
 			"phoneNumber" : ""
 		},
 		"roles" : []
+	},
+	parse : function(resp, xhr) {
+		// This is the only place we have access to xhr - response object
+		var authToken = xhr.getResponseHeader("X-Auth-Token");
+		if (authToken) {
+			$.ajaxSetup({
+				headers : {
+					"X-Auth-Token" : authToken
+				}
+			});
+		}
+		return resp;
 	}
 });
 
-User.prototype.verify = function(options) {
+App.User.prototype.verify = function(options) {
 	options = options ? _.clone(options) : {};
 	var model = this;
 	var success = options.success;
@@ -39,7 +53,7 @@ User.prototype.verify = function(options) {
 	return (this.sync || Backbone.sync).call(this, 'verify', this, options);
 };
 
-User.prototype.login = function(key, value, options) {
+App.User.prototype.login = function(key, value, options) {
 	options = options ? _.clone(options) : {};
 	var model = this;
 	var success = options.success;
@@ -52,7 +66,7 @@ User.prototype.login = function(key, value, options) {
 		}
 	};
 	options.error = Backbone.wrapError(options.error, model, options);
-
+	
 	var attrs, current;
 	// Handle both `("key", value)` and `({key: value})` -style calls.
 	if (_.isObject(key) || key == null) {
@@ -63,7 +77,7 @@ User.prototype.login = function(key, value, options) {
 		attrs[key] = value;
 	}
 	options = options ? _.clone(options) : {};
-
+	
 	// If we're "wait"-ing to set changed attributes, validate early.
 	if (options.wait) {
 		if (!this._validate(attrs, options)) {
@@ -71,7 +85,7 @@ User.prototype.login = function(key, value, options) {
 		}
 		current = _.clone(this.attributes);
 	}
-
+	
 	// Regular saves `set` attributes before persisting to the server.
 	var silentOptions = _.extend({}, options, {
 		silent : true
@@ -100,21 +114,21 @@ User.prototype.login = function(key, value, options) {
 	};
 	// Finish configuring and sending the Ajax request.
 	options.error = Backbone.wrapError(options.error, model, options);
-
+	
 	var xhr = this.sync.call(this, 'login', this, options);
-
+	
 	if (options.wait) {
 		this.set(current, silentOptions);
 	}
-
+	
 	return xhr;
 };
 
-User.prototype.sync = function(method, model, options) {
+App.User.prototype.sync = function(method, model, options) {
 	console.log('method = ' + method);
 	console.log(model.toJSON());
 	switch (method) {
-
+	
 	case "verify":
 		// Default options, unless specified.
 		options || (options = {});
@@ -125,7 +139,7 @@ User.prototype.sync = function(method, model, options) {
 			contentType : 'application/json',
 			data : JSON.stringify(model.toJSON())
 		};
-
+		
 		// Ensure that we have a URL.
 		if (!options.url) {
 			if (model.url) {
@@ -136,7 +150,7 @@ User.prototype.sync = function(method, model, options) {
 		}
 		// Make the request, allowing the user to override any Ajax options.
 		return $.ajax(_.extend(params, options));
-
+		
 	case "login":
 		// Default options, unless specified.
 		options || (options = {});
@@ -144,8 +158,7 @@ User.prototype.sync = function(method, model, options) {
 		var params = {
 			type : 'PUT',
 			dataType : 'json',
-			contentType : 'application/json',
-			data : JSON.stringify(model.toJSON())
+			data : model.toJSON()
 		};
 		// Ensure that we have a URL.
 		if (!options.url) {
@@ -162,3 +175,89 @@ User.prototype.sync = function(method, model, options) {
 		return (Backbone.sync).call(this, method, this, options);
 	}
 };
+
+// Role
+App.Role = Backbone.Model.extend({
+	url : function() {
+		return "/dep/rest/role" + (this.id ? "/" + this.id : "");
+	},
+	defaults : {
+		// Common Fields
+		"id" : undefined,
+		"discriminator" : undefined,
+		"user" : undefined,
+		// Specific Fields
+		"institution" : undefined,
+		"department" : undefined,
+		"position" : undefined,
+		"rank" : undefined,
+		"subject" : undefined,
+		"fek" : undefined,
+		"fekSubject" : undefined,
+		"manager" : undefined,
+		"ministry" : undefined,
+		// Files:
+		"fekFile" : undefined,
+		"cv" : undefined,
+		"identity" : undefined,
+		"military1599" : undefined,
+	// "degrees" : [],
+	// "publications" : [],
+	}
+});
+
+App.Roles = Backbone.Collection.extend({
+	model : App.Role,
+	user : undefined,
+	url : function() {
+		return "/dep/rest/role" + (this.user ? "?user=" + this.user : "");
+	}
+});
+
+// File
+App.File = Backbone.Model.extend({
+	url : undefined,
+	
+	defaults : {
+		"id" : undefined,
+		"name" : undefined,
+		"description" : undefined,
+		"currentBody" : {
+			"id" : undefined,
+			"mimeType" : undefined,
+			"originalFilename" : undefined,
+			"storedFilePath" : undefined,
+			"fileSize" : undefined,
+			"date" : undefined
+		}
+	}
+});
+
+App.Institution = Backbone.Model.extend({
+	url : "/dep/rest/institution",
+	defaults : {
+		"id" : undefined,
+		"name" : undefined,
+	}
+});
+
+App.Institutions = Backbone.Collection.extend({
+	url : "/dep/rest/institution",
+	model : App.Institution
+});
+
+App.Department = Backbone.Model.extend({
+	url : "/dep/rest/department",
+	defaults : {
+		"id" : undefined,
+		"department" : undefined,
+		"school" : undefined,
+		"fullName" : undefined,
+		"institution" : undefined
+	}
+});
+
+App.Departments = Backbone.Collection.extend({
+	url : "/dep/rest/department",
+	model : App.Department
+});

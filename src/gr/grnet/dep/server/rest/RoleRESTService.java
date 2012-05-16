@@ -18,17 +18,20 @@ import javax.persistence.PersistenceContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.codehaus.jackson.map.annotate.JsonView;
+import org.jboss.resteasy.spi.NoLogWebApplicationException;
 
 @Path("/role")
 @Stateless
@@ -36,6 +39,15 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class RoleRESTService extends RESTService {
 
+	
+
+	@SuppressWarnings("unused")
+	@Inject
+	private Logger log;
+	
+	@PersistenceContext(unitName = "depdb")
+	private EntityManager em;
+	
 	
 	private static final Set<Pair> forbiddenPairs;
 	static {
@@ -85,15 +97,27 @@ public class RoleRESTService extends RESTService {
 		}	
 	}
 
-	
-	@PersistenceContext(unitName = "depdb")
-	private EntityManager em;
 
-	@SuppressWarnings("unused")
-	@Inject
-	private Logger log;
-	
-	
+	@GET
+	@JsonView({DetailedRoleView.class})
+	public Collection<Role> getAll(@HeaderParam(TOKEN_HEADER) String authToken, @QueryParam("user") Long userID) {
+		getLoggedOn(authToken);
+		if (userID != null) {
+			@SuppressWarnings("unchecked")
+			Collection<Role> roles = (Collection<Role>) em.createQuery(
+				"from Role r " +
+					"where r.user = :userID ")
+				.setParameter("userID", userID)
+				.getResultList();
+			for (Role r : roles) {
+				r.initializeCollections();
+			}
+			return roles;
+		} else {
+			throw new NoLogWebApplicationException(Status.BAD_REQUEST);
+		}
+	}
+
 	
 	private boolean isForbiddenPair(RoleDiscriminator first, RoleDiscriminator second) {
 		return forbiddenPairs.contains(new Pair(first, second))
@@ -111,19 +135,19 @@ public class RoleRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedRoleView.class})
-	public Role get(@PathParam("id") long id) {
-		User loggedOn = getLoggedOn();
+	public Role get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+		User loggedOn = getLoggedOn(authToken);
 		boolean roleBelongsToUser = false;
-		for (Role r: loggedOn.getRoles()) {
-			if (r.getId()==id) {
+		for (Role r : loggedOn.getRoles()) {
+			if (r.getId() == id) {
 				roleBelongsToUser = true;
 				break;
 			}
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
 					&& !roleBelongsToUser)
-			throw new WebApplicationException(Status.FORBIDDEN);
-		
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+
 		Role r = (Role) em.createQuery(
 			"from Role r where r.id=:id")
 			.setParameter("id", id)
@@ -132,15 +156,13 @@ public class RoleRESTService extends RESTService {
 		return r;
 	}
 
-	
 	@POST
 	@JsonView({DetailedRoleView.class})
-	public Role create(Role role) {
-		User loggedOn = getLoggedOn();
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
-					&& role.getUser()!=loggedOn.getId())
-			throw new WebApplicationException(Status.FORBIDDEN);
-		
+	public Role create(@HeaderParam(TOKEN_HEADER) String authToken, Role role) {
+		User loggedOn = getLoggedOn(authToken);
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && role.getUser() != loggedOn.getId()) {
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		}
 		if (isIncompatibleRole(role, loggedOn.getRoles())) {
 			throw new WebApplicationException(Response.status(Status.CONFLICT).
 						header("X-Error-Code", "incompatible.role").build());
@@ -149,43 +171,43 @@ public class RoleRESTService extends RESTService {
 		em.persist(role);
 		return role;
 	}
-	
-	
+
 	@PUT
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedRoleView.class})
-	public Role update(@PathParam("id") long id, Role role) {
+	public Role update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Role role) {
 		Role existingRole = em.find(Role.class, id);
 		if (existingRole == null) {
-			throw new WebApplicationException(Status.NOT_FOUND);
+			throw new NoLogWebApplicationException(Status.NOT_FOUND);
 		}
-	
-		User loggedOn = getLoggedOn();
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
-					&& existingRole.getUser()!=loggedOn.getId())
-			throw new WebApplicationException(Status.FORBIDDEN);
-		
+
+		User loggedOn = getLoggedOn(authToken);
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && existingRole.getUser() != loggedOn.getId()) {
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		}
 		Role r = existingRole.copyFrom(role);
-		
-		return get(r.getId());
+
+		return r;
 	}
-	
-	
+
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}")
-	public void delete(@PathParam("id") long id) {
-		Role existingRole = em.find(Role.class, id);
-		if (existingRole == null) {
-			throw new WebApplicationException(Status.NOT_FOUND);
-		}
-		
-		User loggedOn = getLoggedOn();
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
-					&& existingRole.getUser()!=loggedOn.getId())
-			throw new WebApplicationException(Status.FORBIDDEN);
+	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+		User loggedOn = getLoggedOn(authToken);
 
-		//Do Delete:
-		em.remove(existingRole);
+		Role role = em.find(Role.class, id);
+		// Validate:
+		if (role == null) {
+			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
+			&& role.getUser() != loggedOn.getId())
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+
+		// Delete:
+		User user = em.find(User.class, role.getUser());
+		user.removeRole(role);
+		em.remove(role);
 	}
-	
+
 }

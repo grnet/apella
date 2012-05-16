@@ -8,18 +8,29 @@
 
 <link rel="icon" href="images/favicon.gif" type="image/x-icon" />
 <link rel="shortcut icon" href="images/favicon.gif" type="image/x-icon" />
-<link rel="stylesheet" type="text/css" href="css/jquery-ui-1.8.18.custom.css" />
+<link rel="stylesheet" type="text/css" href="lib/jquery.ui/css/jquery-ui-1.8.18.custom.css" />
 <link rel="stylesheet" type="text/css" href="css/styles.css" />
 
-<script src="lib/jquery-1.7.1.js"></script>
-<script src="lib/jquery-ui-1.8.18.custom.js"></script>
-<script src="lib/underscore.js"></script>
-<script src="lib/backbone.js"></script>
-<script src="js/utils.js"></script>
-<script src="js/models.js"></script>
-<script src="js/views.js"></script>
-<script src="js/main.js"></script>
+<script type="text/javascript" src="lib/jquery-1.7.1.js"></script>
+<script type="text/javascript" src="lib/jquery.ui/jquery-ui-1.8.18.custom.js"></script>
+<script type="text/javascript" src="lib/jquery.validate.js"></script>
 
+<script src="lib/jquery.iframe-transport.js"></script>
+<script src="lib/jquery.fileupload.js"></script>
+
+<script type="text/javascript" src="lib/underscore.js"></script>
+<script type="text/javascript" src="lib/backbone.js"></script>
+<script type="text/javascript" src="js/utils.js"></script>
+<script type="text/javascript" src="js/main.js"></script>
+<script type="text/javascript" src="js/models.js"></script>
+<script type="text/javascript" src="js/views.js"></script>
+<script type="text/javascript">
+	$(document).ready(function() {
+		tpl.loadTemplates([ "login", "popup", "user", "role", "file" ], function() {
+			App.router = new App.Router();
+		});
+	});
+</script>
 </head>
 
 <body>

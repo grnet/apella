@@ -1,3 +1,11 @@
+/**************************
+* Palette
+* 9CC5C9 : Light Blur
+* D5544F : Orange
+* CDB599 : Sand
+* A08689 : Dark Purple
+*/
+
 /***************************************************
 			      Reset
 ***************************************************/
@@ -51,13 +59,9 @@ p {
 	margin-top: 3px;
 }
 
-a,p a {
-	text-decoration: underline;
-	color: white;
-}
-
-a: hover {
-	color: white;
+a {
+	color: #D5544F;
+	text-decoration: none;
 }
 
 h1,h2,h3,h4,h5,h6 {
@@ -168,6 +172,10 @@ h4 {
 	background-color: black;
 }
 
+#footer a {
+	color: #FFFFF;
+}
+
 #FooterOne,#FooterTwo,#FooterTree {
 	position: absolute;
 }
@@ -184,6 +192,21 @@ h4 {
 	left: 225px;
 	top: 26px;
 	color: white;
+}
+
+/***************************************************
+				       BOXES
+***************************************************/
+.sidebar {
+	float: left;
+	overflow: hidden;
+	margin-right: 5px;
+	border: 2px solid #FFFFFF;
+}
+
+.box {
+	float: left;
+	margin: 0px 5px 5px 5px;
 }
 
 /***************************************************
@@ -228,27 +251,51 @@ p.notice {
 	color: #FF0000
 }
 
-.button {
-	width: 66px;
-	height: 13px;
-	position: relative;
-	margin-top: 12px;
-	padding: 9px;
-	background-color: black;
+a.button {
 	display: inline-block;
-	color: white;
+	margin: 0px 2px;
+	padding: 2px 10px;
+	font-size: 14px;
+	background-color: #A08689;
+	color: #FFFFFF;
+	border-right: 2px solid #CDB599;
+	border-top: 1px solid #CDB599;
+	border-left: 1px solid #CDB599;
+	border-bottom: 2px solid #CDB599;
+}
+
+a.button:hover {
+	color: #000000;
 	cursor: pointer;
-	text-align: center;
-	text-decoration: none;
 }
 
-.button: hover {
-	background-color: #333333;
+a.button:active {
+	border-bottom: 1px solid #CDB599;
+	border-right: 1px solid #CDB599;
+	border-top: 2px solid #CDB599;
+	border-left: 2px solid #CDB599;
 }
 
-.button: active {
-	position: relative;
-	top: 1px;
+ul.list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	border: 1px solid #FFFFFF;
+}
+
+ul.list li {
+	margin: 0;
+	border-bottom: 1px solid #FFFFFF;
+}
+
+ul.list li a {
+	display: block;
+	padding: 5px;
+}
+
+ul.list li a:hover {
+	background-color: #D5544F;
+	color: #FFFFFF;
 }
 
 /***************************************************
@@ -259,8 +306,13 @@ form {
 	margin-top: 5px;
 }
 
+form p {
+	margin: 0px;
+	padding: 0px 5px;
+}
+
 form fieldset {
-	margin: 5px;
+	margin: 5px 0px;
 	padding: 5px;
 }
 
@@ -270,35 +322,30 @@ form legend {
 }
 
 form label {
-	float: left;
-	width: 15%;
-	text-align: right;
+	display: inline-block;
+	width: 96px;
 	font-weight: bold;
 }
 
 form label.error {
-	float: none;
+	background-color: #A08689;
+	padding: 1px 2px;
 	width: auto;
-	color: red;
+	color: white;
+	border: 2px solid #A08689;
+	border-radius: 2px;
 }
 
-form input {
-	width: 50%;
+form input, form select, form textarea {
+	display: inline-block;
+	width: 400px;
 	margin-left: 5px;
 	margin-right: 5px;
 	margin-bottom: 15px;
+	padding: 5px;
 	border: 1px solid #ccc;
 	outline: none;
 	border-radius: 5px;
-	font-size: 20px;
-}
-
-form input[type=submit] {
-	float: none;
-	width: 50%;
-	background : none;
-	padding: 10px;
-	background: none;
 }
 
 /***************************************************
