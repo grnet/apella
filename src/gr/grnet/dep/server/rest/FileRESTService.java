@@ -21,6 +21,7 @@ import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -196,7 +197,7 @@ public class FileRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedFileHeaderView.class})
-	public FileHeader get(@PathParam("id") long id) {
+	public FileHeader get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		FileHeader fh = (FileHeader) em.createQuery(
 			"from FileHeader fh left join fetch fh.bodies " +
 			"where fh.id=:id")
@@ -217,7 +218,7 @@ public class FileRESTService extends RESTService {
 	@Consumes("multipart/form-data")
 	@Produces({MediaType.APPLICATION_JSON})
 	@JsonView({ DetailedFileBodyView.class })
-	public FileBody createFile(@Context HttpServletRequest request) throws FileUploadException, IOException 
+	public FileBody createFile(@HeaderParam(TOKEN_HEADER) String authToken, @Context HttpServletRequest request) throws FileUploadException, IOException 
 	{
 		return uploadFile(request, null);
 	}
@@ -228,7 +229,7 @@ public class FileRESTService extends RESTService {
 	@Consumes("multipart/form-data")
 	@Produces({MediaType.APPLICATION_JSON})
 	@JsonView({ DetailedFileBodyView.class })
-	public FileBody updateBody(@PathParam("id") Long headerId, @Context HttpServletRequest request) throws FileUploadException, IOException 
+	public FileBody updateBody(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long headerId, @Context HttpServletRequest request) throws FileUploadException, IOException 
 	{
 		FileHeader fh = (FileHeader) em.find(FileHeader.class, headerId);
 		return uploadFile(request, fh);
