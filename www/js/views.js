@@ -53,32 +53,32 @@ App.UserRegistrationView = Backbone.View.extend({
 				address_country : "required"
 			},
 			messages : {
-				firstname : "Please enter your firstname",
-				lastname : "Please enter your lastname",
+				firstname : $.i18n.prop('validation_firstname'),
+				lastname : $.i18n.prop('validation_lastname'),
 				username : {
-					required : "Please enter a username",
-					minlength : "Your username must consist of at least 2 characters"
+					required : $.i18n.prop('validation_username'),
+					minlength : $.i18n.prop('validation_minlength', 2),
 				},
 				password : {
-					required : "Please provide a password",
-					minlength : "Your password must be at least 5 characters long"
+					required : $.i18n.prop('validation_password'),
+					minlength : $.i18n.prop('validation_minlength', 5)
 				},
 				confirm_password : {
-					required : "Please provide a password",
-					minlength : "Your password must be at least 5 characters long",
-					equalTo : "Please enter the same password as above"
+					required : $.i18n.prop('validation_password'),
+					minlength : $.i18n.prop('validation_minlength', 5),
+					equalTo : $.i18n.prop('validation_confirmpassword')
 				},
 				phoneNumber : {
-					required : "Please enter a phone number",
-					number : "Please enter only numbers",
-					minlength : "Phone number must be between 10 and 12 characters",
-					maxlength : "Phone number must be between 10 and 12 characters"
+					required : $.i18n.prop('validation_phone'),
+					number : $.i18n.prop('validation_number'),
+					minlength : $.i18n.prop('validation_minlength', 10),
+					maxlength : $.i18n.prop('validation_maxlength', 12)
 				},
-				address_street : "Please enter a street",
-				address_number : "Please enter an address",
-				address_zip : "Please enter a zip code",
-				address_city : "Please enter a city",
-				address_country : "Please enter a country"
+				address_street : $.i18n.prop('validation_street'),
+				address_number : $.i18n.prop('validation_address'),
+				address_zip : $.i18n.prop('validation_zip'),
+				address_city : $.i18n.prop('validation_city'),
+				address_country : $.i18n.prop('validation_country')
 			}
 		});
 		
@@ -186,12 +186,12 @@ App.LoginView = Backbone.View.extend({
 			},
 			messages : {
 				username : {
-					required : "Please enter a username",
-					minlength : "Your username must consist of at least 2 characters"
+					required : $.i18n.prop('validation_username'),
+					minlength : $.i18n.prop('validation_minlength', 2),
 				},
 				password : {
-					required : "Please provide a password",
-					minlength : "Your password must be at least 5 characters long"
+					required : $.i18n.prop('validation_password'),
+					minlength : $.i18n.prop('validation_minlength', 5)
 				}
 			}
 		});
@@ -291,9 +291,12 @@ App.PopupView = Backbone.View.extend({
 	},
 	
 	close : function() {
+		var self = this;
 		$('body').unbind('click.popup');
 		$('body').unbind('keypress.popup');
-		$(this.el).remove();
+		$(self.el).fadeOut('slow', function() {
+			$(self.el).remove();
+		});
 	}
 });
 
@@ -313,11 +316,10 @@ App.MenuView = Backbone.View.extend({
 	render : function(eventName) {
 		this.$el.empty();
 		// CREATE MENU BASED ON USER ROLES:
-		this.$el.append("<li><a href=\"\#\">ΗΟΜΕ</a>");
-		this.$el.append("<li><a href=\"\#profile\">PROFILE</a>");
-		this.$el.append("<li><a href=\"\#requests\">REQUESTS</a>");
+		this.$el.append("<li><a href=\"\#\">" + $.i18n.prop('menu_home') + "</a>");
+		this.$el.append("<li><a href=\"\#profile\">" + $.i18n.prop('menu_profile') + "</a>");
 		// Add Logout
-		this.$el.append("<li><a id=\"logout\" href=\"#\">LOGOUT</a>");
+		this.$el.append("<li><a id=\"logout\" href=\"#\">" + $.i18n.prop('menu_logout') + "</a>");
 		return this;
 	},
 	
@@ -393,30 +395,32 @@ App.UserView = Backbone.View.extend({
 				address_country : "required"
 			},
 			messages : {
-				firstname : "Please enter your firstname",
-				lastname : "Please enter your lastname",
+				firstname : $.i18n.prop('validation_firstname'),
+				lastname : $.i18n.prop('validation_lastname'),
 				username : {
-					required : "Please enter a username",
-					minlength : "Your username must consist of at least 2 characters"
+					required : $.i18n.prop('validation_username'),
+					minlength : $.i18n.prop('validation_minlength', 2),
 				},
 				password : {
-					minlength : "Your password must be at least 5 characters long"
+					required : $.i18n.prop('validation_password'),
+					minlength : $.i18n.prop('validation_minlength', 5)
 				},
 				confirm_password : {
-					minlength : "Your password must be at least 5 characters long",
-					equalTo : "Please enter the same password as above"
+					required : $.i18n.prop('validation_password'),
+					minlength : $.i18n.prop('validation_minlength', 5),
+					equalTo : $.i18n.prop('validation_confirmpassword')
 				},
 				phoneNumber : {
-					required : "Please enter a phone number",
-					number : "Please enter only numbers",
-					minlength : "Phone number must be between 10 and 12 characters",
-					maxlength : "Phone number must be between 10 and 12 characters"
+					required : $.i18n.prop('validation_phone'),
+					number : $.i18n.prop('validation_number'),
+					minlength : $.i18n.prop('validation_minlength', 10),
+					maxlength : $.i18n.prop('validation_maxlength', 12)
 				},
-				address_street : "Please enter a street",
-				address_number : "Please enter an address",
-				address_zip : "Please enter a zip code",
-				address_city : "Please enter a city",
-				address_country : "Please enter a country"
+				address_street : $.i18n.prop('validation_street'),
+				address_number : $.i18n.prop('validation_address'),
+				address_zip : $.i18n.prop('validation_zip'),
+				address_city : $.i18n.prop('validation_city'),
+				address_country : $.i18n.prop('validation_country')
 			}
 		});
 		
@@ -534,7 +538,7 @@ App.RoleListView = Backbone.View.extend({
 		_.each(_.filter(App.allowedRoles, function(discriminator) {
 			return true; // Do filtering here
 		}), function(discriminator) {
-			$("select[name='newRole']", self.$el).append("<option value='" + discriminator + "'>" + discriminator + "</option>");
+			$("select[name='newRole']", self.$el).append("<option value='" + discriminator + "'>" + $.i18n.prop(discriminator) + "</option>");
 		});
 		// Add existing roles
 		self.collection.each(function(role) {
@@ -589,9 +593,9 @@ App.RoleListItemView = Backbone.View.extend({
 	
 	render : function(eventName) {
 		if (this.model.get("id")) {
-			this.$el.html("<a href='#'>" + this.model.get("discriminator") + "_" + this.model.get("id") + "</a>");
+			this.$el.html("<a href='#'>" + $.i18n.prop(this.model.get("discriminator")) + "_" + this.model.get("id") + "</a>");
 		} else {
-			this.$el.html("<a href='#'>" + this.model.get("discriminator") + "*</a>");
+			this.$el.html("<a href='#'>" + $.i18n.prop(this.model.get("discriminator")) + "*</a>");
 		}
 		return this;
 	},
@@ -696,12 +700,12 @@ App.RoleView = Backbone.View.extend({
 					fekSubject : "required"
 				},
 				messages : {
-					institution : "Please select an institution",
-					rank : "Please enter your rank",
-					position : "Please enter your position",
-					subject : "Please enter your subject",
-					fek : "Please enter the fek",
-					fekSubject : "Please enter the subject of the fek"
+					institution : $.i18n.prop('validation_institution'),
+					rank : $.i18n.prop('validation_rank'),
+					position : $.i18n.prop('validation_position'),
+					subject : $.i18n.prop('validation_subject'),
+					fek : $.i18n.prop('validation_fek'),
+					fekSubject : $.i18n.prop('validation_fekSubject')
 				}
 			});
 			
@@ -715,10 +719,10 @@ App.RoleView = Backbone.View.extend({
 					subject : "required",
 				},
 				messages : {
-					institution : "Please enter your institution",
-					rank : "Please enter your rank",
-					position : "Please enter your position",
-					subject : "Please enter your subject",
+					institution : $.i18n.prop('validation_institution'),
+					rank : $.i18n.prop('validation_rank'),
+					position : $.i18n.prop('validation_position'),
+					subject : $.i18n.prop('validation_subject'),
 				}
 			});
 			break;
@@ -748,7 +752,7 @@ App.RoleView = Backbone.View.extend({
 					institution : "required"
 				},
 				messages : {
-					institution : "Please select an institution"
+					institution : $.i18n.prop('validation_institution')
 				}
 			});
 			break;
@@ -779,7 +783,7 @@ App.RoleView = Backbone.View.extend({
 					institution : "required"
 				},
 				messages : {
-					institution : "Please select an institution"
+					institution : $.i18n.prop('validation_institution'),
 				}
 			});
 			break;
@@ -789,7 +793,7 @@ App.RoleView = Backbone.View.extend({
 			App.departments.fetch({
 				success : function(collection, resp) {
 					collection.each(function(department) {
-						if (_.isObject(self.model.get("department")) && _.isEqual(institution.id, self.model.get("department").id)) {
+						if (_.isObject(self.model.get("department")) && _.isEqual(department.id, self.model.get("department").id)) {
 							$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "' selected>" + department.get("fullName") + "</option>");
 						} else {
 							$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "'>" + department.get("fullName") + "</option>");
@@ -810,7 +814,7 @@ App.RoleView = Backbone.View.extend({
 					department : "required"
 				},
 				messages : {
-					department : "Please select an institution"
+					department : $.i18n.prop('validation_department'),
 				}
 			});
 			break;
@@ -821,7 +825,7 @@ App.RoleView = Backbone.View.extend({
 					ministry : "required"
 				},
 				messages : {
-					ministry : "Please select your ministry"
+					ministry : $.i18n.prop('validation_ministry'),
 				}
 			});
 			break;
@@ -842,14 +846,17 @@ App.RoleView = Backbone.View.extend({
 				"id" : $('form select[name=institution]', this.el).val()
 			};
 			values.rank = {
+				"id" : self.model.has("rank") ? self.model.get("rank").id : undefined,
 				"name" : $('form textarea[name=rank]', this.el).val()
 			};
 			values.position = $('form input[name=position]', this.el).val();
 			values.subject = {
+				"id" : self.model.has("subject") ? self.model.get("subject").id : undefined,
 				"name" : $('form textarea[name=subject]', this.el).val()
 			};
-			values.fek = $('form textarea[name=fek]', this.el).val();
+			values.fek = $('form input[name=fek]', this.el).val();
 			values.fekSubject = {
+				"id" : self.model.has("fekSubject") ? self.model.get("fekSubject").id : undefined,
 				"name" : $('form textarea[name=fekSubject]', this.el).val()
 			};
 			break;
@@ -857,9 +864,11 @@ App.RoleView = Backbone.View.extend({
 			values.institution = $('form input[name=institution]', this.el).val();
 			values.position = $('form input[name=position]', this.el).val();
 			values.rank = {
+				"id" : self.model.has("rank") ? self.model.get("rank").id : undefined,
 				"name" : $('form textarea[name=rank]', this.el).val()
 			};
 			values.subject = {
+				"id" : self.model.has("subject") ? self.model.get("subject").id : undefined,
 				"name" : $('form textarea[name=subject]', this.el).val()
 			};
 			break;
@@ -990,9 +999,24 @@ App.FileView = Backbone.View.extend({
 			done : function(e, data) {
 				$("span#progress", self.$el).empty();
 				self.model.set(data.result);
+				
+				var popup = new App.PopupView({
+					type : "success",
+					message : "The file has been uploaded"
+				});
+				popup.show();
 			},
 			fail : function(e, data) {
+				console.log("UploadFile failed: ");
+				console.log(data);
 				$("span#progress", self.$el).empty();
+				
+				var popup = new App.PopupView({
+					type : "error",
+					message : "Error " + data.jqXHR.status + " " + data.jqXHR.statusText
+				});
+				popup.show();
+				
 			},
 			progress : function(e, data) {
 				var progress = parseInt(data.loaded / data.total * 100, 10);

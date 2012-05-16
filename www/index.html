@@ -13,6 +13,7 @@
 
 <script type="text/javascript" src="lib/jquery-1.7.1.js"></script>
 <script type="text/javascript" src="lib/jquery.ui/jquery-ui-1.8.18.custom.js"></script>
+<script type="text/javascript" src="lib/jquery.i18n.properties-1.0.9.js"></script>
 <script type="text/javascript" src="lib/jquery.validate.js"></script>
 
 <script src="lib/jquery.iframe-transport.js"></script>
@@ -27,7 +28,16 @@
 <script type="text/javascript">
 	$(document).ready(function() {
 		tpl.loadTemplates([ "login", "popup", "user", "role", "file" ], function() {
-			App.router = new App.Router();
+			console.log("Loaded templates");
+			jQuery.i18n.properties({
+				name : 'messages',
+				path : 'locale/',
+				mode : 'map',
+				callback : function() {
+					console.log("Loaded locales");
+					App.router = new App.Router();
+				}
+			});
 		});
 	});
 </script>

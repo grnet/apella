@@ -16,24 +16,25 @@ public class Department {
 	@Id
 	@GeneratedValue
 	private Long id;
-	
+
 	@SuppressWarnings("unused")
 	@Version
 	private int version;
-	
+
 	private String school;
 
 	@NotNull
 	@NotEmpty
 	private String department;
 
-	@ManyToOne(optional=true)
-	@JoinColumn(insertable=false, updatable=false)
+	@ManyToOne(optional = true)
+	@JoinColumn(insertable = false, updatable = false)
 	private Institution institution;
 
 	public Long getId() {
 		return id;
 	}
+
 	public void setId(Long id) {
 		this.id = id;
 	}
@@ -41,6 +42,7 @@ public class Department {
 	public String getSchool() {
 		return school;
 	}
+
 	public void setSchool(String sxoli) {
 		this.school = sxoli;
 	}
@@ -48,10 +50,10 @@ public class Department {
 	public String getDepartment() {
 		return department;
 	}
+
 	public void setDepartment(String tmima) {
 		this.department = tmima;
 	}
-
 
 	public Institution getInstitution() {
 		return institution;
@@ -60,17 +62,18 @@ public class Department {
 	///////////////////////////////////////////////////////////////
 
 	public String getFullName() {
-		StringBuilder sb = new StringBuilder(getDepartment());
-		if (getSchool() != null && getSchool().length() > 0) {
-			sb.append(", ").append(getSchool());
+		if (getDepartment() != null) {
+			StringBuilder sb = new StringBuilder(getDepartment());
+			if (getSchool() != null && getSchool().length() > 0) {
+				sb.append(", ").append(getSchool());
+			}
+			if (getInstitution() != null) {
+				sb.append(", ").append(getInstitution().getName());
+			}
+			return sb.toString();
+		} else {
+			return "";
 		}
-		if (getInstitution() != null) {
-			sb.append(", ").append(getInstitution().getName());
-		}
-
-		return sb.toString();
 	}
-
-	
 
 }

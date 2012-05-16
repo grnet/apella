@@ -19,23 +19,21 @@ public class InstitutionAssistant extends Role {
 	@Transient
 	private Logger logger;
 
-
-	@ManyToOne(optional=false)
+	@ManyToOne(optional = false)
 	private Institution institution;
 
-	@ManyToOne(optional=false)
+	@ManyToOne
 	private InstitutionManager manager;
-
 
 	public InstitutionAssistant() {
 		super();
 		setDiscriminator(RoleDiscriminator.INSTITUTION_ASSISTANT);
 	}
 
-
 	public Institution getInstitution() {
 		return institution;
 	}
+
 	public void setInstitution(Institution institution) {
 		this.institution = institution;
 	}
@@ -43,22 +41,22 @@ public class InstitutionAssistant extends Role {
 	public InstitutionManager getManager() {
 		return manager;
 	}
+
 	public void setManager(InstitutionManager manager) {
 		this.manager = manager;
 	}
 
-
 	////////////////////////////////////////////////////////////////////////////
-	
-	
+
 	@Override
 	public void initializeCollections() {
 	}
 
-
 	@Override
 	public Role copyFrom(Role otherRole) {
+		InstitutionAssistant ia = (InstitutionAssistant) otherRole;
+		this.setInstitution(ia.getInstitution());
+		this.setManager(ia.getManager());
 		return this;
-	}   
-
+	}
 }

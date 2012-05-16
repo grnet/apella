@@ -3,6 +3,7 @@ package gr.grnet.dep.service.model;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
+import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
@@ -22,18 +23,15 @@ public class ProfessorDomestic extends Professor {
 	@ManyToOne(optional = false)
 	private Institution institution;
 
-	@ManyToOne(optional = false)
-	private Department department;
-
-	@ManyToOne(optional = false)
+	@ManyToOne(optional = false, cascade = CascadeType.ALL)
 	private Rank rank;
 
-	@ManyToOne(optional = false)
+	@ManyToOne(optional = false, cascade = CascadeType.ALL)
 	private Subject subject;
 
 	private String fek;
 
-	@ManyToOne(optional = false)
+	@ManyToOne(optional = false, cascade = CascadeType.ALL)
 	private Subject fekSubject;
 
 	@ManyToOne
@@ -42,14 +40,6 @@ public class ProfessorDomestic extends Professor {
 	public ProfessorDomestic() {
 		super();
 		setDiscriminator(RoleDiscriminator.PROFESSOR_DOMESTIC);
-	}
-
-	public Department getDepartment() {
-		return department;
-	}
-
-	public void setDepartment(Department department) {
-		this.department = department;
 	}
 
 	public Rank getRank() {
@@ -84,6 +74,22 @@ public class ProfessorDomestic extends Professor {
 		this.fekFile = fekFile;
 	}
 
+	public Institution getInstitution() {
+		return institution;
+	}
+
+	public void setInstitution(Institution institution) {
+		this.institution = institution;
+	}
+
+	public Subject getFekSubject() {
+		return fekSubject;
+	}
+
+	public void setFekSubject(Subject fekSubject) {
+		this.fekSubject = fekSubject;
+	}
+
 	////////////////////////////////////////////////////////////////////////////
 
 	@Override
@@ -93,7 +99,12 @@ public class ProfessorDomestic extends Professor {
 	@Override
 	public Role copyFrom(Role otherRole) {
 		ProfessorDomestic pd = (ProfessorDomestic) otherRole;
+		setInstitution(pd.getInstitution());
+		setPosition(pd.getPosition());
+		getRank().setName(pd.getRank().getName());
+		getSubject().setName(pd.getSubject().getName());
 		setFek(pd.getFek());
+		getFekSubject().setName(pd.getFekSubject().getName());
 		return this;
 	}
 

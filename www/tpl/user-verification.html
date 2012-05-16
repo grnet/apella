@@ -1,11 +1,11 @@
-<h3>Verification Form</h3>
+<h3><%= $.i18n.prop('VerificationForm') %></h3>
 <div style="float: left; width: 40%">
 	<ul>
-		<li>E-Mail: <%= email %> </li>
-		<li>Name: <%= firstname %> </li>
-		<li>Surname: <%= lastname %> </li>
+		<li><%= $.i18n.prop('EMail') %>: <%= email %> </li>
+		<li><%= $.i18n.prop('Name') %>: <%= firstname %> </li>
+		<li><%= $.i18n.prop('Surname') %>: <%= lastname %> </li>
 	</ul>
 </div>
 <aside style="float: left; width: 60%">
-	<p>Verification INFO:  ..... lorem ipsum dolor sit amet, consectetuer adipiscing elit. Donec molestie. Sed aliquam sem ut arcu. Phasellus sollicitudin. Vestibulum condimentum facilisis nulla. In hac habitasse platea dictumst. Nulla nonummy.</p>
+	<p><%= $.i18n.prop('Instructions_Verification') %></p>
 </aside>

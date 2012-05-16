@@ -97,9 +97,9 @@ public class RoleRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && existingRole.getUser() != loggedOn.getId()) {
 			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 		}
-		Role r = existingRole.copyFrom(role);
 
-		return r;
+		existingRole = existingRole.copyFrom(role);
+		return existingRole;
 	}
 
 	@DELETE

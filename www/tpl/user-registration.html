@@ -1,62 +1,62 @@
-<h3>Registration Form</h3>
-<p>Registration Form for ..... lorem ipsum dolor sit amet, consectetuer adipiscing elit. Donec molestie. Sed aliquam sem ut arcu. Phasellus sollicitudin. Vestibulum condimentum facilisis nulla. In hac habitasse platea dictumst. Nulla nonummy.</p>
+<h3><%= $.i18n.prop('RegistrationForm') %></h3>
+<p><%= $.i18n.prop('Instructions_Registration') %></p>
 <p id="messages" class="notice"></p>
 <form onsubmit="return false">
 	<fieldset>
-		<legend>Account</legend>
+		<legend><%= $.i18n.prop('Account') %></legend>
 		<p>
-			<label for="username">Username (email):</label>
+			<label for="username"><%= $.i18n.prop('Username') %>:</label>
 			<input type="email" name="username" />
 		</p>
 		<p>
-			<label for="firstname">Name:</label>
+			<label for="firstname"><%= $.i18n.prop('Name') %>:</label>
 			<input type="text" name="firstname" />
 		</p>
 		<p>
-			<label for="lastname">Surname:</label>
+			<label for="lastname"><%= $.i18n.prop('Surname') %>:</label>
 			<input type="text" name="lastname" />
 		</p>
 		<p>
-			<label for="password">Password:</label>
+			<label for="password"><%= $.i18n.prop('Password') %>:</label>
 			<input type="password" name="password" />
 		</p>
 		<p>
-			<label for="confirm_password">Confirm Password:</label>
+			<label for="confirm_password"><%= $.i18n.prop('ConfirmPassword') %>:</label>
 			<input type="password" name="confirm_password" />
 		</p>
 	</fieldset>
 	<fieldset>
-		<legend>Contact Information</legend>
+		<legend><%= $.i18n.prop('ContactInformation') %></legend>
 		<p>
-			<label for="phoneNumber">Phone:</label>
+			<label for="phoneNumber"><%= $.i18n.prop('Phone') %>:</label>
 			<input type="text" name="phoneNumber" />
 		</p>
 	</fieldset>
 	<fieldset>
-		<legend>Address</legend>
+		<legend><%= $.i18n.prop('Address') %></legend>
 		<p>
-		<label for="address_street">Street:</label>
+		<label for="address_street"><%= $.i18n.prop('Street') %>:</label>
 		<input type="text" name="address_street" />
 		</p>
 		<p>
-		<label for="address_number">Street Number:</label>
+		<label for="address_number"><%= $.i18n.prop('StreetNumber') %>:</label>
 		<input type="text" name="address_number" />
 		</p>
 		<p>
-		<label for="address_zip">Zip:</label>
+		<label for="address_zip"><%= $.i18n.prop('Zip') %>:</label>
 		<input type="text" name="address_zip" />
 		</p>
 		<p>
-		<label for="address_city">City:</label>
+		<label for="address_city"><%= $.i18n.prop('City') %>:</label>
 		<input type="text" name="address_city" />
 		</p>
 		<p>
-		<label for="address_country">Country:</label>
+		<label for="address_country"><%= $.i18n.prop('Country') %>:</label>
 		<input type="text" name="address_country" />
 		</p>
 	</fieldset>
 	<p>
 		<label for="submit">&nbsp;</label>
-		<a id="save" class="button">Register</a>
+		<a id="save" class="button"><%= $.i18n.prop('btn_register') %></a>
 	</p>
 </form>

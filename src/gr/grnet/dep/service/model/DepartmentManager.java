@@ -19,35 +19,32 @@ public class DepartmentManager extends Role {
 	@Transient
 	private Logger logger;
 
-
-	@ManyToOne(optional=false)
+	@ManyToOne(optional = false)
 	private Department department;
-
 
 	public DepartmentManager() {
 		super();
 		setDiscriminator(RoleDiscriminator.DEPARTMENT_MANAGER);
 	}
 
-
 	public Department getDepartment() {
 		return department;
 	}
+
 	public void setDepartment(Department department) {
 		this.department = department;
 	}
 
-	
 	////////////////////////////////////////////////////////////////////////////
-	
 
 	@Override
 	public void initializeCollections() {
 	}
 
-
 	@Override
 	public Role copyFrom(Role otherRole) {
+		DepartmentManager dp = (DepartmentManager) otherRole;
+		this.setDepartment(dp.getDepartment());
 		return this;
 	}
 

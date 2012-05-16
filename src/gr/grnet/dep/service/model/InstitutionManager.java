@@ -12,43 +12,42 @@ import javax.persistence.Transient;
 @DiscriminatorValue("INSTITUTION_MANAGER")
 public class InstitutionManager extends Role {
 
-/** Default value included to remove warning. Remove or modify at will. **/
-   private static final long serialVersionUID = 1L;
-   
-   @Inject
-   @Transient
-   private Logger logger;
+	/** Default value included to remove warning. Remove or modify at will. **/
+	private static final long serialVersionUID = 1L;
 
+	@Inject
+	@Transient
+	private Logger logger;
 
-   @ManyToOne(optional=false)
-   private Institution institution;
+	@ManyToOne(optional = false)
+	private Institution institution;
 
-   
-   public InstitutionManager() {
-	   super();
+	public InstitutionManager() {
+		super();
 		setDiscriminator(RoleDiscriminator.INSTITUTION_MANAGER);
-   }
+	}
 
-   
-   public Institution getInstitution() {
+	public Institution getInstitution() {
 		return institution;
 	}
+
 	public void setInstitution(Institution institution) {
 		this.institution = institution;
 	}
 
-	
 	////////////////////////////////////////////////////////////////////////////
-	
 
 	@Override
 	public void initializeCollections() {
 	}
 
-
 	@Override
 	public Role copyFrom(Role otherRole) {
-		return this;
-	}   
-  
+		if (otherRole instanceof InstitutionManager) {
+			this.setInstitution(((InstitutionManager) otherRole).getInstitution());
+			return this;
+		}
+		return null;
+	}
+
 }

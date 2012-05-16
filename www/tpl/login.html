@@ -3,24 +3,21 @@
 	<form onsubmit="return false">
 		<fieldset>
 			<p>
-				<label for="username">Username (email):</label>
+				<label for="username"><%= $.i18n.prop('Username') %>:</label>
 				<input type="email" name="username" />
 			</p>
 			<p>
-				<label for="password">Password:</label>
+				<label for="password"><%= $.i18n.prop('Password') %>:</label>
 				<input type="password" name="password" />
 			</p>
 		</fieldset>
 		<p>
 			<label for="submit">&nbsp;</label>
-			<a id="save" class="button">Login</a>
+			<a id="save" class="button"><%= $.i18n.prop('Login') %></a>
 		</p>
 	</form>
 </div>
 <div class="box">
-	<p>Login Form for ..... lorem ipsum dolor sit amet, consectetuer
-	adipiscing elit. Donec molestie. Sed aliquam sem ut arcu. Phasellus
-	sollicitudin. Vestibulum condimentum facilisis nulla. In hac habitasse
-	platea dictumst. Nulla nonummy.</p>
+	<p><%= $.i18n.prop('Instructions_Login') %></p>
 	<p id="messages" class="notice"></p>
 </div>

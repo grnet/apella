@@ -3,6 +3,7 @@ package gr.grnet.dep.service.model;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
+import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
@@ -21,10 +22,10 @@ public class ProfessorForeign extends Professor {
 
 	private String institution;
 
-	@ManyToOne(optional = false)
+	@ManyToOne(optional = false, cascade = CascadeType.ALL)
 	private Rank rank;
 
-	@ManyToOne(optional = false)
+	@ManyToOne(optional = false, cascade = CascadeType.ALL)
 	private Subject subject;
 
 	public ProfessorForeign() {
@@ -64,8 +65,9 @@ public class ProfessorForeign extends Professor {
 	public Role copyFrom(Role otherRole) {
 		ProfessorForeign pf = (ProfessorForeign) otherRole;
 		setInstitution(pf.getInstitution());
-		setRank(pf.getRank());
-		setSubject(pf.getSubject());
+		setPosition(pf.getPosition());
+		getRank().setName(pf.getRank().getName());
+		getSubject().setName(pf.getSubject().getName());
 		return this;
 	}
 
