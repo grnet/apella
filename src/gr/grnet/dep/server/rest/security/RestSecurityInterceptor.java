@@ -50,7 +50,7 @@ public class RestSecurityInterceptor implements PreProcessInterceptor, AcceptedB
 		// It is UserRESTService
 		try {
 			// Allow UserRESTService.login method to pass through unauthenticated
-			Method loginMethod = UserRESTService.class.getMethod("login", new Class<?>[] {User.class});
+			Method loginMethod = UserRESTService.class.getMethod("login", new Class<?>[] {String.class, String.class});
 			// Allow UserRESTService.create method to pass through unauthenticated
 			Method createMethod = UserRESTService.class.getMethod("create", new Class<?>[] {User.class});
 			// Allow UserRESTService.verify method to pass through unauthenticated
