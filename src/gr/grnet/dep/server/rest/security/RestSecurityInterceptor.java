@@ -55,7 +55,12 @@ public class RestSecurityInterceptor implements PreProcessInterceptor, AcceptedB
 			Method createMethod = UserRESTService.class.getMethod("create", new Class<?>[] {User.class});
 			// Allow UserRESTService.verify method to pass through unauthenticated
 			Method verifyMethod = UserRESTService.class.getMethod("verify", new Class<?>[] {User.class});
-			if (method.equals(loginMethod) || method.equals(createMethod) || method.equals(verifyMethod)) return false;
+			
+			// These are for testing only. Comment out for production.
+			/*Method createFile = FileRESTService.class.getMethod("createFile", new Class<?>[] {HttpServletRequest.class});
+			Method updateFile = FileRESTService.class.getMethod("updateBody", new Class<?>[] {Long.class, HttpServletRequest.class});*/
+			
+			if (method.equals(loginMethod) || method.equals(createMethod) || method.equals(verifyMethod) ) return false;
 		} catch (SecurityException e) {
 			logger.log(Level.SEVERE, "", e);
 		} catch (NoSuchMethodException e) {

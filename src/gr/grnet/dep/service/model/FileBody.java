@@ -1,5 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.FileHeader.DetailedFileHeaderView;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.logging.Logger;
@@ -13,13 +15,26 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.persistence.Version;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+
+import org.codehaus.jackson.map.annotate.JsonView;
 
 /**
- * The mutable part of the structure of a file on the GSS service.
+ * The mutable part of the structure of a file.
  */
 @Entity
+@XmlRootElement
 public final class FileBody implements Serializable {
 	
+	// define 2 json views
+	public static interface SimpleFileBodyView {
+	}; // shows a summary view of a FileHeader/FileBody
+
+	public static interface DetailedFileBodyView extends SimpleFileBodyView {
+	};
+	
+	@SuppressWarnings("unused")
 	@Inject
 	@Transient
 	private Logger logger;
@@ -87,6 +102,7 @@ public final class FileBody implements Serializable {
 		this.id = id;
 	}
 
+	@JsonView({ DetailedFileHeaderView.class, SimpleFileBodyView.class })
 	public int getVersion() {
 		return version;
 	}
@@ -94,6 +110,7 @@ public final class FileBody implements Serializable {
 		this.version = version;
 	}
 
+	@JsonView({ DetailedFileBodyView.class })
 	public FileHeader getHeader() {
 		return header;
 	}
@@ -101,6 +118,7 @@ public final class FileBody implements Serializable {
 		this.header = header;
 	}
 
+	@JsonView({ DetailedFileHeaderView.class, SimpleFileBodyView.class })
 	public String getMimeType() {
 		return mimeType;
 	}
@@ -108,6 +126,7 @@ public final class FileBody implements Serializable {
 		this.mimeType = mimeType;
 	}
 
+	@JsonView({ DetailedFileHeaderView.class, SimpleFileBodyView.class })
 	public String getOriginalFilename() {
 		return originalFilename;
 	}
@@ -115,6 +134,7 @@ public final class FileBody implements Serializable {
 		this.originalFilename = originalFilename;
 	}
 
+	@XmlTransient
 	public String getStoredFilePath() {
 		return storedFilePath;
 	}
@@ -122,6 +142,7 @@ public final class FileBody implements Serializable {
 		this.storedFilePath = storedFilePath;
 	}
 
+	@JsonView({ DetailedFileHeaderView.class, SimpleFileBodyView.class })
 	public long getFileSize() {
 		return fileSize;
 	}
@@ -129,6 +150,7 @@ public final class FileBody implements Serializable {
 		this.fileSize = fileSize;
 	}
 	
+	@JsonView({ DetailedFileHeaderView.class, SimpleFileBodyView.class })
 	public Date getDate() {
 		return date;
 	}

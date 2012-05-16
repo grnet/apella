@@ -1,5 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.FileBody.DetailedFileBodyView;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,12 +15,25 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Version;
+import javax.xml.bind.annotation.XmlRootElement;
+
+import org.codehaus.jackson.map.annotate.JsonView;
 
 /**
- * The immutable part of the structure of a file on the GSS service.
+ * The immutable part of the structure of a file.
  */
 @Entity
+@XmlRootElement
 public final class FileHeader implements Serializable {
+	
+	
+	// define 2 json views
+	public static interface SimpleFileHeaderView {
+	}; // shows a summary view of a FileHeader/FileBody
+
+	public static interface DetailedFileHeaderView extends SimpleFileHeaderView {
+	};
+	
 
 	/**
 	 * The persistence ID of the object.
@@ -71,6 +86,7 @@ public final class FileHeader implements Serializable {
 		return id;
 	}
 
+	@JsonView({ SimpleFileHeaderView.class })
 	public String getName() {
 		return name;
 	}
@@ -78,6 +94,7 @@ public final class FileHeader implements Serializable {
 		this.name = name;
 	}
 	
+	@JsonView({ SimpleFileHeaderView.class, DetailedFileBodyView.class })
 	public String getDescription() {
 		return description;
 	}
@@ -85,6 +102,7 @@ public final class FileHeader implements Serializable {
 		this.description = description;
 	}
 	
+	@JsonView({ SimpleFileHeaderView.class, DetailedFileBodyView.class })
 	public boolean isDeleted() {
 		return deleted;
 	}
@@ -92,6 +110,7 @@ public final class FileHeader implements Serializable {
 		this.deleted = deleted;
 	}
 	
+	@JsonView({ DetailedFileHeaderView.class })
 	public List<FileBody> getBodies() {
 		return bodies;
 	}
@@ -99,6 +118,7 @@ public final class FileHeader implements Serializable {
 		this.bodies = bodies;
 	}
 
+	@JsonView({ DetailedFileHeaderView.class })
 	public FileBody getCurrentBody() {
 		return currentBody;
 	}
