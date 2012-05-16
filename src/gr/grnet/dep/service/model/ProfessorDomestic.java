@@ -19,9 +19,6 @@ public class ProfessorDomestic extends Professor {
    @Transient
    private Logger logger;
    
-
-   @ManyToOne(optional=false)
-   private Department department;
    
    @ManyToOne(optional=false)
    private Rank rank;
@@ -41,13 +38,6 @@ public class ProfessorDomestic extends Professor {
 	   setDiscriminator(RoleDiscriminator.PROFESSOR_DOMESTIC);
    }
 
-
-	public Department getDepartment() {
-		return department;
-	}
-	public void setDepartment(Department department) {
-		this.department = department;
-	}
 
 	public Rank getRank() {
 		return rank;

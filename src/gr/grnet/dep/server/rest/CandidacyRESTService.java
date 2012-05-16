@@ -1,11 +1,8 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.service.model.Candidacy;
-import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
-import gr.grnet.dep.service.model.Candidacy.SimpleCandidacyView;
 import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
