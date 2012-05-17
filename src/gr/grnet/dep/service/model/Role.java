@@ -17,7 +17,6 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.annotate.JsonSubTypes;
 import org.codehaus.jackson.annotate.JsonTypeInfo;
@@ -43,18 +42,16 @@ public abstract class Role implements Serializable {
 
 	/** Default value included to remove warning. Remove or modify at will. **/
 	private static final long serialVersionUID = 1L;
-	
-	
+
 	// define 3 json views
 	public static interface IdRoleView {
 	}; // shows only id view of a Role
-	
+
 	public static interface SimpleRoleView extends IdRoleView {
 	}; // shows a summary view of a Role
 
 	public static interface DetailedRoleView extends SimpleRoleView {
 	};
-	
 
 	public enum RoleDiscriminator {
 		PROFESSOR_DOMESTIC,
@@ -84,7 +81,7 @@ public abstract class Role implements Serializable {
 	private RoleDiscriminator discriminator;
 
 	// Inverse to User
-	@Basic(optional=false)
+	@Basic(optional = false)
 	@Column(name = "user_id")
 	private Long user;
 
@@ -96,7 +93,7 @@ public abstract class Role implements Serializable {
 		this.id = id;
 	}
 
-	@JsonView({ SimpleRoleView.class })
+	@JsonView({SimpleRoleView.class})
 	public RoleDiscriminator getDiscriminator() {
 		return discriminator;
 	}
@@ -105,7 +102,7 @@ public abstract class Role implements Serializable {
 		this.discriminator = discriminator;
 	}
 
-	@JsonView({ SimpleRoleView.class })
+	@JsonView({SimpleRoleView.class})
 	public Long getUser() {
 		return user;
 	}
@@ -113,12 +110,11 @@ public abstract class Role implements Serializable {
 	public void setUser(Long user) {
 		this.user = user;
 	}
-	
-	
+
 	//////////////////////////////////////////////////////////
-	
-	public abstract void initializeCollections() ;
-	
-	public abstract Role copyFrom(Role otherRole) ;
+
+	public abstract void initializeCollections();
+
+	public abstract Role copyFrom(Role otherRole);
 
 }

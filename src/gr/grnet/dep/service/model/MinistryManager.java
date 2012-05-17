@@ -21,33 +21,28 @@ public class MinistryManager extends Role {
 	@Transient
 	private Logger logger;
 
-
 	@NotNull
 	@NotEmpty
 	private String ministry;
-
 
 	public MinistryManager() {
 		super();
 		setDiscriminator(RoleDiscriminator.MINISTRY_MANAGER);
 	}
 
-
 	public String getMinistry() {
 		return ministry;
 	}
+
 	public void setMinistry(String ministry) {
 		this.ministry = ministry;
 	}
 
-
 	////////////////////////////////////////////////////////////////////////////	
-	
-	
+
 	@Override
 	public void initializeCollections() {
 	}
-
 
 	@Override
 	public Role copyFrom(Role otherRole) {
@@ -55,6 +50,5 @@ public class MinistryManager extends Role {
 		setMinistry(mm.getMinistry());
 		return this;
 	}
-
 
 }

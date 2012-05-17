@@ -72,7 +72,6 @@ public class RegisterForeignMembership implements Serializable {
 	@JoinColumn(name = "professorForeign_id", insertable = false, updatable = false)
 	private ProfessorForeign professor;
 
-	
 	public RegisterForeignMembership() {
 	}
 
@@ -82,7 +81,6 @@ public class RegisterForeignMembership implements Serializable {
 		this.id.register_id = rd.getId();
 		this.id.professor_id = pd.getId();
 	}
-
 
 	@Override
 	public int hashCode() {
@@ -104,6 +102,7 @@ public class RegisterForeignMembership implements Serializable {
 	public RegisterForeign getRegister() {
 		return register;
 	}
+
 	public void setRegister(RegisterForeign register) {
 		this.register = register;
 	}
@@ -111,9 +110,9 @@ public class RegisterForeignMembership implements Serializable {
 	public ProfessorForeign getProfessor() {
 		return professor;
 	}
+
 	public void setProfessor(ProfessorForeign professor) {
 		this.professor = professor;
 	}
 
-	
 }

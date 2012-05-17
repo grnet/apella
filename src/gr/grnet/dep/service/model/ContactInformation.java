@@ -17,28 +17,29 @@ public class ContactInformation {
 	@Embedded
 	@NotNull
 	private Address address = new Address();
-	
+
 	@NotNull
 	@NotEmpty
 	@Email
 	private String email;
-	
+
 	@NotNull
 	@Size(min = 10, max = 12)
 	@Digits(fraction = 0, integer = 12)
 	private String phoneNumber;
 
-	
 	public Address getAddress() {
 		return address;
 	}
+
 	public void setAddress(Address address) {
 		this.address = address;
 	}
-	
+
 	public String getEmail() {
 		return email;
 	}
+
 	public void setEmail(String email) {
 		this.email = email;
 	}
@@ -46,9 +47,9 @@ public class ContactInformation {
 	public String getPhoneNumber() {
 		return phoneNumber;
 	}
+
 	public void setPhoneNumber(String phoneNumber) {
 		this.phoneNumber = phoneNumber;
 	}
 
-   
 }

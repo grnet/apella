@@ -17,24 +17,24 @@ public class RecommendatoryCommittee {
 	@Id
 	@GeneratedValue
 	private Long id;
-	
+
 	@SuppressWarnings("unused")
 	@Version
 	private int version;
 
-	@ManyToOne(optional=false)
+	@ManyToOne(optional = false)
 	private Position position;
-	
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="recommendatoryCommittee")
+
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "recommendatoryCommittee")
 	private Set<RecommendatoryCommitteeMembership> members = new HashSet<RecommendatoryCommitteeMembership>();
 
 	@ManyToOne
 	private FileHeader recommendatoryReport;
-	
-	
+
 	public Long getId() {
 		return id;
 	}
+
 	public void setId(Long id) {
 		this.id = id;
 	}
@@ -42,23 +42,25 @@ public class RecommendatoryCommittee {
 	public Position getPosition() {
 		return position;
 	}
+
 	public void setPosition(Position position) {
 		this.position = position;
 	}
-	
+
 	public Set<RecommendatoryCommitteeMembership> getMembers() {
 		return members;
 	}
+
 	public void setMembers(Set<RecommendatoryCommitteeMembership> members) {
 		this.members = members;
 	}
-	
+
 	public FileHeader getRecommendatoryReport() {
 		return recommendatoryReport;
 	}
+
 	public void setRecommendatoryReport(FileHeader recommendatoryReport) {
 		this.recommendatoryReport = recommendatoryReport;
 	}
-
 
 }

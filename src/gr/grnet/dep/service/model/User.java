@@ -44,8 +44,11 @@ public class User implements Serializable {
 	/** Default value included to remove warning. Remove or modify at will. **/
 	private static final long serialVersionUID = 1L;
 
-	// define 2 json views
-	public static interface SimpleUserView {
+	// define 3 json views
+	public static interface IdUserView {
+	}; // shows an id-only view of a User
+
+	public static interface SimpleUserView extends IdUserView {
 	}; // shows a summary view of a User
 
 	public static interface DetailedUserView extends SimpleUserView {
@@ -108,6 +111,7 @@ public class User implements Serializable {
 		this.id = id;
 	}
 
+	@JsonView({SimpleUserView.class})
 	public String getUsername() {
 		return username;
 	}
@@ -116,6 +120,7 @@ public class User implements Serializable {
 		this.username = username;
 	}
 
+	@JsonView({SimpleUserView.class})
 	public BasicInformation getBasicInfo() {
 		return basicInfo;
 	}
@@ -124,6 +129,7 @@ public class User implements Serializable {
 		this.basicInfo = basicInfo;
 	}
 
+	@JsonView({SimpleUserView.class})
 	public ContactInformation getContactInfo() {
 		return contactInfo;
 	}
@@ -132,6 +138,7 @@ public class User implements Serializable {
 		this.contactInfo = contactInfo;
 	}
 
+	@XmlTransient
 	public String getPassword() {
 		return password;
 	}
@@ -149,6 +156,7 @@ public class User implements Serializable {
 		this.roles = roles;
 	}
 
+	@JsonView({SimpleUserView.class})
 	public boolean isActive() {
 		return active;
 	}
@@ -157,6 +165,7 @@ public class User implements Serializable {
 		this.active = active;
 	}
 
+	@JsonView({SimpleUserView.class})
 	public Date getRegistrationDate() {
 		return registrationDate;
 	}
@@ -174,6 +183,7 @@ public class User implements Serializable {
 		this.verificationNumber = verificationNumber;
 	}
 
+	@JsonView({SimpleUserView.class})
 	public Boolean getVerified() {
 		return verified;
 	}
@@ -182,6 +192,7 @@ public class User implements Serializable {
 		this.verified = verified;
 	}
 
+	@JsonView({SimpleUserView.class})
 	public Date getLastLoginDate() {
 		return lastLoginDate;
 	}
@@ -190,6 +201,7 @@ public class User implements Serializable {
 		this.lastLoginDate = lastLoginDate;
 	}
 
+	@XmlTransient
 	public String getAuthToken() {
 		return authToken;
 	}

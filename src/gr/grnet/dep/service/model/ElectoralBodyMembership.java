@@ -71,13 +71,12 @@ public class ElectoralBodyMembership implements Serializable {
 	@ManyToOne
 	@JoinColumn(name = "professor_id", insertable = false, updatable = false)
 	private Professor professor;
-	
+
 	private Boolean confirmedMembership;
-	
+
 	@ManyToOne
 	private FileHeader recommendatoryReport;
 
-	
 	public ElectoralBodyMembership() {
 	}
 
@@ -87,7 +86,6 @@ public class ElectoralBodyMembership implements Serializable {
 		this.id.electoralBody_id = eb.getId();
 		this.id.professor_id = p.getId();
 	}
-
 
 	@Override
 	public int hashCode() {
@@ -106,17 +104,18 @@ public class ElectoralBodyMembership implements Serializable {
 		return this.id.equals(that.id);
 	}
 
-	
 	public ElectoralBody getElectoralBody() {
 		return electoralBody;
 	}
+
 	public void setElectoralBody(ElectoralBody electoralBody) {
 		this.electoralBody = electoralBody;
 	}
-	
+
 	public Professor getProfessor() {
 		return professor;
 	}
+
 	public void setProfessor(Professor professor) {
 		this.professor = professor;
 	}
@@ -124,16 +123,17 @@ public class ElectoralBodyMembership implements Serializable {
 	public Boolean getConfirmedMembership() {
 		return confirmedMembership;
 	}
+
 	public void setConfirmedMembership(Boolean confirmedMembership) {
 		this.confirmedMembership = confirmedMembership;
-	}	
-	
+	}
+
 	public FileHeader getRecommendatoryReport() {
 		return recommendatoryReport;
 	}
+
 	public void setRecommendatoryReport(FileHeader recommendatoryReport) {
 		this.recommendatoryReport = recommendatoryReport;
 	}
 
-	
 }

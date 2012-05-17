@@ -17,21 +17,21 @@ public class CandidateCommittee {
 	@Id
 	@GeneratedValue
 	private Long id;
-	
+
 	@SuppressWarnings("unused")
 	@Version
 	private int version;
 
-	@ManyToOne(optional=false)
+	@ManyToOne(optional = false)
 	private Candidacy candidacy;
-	
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="candidateCommittee")
+
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "candidateCommittee")
 	private Set<CandidateCommitteeMembership> members = new HashSet<CandidateCommitteeMembership>();
 
-	
 	public Long getId() {
 		return id;
 	}
+
 	public void setId(Long id) {
 		this.id = id;
 	}
@@ -39,16 +39,17 @@ public class CandidateCommittee {
 	public Candidacy getCandidacy() {
 		return candidacy;
 	}
+
 	public void setCandidacy(Candidacy candidacy) {
 		this.candidacy = candidacy;
 	}
-	
+
 	public Set<CandidateCommitteeMembership> getMembers() {
 		return members;
 	}
+
 	public void setMembers(Set<CandidateCommitteeMembership> members) {
 		this.members = members;
 	}
-
 
 }

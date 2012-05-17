@@ -72,7 +72,6 @@ public class RecommendatoryCommitteeMembership implements Serializable {
 	@JoinColumn(name = "professor_id", insertable = false, updatable = false)
 	private Professor professor;
 
-	
 	public RecommendatoryCommitteeMembership() {
 	}
 
@@ -82,7 +81,6 @@ public class RecommendatoryCommitteeMembership implements Serializable {
 		this.id.recommendatoryCommittee_id = rc.getId();
 		this.id.professor_id = p.getId();
 	}
-
 
 	@Override
 	public int hashCode() {
@@ -101,10 +99,10 @@ public class RecommendatoryCommitteeMembership implements Serializable {
 		return this.id.equals(that.id);
 	}
 
-	
 	public RecommendatoryCommittee getRecommendatoryCommittee() {
 		return recommendatoryCommittee;
 	}
+
 	public void setRecommendatoryCommittee(RecommendatoryCommittee recommendatoryCommittee) {
 		this.recommendatoryCommittee = recommendatoryCommittee;
 	}
@@ -112,9 +110,9 @@ public class RecommendatoryCommitteeMembership implements Serializable {
 	public Professor getProfessor() {
 		return professor;
 	}
+
 	public void setProfessor(Professor professor) {
 		this.professor = professor;
 	}
 
-	
 }

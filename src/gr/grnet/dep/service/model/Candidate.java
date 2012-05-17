@@ -22,24 +22,22 @@ public class Candidate extends Role {
 
 	/** Default value included to remove warning. Remove or modify at will. **/
 	private static final long serialVersionUID = 1L;
-	
-   
+
 	@Inject
 	@Transient
 	private Logger logger;
 
-	
 	@ManyToOne
 	private FileHeader cv;
 
-	@OneToMany(cascade=CascadeType.ALL, orphanRemoval=true)
-	@JoinTable(name="Candidate_Degrees",
-	uniqueConstraints = {@UniqueConstraint(columnNames = "degrees_id")})
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinTable(name = "Candidate_Degrees",
+		uniqueConstraints = {@UniqueConstraint(columnNames = "degrees_id")})
 	private Set<FileHeader> degrees = new HashSet<FileHeader>();
 
-	@OneToMany(cascade=CascadeType.ALL, orphanRemoval=true)
-	@JoinTable(name="Candidate_Publications",
-	uniqueConstraints = {@UniqueConstraint(columnNames = "publications_id")})
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinTable(name = "Candidate_Publications",
+		uniqueConstraints = {@UniqueConstraint(columnNames = "publications_id")})
 	private Set<FileHeader> publications = new HashSet<FileHeader>();
 
 	@ManyToOne
@@ -48,73 +46,74 @@ public class Candidate extends Role {
 	@ManyToOne
 	private FileHeader military1599;
 
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="candidate")
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "candidate")
 	private Set<Candidacy> candidacies = new HashSet<Candidacy>();
-
 
 	public Candidate() {
 		super();
 		setDiscriminator(RoleDiscriminator.CANDIDATE);
 	}
 
-
-	@JsonView({ SimpleRoleView.class })
+	@JsonView({SimpleRoleView.class})
 	public FileHeader getCv() {
 		return cv;
 	}
+
 	public void setCv(FileHeader cv) {
 		this.cv = cv;
 	}
 
-	@JsonView({ DetailedRoleView.class })
+	@JsonView({DetailedRoleView.class})
 	public Set<FileHeader> getDegrees() {
 		return degrees;
 	}
+
 	public void setDegrees(Set<FileHeader> degrees) {
 		this.degrees = degrees;
 	}
 
-	@JsonView({ DetailedRoleView.class })
+	@JsonView({DetailedRoleView.class})
 	public Set<FileHeader> getPublications() {
 		return publications;
 	}
+
 	public void setPublications(Set<FileHeader> publications) {
 		this.publications = publications;
 	}
 
-	@JsonView({ SimpleRoleView.class })
+	@JsonView({SimpleRoleView.class})
 	public FileHeader getMilitary1599() {
 		return military1599;
 	}
+
 	public void setMilitary1599(FileHeader military1599) {
 		this.military1599 = military1599;
 	}
 
-	@JsonView({ SimpleRoleView.class })
+	@JsonView({SimpleRoleView.class})
 	public FileHeader getIdentity() {
 		return identity;
 	}
+
 	public void setIdentity(FileHeader identity) {
 		this.identity = identity;
 	}
 
-	@JsonView({ DetailedRoleView.class })
+	@JsonView({DetailedRoleView.class})
 	public Set<Candidacy> getCandidacies() {
 		return candidacies;
 	}
+
 	public void setCandidacies(Set<Candidacy> candidacies) {
 		this.candidacies = candidacies;
 	}
 
-	
 	///////////////////////////////////////////////////////////////////////////////
-	
-	
+
 	public void addCandidacy(Candidacy candidacy) {
 		this.candidacies.add(candidacy);
 		candidacy.setCandidate(this.getId());
 	}
-
 
 	@Override
 	public void initializeCollections() {
@@ -122,7 +121,6 @@ public class Candidate extends Role {
 		getDegrees().size();
 		getPublications().size();
 	}
-
 
 	@Override
 	public Role copyFrom(Role otherRole) {
@@ -133,5 +131,4 @@ public class Candidate extends Role {
 		return this;
 	}
 
-  
 }

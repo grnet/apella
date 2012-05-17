@@ -63,6 +63,7 @@ public class ProfessorForeign extends Professor {
 
 	@Override
 	public Role copyFrom(Role otherRole) {
+		super.copyFrom(otherRole);
 		ProfessorForeign pf = (ProfessorForeign) otherRole;
 		setInstitution(pf.getInstitution());
 		setPosition(pf.getPosition());

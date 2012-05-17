@@ -72,7 +72,6 @@ public class RegisterDomesticMembership implements Serializable {
 	@JoinColumn(name = "professorDomestic_id", insertable = false, updatable = false)
 	private ProfessorDomestic professor;
 
-	
 	public RegisterDomesticMembership() {
 	}
 
@@ -82,7 +81,6 @@ public class RegisterDomesticMembership implements Serializable {
 		this.id.register_id = rd.getId();
 		this.id.professor_id = pd.getId();
 	}
-
 
 	@Override
 	public int hashCode() {
@@ -101,10 +99,10 @@ public class RegisterDomesticMembership implements Serializable {
 		return this.id.equals(that.id);
 	}
 
-	
 	public RegisterDomestic getRegister() {
 		return register;
 	}
+
 	public void setRegister(RegisterDomestic register) {
 		this.register = register;
 	}
@@ -112,9 +110,9 @@ public class RegisterDomesticMembership implements Serializable {
 	public ProfessorDomestic getProfessor() {
 		return professor;
 	}
+
 	public void setProfessor(ProfessorDomestic professor) {
 		this.professor = professor;
 	}
-	
-	
+
 }

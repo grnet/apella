@@ -17,38 +17,40 @@ public class RegisterDomestic {
 	@Id
 	@GeneratedValue
 	private Long id;
-	
+
 	@SuppressWarnings("unused")
 	@Version
 	private int version;
-	
-	@ManyToOne(optional=false)
+
+	@ManyToOne(optional = false)
 	private Institution institution;
-	
-	@ManyToOne(optional=false)
+
+	@ManyToOne(optional = false)
 	private Subject subject;
-	
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="register")
+
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "register")
 	private Set<RegisterDomesticMembership> members = new HashSet<RegisterDomesticMembership>();
 
-	
 	public Long getId() {
 		return id;
 	}
+
 	public void setId(Long id) {
 		this.id = id;
 	}
-	
+
 	public Institution getInstitution() {
 		return institution;
 	}
+
 	public void setInstitution(Institution institution) {
 		this.institution = institution;
 	}
-	
+
 	public Subject getSubject() {
 		return subject;
 	}
+
 	public void setSubject(Subject subject) {
 		this.subject = subject;
 	}
@@ -56,9 +58,9 @@ public class RegisterDomestic {
 	public Set<RegisterDomesticMembership> getMembers() {
 		return members;
 	}
+
 	public void setMembers(Set<RegisterDomesticMembership> members) {
 		this.members = members;
 	}
-	
 
 }

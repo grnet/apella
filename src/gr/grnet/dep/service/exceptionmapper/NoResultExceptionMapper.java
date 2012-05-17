@@ -7,9 +7,9 @@ import javax.ws.rs.ext.Provider;
 
 @Provider
 public class NoResultExceptionMapper implements ExceptionMapper<NoResultException> {
-	
-   public Response toResponse(NoResultException e) {
-      return Response.status(Response.Status.NOT_FOUND).build();
-   }
-   
+
+	public Response toResponse(NoResultException e) {
+		return Response.status(Response.Status.NOT_FOUND).build();
+	}
+
 }

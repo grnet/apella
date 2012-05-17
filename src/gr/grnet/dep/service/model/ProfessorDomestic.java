@@ -20,7 +20,7 @@ public class ProfessorDomestic extends Professor {
 	@Transient
 	private Logger logger;
 
-	@ManyToOne(optional = false)
+	@ManyToOne(optional = false, cascade = CascadeType.ALL)
 	private Institution institution;
 
 	@ManyToOne(optional = false, cascade = CascadeType.ALL)
@@ -98,6 +98,7 @@ public class ProfessorDomestic extends Professor {
 
 	@Override
 	public Role copyFrom(Role otherRole) {
+		super.copyFrom(otherRole);
 		ProfessorDomestic pd = (ProfessorDomestic) otherRole;
 		setInstitution(pd.getInstitution());
 		setPosition(pd.getPosition());

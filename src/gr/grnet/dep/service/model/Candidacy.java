@@ -19,52 +19,51 @@ import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 public class Candidacy {
-	
+
 	// define 3 json views
 	public static interface IdCandidacyView {
 	}; // shows only id view of a Candidacy
-	
+
 	public static interface SimpleCandidacyView extends IdCandidacyView {
 	}; // shows a summary view of a Candidacy
 
 	public static interface DetailedCandidacyView extends SimpleCandidacyView {
 	};
-		
 
 	@Id
 	@GeneratedValue
 	private Long id;
-	
+
 	@SuppressWarnings("unused")
 	@Version
 	private int version;
-	
+
 	@NotNull
 	@Temporal(TemporalType.TIMESTAMP)
 	Date date;
 
 	// Inverse to User
-	@Basic(optional=false)
+	@Basic(optional = false)
 	@Column(name = "candidate_id")
 	private Long candidate;
 
 	// Inverse to Position
-	@Basic(optional=false)
+	@Basic(optional = false)
 	@Column(name = "position_id")
 	private Long position;
 
 	@ManyToMany
 	private Set<FileBody> files = new HashSet<FileBody>();
 
-	
 	public Long getId() {
 		return id;
 	}
-	
+
 	@JsonView(SimpleCandidacyView.class)
 	public Date getDate() {
 		return date;
 	}
+
 	public void setDate(Date date) {
 		this.date = date;
 	}
@@ -73,6 +72,7 @@ public class Candidacy {
 	public Long getCandidate() {
 		return candidate;
 	}
+
 	public void setCandidate(Long candidate) {
 		this.candidate = candidate;
 	}
@@ -81,6 +81,7 @@ public class Candidacy {
 	public Long getPosition() {
 		return position;
 	}
+
 	public void setPosition(Long position) {
 		this.position = position;
 	}
@@ -89,6 +90,7 @@ public class Candidacy {
 	public Set<FileBody> getFiles() {
 		return files;
 	}
+
 	public void setFiles(Set<FileBody> files) {
 		this.files = files;
 	}

@@ -71,11 +71,10 @@ public class CandidateCommitteeMembership implements Serializable {
 	@ManyToOne
 	@JoinColumn(name = "professor_id", insertable = false, updatable = false)
 	private Professor professor;
-	
+
 	@ManyToOne
 	private FileHeader report;
 
-	
 	public CandidateCommitteeMembership() {
 	}
 
@@ -85,7 +84,6 @@ public class CandidateCommitteeMembership implements Serializable {
 		this.id.candidateCommittee_id = cc.getId();
 		this.id.professor_id = p.getId();
 	}
-
 
 	@Override
 	public int hashCode() {
@@ -104,10 +102,10 @@ public class CandidateCommitteeMembership implements Serializable {
 		return this.id.equals(that.id);
 	}
 
-	
 	public CandidateCommittee getCandidateCommittee() {
 		return candidateCommittee;
 	}
+
 	public void setCandidateCommittee(CandidateCommittee candidateCommittee) {
 		this.candidateCommittee = candidateCommittee;
 	}
@@ -115,6 +113,7 @@ public class CandidateCommitteeMembership implements Serializable {
 	public Professor getProfessor() {
 		return professor;
 	}
+
 	public void setProfessor(Professor professor) {
 		this.professor = professor;
 	}
@@ -122,9 +121,9 @@ public class CandidateCommitteeMembership implements Serializable {
 	public FileHeader getReport() {
 		return report;
 	}
+
 	public void setReport(FileHeader report) {
 		this.report = report;
 	}
 
-	
 }

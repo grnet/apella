@@ -17,21 +17,21 @@ public class ElectoralBody {
 	@Id
 	@GeneratedValue
 	private Long id;
-	
+
 	@SuppressWarnings("unused")
 	@Version
 	private int version;
 
-	@ManyToOne(optional=false)
+	@ManyToOne(optional = false)
 	private Position position;
-	
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="electoralBody")
+
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "electoralBody")
 	private Set<ElectoralBodyMembership> members = new HashSet<ElectoralBodyMembership>();
 
-	
 	public Long getId() {
 		return id;
 	}
+
 	public void setId(Long id) {
 		this.id = id;
 	}
@@ -39,6 +39,7 @@ public class ElectoralBody {
 	public Position getPosition() {
 		return position;
 	}
+
 	public void setPosition(Position position) {
 		this.position = position;
 	}
@@ -46,9 +47,9 @@ public class ElectoralBody {
 	public Set<ElectoralBodyMembership> getMembers() {
 		return members;
 	}
+
 	public void setMembers(Set<ElectoralBodyMembership> members) {
 		this.members = members;
 	}
-
 
 }

@@ -10,5 +10,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="ear/lib/jackson-module-hibernate-0.7.1-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="ear/lib/commons-configuration-1.2.jar"/>
+	<classpathentry kind="lib" path="ear/lib/commons-fileupload-1.2.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
