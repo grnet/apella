@@ -216,12 +216,49 @@ public class RoleRESTService extends RESTService {
 		em.remove(role);
 	}
 
+	
+	@GET
+	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599}")
+	@JsonView({DetailedFileHeaderView.class})
+	public FileHeader getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("var") String var) 
+	{
+		FileHeader file = null;
+		User loggedOn = getLoggedOn(authToken);
+
+		Role role = em.find(Role.class, id);
+		// Validate:
+		if (role == null) {
+			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && role.getUser() != loggedOn.getId()) {
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		}
+
+		if ("fekFile".equals(var)) {
+			ProfessorDomestic professorDomestic = (ProfessorDomestic) role;
+			file = professorDomestic.getFekFile();
+		} else if ("cv".equals(var)) {
+			Candidate candidate = (Candidate) role;
+			file = candidate.getCv();
+		} else if ("identity".equals(var)) {
+			Candidate candidate = (Candidate) role;
+			file = candidate.getIdentity();
+		} else if ("military1599".equals(var)) {
+			Candidate candidate = (Candidate) role;
+			file = candidate.getMilitary1599();
+		}
+
+		if (file!=null) file.getBodies().size();
+		return file;
+	}
+	
+	
 	@POST
 	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599}")
 	@Consumes("multipart/form-data")
 	@Produces({MediaType.APPLICATION_JSON})
 	@JsonView({SimpleFileHeaderView.class})
-	public FileHeader cv(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("var") String var, @Context HttpServletRequest request) throws FileUploadException, IOException
+	public FileHeader postFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("var") String var, @Context HttpServletRequest request) throws FileUploadException, IOException
 	{
 		FileHeader file = null;
 		User loggedOn = getLoggedOn(authToken);
@@ -268,31 +305,9 @@ public class RoleRESTService extends RESTService {
 	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599}")
 	@JsonView({DetailedFileHeaderView.class})
 	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("var") String var) {
-		FileHeader file = null;
 		User loggedOn = getLoggedOn(authToken);
-
 		Role role = em.find(Role.class, id);
-		// Validate:
-		if (role == null) {
-			throw new NoLogWebApplicationException(Status.NOT_FOUND);
-		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && role.getUser() != loggedOn.getId()) {
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
-		}
-		
-		if ("fekFile".equals(var)) {
-			ProfessorDomestic professorDomestic = (ProfessorDomestic) role;
-			file = professorDomestic.getFekFile();
-		} else if ("cv".equals(var)) {
-			Candidate candidate = (Candidate) role;
-			file = candidate.getCv();
-		} else if ("identity".equals(var)) {
-			Candidate candidate = (Candidate) role;
-			file = candidate.getIdentity();
-		} else if ("military1599".equals(var)) {
-			Candidate candidate = (Candidate) role;
-			file = candidate.getMilitary1599();
-		}
+		FileHeader file = getFile(authToken, id, var);
 		
 		Response retv = deleteFileBody(loggedOn, file);
 		
