@@ -2,6 +2,7 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.FileHeader;
+import gr.grnet.dep.service.model.FileHeader.DetailedFileHeaderView;
 import gr.grnet.dep.service.model.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Role;
@@ -253,6 +254,65 @@ public class RoleRESTService extends RESTService {
 		}
 
 		return file;
+	}
+	
+	
+	/**
+	 * Deletes the last body of given file, if possible.
+	 * 
+	 * @param authToken
+	 * @param id
+	 * @return
+	 */
+	@DELETE
+	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599}")
+	@JsonView({DetailedFileHeaderView.class})
+	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("var") String var) {
+		FileHeader file = null;
+		User loggedOn = getLoggedOn(authToken);
+
+		Role role = em.find(Role.class, id);
+		// Validate:
+		if (role == null) {
+			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && role.getUser() != loggedOn.getId()) {
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		}
+		
+		if ("fekFile".equals(var)) {
+			ProfessorDomestic professorDomestic = (ProfessorDomestic) role;
+			file = professorDomestic.getFekFile();
+		} else if ("cv".equals(var)) {
+			Candidate candidate = (Candidate) role;
+			file = candidate.getCv();
+		} else if ("identity".equals(var)) {
+			Candidate candidate = (Candidate) role;
+			file = candidate.getIdentity();
+		} else if ("military1599".equals(var)) {
+			Candidate candidate = (Candidate) role;
+			file = candidate.getMilitary1599();
+		}
+		
+		Response retv = deleteFileBody(loggedOn, file);
+		
+		if (retv.getStatus()==Status.NO_CONTENT.getStatusCode()) {
+			// Break the relationship as well
+			if ("fekFile".equals(var)) {
+				ProfessorDomestic professorDomestic = (ProfessorDomestic) role;
+				professorDomestic.setFekFile(null);
+			} else if ("cv".equals(var)) {
+				Candidate candidate = (Candidate) role;
+				candidate.setCv(null);
+			} else if ("identity".equals(var)) {
+				Candidate candidate = (Candidate) role;
+				candidate.setIdentity(null);
+			} else if ("military1599".equals(var)) {
+				Candidate candidate = (Candidate) role;
+				candidate.setMilitary1599(null);
+			}
+		}
+		return retv;
 	}
 
 }

@@ -3,6 +3,7 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.service.model.FileBody;
 import gr.grnet.dep.service.model.FileHeader;
 import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.model.FileHeader.DetailedFileHeaderView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 
@@ -18,8 +19,14 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -28,6 +35,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.map.annotate.JsonView;
 import org.jboss.resteasy.spi.NoLogWebApplicationException;
 
 public class RESTService {
@@ -47,7 +55,7 @@ public class RESTService {
 
 	private static Logger staticLogger = Logger.getLogger(RESTService.class.getName());
 
-	private static String savePath;
+	static String savePath;
 
 	static {
 		try {
@@ -198,4 +206,56 @@ public class RESTService {
 		return header;
 	}
 
+	
+	/**
+	 * Deletes the last body of given file, if possible.
+	 * 
+	 * @param loggedOn
+	 * @param fh
+	 * @return
+	 */
+	Response deleteFileBody(User loggedOn, FileHeader fh) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(fh.getOwner().getId())) {
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		}
+
+		int size = fh.getBodies().size();
+		// Delete the file itself, if possible.
+		FileBody fb = fh.getCurrentBody();
+		logger.info("Attempting to delete FileBody id="+fb.getId()+" of FileHeader id="+fh.getId());
+		String fullPath = savePath + File.separator + fb.getStoredFilePath();
+		File file = new File(fullPath);
+		
+		fh.getBodies().remove(size-1);
+		fh.setCurrentBody(null);
+		try {
+			em.remove(fb);
+			em.flush();
+		}
+		catch (PersistenceException e) {
+			// Assume it's a constraint violation
+			logger.info("Could not delete FileBody id="+fb.getId()+". Constraint violation.");
+			return Response.status(Status.CONFLICT).
+				header("X-Error-Code", "file.in.use").build();
+		}
+		if (size>1) {
+			fh.setCurrentBody(fh.getBodies().get(size-2));
+		}
+		else {
+			em.remove(fh);
+		}
+		boolean deleted = file.delete();
+		if (!deleted) {
+			logger.log(Level.WARNING, "Could not delete file '"+fullPath+"'.");
+			// Do something? What?
+		}
+		if (size>1) {
+			logger.info("Deleted FileBody id="+fb.getId());
+			return Response.ok(fh).build();
+		}
+		else {
+			logger.info("Deleted FileBody id="+fb.getId()+" PLUS FileHeader id="+fh.getId());
+			return Response.noContent().build();
+		}
+	}
 }
