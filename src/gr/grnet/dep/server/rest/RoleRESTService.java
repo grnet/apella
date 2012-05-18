@@ -171,7 +171,7 @@ public class RoleRESTService extends RESTService {
 		}
 		if (isIncompatibleRole(role, loggedOn.getRoles())) {
 			throw new WebApplicationException(Response.status(Status.CONFLICT).
-				header("X-Error-Code", "incompatible.role").build());
+				header(ERROR_CODE_HEADER, "incompatible.role").build());
 		}
 
 		em.persist(role);

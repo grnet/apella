@@ -52,6 +52,8 @@ public class RESTService {
 	private static final String DEFAULT_MIME_TYPE = "application/octet-stream";
 
 	protected static final String TOKEN_HEADER = "X-Auth-Token";
+	
+	protected static final String ERROR_CODE_HEADER = "X-Error-Code";
 
 	private static Logger staticLogger = Logger.getLogger(RESTService.class.getName());
 
@@ -236,7 +238,7 @@ public class RESTService {
 			// Assume it's a constraint violation
 			logger.info("Could not delete FileBody id="+fb.getId()+". Constraint violation.");
 			return Response.status(Status.CONFLICT).
-				header("X-Error-Code", "file.in.use").build();
+				header(ERROR_CODE_HEADER, "file.in.use").build();
 		}
 		if (size>1) {
 			fh.setCurrentBody(fh.getBodies().get(size-2));

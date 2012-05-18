@@ -182,10 +182,10 @@ public class UserRESTService extends RESTService {
 					.entity(u)
 					.build();
 			} else {
-				return Response.status(Status.UNAUTHORIZED).header("X-Error-Code", "wrong.password").build();
+				return Response.status(Status.UNAUTHORIZED).header(ERROR_CODE_HEADER, "wrong.password").build();
 			}
 		} catch (NoResultException e) {
-			return Response.status(Status.UNAUTHORIZED).header("X-Error-Code", "wrong.username").build();
+			return Response.status(Status.UNAUTHORIZED).header(ERROR_CODE_HEADER, "wrong.username").build();
 		}
 	}
 
@@ -202,10 +202,10 @@ public class UserRESTService extends RESTService {
 				.getSingleResult();
 			// Validate
 			if (u.getVerified() != null && u.getVerified()) {
-				throw new NoLogWebApplicationException(Response.status(Status.FORBIDDEN).header("X-Error-Code", "already.verified").build());
+				throw new NoLogWebApplicationException(Response.status(Status.FORBIDDEN).header(ERROR_CODE_HEADER, "already.verified").build());
 			}
 			if (user.getVerificationNumber() == null || !user.getVerificationNumber().equals(u.getVerificationNumber())) {
-				throw new NoLogWebApplicationException(Response.status(Status.FORBIDDEN).header("X-Error-Code", "wrong.verification").build());
+				throw new NoLogWebApplicationException(Response.status(Status.FORBIDDEN).header(ERROR_CODE_HEADER, "wrong.verification").build());
 			}
 
 			// Verify
@@ -214,7 +214,7 @@ public class UserRESTService extends RESTService {
 
 			return u;
 		} catch (NoResultException e) {
-			throw new NoLogWebApplicationException(Response.status(Status.NOT_FOUND).header("X-Error-Code", "wrong.username").build());
+			throw new NoLogWebApplicationException(Response.status(Status.NOT_FOUND).header(ERROR_CODE_HEADER, "wrong.username").build());
 		}
 	}
 	
