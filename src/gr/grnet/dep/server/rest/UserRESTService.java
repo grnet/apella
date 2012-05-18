@@ -26,6 +26,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
@@ -99,7 +100,7 @@ public class UserRESTService extends RESTService {
 	public User create(User user) {
 		Set<Role> roles = user.getRoles();
 
-		user.setActive(Boolean.FALSE);
+		user.setActive(false);
 		user.setRegistrationDate(new Date());
 		user.setVerified(Boolean.FALSE);
 		user.setPassword(User.encodePassword(user.getPassword()));
@@ -166,7 +167,7 @@ public class UserRESTService extends RESTService {
 			User u = (User) em.createQuery(
 				"from User u " +
 					"left join fetch u.roles " +
-					"where u.active=true and u.username = :username")
+					"where u.active=true and u.verified=true and u.username = :username")
 				.setParameter("username", username)
 				.getSingleResult();
 
@@ -214,6 +215,30 @@ public class UserRESTService extends RESTService {
 			return u;
 		} catch (NoResultException e) {
 			throw new NoLogWebApplicationException(Response.status(Status.NOT_FOUND).header("X-Error-Code", "wrong.username").build());
+		}
+	}
+	
+	@PUT
+	@Path("/{id:[0-9][0-9]*}/activate")
+	@JsonView({DetailedUserView.class})
+	public User activate(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @QueryParam("active") Boolean active) {
+		User loggedOn = getLoggedOn(authToken);
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR))
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		
+		try {
+			User u = (User) em.createQuery(
+				"from User u where u.id = :id")
+				.setParameter("id", id)
+				.getSingleResult();
+
+			// Activate
+			if (active==null) active=Boolean.TRUE;
+			u.setActive(active);
+
+			return u;
+		} catch (NoResultException e) {
+			throw new NoLogWebApplicationException(Response.status(Status.NOT_FOUND).build());
 		}
 	}
 
