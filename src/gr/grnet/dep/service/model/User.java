@@ -224,7 +224,7 @@ public class User implements Serializable {
 
 	public boolean hasRole(RoleDiscriminator role) {
 		for (Role r : getRoles()) {
-			if (r.getDiscriminator() == role)
+			if (r.getDiscriminator() == role && r.isActive())
 				return true;
 		}
 		return false;

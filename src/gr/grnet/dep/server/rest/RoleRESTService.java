@@ -8,6 +8,7 @@ import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.User.DetailedUserView;
 import gr.grnet.dep.service.model.User;
 
 import java.io.IOException;
@@ -20,6 +21,7 @@ import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -195,6 +197,28 @@ public class RoleRESTService extends RESTService {
 		existingRole = existingRole.copyFrom(role);
 		return existingRole;
 	}
+	
+	
+	@PUT
+	@Path("/{id:[0-9][0-9]*}/activate")
+	@JsonView({DetailedRoleView.class})
+	public Role activate(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @QueryParam("active") Boolean active) {
+		Role existingRole = em.find(Role.class, id);
+		if (existingRole == null) {
+			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+		}
+
+		User loggedOn = getLoggedOn(authToken);
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && (existingRole.getUser() != loggedOn.getId() || !existingRole.isActive()) ) {
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		}
+		
+		// Activate
+		if (active==null) active=Boolean.TRUE;
+		existingRole.setActive(active);
+		return existingRole;
+	}
+	
 
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}")
