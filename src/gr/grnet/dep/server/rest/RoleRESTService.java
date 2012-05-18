@@ -166,7 +166,7 @@ public class RoleRESTService extends RESTService {
 	@JsonView({DetailedRoleView.class})
 	public Role create(@HeaderParam(TOKEN_HEADER) String authToken, Role role) {
 		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && role.getUser() != loggedOn.getId()) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && (role.getUser() != loggedOn.getId() || role.getDiscriminator()==RoleDiscriminator.ADMINISTRATOR)) {
 			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 		}
 		if (isIncompatibleRole(role, loggedOn.getRoles())) {
