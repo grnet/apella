@@ -14,6 +14,7 @@ import java.util.Set;
 
 import javax.ejb.Stateless;
 import javax.persistence.NoResultException;
+import javax.persistence.PersistenceException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -97,21 +98,25 @@ public class UserRESTService extends RESTService {
 	@POST
 	@JsonView({DetailedUserView.class})
 	public User create(User user) {
-		Set<Role> roles = user.getRoles();
+		try {
+			Set<Role> roles = user.getRoles();
 
-		user.setActive(Boolean.FALSE);
-		user.setRegistrationDate(new Date());
-		user.setVerified(Boolean.FALSE);
-		user.setPassword(User.encodePassword(user.getPassword()));
-		user.setVerificationNumber(System.currentTimeMillis());
-		user.setRoles(new HashSet<Role>());
-		em.persist(user);
+			user.setActive(Boolean.FALSE);
+			user.setRegistrationDate(new Date());
+			user.setVerified(Boolean.FALSE);
+			user.setPassword(User.encodePassword(user.getPassword()));
+			user.setVerificationNumber(System.currentTimeMillis());
+			user.setRoles(new HashSet<Role>());
+			em.persist(user);
 
-		for (Role r : roles) {
-			user.addRole(r);
+			for (Role r : roles) {
+				user.addRole(r);
+			}
+
+			return user;
+		} catch (PersistenceException e) {
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 		}
-
-		return user;
 	}
 
 	@PUT

@@ -1,4 +1,19 @@
-<span><%= id %></span>
-<input type="file" name="<%= name %>">
-<a "href="#" id="delete" class="button"><%= $.i18n.prop('btn_delete') %></a>
-<span id="progress"></span>
+<table>
+<% if (!_.isUndefined(id)) { %>
+<tr>
+	<td colspan="3">
+		<%= id %>, <a href='/rest/file/<%= id %>' target="viewfile"><%= currentBody.originalFilename %></a>, <%= currentBody.fileSize %> bytes, <%= currentBody.date %>
+	</td>
+</tr>
+<% } %>
+<tr>
+	<td>
+		<input type="file" name="<%= name %>" />
+	</td>
+	<td id = "progress">
+	</td>
+	<td>
+		<a href="#" id="delete" class="button"><%= $.i18n.prop('btn_delete') %></a>
+	</td>
+</tr>
+</table>

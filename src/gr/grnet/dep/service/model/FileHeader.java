@@ -1,7 +1,5 @@
 package gr.grnet.dep.service.model;
 
-import gr.grnet.dep.service.model.FileBody.DetailedFileBodyView;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -91,7 +89,6 @@ public final class FileHeader implements Serializable {
 		return id;
 	}
 
-	@JsonView({SimpleFileHeaderView.class})
 	public String getName() {
 		return name;
 	}
@@ -100,7 +97,6 @@ public final class FileHeader implements Serializable {
 		this.name = name;
 	}
 
-	@JsonView({SimpleFileHeaderView.class, DetailedFileBodyView.class})
 	public String getDescription() {
 		return description;
 	}
@@ -109,7 +105,6 @@ public final class FileHeader implements Serializable {
 		this.description = description;
 	}
 
-	@JsonView({SimpleFileHeaderView.class, DetailedFileBodyView.class})
 	public boolean isDeleted() {
 		return deleted;
 	}
@@ -127,7 +122,6 @@ public final class FileHeader implements Serializable {
 		this.bodies = bodies;
 	}
 
-	@JsonView({SimpleFileHeaderView.class})
 	public FileBody getCurrentBody() {
 		return currentBody;
 	}

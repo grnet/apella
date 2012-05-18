@@ -13,8 +13,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
-
-import org.codehaus.jackson.map.annotate.JsonView;
+import javax.xml.bind.annotation.XmlTransient;
 
 @Entity
 @DiscriminatorValue("CANDIDATE")
@@ -54,7 +53,6 @@ public class Candidate extends Role {
 		setDiscriminator(RoleDiscriminator.CANDIDATE);
 	}
 
-	@JsonView({SimpleRoleView.class})
 	public FileHeader getCv() {
 		return cv;
 	}
@@ -63,7 +61,7 @@ public class Candidate extends Role {
 		this.cv = cv;
 	}
 
-	@JsonView({DetailedRoleView.class})
+	@XmlTransient
 	public Set<FileHeader> getDegrees() {
 		return degrees;
 	}
@@ -72,7 +70,7 @@ public class Candidate extends Role {
 		this.degrees = degrees;
 	}
 
-	@JsonView({DetailedRoleView.class})
+	@XmlTransient
 	public Set<FileHeader> getPublications() {
 		return publications;
 	}
@@ -81,7 +79,6 @@ public class Candidate extends Role {
 		this.publications = publications;
 	}
 
-	@JsonView({SimpleRoleView.class})
 	public FileHeader getMilitary1599() {
 		return military1599;
 	}
@@ -90,7 +87,6 @@ public class Candidate extends Role {
 		this.military1599 = military1599;
 	}
 
-	@JsonView({SimpleRoleView.class})
 	public FileHeader getIdentity() {
 		return identity;
 	}
@@ -99,7 +95,7 @@ public class Candidate extends Role {
 		this.identity = identity;
 	}
 
-	@JsonView({DetailedRoleView.class})
+	@XmlTransient
 	public Set<Candidacy> getCandidacies() {
 		return candidacies;
 	}

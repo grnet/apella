@@ -943,26 +943,27 @@ App.RoleView = Backbone.View.extend({
 	},
 	
 	addFile : function(type, $el) {
-		console.log("Roleview:addFile");
-		console.log(type);
-		console.log($el);
-		
+		console.log("Roleview:addFile - start");
 		var self = this;
+		var fileView;
 		var file;
-		var fileAttributes = self.model.get(type) ? self.model.get(type) : {};
-		
-		fileAttributes.url = self.model.url() + "/" + type;
+		var fileAttributes = self.model.has(type) ? self.model.get(type) : {};
+		fileAttributes.name = type;
 		file = new App.File(fileAttributes);
-		
-		if (self.model.get(type) !== undefined || self.model.get(type) !== null) {
-			file.set(self.model.get(type));
-			file.url = self.model.url() + "/" + type;
-		}
-		
-		var fileView = new App.FileView({
+		file.urlRoot = self.model.url() + "/" + type;
+		fileView = new App.FileView({
 			model : file
 		});
+		file.bind("change", function() {
+			console.log("AddFile:change");
+			console.log(file.toJSON());
+			self.model.set(type, file.toJSON(), {
+				silent : true
+			});
+		});
+		
 		$el.html(fileView.render().el);
+		console.log("Roleview:addFile - end");
 	}
 });
 
@@ -970,8 +971,6 @@ App.FileView = Backbone.View.extend({
 	tagName : "span",
 	
 	id : "fileview",
-	
-	validator : undefined,
 	
 	initialize : function() {
 		console.log("FileView:initialize");
@@ -995,9 +994,9 @@ App.FileView = Backbone.View.extend({
 		$("input[type=file]", self.$el).fileupload({
 			dataType : 'json',
 			maxNumberOfFiles : 1,
-			url : self.model.url,
+			url : self.model.url(),
 			done : function(e, data) {
-				$("span#progress", self.$el).empty();
+				$("td#progress", self.$el).empty();
 				self.model.set(data.result);
 				
 				var popup = new App.PopupView({
@@ -1009,7 +1008,7 @@ App.FileView = Backbone.View.extend({
 			fail : function(e, data) {
 				console.log("UploadFile failed: ");
 				console.log(data);
-				$("span#progress", self.$el).empty();
+				$("td#progress", self.$el).empty();
 				
 				var popup = new App.PopupView({
 					type : "error",
@@ -1020,7 +1019,7 @@ App.FileView = Backbone.View.extend({
 			},
 			progress : function(e, data) {
 				var progress = parseInt(data.loaded / data.total * 100, 10);
-				$("span#progress", self.$el).html(progress + "%");
+				$("td#progress", self.$el).html(progress + "%");
 			}
 		});
 		return this;
@@ -1030,12 +1029,26 @@ App.FileView = Backbone.View.extend({
 		var self = this;
 		self.model.destroy({
 			success : function(model, resp) {
+				var name = model.get("name");
+				var popup;
 				console.log(model);
 				console.log(resp);
-				var popup = new App.PopupView({
-					type : "success",
-					message : "The file has been deleted"
-				});
+				if (_.isNull(resp)) {
+					self.model.set(self.model.defaults, {
+						silent : true
+					});
+					self.model.set("name", name);
+					popup = new App.PopupView({
+						type : "success",
+						message : "The file has been deleted"
+					});
+				} else {
+					self.model.set(resp);
+					popup = new App.PopupView({
+						type : "warning",
+						message : "The file has been reverted to earlier edition"
+					});
+				}
 				popup.show();
 			},
 			error : function(model, resp, options) {

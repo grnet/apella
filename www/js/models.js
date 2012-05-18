@@ -1,8 +1,6 @@
 // User
 App.User = Backbone.Model.extend({
-	url : function() {
-		return "/dep/rest/user" + (this.id ? "/" + this.id : "");
-	},
+	urlRoot : "/dep/rest/user",
 	defaults : {
 		"id" : undefined,
 		"username" : undefined,
@@ -178,9 +176,7 @@ App.User.prototype.sync = function(method, model, options) {
 
 // Role
 App.Role = Backbone.Model.extend({
-	url : function() {
-		return "/dep/rest/role" + (this.id ? "/" + this.id : "");
-	},
+	urlRoot : "/dep/rest/role",
 	defaults : {
 		// Common Fields
 		"id" : undefined,
@@ -216,8 +212,6 @@ App.Roles = Backbone.Collection.extend({
 
 // File
 App.File = Backbone.Model.extend({
-	url : undefined,
-	
 	defaults : {
 		"id" : undefined,
 		"name" : undefined,
@@ -234,7 +228,7 @@ App.File = Backbone.Model.extend({
 });
 
 App.Institution = Backbone.Model.extend({
-	url : "/dep/rest/institution",
+	urlRoot : "/dep/rest/institution",
 	defaults : {
 		"id" : undefined,
 		"name" : undefined,
@@ -247,7 +241,7 @@ App.Institutions = Backbone.Collection.extend({
 });
 
 App.Department = Backbone.Model.extend({
-	url : "/dep/rest/department",
+	urlRoot : "/dep/rest/department",
 	defaults : {
 		"id" : undefined,
 		"department" : undefined,

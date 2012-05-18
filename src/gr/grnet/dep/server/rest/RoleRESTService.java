@@ -216,16 +216,13 @@ public class RoleRESTService extends RESTService {
 		em.remove(role);
 	}
 
-	
 	@GET
-	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599}")
+	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599}{fileId:(/[0-9][0-9]*)?}")
 	@JsonView({DetailedFileHeaderView.class})
-	public FileHeader getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("var") String var) 
-	{
-		FileHeader file = null;
+	public FileHeader getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("var") String var) {
 		User loggedOn = getLoggedOn(authToken);
-
 		Role role = em.find(Role.class, id);
+
 		// Validate:
 		if (role == null) {
 			throw new NoLogWebApplicationException(Status.NOT_FOUND);
@@ -234,6 +231,8 @@ public class RoleRESTService extends RESTService {
 			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 		}
 
+		// Get File
+		FileHeader file = null;
 		if ("fekFile".equals(var)) {
 			ProfessorDomestic professorDomestic = (ProfessorDomestic) role;
 			file = professorDomestic.getFekFile();
@@ -248,22 +247,23 @@ public class RoleRESTService extends RESTService {
 			file = candidate.getMilitary1599();
 		}
 
-		if (file!=null) file.getBodies().size();
+		if (file != null) {
+			file.getBodies().size();
+		} else {
+			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+		}
 		return file;
 	}
-	
-	
+
 	@POST
-	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599}")
+	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599}{fileId:(/[0-9][0-9]*)?}")
 	@Consumes("multipart/form-data")
 	@Produces({MediaType.APPLICATION_JSON})
 	@JsonView({SimpleFileHeaderView.class})
-	public FileHeader postFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("var") String var, @Context HttpServletRequest request) throws FileUploadException, IOException
-	{
-		FileHeader file = null;
+	public FileHeader postFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("var") String var, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
-
 		Role role = em.find(Role.class, id);
+
 		// Validate:
 		if (role == null) {
 			throw new NoLogWebApplicationException(Status.NOT_FOUND);
@@ -272,6 +272,7 @@ public class RoleRESTService extends RESTService {
 			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 		}
 
+		FileHeader file = null;
 		if ("fekFile".equals(var)) {
 			ProfessorDomestic professorDomestic = (ProfessorDomestic) role;
 			file = uploadFile(loggedOn, request, professorDomestic.getFekFile());
@@ -292,8 +293,7 @@ public class RoleRESTService extends RESTService {
 
 		return file;
 	}
-	
-	
+
 	/**
 	 * Deletes the last body of given file, if possible.
 	 * 
@@ -302,16 +302,16 @@ public class RoleRESTService extends RESTService {
 	 * @return
 	 */
 	@DELETE
-	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599}")
+	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599}{fileId:(/[0-9][0-9]*)?}")
 	@JsonView({DetailedFileHeaderView.class})
 	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("var") String var) {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
+
 		FileHeader file = getFile(authToken, id, var);
-		
 		Response retv = deleteFileBody(loggedOn, file);
-		
-		if (retv.getStatus()==Status.NO_CONTENT.getStatusCode()) {
+
+		if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
 			// Break the relationship as well
 			if ("fekFile".equals(var)) {
 				ProfessorDomestic professorDomestic = (ProfessorDomestic) role;

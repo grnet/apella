@@ -138,7 +138,6 @@ public class User implements Serializable {
 		this.contactInfo = contactInfo;
 	}
 
-	@XmlTransient
 	public String getPassword() {
 		return password;
 	}

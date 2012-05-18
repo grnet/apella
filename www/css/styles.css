@@ -360,7 +360,7 @@ div.popup {
 	z-index: 100px;
 }
 
-div.info,div.success,div.warn,div.error {
+div.info,div.success,div.warning,div.error {
 	padding: 15px 10px 15px 80px;
 	border: 1px solid;
 	background-repeat: no-repeat;
@@ -379,7 +379,7 @@ div.success {
 	background-image: url('../images/success.png');
 }
 
-div.warn {
+div.warning {
 	color: #9F6000;
 	background-color: #FEEFB3;
 	background-image: url('../images/warning.png');
