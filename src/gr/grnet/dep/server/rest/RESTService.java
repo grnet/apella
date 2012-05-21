@@ -205,15 +205,10 @@ public class RESTService {
 	/**
 	 * Deletes the last body of given file, if possible.
 	 * 
-	 * @param loggedOn
 	 * @param fh
 	 * @return
 	 */
-	Response deleteFileBody(User loggedOn, FileHeader fh) {
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(fh.getOwner().getId())) {
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
-		}
-
+	Response deleteFileBody(FileHeader fh) {
 		int size = fh.getBodies().size();
 		// Delete the file itself, if possible.
 		FileBody fb = fh.getCurrentBody();

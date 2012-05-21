@@ -328,9 +328,15 @@ public class RoleRESTService extends RESTService {
 	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("var") String var) {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
+		if (role == null) {
+			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+		}
 		FileHeader file = getFile(authToken, id, var);
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(file.getOwner().getId())) {
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		}
 		
-		Response retv = deleteFileBody(loggedOn, file);
+		Response retv = deleteFileBody(file);
 		
 		if (retv.getStatus()==Status.NO_CONTENT.getStatusCode()) {
 			// Break the relationship as well
