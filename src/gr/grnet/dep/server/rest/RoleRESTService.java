@@ -8,7 +8,6 @@ import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
-import gr.grnet.dep.service.model.User.DetailedUserView;
 import gr.grnet.dep.service.model.User;
 
 import java.io.IOException;
@@ -21,7 +20,6 @@ import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -34,7 +32,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -172,7 +169,7 @@ public class RoleRESTService extends RESTService {
 			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 		}
 		if (isIncompatibleRole(role, loggedOn.getRoles())) {
-			throw new WebApplicationException(Response.status(Status.CONFLICT).
+			throw new NoLogWebApplicationException(Response.status(Status.CONFLICT).
 				header(ERROR_CODE_HEADER, "incompatible.role").build());
 		}
 

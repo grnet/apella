@@ -2,9 +2,8 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.service.model.FileBody;
 import gr.grnet.dep.service.model.FileHeader;
-import gr.grnet.dep.service.model.User;
-import gr.grnet.dep.service.model.FileHeader.DetailedFileHeaderView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 
 import java.io.File;
@@ -21,11 +20,6 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -35,7 +29,6 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.map.annotate.JsonView;
 import org.jboss.resteasy.spi.NoLogWebApplicationException;
 
 public class RESTService {
@@ -196,12 +189,12 @@ public class RESTService {
 					sb.append("ERROR");
 					logger.info(sb.toString());
 					logger.log(Level.SEVERE, "Error encountered while parsing the request", ex);
-					throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
+					throw new NoLogWebApplicationException(Status.INTERNAL_SERVER_ERROR);
 				} catch (Exception e) {
 					sb.append("ERROR");
 					logger.info(sb.toString());
 					logger.log(Level.SEVERE, "Error encountered while uploading file", e);
-					throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
+					throw new NoLogWebApplicationException(Status.INTERNAL_SERVER_ERROR);
 				}
 			}
 		}
