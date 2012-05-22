@@ -241,4 +241,9 @@ public class User implements Serializable {
 		}
 	}
 
+	public static void main(String[] args) {
+		String password = "anglen";
+		System.out.println(password + ": " + encodePassword(password));
+	}
+
 }

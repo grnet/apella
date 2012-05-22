@@ -6,7 +6,7 @@ App.User = Backbone.Model.extend({
 		"username" : undefined,
 		"basicInfo" : {
 			"firstname" : undefined,
-			"lastname" : undefined,
+			"lastname" : undefined
 		},
 		"contactInfo" : {
 			"address" : {
@@ -196,9 +196,7 @@ App.Role = Backbone.Model.extend({
 		"fekFile" : undefined,
 		"cv" : undefined,
 		"identity" : undefined,
-		"military1599" : undefined,
-	// "degrees" : [],
-	// "publications" : [],
+		"military1599" : undefined
 	}
 });
 
@@ -207,6 +205,9 @@ App.Roles = Backbone.Collection.extend({
 	user : undefined,
 	url : function() {
 		return "/dep/rest/role" + (this.user ? "?user=" + this.user : "");
+	},
+	comparator : function(role) {
+		return _.indexOf(App.allowedRoles, role.get('discriminator'), false);
 	}
 });
 
@@ -231,7 +232,7 @@ App.Institution = Backbone.Model.extend({
 	urlRoot : "/dep/rest/institution",
 	defaults : {
 		"id" : undefined,
-		"name" : undefined,
+		"name" : undefined
 	}
 });
 

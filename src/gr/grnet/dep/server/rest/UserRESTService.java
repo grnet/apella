@@ -62,7 +62,7 @@ public class UserRESTService extends RESTService {
 	@JsonView({DetailedUserView.class})
 	public Response getLoggedOn(@Context HttpServletRequest request) {
 		String authToken = request.getHeader(TOKEN_HEADER);
-		if (authToken == null) {
+		if (authToken == null && request.getCookies() != null) {
 			for (Cookie c : request.getCookies()) {
 				if (c.getName().equals("_dep_a")) {
 					authToken = c.getValue();

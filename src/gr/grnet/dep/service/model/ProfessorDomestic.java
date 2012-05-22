@@ -20,7 +20,7 @@ public class ProfessorDomestic extends Professor {
 	@Transient
 	private Logger logger;
 
-	@ManyToOne(optional = false, cascade = CascadeType.ALL)
+	@ManyToOne
 	private Institution institution;
 
 	@ManyToOne(optional = false, cascade = CascadeType.ALL)

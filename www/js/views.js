@@ -17,7 +17,7 @@ App.UserRegistrationView = Backbone.View.extend({
 			$("form", this.el).submit();
 		},
 		"submit form" : "submit",
-		"blur form" : "resetForm",
+		"blur form" : "resetForm"
 	},
 	
 	render : function(eventName) {
@@ -44,7 +44,7 @@ App.UserRegistrationView = Backbone.View.extend({
 					required : true,
 					number : true,
 					minlength : 10,
-					maxlength : 12,
+					maxlength : 12
 				},
 				address_street : "required",
 				address_number : "required",
@@ -57,7 +57,7 @@ App.UserRegistrationView = Backbone.View.extend({
 				lastname : $.i18n.prop('validation_lastname'),
 				username : {
 					required : $.i18n.prop('validation_username'),
-					minlength : $.i18n.prop('validation_minlength', 2),
+					minlength : $.i18n.prop('validation_minlength', 2)
 				},
 				password : {
 					required : $.i18n.prop('validation_password'),
@@ -107,7 +107,7 @@ App.UserRegistrationView = Backbone.View.extend({
 			"username" : username,
 			"basicInfo" : {
 				"firstname" : firstname,
-				"lastname" : lastname,
+				"lastname" : lastname
 			},
 			"contactInfo" : {
 				"address" : {
@@ -187,7 +187,7 @@ App.LoginView = Backbone.View.extend({
 			messages : {
 				username : {
 					required : $.i18n.prop('validation_username'),
-					minlength : $.i18n.prop('validation_minlength', 2),
+					minlength : $.i18n.prop('validation_minlength', 2)
 				},
 				password : {
 					required : $.i18n.prop('validation_password'),
@@ -226,9 +226,6 @@ App.LoginView = Backbone.View.extend({
 				}
 			}
 		});
-		
-		event.preventDefault();
-		return false;
 	},
 	
 	resetForm : function(event) {
@@ -300,6 +297,56 @@ App.PopupView = Backbone.View.extend({
 	}
 });
 
+// PopupView
+App.ConfirmView = Backbone.View.extend({
+	tagName : "div",
+	
+	initialize : function() {
+		_.bindAll(this, "render", "show", "close");
+	},
+	
+	events : {},
+	
+	render : function(eventName) {
+		var self = this;
+		$('body').append(self.el);
+		$(self.el).attr('title', self.options.title);
+		$(self.el).html("<p>" + self.options.message + "</p>");
+		$(self.el).dialog({
+			resizable : false,
+			height : 200,
+			modal : true,
+			buttons : [ {
+				text : $.i18n.prop('btn_yes'),
+				click : function() {
+					if (_.isFunction(self.options.yes)) {
+						self.options.yes();
+					}
+					self.$el.dialog("close");
+				}
+			}, {
+				text : $.i18n.prop('btn_no'),
+				click : function() {
+					self.$el.dialog("close");
+				}
+			} ],
+			close : function(event, ui) {
+				self.close();
+			}
+		});
+		return this;
+	},
+	
+	show : function() {
+		this.render();
+	},
+	
+	close : function() {
+		this.$el.dialog("destroy");
+		this.$el.remove();
+	},
+});
+
 // MenuView
 App.MenuView = Backbone.View.extend({
 	tagName : "ul",
@@ -319,7 +366,7 @@ App.MenuView = Backbone.View.extend({
 		this.$el.append("<li><a href=\"\#\">" + $.i18n.prop('menu_home') + "</a>");
 		this.$el.append("<li><a href=\"\#profile\">" + $.i18n.prop('menu_profile') + "</a>");
 		// Add Logout
-		this.$el.append("<li><a id=\"logout\" href=\"#\">" + $.i18n.prop('menu_logout') + "</a>");
+		this.$el.append("<li><a id=\"logout\" href=\"javascript:void(0)\">" + $.i18n.prop('menu_logout') + "</a>");
 		return this;
 	},
 	
@@ -333,9 +380,6 @@ App.MenuView = Backbone.View.extend({
 		document.cookie = "_dep_a=-1;expires=0;path=/";
 		// Send Redirect
 		window.location.href = window.location.pathname;
-		
-		event.preventDefault;
-		return false;
 	}
 
 });
@@ -361,7 +405,7 @@ App.UserView = Backbone.View.extend({
 		"click a#save" : function() {
 			$("form", this.el).submit();
 		},
-		"submit form" : "submit",
+		"submit form" : "submit"
 	},
 	
 	render : function(eventName) {
@@ -386,7 +430,7 @@ App.UserView = Backbone.View.extend({
 					required : true,
 					number : true,
 					minlength : 10,
-					maxlength : 12,
+					maxlength : 12
 				},
 				address_street : "required",
 				address_number : "required",
@@ -399,7 +443,7 @@ App.UserView = Backbone.View.extend({
 				lastname : $.i18n.prop('validation_lastname'),
 				username : {
 					required : $.i18n.prop('validation_username'),
-					minlength : $.i18n.prop('validation_minlength', 2),
+					minlength : $.i18n.prop('validation_minlength', 2)
 				},
 				password : {
 					required : $.i18n.prop('validation_password'),
@@ -431,60 +475,66 @@ App.UserView = Backbone.View.extend({
 	
 	submit : function(event) {
 		var self = this;
-		
-		// Read Input
-		var username = $('form input[name=username]', this.el).val();
-		var firstname = $('form input[name=firstname]', this.el).val();
-		var lastname = $('form input[name=lastname]', this.el).val();
-		var password = $('form input[name=password]', this.el).val();
-		var phoneNumber = $('form input[name=phoneNumber]', this.el).val();
-		var address_street = $('form input[name=address_street]', this.el).val();
-		var address_number = $('form input[name=address_number]', this.el).val();
-		var address_zip = $('form input[name=address_zip]', this.el).val();
-		var address_city = $('form input[name=address_city]', this.el).val();
-		var address_country = $('form input[name=address_country]', this.el).val();
-		
-		// Validate
-		
-		// Save to model
-		self.model.save({
-			"username" : username,
-			"basicInfo" : {
-				"firstname" : firstname,
-				"lastname" : lastname,
-			},
-			"contactInfo" : {
-				"address" : {
-					"street" : address_street,
-					"number" : address_number,
-					"zip" : address_zip,
-					"city" : address_city,
-					"country" : address_country
-				},
-				"email" : username,
-				"phoneNumber" : phoneNumber
-			},
-			"password" : password
-		}, {
-			success : function(model, resp) {
-				console.log(model);
-				console.log(resp);
-				var popup = new App.PopupView({
-					type : "success",
-					message : "The user has been updated"
+		var confirm = new App.ConfirmView({
+			title : "Title",
+			message : "Are you sure?",
+			yes : function() {
+				
+				// Read Input
+				var username = $('form input[name=username]', this.el).val();
+				var firstname = $('form input[name=firstname]', this.el).val();
+				var lastname = $('form input[name=lastname]', this.el).val();
+				var password = $('form input[name=password]', this.el).val();
+				var phoneNumber = $('form input[name=phoneNumber]', this.el).val();
+				var address_street = $('form input[name=address_street]', this.el).val();
+				var address_number = $('form input[name=address_number]', this.el).val();
+				var address_zip = $('form input[name=address_zip]', this.el).val();
+				var address_city = $('form input[name=address_city]', this.el).val();
+				var address_country = $('form input[name=address_country]', this.el).val();
+				
+				// Validate
+				
+				// Save to model
+				self.model.save({
+					"username" : username,
+					"basicInfo" : {
+						"firstname" : firstname,
+						"lastname" : lastname
+					},
+					"contactInfo" : {
+						"address" : {
+							"street" : address_street,
+							"number" : address_number,
+							"zip" : address_zip,
+							"city" : address_city,
+							"country" : address_country
+						},
+						"email" : username,
+						"phoneNumber" : phoneNumber
+					},
+					"password" : password
+				}, {
+					success : function(model, resp) {
+						console.log(model);
+						console.log(resp);
+						var popup = new App.PopupView({
+							type : "success",
+							message : "The user has been updated"
+						});
+						popup.show();
+					},
+					error : function(model, resp, options) {
+						console.log("" + resp.status);
+						var popup = new App.PopupView({
+							type : "error",
+							message : "Error " + resp.status
+						});
+						popup.show();
+					}
 				});
-				popup.show();
-			},
-			error : function(model, resp, options) {
-				console.log("" + resp.status);
-				var popup = new App.PopupView({
-					type : "error",
-					message : "Error " + resp.status
-				});
-				popup.show();
 			}
 		});
-		
+		confirm.show();
 		event.preventDefault();
 		return false;
 	},
@@ -518,7 +568,7 @@ App.RoleListView = Backbone.View.extend({
 	
 	className : "sidebar",
 	
-	template : _.template("<ul class=\"list\"></ul><select name=\"newRole\" id=\"newRole\"></select><a class=\"button\" id=\"create\" href=\"#\">(+)</a>"),
+	template : _.template("<ul class=\"list\"></ul><select name=\"newRole\" id=\"newRole\"></select><a class=\"button\" id=\"create\" href=\"javascript:void(0)\">(+)</a>"),
 	
 	initialize : function() {
 		_.bindAll(this, "render", "add", "newRole");
@@ -568,9 +618,6 @@ App.RoleListView = Backbone.View.extend({
 		console.log(newRole);
 		self.collection.add(newRole);
 		newRole.trigger("select", event);
-		
-		event.preventDefault();
-		return false;
 	}
 
 });
@@ -593,9 +640,9 @@ App.RoleListItemView = Backbone.View.extend({
 	
 	render : function(eventName) {
 		if (this.model.get("id")) {
-			this.$el.html("<a href='#'>" + $.i18n.prop(this.model.get("discriminator")) + "_" + this.model.get("id") + "</a>");
+			this.$el.html("<a href='javascript:void(0)'>" + $.i18n.prop(this.model.get("discriminator")) + "_" + this.model.get("id") + "</a>");
 		} else {
-			this.$el.html("<a href='#'>" + $.i18n.prop(this.model.get("discriminator")) + "*</a>");
+			this.$el.html("<a href='javascript:void(0)'>" + $.i18n.prop(this.model.get("discriminator")) + "*</a>");
 		}
 		return this;
 	},
@@ -613,9 +660,6 @@ App.RoleListItemView = Backbone.View.extend({
 		$("#roleview", $("#content")).unbind();
 		$("#roleview", $("#content")).remove();
 		$("#content").append(roleView.render().el);
-		
-		event.preventDefault;
-		return false;
 	}
 
 });
@@ -643,7 +687,7 @@ App.RoleView = Backbone.View.extend({
 		"click a#save" : function() {
 			$("form", this.el).submit();
 		},
-		"submit form" : "submit",
+		"submit form" : "submit"
 	},
 	
 	render : function(eventName) {
@@ -716,13 +760,13 @@ App.RoleView = Backbone.View.extend({
 					institution : "required",
 					rank : "required",
 					position : "required",
-					subject : "required",
+					subject : "required"
 				},
 				messages : {
 					institution : $.i18n.prop('validation_institution'),
 					rank : $.i18n.prop('validation_rank'),
 					position : $.i18n.prop('validation_position'),
-					subject : $.i18n.prop('validation_subject'),
+					subject : $.i18n.prop('validation_subject')
 				}
 			});
 			break;
@@ -783,7 +827,7 @@ App.RoleView = Backbone.View.extend({
 					institution : "required"
 				},
 				messages : {
-					institution : $.i18n.prop('validation_institution'),
+					institution : $.i18n.prop('validation_institution')
 				}
 			});
 			break;
@@ -814,7 +858,7 @@ App.RoleView = Backbone.View.extend({
 					department : "required"
 				},
 				messages : {
-					department : $.i18n.prop('validation_department'),
+					department : $.i18n.prop('validation_department')
 				}
 			});
 			break;
@@ -825,7 +869,7 @@ App.RoleView = Backbone.View.extend({
 					ministry : "required"
 				},
 				messages : {
-					ministry : $.i18n.prop('validation_ministry'),
+					ministry : $.i18n.prop('validation_ministry')
 				}
 			});
 			break;
@@ -836,84 +880,91 @@ App.RoleView = Backbone.View.extend({
 	
 	submit : function(event) {
 		var self = this;
-		var values = {};
-		// Read Input
-		switch (self.model.get("discriminator")) {
-		case "CANDIDATE":
-			break;
-		case "PROFESSOR_DOMESTIC":
-			values.institution = {
-				"id" : $('form select[name=institution]', this.el).val()
-			};
-			values.rank = {
-				"id" : self.model.has("rank") ? self.model.get("rank").id : undefined,
-				"name" : $('form textarea[name=rank]', this.el).val()
-			};
-			values.position = $('form input[name=position]', this.el).val();
-			values.subject = {
-				"id" : self.model.has("subject") ? self.model.get("subject").id : undefined,
-				"name" : $('form textarea[name=subject]', this.el).val()
-			};
-			values.fek = $('form input[name=fek]', this.el).val();
-			values.fekSubject = {
-				"id" : self.model.has("fekSubject") ? self.model.get("fekSubject").id : undefined,
-				"name" : $('form textarea[name=fekSubject]', this.el).val()
-			};
-			break;
-		case "PROFESSOR_FOREIGN":
-			values.institution = $('form input[name=institution]', this.el).val();
-			values.position = $('form input[name=position]', this.el).val();
-			values.rank = {
-				"id" : self.model.has("rank") ? self.model.get("rank").id : undefined,
-				"name" : $('form textarea[name=rank]', this.el).val()
-			};
-			values.subject = {
-				"id" : self.model.has("subject") ? self.model.get("subject").id : undefined,
-				"name" : $('form textarea[name=subject]', this.el).val()
-			};
-			break;
-		case "INSTITUTION_MANAGER":
-			values.institution = {
-				"id" : $('form select[name=institution]', this.el).val()
-			};
-			break;
-		
-		case "INSTITUTION_ASSISTANT":
-			values.institution = {
-				"id" : $('form select[name=institution]', this.el).val()
-			};
-			break;
-		
-		case "DEPARTMENT_MANAGER":
-			values.department = {};
-			values.department.id = $('form select[name=department]', this.el).val();
-			break;
-		
-		case "MINISTRY_MANAGER":
-			values.ministry = $('form input[name=ministry]', this.el).val();
-			break;
-		}
-		// Save to model
-		self.model.save(values, {
-			success : function(model, resp) {
-				console.log(model);
-				console.log(resp);
-				var popup = new App.PopupView({
-					type : "success",
-					message : "The role has been updated"
+		var confirm = new App.ConfirmView({
+			title : "Title",
+			message : "Are you sure?",
+			yes : function() {
+				
+				var values = {};
+				// Read Input
+				switch (self.model.get("discriminator")) {
+				case "CANDIDATE":
+					break;
+				case "PROFESSOR_DOMESTIC":
+					values.institution = {
+						"id" : $('form select[name=institution]', this.el).val()
+					};
+					values.rank = {
+						"id" : self.model.has("rank") ? self.model.get("rank").id : undefined,
+						"name" : $('form textarea[name=rank]', this.el).val()
+					};
+					values.position = $('form input[name=position]', this.el).val();
+					values.subject = {
+						"id" : self.model.has("subject") ? self.model.get("subject").id : undefined,
+						"name" : $('form textarea[name=subject]', this.el).val()
+					};
+					values.fek = $('form input[name=fek]', this.el).val();
+					values.fekSubject = {
+						"id" : self.model.has("fekSubject") ? self.model.get("fekSubject").id : undefined,
+						"name" : $('form textarea[name=fekSubject]', this.el).val()
+					};
+					break;
+				case "PROFESSOR_FOREIGN":
+					values.institution = $('form input[name=institution]', this.el).val();
+					values.position = $('form input[name=position]', this.el).val();
+					values.rank = {
+						"id" : self.model.has("rank") ? self.model.get("rank").id : undefined,
+						"name" : $('form textarea[name=rank]', this.el).val()
+					};
+					values.subject = {
+						"id" : self.model.has("subject") ? self.model.get("subject").id : undefined,
+						"name" : $('form textarea[name=subject]', this.el).val()
+					};
+					break;
+				case "INSTITUTION_MANAGER":
+					values.institution = {
+						"id" : $('form select[name=institution]', this.el).val()
+					};
+					break;
+				
+				case "INSTITUTION_ASSISTANT":
+					values.institution = {
+						"id" : $('form select[name=institution]', this.el).val()
+					};
+					break;
+				
+				case "DEPARTMENT_MANAGER":
+					values.department = {};
+					values.department.id = $('form select[name=department]', this.el).val();
+					break;
+				
+				case "MINISTRY_MANAGER":
+					values.ministry = $('form input[name=ministry]', this.el).val();
+					break;
+				}
+				// Save to model
+				self.model.save(values, {
+					success : function(model, resp) {
+						console.log(model);
+						console.log(resp);
+						var popup = new App.PopupView({
+							type : "success",
+							message : "The role has been updated"
+						});
+						popup.show();
+					},
+					error : function(model, resp, options) {
+						console.log("" + resp.status);
+						var popup = new App.PopupView({
+							type : "error",
+							message : "Error " + resp.status
+						});
+						popup.show();
+					}
 				});
-				popup.show();
-			},
-			error : function(model, resp, options) {
-				console.log("" + resp.status);
-				var popup = new App.PopupView({
-					type : "error",
-					message : "Error " + resp.status
-				});
-				popup.show();
 			}
 		});
-		
+		confirm.show();
 		event.preventDefault();
 		return false;
 	},
@@ -929,11 +980,33 @@ App.RoleView = Backbone.View.extend({
 	},
 	
 	remove : function() {
-		this.model.destroy({
-			success : function() {
-				console.log("Role Model destroyed");
+		var self = this;
+		var confirm = new App.ConfirmView({
+			title : "Title",
+			message : "Are you sure?",
+			yes : function() {
+				self.model.destroy({
+					success : function(model, resp) {
+						console.log(model);
+						console.log(resp);
+						var popup = new App.PopupView({
+							type : "success",
+							message : "The role has been removed"
+						});
+						popup.show();
+					},
+					error : function(model, resp, options) {
+						console.log("" + resp.status);
+						var popup = new App.PopupView({
+							type : "error",
+							message : "Error " + resp.status
+						});
+						popup.show();
+					}
+				});
 			}
 		});
+		confirm.show();
 		return false;
 	},
 	
@@ -972,32 +1045,51 @@ App.FileView = Backbone.View.extend({
 	
 	id : "fileview",
 	
+	uploadData : undefined,
+	
 	initialize : function() {
 		console.log("FileView:initialize");
 		console.log(this.model);
 		
 		this.template = _.template(tpl.get('file'));
 		
-		_.bindAll(this, "render", "deleteFile", "close");
+		_.bindAll(this, "render", "deleteFile", "startUpload", "close");
 		this.model.bind('change', this.render, this);
 	},
 	
 	events : {
-		"click a#delete" : "deleteFile"
+		"click a#delete" : "deleteFile",
+		"click a#upload" : "startUpload"
 	},
 	
 	render : function(eventName) {
 		var self = this;
 		console.log(self.$el);
 		self.$el.html(self.template(self.model.toJSON()));
-		
-		$("input[type=file]", self.$el).fileupload({
+		self.uploader = $("input[type=file]", self.$el).fileupload({
 			dataType : 'json',
 			maxNumberOfFiles : 1,
 			url : self.model.url(),
+			add : function(e, data) {
+				console.log("FileAdded:");
+				console.log(data);
+				self.uploadData = data;
+				
+				$("td.list", self.$el).empty();
+				_.each(data.files, function(file) {
+					console.log("Adding:");
+					$("td.list", self.$el).append(file.name);
+				});
+			},
 			done : function(e, data) {
-				$("td#progress", self.$el).empty();
+				self.uploadData = undefined;
+				$("td.progress", self.$el).empty();
 				self.model.set(data.result);
+				$("td.list", self.$el).fadeOut('slow', function() {
+					$(this).empty().show();
+					
+				});
+				$("td.progress", self.$el).empty();
 				
 				var popup = new App.PopupView({
 					type : "success",
@@ -1008,7 +1100,11 @@ App.FileView = Backbone.View.extend({
 			fail : function(e, data) {
 				console.log("UploadFile failed: ");
 				console.log(data);
-				$("td#progress", self.$el).empty();
+				$("td.list", self.$el).fadeOut('fast', function() {
+					$(this).empty().show();
+					
+				});
+				$("td.progress", self.$el).empty();
 				
 				var popup = new App.PopupView({
 					type : "error",
@@ -1025,44 +1121,63 @@ App.FileView = Backbone.View.extend({
 		return this;
 	},
 	
-	deleteFile : function(event) {
+	startUpload : function(event) {
 		var self = this;
-		self.model.destroy({
-			success : function(model, resp) {
-				var name = model.get("name");
-				var popup;
-				console.log(model);
-				console.log(resp);
-				if (_.isNull(resp)) {
-					self.model.set(self.model.defaults, {
-						silent : true
-					});
-					self.model.set("name", name);
-					popup = new App.PopupView({
-						type : "success",
-						message : "The file has been deleted"
-					});
-				} else {
-					self.model.set(resp);
-					popup = new App.PopupView({
-						type : "warning",
-						message : "The file has been reverted to earlier edition"
-					});
+		var confirm = new App.ConfirmView({
+			title : "Title",
+			message : "Are you sure?",
+			yes : function() {
+				console.log("FileView:startUpload");
+				if (!_.isUndefined(self.uploadData)) {
+					self.uploadData.submit();
 				}
-				popup.show();
-			},
-			error : function(model, resp, options) {
-				console.log("" + resp.status);
-				var popup = new App.PopupView({
-					type : "error",
-					message : "Error " + resp.status
-				});
-				popup.show();
 			}
 		});
-		
-		event.preventDefault();
-		return false;
+		confirm.show();
+	},
+	
+	deleteFile : function(event) {
+		var self = this;
+		var confirm = new App.ConfirmView({
+			title : "Title",
+			message : "Are you sure?",
+			yes : function() {
+				self.model.destroy({
+					success : function(model, resp) {
+						var name = model.get("name");
+						var popup;
+						console.log(model);
+						console.log(resp);
+						if (_.isNull(resp)) {
+							self.model.set(self.model.defaults, {
+								silent : true
+							});
+							self.model.set("name", name);
+							popup = new App.PopupView({
+								type : "success",
+								message : "The file has been deleted"
+							});
+						} else {
+							self.model.set(resp);
+							popup = new App.PopupView({
+								type : "warning",
+								message : "The file has been reverted to earlier edition"
+							});
+						}
+						popup.show();
+					},
+					error : function(model, resp, options) {
+						console.log("" + resp.status);
+						var popup = new App.PopupView({
+							type : "error",
+							message : "Error " + resp.status
+						});
+						popup.show();
+					}
+				});
+			}
+		});
+		confirm.show();
 	},
 	
 	close : function(eventName) {
