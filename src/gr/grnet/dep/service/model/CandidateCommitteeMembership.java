@@ -8,6 +8,7 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.xml.bind.annotation.XmlTransient;
 
 @Entity
 public class CandidateCommitteeMembership implements Serializable {
@@ -102,6 +103,7 @@ public class CandidateCommitteeMembership implements Serializable {
 		return this.id.equals(that.id);
 	}
 
+	@XmlTransient
 	public CandidateCommittee getCandidateCommittee() {
 		return candidateCommittee;
 	}
