@@ -166,12 +166,12 @@ public class RoleRESTService extends RESTService {
 	@JsonView({DetailedRoleView.class})
 	public Role create(@HeaderParam(TOKEN_HEADER) String authToken, Role role) {
 		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && role.getUser() != loggedOn.getId()) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && (role.getUser() != loggedOn.getId() || role.getDiscriminator() == RoleDiscriminator.ADMINISTRATOR)) {
 			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 		}
 		if (isIncompatibleRole(role, loggedOn.getRoles())) {
 			throw new WebApplicationException(Response.status(Status.CONFLICT).
-				header("X-Error-Code", "incompatible.role").build());
+				header(ERROR_CODE_HEADER, "incompatible.role").build());
 		}
 
 		em.persist(role);
@@ -193,6 +193,27 @@ public class RoleRESTService extends RESTService {
 		}
 
 		existingRole = existingRole.copyFrom(role);
+		return existingRole;
+	}
+
+	@PUT
+	@Path("/{id:[0-9][0-9]*}/activate")
+	@JsonView({DetailedRoleView.class})
+	public Role activate(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @QueryParam("active") Boolean active) {
+		Role existingRole = em.find(Role.class, id);
+		if (existingRole == null) {
+			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+		}
+
+		User loggedOn = getLoggedOn(authToken);
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && (existingRole.getUser() != loggedOn.getId() || !existingRole.isActive())) {
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		}
+
+		// Activate
+		if (active == null)
+			active = Boolean.TRUE;
+		existingRole.setActive(active);
 		return existingRole;
 	}
 

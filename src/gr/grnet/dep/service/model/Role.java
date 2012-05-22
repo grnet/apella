@@ -80,6 +80,10 @@ public abstract class Role implements Serializable {
 	@org.hibernate.annotations.Index(name = "IDX_Roles_discriminator")
 	private RoleDiscriminator discriminator;
 
+	@Basic(optional = false)
+	@Column(columnDefinition = " boolean DEFAULT false")
+	private boolean active = false;
+
 	// Inverse to User
 	@Basic(optional = false)
 	@Column(name = "user_id")
@@ -116,5 +120,13 @@ public abstract class Role implements Serializable {
 	public abstract void initializeCollections();
 
 	public abstract Role copyFrom(Role otherRole);
+
+	public boolean isActive() {
+		return active;
+	}
+
+	public void setActive(boolean active) {
+		this.active = active;
+	}
 
 }
