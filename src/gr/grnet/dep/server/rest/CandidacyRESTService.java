@@ -247,6 +247,10 @@ public class CandidacyRESTService extends RESTService {
 		}
 		
 		Professor existingProfessor = em.find(Professor.class, p.getId());
+		if (existingProfessor==null) {
+			throw new NoLogWebApplicationException(Response.status(Status.NOT_FOUND).
+						header(ERROR_CODE_HEADER, "professor.not.found").build());
+		}
 		cc.addMember(existingProfessor);
 		em.persist(cc);
 		em.flush();
@@ -290,6 +294,10 @@ public class CandidacyRESTService extends RESTService {
 					.getSingleResult();
 		
 		Professor existingProfessor = em.find(Professor.class, p.getId());
+		if (existingProfessor==null) {
+			throw new NoLogWebApplicationException(Response.status(Status.NOT_FOUND).
+						header(ERROR_CODE_HEADER, "professor.not.found").build());
+		}
 		CandidateCommitteeMembership removed = cc.removeMember(existingProfessor);
 		if (removed==null) {
 			throw new NoLogWebApplicationException(Response.status(Status.NOT_FOUND).
@@ -335,6 +343,8 @@ public class CandidacyRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		CandidateCommitteeMembership ccm = getCommitteeMembership(authToken, id, professorId);
 		FileHeader file = ccm.getReport();
+		
+		//TODO: Security / lifecycle checks
 
 		file = uploadFile(loggedOn, request, ccm.getReport());
 		ccm.setReport(file);
@@ -352,6 +362,8 @@ public class CandidacyRESTService extends RESTService {
 	{
 		CandidateCommitteeMembership ccm = getCommitteeMembership(authToken, id, professorId);
 		FileHeader file = ccm.getReport();
+		
+		//TODO: Security / lifecycle checks
 
 		Response retv = deleteFileBody(file);
 		

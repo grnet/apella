@@ -1,11 +1,18 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.service.model.CandidateCommittee;
+import gr.grnet.dep.service.model.CandidateCommitteeMembership;
 import gr.grnet.dep.service.model.Department;
+import gr.grnet.dep.service.model.ElectoralBody;
+import gr.grnet.dep.service.model.CandidateCommittee.SimpleCandidateCommitteeView;
+import gr.grnet.dep.service.model.ElectoralBody.SimpleElectoralBodyView;
+import gr.grnet.dep.service.model.ElectoralBodyMembership;
 import gr.grnet.dep.service.model.FileHeader;
 import gr.grnet.dep.service.model.FileHeader.DetailedFileHeaderView;
 import gr.grnet.dep.service.model.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
+import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Subject;
 import gr.grnet.dep.service.model.User;
@@ -16,6 +23,7 @@ import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -242,5 +250,208 @@ public class PositionRESTService extends RESTService {
 		}
 		return retv;
 	}
+	
+	
+	@GET
+	@Path("/{id:[0-9][0-9]*}/electoralbody")
+	@JsonView({SimpleElectoralBodyView.class})
+	public ElectoralBody getElectoralBody(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+		Position p = (Position) em.createQuery(
+			"from Position p where p.id=:id")
+			.setParameter("id", id)
+			.getSingleResult();
+		Department department = p.getDepartment();
+		
+		User loggedOn = getLoggedOn(authToken);
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
+					&& !loggedOn.isDepartmentUser(department))
+				throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		
+		ElectoralBody eb = (ElectoralBody) em.createQuery(
+				"from ElectoralBody eb left join fetch eb.members " +
+					"where eb.position=:position")
+				.setParameter("position", p)
+				.getSingleResult();
+
+		return eb;
+	}
+
+	
+	@POST
+	@Path("/{id:[0-9][0-9]*}/electoralbody")
+	@JsonView({SimpleElectoralBodyView.class})
+	public ElectoralBody addToElectoralBody(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id,
+				Professor p) {
+		ElectoralBody eb;
+		
+		Position position = (Position) em.createQuery(
+					"from Position p where p.id=:id")
+					.setParameter("id", id)
+					.getSingleResult();
+		Department department = position.getDepartment();
+		
+		User loggedOn = getLoggedOn(authToken);
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
+					&& !loggedOn.isDepartmentUser(department))
+				throw new NoLogWebApplicationException(Status.FORBIDDEN);
+	
+		//TODO: Will obviously not be allowed after some point in the lifecycle
+		
+		try {
+			eb = (ElectoralBody) em.createQuery(
+				"from ElectoralBody eb " +
+					"where eb.position=:position")
+				.setParameter("position", position)
+				.getSingleResult();
+		} catch (NoResultException e) {
+			eb= new ElectoralBody();
+			eb.setPosition(position);
+		}
+		if (eb.getMembers().size()>=ElectoralBody.MAX_MEMBERS) {
+			throw new NoLogWebApplicationException(Response.status(Status.CONFLICT).
+						header(ERROR_CODE_HEADER, "max.members.exceeded").build());
+		}
+		
+		Professor existingProfessor = em.find(Professor.class, p.getId());
+		if (existingProfessor==null) {
+			throw new NoLogWebApplicationException(Response.status(Status.NOT_FOUND).
+						header(ERROR_CODE_HEADER, "professor.not.found").build());
+		}
+		eb.addMember(existingProfessor);
+		em.persist(eb);
+		em.flush();
+		
+		return eb;
+	}
+
+	
+	@DELETE
+	@Path("/{id:[0-9][0-9]*}/electoralbody")
+	@JsonView({SimpleElectoralBodyView.class})
+	public ElectoralBody removeFromElectoralBody(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id,
+				Professor p) {
+		ElectoralBody eb;
+		
+		Position position = (Position) em.createQuery(
+					"from Position p where p.id=:id")
+					.setParameter("id", id)
+					.getSingleResult();
+		Department department = position.getDepartment();
+		
+		User loggedOn = getLoggedOn(authToken);
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
+					&& !loggedOn.isDepartmentUser(department))
+				throw new NoLogWebApplicationException(Status.FORBIDDEN);
+	
+		//TODO: Will obviously not be allowed after some point in the lifecycle
+		
+		//TODO: Will obviously not be allowed after some point in the lifecycle
+		
+		eb = (ElectoralBody) em.createQuery(
+					"from ElectoralBody eb " +
+						"where eb.position=:position")
+					.setParameter("position", position)
+					.getSingleResult();
+		
+		Professor existingProfessor = em.find(Professor.class, p.getId());
+		if (existingProfessor==null) {
+			throw new NoLogWebApplicationException(Response.status(Status.NOT_FOUND).
+						header(ERROR_CODE_HEADER, "professor.not.found").build());
+		}
+			
+		ElectoralBodyMembership removed = eb.removeMember(existingProfessor);
+		if (removed==null) {
+			throw new NoLogWebApplicationException(Response.status(Status.NOT_FOUND).
+						header(ERROR_CODE_HEADER, "membership.not.found").build());
+		}
+		
+		return eb;
+	}
+	
+	
+	
+	@GET
+	@Path("/{id:[0-9][0-9]*}/electoralbody/{professorId:[0-9][0-9]*}")
+	@JsonView({SimpleElectoralBodyView.class})
+	public ElectoralBodyMembership getElectoralBodyMembership(@HeaderParam(TOKEN_HEADER) String authToken,
+					@PathParam("id") long id, @PathParam("professorId") long professorId) {
+		ElectoralBody eb = getElectoralBody(authToken, id);
+		for (ElectoralBodyMembership ebm: eb.getMembers()) {
+			if (ebm.getProfessor().getId().equals(professorId)) return ebm;
+		}
+		throw new NoLogWebApplicationException(Response.status(Status.NOT_FOUND).
+					header(ERROR_CODE_HEADER, "membership.not.found").build());
+	}
+	
+	
+	@PUT
+	@Path("/{id:[0-9][0-9]*}/electoralbody/{professorId:[0-9][0-9]*}")
+	@JsonView({SimpleElectoralBodyView.class})
+	public ElectoralBodyMembership updateElectoralBodyMembership(@HeaderParam(TOKEN_HEADER) String authToken,
+					@PathParam("id") long id, @PathParam("professorId") long professorId, ElectoralBodyMembership ebm) {
+		User loggedOn = getLoggedOn(authToken);
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR))
+				throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		
+		ElectoralBodyMembership existingEbm = getElectoralBodyMembership(authToken, id, professorId);
+		existingEbm.setConfirmedMembership(ebm.getConfirmedMembership());
+		
+		return existingEbm;
+	}
+	
+	
+	@GET
+	@Path("/{id:[0-9][0-9]*}/electoralbody/{professorId:[0-9][0-9]*}/report")
+	@JsonView({DetailedFileHeaderView.class})
+	public FileHeader getElectoralBodyMembershipReport(@HeaderParam(TOKEN_HEADER) String authToken,
+					@PathParam("id") long id, @PathParam("professorId") long professorId) {
+		ElectoralBodyMembership ebm = getElectoralBodyMembership(authToken, id, professorId);
+		FileHeader file = ebm.getRecommendatoryReport();
+		if (file!=null) file.getBodies().size();
+		return file;
+	}	
+	
+	
+	@POST
+	@Path("/{id:[0-9][0-9]*}/electoralbody/{professorId:[0-9][0-9]*}/report")
+	@Consumes("multipart/form-data")
+	@Produces({MediaType.APPLICATION_JSON})
+	@JsonView({SimpleFileHeaderView.class})
+	public FileHeader postFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("professorId") long professorId,
+				@Context HttpServletRequest request) throws FileUploadException, IOException
+	{
+		User loggedOn = getLoggedOn(authToken);
+		ElectoralBodyMembership ebm = getElectoralBodyMembership(authToken, id, professorId);
+		FileHeader file = ebm.getRecommendatoryReport();
+		
+		//TODO: Security / lifecycle checks
+
+		file = uploadFile(loggedOn, request, file);
+		ebm.setRecommendatoryReport(file);
+		em.persist(ebm);
+
+		return file;
+	}	
+	
+	
+	
+	@DELETE
+	@Path("/{id:[0-9][0-9]*}/electoralbody/{professorId:[0-9][0-9]*}/report")
+	@JsonView({DetailedFileHeaderView.class})
+	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("professorId") long professorId,
+				@Context HttpServletRequest request) throws FileUploadException, IOException
+	{
+		ElectoralBodyMembership ebm = getElectoralBodyMembership(authToken, id, professorId);
+		FileHeader file = ebm.getRecommendatoryReport();
+		
+		//TODO: Security / lifecycle checks
+
+		Response retv = deleteFileBody(file);
+		
+		if (retv.getStatus()==Status.NO_CONTENT.getStatusCode()) 
+			ebm.setRecommendatoryReport(null);
+		
+		return retv;
+	}	
 	
 }
