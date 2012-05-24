@@ -30,6 +30,7 @@ App.User = Backbone.Model.extend({
 					"X-Auth-Token" : authToken
 				}
 			});
+			App.authToken = authToken;
 		}
 		return resp;
 	}
@@ -185,6 +186,7 @@ App.Role = Backbone.Model.extend({
 		// Specific Fields
 		"institution" : undefined,
 		"department" : undefined,
+		"profileURL" : undefined,
 		"position" : undefined,
 		"rank" : undefined,
 		"subject" : undefined,
@@ -226,6 +228,11 @@ App.File = Backbone.Model.extend({
 			"date" : undefined
 		}
 	}
+});
+
+App.Files = Backbone.Collection.extend({
+	name : undefined,
+	model : App.File
 });
 
 App.Institution = Backbone.Model.extend({

@@ -276,12 +276,36 @@ public class RoleRESTService extends RESTService {
 		return file;
 	}
 
+	@GET
+	@Path("/{id:[0-9][0-9]*}/publications")
+	@JsonView({DetailedFileHeaderView.class})
+	public Collection<FileHeader> getPublications(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
+		User loggedOn = getLoggedOn(authToken);
+		Role role = em.find(Role.class, id);
+
+		// Validate:
+		if (role == null) {
+			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+		}
+		if (!(role instanceof Candidate)) {
+			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && role.getUser() != loggedOn.getId()) {
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		}
+
+		// Get File
+		Candidate c = (Candidate) role;
+		c.getPublications().size();
+		return c.getPublications();
+	}
+
 	@POST
-	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599}{fileId:(/[0-9][0-9]*)?}")
+	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599|publications}{fileId:(/[0-9][0-9]*)?}")
 	@Consumes("multipart/form-data")
 	@Produces({MediaType.APPLICATION_JSON})
 	@JsonView({SimpleFileHeaderView.class})
-	public FileHeader postFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("var") String var, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	public FileHeader postFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("var") String var, @PathParam("fileId") String fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
 
@@ -310,6 +334,25 @@ public class RoleRESTService extends RESTService {
 			Candidate candidate = (Candidate) role;
 			file = uploadFile(loggedOn, request, candidate.getMilitary1599());
 			candidate.setMilitary1599(file);
+		} else if ("publications".equals(var)) {
+			Candidate candidate = (Candidate) role;
+			Set<FileHeader> publications = candidate.getPublications();
+			FileHeader existingPublication = null;
+			Long fileHeaderId = (fileId.isEmpty()) ? -1L : Long.parseLong(fileId.substring(1));
+			if (fileHeaderId > 0) {
+				for (FileHeader fh : publications) {
+					if (fh.getId().equals(fileHeaderId)) {
+						existingPublication = fh;
+						break;
+					}
+				}
+			}
+			if (existingPublication == null) {
+				file = uploadFile(loggedOn, request, null);
+				publications.add(file);
+			} else {
+				file = uploadFile(loggedOn, request, existingPublication);
+			}
 		}
 
 		return file;
@@ -348,6 +391,36 @@ public class RoleRESTService extends RESTService {
 				candidate.setMilitary1599(null);
 			}
 		}
+		return retv;
+	}
+
+	/**
+	 * Deletes the last body of given file, if possible.
+	 * 
+	 * @param authToken
+	 * @param id
+	 * @return
+	 */
+	@DELETE
+	@Path("/{id:[0-9][0-9]*}/publications}/{fileId:[0-9][0-9]*}")
+	@JsonView({DetailedFileHeaderView.class})
+	public Response deletePublication(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("fileId") Long fileId) {
+		User loggedOn = getLoggedOn(authToken);
+		Role role = em.find(Role.class, id);
+		if (!(role instanceof Candidate)) {
+			return Response.status(Status.NOT_FOUND).build();
+		}
+		Candidate candidate = (Candidate) role;
+		Set<FileHeader> publications = candidate.getPublications();
+		FileHeader existingPublication = null;
+		for (FileHeader fh : publications) {
+			if (fh.getId().equals(fileId)) {
+				existingPublication = fh;
+				break;
+			}
+		}
+		Response retv = deleteFileBody(loggedOn, existingPublication);
+		publications.remove(existingPublication);
 		return retv;
 	}
 

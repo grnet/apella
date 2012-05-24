@@ -109,7 +109,11 @@ App.Router = Backbone.Router.extend({
 		var menuView = new App.MenuView({
 			model : App.loggedOnUser
 		});
-		$("#nav").html(menuView.render().el);
+		menuView.render();
+		var usermenuView = new App.UserMenuView({
+			model : App.loggedOnUser
+		});
+		usermenuView.render();
 		
 		// Start Routing
 		Backbone.history.start();
@@ -144,11 +148,14 @@ App.Router = Backbone.Router.extend({
 		var self = this;
 		console.log("showProfileView");
 		$("#content").empty();
+		$("#content").append("<div id=\"roleList\" class=\"well span3\">");
+		$("#content").append("<div id=\"roleInfo\" class=\"span9\">");
 		var roleListView = new App.RoleListView({
+			el: $("#content #roleList")[0],
 			collection : App.roles,
 			user : App.loggedOnUser.get("id")
 		});
-		$("#content").append(roleListView.render().el);
+		roleListView.render();
 		// Refresh roles from server
 		App.roles.fetch();
 		

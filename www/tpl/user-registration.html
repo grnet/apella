@@ -1,62 +1,82 @@
 <h3><%= $.i18n.prop('RegistrationForm') %></h3>
-<p><%= $.i18n.prop('Instructions_Registration') %></p>
-<p id="messages" class="notice"></p>
-<form onsubmit="return false">
+<div class="control-group"><%= $.i18n.prop('Instructions_Registration') %></div>
+<form class="form-horizontal" onsubmit="return false">
 	<fieldset>
 		<legend><%= $.i18n.prop('Account') %></legend>
-		<p>
-			<label for="username"><%= $.i18n.prop('Username') %>:</label>
+		<div class="control-group">
+			<label class="control-label" for="username"><%= $.i18n.prop('Username') %>:</label>
+			<div class="controls">
 			<input type="email" name="username" />
-		</p>
-		<p>
-			<label for="firstname"><%= $.i18n.prop('Name') %>:</label>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="firstname"><%= $.i18n.prop('Name') %>:</label>
+			<div class="controls">
 			<input type="text" name="firstname" />
-		</p>
-		<p>
-			<label for="lastname"><%= $.i18n.prop('Surname') %>:</label>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="lastname"><%= $.i18n.prop('Surname') %>:</label>
+			<div class="controls">
 			<input type="text" name="lastname" />
-		</p>
-		<p>
-			<label for="password"><%= $.i18n.prop('Password') %>:</label>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="password"><%= $.i18n.prop('Password') %>:</label>
+			<div class="controls">
 			<input type="password" name="password" />
-		</p>
-		<p>
+			</div>
+		</div>
+		<div class="control-group">
 			<label for="confirm_password"><%= $.i18n.prop('ConfirmPassword') %>:</label>
+			<div class="controls">
 			<input type="password" name="confirm_password" />
-		</p>
+			</div>
+		</div>
 	</fieldset>
 	<fieldset>
 		<legend><%= $.i18n.prop('ContactInformation') %></legend>
-		<p>
-			<label for="phoneNumber"><%= $.i18n.prop('Phone') %>:</label>
+		<div class="control-group">
+			<label class="control-label" for="phoneNumber"><%= $.i18n.prop('Phone') %>:</label>
+			<div class="controls">
 			<input type="text" name="phoneNumber" />
-		</p>
+			</div>
+		</div>
 	</fieldset>
 	<fieldset>
 		<legend><%= $.i18n.prop('Address') %></legend>
-		<p>
-		<label for="address_street"><%= $.i18n.prop('Street') %>:</label>
+		<div class="control-group">
+		<label class="control-label" for="address_street"><%= $.i18n.prop('Street') %>:</label>
+		<div class="controls">
 		<input type="text" name="address_street" />
-		</p>
-		<p>
-		<label for="address_number"><%= $.i18n.prop('StreetNumber') %>:</label>
+		</div>
+		</div>
+		<div class="control-group">
+		<label class="control-label" for="address_number"><%= $.i18n.prop('StreetNumber') %>:</label>
+		<div class="controls">
 		<input type="text" name="address_number" />
-		</p>
-		<p>
-		<label for="address_zip"><%= $.i18n.prop('Zip') %>:</label>
+		</div>
+		</div>
+		<div class="control-group">
+		<label class="control-label" for="address_zip"><%= $.i18n.prop('Zip') %>:</label>
+		<div class="controls">
 		<input type="text" name="address_zip" />
-		</p>
-		<p>
-		<label for="address_city"><%= $.i18n.prop('City') %>:</label>
+		</div>
+		</div>
+		<div class="control-group">
+		<label class="control-label" for="address_city"><%= $.i18n.prop('City') %>:</label>
+		<div class="controls">
 		<input type="text" name="address_city" />
-		</p>
-		<p>
-		<label for="address_country"><%= $.i18n.prop('Country') %>:</label>
+		</div>
+		</div>
+		<div class="control-group">
+		<label class="control-label" for="address_country"><%= $.i18n.prop('Country') %>:</label>
+		<div class="controls">
 		<input type="text" name="address_country" />
-		</p>
+		</div>
+		</div>
+		<div class="form-actions">
+			<a id="save" href="javascript:void(0)" class="btn"><%= $.i18n.prop('btn_register') %></a>
+		</div>
 	</fieldset>
-	<p>
-		<label for="submit">&nbsp;</label>
-		<a id="save" href="javascript:void(0)" class="button"><%= $.i18n.prop('btn_register') %></a>
-	</p>
 </form>

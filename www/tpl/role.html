@@ -1,199 +1,240 @@
-<p id="messages" class="notice"></p>
 <% if (discriminator === "PROFESSOR_DOMESTIC") { %>
 <div id="PROFESSOR_DOMESTIC">
-	<form onsubmit="return false">
+	<form class="form-horizontal" onsubmit="return false">
 		<fieldset>
 			<legend><%= $.i18n.prop('PROFESSOR_DOMESTIC') %></legend>
-			<p>
-				<label for="institution"><%= $.i18n.prop('Institution') %>:</label>
-				<select name="institution" class="edit">
+			<div class="control-group">
+				<label class="control-label" for="institution"><%= $.i18n.prop('Institution') %>:</label>
+				<div class="controls">
+				<select class="input-xlarge" name="institution">
 				</select>
-			</p>
-			<p>
-				<label for="rank"><%= $.i18n.prop('Rank') %>:</label>
-				<textarea name="rank" class="edit" ><% if (!_.isUndefined(rank)) { %><%= rank.name %><% } %></textarea>
-			</p>
-			<p>
-				<label for="position"><%= $.i18n.prop('Position') %>:</label>
-				<input name="position" class="edit" type="text" value="<%= position %>" />
-			</p>
-			<p>
-				<label for="subject"><%= $.i18n.prop('Subject') %>:</label>
-				<textarea name="subject" class="edit"><% if (!_.isUndefined(subject)) { %><%= subject.name %><% } %></textarea>
-			</p>
-			<p>
-				<label for="fek"><%= $.i18n.prop('FEK') %>:</label>
-				<input name="fek" class="edit" type="text" value="<%= fek %>" />
-			</p>
-			<p>
-				<label for="fekSubject"><%= $.i18n.prop('FEKSubject') %>:</label>
-				<textarea name="fekSubject" class="edit"><% if (!_.isUndefined(fekSubject)) { %><%= fekSubject.name %><% } %></textarea>
-			</p>
-			<p>
-				<label for="fekFile"><%= $.i18n.prop('FEKFile') %>:</label>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="profileURL"><%= $.i18n.prop('ProfileURL') %>:</label>
+				<div class="controls">
+				<input class="input-xlarge" name="profileURL" type="text" value="<%= profileURL %>" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="rank"><%= $.i18n.prop('Rank') %>:</label>
+				<div class="controls">
+				<textarea class="input-xlarge" name="rank" ><% if (!_.isUndefined(rank)) { %><%= rank.name %><% } %></textarea>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="position"><%= $.i18n.prop('Position') %>:</label>
+				<div class="controls">
+				<input class="input-xlarge" name="position" type="text" value="<%= position %>" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="subject"><%= $.i18n.prop('Subject') %>:</label>
+				<div class="controls">
+				<textarea class="input-xlarge" name="subject" class="edit"><% if (!_.isUndefined(subject)) { %><%= subject.name %><% } %></textarea>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="fek"><%= $.i18n.prop('FEK') %>:</label>
+				<div class="controls">
+				<input class="input-xlarge" name="fek" type="text" value="<%= fek %>" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="fekSubject"><%= $.i18n.prop('FEKSubject') %>:</label>
+				<div class="controls">
+				<textarea class="input-xlarge" name="fekSubject" class="edit"><% if (!_.isUndefined(fekSubject)) { %><%= fekSubject.name %><% } %></textarea>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="fekFile"><%= $.i18n.prop('FEKFile') %>:</label>
+				<div class="controls">
 				<span id="fekFile"></span>
-			</p>
+				</div>
+			</div>
+			<div class="form-actions">
+				<a id="remove" href="javascript:void(0)" class="btn btn-warning"><%= $.i18n.prop('btn_remove') %></a>
+				<a id="save" href="javascript:void(0)" class="btn btn-primary"><%= $.i18n.prop('btn_save') %></a>
+				<a id="cancel" href="javascript:void(0)" class="btn"><%= $.i18n.prop('btn_cancel') %></a>
+			</div>
 		</fieldset>
-		<p>
-			<a id="remove" href="javascript:void(0)" class="button"><%= $.i18n.prop('btn_remove') %></a>
-			<a id="save" href="javascript:void(0)" class="button"><%= $.i18n.prop('btn_save') %></a>
-			<a id="cancel" hef="javascript:void(0)" class="button"><%= $.i18n.prop('btn_cancel') %></a>
-		</p>
 	</form>
 </div>
 <% } %>
 <% if (discriminator === "PROFESSOR_FOREIGN") { %>
 <div id="PROFESSOR_FOREIGN">
-	<form onsubmit="return false">
+	<form class="form-horizontal" onsubmit="return false">
 		<fieldset>
 			<legend><%= $.i18n.prop('PROFESSOR_FOREIGN') %></legend>
-			<p>
-				<label for="institution"><%= $.i18n.prop('Institution') %>:</label>
-				<input name="institution" class="edit" type="text" value="<%= institution %>"/>
-			</p>
-			<p>
-				<label for="position"><%= $.i18n.prop('Position') %>:</label>
-				<input name="position" class="edit" type="text" value="<%= position %>" />
-			</p>
-			<p>
-				<label for="rank"><%= $.i18n.prop('Rank') %>:</label>
-				<textarea name="rank" class="edit" ><% if (!_.isUndefined(rank)) { %><%= rank.name %><% } %></textarea>
-			</p>
-			<p>
-				<label for="subject"><%= $.i18n.prop('Subject') %>:</label>
-				<textarea name="subject" class="edit"><% if (!_.isUndefined(subject)) { %><%= subject.name %><% } %></textarea>
-			</p>
+			<div class="control-group">
+				<label class="control-label" for="institution"><%= $.i18n.prop('Institution') %>:</label>
+				<div class="controls">
+				<input class="input-xlarge" name="institution" type="text" value="<%= institution %>"/>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="profileURL"><%= $.i18n.prop('ProfileURL') %>:</label>
+				<div class="controls">
+				<input class="input-xlarge" name="profileURL" type="text" value="<%= profileURL %>" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="position"><%= $.i18n.prop('Position') %>:</label>
+				<div class="controls">
+				<input name="position" type="text" value="<%= position %>" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="rank"><%= $.i18n.prop('Rank') %>:</label>
+				<div class="controls">
+				<textarea class="input-xlarge" name="rank" ><% if (!_.isUndefined(rank)) { %><%= rank.name %><% } %></textarea>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="subject"><%= $.i18n.prop('Subject') %>:</label>
+				<div class="controls">
+				<textarea class="input-xlarge" name="subject" class="edit"><% if (!_.isUndefined(subject)) { %><%= subject.name %><% } %></textarea>
+				</div>
+			</div>
+			<div class="form-actions">
+				<a id="remove" href="javascript:void(0)" class="btn btn-warning"><%= $.i18n.prop('btn_remove') %></a>
+				<a id="save" href="javascript:void(0)" class="btn btn-primary"><%= $.i18n.prop('btn_save') %></a>
+				<a id="cancel" href="javascript:void(0)" class="btn"><%= $.i18n.prop('btn_cancel') %></a>
+			</div>
 		</fieldset>
-		<p>
-			<a id="remove" href="javascript:void(0)" class="button"><%= $.i18n.prop('btn_remove') %></a>
-			<a id="save" href="javascript:void(0)" class="button"><%= $.i18n.prop('btn_save') %></a>
-			<a id="cancel" href="javascript:void(0)" class="button"><%= $.i18n.prop('btn_cancel') %></a>
-		</p>
 	</form>
 </div>
 <% } %>
 <% if (discriminator === "INSTITUTION_MANAGER") { %>
 <div id="INSTITUTION_MANAGER">
-	<form onsubmit="return false">
+	<form class="form-horizontal" onsubmit="return false">
 		<fieldset>
 			<legend><%= $.i18n.prop('INSTITUTION_MANAGER') %></legend>
-			<p>
-				<label for="institution"><%= $.i18n.prop('Institution') %>:</label>
-				<select name="institution" class="edit" >
+			<div class="control-group">
+				<label class="control-label" for="institution"><%= $.i18n.prop('Institution') %>:</label>
+				<div class="controls">
+				<select class="input-xlarge" name="institution" >
 				</select>
-			</p>
+				</div>
+			</div>
+			<div class="form-actions">
+				<a id="remove" href="javascript:void(0)" class="btn btn-warning"><%= $.i18n.prop('btn_remove') %></a>
+				<a id="save" href="javascript:void(0)" class="btn btn-primary"><%= $.i18n.prop('btn_save') %></a>
+				<a id="cancel" href="javascript:void(0)" class="btn"><%= $.i18n.prop('btn_cancel') %></a>
+			</div>
 		</fieldset>
-		<p>
-			<a id="remove"href="javascript:void(0)" class="button"><%= $.i18n.prop('btn_remove') %></a>
-			<a id="save" href="javascript:void(0)" class="button"><%= $.i18n.prop('btn_save') %></a>
-			<a id="cancel" href="javascript:void(0)" class="button"><%= $.i18n.prop('btn_cancel') %></a>
-		</p>
 	</form>
 </div>
 <% } %>
 <% if (discriminator === "DEPARTMENT_MANAGER") { %>
 <div id="DEPARTMENT_MANAGER">
-	<form onsubmit="return false">
+	<form class="form-horizontal" onsubmit="return false">
 		<fieldset>
 			<legend><%= $.i18n.prop('DEPARTMENT_MANAGER') %></legend>
-			<p>
-				<label for="department"><%= $.i18n.prop('Department') %>:</label>
-				<select name="department" class="edit" >
+			<div class="control-group">
+				<label class="control-label" for="department"><%= $.i18n.prop('Department') %>:</label>
+				<div class="controls">
+				<select class="input-xlarge" name="department" >
 				</select>
-			</p>
+				</div>
+			</div>
+			<div class="form-actions">
+				<a id="remove" href="javascript:void(0)" class="btn btn-warning"><%= $.i18n.prop('btn_remove') %></a>
+				<a id="save" href="javascript:void(0)" class="btn btn-primary"><%= $.i18n.prop('btn_save') %></a>
+				<a id="cancel" href="javascript:void(0)" class="btn"><%= $.i18n.prop('btn_cancel') %></a>
+			</div>
 		</fieldset>
-		<p>
-			<a id="remove" href="javascript:void(0)" class="button"><%= $.i18n.prop('btn_remove') %></a>
-			<a id="save" href="javascript:void(0)" class="button"><%= $.i18n.prop('btn_save') %></a>
-			<a id="cancel" href="javascript:void(0)" class="button"><%= $.i18n.prop('btn_cancel') %></a>
-		</p>
 	</form>
 </div>
 <% } %>
 <% if (discriminator === "INSTITUTION_ASSISTANT") { %>
 <div id="INSTITUTION_ASSISTANT">
-	<form onsubmit="return false">
+	<form class="form-horizontal" onsubmit="return false">
 		<fieldset>
 			<legend><%= $.i18n.prop('INSTITUTION_ASSISTANT') %></legend>
-			<p>
-				<label for="institution"><%= $.i18n.prop('Institution') %>:</label>
-				<select name="institution" class="edit" >
+			<div class="control-group">
+				<label class="control-label" for="institution"><%= $.i18n.prop('Institution') %>:</label>
+				<div class="controls">
+				<select class="input-xlarge" name="institution" >
 				</select>
-			</p>
-			<p>
-				<label for="manager"><%= $.i18n.prop('Manager') %>:</label>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="manager"><%= $.i18n.prop('Manager') %>:</label>
+				<div class="controls">
 				<span><a id="view-manager">View</a></span>
-			</p>
+				</div>
+			</div>
+			<div class="form-actions">
+				<a id="remove" href="javascript:void(0)" class="btn btn-warning"><%= $.i18n.prop('btn_remove') %></a>
+				<a id="save" href="javascript:void(0)" class="btn btn-primary"><%= $.i18n.prop('btn_save') %></a>
+				<a id="cancel" href="javascript:void(0)" class="btn"><%= $.i18n.prop('btn_cancel') %></a>
+			</div>
 		</fieldset>
-		<p>
-			<a id="remove" href="javascript:void(0)" class="button"><%= $.i18n.prop('btn_remove') %></a>
-			<a id="save" href="javascript:void(0)" class="button"><%= $.i18n.prop('btn_save') %></a>
-			<a id="cancel" href="javascript:void(0)" class="button"><%= $.i18n.prop('btn_cancel') %></a>
-		</p>
 	</form>
 </div>
 <% } %>
 <% if (discriminator === "MINISTRY_MANAGER") { %>
 <div id="MINISTRY_MANAGER">
-	<form onsubmit="return false">
+	<form class="form-horizontal" onsubmit="return false">
 		<fieldset>
 			<legend><%= $.i18n.prop('MINISTRY_MANAGER') %></legend>
-			<p>
-				<label for="ministry"><%= $.i18n.prop('Ministry') %>:</label>
-				<input name="ministry" class="edit" type="text" value="<%= ministry %>" />
-			</p>
-			<p>
-				<label for="manager"><%= $.i18n.prop('Manager') %>:</label>
+			<div class="control-group">
+				<label class="control-label" for="ministry"><%= $.i18n.prop('Ministry') %>:</label>
+				<div class="controls">
+				<input class="input-xlarge" name="ministry" type="text" value="<%= ministry %>" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="manager"><%= $.i18n.prop('Manager') %>:</label>
+				<div class="controls">
 				<span><a id="view-manager">View</a></span>
-			</p>
+				</div>
+			</div>
+			<div class="form-actions">
+				<a id="remove" href="javascript:void(0)" class="btn btn-warning"><%= $.i18n.prop('btn_remove') %></a>
+				<a id="save" href="javascript:void(0)" class="btn btn-primary"><%= $.i18n.prop('btn_save') %></a>
+				<a id="cancel" href="javascript:void(0)" class="btn"><%= $.i18n.prop('btn_cancel') %></a>
+			</div>
 		</fieldset>
-		<p>
-			<a id="remove" href="javascript:void(0)" class="button"><%= $.i18n.prop('btn_remove') %></a>
-			<a id="save" href="javascript:void(0)" class="button"><%= $.i18n.prop('btn_save') %></a>
-			<a id="cancel" href="javascript:void(0)" class="button"><%= $.i18n.prop('btn_cancel') %></a>
-		</p>
 	</form>
 </div>
 <% } %>
 <% if (discriminator === "CANDIDATE") { %>
 <div id="CANDIDATE">
-	<form onsubmit="return false">
+	<form class="form-horizontal" onsubmit="return false">
 		<fieldset>
 			<legend><%= $.i18n.prop('CANDIDATE') %></legend>
-			<p>
-				<label for="cv"><%= $.i18n.prop('CuriculumVitaeFile') %>:</label>
-				<span>
-					<% if (typeof(cv) !== "undefined" && cv !== null) { %>
-					<%= cv.name  %>
-					<% } %>	
-				</span>
+			<div class="control-group">
+				<label class="control-label" for="cv"><%= $.i18n.prop('CuriculumVitaeFile') %>:</label>
+				<div class="controls">
 				<span id="cv"></span>
-			</p>
-			<p>
-				<label for="identity"><%= $.i18n.prop('IdentityFile') %>:</label>
-				<span>
-					<% if (typeof(identity) !== "undefined" && identity !== null) { %>
-					<%= identity.name  %>
-					<% } %>
-				</span>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="identity"><%= $.i18n.prop('IdentityFile') %>:</label>
+				<div class="controls">
 				<span id="identity"></span>
-			</p>
-			<p>
-				<label for="military1599"><%= $.i18n.prop('Military1599File') %>:</label>
-				<span>
-					<% if (typeof(military1599) !== "undefined" && military1599 !== null) { %>
-					<%= military1599.name  %>
-					<% } %>
-				</span>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="military1599"><%= $.i18n.prop('Military1599File') %>:</label>
+				<div class="controls">
 				<span id="military1599"></span>
-			</p>
-			
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="publications"><%= $.i18n.prop('PublicationsFiles') %>:</label>
+				<div class="controls">
+				<span id="publications"></span>
+				</div>
+			</div>
+			<div class="form-actions">
+				<a id="remove" href="javascript:void(0)" class="btn btn-warning"><%= $.i18n.prop('btn_remove') %></a>
+				<a id="save" href="javascript:void(0)" class="btn btn-primary"><%= $.i18n.prop('btn_save') %></a>
+				<a id="cancel" href="javascript:void(0)" class="btn"><%= $.i18n.prop('btn_cancel') %></a>
+			</div>
 		</fieldset>
-		<p>
-			<a id="remove" href="javascript:void(0)" class="button"><%= $.i18n.prop('btn_remove') %></a>
-			<a id="save" href="javascript:void(0)" class="button"><%= $.i18n.prop('btn_save') %></a>
-			<a id="cancel" href="javascript:void(0)" class="button"><%= $.i18n.prop('btn_cancel') %></a>
-		</p>
 	</form>
 </div>
 <% } %>

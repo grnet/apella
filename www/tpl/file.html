@@ -1,17 +1,27 @@
-<table>
-	<% if (!_.isUndefined(id)) { %>
-	<tr>
-		<td colspan="3"><%= id %>, <a href='/rest/file/<%= id %>' target="viewfile"><%= currentBody.originalFilename %></a>, <%= currentBody.fileSize %> bytes, <%= currentBody.date %>
-		</td>
-	</tr>
-	<% } %>
-	<tr>
-		<td class="list" colspan="2"></td>
-		<td class="progress"></td>
-	</tr>
-	<tr class="uploader">
-		<td><input type="file" class="upload" name="<%= name %>" /></td>
-		<td><a href="javascript:void(0)" id="upload" class="button"><%= $.i18n.prop('btn_upload') %></a></td>
-		<td><a href="javascript:void(0)" id="delete" class="button"><%= $.i18n.prop('btn_delete') %></a></td>
-	</tr>
-</table>
+<tbody>
+<% _.each(files, function(file) { %> 
+<% if (!_.isUndefined(file.id)) { %>
+<tr>
+	<td><%= file.id %></td>
+	<td><a href='/rest/file/<%= file.id %>' target="viewfile"><%= file.currentBody.originalFilename %></a></td>
+	<td><%= file.currentBody.fileSize %> bytes</td>
+	<td><%= file.currentBody.date %></td>
+	<td>
+		<a href="javascript:void(0)" id="delete" fileId="<%= file.id %>" class="btn btn-danger"><i class="icon-trash icon-white"></i> <%= $.i18n.prop('btn_delete') %></a>
+	</td>
+</tr>
+<% } %>
+<% }); %>
+<tr>
+	<td colspan="5">
+		<a href="javascript:void(0)" id="upload" class="btn btn-primary"><i class="icon-upload icon-white"></i>  <%= $.i18n.prop('btn_upload') %></a>
+		<div class="modal fade">
+  			<div class="modal-header">
+    			<button class="close" data-dismiss="modal">×</button>
+  			</div>
+  			<div class="modal-body uploader"></div>
+  			<div class="modal-footer"></div>
+		</div>
+	</td>
+</tr>
+</tbody>
