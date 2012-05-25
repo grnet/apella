@@ -1,10 +1,7 @@
 package gr.grnet.dep.server.rest;
 
-import gr.grnet.dep.service.model.CandidateCommittee;
-import gr.grnet.dep.service.model.CandidateCommitteeMembership;
 import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.ElectoralBody;
-import gr.grnet.dep.service.model.CandidateCommittee.SimpleCandidateCommitteeView;
 import gr.grnet.dep.service.model.ElectoralBody.SimpleElectoralBodyView;
 import gr.grnet.dep.service.model.ElectoralBodyMembership;
 import gr.grnet.dep.service.model.FileHeader;
@@ -13,6 +10,9 @@ import gr.grnet.dep.service.model.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
 import gr.grnet.dep.service.model.Professor;
+import gr.grnet.dep.service.model.RecommendatoryCommittee;
+import gr.grnet.dep.service.model.RecommendatoryCommittee.SimpleRecommendatoryCommitteeView;
+import gr.grnet.dep.service.model.RecommendatoryCommitteeMembership;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Subject;
 import gr.grnet.dep.service.model.User;
@@ -57,6 +57,22 @@ public class PositionRESTService extends RESTService {
 	@Inject
 	private Logger log;
 
+	
+	private Position getAndCheckPosition(String authToken, long positionId) {
+		Position position = (Position) em.createQuery(
+					"from Position p where p.id=:id")
+					.setParameter("id", positionId)
+					.getSingleResult();
+		Department department = position.getDepartment();
+		
+		User loggedOn = getLoggedOn(authToken);
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
+					&& !loggedOn.isDepartmentUser(department))
+				throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		
+		return position;
+	}
+	
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedPositionView.class})
@@ -97,16 +113,7 @@ public class PositionRESTService extends RESTService {
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedPositionView.class})
 	public Position update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Position position) {
-		Position existingPosition = em.find(Position.class, id);
-		if (existingPosition == null) {
-			throw new NoLogWebApplicationException(Status.NOT_FOUND);
-		}
-		Department department = existingPosition.getDepartment();
-
-		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
-						&& !loggedOn.isDepartmentUser(department))
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		Position existingPosition = getAndCheckPosition(authToken, id);
 
 		Subject subject = em.find(Subject.class, position.getSubject().getId());
 		if (subject==null) 
@@ -127,19 +134,10 @@ public class PositionRESTService extends RESTService {
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}")
 	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
-		Position existingPosition = em.find(Position.class, id);
-		if (existingPosition == null) {
-			throw new NoLogWebApplicationException(Status.NOT_FOUND);
-		}
-		Department department = existingPosition.getDepartment();
-
-		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
-						&& !loggedOn.isDepartmentUser(department))
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		Position position = getAndCheckPosition(authToken, id);
 
 		//Do Delete:
-		em.remove(existingPosition);
+		em.remove(position);
 	}
 	
 	@GET
@@ -180,17 +178,8 @@ public class PositionRESTService extends RESTService {
 	public FileHeader postFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("var") String var, @Context HttpServletRequest request) throws FileUploadException, IOException
 	{
 		FileHeader file = null;
-		Position position = em.find(Position.class, id);
-		if (position == null) {
-			throw new NoLogWebApplicationException(Status.NOT_FOUND);
-		}
-		Department department = position.getDepartment();
-
 		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
-						&& !loggedOn.isDepartmentUser(department))
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
-
+		Position position = getAndCheckPosition(authToken, id);
 
 		if ("prosklisiKosmitora".equals(var)) {
 			file = uploadFile(loggedOn, request, position.getProsklisiKosmitora());
@@ -221,18 +210,13 @@ public class PositionRESTService extends RESTService {
 	@Path("/{id:[0-9][0-9]*}/{var:prosklisiKosmitora|recommendatoryReport|recommendatoryReportSecond|fek}")
 	@JsonView({DetailedFileHeaderView.class})
 	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("var") String var) {
-		Position position = em.find(Position.class, id);
-		if (position == null) {
-			throw new NoLogWebApplicationException(Status.NOT_FOUND);
-		}
-		Department department = position.getDepartment();
-
-		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
-						&& !loggedOn.isDepartmentUser(department))
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		Position position = getAndCheckPosition(authToken, id);
 		
 		FileHeader file = getFile(authToken, id, var);
+		if (file == null) {
+			throw new NoLogWebApplicationException(Response.status(Status.NOT_FOUND).
+						header(ERROR_CODE_HEADER, "file.not.found").build());
+		}
 		
 		Response retv = deleteFileBody(file);
 		
@@ -256,21 +240,12 @@ public class PositionRESTService extends RESTService {
 	@Path("/{id:[0-9][0-9]*}/electoralbody")
 	@JsonView({SimpleElectoralBodyView.class})
 	public ElectoralBody getElectoralBody(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
-		Position p = (Position) em.createQuery(
-			"from Position p where p.id=:id")
-			.setParameter("id", id)
-			.getSingleResult();
-		Department department = p.getDepartment();
-		
-		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
-					&& !loggedOn.isDepartmentUser(department))
-				throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		Position position = getAndCheckPosition(authToken, id);
 		
 		ElectoralBody eb = (ElectoralBody) em.createQuery(
 				"from ElectoralBody eb left join fetch eb.members " +
 					"where eb.position=:position")
-				.setParameter("position", p)
+				.setParameter("position", position)
 				.getSingleResult();
 
 		return eb;
@@ -284,16 +259,7 @@ public class PositionRESTService extends RESTService {
 				Professor p) {
 		ElectoralBody eb;
 		
-		Position position = (Position) em.createQuery(
-					"from Position p where p.id=:id")
-					.setParameter("id", id)
-					.getSingleResult();
-		Department department = position.getDepartment();
-		
-		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
-					&& !loggedOn.isDepartmentUser(department))
-				throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		Position position = getAndCheckPosition(authToken, id);
 	
 		//TODO: Will obviously not be allowed after some point in the lifecycle
 		
@@ -317,9 +283,9 @@ public class PositionRESTService extends RESTService {
 			throw new NoLogWebApplicationException(Response.status(Status.NOT_FOUND).
 						header(ERROR_CODE_HEADER, "professor.not.found").build());
 		}
-		eb.addMember(existingProfessor);
 		em.persist(eb);
 		em.flush();
+		eb.addMember(existingProfessor);
 		
 		return eb;
 	}
@@ -332,19 +298,8 @@ public class PositionRESTService extends RESTService {
 				Professor p) {
 		ElectoralBody eb;
 		
-		Position position = (Position) em.createQuery(
-					"from Position p where p.id=:id")
-					.setParameter("id", id)
-					.getSingleResult();
-		Department department = position.getDepartment();
-		
-		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
-					&& !loggedOn.isDepartmentUser(department))
-				throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		Position position = getAndCheckPosition(authToken, id);
 	
-		//TODO: Will obviously not be allowed after some point in the lifecycle
-		
 		//TODO: Will obviously not be allowed after some point in the lifecycle
 		
 		eb = (ElectoralBody) em.createQuery(
@@ -432,8 +387,7 @@ public class PositionRESTService extends RESTService {
 
 		return file;
 	}	
-	
-	
+
 	
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}/electoralbody/{professorId:[0-9][0-9]*}/report")
@@ -454,4 +408,157 @@ public class PositionRESTService extends RESTService {
 		return retv;
 	}	
 	
+	
+	@GET
+	@Path("/{id:[0-9][0-9]*}/committee")
+	@JsonView({SimpleRecommendatoryCommitteeView.class})
+	public RecommendatoryCommittee getRecommendatoryCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+		Position position = getAndCheckPosition(authToken, id);
+		
+		RecommendatoryCommittee rc = (RecommendatoryCommittee) em.createQuery(
+				"from RecommendatoryCommittee rc left join fetch rc.members " +
+					"where rc.position=:position")
+				.setParameter("position", position)
+				.getSingleResult();
+
+		return rc;
+	}
+	
+	
+	@POST
+	@Path("/{id:[0-9][0-9]*}/committee")
+	@JsonView({SimpleRecommendatoryCommitteeView.class})
+	public RecommendatoryCommittee addToRecommendatoryCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id,
+				Professor p) {
+		RecommendatoryCommittee rc;
+		
+		Position position = getAndCheckPosition(authToken, id);
+	
+		//TODO: Will obviously not be allowed after some point in the lifecycle
+		
+		try {
+			rc = (RecommendatoryCommittee) em.createQuery(
+				"from RecommendatoryCommittee rc " +
+					"where rc.position=:position")
+				.setParameter("position", position)
+				.getSingleResult();
+		} catch (NoResultException e) {
+			rc= new RecommendatoryCommittee();
+			rc.setPosition(position);
+		}
+		if (rc.getMembers().size()>=RecommendatoryCommittee.MAX_MEMBERS) {
+			throw new NoLogWebApplicationException(Response.status(Status.CONFLICT).
+						header(ERROR_CODE_HEADER, "max.members.exceeded").build());
+		}
+		
+		Professor existingProfessor = em.find(Professor.class, p.getId());
+		if (existingProfessor==null) {
+			throw new NoLogWebApplicationException(Response.status(Status.NOT_FOUND).
+						header(ERROR_CODE_HEADER, "professor.not.found").build());
+		}
+		em.persist(rc);
+		em.flush();
+		rc.addMember(existingProfessor);
+		
+		return rc;
+	}
+	
+	@DELETE
+	@Path("/{id:[0-9][0-9]*}/committee")
+	@JsonView({SimpleRecommendatoryCommitteeView.class})
+	public RecommendatoryCommittee removeFromRecommendatoryCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id,
+				Professor p) {
+		RecommendatoryCommittee rc;
+		
+		Position position = getAndCheckPosition(authToken, id);
+	
+		//TODO: Will obviously not be allowed after some point in the lifecycle
+		
+		rc = (RecommendatoryCommittee) em.createQuery(
+					"from RecommendatoryCommittee rc " +
+						"where rc.position=:position")
+					.setParameter("position", position)
+					.getSingleResult();
+		
+		Professor existingProfessor = em.find(Professor.class, p.getId());
+		if (existingProfessor==null) {
+			throw new NoLogWebApplicationException(Response.status(Status.NOT_FOUND).
+						header(ERROR_CODE_HEADER, "professor.not.found").build());
+		}
+			
+		RecommendatoryCommitteeMembership removed = rc.removeMember(existingProfessor);
+		if (removed==null) {
+			throw new NoLogWebApplicationException(Response.status(Status.NOT_FOUND).
+						header(ERROR_CODE_HEADER, "membership.not.found").build());
+		}
+		
+		return rc;
+	}
+
+	@GET
+	@Path("/{id:[0-9][0-9]*}/committee/{professorId:[0-9][0-9]*}")
+	@JsonView({SimpleRecommendatoryCommitteeView.class})
+	public RecommendatoryCommitteeMembership getRecommendatoryCommitteeMembership(@HeaderParam(TOKEN_HEADER) String authToken,
+					@PathParam("id") long id, @PathParam("professorId") long professorId) {
+		RecommendatoryCommittee rc = getRecommendatoryCommittee(authToken, id);
+		for (RecommendatoryCommitteeMembership rcm: rc.getMembers()) {
+			if (rcm.getProfessor().getId().equals(professorId)) return rcm;
+		}
+		throw new NoLogWebApplicationException(Response.status(Status.NOT_FOUND).
+					header(ERROR_CODE_HEADER, "membership.not.found").build());
+	}
+	
+	@GET
+	@Path("/{id:[0-9][0-9]*}/committee/report")
+	@JsonView({DetailedFileHeaderView.class})
+	public FileHeader getRecommendatoryCommitteeReport(@HeaderParam(TOKEN_HEADER) String authToken,
+					@PathParam("id") long id) {
+		RecommendatoryCommittee rc = getRecommendatoryCommittee(authToken, id);
+		FileHeader file = rc.getRecommendatoryReport();
+		if (file!=null) file.getBodies().size();
+		return file;
+	}	
+	
+	@POST
+	@Path("/{id:[0-9][0-9]*}/committee/report")
+	@Consumes("multipart/form-data")
+	@Produces({MediaType.APPLICATION_JSON})
+	@JsonView({SimpleFileHeaderView.class})
+	public FileHeader postFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id,
+				@Context HttpServletRequest request) throws FileUploadException, IOException
+	{
+		User loggedOn = getLoggedOn(authToken);
+		RecommendatoryCommittee rc = getRecommendatoryCommittee(authToken, id);
+		FileHeader file = rc.getRecommendatoryReport();
+		
+		//TODO: Security / lifecycle checks
+
+		file = uploadFile(loggedOn, request, file);
+		rc.setRecommendatoryReport(file);
+		em.persist(rc);
+
+		return file;
+	}	
+
+	
+	@DELETE
+	@Path("/{id:[0-9][0-9]*}/committee/report")
+	@JsonView({DetailedFileHeaderView.class})
+	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id,
+				@Context HttpServletRequest request) throws FileUploadException, IOException
+	{
+		RecommendatoryCommittee rc = getRecommendatoryCommittee(authToken, id);
+		FileHeader file = rc.getRecommendatoryReport();
+		
+		//TODO: Security / lifecycle checks
+
+		Response retv = deleteFileBody(file);
+		
+		if (retv.getStatus()==Status.NO_CONTENT.getStatusCode()) 
+			rc.setRecommendatoryReport(null);
+		
+		return retv;
+	}	
+	
+
 }
