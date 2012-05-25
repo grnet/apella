@@ -251,9 +251,9 @@ public class CandidacyRESTService extends RESTService {
 			throw new NoLogWebApplicationException(Response.status(Status.NOT_FOUND).
 						header(ERROR_CODE_HEADER, "professor.not.found").build());
 		}
-		cc.addMember(existingProfessor);
 		em.persist(cc);
 		em.flush();
+		cc.addMember(existingProfessor);
 		
 		return cc;
 	}
