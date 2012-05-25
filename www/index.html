@@ -36,7 +36,7 @@
 <script type="text/javascript" src="js/views.js"></script>
 <script type="text/javascript">
 	$(document).ready(function() {
-		tpl.loadTemplates([ "login", "popup", "user", "role", "file", "confirm" ], function() {
+		tpl.loadTemplates([ "home", "login", "popup", "user", "role", "rolelist", "file", "confirm" ], function() {
 			console.log("Loaded templates");
 			jQuery.i18n.properties({
 				name : 'messages',
@@ -59,12 +59,13 @@
 		<div class="navbar-inner">
 			<div class="container-fluid">
 				<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"> <span class="icon-bar"></span> <span class="icon-bar"></span><span class="icon-bar"></span>
-				</a> <a class="brand" href="#">Εκλογές ΔΕΠ</a>
+				</a> <a class="brand" href="#">ΑΠΕΛΛΑ</a>
 
 				<div id="user-menu" class="btn-group pull-right"></div>
 				<div id="menu" class="nav-collapse"></div>
 			</div>
 		</div>
+		<div id="alerts"></div>
 	</div>
 
 	<!-- Container -->

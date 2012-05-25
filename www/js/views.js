@@ -7,7 +7,7 @@ App.MenuView = Backbone.View.extend({
 	className : "nav",
 	
 	initialize : function() {
-		_.bindAll(this, "render", "logout");
+		_.bindAll(this, "render");
 		this.model.bind('change', this.render);
 	},
 	
@@ -16,20 +16,8 @@ App.MenuView = Backbone.View.extend({
 	render : function(eventName) {
 		this.$el.empty();
 		this.$el.append("<ul class=\"nav\">");
-		this.$el.find("ul").append("<li><a href=\"\#\">" + $.i18n.prop('menu_home') + "</a></li>");
+		this.$el.find("ul").append("<li><a href=\"\#profile\">" + $.i18n.prop('menu_profile') + "</a></li>");
 		return this;
-	},
-	
-	logout : function(event) {
-		console.log("Logging out");
-		// Remove X-Auth-Token
-		$.ajaxSetup({
-			headers : {}
-		});
-		// Remove auth cookie
-		document.cookie = "_dep_a=-1;expires=0;path=/";
-		// Send Redirect
-		window.location.href = window.location.pathname;
 	}
 
 });
@@ -53,7 +41,7 @@ App.UserMenuView = Backbone.View.extend({
 		this.$el.empty();
 		this.$el.append("<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\"> <i class=\"icon-user\"></i> " + this.model.get("username") + "<span class=\"caret\"></span></a>");
 		this.$el.append("<ul class=\"dropdown-menu\">");
-		this.$el.find("ul").append("<li><a href=\"\#profile\">" + $.i18n.prop('menu_profile') + "</a>");
+		this.$el.find("ul").append("<li><a href=\"\#user\">" + $.i18n.prop('menu_user') + "</a>");
 		// Add Logout
 		this.$el.find("ul").append("<li><a id=\"logout\" href=\"javascript:void(0)\">" + $.i18n.prop('menu_logout') + "</a>");
 		return this;
@@ -96,6 +84,14 @@ App.LoginView = Backbone.View.extend({
 		$(this.el).html(this.template(this.model.toJSON()));
 		
 		this.validator = $("form", this.el).validate({
+			errorElement : "span",
+			errorClass : "help-inline",
+			highlight : function(element, errorClass, validClass) {
+				$(element).parent(".controls").parent(".control-group").addClass("error");
+			},
+			unhighlight : function(element, errorClass, validClass) {
+				$(element).parent(".controls").parent(".control-group").removeClass("error");
+			},
 			rules : {
 				username : {
 					required : true,
@@ -192,7 +188,7 @@ App.PopupView = Backbone.View.extend({
 	show : function() {
 		var self = this;
 		self.render();
-		$('body').prepend(self.el);
+		$('div#alerts').append(self.el);
 	}
 });
 
@@ -253,6 +249,14 @@ App.UserRegistrationView = Backbone.View.extend({
 		$(this.el).html(this.template(this.model.toJSON()));
 		
 		this.validator = $("form", this.el).validate({
+			errorElement : "span",
+			errorClass : "help-inline",
+			highlight : function(element, errorClass, validClass) {
+				$(element).parent(".controls").parent(".control-group").addClass("error");
+			},
+			unhighlight : function(element, errorClass, validClass) {
+				$(element).parent(".controls").parent(".control-group").removeClass("error");
+			},
 			rules : {
 				username : {
 					required : true,
@@ -393,6 +397,24 @@ App.UserVerificationView = Backbone.View.extend({
 
 });
 
+// LoginView
+App.HomeView = Backbone.View.extend({
+	tagName : "div",
+	
+	initialize : function() {
+		_.bindAll(this, "render");
+		this.template = _.template(tpl.get('home'));
+		this.model.bind('change', this.render);
+	},
+	
+	events : {},
+	
+	render : function(eventName) {
+		$(this.el).html(this.template(this.model.toJSON()));
+		return this;
+	}
+});
+
 // UserView
 App.UserView = Backbone.View.extend({
 	tagName : "div",
@@ -402,15 +424,13 @@ App.UserView = Backbone.View.extend({
 	validator : undefined,
 	
 	initialize : function() {
-		_.bindAll(this, "render", "submit", "edit", "view");
+		_.bindAll(this, "render", "submit", "cancel");
 		this.template = _.template(tpl.get('user'));
 		this.model.bind('change', this.render);
 	},
 	
 	events : {
-		"dblclick form" : "edit",
-		"click a#edit" : "edit",
-		"click a#cancel" : "view",
+		"click a#cancel" : "cancel",
 		"click a#save" : function() {
 			$("form", this.el).submit();
 		},
@@ -421,6 +441,14 @@ App.UserView = Backbone.View.extend({
 		$(this.el).html(this.template(this.model.toJSON()));
 		
 		this.validator = $("form", this.el).validate({
+			errorElement : "span",
+			errorClass : "help-inline",
+			highlight : function(element, errorClass, validClass) {
+				$(element).parent(".controls").parent(".control-group").addClass("error");
+			},
+			unhighlight : function(element, errorClass, validClass) {
+				$(element).parent(".controls").parent(".control-group").removeClass("error");
+			},
 			rules : {
 				username : {
 					required : true,
@@ -476,10 +504,15 @@ App.UserView = Backbone.View.extend({
 				address_country : $.i18n.prop('validation_country')
 			}
 		});
-		
-		this.view();
-		
 		return this;
+	},
+	
+	cancel : function(event) {
+		var self = this;
+		if (self.validator) {
+			self.validator.resetForm();
+			self.render();
+		}
 	},
 	
 	submit : function(event) {
@@ -545,26 +578,6 @@ App.UserView = Backbone.View.extend({
 		confirm.show();
 		event.preventDefault();
 		return false;
-	},
-	
-	edit : function(event) {
-		$("form span", this.el).hide();
-		$("form a#edit", this.el).hide();
-		$("form input", this.el).show();
-		$("form a#save", this.el).show();
-		$("form a#cancel", this.el).show();
-	},
-	
-	view : function(event) {
-		if (this.validator) {
-			this.validator.resetForm();
-		}
-		$("form a#save", this.el).hide();
-		$("form a#cancel", this.el).hide();
-		$("form input", this.el).hide();
-		$("form a#edit", this.el).show();
-		$("form span", this.el).show();
-		
 	}
 });
 
@@ -574,93 +587,56 @@ App.RoleListView = Backbone.View.extend({
 	
 	className : "well",
 	
-	template : _.template("<ul class=\"nav nav-list\"></ul><select name=\"newRole\" id=\"newRole\"></select><a class=\"btn\" id=\"create\" href=\"javascript:void(0)\">(+)</a>"),
-	
 	initialize : function() {
-		_.bindAll(this, "render", "add", "newRole");
+		_.bindAll(this, "render", "select", "newRole");
+		this.template = _.template(tpl.get('rolelist'));
+		this.collection.bind("change", this.render, this);
 		this.collection.bind("reset", this.render, this);
-		this.collection.bind("add", this.add, this);
+		this.collection.bind("add", this.render, this);
+		this.collection.bind("remove", this.render, this);
 	},
 	
 	events : {
-		"click a#create" : "newRole"
+		"click a.createRole" : "newRole",
+		"click a.selectRole" : "select"
 	},
 	
 	render : function(eventName) {
 		console.log("RoleListView:render");
 		var self = this;
-		self.$el.html(this.template(this.collection.toJSON()));
-		// Add options in select for adding roles:
-		_.each(_.filter(App.allowedRoles, function(discriminator) {
-			return true; // Do filtering here
-		}), function(discriminator) {
-			$("select[name='newRole']", self.$el).append("<option value='" + discriminator + "'>" + $.i18n.prop(discriminator) + "</option>");
-		});
-		// Add existing roles
-		self.collection.each(function(role) {
-			self.add(role);
-		});
+		var tpl_data = {
+			roles : (function() {
+				var result = [];
+				self.collection.each(function(model) {
+					var item = model.toJSON();
+					item.cid = model.cid;
+					result.push(item);
+				});
+				return result;
+			})(),
+			discriminators : _.filter(App.allowedRoles, function(discriminator) {
+				return true;
+			})
+		};
+		self.$el.html(this.template(tpl_data));
 		return this;
 	},
 	
-	add : function(role) {
-		console.log("RoleListView:add", role);
-		var roleListItemView = new App.RoleListItemView({
-			model : role
-		});
-		$("ul", this.el).append(roleListItemView.render().el);
-	},
-	
 	newRole : function(event) {
-		console.log("RoleListView:newRole");
 		var self = this;
-		var discriminator = $("select[name='newRole']", self.$el).val();
+		var discriminator = $(event.target).attr('discriminator');
 		var newRole = new App.Role({
 			"discriminator" : discriminator,
 			user : self.options.user
 		});
-		
-		console.log(newRole);
 		self.collection.add(newRole);
-		newRole.trigger("select", event);
-	}
-
-});
-
-App.RoleListItemView = Backbone.View.extend({
-	tagName : "li",
-	
-	id : "roleitem",
-	
-	events : {
-		"click a" : "select"
-	},
-	
-	initialize : function() {
-		_.bindAll(this, "render", "close", "select");
-		this.model.bind("change", this.render, this);
-		this.model.bind("destroy", this.close, this);
-		this.model.bind("select", this.select, this);
-	},
-	
-	render : function(eventName) {
-		if (this.model.get("id")) {
-			this.$el.html("<a href='javascript:void(0)'>" + $.i18n.prop(this.model.get("discriminator")) + "_" + this.model.get("id") + "</a>");
-		} else {
-			this.$el.html("<a href='javascript:void(0)'>" + $.i18n.prop(this.model.get("discriminator")) + "*</a>");
-		}
-		return this;
-	},
-	
-	close : function() {
-		$(this.el).unbind();
-		$(this.el).remove();
 	},
 	
 	select : function(event) {
 		var self = this;
+		var selectedModel = self.collection.getByCid($(event.target).attr('role'));
 		var roleView = new App.RoleView({
-			model : self.model
+			model : selectedModel
 		});
 		$("#content #roleInfo").unbind();
 		$("#content #roleInfo").empty();
@@ -741,6 +717,14 @@ App.RoleView = Backbone.View.extend({
 			}
 			
 			this.validator = $("form", this.el).validate({
+				errorElement : "span",
+				errorClass : "help-inline",
+				highlight : function(element, errorClass, validClass) {
+					$(element).parent(".controls").parent(".control-group").addClass("error");
+				},
+				unhighlight : function(element, errorClass, validClass) {
+					$(element).parent(".controls").parent(".control-group").removeClass("error");
+				},
 				rules : {
 					institution : "required",
 					profileURL : {
@@ -767,6 +751,14 @@ App.RoleView = Backbone.View.extend({
 			break;
 		case "PROFESSOR_FOREIGN":
 			this.validator = $("form", this.el).validate({
+				errorElement : "span",
+				errorClass : "help-inline",
+				highlight : function(element, errorClass, validClass) {
+					$(element).parent(".controls").parent(".control-group").addClass("error");
+				},
+				unhighlight : function(element, errorClass, validClass) {
+					$(element).parent(".controls").parent(".control-group").removeClass("error");
+				},
 				rules : {
 					institution : "required",
 					profileURL : {
@@ -807,6 +799,14 @@ App.RoleView = Backbone.View.extend({
 				}
 			});
 			this.validator = $("form", this.el).validate({
+				errorElement : "span",
+				errorClass : "help-inline",
+				highlight : function(element, errorClass, validClass) {
+					$(element).parent(".controls").parent(".control-group").addClass("error");
+				},
+				unhighlight : function(element, errorClass, validClass) {
+					$(element).parent(".controls").parent(".control-group").removeClass("error");
+				},
 				rules : {
 					institution : "required"
 				},
@@ -837,6 +837,14 @@ App.RoleView = Backbone.View.extend({
 				}
 			});
 			this.validator = $("form", this.el).validate({
+				errorElement : "span",
+				errorClass : "help-inline",
+				highlight : function(element, errorClass, validClass) {
+					$(element).parent(".controls").parent(".control-group").addClass("error");
+				},
+				unhighlight : function(element, errorClass, validClass) {
+					$(element).parent(".controls").parent(".control-group").removeClass("error");
+				},
 				rules : {
 					institution : "required"
 				},
@@ -867,6 +875,14 @@ App.RoleView = Backbone.View.extend({
 				}
 			});
 			this.validator = $("form", this.el).validate({
+				errorElement : "span",
+				errorClass : "help-inline",
+				highlight : function(element, errorClass, validClass) {
+					$(element).parent(".controls").parent(".control-group").addClass("error");
+				},
+				unhighlight : function(element, errorClass, validClass) {
+					$(element).parent(".controls").parent(".control-group").removeClass("error");
+				},
 				rules : {
 					department : "required"
 				},
@@ -878,6 +894,14 @@ App.RoleView = Backbone.View.extend({
 		
 		case "MINISTRY_MANAGER":
 			this.validator = $("form", this.el).validate({
+				errorElement : "span",
+				errorClass : "help-inline",
+				highlight : function(element, errorClass, validClass) {
+					$(element).parent(".controls").parent(".control-group").addClass("error");
+				},
+				unhighlight : function(element, errorClass, validClass) {
+					$(element).parent(".controls").parent(".control-group").removeClass("error");
+				},
 				rules : {
 					ministry : "required"
 				},

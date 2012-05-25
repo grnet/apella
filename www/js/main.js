@@ -90,6 +90,7 @@ App.Router = Backbone.Router.extend({
 	
 	routes : {
 		"" : "showHomeView",
+		"user" : "showUserView",
 		"profile" : "showProfileView",
 		"requests" : "showRequestsView"
 	},
@@ -136,6 +137,18 @@ App.Router = Backbone.Router.extend({
 		var self = this;
 		console.log("showHomeView");
 		$("#content").empty();
+		var homeView = new App.HomeView({
+			model : App.loggedOnUser
+		});
+		$("#content").append(homeView.render().el);
+		this.currentView = homeView;
+		return homeView;
+	},
+	
+	showUserView : function() {
+		var self = this;
+		console.log("showUserView");
+		$("#content").empty();
 		var userView = new App.UserView({
 			model : App.loggedOnUser
 		});
@@ -151,7 +164,7 @@ App.Router = Backbone.Router.extend({
 		$("#content").append("<div id=\"roleList\" class=\"well span3\">");
 		$("#content").append("<div id=\"roleInfo\" class=\"span9\">");
 		var roleListView = new App.RoleListView({
-			el: $("#content #roleList")[0],
+			el : $("#content #roleList")[0],
 			collection : App.roles,
 			user : App.loggedOnUser.get("id")
 		});
