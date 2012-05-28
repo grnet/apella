@@ -239,10 +239,9 @@ public class RoleRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599}{fileId:(/[0-9][0-9]*)?}")
 	@JsonView({DetailedFileHeaderView.class})
-	public FileHeader getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("var") String var) {
+	public FileHeader getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("var") String var, @PathParam("fileId") String fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
-
 		// Validate:
 		if (role == null) {
 			throw new NoLogWebApplicationException(Status.NOT_FOUND);
@@ -278,10 +277,9 @@ public class RoleRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9][0-9]*}/publications")
 	@JsonView({DetailedFileHeaderView.class})
-	public Collection<FileHeader> getPublications(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
+	public Collection<FileHeader> getPublicationFiles(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
-
 		// Validate:
 		if (role == null) {
 			throw new NoLogWebApplicationException(Status.NOT_FOUND);
@@ -367,19 +365,19 @@ public class RoleRESTService extends RESTService {
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599}{fileId:(/[0-9][0-9]*)?}")
 	@JsonView({DetailedFileHeaderView.class})
-	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("var") String var) {
+	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("var") String var, @PathParam("fileId") String fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
 		if (role == null) {
 			throw new NoLogWebApplicationException(Status.NOT_FOUND);
 		}
-		FileHeader file = getFile(authToken, id, var);
+		FileHeader file = getFile(authToken, id, var, fileId);
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(file.getOwner().getId())) {
 			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 		}
 		Response retv = deleteFileBody(file);
-		
-		if (retv.getStatus()==Status.NO_CONTENT.getStatusCode()) {
+
+		if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
 			// Break the relationship as well
 			if ("fekFile".equals(var)) {
 				ProfessorDomestic professorDomestic = (ProfessorDomestic) role;
@@ -406,25 +404,30 @@ public class RoleRESTService extends RESTService {
 	 * @return
 	 */
 	@DELETE
-	@Path("/{id:[0-9][0-9]*}/publications}/{fileId:[0-9][0-9]*}")
+	@Path("/{id:[0-9][0-9]*}/publications/{fileId:[0-9][0-9]*}")
 	@JsonView({DetailedFileHeaderView.class})
-	public Response deletePublication(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("fileId") Long fileId) {
+	public Response deletePublication(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("fileId") Long fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
+		if (role == null) {
+			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+		}
 		if (!(role instanceof Candidate)) {
 			return Response.status(Status.NOT_FOUND).build();
 		}
 		Candidate candidate = (Candidate) role;
-		Set<FileHeader> publications = candidate.getPublications();
-		FileHeader existingPublication = null;
-		for (FileHeader fh : publications) {
+		FileHeader publication = null;
+		for (FileHeader fh : candidate.getPublications()) {
 			if (fh.getId().equals(fileId)) {
-				existingPublication = fh;
+				publication = fh;
 				break;
 			}
 		}
-		Response retv = deleteFileBody(existingPublication);
-		publications.remove(existingPublication);
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(publication.getOwner().getId())) {
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		}
+		Response retv = deleteFileBody(publication);
+		candidate.getPublications().remove(publication);
 		return retv;
 	}
 

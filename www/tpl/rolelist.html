@@ -1,9 +1,9 @@
 <ul class="nav nav-list">
 <% _.each(roles, function(role) { %>
 <% if (role.id) { %>
-	<li><a class="selectRole" role="<%= role.cid %>" href='javascript:void(0)'><%= $.i18n.prop(role.discriminator) %>_<%= role.id %></a></li>
+	<li><a class="selectRole" role="<%= role.cid %>" href='javascript:void(0)'><%= $.i18n.prop(role.discriminator) %></a></li>
 <% } else { %>
-	<li><a class="selectRole" role="<%= role.cid %>" href='javascript:void(0)'><%= $.i18n.prop(role.discriminator) %>_*</a></li>
+	<li><a class="selectRole" role="<%= role.cid %>" href='javascript:void(0)' rel="tooltip" data-original-title="<%= $.i18n.prop('Unsaved')%>"><%= $.i18n.prop(role.discriminator) %>*</a></li>
 <% } %>	
 <% }); %> 
 </ul>

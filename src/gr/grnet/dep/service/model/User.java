@@ -54,6 +54,9 @@ public class User implements Serializable {
 	public static interface DetailedUserView extends SimpleUserView {
 	};
 
+	public static interface DetailedWithPasswordUserView extends SimpleUserView {
+	};
+
 	@Inject
 	@Transient
 	private Logger logger;
@@ -138,6 +141,7 @@ public class User implements Serializable {
 		this.contactInfo = contactInfo;
 	}
 
+	@JsonView({DetailedWithPasswordUserView.class})
 	public String getPassword() {
 		return password;
 	}
@@ -228,23 +232,23 @@ public class User implements Serializable {
 		}
 		return false;
 	}
-	
+
 	public boolean isDepartmentUser(Department department) {
 		Institution institution = department.getInstitution();
-		for (Role r: getRoles()) {
-			if (r.getDiscriminator()==RoleDiscriminator.DEPARTMENT_MANAGER) {
+		for (Role r : getRoles()) {
+			if (r.getDiscriminator() == RoleDiscriminator.DEPARTMENT_MANAGER) {
 				DepartmentManager dm = (DepartmentManager) r;
-				if (dm.getDepartment().getId().equals(department.getId())) 
+				if (dm.getDepartment().getId().equals(department.getId()))
 					return true;
 			}
-			if (r.getDiscriminator()==RoleDiscriminator.INSTITUTION_MANAGER) {
+			if (r.getDiscriminator() == RoleDiscriminator.INSTITUTION_MANAGER) {
 				InstitutionManager im = (InstitutionManager) r;
-				if (im.getInstitution().getId().equals(institution.getId())) 
+				if (im.getInstitution().getId().equals(institution.getId()))
 					return true;
 			}
-			if (r.getDiscriminator()==RoleDiscriminator.INSTITUTION_ASSISTANT) {
+			if (r.getDiscriminator() == RoleDiscriminator.INSTITUTION_ASSISTANT) {
 				InstitutionAssistant ia = (InstitutionAssistant) r;
-				if (ia.getInstitution().getId().equals(institution.getId())) 
+				if (ia.getInstitution().getId().equals(institution.getId()))
 					return true;
 			}
 		}

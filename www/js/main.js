@@ -92,6 +92,7 @@ App.Router = Backbone.Router.extend({
 		"" : "showHomeView",
 		"user" : "showUserView",
 		"profile" : "showProfileView",
+		"profile/:roleId" : "showProfileView",
 		"requests" : "showRequestsView"
 	},
 	
@@ -120,35 +121,36 @@ App.Router = Backbone.Router.extend({
 		Backbone.history.start();
 	},
 	
+	clear : function() {
+		$("#featured").empty();
+		$("#sidebar").empty();
+		$("#content").empty();
+	},
+	
 	showLoginView : function() {
-		var self = this;
-		
+		this.clear();
 		var loginView = new App.LoginView({
 			model : App.loggedOnUser
 		});
-		
-		$("#content").html(loginView.render().el);
-		
+		$("#featured").html(loginView.render().el);
 		this.currentView = loginView;
 		return loginView;
 	},
 	
 	showHomeView : function() {
-		var self = this;
 		console.log("showHomeView");
-		$("#content").empty();
+		this.clear();
 		var homeView = new App.HomeView({
 			model : App.loggedOnUser
 		});
-		$("#content").append(homeView.render().el);
+		$("#featured").append(homeView.render().el);
 		this.currentView = homeView;
 		return homeView;
 	},
 	
 	showUserView : function() {
-		var self = this;
 		console.log("showUserView");
-		$("#content").empty();
+		this.clear();
 		var userView = new App.UserView({
 			model : App.loggedOnUser
 		});
@@ -157,27 +159,31 @@ App.Router = Backbone.Router.extend({
 		return userView;
 	},
 	
-	showProfileView : function() {
-		var self = this;
+	showProfileView : function(roleId) {
 		console.log("showProfileView");
-		$("#content").empty();
-		$("#content").append("<div id=\"roleList\" class=\"well span3\">");
-		$("#content").append("<div id=\"roleInfo\" class=\"span9\">");
+		this.clear();
 		var roleListView = new App.RoleListView({
-			el : $("#content #roleList")[0],
 			collection : App.roles,
 			user : App.loggedOnUser.get("id")
 		});
-		roleListView.render();
+		$("#sidebar").html(roleListView.render().el);
 		// Refresh roles from server
-		App.roles.fetch();
-		
+		App.roles.fetch({
+			success : function() {
+				if (_.isUndefined(roleId)) {
+					roleListView.displayRole(roleListView.collection.at(0));
+				} else {
+					roleListView.displayRole(roleListView.collection.get(roleId));
+				}
+			}
+		});
 		this.currentView = roleListView;
 		return roleListView;
 	},
 	
 	showRequestsView : function() {
 		console.log("showRequestsView");
+		this.clear();
 		$("#content").html("<h1>REQUESTS</h1>");
 	}
 

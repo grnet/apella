@@ -518,8 +518,8 @@ App.UserView = Backbone.View.extend({
 	submit : function(event) {
 		var self = this;
 		var confirm = new App.ConfirmView({
-			title : "Title",
-			message : "Are you sure?",
+			title : $.i18n.prop('Confirm'),
+			message : $.i18n.prop('AreYouSure'),
 			yes : function() {
 				
 				// Read Input
@@ -585,10 +585,10 @@ App.UserView = Backbone.View.extend({
 App.RoleListView = Backbone.View.extend({
 	tagName : "div",
 	
-	className : "well",
+	className : "well sidebar-nav",
 	
 	initialize : function() {
-		_.bindAll(this, "render", "select", "newRole");
+		_.bindAll(this, "render", "select", "newRole", "displayRole");
 		this.template = _.template(tpl.get('rolelist'));
 		this.collection.bind("change", this.render, this);
 		this.collection.bind("reset", this.render, this);
@@ -619,7 +619,14 @@ App.RoleListView = Backbone.View.extend({
 			})
 		};
 		self.$el.html(this.template(tpl_data));
+		$("a[rel=\"tooltip\"]", self.$el).tooltip();
 		return this;
+	},
+	
+	select : function(event) {
+		var self = this;
+		var selectedModel = self.collection.getByCid($(event.target).attr('role'));
+		self.displayRole(selectedModel);
 	},
 	
 	newRole : function(event) {
@@ -630,17 +637,31 @@ App.RoleListView = Backbone.View.extend({
 			user : self.options.user
 		});
 		self.collection.add(newRole);
+		self.displayRole(newRole);
 	},
 	
-	select : function(event) {
-		var self = this;
-		var selectedModel = self.collection.getByCid($(event.target).attr('role'));
+	displayRole : function(role) {
+		console.log("RoleListView: displayRole");
 		var roleView = new App.RoleView({
-			model : selectedModel
+			model : role
 		});
-		$("#content #roleInfo").unbind();
-		$("#content #roleInfo").empty();
-		$("#content #roleInfo").html(roleView.render().el);
+		// Update Selected:
+		$("li.active", this.$el).removeClass("active");
+		console.log("li[role=" + role.cid + "]");
+		$("a[role=" + role.cid + "]", this.$el).parent("li").addClass("active");
+		// Update history
+		if (role.id) {
+			App.router.navigate("profile/" + role.id, {
+				trigger : false
+			});
+		} else {
+			App.router.navigate("profile", {
+				trigger : false
+			});
+		}
+		$("#content").unbind();
+		$("#content").empty();
+		$("#content").html(roleView.render().el);
 	}
 
 });
@@ -860,9 +881,9 @@ App.RoleView = Backbone.View.extend({
 				success : function(collection, resp) {
 					collection.each(function(department) {
 						if (_.isObject(self.model.get("department")) && _.isEqual(department.id, self.model.get("department").id)) {
-							$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "' selected>" + department.get("fullName") + "</option>");
+							$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "' selected>" + department.get("institution").name + ":" + department.get("department") + "</option>");
 						} else {
-							$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "'>" + department.get("fullName") + "</option>");
+							$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "'>" + department.get("institution").name + ":" + department.get("department") + "</option>");
 						}
 					});
 				},
@@ -918,8 +939,8 @@ App.RoleView = Backbone.View.extend({
 	submit : function(event) {
 		var self = this;
 		var confirm = new App.ConfirmView({
-			title : "Title",
-			message : "Are you sure?",
+			title : $.i18n.prop('Confirm'),
+			message : $.i18n.prop('AreYouSure'),
 			yes : function() {
 				
 				var values = {};
@@ -1008,26 +1029,20 @@ App.RoleView = Backbone.View.extend({
 	},
 	
 	cancel : function(event) {
-		console.log("RoleView: Cancel");
-		var self = this;
-		if (self.model.get("id") === undefined) {
-			self.remove();
-			return;
-		} else {
-			if (self.validator) {
-				self.validator.resetForm();
-			}
-			self.render();
+		if (self.validator) {
+			self.validator.resetForm();
 		}
+		self.render();
 	},
 	
 	remove : function() {
 		var self = this;
 		var confirm = new App.ConfirmView({
-			title : "Title",
-			message : "Are you sure?",
+			title : $.i18n.prop('Confirm'),
+			message : $.i18n.prop('AreYouSure'),
 			yes : function() {
 				self.model.destroy({
+					wait : true,
 					success : function(model, resp) {
 						console.log("RoleView: remove", model, resp);
 						var popup = new App.PopupView({
@@ -1160,11 +1175,12 @@ App.FileView = Backbone.View.extend({
 	deleteFile : function(event) {
 		var self = this;
 		var confirm = new App.ConfirmView({
-			title : "Title",
-			message : "Are you sure?",
+			title : $.i18n.prop('Confirm'),
+			message : $.i18n.prop('AreYouSure'),
 			yes : function() {
 				console.log("File:trying to destroy:", self.model, self.model.url());
 				self.model.destroy({
+					wait : true,
 					success : function(model, resp) {
 						console.log("File:destroy-success", model, resp);
 						var name = model.get("name");
@@ -1281,24 +1297,24 @@ App.FileListView = Backbone.View.extend({
 		var selectedModel = self.collection.get($(event.target).attr('fileId'));
 		console.log("FileList: deleteFile", $(event.target).attr('fileId'), selectedModel);
 		var confirm = new App.ConfirmView({
-			title : "Title",
-			message : "Are you sure?",
+			title : $.i18n.prop('Confirm'),
+			message : $.i18n.prop('AreYouSure'),
 			yes : function() {
 				console.log("File:trying to destroy:");
 				selectedModel.destroy({
 					wait : true,
-					silent : true,
 					success : function(model, resp) {
-						console.log("File:destroy-success", model, resp);
+						console.log("File:destroy-success", model, resp, self.collection);
 						var popup;
 						if (_.isNull(resp)) {
-							self.collection.remove(selectedModel);
 							popup = new App.PopupView({
 								type : "success",
 								message : "The file has been deleted"
 							});
 						} else {
+							console.log("Setting ", model, selectedModel);
 							selectedModel.set(resp);
+							self.collection.add(selectedModel);
 							popup = new App.PopupView({
 								type : "warning",
 								message : "The file has been reverted to earlier edition"

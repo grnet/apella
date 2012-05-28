@@ -136,7 +136,7 @@ public class UserRESTService extends RESTService {
 		//TODO: 1. Validate changes:
 
 		// 2. Copy User Fields
-		if (user.getPassword() != null) {
+		if (user.getPassword() != null && !user.getPassword().isEmpty()) {
 			existingUser.setPassword(User.encodePassword(user.getPassword()));
 		}
 		existingUser.setBasicInfo(user.getBasicInfo());
