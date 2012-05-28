@@ -8,6 +8,7 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.xml.bind.annotation.XmlTransient;
 
 @Entity
 public class RecommendatoryCommitteeMembership implements Serializable {
@@ -99,6 +100,7 @@ public class RecommendatoryCommitteeMembership implements Serializable {
 		return this.id.equals(that.id);
 	}
 
+	@XmlTransient
 	public RecommendatoryCommittee getRecommendatoryCommittee() {
 		return recommendatoryCommittee;
 	}

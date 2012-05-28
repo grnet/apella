@@ -7,6 +7,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -61,6 +62,7 @@ public class Department {
 
 	///////////////////////////////////////////////////////////////
 
+	@XmlTransient
 	public String getFullName() {
 		if (getDepartment() != null) {
 			StringBuilder sb = new StringBuilder(getDepartment());

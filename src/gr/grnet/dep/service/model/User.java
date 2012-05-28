@@ -228,6 +228,28 @@ public class User implements Serializable {
 		}
 		return false;
 	}
+	
+	public boolean isDepartmentUser(Department department) {
+		Institution institution = department.getInstitution();
+		for (Role r: getRoles()) {
+			if (r.getDiscriminator()==RoleDiscriminator.DEPARTMENT_MANAGER) {
+				DepartmentManager dm = (DepartmentManager) r;
+				if (dm.getDepartment().getId().equals(department.getId())) 
+					return true;
+			}
+			if (r.getDiscriminator()==RoleDiscriminator.INSTITUTION_MANAGER) {
+				InstitutionManager im = (InstitutionManager) r;
+				if (im.getInstitution().getId().equals(institution.getId())) 
+					return true;
+			}
+			if (r.getDiscriminator()==RoleDiscriminator.INSTITUTION_ASSISTANT) {
+				InstitutionAssistant ia = (InstitutionAssistant) r;
+				if (ia.getInstitution().getId().equals(institution.getId())) 
+					return true;
+			}
+		}
+		return false;
+	}
 
 	public static String encodePassword(String password) {
 		try {

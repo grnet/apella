@@ -1,6 +1,7 @@
 package gr.grnet.dep.service.model;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -11,8 +12,24 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Version;
 
+import org.codehaus.jackson.map.annotate.JsonView;
+
 @Entity
 public class CandidateCommittee {
+	
+	public static final int MAX_MEMBERS = 2;
+	
+	
+	// define 3 json views
+	public static interface IdCandidateCommitteeView {
+	}; // shows only id view of a CandidateCommittee
+
+	public static interface SimpleCandidateCommitteeView extends IdCandidateCommitteeView {
+	}; // shows a summary view of a CandidateCommittee
+
+	public static interface DetailedCandidateCommitteeView extends SimpleCandidateCommitteeView {
+	};
+	
 
 	@Id
 	@GeneratedValue
@@ -25,7 +42,7 @@ public class CandidateCommittee {
 	@ManyToOne(optional = false)
 	private Candidacy candidacy;
 
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "candidateCommittee")
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "candidateCommittee", orphanRemoval = true)
 	private Set<CandidateCommitteeMembership> members = new HashSet<CandidateCommitteeMembership>();
 
 	public Long getId() {
@@ -36,6 +53,7 @@ public class CandidateCommittee {
 		this.id = id;
 	}
 
+	@JsonView({DetailedCandidateCommitteeView.class})
 	public Candidacy getCandidacy() {
 		return candidacy;
 	}
@@ -44,6 +62,7 @@ public class CandidateCommittee {
 		this.candidacy = candidacy;
 	}
 
+	@JsonView({SimpleCandidateCommitteeView.class})
 	public Set<CandidateCommitteeMembership> getMembers() {
 		return members;
 	}
@@ -52,4 +71,27 @@ public class CandidateCommittee {
 		this.members = members;
 	}
 
+	
+	///////////////////////////////////////////////////////////////////////////////////////
+
+	
+	public void addMember(Professor professor) {
+		CandidateCommitteeMembership ccm = new CandidateCommitteeMembership(this, professor);
+		members.add(ccm);
+	}
+	
+	public CandidateCommitteeMembership removeMember(Professor professor) {
+		CandidateCommitteeMembership removed = null;
+		CandidateCommitteeMembership membership = new CandidateCommitteeMembership(this, professor);
+		Iterator<CandidateCommitteeMembership> it = getMembers().iterator();
+		while (it.hasNext()) {
+			CandidateCommitteeMembership ccm = it.next();
+			if (ccm.equals(membership)) {
+				it.remove();
+				removed = ccm;
+			}
+		}
+		return removed;
+	}
+	
 }

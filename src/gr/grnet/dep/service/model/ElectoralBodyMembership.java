@@ -8,6 +8,7 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.xml.bind.annotation.XmlTransient;
 
 @Entity
 public class ElectoralBodyMembership implements Serializable {
@@ -104,6 +105,7 @@ public class ElectoralBodyMembership implements Serializable {
 		return this.id.equals(that.id);
 	}
 
+	@XmlTransient
 	public ElectoralBody getElectoralBody() {
 		return electoralBody;
 	}

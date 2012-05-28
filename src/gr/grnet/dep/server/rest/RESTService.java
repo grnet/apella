@@ -20,6 +20,10 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -190,12 +194,12 @@ public class RESTService {
 					sb.append("ERROR");
 					logger.info(sb.toString());
 					logger.log(Level.SEVERE, "Error encountered while parsing the request", ex);
-					throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
+					throw new NoLogWebApplicationException(Status.INTERNAL_SERVER_ERROR);
 				} catch (Exception e) {
 					sb.append("ERROR");
 					logger.info(sb.toString());
 					logger.log(Level.SEVERE, "Error encountered while uploading file", e);
-					throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
+					throw new NoLogWebApplicationException(Status.INTERNAL_SERVER_ERROR);
 				}
 			}
 		}
@@ -205,50 +209,46 @@ public class RESTService {
 	/**
 	 * Deletes the last body of given file, if possible.
 	 * 
-	 * @param loggedOn
 	 * @param fh
 	 * @return
 	 */
-	Response deleteFileBody(User loggedOn, FileHeader fh) {
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(fh.getOwner().getId())) {
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
-		}
-
+	Response deleteFileBody(FileHeader fh) {
 		int size = fh.getBodies().size();
 		// Delete the file itself, if possible.
 		FileBody fb = fh.getCurrentBody();
-		logger.info("Attempting to delete FileBody id=" + fb.getId() + " of FileHeader id=" + fh.getId());
+		logger.info("Attempting to delete FileBody id="+fb.getId()+" of FileHeader id="+fh.getId());
 		String fullPath = savePath + File.separator + fb.getStoredFilePath();
 		File file = new File(fullPath);
-
-		fh.getBodies().remove(size - 1);
+		
+		fh.getBodies().remove(size-1);
 		fh.setCurrentBody(null);
 		try {
 			em.remove(fb);
 			em.flush();
-		} catch (PersistenceException e) {
+		}
+		catch (PersistenceException e) {
 			// Assume it's a constraint violation
-			logger.info("Could not delete FileBody id=" + fb.getId() + ". Constraint violation.");
+			logger.info("Could not delete FileBody id="+fb.getId()+". Constraint violation.");
 			return Response.status(Status.CONFLICT).
 				header(ERROR_CODE_HEADER, "file.in.use").build();
 		}
-		if (size > 1) {
-			fh.setCurrentBody(fh.getBodies().get(size - 2));
+		if (size>1) {
+			fh.setCurrentBody(fh.getBodies().get(size-2));
 		}
 		else {
 			em.remove(fh);
 		}
 		boolean deleted = file.delete();
 		if (!deleted) {
-			logger.log(Level.WARNING, "Could not delete file '" + fullPath + "'.");
+			logger.log(Level.WARNING, "Could not delete file '"+fullPath+"'.");
 			// Do something? What?
 		}
-		if (size > 1) {
-			logger.info("Deleted FileBody id=" + fb.getId());
+		if (size>1) {
+			logger.info("Deleted FileBody id="+fb.getId());
 			return Response.ok(fh).build();
 		}
 		else {
-			logger.info("Deleted FileBody id=" + fb.getId() + " PLUS FileHeader id=" + fh.getId());
+			logger.info("Deleted FileBody id="+fb.getId()+" PLUS FileHeader id="+fh.getId());
 			return Response.noContent().build();
 		}
 	}

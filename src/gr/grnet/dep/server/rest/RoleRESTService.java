@@ -32,7 +32,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -170,7 +169,7 @@ public class RoleRESTService extends RESTService {
 			throw new NoLogWebApplicationException(Status.FORBIDDEN);
 		}
 		if (isIncompatibleRole(role, loggedOn.getRoles())) {
-			throw new WebApplicationException(Response.status(Status.CONFLICT).
+			throw new NoLogWebApplicationException(Response.status(Status.CONFLICT).
 				header(ERROR_CODE_HEADER, "incompatible.role").build());
 		}
 
@@ -371,11 +370,16 @@ public class RoleRESTService extends RESTService {
 	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("var") String var) {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
-
+		if (role == null) {
+			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+		}
 		FileHeader file = getFile(authToken, id, var);
-		Response retv = deleteFileBody(loggedOn, file);
-
-		if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(file.getOwner().getId())) {
+			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		}
+		Response retv = deleteFileBody(file);
+		
+		if (retv.getStatus()==Status.NO_CONTENT.getStatusCode()) {
 			// Break the relationship as well
 			if ("fekFile".equals(var)) {
 				ProfessorDomestic professorDomestic = (ProfessorDomestic) role;
@@ -419,7 +423,7 @@ public class RoleRESTService extends RESTService {
 				break;
 			}
 		}
-		Response retv = deleteFileBody(loggedOn, existingPublication);
+		Response retv = deleteFileBody(existingPublication);
 		publications.remove(existingPublication);
 		return retv;
 	}
