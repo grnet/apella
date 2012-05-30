@@ -127,6 +127,7 @@ App.LoginView = Backbone.View.extend({
 			"username" : username,
 			"password" : password
 		}, {
+			wait : true,
 			success : function(model, resp) {
 				// Notify AppRouter to start Application (fill Header and handle
 				// history token)
@@ -134,12 +135,11 @@ App.LoginView = Backbone.View.extend({
 				self.model.trigger("user:loggedon");
 			},
 			error : function(model, resp, options) {
-				var errorCode = resp.getResponseHeader("X-Error-Code");
-				if (errorCode === "wrong.username") {
-					$("#messages", self.$el).html("Username does not exist");
-				} else if (errorCode === "wrong.password") {
-					$("#messages", self.$el).html("Password is not valid");
-				}
+				var popup = new App.PopupView({
+					type : "error",
+					message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+				});
+				popup.show();
 			}
 		});
 	},
@@ -225,6 +225,26 @@ App.ConfirmView = Backbone.View.extend({
 	}
 });
 
+App.UserRegistrationSelectView = Backbone.View.extend({
+	tagName : "div",
+	
+	validator : undefined,
+	
+	initialize : function() {
+		_.bindAll(this, "render");
+		this.template = _.template(tpl.get('user-registration-select'));
+	},
+	
+	events : {},
+	
+	render : function(eventName) {
+		$(this.el).html(this.template({
+			roles : App.allowedRoles
+		}));
+		return this;
+	}
+});
+
 // UserRegistrationView
 App.UserRegistrationView = Backbone.View.extend({
 	tagName : "div",
@@ -232,7 +252,7 @@ App.UserRegistrationView = Backbone.View.extend({
 	validator : undefined,
 	
 	initialize : function() {
-		_.bindAll(this, "render", "submit", "resetForm");
+		_.bindAll(this, "render", "submit");
 		this.template = _.template(tpl.get('user-registration'));
 		this.model.bind('change', this.render);
 	},
@@ -241,12 +261,12 @@ App.UserRegistrationView = Backbone.View.extend({
 		"click a#save" : function() {
 			$("form", this.el).submit();
 		},
-		"submit form" : "submit",
-		"blur form" : "resetForm"
+		"submit form" : "submit"
 	},
 	
 	render : function(eventName) {
-		$(this.el).html(this.template(this.model.toJSON()));
+		console.log("UserRegistrationView: render");
+		$(this.el).html(this.template(this.model.get('roles')[0]));
 		
 		this.validator = $("form", this.el).validate({
 			errorElement : "span",
@@ -260,6 +280,7 @@ App.UserRegistrationView = Backbone.View.extend({
 			rules : {
 				username : {
 					required : true,
+					email : true,
 					minlength : 2
 				},
 				firstname : "required",
@@ -290,6 +311,7 @@ App.UserRegistrationView = Backbone.View.extend({
 				lastname : $.i18n.prop('validation_lastname'),
 				username : {
 					required : $.i18n.prop('validation_username'),
+					email : $.i18n.prop('validation_username'),
 					minlength : $.i18n.prop('validation_minlength', 2)
 				},
 				password : {
@@ -308,7 +330,7 @@ App.UserRegistrationView = Backbone.View.extend({
 					maxlength : $.i18n.prop('validation_maxlength', 12)
 				},
 				address_street : $.i18n.prop('validation_street'),
-				address_number : $.i18n.prop('validation_address'),
+				address_number : $.i18n.prop('validation_number'),
 				address_zip : $.i18n.prop('validation_zip'),
 				address_city : $.i18n.prop('validation_city'),
 				address_country : $.i18n.prop('validation_country')
@@ -319,6 +341,7 @@ App.UserRegistrationView = Backbone.View.extend({
 	},
 	
 	submit : function(event) {
+		console.log("UserRegistrationView: submit");
 		var self = this;
 		
 		// Read Input
@@ -355,28 +378,27 @@ App.UserRegistrationView = Backbone.View.extend({
 			},
 			"password" : password
 		}, {
+			wait : true,
 			success : function(model, resp) {
 				console.log("UserRegistrationView: save(success):", model, resp);
 				$("#messages", self.$el).html("Η εγγραφή ολοκληρώθηκε, θα σας αποσταλεί e-mail........");
+				var popup = new App.PopupView({
+					type : "success",
+					message : $.i18n.prop("RegistrationSuccess")
+				});
+				popup.show();
 			},
 			error : function(model, resp, options) {
-				console.log("UserRegistrationView: save(error):", resp);
+				console.log(model, resp, options);
 				var popup = new App.PopupView({
 					type : "error",
-					message : "Error " + resp.status
+					message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 				});
 				popup.show();
 			}
 		});
-		
 		event.preventDefault();
 		return false;
-	},
-	
-	resetForm : function(event) {
-		if (this.validator) {
-			this.validator.resetForm();
-		}
 	}
 });
 
@@ -556,11 +578,12 @@ App.UserView = Backbone.View.extend({
 					},
 					"password" : password
 				}, {
+					wait : true,
 					success : function(model, resp) {
 						console.log("UserView:save(success):", model, resp);
 						var popup = new App.PopupView({
 							type : "success",
-							message : "The user has been updated"
+							message : $.i18n.prop("Success")
 						});
 						popup.show();
 					},
@@ -568,7 +591,7 @@ App.UserView = Backbone.View.extend({
 						console.log("UserView:save(error):", model, resp);
 						var popup = new App.PopupView({
 							type : "error",
-							message : "Error " + resp.status
+							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 						});
 						popup.show();
 					}
@@ -705,10 +728,10 @@ App.RoleView = Backbone.View.extend({
 				self.addFile("military1599", $("#military1599", this.$el));
 				self.addFileList("publications", $("#publications", this.$el));
 			} else {
-				$("#cv", self.$el).html("Press Save to enable uploading");
-				$("#identity", self.$el).html("Press Save to enable uploading");
-				$("#military1599", self.$el).html("Press Save to enable uploading");
-				$("#publications", self.$el).html("Press Save to enable uploading");
+				$("#cv", self.$el).html($.i18n.prop("PressSave"));
+				$("#identity", self.$el).html($.i18n.prop("PressSave"));
+				$("#military1599", self.$el).html($.i18n.prop("PressSave"));
+				$("#publications", self.$el).html($.i18n.prop("PressSave"));
 			}
 			break;
 		case "PROFESSOR_DOMESTIC":
@@ -726,7 +749,7 @@ App.RoleView = Backbone.View.extend({
 				error : function(model, resp, options) {
 					var popup = new App.PopupView({
 						type : "error",
-						message : "Error " + resp.status
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -734,7 +757,7 @@ App.RoleView = Backbone.View.extend({
 			if (self.model.has("id")) {
 				self.addFile("fekFile", $("#fekFile", this.$el));
 			} else {
-				$("#fekFile", self.$el).html("Press Save to enable uploading");
+				$("#fekFile", self.$el).html($.i18n.prop("PressSave"));
 			}
 			
 			this.validator = $("form", this.el).validate({
@@ -814,7 +837,7 @@ App.RoleView = Backbone.View.extend({
 				error : function(model, resp, options) {
 					var popup = new App.PopupView({
 						type : "error",
-						message : "Error " + resp.status
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -852,7 +875,7 @@ App.RoleView = Backbone.View.extend({
 				error : function(model, resp, options) {
 					var popup = new App.PopupView({
 						type : "error",
-						message : "Error " + resp.status
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -890,7 +913,7 @@ App.RoleView = Backbone.View.extend({
 				error : function(model, resp, options) {
 					var popup = new App.PopupView({
 						type : "error",
-						message : "Error " + resp.status
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -1004,11 +1027,12 @@ App.RoleView = Backbone.View.extend({
 				}
 				// Save to model
 				self.model.save(values, {
+					wait : true,
 					success : function(model, resp) {
 						console.log("RoleView: save(success):", model, resp);
 						var popup = new App.PopupView({
 							type : "success",
-							message : "The role has been updated"
+							message : $.i18n.prop("Success")
 						});
 						popup.show();
 					},
@@ -1016,7 +1040,7 @@ App.RoleView = Backbone.View.extend({
 						console.log("RoleView: save(error):", model, resp);
 						var popup = new App.PopupView({
 							type : "error",
-							message : "Error " + resp.status
+							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 						});
 						popup.show();
 					}
@@ -1029,6 +1053,7 @@ App.RoleView = Backbone.View.extend({
 	},
 	
 	cancel : function(event) {
+		var self = this;
 		if (self.validator) {
 			self.validator.resetForm();
 		}
@@ -1047,7 +1072,7 @@ App.RoleView = Backbone.View.extend({
 						console.log("RoleView: remove", model, resp);
 						var popup = new App.PopupView({
 							type : "success",
-							message : "The role has been removed"
+							message : $.i18n.prop("Success")
 						});
 						popup.show();
 					},
@@ -1055,7 +1080,7 @@ App.RoleView = Backbone.View.extend({
 						console.log("RoleView: remove(error)", model, resp);
 						var popup = new App.PopupView({
 							type : "error",
-							message : "Error " + resp.status
+							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 						});
 						popup.show();
 					}
@@ -1192,13 +1217,13 @@ App.FileView = Backbone.View.extend({
 							self.model.set("name", name);
 							popup = new App.PopupView({
 								type : "success",
-								message : "The file has been deleted"
+								message : $.i18n.prop("Success")
 							});
 						} else {
 							self.model.set(resp);
 							popup = new App.PopupView({
 								type : "warning",
-								message : "The file has been reverted to earlier edition"
+								message : $.i18n.prop("FileReverted")
 							});
 						}
 						popup.show();
@@ -1207,7 +1232,7 @@ App.FileView = Backbone.View.extend({
 						console.log("File:destroy-error", model, resp, options);
 						var popup = new App.PopupView({
 							type : "error",
-							message : "Error " + resp.status
+							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 						});
 						popup.show();
 					}
@@ -1309,7 +1334,7 @@ App.FileListView = Backbone.View.extend({
 						if (_.isNull(resp)) {
 							popup = new App.PopupView({
 								type : "success",
-								message : "The file has been deleted"
+								message : $.i18n.prop("Success")
 							});
 						} else {
 							console.log("Setting ", model, selectedModel);
@@ -1317,7 +1342,7 @@ App.FileListView = Backbone.View.extend({
 							self.collection.add(selectedModel);
 							popup = new App.PopupView({
 								type : "warning",
-								message : "The file has been reverted to earlier edition"
+								message : $.i18n.prop("FileReverted")
 							});
 						}
 						popup.show();
@@ -1326,7 +1351,7 @@ App.FileListView = Backbone.View.extend({
 						console.log("File:destroy-error", model, resp, options);
 						var popup = new App.PopupView({
 							type : "error",
-							message : "Error " + resp.status
+							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 						});
 						popup.show();
 					}

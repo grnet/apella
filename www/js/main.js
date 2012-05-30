@@ -6,14 +6,21 @@ App.RegistrationRouter = Backbone.Router.extend({
 	
 	initialize : function() {
 		_.extend(this, Backbone.Events);
-		_.bindAll(this, "showRegisterView", "showVerificationView");
-		
+		_.bindAll(this, "showRegisterView", "showVerificationView", "showRegisterSelectView");
 		Backbone.history.start();
 	},
 	
 	routes : {
 		"email=:email&verification=:verificationNumber" : "showVerificationView",
+		"" : "showRegisterSelectView",
 		"profile=:role" : "showRegisterView"
+	},
+	
+	showRegisterSelectView : function() {
+		var userRegistrationSelectView = new App.UserRegistrationSelectView({});
+		$("#featured").html(userRegistrationSelectView.render().el);
+		this.currentView = userRegistrationSelectView;
+		return userRegistrationSelectView;
 	},
 	
 	showRegisterView : function(role) {
@@ -26,11 +33,11 @@ App.RegistrationRouter = Backbone.Router.extend({
 			var userRegistrationView = new App.UserRegistrationView({
 				model : userRegistration
 			});
-			$("#content").html(userRegistrationView.render().el);
+			$("#featured").html(userRegistrationView.render().el);
 			this.currentView = userRegistrationView;
 			return userRegistrationView;
 		} else {
-			$("#content").empty();
+			$("#featured").empty();
 			this.currentView = undefined;
 			return undefined;
 		}
@@ -49,14 +56,13 @@ App.RegistrationRouter = Backbone.Router.extend({
 				var userVerificationView = new App.UserVerificationView({
 					model : userRegistration
 				});
-				$("#content").html(userVerificationView.render().el);
+				$("#featured").html(userVerificationView.render().el);
 				self.currentView = userVerificationView;
 			},
 			error : function(model, resp, options) {
 				console.log(resp.status);
 				console.log(resp);
-				
-				$("#content").html("ΣΦΑΛΜΑ");
+				$("#featured").html("ΣΦΑΛΜΑ " + resp.status);
 				self.currentView = undefined;
 			}
 		});

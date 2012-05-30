@@ -1,5 +1,6 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.FileBody;
 import gr.grnet.dep.service.model.FileHeader;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
@@ -20,11 +21,6 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -34,7 +30,6 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.StringUtils;
-import org.jboss.resteasy.spi.NoLogWebApplicationException;
 
 public class RESTService {
 
@@ -66,12 +61,10 @@ public class RESTService {
 		}
 	}
 
-	protected User getLoggedOn(String authToken) throws NoLogWebApplicationException {
-
+	protected User getLoggedOn(String authToken) throws RestException {
 		if (authToken == null) {
-			throw new NoLogWebApplicationException(Status.UNAUTHORIZED);
+			throw new RestException(Status.UNAUTHORIZED, "missing.token");
 		}
-
 		try {
 			User user = (User) em.createQuery(
 				"from User u left join fetch u.roles " +
@@ -79,10 +72,9 @@ public class RESTService {
 					"and u.authToken = :authToken")
 				.setParameter("authToken", authToken)
 				.getSingleResult();
-
 			return user;
 		} catch (NoResultException e) {
-			throw new NoLogWebApplicationException(Status.UNAUTHORIZED);
+			throw new RestException(Status.UNAUTHORIZED, "invalid.token");
 		}
 	}
 
@@ -127,8 +119,9 @@ public class RESTService {
 	private String suggestFilename(Long id, String prefix, String originalName) throws IOException {
 		int dotPoint = originalName.lastIndexOf('.');
 		String extension = "";
-		if (dotPoint > -1)
+		if (dotPoint > -1) {
 			extension = originalName.substring(dotPoint);
+		}
 		String subPath = getSubdirForId(id) + File.separator;
 		// Create if it does not exist
 		new File(savePath + File.separator + subPath).mkdirs();
@@ -160,7 +153,7 @@ public class RESTService {
 				} else {
 					// Update
 					if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(header.getOwner().getId()))
-						throw new NoLogWebApplicationException(Status.FORBIDDEN);
+						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 				}
 				header.addBody(body);
 				em.persist(header);
@@ -170,16 +163,20 @@ public class RESTService {
 				String filename = fileItem.getName();
 				String newFilename = suggestFilename(body.getId(), "upl", filename);
 				File file = new File(savePath + newFilename);
-				StringBuilder sb = (new StringBuilder("Saving file. Original filename='")).append(filename)
-					.append("', filename='").append(file.getCanonicalPath()).append("' ");
+				StringBuilder sb = (new StringBuilder("Saving file. Original filename='"))
+					.append(filename)
+					.append("', filename='")
+					.append(file.getCanonicalPath())
+					.append("' ");
 
 				String mimeType = fileItem.getContentType();
 				if (StringUtils.isEmpty(mimeType) || "application/octet-stream".equals(mimeType)
 					|| "application/download".equals(mimeType) || "application/force-download".equals(mimeType)
-					|| "octet/stream".equals(mimeType) || "application/unknown".equals(mimeType))
+					|| "octet/stream".equals(mimeType) || "application/unknown".equals(mimeType)) {
 					body.setMimeType(identifyMimeType(filename));
-				else
+				} else {
 					body.setMimeType(mimeType);
+				}
 				body.setOriginalFilename(fileItem.getName());
 				body.setStoredFilePath(newFilename);
 				body.setFileSize(fileItem.getSize());
@@ -194,12 +191,12 @@ public class RESTService {
 					sb.append("ERROR");
 					logger.info(sb.toString());
 					logger.log(Level.SEVERE, "Error encountered while parsing the request", ex);
-					throw new NoLogWebApplicationException(Status.INTERNAL_SERVER_ERROR);
+					throw new RestException(Status.INTERNAL_SERVER_ERROR, "generic");
 				} catch (Exception e) {
 					sb.append("ERROR");
 					logger.info(sb.toString());
 					logger.log(Level.SEVERE, "Error encountered while uploading file", e);
-					throw new NoLogWebApplicationException(Status.INTERNAL_SERVER_ERROR);
+					throw new RestException(Status.INTERNAL_SERVER_ERROR, "generic");
 				}
 			}
 		}
@@ -212,43 +209,40 @@ public class RESTService {
 	 * @param fh
 	 * @return
 	 */
-	Response deleteFileBody(FileHeader fh) {
+	public Response deleteFileBody(FileHeader fh) {
 		int size = fh.getBodies().size();
 		// Delete the file itself, if possible.
 		FileBody fb = fh.getCurrentBody();
-		logger.info("Attempting to delete FileBody id="+fb.getId()+" of FileHeader id="+fh.getId());
+		logger.info("Attempting to delete FileBody id=" + fb.getId() + " of FileHeader id=" + fh.getId());
 		String fullPath = savePath + File.separator + fb.getStoredFilePath();
 		File file = new File(fullPath);
-		
-		fh.getBodies().remove(size-1);
+
+		fh.getBodies().remove(size - 1);
 		fh.setCurrentBody(null);
 		try {
 			em.remove(fb);
 			em.flush();
-		}
-		catch (PersistenceException e) {
+		} catch (PersistenceException e) {
 			// Assume it's a constraint violation
-			logger.info("Could not delete FileBody id="+fb.getId()+". Constraint violation.");
+			logger.info("Could not delete FileBody id=" + fb.getId() + ". Constraint violation.");
 			return Response.status(Status.CONFLICT).
 				header(ERROR_CODE_HEADER, "file.in.use").build();
 		}
-		if (size>1) {
-			fh.setCurrentBody(fh.getBodies().get(size-2));
-		}
-		else {
+		if (size > 1) {
+			fh.setCurrentBody(fh.getBodies().get(size - 2));
+		} else {
 			em.remove(fh);
 		}
 		boolean deleted = file.delete();
 		if (!deleted) {
-			logger.log(Level.WARNING, "Could not delete file '"+fullPath+"'.");
+			logger.log(Level.WARNING, "Could not delete file '" + fullPath + "'.");
 			// Do something? What?
 		}
-		if (size>1) {
-			logger.info("Deleted FileBody id="+fb.getId());
+		if (size > 1) {
+			logger.info("Deleted FileBody id=" + fb.getId());
 			return Response.ok(fh).build();
-		}
-		else {
-			logger.info("Deleted FileBody id="+fb.getId()+" PLUS FileHeader id="+fh.getId());
+		} else {
+			logger.info("Deleted FileBody id=" + fb.getId() + " PLUS FileHeader id=" + fh.getId());
 			return Response.noContent().build();
 		}
 	}

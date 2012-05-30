@@ -1,7 +1,7 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Role;
-import gr.grnet.dep.service.model.Role.IdRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.DetailedUserView;
@@ -35,7 +35,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.codehaus.jackson.map.annotate.JsonView;
-import org.jboss.resteasy.spi.NoLogWebApplicationException;
 
 @Path("/user")
 @Stateless
@@ -48,9 +47,9 @@ public class UserRESTService extends RESTService {
 	@SuppressWarnings("unchecked")
 	public List<User> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
 		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR))
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
-
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient-priviledges");
+		}
 		return (List<User>) em.createQuery(
 			"select distinct u from User u " +
 				"left join fetch u.roles " +
@@ -85,21 +84,26 @@ public class UserRESTService extends RESTService {
 	public User get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		User loggedOn = getLoggedOn(authToken);
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
-			loggedOn.getId() != id)
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+			loggedOn.getId() != id) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		try {
+			return (User) em.createQuery(
+				"from User u left join fetch u.roles " +
+					"where u.id=:id")
+				.setParameter("id", id)
+				.getSingleResult();
+		} catch (NoResultException e) {
+			throw new RestException(Status.NOT_FOUND, "wrong.id");
+		}
 
-		User user = (User) em.createQuery(
-			"from User u left join fetch u.roles " +
-				"where u.id=:id")
-			.setParameter("id", id)
-			.getSingleResult();
-		return user;
 	}
 
 	@POST
 	@JsonView({DetailedUserView.class})
 	public User create(User user) {
 		try {
+
 			Set<Role> roles = user.getRoles();
 
 			user.setActive(Boolean.FALSE);
@@ -114,9 +118,10 @@ public class UserRESTService extends RESTService {
 				user.addRole(r);
 			}
 
+			em.flush(); //To catch the exception
 			return user;
 		} catch (PersistenceException e) {
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+			throw new RestException(Status.FORBIDDEN, "username.not.available");
 		}
 	}
 
@@ -126,16 +131,16 @@ public class UserRESTService extends RESTService {
 	public User update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, User user) {
 		User loggedOn = getLoggedOn(authToken);
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
-			loggedOn.getId() != id)
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+			loggedOn.getId() != id) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
 
 		User existingUser = em.find(User.class, id);
 		if (existingUser == null) {
-			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		//TODO: 1. Validate changes:
 
-		// 2. Copy User Fields
+		// Copy User Fields
 		if (user.getPassword() != null && !user.getPassword().isEmpty()) {
 			existingUser.setPassword(User.encodePassword(user.getPassword()));
 		}
@@ -150,12 +155,12 @@ public class UserRESTService extends RESTService {
 	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		User loggedOn = getLoggedOn(authToken);
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
-			loggedOn.getId() != id)
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
-
+			loggedOn.getId() != id) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
 		User existingUser = em.find(User.class, id);
 		if (existingUser == null) {
-			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
 		//TODO: Validate:
 
@@ -187,10 +192,10 @@ public class UserRESTService extends RESTService {
 					.entity(u)
 					.build();
 			} else {
-				return Response.status(Status.UNAUTHORIZED).header(ERROR_CODE_HEADER, "wrong.password").build();
+				throw new RestException(Status.UNAUTHORIZED, "wrong.password");
 			}
 		} catch (NoResultException e) {
-			return Response.status(Status.UNAUTHORIZED).header(ERROR_CODE_HEADER, "wrong.username").build();
+			throw new RestException(Status.UNAUTHORIZED, "wrong.username");
 		}
 	}
 
@@ -207,19 +212,17 @@ public class UserRESTService extends RESTService {
 				.getSingleResult();
 			// Validate
 			if (u.getVerified() != null && u.getVerified()) {
-				throw new NoLogWebApplicationException(Response.status(Status.FORBIDDEN).header(ERROR_CODE_HEADER, "already.verified").build());
+				throw new RestException(Status.FORBIDDEN, "already.verified");
 			}
 			if (user.getVerificationNumber() == null || !user.getVerificationNumber().equals(u.getVerificationNumber())) {
-				throw new NoLogWebApplicationException(Response.status(Status.FORBIDDEN).header(ERROR_CODE_HEADER, "wrong.verification").build());
+				throw new RestException(Status.FORBIDDEN, "wrong.verification");
 			}
-
 			// Verify
 			u.setVerified(Boolean.TRUE);
 			u.setVerificationNumber(null);
-
 			return u;
 		} catch (NoResultException e) {
-			throw new NoLogWebApplicationException(Response.status(Status.NOT_FOUND).header(ERROR_CODE_HEADER, "wrong.username").build());
+			throw new RestException(Status.NOT_FOUND, "wrong.username");
 		}
 	}
 
@@ -228,40 +231,24 @@ public class UserRESTService extends RESTService {
 	@JsonView({DetailedUserView.class})
 	public User activate(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @QueryParam("active") Boolean active) {
 		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR))
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
-
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
 		try {
 			User u = (User) em.createQuery(
 				"from User u where u.id = :id")
 				.setParameter("id", id)
 				.getSingleResult();
-
 			// Activate
-			if (active == null)
+			if (active == null) {
 				active = Boolean.TRUE;
+			}
 			u.setActive(active);
 
 			return u;
 		} catch (NoResultException e) {
-			throw new NoLogWebApplicationException(Response.status(Status.NOT_FOUND).build());
+			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-	}
-
-	@GET
-	@Path("/{id:[0-9][0-9]*}/roles")
-	@JsonView({IdRoleView.class})
-	public Set<Role> getRolesForUser(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
-		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
-			loggedOn.getId() != id)
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
-
-		User u = (User) em.createQuery(
-			"from User u join fetch u.roles where u.id=:id")
-			.setParameter("id", id)
-			.getSingleResult();
-		return u.getRoles();
 	}
 
 }

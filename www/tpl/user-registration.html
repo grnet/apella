@@ -1,12 +1,16 @@
-<h3><%= $.i18n.prop('RegistrationForm') %></h3>
-<div class="control-group"><%= $.i18n.prop('Instructions_Registration') %></div>
+<div class="span4">
+	<h2><%= $.i18n.prop('RegistrationForm') %></h2>
+	<p><%= $.i18n.prop('Instructions_Registration') %></p>
+</div>
+<div class="span8">
+<h2><%= $.i18n.prop(discriminator) %></h2>
 <form class="form-horizontal" onsubmit="return false">
 	<fieldset>
 		<legend><%= $.i18n.prop('Account') %></legend>
 		<div class="control-group">
 			<label class="control-label" for="username"><%= $.i18n.prop('Username') %>:</label>
 			<div class="controls">
-			<input type="email" name="username" />
+			<input type="text" name="username" />
 			</div>
 		</div>
 		<div class="control-group">
@@ -28,7 +32,7 @@
 			</div>
 		</div>
 		<div class="control-group">
-			<label for="confirm_password"><%= $.i18n.prop('ConfirmPassword') %>:</label>
+			<label class="control-label" for="confirm_password"><%= $.i18n.prop('ConfirmPassword') %>:</label>
 			<div class="controls">
 			<input type="password" name="confirm_password" />
 			</div>
@@ -76,7 +80,8 @@
 		</div>
 		</div>
 		<div class="form-actions">
-			<a id="save" href="javascript:void(0)" class="btn"><%= $.i18n.prop('btn_register') %></a>
+			<a id="save" href="javascript:void(0)" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_register') %></a>
 		</div>
 	</fieldset>
 </form>
+</div>

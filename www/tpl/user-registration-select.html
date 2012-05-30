@@ -1,0 +1,6 @@
+<h2><%= $.i18n.prop('Register') %></h2>
+<ul class="unstyled">
+<% _.each(roles, function(role) { %>
+	<li><a href="#profile=<%= role %>"><%= $.i18n.prop(role) %></a></li>
+<% }); %>
+</ul>

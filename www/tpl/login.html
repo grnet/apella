@@ -1,6 +1,6 @@
-<h3>Login Form</h3>
-<div>
-	<form class="form-horizontal"" onsubmit="return false">
+<div class="span6">
+	<h2><%= $.i18n.prop('Login') %></h2>
+	<form class="form-horizontal" onsubmit="return false">
 		<fieldset>
 			<div class="control-group">
 				<label class="control-label" for="username"><%= $.i18n.prop('Username') %>:</label>
@@ -15,11 +15,18 @@
 				</div>
 			</div>
 			<div class="form-actions">
-				<a id="save" href="javascript:void(0)" class="btn btn-primary"><%= $.i18n.prop('Login') %></a>
+				<a id="save" href="javascript:void(0)" class="btn btn-primary"><%= $.i18n.prop('btn_login') %></a>
 			</div>
 		</fieldset>
 	</form>
 </div>
-<div>
+<div class="span6">
+	<h2><%= $.i18n.prop('Instructions') %></h2>
 	<p><%= $.i18n.prop('Instructions_Login') %></p>
+	<p>
+		<a href="registration.html"><%= $.i18n.prop('Register') %></a>
+	</p>
+	<p>
+		<a href="javascript:void(0)"><%= $.i18n.prop('ShibbolethLogin') %></a>
+	</p>
 </div>

@@ -1,15 +1,14 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.FileHeader;
 import gr.grnet.dep.service.model.FileHeader.DetailedFileHeaderView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
-import java.util.logging.Logger;
-
 import javax.ejb.Stateless;
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -21,7 +20,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
 import org.codehaus.jackson.map.annotate.JsonView;
-import org.jboss.resteasy.spi.NoLogWebApplicationException;
 
 @Path("/file")
 @Stateless
@@ -32,24 +30,24 @@ public class FileRESTService extends RESTService {
 	@PersistenceContext(unitName = "depdb")
 	private EntityManager em;
 
-	@Inject
-	private Logger logger;
-
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedFileHeaderView.class})
 	public FileHeader get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		User loggedOn = getLoggedOn(authToken);
-		FileHeader fh = (FileHeader) em.createQuery(
-			"from FileHeader fh left join fetch fh.bodies " +
-				"where fh.id=:id")
-			.setParameter("id", id)
-			.getSingleResult();
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(fh.getOwner().getId())) {
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		try {
+			FileHeader fh = (FileHeader) em.createQuery(
+				"from FileHeader fh left join fetch fh.bodies " +
+					"where fh.id=:id")
+				.setParameter("id", id)
+				.getSingleResult();
+			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(fh.getOwner().getId())) {
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+			}
+			return fh;
+		} catch (NoResultException e) {
+			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-
-		return fh;
 	}
 
 }

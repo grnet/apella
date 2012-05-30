@@ -1,5 +1,6 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.FileHeader;
 import gr.grnet.dep.service.model.FileHeader.DetailedFileHeaderView;
@@ -39,7 +40,6 @@ import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.fileupload.FileUploadException;
 import org.codehaus.jackson.map.annotate.JsonView;
-import org.jboss.resteasy.spi.NoLogWebApplicationException;
 
 @Path("/role")
 @Stateless
@@ -89,17 +89,22 @@ public class RoleRESTService extends RESTService {
 
 		@Override
 		public boolean equals(Object obj) {
-			if (this == obj)
+			if (this == obj) {
 				return true;
-			if (obj == null)
+			}
+			if (obj == null) {
 				return false;
-			if (getClass() != obj.getClass())
+			}
+			if (getClass() != obj.getClass()) {
 				return false;
+			}
 			Pair other = (Pair) obj;
-			if (first != other.first)
+			if (first != other.first) {
 				return false;
-			if (second != other.second)
+			}
+			if (second != other.second) {
 				return false;
+			}
 			return true;
 		}
 	}
@@ -120,7 +125,7 @@ public class RoleRESTService extends RESTService {
 			}
 			return roles;
 		} else {
-			throw new NoLogWebApplicationException(Status.BAD_REQUEST);
+			throw new RestException(Status.BAD_REQUEST);
 		}
 	}
 
@@ -149,9 +154,9 @@ public class RoleRESTService extends RESTService {
 				break;
 			}
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
-			&& !roleBelongsToUser)
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !roleBelongsToUser) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
 
 		Role r = (Role) em.createQuery(
 			"from Role r where r.id=:id")
@@ -166,13 +171,11 @@ public class RoleRESTService extends RESTService {
 	public Role create(@HeaderParam(TOKEN_HEADER) String authToken, Role role) {
 		User loggedOn = getLoggedOn(authToken);
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && (role.getUser() != loggedOn.getId() || role.getDiscriminator() == RoleDiscriminator.ADMINISTRATOR)) {
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (isIncompatibleRole(role, loggedOn.getRoles())) {
-			throw new NoLogWebApplicationException(Response.status(Status.CONFLICT).
-				header(ERROR_CODE_HEADER, "incompatible.role").build());
+			throw new RestException(Status.CONFLICT, "incompatible.role");
 		}
-
 		em.persist(role);
 		return role;
 	}
@@ -183,12 +186,12 @@ public class RoleRESTService extends RESTService {
 	public Role update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Role role) {
 		Role existingRole = em.find(Role.class, id);
 		if (existingRole == null) {
-			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
 
 		User loggedOn = getLoggedOn(authToken);
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && existingRole.getUser() != loggedOn.getId()) {
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 
 		existingRole = existingRole.copyFrom(role);
@@ -201,17 +204,18 @@ public class RoleRESTService extends RESTService {
 	public Role activate(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @QueryParam("active") Boolean active) {
 		Role existingRole = em.find(Role.class, id);
 		if (existingRole == null) {
-			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
 
 		User loggedOn = getLoggedOn(authToken);
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && (existingRole.getUser() != loggedOn.getId() || !existingRole.isActive())) {
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 
 		// Activate
-		if (active == null)
+		if (active == null) {
 			active = Boolean.TRUE;
+		}
 		existingRole.setActive(active);
 		return existingRole;
 	}
@@ -224,11 +228,12 @@ public class RoleRESTService extends RESTService {
 		Role role = em.find(Role.class, id);
 		// Validate:
 		if (role == null) {
-			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
-			&& role.getUser() != loggedOn.getId())
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+			&& role.getUser() != loggedOn.getId()) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
 
 		// Delete:
 		User user = em.find(User.class, role.getUser());
@@ -244,10 +249,10 @@ public class RoleRESTService extends RESTService {
 		Role role = em.find(Role.class, id);
 		// Validate:
 		if (role == null) {
-			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && role.getUser() != loggedOn.getId()) {
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 
 		// Get File
@@ -269,7 +274,7 @@ public class RoleRESTService extends RESTService {
 		if (file != null) {
 			file.getBodies().size();
 		} else {
-			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+			throw new RestException(Status.NOT_FOUND, "missing.file");
 		}
 		return file;
 	}
@@ -282,13 +287,13 @@ public class RoleRESTService extends RESTService {
 		Role role = em.find(Role.class, id);
 		// Validate:
 		if (role == null) {
-			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
 		if (!(role instanceof Candidate)) {
-			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+			throw new RestException(Status.NOT_FOUND, "wrong.role");
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && role.getUser() != loggedOn.getId()) {
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 
 		// Get File
@@ -308,10 +313,10 @@ public class RoleRESTService extends RESTService {
 
 		// Validate:
 		if (role == null) {
-			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && role.getUser() != loggedOn.getId()) {
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 
 		FileHeader file = null;
@@ -369,11 +374,11 @@ public class RoleRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
 		if (role == null) {
-			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
 		FileHeader file = getFile(authToken, id, var, fileId);
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(file.getOwner().getId())) {
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		Response retv = deleteFileBody(file);
 
@@ -410,10 +415,10 @@ public class RoleRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
 		if (role == null) {
-			throw new NoLogWebApplicationException(Status.NOT_FOUND);
+			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
 		if (!(role instanceof Candidate)) {
-			return Response.status(Status.NOT_FOUND).build();
+			throw new RestException(Status.NOT_FOUND, "wrong.role");
 		}
 		Candidate candidate = (Candidate) role;
 		FileHeader publication = null;
@@ -424,7 +429,7 @@ public class RoleRESTService extends RESTService {
 			}
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(publication.getOwner().getId())) {
-			throw new NoLogWebApplicationException(Status.FORBIDDEN);
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		Response retv = deleteFileBody(publication);
 		candidate.getPublications().remove(publication);
