@@ -4,6 +4,7 @@ import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.User.DetailedUserView;
 import gr.grnet.dep.service.model.User.SimpleUserView;
 
@@ -106,18 +107,16 @@ public class UserRESTService extends RESTService {
 
 			Set<Role> roles = user.getRoles();
 
-			user.setActive(Boolean.FALSE);
 			user.setRegistrationDate(new Date());
-			user.setVerified(Boolean.FALSE);
+			user.setStatus(UserStatus.UNVERIFIED);
+			user.setStatusDate(new Date());
 			user.setPassword(User.encodePassword(user.getPassword()));
 			user.setVerificationNumber(System.currentTimeMillis());
 			user.setRoles(new HashSet<Role>());
 			em.persist(user);
-
 			for (Role r : roles) {
 				user.addRole(r);
 			}
-
 			em.flush(); //To catch the exception
 			return user;
 		} catch (PersistenceException e) {
@@ -211,15 +210,23 @@ public class UserRESTService extends RESTService {
 				.setParameter("username", user.getUsername())
 				.getSingleResult();
 			// Validate
-			if (u.getVerified() != null && u.getVerified()) {
-				throw new RestException(Status.FORBIDDEN, "already.verified");
+			switch (u.getStatus()) {
+				case CREATED:
+					throw new RestException(Status.FORBIDDEN, "account.status.created");
+				case UNVERIFIED:
+					if (user.getVerificationNumber() == null || !user.getVerificationNumber().equals(u.getVerificationNumber())) {
+						throw new RestException(Status.FORBIDDEN, "wrong.verification");
+					}
+					// Verify
+					u.setStatus(UserStatus.ACTIVE);
+					u.setStatusDate(new Date());
+				case ACTIVE:
+					throw new RestException(Status.FORBIDDEN, "account.status.active");
+				case BLOCKED:
+					throw new RestException(Status.FORBIDDEN, "account.status.blocked");
+				case DELETED:
+					throw new RestException(Status.FORBIDDEN, "account.status.deleted");
 			}
-			if (user.getVerificationNumber() == null || !user.getVerificationNumber().equals(u.getVerificationNumber())) {
-				throw new RestException(Status.FORBIDDEN, "wrong.verification");
-			}
-			// Verify
-			u.setVerified(Boolean.TRUE);
-			u.setVerificationNumber(null);
 			return u;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.username");
@@ -227,9 +234,9 @@ public class UserRESTService extends RESTService {
 	}
 
 	@PUT
-	@Path("/{id:[0-9][0-9]*}/activate")
+	@Path("/{id:[0-9][0-9]*}/status")
 	@JsonView({DetailedUserView.class})
-	public User activate(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @QueryParam("active") Boolean active) {
+	public User updateStatus(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @QueryParam("status") String status) {
 		User loggedOn = getLoggedOn(authToken);
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -239,13 +246,10 @@ public class UserRESTService extends RESTService {
 				"from User u where u.id = :id")
 				.setParameter("id", id)
 				.getSingleResult();
-			// Activate
-			if (active == null) {
-				active = Boolean.TRUE;
-			}
-			u.setActive(active);
-
+			u.setStatus(UserStatus.valueOf(status));
 			return u;
+		} catch (IllegalArgumentException e) {
+			throw new RestException(Status.BAD_REQUEST);
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}

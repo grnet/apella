@@ -1,6 +1,7 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.Role.RoleStatus;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -44,6 +45,10 @@ public class User implements Serializable {
 	/** Default value included to remove warning. Remove or modify at will. **/
 	private static final long serialVersionUID = 1L;
 
+	public enum UserStatus {
+		CREATED, UNVERIFIED, ACTIVE, BLOCKED, DELETED
+	}
+
 	// define 3 json views
 	public static interface IdUserView {
 	}; // shows an id-only view of a User
@@ -72,6 +77,10 @@ public class User implements Serializable {
 	@NotNull
 	private String username;
 
+	private UserStatus status;
+
+	private Date statusDate;
+
 	@Valid
 	@Embedded
 	@NotNull
@@ -90,14 +99,10 @@ public class User implements Serializable {
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
 	private Set<Role> roles = new HashSet<Role>();
 
-	private boolean active = true;
-
 	@NotNull
 	private Date registrationDate;
 
 	private Long verificationNumber;
-
-	private Boolean verified;
 
 	private Date lastLoginDate;
 
@@ -121,6 +126,23 @@ public class User implements Serializable {
 
 	public void setUsername(String username) {
 		this.username = username;
+	}
+
+	@JsonView({SimpleUserView.class})
+	public UserStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(UserStatus status) {
+		this.status = status;
+	}
+
+	public Date getStatusDate() {
+		return statusDate;
+	}
+
+	public void setStatusDate(Date statusDate) {
+		this.statusDate = statusDate;
 	}
 
 	@JsonView({SimpleUserView.class})
@@ -160,15 +182,6 @@ public class User implements Serializable {
 	}
 
 	@JsonView({SimpleUserView.class})
-	public boolean isActive() {
-		return active;
-	}
-
-	public void setActive(boolean active) {
-		this.active = active;
-	}
-
-	@JsonView({SimpleUserView.class})
 	public Date getRegistrationDate() {
 		return registrationDate;
 	}
@@ -184,15 +197,6 @@ public class User implements Serializable {
 
 	public void setVerificationNumber(Long verificationNumber) {
 		this.verificationNumber = verificationNumber;
-	}
-
-	@JsonView({SimpleUserView.class})
-	public Boolean getVerified() {
-		return verified;
-	}
-
-	public void setVerified(Boolean verified) {
-		this.verified = verified;
 	}
 
 	@JsonView({SimpleUserView.class})
@@ -227,8 +231,9 @@ public class User implements Serializable {
 
 	public boolean hasRole(RoleDiscriminator role) {
 		for (Role r : getRoles()) {
-			if (r.getDiscriminator() == role && r.isActive())
+			if (r.getDiscriminator() == role && r.getStatus().equals(RoleStatus.ACTIVE)) {
 				return true;
+			}
 		}
 		return false;
 	}

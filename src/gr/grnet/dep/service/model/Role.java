@@ -1,6 +1,7 @@
 package gr.grnet.dep.service.model;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -64,6 +65,14 @@ public abstract class Role implements Serializable {
 		ADMINISTRATOR
 	};
 
+	public enum RoleStatus {
+		CREATED,
+		UNAPPROVED,
+		ACTIVE,
+		BLOCKED,
+		DELETED
+	};
+
 	@Inject
 	@Transient
 	private Logger logger;
@@ -80,9 +89,9 @@ public abstract class Role implements Serializable {
 	@org.hibernate.annotations.Index(name = "IDX_Roles_discriminator")
 	private RoleDiscriminator discriminator;
 
-	@Basic(optional = false)
-	@Column(columnDefinition = " boolean DEFAULT false")
-	private boolean active = false;
+	private RoleStatus status;
+
+	private Date statusDate;
 
 	// Inverse to User
 	@Basic(optional = false)
@@ -106,6 +115,22 @@ public abstract class Role implements Serializable {
 		this.discriminator = discriminator;
 	}
 
+	public RoleStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(RoleStatus status) {
+		this.status = status;
+	}
+
+	public Date getStatusDate() {
+		return statusDate;
+	}
+
+	public void setStatusDate(Date statusDate) {
+		this.statusDate = statusDate;
+	}
+
 	@JsonView({SimpleRoleView.class})
 	public Long getUser() {
 		return user;
@@ -120,13 +145,5 @@ public abstract class Role implements Serializable {
 	public abstract void initializeCollections();
 
 	public abstract Role copyFrom(Role otherRole);
-
-	public boolean isActive() {
-		return active;
-	}
-
-	public void setActive(boolean active) {
-		this.active = active;
-	}
 
 }

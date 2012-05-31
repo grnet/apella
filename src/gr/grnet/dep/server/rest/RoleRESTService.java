@@ -9,11 +9,13 @@ import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -176,6 +178,8 @@ public class RoleRESTService extends RESTService {
 		if (isIncompatibleRole(role, loggedOn.getRoles())) {
 			throw new RestException(Status.CONFLICT, "incompatible.role");
 		}
+		//Check fields, if any is missing set Status CREATED, else UNAPPROVED
+
 		em.persist(role);
 		return role;
 	}
@@ -188,35 +192,13 @@ public class RoleRESTService extends RESTService {
 		if (existingRole == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-
 		User loggedOn = getLoggedOn(authToken);
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && existingRole.getUser() != loggedOn.getId()) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+		// Check fields, if any is missing throw exception else set Status UNAPPROVED
 
 		existingRole = existingRole.copyFrom(role);
-		return existingRole;
-	}
-
-	@PUT
-	@Path("/{id:[0-9][0-9]*}/activate")
-	@JsonView({DetailedRoleView.class})
-	public Role activate(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @QueryParam("active") Boolean active) {
-		Role existingRole = em.find(Role.class, id);
-		if (existingRole == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
-		}
-
-		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && (existingRole.getUser() != loggedOn.getId() || !existingRole.isActive())) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-
-		// Activate
-		if (active == null) {
-			active = Boolean.TRUE;
-		}
-		existingRole.setActive(active);
 		return existingRole;
 	}
 
@@ -434,6 +416,29 @@ public class RoleRESTService extends RESTService {
 		Response retv = deleteFileBody(publication);
 		candidate.getPublications().remove(publication);
 		return retv;
+	}
+
+	/************************************
+	 *** Administrator Only Functions ***
+	 ************************************/
+
+	@PUT
+	@Path("/{id:[0-9][0-9]*}/status")
+	@JsonView({DetailedRoleView.class})
+	public Role updateStatus(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @QueryParam("status") String status) {
+		User loggedOn = getLoggedOn(authToken);
+		Role existingRole = em.find(Role.class, id);
+		if (existingRole == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.id");
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Update Status
+		existingRole.setStatus(RoleStatus.valueOf(status));
+		existingRole.setStatusDate(new Date());
+
+		return existingRole;
 	}
 
 }
