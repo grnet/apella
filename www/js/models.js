@@ -33,6 +33,15 @@ App.User = Backbone.Model.extend({
 			App.authToken = authToken;
 		}
 		return resp;
+	},
+	hasRole : function(role) {
+		var self = this;
+		if (self.has("roles")) {
+			return _.any(self.get("roles"), function(r) {
+				return r.discriminator === role;
+			});
+		}
+		return false;
 	}
 });
 

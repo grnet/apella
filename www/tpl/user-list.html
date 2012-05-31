@@ -1,0 +1,22 @@
+<thead>
+	<tr>
+		<th><%= $.i18n.prop("ID") %></th>
+		<th><%= $.i18n.prop("FirstName") %></th>
+		<th><%= $.i18n.prop("LastName") %></th>
+		<th width="100px"><%= $.i18n.prop("LastName") %></th>
+	</tr>
+</thead>
+<tbody>
+	<% _.each(users, function(user) { %>
+	<tr>
+		<td><%= user.id %></td>
+		<td><%= user.firstname %></td>
+		<td><%= user.lastname%></td>
+		<td width="100px">
+			<p align="center">
+				<a href="javascript:void(0)" id="select" userId="<%= user.id %>" class="btn btn-mini"><i class="icon-select icon-white"></i> <%= $.i18n.prop('btn_select') %></a>
+			</p>
+		</td>
+	</tr>
+	<% }); %>
+</tbody>

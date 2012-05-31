@@ -22,6 +22,30 @@ App.MenuView = Backbone.View.extend({
 
 });
 
+// MenuView
+App.AdminMenuView = Backbone.View.extend({
+	el : "div#menu",
+	
+	tagName : "ul",
+	
+	className : "nav",
+	
+	initialize : function() {
+		_.bindAll(this, "render");
+		this.model.bind('change', this.render);
+	},
+	
+	events : {},
+	
+	render : function(eventName) {
+		this.$el.empty();
+		this.$el.append("<ul class=\"nav\">");
+		this.$el.find("ul").append("<li><a href=\"\#users\">" + $.i18n.prop('adminmenu_users') + "</a></li>");
+		return this;
+	}
+
+});
+
 // UserMenuView
 App.UserMenuView = Backbone.View.extend({
 	el : "div#user-menu",
@@ -41,7 +65,7 @@ App.UserMenuView = Backbone.View.extend({
 		this.$el.empty();
 		this.$el.append("<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\"> <i class=\"icon-user\"></i> " + this.model.get("username") + "<span class=\"caret\"></span></a>");
 		this.$el.append("<ul class=\"dropdown-menu\">");
-		this.$el.find("ul").append("<li><a href=\"\#user\">" + $.i18n.prop('menu_user') + "</a>");
+		this.$el.find("ul").append("<li><a href=\"\#account\">" + $.i18n.prop('menu_account') + "</a>");
 		// Add Logout
 		this.$el.find("ul").append("<li><a id=\"logout\" href=\"javascript:void(0)\">" + $.i18n.prop('menu_logout') + "</a>");
 		return this;
@@ -67,8 +91,8 @@ App.LoginView = Backbone.View.extend({
 	validator : undefined,
 	
 	initialize : function() {
-		_.bindAll(this, "render", "login", "resetForm");
-		this.template = _.template(tpl.get('login'));
+		_.bindAll(this, "render", "login");
+		this.template = _.template(tpl.get('login-main'));
 		this.model.bind('change', this.render);
 	},
 	
@@ -76,8 +100,7 @@ App.LoginView = Backbone.View.extend({
 		"click a#save" : function() {
 			$("form", this.el).submit();
 		},
-		"submit form" : "login",
-		"blur form" : "resetForm"
+		"submit form" : "login"
 	},
 	
 	render : function(eventName) {
@@ -142,12 +165,90 @@ App.LoginView = Backbone.View.extend({
 				popup.show();
 			}
 		});
+	}
+});
+
+// LoginView
+App.AdminLoginView = Backbone.View.extend({
+	tagName : "div",
+	
+	validator : undefined,
+	
+	initialize : function() {
+		_.bindAll(this, "render", "login");
+		this.template = _.template(tpl.get('login-admin'));
+		this.model.bind('change', this.render);
 	},
 	
-	resetForm : function(event) {
-		if (this.validator) {
-			this.validator.resetForm();
-		}
+	events : {
+		"click a#save" : function() {
+			$("form", this.el).submit();
+		},
+		"submit form" : "login"
+	},
+	
+	render : function(eventName) {
+		$(this.el).html(this.template(this.model.toJSON()));
+		
+		this.validator = $("form", this.el).validate({
+			errorElement : "span",
+			errorClass : "help-inline",
+			highlight : function(element, errorClass, validClass) {
+				$(element).parent(".controls").parent(".control-group").addClass("error");
+			},
+			unhighlight : function(element, errorClass, validClass) {
+				$(element).parent(".controls").parent(".control-group").removeClass("error");
+			},
+			rules : {
+				username : {
+					required : true,
+					minlength : 2
+				},
+				password : {
+					required : true,
+					minlength : 5
+				}
+			},
+			messages : {
+				username : {
+					required : $.i18n.prop('validation_username'),
+					minlength : $.i18n.prop('validation_minlength', 2)
+				},
+				password : {
+					required : $.i18n.prop('validation_password'),
+					minlength : $.i18n.prop('validation_minlength', 5)
+				}
+			}
+		});
+		
+		return this;
+	},
+	
+	login : function(event) {
+		var self = this;
+		var username = $('form input[name=username]', self.el).val();
+		var password = $('form input[name=password]', self.el).val();
+		
+		// Save to model
+		self.model.login({
+			"username" : username,
+			"password" : password
+		}, {
+			wait : true,
+			success : function(model, resp) {
+				// Notify AppRouter to start Application (fill Header and handle
+				// history token)
+				console.log("Succesful Login", model, resp);
+				self.model.trigger("user:loggedon");
+			},
+			error : function(model, resp, options) {
+				var popup = new App.PopupView({
+					type : "error",
+					message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+				});
+				popup.show();
+			}
+		});
 	}
 });
 
@@ -437,8 +538,8 @@ App.HomeView = Backbone.View.extend({
 	}
 });
 
-// UserView
-App.UserView = Backbone.View.extend({
+// AccountView
+App.AccountView = Backbone.View.extend({
 	tagName : "div",
 	
 	className : "box",
@@ -447,7 +548,7 @@ App.UserView = Backbone.View.extend({
 	
 	initialize : function() {
 		_.bindAll(this, "render", "submit", "cancel");
-		this.template = _.template(tpl.get('user'));
+		this.template = _.template(tpl.get('user-edit'));
 		this.model.bind('change', this.render);
 	},
 	
@@ -608,11 +709,11 @@ App.UserView = Backbone.View.extend({
 App.RoleListView = Backbone.View.extend({
 	tagName : "div",
 	
-	className : "well sidebar-nav",
+	className : "sidebar-nav",
 	
 	initialize : function() {
 		_.bindAll(this, "render", "select", "newRole", "displayRole");
-		this.template = _.template(tpl.get('rolelist'));
+		this.template = _.template(tpl.get('role-list'));
 		this.collection.bind("change", this.render, this);
 		this.collection.bind("reset", this.render, this);
 		this.collection.bind("add", this.render, this);
@@ -1139,7 +1240,7 @@ App.FileView = Backbone.View.extend({
 	
 	initialize : function() {
 		console.log("FileView:initialize", this.model);
-		this.template = _.template(tpl.get('file'));
+		this.template = _.template(tpl.get('file-edit'));
 		_.bindAll(this, "render", "deleteFile", "uploadFile", "close");
 		this.model.bind('change', this.render, this);
 	},
@@ -1260,7 +1361,7 @@ App.FileListView = Backbone.View.extend({
 	
 	initialize : function() {
 		console.log("FileView:initialize", this.collection);
-		this.template = _.template(tpl.get('file'));
+		this.template = _.template(tpl.get('file-edit'));
 		_.bindAll(this, "render", "deleteFile", "uploadFile", "close");
 		this.collection.bind('reset', this.render, this);
 		this.collection.bind('remove', this.render, this);
@@ -1365,4 +1466,44 @@ App.FileListView = Backbone.View.extend({
 		$(this.el).unbind();
 		$(this.el).remove();
 	}
+});
+
+// AnnouncementsView
+App.AnnouncementListView = Backbone.View.extend({
+	tagName : "div",
+	
+	className : "well",
+	
+	initialize : function() {
+		this.template = _.template(tpl.get('announcement-list'));
+		_.bindAll(this, "render");
+		this.collection.bind('reset', this.render);
+	},
+	
+	events : {},
+	
+	render : function(eventName) {
+		var self = this;
+		// 1. Create JSON:
+		var data = {
+			announcements : []
+		};
+		self.collection.each(function(role) {
+			console.log("AnnouncementRender: ", role, role.toJSON());
+			if (!role.get("active")) {
+				data.announcements.push({
+					text : (function() {
+						return $.i18n.prop('RoleIsNotActive', $.i18n.prop(role.get('discriminator')));
+					})(),
+					url : "#profile/" + role.id
+				});
+			}
+			
+		});
+		// 2. Show
+		self.$el.html(self.template(data));
+		
+		return self;
+	}
+
 });

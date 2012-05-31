@@ -75,7 +75,7 @@ App.Router = Backbone.Router.extend({
 		var self = this;
 		
 		_.extend(self, Backbone.Events);
-		_.bindAll(self, "showLoginView", "showHomeView", "start");
+		_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showRequestsView", "start");
 		
 		// Init LoggedOnUser
 		App.loggedOnUser = new App.User();
@@ -96,7 +96,7 @@ App.Router = Backbone.Router.extend({
 	
 	routes : {
 		"" : "showHomeView",
-		"user" : "showUserView",
+		"account" : "showAccountView",
 		"profile" : "showProfileView",
 		"profile/:roleId" : "showProfileView",
 		"requests" : "showRequestsView"
@@ -105,7 +105,19 @@ App.Router = Backbone.Router.extend({
 	start : function(eventName, authToken) {
 		var self = this;
 		console.log("Start called");
-		
+		// Check that this is not an ADMINISTRATOR
+		if (App.loggedOnUser.hasRole("ADMINISTRATOR")) {
+			App.loggedOnUser = new App.User();
+			App.loggedOnUser.on("user:loggedon", self.start);
+			self.showLoginView();
+			var popup = new App.PopupView({
+				type : "warning",
+				message : $.i18n.prop("error.administrator.login")
+			});
+			popup.show();
+			
+			return;
+		}
 		App.loggedOnUser.off("user:loggedon", self.start);
 		
 		// Add necessary data
@@ -128,9 +140,15 @@ App.Router = Backbone.Router.extend({
 	},
 	
 	clear : function() {
+		$("#featured").unbind();
 		$("#featured").empty();
+		$("#featured").removeClass("well");
+		$("#sidebar").unbind();
 		$("#sidebar").empty();
+		$("#sidebar").removeClass("well");
+		$("#content").unbind();
 		$("#content").empty();
+		$("#content").removeClass("well");
 	},
 	
 	showLoginView : function() {
@@ -149,20 +167,27 @@ App.Router = Backbone.Router.extend({
 		var homeView = new App.HomeView({
 			model : App.loggedOnUser
 		});
-		$("#featured").append(homeView.render().el);
+		var announcementsView = new App.AnnouncementListView({
+			collection : App.roles
+		});
+		
+		$("#featured").html(homeView.render().el);
+		$("#featured").append(announcementsView.render().el);
+		App.roles.fetch();
+		
 		this.currentView = homeView;
 		return homeView;
 	},
 	
-	showUserView : function() {
-		console.log("showUserView");
+	showAccountView : function() {
+		console.log("showAccountView");
 		this.clear();
-		var userView = new App.UserView({
+		var accountView = new App.AccountView({
 			model : App.loggedOnUser
 		});
-		$("#content").append(userView.render().el);
-		this.currentView = userView;
-		return userView;
+		$("#content").append(accountView.render().el);
+		this.currentView = accountView;
+		return accountView;
 	},
 	
 	showProfileView : function(roleId) {
@@ -172,6 +197,7 @@ App.Router = Backbone.Router.extend({
 			collection : App.roles,
 			user : App.loggedOnUser.get("id")
 		});
+		$("#sidebar").addClass("well");
 		$("#sidebar").html(roleListView.render().el);
 		// Refresh roles from server
 		App.roles.fetch({
@@ -193,4 +219,119 @@ App.Router = Backbone.Router.extend({
 		$("#content").html("<h1>REQUESTS</h1>");
 	}
 
+});
+
+App.AdminRouter = Backbone.Router.extend({
+	
+	initialize : function() {
+		var self = this;
+		
+		_.extend(this, Backbone.Events);
+		_.bindAll(this, "start", "showLoginView", "showHomeView", "showSearchUserView", "showUserView");
+		
+		// Init LoggedOnUser
+		App.loggedOnUser = new App.User();
+		App.loggedOnUser.on("user:loggedon", self.start);
+		App.loggedOnUser.fetch({
+			url : "/dep/rest/user/loggedon",
+			success : function(model, resp) {
+				console.log("Succesful Login");
+				console.log(resp);
+				App.loggedOnUser.trigger("user:loggedon");
+			},
+			error : function(model, resp, options) {
+				console.log("Fetch User Error");
+				self.showLoginView();
+			}
+		});
+	},
+	
+	routes : {
+		"" : "showHomeView",
+		"account" : "showAccountView",
+		"users" : "showSearchUserView",
+		"user/:id" : "showUserView"
+	},
+	
+	start : function(eventName, authToken) {
+		var self = this;
+		console.log("Start called");
+		// Check that user is indeed Administrator
+		if (!App.loggedOnUser.hasRole("ADMINISTRATOR")) {
+			App.loggedOnUser = new App.User();
+			App.loggedOnUser.on("user:loggedon", self.start);
+			self.showLoginView();
+			
+			var popup = new App.PopupView({
+				type : "warning",
+				message : $.i18n.prop("error.insufficient.privileges")
+			});
+			popup.show();
+			
+			return;
+		}
+		App.loggedOnUser.off("user:loggedon", self.start);
+		
+		// Create Header, Menu, and other side content and
+		// bind them to the same loggedOnUser model
+		var adminmenuView = new App.AdminMenuView({
+			model : App.loggedOnUser
+		});
+		adminmenuView.render();
+		var usermenuView = new App.UserMenuView({
+			model : App.loggedOnUser
+		});
+		usermenuView.render();
+		
+		// Start Routing
+		Backbone.history.start();
+	},
+	
+	clear : function() {
+		$("#featured").unbind();
+		$("#featured").empty();
+		$("#featured").removeClass("well");
+		$("#sidebar").unbind();
+		$("#sidebar").empty();
+		$("#sidebar").removeClass("well");
+		$("#content").unbind();
+		$("#content").empty();
+		$("#content").removeClass("well");
+	},
+	
+	showLoginView : function() {
+		this.clear();
+		var loginView = new App.AdminLoginView({
+			model : App.loggedOnUser
+		});
+		$("#featured").html(loginView.render().el);
+		this.currentView = loginView;
+		return loginView;
+	},
+	
+	showHomeView : function() {
+		this.clear();
+		$("#content").html("<h1>HOME</h1>");
+	},
+	
+	showSearchUserView : function() {
+		this.clear();
+		$("#content").html("<h1>Search</h1>");
+	},
+	
+	showUserView : function(id) {
+		this.clear();
+		$("#content").html("<h1>User</h1>");
+	},
+	
+	showAccountView : function() {
+		console.log("showAccountView");
+		this.clear();
+		var accountView = new App.AccountView({
+			model : App.loggedOnUser
+		});
+		$("#content").append(accountView.render().el);
+		this.currentView = accountView;
+		return accountView;
+	},
 });
