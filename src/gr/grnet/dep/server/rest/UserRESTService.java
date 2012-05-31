@@ -4,9 +4,9 @@ import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
-import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.User.DetailedUserView;
 import gr.grnet.dep.service.model.User.SimpleUserView;
+import gr.grnet.dep.service.model.User.UserStatus;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -176,22 +176,26 @@ public class UserRESTService extends RESTService {
 			User u = (User) em.createQuery(
 				"from User u " +
 					"left join fetch u.roles " +
-					"where u.active=true and u.verified=true and u.username = :username")
+					"where u.username = :username")
 				.setParameter("username", username)
 				.getSingleResult();
 
-			if (u.getPassword().equals(User.encodePassword(password))) {
-				//TODO: Create Token: 
-				u.setAuthToken("" + System.currentTimeMillis());
-				u = em.merge(u);
-
-				return Response.status(200)
-					.header(TOKEN_HEADER, u.getAuthToken())
-					.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, Integer.MAX_VALUE, false))
-					.entity(u)
-					.build();
-			} else {
-				throw new RestException(Status.UNAUTHORIZED, "wrong.password");
+			switch (u.getStatus()) {
+				case ACTIVE:
+					if (u.getPassword().equals(User.encodePassword(password))) {
+						//TODO: Create Token: 
+						u.setAuthToken("" + System.currentTimeMillis());
+						u = em.merge(u);
+						return Response.status(200)
+							.header(TOKEN_HEADER, u.getAuthToken())
+							.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, Integer.MAX_VALUE, false))
+							.entity(u)
+							.build();
+					} else {
+						throw new RestException(Status.UNAUTHORIZED, "wrong.password");
+					}
+				default:
+					throw new RestException(Status.UNAUTHORIZED, "account.status." + u.getStatus().toString().toLowerCase());
 			}
 		} catch (NoResultException e) {
 			throw new RestException(Status.UNAUTHORIZED, "wrong.username");
@@ -206,13 +210,11 @@ public class UserRESTService extends RESTService {
 			User u = (User) em.createQuery(
 				"from User u " +
 					"left join fetch u.roles " +
-					"where u.active=true and u.username = :username")
+					"where u.username = :username")
 				.setParameter("username", user.getUsername())
 				.getSingleResult();
 			// Validate
 			switch (u.getStatus()) {
-				case CREATED:
-					throw new RestException(Status.FORBIDDEN, "account.status.created");
 				case UNVERIFIED:
 					if (user.getVerificationNumber() == null || !user.getVerificationNumber().equals(u.getVerificationNumber())) {
 						throw new RestException(Status.FORBIDDEN, "wrong.verification");
@@ -220,14 +222,10 @@ public class UserRESTService extends RESTService {
 					// Verify
 					u.setStatus(UserStatus.ACTIVE);
 					u.setStatusDate(new Date());
-				case ACTIVE:
-					throw new RestException(Status.FORBIDDEN, "account.status.active");
-				case BLOCKED:
-					throw new RestException(Status.FORBIDDEN, "account.status.blocked");
-				case DELETED:
-					throw new RestException(Status.FORBIDDEN, "account.status.deleted");
+					return u;
+				default:
+					throw new RestException(Status.FORBIDDEN, "account.status." + u.getStatus().toString().toLowerCase());
 			}
-			return u;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.username");
 		}

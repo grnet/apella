@@ -17,6 +17,8 @@ import javax.inject.Inject;
 import javax.persistence.CascadeType;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
@@ -77,6 +79,7 @@ public class User implements Serializable {
 	@NotNull
 	private String username;
 
+	@Enumerated(EnumType.STRING)
 	private UserStatus status;
 
 	private Date statusDate;

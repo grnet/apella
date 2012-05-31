@@ -184,6 +184,11 @@ App.User.prototype.sync = function(method, model, options) {
 	}
 };
 
+App.Users = Backbone.Collection.extend({
+	model : App.User,
+	url : "/dep/rest/user"
+});
+
 // Role
 App.Role = Backbone.Model.extend({
 	urlRoot : "/dep/rest/role",
@@ -191,6 +196,8 @@ App.Role = Backbone.Model.extend({
 		// Common Fields
 		"id" : undefined,
 		"discriminator" : undefined,
+		"status" : undefined,
+		"statusDate" : undefined,
 		"user" : undefined,
 		// Specific Fields
 		"institution" : undefined,

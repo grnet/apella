@@ -314,16 +314,6 @@ App.AdminRouter = Backbone.Router.extend({
 		$("#content").html("<h1>HOME</h1>");
 	},
 	
-	showSearchUserView : function() {
-		this.clear();
-		$("#content").html("<h1>Search</h1>");
-	},
-	
-	showUserView : function(id) {
-		this.clear();
-		$("#content").html("<h1>User</h1>");
-	},
-	
 	showAccountView : function() {
 		console.log("showAccountView");
 		this.clear();
@@ -334,4 +324,26 @@ App.AdminRouter = Backbone.Router.extend({
 		this.currentView = accountView;
 		return accountView;
 	},
+	
+	showSearchUserView : function() {
+		this.clear();
+		var users = new App.Users();
+		App.loggedOnUser.on("role:selected", function(event) {
+			console.log("Role Selected ", event);
+		});
+		var searchUserView = new App.SearchUserView({
+			collection : users
+		});
+		var userListView = new App.UserListView({
+			collection : users
+		});
+		$("#content").html(searchUserView.render().el);
+		$("#content").html(userListView.render().el);
+	},
+	
+	showUserView : function(id) {
+		this.clear();
+		$("#content").html("<h1>User " + id + "</h1>");
+	},
+
 });

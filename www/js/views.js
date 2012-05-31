@@ -705,6 +705,43 @@ App.AccountView = Backbone.View.extend({
 	}
 });
 
+App.UserSearchView = Backbone.View.extend({
+	tagName : "div",
+	
+	className : "",
+	
+	initialize : function() {
+		_.bindAll(this, "render", "search");
+		this.template = _.template(tpl.get('role-search'));
+		this.collection.bind("change", this.render, this);
+		this.collection.bind("reset", this.render, this);
+	},
+	
+	events : {
+		"click a#search" : "search"
+	},
+	
+	render : function(eventName) {
+		var self = this;
+		console.log("UserSearchView:render");
+		self.$el.html(this.template());
+		return self;
+	},
+	
+	search : function(event) {
+		var self = this;
+		var searchData = {
+			email : $('form input[name=email]', this.el).val(),
+			firstname : $('form input[name=firstname]', this.el).val(),
+			lastname : $('form input[name=lastname]', this.el).val(),
+			status : $('form select[name=status]', this.el).val(),
+			role : $('form select[name=role]', this.el).val(),
+			roleStatus : $('form select[name=roleStatus]', this.el).val()
+		};
+		
+	}
+});
+
 // RoleView
 App.RoleListView = Backbone.View.extend({
 	tagName : "div",
@@ -1490,7 +1527,7 @@ App.AnnouncementListView = Backbone.View.extend({
 		};
 		self.collection.each(function(role) {
 			console.log("AnnouncementRender: ", role, role.toJSON());
-			if (!role.get("active")) {
+			if (role.get("status") !== "ACTIVE" ) {
 				data.announcements.push({
 					text : (function() {
 						return $.i18n.prop('RoleIsNotActive', $.i18n.prop(role.get('discriminator')));

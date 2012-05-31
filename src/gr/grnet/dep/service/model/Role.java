@@ -89,6 +89,7 @@ public abstract class Role implements Serializable {
 	@org.hibernate.annotations.Index(name = "IDX_Roles_discriminator")
 	private RoleDiscriminator discriminator;
 
+	@Enumerated(EnumType.STRING)
 	private RoleStatus status;
 
 	private Date statusDate;

@@ -5,6 +5,7 @@ import gr.grnet.dep.service.model.FileBody;
 import gr.grnet.dep.service.model.FileHeader;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 
 import java.io.File;
@@ -68,8 +69,9 @@ public class RESTService {
 		try {
 			User user = (User) em.createQuery(
 				"from User u left join fetch u.roles " +
-					"where u.active=true " +
+					"where u.status = :status " +
 					"and u.authToken = :authToken")
+				.setParameter("status", UserStatus.ACTIVE)
 				.setParameter("authToken", authToken)
 				.getSingleResult();
 			return user;
