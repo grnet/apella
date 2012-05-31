@@ -1,17 +1,22 @@
 <h2><%= $.i18n.prop('UserSearch') %></h2>
-<form class="form-search">
-	<input name="email" type="text" class="input-medium search-query" />
-	<input name="firstname" type="text" class="input-medium search-query" />
-	<input name="lastname" type="text" class="input-medium search-query" />
-	<select name="status" class="input-medium search-query" >
+<form>
+	<label><%= $.i18n.prop("Username") %></label>
+	<input name="username" type="text" class="input-medium" />
+	<label><%= $.i18n.prop("Name") %></label>
+	<input name="firstname" type="text" class="input-medium" />
+	<label><%= $.i18n.prop("Surname") %></label>
+	<input name="lastname" type="text" class="input-medium" />
+	<label><%= $.i18n.prop("UserStatus") %></label>
+	<select name="status" class="input-medium" >
 		<option value="">--</option>
-		<option value="CREATED"><%= $.i18n.prop('StatusCREATED') %></option>
-		<option value="UNVERIFIED"><%= $.i18n.prop('StatusUNVERIFIED') %></option>
-		<option value="ACTIVE"><%= $.i18n.prop('StatusACTIVE') %></option>
-		<option value="BLOCKED"><%= $.i18n.prop('StatusBLOCKED') %></option>
-		<option value="DELETED"><%= $.i18n.prop('StatusDELETED') %></option>
+		<option value="CREATED"><%= $.i18n.prop('statusCREATED') %></option>
+		<option value="UNVERIFIED"><%= $.i18n.prop('statusUNVERIFIED') %></option>
+		<option value="ACTIVE"><%= $.i18n.prop('statusACTIVE') %></option>
+		<option value="BLOCKED"><%= $.i18n.prop('statusBLOCKED') %></option>
+		<option value="DELETED"><%= $.i18n.prop('statusDELETED') %></option>
 	</select>
-	<select name="role"class="input-medium search-query" >
+	<label><%= $.i18n.prop("Profile") %></label>
+	<select name="role" class="input-medium" >
 		<option value="">--</option>
 		<option value="CANDIDATE"><%= $.i18n.prop('CANDIDATE') %></option>
 		<option value="PROFESSOR_DOMESTIC"><%= $.i18n.prop('PROFESSOR_DOMESTIC') %></option>
@@ -20,14 +25,15 @@
 		<option value="DEPARTMENT_MANAGER"><%= $.i18n.prop('DEPARTMENT_MANAGER') %></option>
 		<option value="MINISTRY_MANAGER"><%= $.i18n.prop('MINISTRY_MANAGER') %></option>
 	</select>
-	<select name="roleStatus" class="input-medium search-query" >
+	<label><%= $.i18n.prop("RoleStatus") %></label>
+	<select name="roleStatus" class="input-medium" >
 		<option value="">--</option>
-		<option value="CREATED"><%= $.i18n.prop('StatusCREATED') %></option>
-		<option value="UNAPPROVED"><%= $.i18n.prop('StatusUNAPPROVED') %></option>
-		<option value="ACTIVE"><%= $.i18n.prop('StatusACTIVE') %></option>
-		<option value="BLOCKED"><%= $.i18n.prop('StatusBLOCKED') %></option>
-		<option value="DELETED"><%= $.i18n.prop('StatusDELETED') %></option>
+		<option value="CREATED"><%= $.i18n.prop('statusCREATED') %></option>
+		<option value="UNAPPROVED"><%= $.i18n.prop('statusUNAPPROVED') %></option>
+		<option value="ACTIVE"><%= $.i18n.prop('statusACTIVE') %></option>
+		<option value="BLOCKED"><%= $.i18n.prop('statusBLOCKED') %></option>
+		<option value="DELETED"><%= $.i18n.prop('statusDELETED') %></option>
 	</select>
-	
-	<a href="javascript:void(0)" id="search" class="btn"><%= $.i18n.prop('btn_search') %></a>
+	<label></label>
+	<a href="javascript:void(0)" id="search" class="btn"><i class="icon-search"></i> <%= $.i18n.prop('btn_search') %></a>
 </form>

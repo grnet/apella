@@ -193,6 +193,24 @@ App.Router = Backbone.Router.extend({
 	showProfileView : function(roleId) {
 		console.log("showProfileView");
 		this.clear();
+		App.roles.on("role:selected", function(role) {
+			var roleView = new App.RoleView({
+				model : role
+			});
+			// Update history
+			if (role.id) {
+				App.router.navigate("profile/" + role.id, {
+					trigger : false
+				});
+			} else {
+				App.router.navigate("profile", {
+					trigger : false
+				});
+			}
+			$("#content").unbind();
+			$("#content").empty();
+			$("#content").html(roleView.render().el);
+		});
 		var roleListView = new App.RoleListView({
 			collection : App.roles,
 			user : App.loggedOnUser.get("id")
@@ -203,9 +221,9 @@ App.Router = Backbone.Router.extend({
 		App.roles.fetch({
 			success : function() {
 				if (_.isUndefined(roleId)) {
-					roleListView.displayRole(roleListView.collection.at(0));
+					App.roles.trigger("role:selected", App.roles.at(0));
 				} else {
-					roleListView.displayRole(roleListView.collection.get(roleId));
+					App.roles.trigger("role:selected", App.roles.get(roleId));
 				}
 			}
 		});
@@ -227,7 +245,7 @@ App.AdminRouter = Backbone.Router.extend({
 		var self = this;
 		
 		_.extend(this, Backbone.Events);
-		_.bindAll(this, "start", "showLoginView", "showHomeView", "showSearchUserView", "showUserView");
+		_.bindAll(this, "start", "showLoginView", "showHomeView", "showUserSearchView", "showUserView");
 		
 		// Init LoggedOnUser
 		App.loggedOnUser = new App.User();
@@ -249,7 +267,8 @@ App.AdminRouter = Backbone.Router.extend({
 	routes : {
 		"" : "showHomeView",
 		"account" : "showAccountView",
-		"users" : "showSearchUserView",
+		"users" : "showUserSearchView",
+		"users/:query" : "showUserSearchView",
 		"user/:id" : "showUserView"
 	},
 	
@@ -325,23 +344,31 @@ App.AdminRouter = Backbone.Router.extend({
 		return accountView;
 	},
 	
-	showSearchUserView : function() {
-		this.clear();
+	showUserSearchView : function(query) {
+		var self = this;
+		self.clear();
 		var users = new App.Users();
-		App.loggedOnUser.on("role:selected", function(event) {
-			console.log("Role Selected ", event);
-		});
-		var searchUserView = new App.SearchUserView({
+		users.on("user:selected", function(user) {
+			if (user) {
+				self.showUserView(user.id, user);
+				self.navigate("user/" + user.id, {
+					trigger : false
+				});
+			}
+		}, this);
+		var userSearchView = new App.UserSearchView({
+			"query" : query ? JSON.parse(query) : undefined,
 			collection : users
 		});
 		var userListView = new App.UserListView({
 			collection : users
 		});
-		$("#content").html(searchUserView.render().el);
-		$("#content").html(userListView.render().el);
+		$("#sidebar").addClass("well");
+		$("#sidebar").append(userSearchView.render().el);
+		$("#content").append(userListView.render().el);
 	},
 	
-	showUserView : function(id) {
+	showUserView : function(id, user) {
 		this.clear();
 		$("#content").html("<h1>User " + id + "</h1>");
 	},

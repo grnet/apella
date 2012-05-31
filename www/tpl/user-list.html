@@ -1,20 +1,20 @@
 <thead>
 	<tr>
-		<th><%= $.i18n.prop("ID") %></th>
-		<th><%= $.i18n.prop("FirstName") %></th>
-		<th><%= $.i18n.prop("LastName") %></th>
-		<th width="100px"><%= $.i18n.prop("LastName") %></th>
+		<th><%= $.i18n.prop("Username") %></th>
+		<th><%= $.i18n.prop("Name") %></th>
+		<th><%= $.i18n.prop("Surname") %></th>
+		<th width="100px"></th>
 	</tr>
 </thead>
 <tbody>
 	<% _.each(users, function(user) { %>
 	<tr>
-		<td><%= user.id %></td>
-		<td><%= user.firstname %></td>
-		<td><%= user.lastname%></td>
+		<td><%= user.username %></td>
+		<td><%= user.basicInfo.firstname %></td>
+		<td><%= user.basicInfo.lastname%></td>
 		<td width="100px">
 			<p align="center">
-				<a href="javascript:void(0)" id="select" userId="<%= user.id %>" class="btn btn-mini"><i class="icon-select icon-white"></i> <%= $.i18n.prop('btn_select') %></a>
+				<a href="javascript:void(0)" id="select" user="<%= user.cid %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_select') %></a>
 			</p>
 		</td>
 	</tr>

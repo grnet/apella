@@ -23,14 +23,16 @@ App.User = Backbone.Model.extend({
 	},
 	parse : function(resp, xhr) {
 		// This is the only place we have access to xhr - response object
-		var authToken = xhr.getResponseHeader("X-Auth-Token");
-		if (authToken) {
-			$.ajaxSetup({
-				headers : {
-					"X-Auth-Token" : authToken
-				}
-			});
-			App.authToken = authToken;
+		if (xhr) {
+			var authToken = xhr.getResponseHeader("X-Auth-Token");
+			if (authToken) {
+				$.ajaxSetup({
+					headers : {
+						"X-Auth-Token" : authToken
+					}
+				});
+				App.authToken = authToken;
+			}
 		}
 		return resp;
 	},

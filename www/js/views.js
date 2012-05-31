@@ -712,9 +712,7 @@ App.UserSearchView = Backbone.View.extend({
 	
 	initialize : function() {
 		_.bindAll(this, "render", "search");
-		this.template = _.template(tpl.get('role-search'));
-		this.collection.bind("change", this.render, this);
-		this.collection.bind("reset", this.render, this);
+		this.template = _.template(tpl.get('user-search'));
 	},
 	
 	events : {
@@ -723,22 +721,77 @@ App.UserSearchView = Backbone.View.extend({
 	
 	render : function(eventName) {
 		var self = this;
-		console.log("UserSearchView:render");
-		self.$el.html(this.template());
+		self.$el.html(self.template({}));
+		if (self.options.query) {
+			$('form input[name=username]', this.el).val(self.options.query['username']);
+			$('form input[name=firstname]', this.el).val(self.options.query['firstname']);
+			$('form input[name=lastname]', this.el).val(self.options.query['lastname']);
+			$('form select[name=status]', this.el).val(self.options.query['status']);
+			$('form select[name=role]', this.el).val(self.options.query['role']);
+			$('form select[name=roleStatus]', this.el).val(self.options.query['roleStatus']);
+			
+			self.search();
+		}
 		return self;
 	},
-	
-	search : function(event) {
+	search : function() {
 		var self = this;
 		var searchData = {
-			email : $('form input[name=email]', this.el).val(),
+				username : $('form input[name=username]', this.el).val(),
 			firstname : $('form input[name=firstname]', this.el).val(),
 			lastname : $('form input[name=lastname]', this.el).val(),
 			status : $('form select[name=status]', this.el).val(),
 			role : $('form select[name=role]', this.el).val(),
 			roleStatus : $('form select[name=roleStatus]', this.el).val()
 		};
-		
+		console.log("Search Data: ", searchData);
+		App.router.navigate("users/" + JSON.stringify(searchData), {
+			trigger : false
+		});
+		self.collection.fetch({
+			data : searchData
+		});
+	}
+});
+
+App.UserListView = Backbone.View.extend({
+	tagName : "table",
+	
+	className : "table table-striped table-bordered table-condensed",
+	
+	initialize : function() {
+		_.bindAll(this, "render", "select");
+		this.template = _.template(tpl.get('user-list'));
+		this.collection.bind("change", this.render, this);
+		this.collection.bind("reset", this.render, this);
+	},
+	
+	events : {
+		"click a" : "select"
+	},
+	
+	render : function(eventName) {
+		var self = this;
+		var tpl_data = {
+			users : (function() {
+				var result = [];
+				self.collection.each(function(model) {
+					var item = model.toJSON();
+					item.cid = model.cid;
+					result.push(item);
+				});
+				return result;
+			})()
+		};
+		self.$el.html(self.template(tpl_data));
+		return self;
+	},
+	
+	select : function(event) {
+		var self = this;
+		var selectedModel = self.collection.getByCid($(event.target).attr('user'));
+		console.log("User Selected ", event, selectedModel);
+		self.collection.trigger("user:selected", selectedModel);
 	}
 });
 
@@ -749,12 +802,13 @@ App.RoleListView = Backbone.View.extend({
 	className : "sidebar-nav",
 	
 	initialize : function() {
-		_.bindAll(this, "render", "select", "newRole", "displayRole");
+		_.bindAll(this, "render", "select", "newRole", "highlightSelected");
 		this.template = _.template(tpl.get('role-list'));
 		this.collection.bind("change", this.render, this);
 		this.collection.bind("reset", this.render, this);
 		this.collection.bind("add", this.render, this);
 		this.collection.bind("remove", this.render, this);
+		this.collection.bind("role:selected", this.highlightSelected, this);
 	},
 	
 	events : {
@@ -784,10 +838,19 @@ App.RoleListView = Backbone.View.extend({
 		return this;
 	},
 	
-	select : function(event) {
+	select : function(event, role) {
 		var self = this;
-		var selectedModel = self.collection.getByCid($(event.target).attr('role'));
-		self.displayRole(selectedModel);
+		var selectedModel = role ? role : self.collection.getByCid($(event.target).attr('role'));
+		if (selectedModel) {
+			self.collection.trigger("role:selected", selectedModel);
+		} else {
+			console.log("no model selected", event, role);
+		}
+	},
+	
+	highlightSelected : function(role) {
+		$("li.active", this.$el).removeClass("active");
+		$("a[role=" + role.cid + "]", this.$el).parent("li").addClass("active");
 	},
 	
 	newRole : function(event) {
@@ -798,33 +861,8 @@ App.RoleListView = Backbone.View.extend({
 			user : self.options.user
 		});
 		self.collection.add(newRole);
-		self.displayRole(newRole);
-	},
-	
-	displayRole : function(role) {
-		console.log("RoleListView: displayRole");
-		var roleView = new App.RoleView({
-			model : role
-		});
-		// Update Selected:
-		$("li.active", this.$el).removeClass("active");
-		console.log("li[role=" + role.cid + "]");
-		$("a[role=" + role.cid + "]", this.$el).parent("li").addClass("active");
-		// Update history
-		if (role.id) {
-			App.router.navigate("profile/" + role.id, {
-				trigger : false
-			});
-		} else {
-			App.router.navigate("profile", {
-				trigger : false
-			});
-		}
-		$("#content").unbind();
-		$("#content").empty();
-		$("#content").html(roleView.render().el);
+		self.select(undefined, newRole);
 	}
-
 });
 
 App.RoleView = Backbone.View.extend({
@@ -1527,7 +1565,7 @@ App.AnnouncementListView = Backbone.View.extend({
 		};
 		self.collection.each(function(role) {
 			console.log("AnnouncementRender: ", role, role.toJSON());
-			if (role.get("status") !== "ACTIVE" ) {
+			if (role.get("status") !== "ACTIVE") {
 				data.announcements.push({
 					text : (function() {
 						return $.i18n.prop('RoleIsNotActive', $.i18n.prop(role.get('discriminator')));
