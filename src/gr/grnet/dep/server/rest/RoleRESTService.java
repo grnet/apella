@@ -172,10 +172,14 @@ public class RoleRESTService extends RESTService {
 	@JsonView({DetailedRoleView.class})
 	public Role create(@HeaderParam(TOKEN_HEADER) String authToken, Role role) {
 		User loggedOn = getLoggedOn(authToken);
+		User existingUser = em.find(User.class, role.getUser());
+		if (existingUser==null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.id");
+		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && (!role.getUser().equals(loggedOn.getId()) || role.getDiscriminator() == RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (isIncompatibleRole(role, loggedOn.getRoles())) {
+		if (isIncompatibleRole(role, existingUser.getRoles())) {
 			throw new RestException(Status.CONFLICT, "incompatible.role");
 		}
 		//Check fields, if any is missing set Status CREATED, else UNAPPROVED
