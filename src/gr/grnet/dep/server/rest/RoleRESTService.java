@@ -172,7 +172,7 @@ public class RoleRESTService extends RESTService {
 	@JsonView({DetailedRoleView.class})
 	public Role create(@HeaderParam(TOKEN_HEADER) String authToken, Role role) {
 		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && (role.getUser() != loggedOn.getId() || role.getDiscriminator() == RoleDiscriminator.ADMINISTRATOR)) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && (!role.getUser().equals(loggedOn.getId()) || role.getDiscriminator() == RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (isIncompatibleRole(role, loggedOn.getRoles())) {
