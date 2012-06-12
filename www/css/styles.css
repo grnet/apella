@@ -14,3 +14,20 @@ div.popup {
 	top: 5%;
 	z-index: 100px;
 }
+
+dl.dl-table {
+	margin: 1em 0;
+	padding: 0;
+}
+
+.dl-table dt {
+	width: 200px;
+	margin: 0;
+	padding: 5px;
+	font-weight: bold;
+}
+
+.dl-table dd {
+	margin: 0;
+	padding: 5px;
+}

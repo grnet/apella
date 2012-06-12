@@ -216,7 +216,8 @@ App.Role = Backbone.Model.extend({
 		"fekFile" : undefined,
 		"cv" : undefined,
 		"identity" : undefined,
-		"military1599" : undefined
+		"military1599" : undefined,
+		"publications" : undefined
 	}
 });
 

@@ -705,6 +705,27 @@ App.AccountView = Backbone.View.extend({
 	}
 });
 
+App.UserView = Backbone.View.extend({
+	tagName : "div",
+	
+	className : "",
+	
+	initialize : function() {
+		this.template = _.template(tpl.get('user'));
+		_.bindAll(this, "render");
+		this.model.bind("change", this.render, this);
+	},
+	
+	events : {},
+	
+	render : function(eventName) {
+		var self = this;
+		console.log("UserView:render", self.model);
+		self.$el.html(self.template(self.model.toJSON()));
+		return self;
+	}
+});
+
 App.UserSearchView = Backbone.View.extend({
 	tagName : "div",
 	
@@ -737,7 +758,7 @@ App.UserSearchView = Backbone.View.extend({
 	search : function() {
 		var self = this;
 		var searchData = {
-				username : $('form input[name=username]', this.el).val(),
+			username : $('form input[name=username]', this.el).val(),
 			firstname : $('form input[name=firstname]', this.el).val(),
 			lastname : $('form input[name=lastname]', this.el).val(),
 			status : $('form select[name=status]', this.el).val(),
@@ -868,6 +889,49 @@ App.RoleListView = Backbone.View.extend({
 App.RoleView = Backbone.View.extend({
 	tagName : "div",
 	
+	className : "",
+	
+	initialize : function() {
+		this.template = _.template(tpl.get('role'));
+		_.bindAll(this, "render");
+		if (this.collection) {
+			this.collection.bind("change", this.render, this);
+			this.collection.bind("reset", this.render, this);
+			this.collection.bind("add", this.render, this);
+			this.collection.bind("remove", this.render, this);
+		} else if (this.model) {
+			this.model.bind("change", this.render, this);
+		}
+	},
+	
+	events : {},
+	
+	render : function(eventName) {
+		var self = this;
+		console.log("RoleView:render");
+		self.$el.empty();
+		if (self.collection) {
+			console.log("RoleView:render", self.collection);
+			self.collection.each(function(role) {
+				console.log("RoleView:render", role);
+				self.$el.append(self.template(role.toJSON()));
+			});
+		} else if (self.model) {
+			console.log("RoleView:render");
+			self.$el.append(self.template(self.model.toJSON()));
+		}
+		return self;
+	},
+	
+	close : function() {
+		this.$el.unbind();
+		this.$el.remove();
+	}
+});
+
+App.RoleEditView = Backbone.View.extend({
+	tagName : "div",
+	
 	id : "roleview",
 	
 	className : "box",
@@ -875,9 +939,9 @@ App.RoleView = Backbone.View.extend({
 	validator : undefined,
 	
 	initialize : function() {
-		console.log("RoleView:initialize");
+		console.log("RoleEditView:initialize");
 		_.bindAll(this, "render", "submit", "cancel", "addFile");
-		this.template = _.template(tpl.get('role'));
+		this.template = _.template(tpl.get('role-edit'));
 		this.model.bind('change', this.render, this);
 		this.model.bind("destroy", this.close, this);
 	},
@@ -1253,7 +1317,7 @@ App.RoleView = Backbone.View.extend({
 						popup.show();
 					},
 					error : function(model, resp, options) {
-						console.log("RoleView: remove(error)", model, resp);
+						console.log("RoleEditView: remove(error)", model, resp);
 						var popup = new App.PopupView({
 							type : "error",
 							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -1295,7 +1359,7 @@ App.RoleView = Backbone.View.extend({
 	},
 	
 	addFileList : function(type, $el) {
-		console.log("Roleview:addFileCollection - start");
+		console.log("RoleEditView:addFileCollection - start");
 		var self = this;
 		var files = new App.Files();
 		files.url = self.model.url() + "/" + type;
@@ -1304,7 +1368,7 @@ App.RoleView = Backbone.View.extend({
 		});
 		$el.html(fileListView.render().el);
 		files.fetch();
-		console.log("Roleview:addFileCollection - end");
+		console.log("RoleEditView:addFileCollection - end");
 	}
 });
 

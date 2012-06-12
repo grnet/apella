@@ -194,7 +194,7 @@ App.Router = Backbone.Router.extend({
 		console.log("showProfileView");
 		this.clear();
 		App.roles.on("role:selected", function(role) {
-			var roleView = new App.RoleView({
+			var roleView = new App.RoleEditView({
 				model : role
 			});
 			// Update history
@@ -370,7 +370,24 @@ App.AdminRouter = Backbone.Router.extend({
 	
 	showUserView : function(id, user) {
 		this.clear();
-		$("#content").html("<h1>User " + id + "</h1>");
+		if (_.isUndefined(user)) {
+			user = new App.User({
+				"id" : id
+			});
+		}
+		var roles = new App.Roles();
+		roles.user = id;
+		
+		var userView = new App.UserView({
+			model : user
+		});
+		var roleView = new App.RoleView({
+			collection : roles
+		});
+		user.fetch();
+		roles.fetch();
+		$("#sidebar").html(userView.el);
+		$("#content").html(roleView.el);
 	},
 
 });
