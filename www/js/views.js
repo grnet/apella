@@ -843,7 +843,7 @@ App.UserListView = Backbone.View.extend({
 	}
 });
 
-// RoleView
+// RoleListView
 App.RoleListView = Backbone.View.extend({
 	tagName : "div",
 	
@@ -943,12 +943,15 @@ App.RoleView = Backbone.View.extend({
 			console.log("RoleView:render", self.collection);
 			self.collection.each(function(role) {
 				console.log("RoleView:render", role);
-				self.$el.append($(self.template(role.toJSON())).addClass("well"));
+				if (role.get("discriminator") !== "ADMINISTRATOR") {
+					self.$el.append($(self.template(role.toJSON())).addClass("well"));
+				}
 			});
 		} else if (self.model) {
-			console.log("RoleView:render");
-			self.$el.append($(self.template(self.model.toJSON())).addClass("well"));
-			self.$el.append(self.template(self.model.toJSON()));
+			console.log("RoleView:render", self.model);
+			if (role.get("discriminator") !== "ADMINISTRATOR") {
+				self.$el.append($(self.template(self.model.toJSON())).addClass("well"));
+			}
 		}
 		return self;
 	},

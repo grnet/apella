@@ -1,5 +1,56 @@
+// Overrride some backbone functions to provide holders for (1) caching and (2) loading display
+Backbone._sync = Backbone.sync;
+
+Backbone.sync = function(method, model, options) {
+	var success = options.success;
+	var error = options.error;
+	/*
+	options.success = function(resp, status, xhr) {
+		$.unblockUI();
+		return success(resp, status, xhr);
+	};
+	options.error = function(resp, status, xhr) {
+		$.unblockUI();
+		return error(resp, status, xhr);
+	};
+	 */
+	return Backbone._sync(method, model, options);
+};
+
+// APELLA Application Routers:
+
 App = {
-	allowedRoles : [ "CANDIDATE", "PROFESSOR_DOMESTIC", "PROFESSOR_FOREIGN", "INSTITUTION_MANAGER", "DEPARTMENT_MANAGER", "INSTITUTION_ASSISTANT", "MINISTRY_MANAGER" ]
+	allowedRoles : [ "CANDIDATE", "PROFESSOR_DOMESTIC", "PROFESSOR_FOREIGN", "INSTITUTION_MANAGER", "DEPARTMENT_MANAGER", "INSTITUTION_ASSISTANT", "MINISTRY_MANAGER" ],
+	
+	blockUI : function() {
+		$.blockUI({
+			message : $("<img src=\"css/images/loader.gif\" />"),
+			showOverlay : true,
+			centerY : false,
+			css : {
+				'z-index' : 2000,
+				width : '30%',
+				top : '1%',
+				left : '35%',
+				padding : 0,
+				margin : 0,
+				textAlign : 'center',
+				color : '#000',
+				border : 'none',
+				backgroundColor : 'none',
+				cursor : 'wait'
+			},
+			overlayCSS : {
+				'z-index' : 1999,
+				backgroundColor : 'none',
+				opacity : 1.0
+			},
+		});
+	},
+	
+	unblockUI : function() {
+		$.unblockUI();
+	}
 };
 
 App.RegistrationRouter = Backbone.Router.extend({
@@ -7,6 +58,10 @@ App.RegistrationRouter = Backbone.Router.extend({
 	initialize : function() {
 		_.extend(this, Backbone.Events);
 		_.bindAll(this, "showRegisterView", "showVerificationView", "showRegisterSelectView");
+		
+		$(document).ajaxStart(App.blockUI);
+		$(document).ajaxStop(App.unblockUI);
+		
 		Backbone.history.start();
 	},
 	
@@ -76,6 +131,8 @@ App.Router = Backbone.Router.extend({
 		
 		_.extend(self, Backbone.Events);
 		_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showRequestsView", "start");
+		$(document).ajaxStart(App.blockUI);
+		$(document).ajaxStop(App.unblockUI);
 		
 		// Init LoggedOnUser
 		App.loggedOnUser = new App.User();
@@ -246,6 +303,8 @@ App.AdminRouter = Backbone.Router.extend({
 		
 		_.extend(this, Backbone.Events);
 		_.bindAll(this, "start", "showLoginView", "showHomeView", "showUserSearchView", "showUserView");
+		$(document).ajaxStart(App.blockUI);
+		$(document).ajaxStop(App.unblockUI);
 		
 		// Init LoggedOnUser
 		App.loggedOnUser = new App.User();
