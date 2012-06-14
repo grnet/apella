@@ -386,6 +386,7 @@ App.AdminRouter = Backbone.Router.extend({
 		});
 		user.fetch();
 		roles.fetch();
+		$("#sidebar").addClass("well");
 		$("#sidebar").html(userView.el);
 		$("#content").html(roleView.el);
 	},

@@ -712,17 +712,44 @@ App.UserView = Backbone.View.extend({
 	
 	initialize : function() {
 		this.template = _.template(tpl.get('user'));
-		_.bindAll(this, "render");
+		_.bindAll(this, "render", "status");
 		this.model.bind("change", this.render, this);
 	},
 	
-	events : {},
+	events : {
+		"click a.status" : "status"
+	},
 	
-	render : function(eventName) {
+	render : function(event) {
 		var self = this;
 		console.log("UserView:render", self.model);
 		self.$el.html(self.template(self.model.toJSON()));
 		return self;
+	},
+	
+	status : function(event) {
+		console.log("UserView: status", event);
+		var userId = $(event.target).attr('user');
+		var status = $(event.target).attr('status');
+		this.model.status({
+			"status" : status
+		}, {
+			wait : true,
+			success : function(model, resp) {
+				var popup = new App.PopupView({
+					type : "success",
+					message : $.i18n.prop("Success")
+				});
+				popup.show();
+			},
+			error : function(model, resp, options) {
+				var popup = new App.PopupView({
+					type : "error",
+					message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+				});
+				popup.show();
+			}
+		});
 	}
 });
 
@@ -893,7 +920,7 @@ App.RoleView = Backbone.View.extend({
 	
 	initialize : function() {
 		this.template = _.template(tpl.get('role'));
-		_.bindAll(this, "render");
+		_.bindAll(this, "render", "status");
 		if (this.collection) {
 			this.collection.bind("change", this.render, this);
 			this.collection.bind("reset", this.render, this);
@@ -904,7 +931,9 @@ App.RoleView = Backbone.View.extend({
 		}
 	},
 	
-	events : {},
+	events : {
+		"click a.status" : "status"
+	},
 	
 	render : function(eventName) {
 		var self = this;
@@ -914,13 +943,61 @@ App.RoleView = Backbone.View.extend({
 			console.log("RoleView:render", self.collection);
 			self.collection.each(function(role) {
 				console.log("RoleView:render", role);
-				self.$el.append(self.template(role.toJSON()));
+				self.$el.append($(self.template(role.toJSON())).addClass("well"));
 			});
 		} else if (self.model) {
 			console.log("RoleView:render");
+			self.$el.append($(self.template(self.model.toJSON())).addClass("well"));
 			self.$el.append(self.template(self.model.toJSON()));
 		}
 		return self;
+	},
+	
+	status : function(event) {
+		console.log("RoleView: status", event);
+		var roleId = $(event.target).attr('role');
+		var status = $(event.target).attr('status');
+		if (this.model) {
+			this.model.status({
+				"status" : status
+			}, {
+				wait : true,
+				success : function(model, resp) {
+					var popup = new App.PopupView({
+						type : "success",
+						message : $.i18n.prop("Success")
+					});
+					popup.show();
+				},
+				error : function(model, resp, options) {
+					var popup = new App.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+		} else if (this.collection) {
+			this.collection.get(roleId).status({
+				"status" : status
+			}, {
+				wait : true,
+				success : function(model, resp) {
+					var popup = new App.PopupView({
+						type : "success",
+						message : $.i18n.prop("Success")
+					});
+					popup.show();
+				},
+				error : function(model, resp, options) {
+					var popup = new App.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+		}
 	},
 	
 	close : function() {

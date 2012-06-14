@@ -1,7 +1,18 @@
 <% if (discriminator === "PROFESSOR_DOMESTIC") { %>
-<div id="PROFESSOR_DOMESTIC" class="">
+<div id="PROFESSOR_DOMESTIC">
+	<div class="btn-group pull-right">
+		<a class="btn btn-small" href="javascript:void(0)"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
+		<a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)"><span class="caret"></span></a>
+		<ul class="dropdown-menu">
+			<li><a class="status" role="<%= id %>" status="CREATED" href="javascript:void(0)"> <%= $.i18n.prop('statusCREATED') %></a></li>
+			<li><a class="status" role="<%= id %>" status="UNAPPROVED" href="javascript:void(0)"> <%= $.i18n.prop('statusUNAPPROVED') %></a></li>
+			<li><a class="status" role="<%= id %>" status="ACTIVE" href="javascript:void(0)"> <%= $.i18n.prop('statusACTIVE') %></a></li>
+			<li><a class="status" role="<%= id %>" status="BLOCKED"  href="javascript:void(0)"> <%= $.i18n.prop('statusBLOCKED') %></a></li>
+			<li><a class="statuc" role="<%= id %>" status="DELETED" href="javascript:void(0)"> <%= $.i18n.prop('statusDELETED') %></a></li>
+		</ul>
+	</div>
 	<h3>
-		<%= $.i18n.prop('PROFESSOR_DOMESTIC') %> <span class="label label-info"><%= $.i18n.prop('status' + status) %></span>
+		<%= $.i18n.prop('PROFESSOR_DOMESTIC') %>
 	</h3>
 	<dl class="dl-table">
 		<dt><%= $.i18n.prop('Institution') %></dt>
@@ -29,8 +40,19 @@
 <% } %>
 <% if (discriminator === "PROFESSOR_FOREIGN") { %>
 <div id="PROFESSOR_FOREIGN">
+	<div class="btn-group pull-right">
+		<a class="btn btn-small" href="javascript:void(0)"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
+		<a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)"><span class="caret"></span></a>
+		<ul class="dropdown-menu">
+			<li><a class="status" role="<%= id %>" status="CREATED" href="javascript:void(0)"> <%= $.i18n.prop('statusCREATED') %></a></li>
+			<li><a class="status" role="<%= id %>" status="UNAPPROVED" href="javascript:void(0)"> <%= $.i18n.prop('statusUNAPPROVED') %></a></li>
+			<li><a class="status" role="<%= id %>" status="ACTIVE" href="javascript:void(0)"> <%= $.i18n.prop('statusACTIVE') %></a></li>
+			<li><a class="status" role="<%= id %>" status="BLOCKED"  href="javascript:void(0)"> <%= $.i18n.prop('statusBLOCKED') %></a></li>
+			<li><a class="statuc" role="<%= id %>" status="DELETED" href="javascript:void(0)"> <%= $.i18n.prop('statusDELETED') %></a></li>
+		</ul>
+	</div>
 	<h3>
-		<%= $.i18n.prop('PROFESSOR_FOREIGN') %> <span class="label label-info"><%= $.i18n.prop('status' + status) %></span>
+		<%= $.i18n.prop('PROFESSOR_FOREIGN') %>
 	</h3>
 	<dl class="dl-table">
 		<dt><%= $.i18n.prop('Institution') %></dt>
@@ -50,8 +72,19 @@
 <% } %>
 <% if (discriminator === "INSTITUTION_MANAGER") { %>
 <div id="INSTITUTION_MANAGER">
+	<div class="btn-group pull-right">
+		<a class="btn btn-small" href="javascript:void(0)"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
+		<a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)"><span class="caret"></span></a>
+		<ul class="dropdown-menu">
+			<li><a class="status" role="<%= id %>" status="CREATED" href="javascript:void(0)"> <%= $.i18n.prop('statusCREATED') %></a></li>
+			<li><a class="status" role="<%= id %>" status="UNAPPROVED" href="javascript:void(0)"> <%= $.i18n.prop('statusUNAPPROVED') %></a></li>
+			<li><a class="status" role="<%= id %>" status="ACTIVE" href="javascript:void(0)"> <%= $.i18n.prop('statusACTIVE') %></a></li>
+			<li><a class="status" role="<%= id %>" status="BLOCKED"  href="javascript:void(0)"> <%= $.i18n.prop('statusBLOCKED') %></a></li>
+			<li><a class="statuc" role="<%= id %>" status="DELETED" href="javascript:void(0)"> <%= $.i18n.prop('statusDELETED') %></a></li>
+		</ul>
+	</div>
 	<h3>
-		<%= $.i18n.prop('INSTITUTION_MANAGER') %> <span class="label label-info"><%= $.i18n.prop('status' + status) %></span>
+		<%= $.i18n.prop('INSTITUTION_MANAGER') %>
 	</h3>
 	<dl class="dl-table">
 		<dt><%= $.i18n.prop('Institution') %></dt>
@@ -60,9 +93,20 @@
 </div>
 <% } %>
 <% if (discriminator === "DEPARTMENT_MANAGER") { %>
-<div id="DEPARTMENT_MANAGER">
+<div id="INSTITUTION_MANAGER">
+	<div class="btn-group pull-right">
+		<a class="btn btn-small" href="javascript:void(0)"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
+		<a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)"><span class="caret"></span></a>
+		<ul class="dropdown-menu">
+			<li><a class="status" role="<%= id %>" status="CREATED" href="javascript:void(0)"> <%= $.i18n.prop('statusCREATED') %></a></li>
+			<li><a class="status" role="<%= id %>" status="UNAPPROVED" href="javascript:void(0)"> <%= $.i18n.prop('statusUNAPPROVED') %></a></li>
+			<li><a class="status" role="<%= id %>" status="ACTIVE" href="javascript:void(0)"> <%= $.i18n.prop('statusACTIVE') %></a></li>
+			<li><a class="status" role="<%= id %>" status="BLOCKED"  href="javascript:void(0)"> <%= $.i18n.prop('statusBLOCKED') %></a></li>
+			<li><a class="statuc" role="<%= id %>" status="DELETED" href="javascript:void(0)"> <%= $.i18n.prop('statusDELETED') %></a></li>
+		</ul>
+	</div>
 	<h3>
-		<%= $.i18n.prop('DEPARTMENT_MANAGER') %> <span class="label label-info"><%= $.i18n.prop('status' + status) %></span>
+		<%= $.i18n.prop('DEPARTMENT_MANAGER') %>
 	</h3>
 	<dl class="dl-table">
 		<dt><%= $.i18n.prop('Department') %></dt>
@@ -72,8 +116,19 @@
 <% } %>
 <% if (discriminator === "INSTITUTION_ASSISTANT") { %>
 <div id="INSTITUTION_ASSISTANT">
+	<div class="btn-group pull-right">
+		<a class="btn btn-small" href="javascript:void(0)"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
+		<a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)"><span class="caret"></span></a>
+		<ul class="dropdown-menu">
+			<li><a class="status" role="<%= id %>" status="CREATED" href="javascript:void(0)"> <%= $.i18n.prop('statusCREATED') %></a></li>
+			<li><a class="status" role="<%= id %>" status="UNAPPROVED" href="javascript:void(0)"> <%= $.i18n.prop('statusUNAPPROVED') %></a></li>
+			<li><a class="status" role="<%= id %>" status="ACTIVE" href="javascript:void(0)"> <%= $.i18n.prop('statusACTIVE') %></a></li>
+			<li><a class="status" role="<%= id %>" status="BLOCKED"  href="javascript:void(0)"> <%= $.i18n.prop('statusBLOCKED') %></a></li>
+			<li><a class="statuc" role="<%= id %>" status="DELETED" href="javascript:void(0)"> <%= $.i18n.prop('statusDELETED') %></a></li>
+		</ul>
+	</div>
 	<h3>
-		<%= $.i18n.prop('INSTITUTION_ASSISTANT') %> <span class="label label-info"><%= $.i18n.prop('status' + status) %></span>
+		<%= $.i18n.prop('INSTITUTION_ASSISTANT') %>
 	</h3>
 	<dl class="dl-table">
 		<dt><%= $.i18n.prop('Institution') %></dt>
@@ -83,8 +138,19 @@
 <% } %>
 <% if (discriminator === "MINISTRY_MANAGER") { %>
 <div id="MINISTRY_MANAGER">
+	<div class="btn-group pull-right">
+		<a class="btn btn-small" href="javascript:void(0)"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
+		<a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)"><span class="caret"></span></a>
+		<ul class="dropdown-menu">
+			<li><a class="status" role="<%= id %>" status="CREATED" href="javascript:void(0)"> <%= $.i18n.prop('statusCREATED') %></a></li>
+			<li><a class="status" role="<%= id %>" status="UNAPPROVED" href="javascript:void(0)"> <%= $.i18n.prop('statusUNAPPROVED') %></a></li>
+			<li><a class="status" role="<%= id %>" status="ACTIVE" href="javascript:void(0)"> <%= $.i18n.prop('statusACTIVE') %></a></li>
+			<li><a class="status" role="<%= id %>" status="BLOCKED"  href="javascript:void(0)"> <%= $.i18n.prop('statusBLOCKED') %></a></li>
+			<li><a class="statuc" role="<%= id %>" status="DELETED" href="javascript:void(0)"> <%= $.i18n.prop('statusDELETED') %></a></li>
+		</ul>
+	</div>
 	<h3>
-		<%= $.i18n.prop('MINISTRY_MANAGER') %> <span class="label label-info"><%= $.i18n.prop('status' + status) %></span>
+		<%= $.i18n.prop('MINISTRY_MANAGER') %>
 	</h3>
 	<dl class="dl-table">
 		<dt><%= $.i18n.prop('Ministry') %></dt>
@@ -94,8 +160,19 @@
 <% } %>
 <% if (discriminator === "CANDIDATE") { %>
 <div id="CANDIDATE">
+	<div class="btn-group pull-right">
+		<a class="btn btn-small" href="javascript:void(0)"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
+		<a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)"><span class="caret"></span></a>
+		<ul class="dropdown-menu">
+			<li><a class="status" role="<%= id %>" status="CREATED" href="javascript:void(0)"> <%= $.i18n.prop('statusCREATED') %></a></li>
+			<li><a class="status" role="<%= id %>" status="UNAPPROVED" href="javascript:void(0)"> <%= $.i18n.prop('statusUNAPPROVED') %></a></li>
+			<li><a class="status" role="<%= id %>" status="ACTIVE" href="javascript:void(0)"> <%= $.i18n.prop('statusACTIVE') %></a></li>
+			<li><a class="status" role="<%= id %>" status="BLOCKED"  href="javascript:void(0)"> <%= $.i18n.prop('statusBLOCKED') %></a></li>
+			<li><a class="statuc" role="<%= id %>" status="DELETED" href="javascript:void(0)"> <%= $.i18n.prop('statusDELETED') %></a></li>
+		</ul>
+	</div>
 	<h3>
-		<%= $.i18n.prop('CANDIDATE') %> <span class="label label-info"><%= $.i18n.prop('status' + status) %></span>
+		<%= $.i18n.prop('CANDIDATE') %>
 	</h3>
 	<dl class="dl-table">
 		<dt><%= $.i18n.prop('CuriculumVitaeFile') %></dt>
