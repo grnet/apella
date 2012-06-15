@@ -3,6 +3,7 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.DetailedUserView;
 import gr.grnet.dep.service.model.User.SimpleUserView;
@@ -16,6 +17,7 @@ import java.util.Set;
 import javax.ejb.Stateless;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
+import javax.persistence.Query;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -28,6 +30,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
@@ -45,16 +48,51 @@ public class UserRESTService extends RESTService {
 	@GET
 	@JsonView({SimpleUserView.class})
 	@SuppressWarnings("unchecked")
-	public List<User> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
+	public List<User> getAll(
+		@HeaderParam(TOKEN_HEADER) String authToken,
+		@QueryParam("username") String username,
+		@QueryParam("firstname") String firstname,
+		@QueryParam("lastname") String lastname,
+		@QueryParam("status") String status,
+		@QueryParam("role") String role,
+		@QueryParam("roleStatus") String roleStatus) {
+
 		User loggedOn = getLoggedOn(authToken);
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient-priviledges");
 		}
-		return (List<User>) em.createQuery(
-			"select distinct u from User u " +
-				"left join fetch u.roles " +
-				"order by u.basicInfo.lastname, u.basicInfo.firstname")
-			.getResultList();
+		//TODO: Search for User based on input
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct u from User u " +
+			"left join fetch u.roles r " +
+			"where u.username like :username " +
+			"and u.basicInfo.firstname like :firstname " +
+			"and u.basicInfo.lastname like :lastname ");
+		if (status != null && !status.isEmpty()) {
+			sb.append("and u.status = :status ");
+		}
+		if (role != null && !role.isEmpty()) {
+			sb.append("and r.discriminator = :discriminator ");
+		}
+		if (roleStatus != null && !roleStatus.isEmpty()) {
+			sb.append("and r.status = :roleStatus ");
+		}
+		sb.append("order by u.basicInfo.lastname, u.basicInfo.firstname");
+
+		Query query = em.createQuery(sb.toString())
+			.setParameter("username", "%" + username + "%")
+			.setParameter("firstname", "%" + firstname + "%")
+			.setParameter("lastname", "%" + lastname + "%");
+		if (status != null && !status.isEmpty()) {
+			query = query.setParameter("status", UserStatus.valueOf(status));
+		}
+		if (role != null && !role.isEmpty()) {
+			query = query.setParameter("discriminator", RoleDiscriminator.valueOf(role));
+		}
+		if (roleStatus != null && !roleStatus.isEmpty()) {
+			query = query.setParameter("roleStatus", RoleStatus.valueOf(roleStatus));
+		}
+		return query.getResultList();
 	}
 
 	@GET
