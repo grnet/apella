@@ -9,7 +9,6 @@ import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
-import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
 
 import java.io.IOException;
@@ -425,7 +424,7 @@ public class RoleRESTService extends RESTService {
 	@PUT
 	@Path("/{id:[0-9][0-9]*}/status")
 	@JsonView({DetailedRoleView.class})
-	public Role updateStatus(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @QueryParam("status") String status) {
+	public Role updateStatus(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Role requestRole) {
 		User loggedOn = getLoggedOn(authToken);
 		Role existingRole = em.find(Role.class, id);
 		if (existingRole == null) {
@@ -435,7 +434,7 @@ public class RoleRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Update Status
-		existingRole.setStatus(RoleStatus.valueOf(status));
+		existingRole.setStatus(requestRole.getStatus());
 		existingRole.setStatusDate(new Date());
 
 		return existingRole;

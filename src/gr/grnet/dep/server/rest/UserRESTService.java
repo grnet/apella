@@ -28,7 +28,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
@@ -234,20 +233,20 @@ public class UserRESTService extends RESTService {
 	@PUT
 	@Path("/{id:[0-9][0-9]*}/status")
 	@JsonView({DetailedUserView.class})
-	public User updateStatus(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @QueryParam("status") String status) {
+	public User updateStatus(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, User requestUser) {
 		User loggedOn = getLoggedOn(authToken);
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
 			User u = (User) em.createQuery(
-				"from User u where u.id = :id")
+				"from User u left join fetch u.roles " +
+					"where u.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
-			u.setStatus(UserStatus.valueOf(status));
+			u.setStatus(requestUser.getStatus());
+			u.setStatusDate(new Date());
 			return u;
-		} catch (IllegalArgumentException e) {
-			throw new RestException(Status.BAD_REQUEST);
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}

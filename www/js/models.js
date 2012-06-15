@@ -239,7 +239,10 @@ App.User.prototype.sync = function(method, model, options) {
 		var params = {
 			type : 'PUT',
 			dataType : 'json',
-			data : model.toJSON()
+			data : {
+				"username" : model.get("username"),
+				"password" : model.get("password")
+			}
 		};
 		// Ensure that we have a URL.
 		if (!options.url) {
@@ -259,7 +262,11 @@ App.User.prototype.sync = function(method, model, options) {
 		var params = {
 			type : 'PUT',
 			dataType : 'json',
-			data : model.toJSON()
+			contentType : 'application/json',
+			data : JSON.stringify({
+				"id" : model.get("id"),
+				"status" : model.get("status")
+			})
 		};
 		// Ensure that we have a URL.
 		if (!options.url) {
@@ -394,7 +401,12 @@ App.Role.prototype.sync = function(method, model, options) {
 		var params = {
 			type : 'PUT',
 			dataType : 'json',
-			data : model.toJSON()
+			contentType : 'application/json',
+			data : JSON.stringify({
+				"id" : model.get("id"),
+				"discriminator" : model.get("discriminator"),
+				"status" : model.get("status")
+			})
 		};
 		// Ensure that we have a URL.
 		if (!options.url) {
