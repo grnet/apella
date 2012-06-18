@@ -31,6 +31,7 @@
 
 <script type="text/javascript" src="lib/underscore.js"></script>
 <script type="text/javascript" src="lib/backbone.js"></script>
+<script type="text/javascript" src="lib/backbone.cache.js"></script>
 <script type="text/javascript" src="js/utils.js"></script>
 <script type="text/javascript" src="js/main.js"></script>
 <script type="text/javascript" src="js/models.js"></script>
@@ -38,13 +39,13 @@
 <script>
 	$(document).ready(function() {
 		tpl.loadTemplates([ 'user-registration-select', 'user-registration', 'user-verification', 'popup' ], function() {
-			console.log("Loaded templates");
+			// Loaded templates
 			jQuery.i18n.properties({
 				name : 'messages',
 				path : 'locale/',
 				mode : 'map',
 				callback : function() {
-					console.log("Loaded locales");
+					// Loaded locales
 					App.registrationRouter = new App.RegistrationRouter();
 				}
 			});
@@ -60,7 +61,8 @@
 	<div class="navbar navbar-fixed-top">
 		<div class="navbar-inner">
 			<div class="container-fluid">
-				<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"> <span class="icon-bar"></span> <span class="icon-bar"></span><span class="icon-bar"></span>
+				<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"> <span class="icon-bar"></span> <span class="icon-bar"></span><span
+					class="icon-bar"></span>
 				</a> <a class="brand" href="#">ΑΠΕΛΛΑ</a>
 			</div>
 		</div>

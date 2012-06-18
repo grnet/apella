@@ -72,7 +72,6 @@ App.UserMenuView = Backbone.View.extend({
 	},
 	
 	logout : function(event) {
-		console.log("Logging out");
 		// Remove X-Auth-Token
 		$.ajaxSetup({
 			headers : {}
@@ -154,7 +153,6 @@ App.LoginView = Backbone.View.extend({
 			success : function(model, resp) {
 				// Notify AppRouter to start Application (fill Header and handle
 				// history token)
-				console.log("Succesful Login", model, resp);
 				self.model.trigger("user:loggedon");
 			},
 			error : function(model, resp, options) {
@@ -238,7 +236,6 @@ App.AdminLoginView = Backbone.View.extend({
 			success : function(model, resp) {
 				// Notify AppRouter to start Application (fill Header and handle
 				// history token)
-				console.log("Succesful Login", model, resp);
 				self.model.trigger("user:loggedon");
 			},
 			error : function(model, resp, options) {
@@ -306,7 +303,6 @@ App.ConfirmView = Backbone.View.extend({
 	
 	events : {
 		"click a#yes" : function(event) {
-			console.log("Click a#yes");
 			this.$el.modal('hide');
 			if (_.isFunction(this.options.yes)) {
 				this.options.yes();
@@ -366,7 +362,6 @@ App.UserRegistrationView = Backbone.View.extend({
 	},
 	
 	render : function(eventName) {
-		console.log("UserRegistrationView: render");
 		$(this.el).html(this.template(this.model.get('roles')[0]));
 		
 		this.validator = $("form", this.el).validate({
@@ -442,7 +437,6 @@ App.UserRegistrationView = Backbone.View.extend({
 	},
 	
 	submit : function(event) {
-		console.log("UserRegistrationView: submit");
 		var self = this;
 		
 		// Read Input
@@ -481,7 +475,6 @@ App.UserRegistrationView = Backbone.View.extend({
 		}, {
 			wait : true,
 			success : function(model, resp) {
-				console.log("UserRegistrationView: save(success):", model, resp);
 				$("#messages", self.$el).html("Η εγγραφή ολοκληρώθηκε, θα σας αποσταλεί e-mail........");
 				var popup = new App.PopupView({
 					type : "success",
@@ -490,7 +483,6 @@ App.UserRegistrationView = Backbone.View.extend({
 				popup.show();
 			},
 			error : function(model, resp, options) {
-				console.log(model, resp, options);
 				var popup = new App.PopupView({
 					type : "error",
 					message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -681,7 +673,6 @@ App.AccountView = Backbone.View.extend({
 				}, {
 					wait : true,
 					success : function(model, resp) {
-						console.log("UserView:save(success):", model, resp);
 						var popup = new App.PopupView({
 							type : "success",
 							message : $.i18n.prop("Success")
@@ -689,7 +680,6 @@ App.AccountView = Backbone.View.extend({
 						popup.show();
 					},
 					error : function(model, resp, options) {
-						console.log("UserView:save(error):", model, resp);
 						var popup = new App.PopupView({
 							type : "error",
 							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -722,13 +712,11 @@ App.UserView = Backbone.View.extend({
 	
 	render : function(event) {
 		var self = this;
-		console.log("UserView:render", self.model);
 		self.$el.html(self.template(self.model.toJSON()));
 		return self;
 	},
 	
 	status : function(event) {
-		console.log("UserView: status", event);
 		var userId = $(event.target).attr('user');
 		var status = $(event.target).attr('status');
 		this.model.status({
@@ -792,11 +780,11 @@ App.UserSearchView = Backbone.View.extend({
 			role : $('form select[name=role]', this.el).val(),
 			roleStatus : $('form select[name=roleStatus]', this.el).val()
 		};
-		console.log("Search Data: ", searchData);
 		App.router.navigate("users/" + JSON.stringify(searchData), {
 			trigger : false
 		});
 		self.collection.fetch({
+			cache : false,
 			data : searchData
 		});
 	}
@@ -838,7 +826,6 @@ App.UserListView = Backbone.View.extend({
 	select : function(event) {
 		var self = this;
 		var selectedModel = self.collection.getByCid($(event.target).attr('user'));
-		console.log("User Selected ", event, selectedModel);
 		self.collection.trigger("user:selected", selectedModel);
 	}
 });
@@ -865,7 +852,6 @@ App.RoleListView = Backbone.View.extend({
 	},
 	
 	render : function(eventName) {
-		console.log("RoleListView:render");
 		var self = this;
 		var tpl_data = {
 			roles : (function() {
@@ -891,8 +877,6 @@ App.RoleListView = Backbone.View.extend({
 		var selectedModel = role ? role : self.collection.getByCid($(event.target).attr('role'));
 		if (selectedModel) {
 			self.collection.trigger("role:selected", selectedModel);
-		} else {
-			console.log("no model selected", event, role);
 		}
 	},
 	
@@ -937,18 +921,14 @@ App.RoleView = Backbone.View.extend({
 	
 	render : function(eventName) {
 		var self = this;
-		console.log("RoleView:render");
 		self.$el.empty();
 		if (self.collection) {
-			console.log("RoleView:render", self.collection);
 			self.collection.each(function(role) {
-				console.log("RoleView:render", role);
 				if (role.get("discriminator") !== "ADMINISTRATOR") {
 					self.$el.append($(self.template(role.toJSON())).addClass("well"));
 				}
 			});
 		} else if (self.model) {
-			console.log("RoleView:render", self.model);
 			if (role.get("discriminator") !== "ADMINISTRATOR") {
 				self.$el.append($(self.template(self.model.toJSON())).addClass("well"));
 			}
@@ -957,7 +937,6 @@ App.RoleView = Backbone.View.extend({
 	},
 	
 	status : function(event) {
-		console.log("RoleView: status", event);
 		var roleId = $(event.target).attr('role');
 		var status = $(event.target).attr('status');
 		if (this.model) {
@@ -1019,7 +998,6 @@ App.RoleEditView = Backbone.View.extend({
 	validator : undefined,
 	
 	initialize : function() {
-		console.log("RoleEditView:initialize");
 		_.bindAll(this, "render", "submit", "cancel", "addFile");
 		this.template = _.template(tpl.get('role-edit'));
 		this.model.bind('change', this.render, this);
@@ -1037,7 +1015,6 @@ App.RoleEditView = Backbone.View.extend({
 	
 	render : function(eventName) {
 		var self = this;
-		console.log("RoleView:render");
 		self.$el.html(this.template(this.model.toJSON()));
 		
 		switch (self.model.get("discriminator")) {
@@ -1057,6 +1034,7 @@ App.RoleEditView = Backbone.View.extend({
 		case "PROFESSOR_DOMESTIC":
 			App.institutions = App.institutions ? App.institutions : new App.Institutions();
 			App.institutions.fetch({
+				cache : true,
 				success : function(collection, resp) {
 					collection.each(function(institution) {
 						if (_.isObject(self.model.get("institution")) && _.isEqual(institution.id, self.model.get("institution").id)) {
@@ -1074,6 +1052,27 @@ App.RoleEditView = Backbone.View.extend({
 					popup.show();
 				}
 			});
+			App.ranks = App.ranks ? App.ranks : new App.Ranks();
+			App.ranks.fetch({
+				cache : true,
+				success : function(collection, resp) {
+					collection.each(function(rank) {
+						if (_.isObject(self.model.get("rank")) && _.isEqual(rank.id, self.model.get("rank").id)) {
+							$("select[name='rank']", self.$el).append("<option value='" + rank.get("id") + "' selected>" + rank.get("name") + "</option>");
+						} else {
+							$("select[name='rank']", self.$el).append("<option value='" + rank.get("id") + "'>" + rank.get("name") + "</option>");
+						}
+					});
+				},
+				error : function(model, resp, options) {
+					var popup = new App.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+			
 			if (self.model.has("id")) {
 				self.addFile("fekFile", $("#fekFile", this.$el));
 			} else {
@@ -1114,6 +1113,26 @@ App.RoleEditView = Backbone.View.extend({
 			
 			break;
 		case "PROFESSOR_FOREIGN":
+			App.ranks = App.ranks ? App.ranks : new App.Ranks();
+			App.ranks.fetch({
+				cache : true,
+				success : function(collection, resp) {
+					collection.each(function(rank) {
+						if (_.isObject(self.model.get("rank")) && _.isEqual(rank.id, self.model.get("rank").id)) {
+							$("select[name='rank']", self.$el).append("<option value='" + rank.get("id") + "' selected>" + rank.get("name") + "</option>");
+						} else {
+							$("select[name='rank']", self.$el).append("<option value='" + rank.get("id") + "'>" + rank.get("name") + "</option>");
+						}
+					});
+				},
+				error : function(model, resp, options) {
+					var popup = new App.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
 			this.validator = $("form", this.el).validate({
 				errorElement : "span",
 				errorClass : "help-inline",
@@ -1145,6 +1164,7 @@ App.RoleEditView = Backbone.View.extend({
 		case "INSTITUTION_MANAGER":
 			App.institutions = App.institutions ? App.institutions : new App.Institutions();
 			App.institutions.fetch({
+				cache : true,
 				success : function(collection, resp) {
 					collection.each(function(institution) {
 						if (_.isObject(self.model.get("institution")) && _.isEqual(institution.id, self.model.get("institution").id)) {
@@ -1183,6 +1203,7 @@ App.RoleEditView = Backbone.View.extend({
 		case "INSTITUTION_ASSISTANT":
 			App.institutions = App.institutions ? App.institutions : new App.Institutions();
 			App.institutions.fetch({
+				cache : true,
 				success : function(collection, resp) {
 					collection.each(function(institution) {
 						if (_.isObject(self.model.get("institution")) && _.isEqual(institution.id, self.model.get("institution").id)) {
@@ -1221,6 +1242,7 @@ App.RoleEditView = Backbone.View.extend({
 		case "DEPARTMENT_MANAGER":
 			App.departments = App.departments ? App.departments : new App.Departments();
 			App.departments.fetch({
+				cache : true,
 				success : function(collection, resp) {
 					collection.each(function(department) {
 						if (_.isObject(self.model.get("department")) && _.isEqual(department.id, self.model.get("department").id)) {
@@ -1296,8 +1318,7 @@ App.RoleEditView = Backbone.View.extend({
 						"id" : $('form select[name=institution]', this.el).val()
 					};
 					values.rank = {
-						"id" : self.model.has("rank") ? self.model.get("rank").id : undefined,
-						"name" : $('form textarea[name=rank]', this.el).val()
+						"id" : $('form select[name=rank]', this.el).val()
 					};
 					values.profileURL = $('form input[name=profileURL]', this.el).val();
 					values.position = $('form input[name=position]', this.el).val();
@@ -1316,8 +1337,7 @@ App.RoleEditView = Backbone.View.extend({
 					values.profileURL = $('form input[name=profileURL]', this.el).val();
 					values.position = $('form input[name=position]', this.el).val();
 					values.rank = {
-						"id" : self.model.has("rank") ? self.model.get("rank").id : undefined,
-						"name" : $('form textarea[name=rank]', this.el).val()
+						"id" : $('form select[name=rank]', this.el).val()
 					};
 					values.subject = {
 						"id" : self.model.has("subject") ? self.model.get("subject").id : undefined,
@@ -1349,7 +1369,6 @@ App.RoleEditView = Backbone.View.extend({
 				self.model.save(values, {
 					wait : true,
 					success : function(model, resp) {
-						console.log("RoleView: save(success):", model, resp);
 						var popup = new App.PopupView({
 							type : "success",
 							message : $.i18n.prop("Success")
@@ -1357,7 +1376,6 @@ App.RoleEditView = Backbone.View.extend({
 						popup.show();
 					},
 					error : function(model, resp, options) {
-						console.log("RoleView: save(error):", model, resp);
 						var popup = new App.PopupView({
 							type : "error",
 							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -1389,7 +1407,6 @@ App.RoleEditView = Backbone.View.extend({
 				self.model.destroy({
 					wait : true,
 					success : function(model, resp) {
-						console.log("RoleView: remove", model, resp);
 						var popup = new App.PopupView({
 							type : "success",
 							message : $.i18n.prop("Success")
@@ -1397,7 +1414,6 @@ App.RoleEditView = Backbone.View.extend({
 						popup.show();
 					},
 					error : function(model, resp, options) {
-						console.log("RoleEditView: remove(error)", model, resp);
 						var popup = new App.PopupView({
 							type : "error",
 							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -1417,7 +1433,6 @@ App.RoleEditView = Backbone.View.extend({
 	},
 	
 	addFile : function(type, $el) {
-		console.log("Roleview:addFile - start");
 		var self = this;
 		var fileView;
 		var file;
@@ -1435,11 +1450,9 @@ App.RoleEditView = Backbone.View.extend({
 		});
 		
 		$el.html(fileView.render().el);
-		console.log("Roleview:addFile - end");
 	},
 	
 	addFileList : function(type, $el) {
-		console.log("RoleEditView:addFileCollection - start");
 		var self = this;
 		var files = new App.Files();
 		files.url = self.model.url() + "/" + type;
@@ -1447,8 +1460,9 @@ App.RoleEditView = Backbone.View.extend({
 			collection : files
 		});
 		$el.html(fileListView.render().el);
-		files.fetch();
-		console.log("RoleEditView:addFileCollection - end");
+		files.fetch({
+			cache : false
+		});
 	}
 });
 
@@ -1458,7 +1472,6 @@ App.FileView = Backbone.View.extend({
 	className : "table table-striped table-bordered table-condensed",
 	
 	initialize : function() {
-		console.log("FileView:initialize", this.model);
 		this.template = _.template(tpl.get('file-edit'));
 		_.bindAll(this, "render", "deleteFile", "uploadFile", "close");
 		this.model.bind('change', this.render, this);
@@ -1471,7 +1484,6 @@ App.FileView = Backbone.View.extend({
 	
 	render : function(eventName) {
 		var self = this;
-		console.log("FileView:render");
 		self.$el.html(self.template({
 			files : [ self.model.toJSON() ]
 		}));
@@ -1523,11 +1535,9 @@ App.FileView = Backbone.View.extend({
 			title : $.i18n.prop('Confirm'),
 			message : $.i18n.prop('AreYouSure'),
 			yes : function() {
-				console.log("File:trying to destroy:", self.model, self.model.url());
 				self.model.destroy({
 					wait : true,
 					success : function(model, resp) {
-						console.log("File:destroy-success", model, resp);
 						var name = model.get("name");
 						var popup;
 						if (_.isNull(resp)) {
@@ -1549,7 +1559,6 @@ App.FileView = Backbone.View.extend({
 						popup.show();
 					},
 					error : function(model, resp, options) {
-						console.log("File:destroy-error", model, resp, options);
 						var popup = new App.PopupView({
 							type : "error",
 							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -1579,7 +1588,6 @@ App.FileListView = Backbone.View.extend({
 	uploader : undefined,
 	
 	initialize : function() {
-		console.log("FileView:initialize", this.collection);
 		this.template = _.template(tpl.get('file-edit'));
 		_.bindAll(this, "render", "deleteFile", "uploadFile", "close");
 		this.collection.bind('reset', this.render, this);
@@ -1617,7 +1625,6 @@ App.FileListView = Backbone.View.extend({
 			},
 			init : {
 				FileUploaded : function(uploader, file, response) {
-					console.log("FileView:uploadFile->FileUploaded");
 					var attributes = JSON.parse(response.response);
 					self.collection.add(new App.File(attributes), {
 						silent : true
@@ -1626,11 +1633,9 @@ App.FileListView = Backbone.View.extend({
 			}
 		});
 		$("div.modal", self.$el).on("hidden", function() {
-			console.log("OnHidden");
 			uploader.pluploadQueue().destroy();
 			uploader.empty();
 			if (length !== self.collection.length) {
-				console.log("Triggering Change");
 				self.collection.trigger("reset");
 			}
 		});
@@ -1640,16 +1645,13 @@ App.FileListView = Backbone.View.extend({
 	deleteFile : function(event) {
 		var self = this;
 		var selectedModel = self.collection.get($(event.target).attr('fileId'));
-		console.log("FileList: deleteFile", $(event.target).attr('fileId'), selectedModel);
 		var confirm = new App.ConfirmView({
 			title : $.i18n.prop('Confirm'),
 			message : $.i18n.prop('AreYouSure'),
 			yes : function() {
-				console.log("File:trying to destroy:");
 				selectedModel.destroy({
 					wait : true,
 					success : function(model, resp) {
-						console.log("File:destroy-success", model, resp, self.collection);
 						var popup;
 						if (_.isNull(resp)) {
 							popup = new App.PopupView({
@@ -1657,7 +1659,6 @@ App.FileListView = Backbone.View.extend({
 								message : $.i18n.prop("Success")
 							});
 						} else {
-							console.log("Setting ", model, selectedModel);
 							selectedModel.set(resp);
 							self.collection.add(selectedModel);
 							popup = new App.PopupView({
@@ -1668,7 +1669,6 @@ App.FileListView = Backbone.View.extend({
 						popup.show();
 					},
 					error : function(model, resp, options) {
-						console.log("File:destroy-error", model, resp, options);
 						var popup = new App.PopupView({
 							type : "error",
 							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -1708,7 +1708,6 @@ App.AnnouncementListView = Backbone.View.extend({
 			announcements : []
 		};
 		self.collection.each(function(role) {
-			console.log("AnnouncementRender: ", role, role.toJSON());
 			if (role.get("status") !== "ACTIVE") {
 				data.announcements.push({
 					text : (function() {

@@ -1,24 +1,4 @@
-// Overrride some backbone functions to provide holders for (1) caching and (2) loading display
-Backbone._sync = Backbone.sync;
-
-Backbone.sync = function(method, model, options) {
-	var success = options.success;
-	var error = options.error;
-	/*
-	options.success = function(resp, status, xhr) {
-		$.unblockUI();
-		return success(resp, status, xhr);
-	};
-	options.error = function(resp, status, xhr) {
-		$.unblockUI();
-		return error(resp, status, xhr);
-	};
-	 */
-	return Backbone._sync(method, model, options);
-};
-
 // APELLA Application Routers:
-
 App = {
 	allowedRoles : [ "CANDIDATE", "PROFESSOR_DOMESTIC", "PROFESSOR_FOREIGN", "INSTITUTION_MANAGER", "DEPARTMENT_MANAGER", "INSTITUTION_ASSISTANT", "MINISTRY_MANAGER" ],
 	
@@ -115,8 +95,6 @@ App.RegistrationRouter = Backbone.Router.extend({
 				self.currentView = userVerificationView;
 			},
 			error : function(model, resp, options) {
-				console.log(resp.status);
-				console.log(resp);
 				$("#featured").html("ΣΦΑΛΜΑ " + resp.status);
 				self.currentView = undefined;
 			}
@@ -139,13 +117,11 @@ App.Router = Backbone.Router.extend({
 		App.loggedOnUser.on("user:loggedon", self.start);
 		App.loggedOnUser.fetch({
 			url : "/dep/rest/user/loggedon",
+			cache : false,
 			success : function(model, resp) {
-				console.log("Succesful Login");
-				console.log(resp);
 				App.loggedOnUser.trigger("user:loggedon");
 			},
 			error : function(model, resp, options) {
-				console.log("Fetch User Error");
 				self.showLoginView();
 			}
 		});
@@ -161,7 +137,6 @@ App.Router = Backbone.Router.extend({
 	
 	start : function(eventName, authToken) {
 		var self = this;
-		console.log("Start called");
 		// Check that this is not an ADMINISTRATOR
 		if (App.loggedOnUser.hasRole("ADMINISTRATOR")) {
 			App.loggedOnUser = new App.User();
@@ -219,7 +194,6 @@ App.Router = Backbone.Router.extend({
 	},
 	
 	showHomeView : function() {
-		console.log("showHomeView");
 		this.clear();
 		var homeView = new App.HomeView({
 			model : App.loggedOnUser
@@ -230,14 +204,15 @@ App.Router = Backbone.Router.extend({
 		
 		$("#featured").html(homeView.render().el);
 		$("#featured").append(announcementsView.render().el);
-		App.roles.fetch();
+		App.roles.fetch({
+			cache : false
+		});
 		
 		this.currentView = homeView;
 		return homeView;
 	},
 	
 	showAccountView : function() {
-		console.log("showAccountView");
 		this.clear();
 		var accountView = new App.AccountView({
 			model : App.loggedOnUser
@@ -248,7 +223,6 @@ App.Router = Backbone.Router.extend({
 	},
 	
 	showProfileView : function(roleId) {
-		console.log("showProfileView");
 		this.clear();
 		App.roles.on("role:selected", function(role) {
 			var roleView = new App.RoleEditView({
@@ -276,6 +250,7 @@ App.Router = Backbone.Router.extend({
 		$("#sidebar").html(roleListView.render().el);
 		// Refresh roles from server
 		App.roles.fetch({
+			cache : false,
 			success : function() {
 				if (_.isUndefined(roleId)) {
 					App.roles.trigger("role:selected", App.roles.at(0));
@@ -289,7 +264,6 @@ App.Router = Backbone.Router.extend({
 	},
 	
 	showRequestsView : function() {
-		console.log("showRequestsView");
 		this.clear();
 		$("#content").html("<h1>REQUESTS</h1>");
 	}
@@ -311,13 +285,11 @@ App.AdminRouter = Backbone.Router.extend({
 		App.loggedOnUser.on("user:loggedon", self.start);
 		App.loggedOnUser.fetch({
 			url : "/dep/rest/user/loggedon",
+			cache : false,
 			success : function(model, resp) {
-				console.log("Succesful Login");
-				console.log(resp);
 				App.loggedOnUser.trigger("user:loggedon");
 			},
 			error : function(model, resp, options) {
-				console.log("Fetch User Error");
 				self.showLoginView();
 			}
 		});
@@ -333,7 +305,6 @@ App.AdminRouter = Backbone.Router.extend({
 	
 	start : function(eventName, authToken) {
 		var self = this;
-		console.log("Start called");
 		// Check that user is indeed Administrator
 		if (!App.loggedOnUser.hasRole("ADMINISTRATOR")) {
 			App.loggedOnUser = new App.User();
@@ -393,7 +364,6 @@ App.AdminRouter = Backbone.Router.extend({
 	},
 	
 	showAccountView : function() {
-		console.log("showAccountView");
 		this.clear();
 		var accountView = new App.AccountView({
 			model : App.loggedOnUser
@@ -443,8 +413,12 @@ App.AdminRouter = Backbone.Router.extend({
 		var roleView = new App.RoleView({
 			collection : roles
 		});
-		user.fetch();
-		roles.fetch();
+		user.fetch({
+			cache : false
+		});
+		roles.fetch({
+			cache : false
+		});
 		$("#sidebar").addClass("well");
 		$("#sidebar").html(userView.el);
 		$("#content").html(roleView.el);

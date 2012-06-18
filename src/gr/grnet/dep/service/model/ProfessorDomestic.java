@@ -23,7 +23,7 @@ public class ProfessorDomestic extends Professor {
 	@ManyToOne
 	private Institution institution;
 
-	@ManyToOne(optional = false, cascade = CascadeType.ALL)
+	@ManyToOne
 	private Rank rank;
 
 	@ManyToOne(optional = false, cascade = CascadeType.ALL)
@@ -102,7 +102,7 @@ public class ProfessorDomestic extends Professor {
 		ProfessorDomestic pd = (ProfessorDomestic) otherRole;
 		setInstitution(pd.getInstitution());
 		setPosition(pd.getPosition());
-		getRank().setName(pd.getRank().getName());
+		setRank(pd.getRank());
 		getSubject().setName(pd.getSubject().getName());
 		setFek(pd.getFek());
 		getFekSubject().setName(pd.getFekSubject().getName());

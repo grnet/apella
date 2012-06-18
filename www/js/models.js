@@ -44,6 +44,16 @@ App.User = Backbone.Model.extend({
 			});
 		}
 		return false;
+	},
+	
+	hasRoleWithStatus : function(role, status) {
+		var self = this;
+		if (self.has("roles")) {
+			return _.any(self.get("roles"), function(r) {
+				return (r.discriminator === role && r.status === status);
+			});
+		}
+		return false;
 	}
 });
 
@@ -206,8 +216,6 @@ App.User.prototype.status = function(key, value, options) {
 };
 
 App.User.prototype.sync = function(method, model, options) {
-	console.log('method = ' + method);
-	console.log(model.toJSON());
 	switch (method) {
 	
 	case "verify":
@@ -391,8 +399,6 @@ App.Role.prototype.status = function(key, value, options) {
 };
 
 App.Role.prototype.sync = function(method, model, options) {
-	console.log('method = ' + method);
-	console.log(model.toJSON());
 	switch (method) {
 	case "status":
 		// Default options, unless specified.
@@ -484,4 +490,17 @@ App.Department = Backbone.Model.extend({
 App.Departments = Backbone.Collection.extend({
 	url : "/dep/rest/department",
 	model : App.Department
+});
+
+App.Rank = Backbone.Model.extend({
+	urlRoot : "/dep/rest/rank",
+	defaults : {
+		"id" : undefined,
+		"name" : undefined
+	}
+});
+
+App.Ranks = Backbone.Collection.extend({
+	url : "/dep/rest/rank",
+	model : App.Rank
 });
