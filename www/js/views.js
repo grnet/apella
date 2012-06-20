@@ -349,22 +349,71 @@ App.UserRegistrationView = Backbone.View.extend({
 	validator : undefined,
 	
 	initialize : function() {
-		_.bindAll(this, "render", "submit");
+		_.bindAll(this, "render", "submit", "selectInstitution");
 		this.template = _.template(tpl.get('user-registration'));
 		this.model.bind('change', this.render);
 	},
 	
 	events : {
 		"click a#save" : function() {
-			$("form", this.el).submit();
+			this.$("form#userForm").submit();
 		},
-		"submit form" : "submit"
+		"click a#selectInstitution" : "selectInstitution",
+		"submit form#userForm" : "submit"
 	},
 	
-	render : function(eventName) {
-		$(this.el).html(this.template(this.model.get('roles')[0]));
+	render : function(event) {
+		var self = this;
+		var role = self.model.get('roles')[0];
+		self.$el.html(self.template(role));
 		
-		this.validator = $("form", this.el).validate({
+		// Especially for PROFESSOR_DOMESTIC there is a demand to select
+		// institution first in case their institution supports Shibboleth Login
+		if (role.discriminator === "PROFESSOR_DOMESTIC") {
+			// Add institutions in selector:
+			App.institutions = App.institutions ? App.institutions : new App.Institutions();
+			App.institutions.fetch({
+				cache : true,
+				success : function(collection, resp) {
+					collection.each(function(institution) {
+						if (_.isObject(role.institution) && _.isEqual(institution.id, role.institution.id)) {
+							$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "' selected>" + institution.get("name") + "</option>");
+						} else {
+							$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
+						}
+					});
+				},
+				error : function(model, resp, options) {
+					var popup = new App.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+			// Set UI components
+			if (role.institution && role.institution.registrationType === "REGISTRATION_FORM") {
+				self.$("#shibbolethLoginInstructions").hide();
+				self.$("form#institutionForm").hide();
+				self.$("form#userForm").show();
+			} else if (role.institution && role.institution.registrationType === "SHIBBOLETH") {
+				self.$("#shibbolethLoginInstructions").show();
+				self.$("form#institutionForm").hide();
+				self.$("form#userForm").hide();
+			} else {
+				self.$("#shibbolethLoginInstructions").hide();
+				self.$("form#institutionForm").show();
+				self.$("form#userForm").hide();
+			}
+		} else {
+			// Set UI components
+			self.$("#shibbolethLoginInstructions").hide();
+			self.$("form#institutionForm").hide();
+			self.$("form#userForm").show();
+		}
+		
+		// Add validator
+		self.validator = self.$("form#userForm").validate({
 			errorElement : "span",
 			errorClass : "help-inline",
 			highlight : function(element, errorClass, validClass) {
@@ -433,7 +482,7 @@ App.UserRegistrationView = Backbone.View.extend({
 			}
 		});
 		
-		return this;
+		return self;
 	},
 	
 	submit : function(event) {
@@ -492,6 +541,14 @@ App.UserRegistrationView = Backbone.View.extend({
 		});
 		event.preventDefault();
 		return false;
+	},
+	
+	selectInstitution : function() {
+		var self = this;
+		var role = self.model.get('roles')[0];
+		var institutionId = self.$("select[name=institution]").val();
+		role.institution = App.institutions.get(institutionId).toJSON();
+		self.model.trigger("change");
 	}
 });
 
@@ -565,10 +622,6 @@ App.AccountView = Backbone.View.extend({
 				$(element).parent(".controls").parent(".control-group").removeClass("error");
 			},
 			rules : {
-				username : {
-					required : true,
-					minlength : 2
-				},
 				firstname : "required",
 				lastname : "required",
 				password : {
@@ -584,6 +637,11 @@ App.AccountView = Backbone.View.extend({
 					minlength : 10,
 					maxlength : 12
 				},
+				email : {
+					required : true,
+					email : true,
+					minlength : 2
+				},
 				address_street : "required",
 				address_number : "required",
 				address_zip : "required",
@@ -593,10 +651,6 @@ App.AccountView = Backbone.View.extend({
 			messages : {
 				firstname : $.i18n.prop('validation_firstname'),
 				lastname : $.i18n.prop('validation_lastname'),
-				username : {
-					required : $.i18n.prop('validation_username'),
-					minlength : $.i18n.prop('validation_minlength', 2)
-				},
 				password : {
 					required : $.i18n.prop('validation_password'),
 					minlength : $.i18n.prop('validation_minlength', 5)
@@ -611,6 +665,11 @@ App.AccountView = Backbone.View.extend({
 					number : $.i18n.prop('validation_number'),
 					minlength : $.i18n.prop('validation_minlength', 10),
 					maxlength : $.i18n.prop('validation_maxlength', 12)
+				},
+				email : {
+					required : $.i18n.prop('validation_email'),
+					email : $.i18n.prop('validation_email'),
+					minlength : $.i18n.prop('validation_minlength', 2)
 				},
 				address_street : $.i18n.prop('validation_street'),
 				address_number : $.i18n.prop('validation_address'),
@@ -638,10 +697,10 @@ App.AccountView = Backbone.View.extend({
 			yes : function() {
 				
 				// Read Input
-				var username = $('form input[name=username]', this.el).val();
 				var firstname = $('form input[name=firstname]', this.el).val();
 				var lastname = $('form input[name=lastname]', this.el).val();
 				var password = $('form input[name=password]', this.el).val();
+				var email = $('form input[name=email]', this.el).val();
 				var phoneNumber = $('form input[name=phoneNumber]', this.el).val();
 				var address_street = $('form input[name=address_street]', this.el).val();
 				var address_number = $('form input[name=address_number]', this.el).val();
@@ -653,7 +712,6 @@ App.AccountView = Backbone.View.extend({
 				
 				// Save to model
 				self.model.save({
-					"username" : username,
 					"basicInfo" : {
 						"firstname" : firstname,
 						"lastname" : lastname
@@ -666,7 +724,7 @@ App.AccountView = Backbone.View.extend({
 							"city" : address_city,
 							"country" : address_country
 						},
-						"email" : username,
+						"email" : email,
 						"phoneNumber" : phoneNumber
 					},
 					"password" : password
@@ -1448,7 +1506,6 @@ App.RoleEditView = Backbone.View.extend({
 				silent : true
 			});
 		});
-		
 		$el.html(fileView.render().el);
 	},
 	
@@ -1459,7 +1516,7 @@ App.RoleEditView = Backbone.View.extend({
 		var fileListView = new App.FileListView({
 			collection : files
 		});
-		$el.html(fileListView.render().el);
+		$el.html(fileListView.el);
 		files.fetch({
 			cache : false
 		});

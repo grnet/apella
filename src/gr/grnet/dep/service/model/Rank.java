@@ -21,6 +21,10 @@ public class Rank {
 
 	@NotNull
 	@NotEmpty
+	private String type;
+
+	@NotNull
+	@NotEmpty
 	private String name;
 
 	public Long getId() {
@@ -37,6 +41,14 @@ public class Rank {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 
 }

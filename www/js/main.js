@@ -1,6 +1,6 @@
 // APELLA Application Routers:
 App = {
-	allowedRoles : [ "CANDIDATE", "PROFESSOR_DOMESTIC", "PROFESSOR_FOREIGN", "INSTITUTION_MANAGER", "DEPARTMENT_MANAGER", "INSTITUTION_ASSISTANT", "MINISTRY_MANAGER" ],
+	allowedRoles : [ "PROFESSOR_DOMESTIC", "PROFESSOR_FOREIGN", "CANDIDATE", "INSTITUTION_MANAGER", "DEPARTMENT_MANAGER", "INSTITUTION_ASSISTANT", "MINISTRY_MANAGER" ],
 	
 	blockUI : function() {
 		$.blockUI({
@@ -38,9 +38,10 @@ App.RegistrationRouter = Backbone.Router.extend({
 	initialize : function() {
 		_.extend(this, Backbone.Events);
 		_.bindAll(this, "showRegisterView", "showVerificationView", "showRegisterSelectView");
-		
 		$(document).ajaxStart(App.blockUI);
 		$(document).ajaxStop(App.unblockUI);
+		
+		App.institutions = new App.Institutions();
 		
 		Backbone.history.start();
 	},
@@ -103,7 +104,7 @@ App.RegistrationRouter = Backbone.Router.extend({
 	}
 });
 
-App.Router = Backbone.Router.extend({
+App.RegistryRouter = Backbone.Router.extend({
 	initialize : function() {
 		var self = this;
 		
@@ -203,7 +204,7 @@ App.Router = Backbone.Router.extend({
 		});
 		
 		$("#featured").html(homeView.render().el);
-		$("#featured").append(announcementsView.render().el);
+		$("#featured").append(announcementsView.el);
 		App.roles.fetch({
 			cache : false
 		});

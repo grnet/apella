@@ -9,7 +9,6 @@ import javax.ejb.Stateless;
 import javax.persistence.NoResultException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -24,8 +23,7 @@ public class DepartmentRESTService extends RESTService {
 
 	@GET
 	@SuppressWarnings("unchecked")
-	public List<Department> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
-		getLoggedOn(authToken);
+	public List<Department> getAll() {
 		return (List<Department>) em.createQuery(
 			"select distinct d from Department d ")
 			.getResultList();
@@ -33,8 +31,7 @@ public class DepartmentRESTService extends RESTService {
 
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
-	public Department get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
-		getLoggedOn(authToken);
+	public Department get(@PathParam("id") long id) {
 		try {
 			return (Department) em.createQuery(
 				"select d from Department d " +

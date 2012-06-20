@@ -473,7 +473,10 @@ App.Institution = Backbone.Model.extend({
 
 App.Institutions = Backbone.Collection.extend({
 	url : "/dep/rest/institution",
-	model : App.Institution
+	model : App.Institution,
+	comparator : function(institution) {
+		return institution.get('name');
+	}
 });
 
 App.Department = Backbone.Model.extend({
@@ -489,7 +492,10 @@ App.Department = Backbone.Model.extend({
 
 App.Departments = Backbone.Collection.extend({
 	url : "/dep/rest/department",
-	model : App.Department
+	model : App.Department,
+	comparator : function(department) {
+		return department.get('department');
+	}
 });
 
 App.Rank = Backbone.Model.extend({
