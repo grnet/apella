@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJBException;
 import javax.inject.Inject;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -24,7 +25,6 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
 import javax.persistence.Version;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -36,12 +36,7 @@ import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 @XmlRootElement
-@Table(name = "Users",
-	uniqueConstraints = {
-		@UniqueConstraint(columnNames = "username"),
-		@UniqueConstraint(columnNames = "email"),
-		@UniqueConstraint(columnNames = "authToken")
-	})
+@Table(name = "Users")
 public class User implements Serializable {
 
 	/** Default value included to remove warning. Remove or modify at will. **/
@@ -77,6 +72,7 @@ public class User implements Serializable {
 	private int version;
 
 	@NotNull
+	@Column(unique = true)
 	private String username;
 
 	@Enumerated(EnumType.STRING)
@@ -88,6 +84,11 @@ public class User implements Serializable {
 	@Embedded
 	@NotNull
 	private BasicInformation basicInfo = new BasicInformation();
+
+	@Valid
+	@Embedded
+	@NotNull
+	private BasicInformation basicInfoLatin = new BasicInformation();
 
 	@Valid
 	@Embedded
@@ -112,6 +113,7 @@ public class User implements Serializable {
 	/**
 	 * This is set when user is loggedin
 	 */
+	@Column(unique = true)
 	private String authToken;
 
 	public Long getId() {
@@ -158,6 +160,15 @@ public class User implements Serializable {
 	}
 
 	@JsonView({SimpleUserView.class})
+	public BasicInformation getBasicInfoLatin() {
+		return basicInfoLatin;
+	}
+
+	public void setBasicInfoLatin(BasicInformation basicInfoLatin) {
+		this.basicInfoLatin = basicInfoLatin;
+	}
+
+	@JsonView({SimpleUserView.class})
 	public ContactInformation getContactInfo() {
 		return contactInfo;
 	}
@@ -193,7 +204,6 @@ public class User implements Serializable {
 		this.registrationDate = registrationDate;
 	}
 
-	@XmlTransient
 	public Long getVerificationNumber() {
 		return verificationNumber;
 	}

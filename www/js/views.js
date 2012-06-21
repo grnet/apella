@@ -97,7 +97,7 @@ App.LoginView = Backbone.View.extend({
 	
 	events : {
 		"click a#save" : function() {
-			$("form", this.el).submit();
+			this.$("form").submit();
 		},
 		"submit form" : "login"
 	},
@@ -141,8 +141,8 @@ App.LoginView = Backbone.View.extend({
 	
 	login : function(event) {
 		var self = this;
-		var username = $('form input[name=username]', self.el).val();
-		var password = $('form input[name=password]', self.el).val();
+		var username = self.$('form input[name=username]').val();
+		var password = self.$('form input[name=password]').val();
 		
 		// Save to model
 		self.model.login({
@@ -224,8 +224,8 @@ App.AdminLoginView = Backbone.View.extend({
 	
 	login : function(event) {
 		var self = this;
-		var username = $('form input[name=username]', self.el).val();
-		var password = $('form input[name=password]', self.el).val();
+		var username = self.$('form input[name=username]').val();
+		var password = self.$('form input[name=password]').val();
 		
 		// Save to model
 		self.model.login({
@@ -430,6 +430,8 @@ App.UserRegistrationView = Backbone.View.extend({
 				},
 				firstname : "required",
 				lastname : "required",
+				firstnamelatin : "required",
+				lastnamelatin : "required",
 				password : {
 					required : true,
 					minlength : 5
@@ -439,7 +441,7 @@ App.UserRegistrationView = Backbone.View.extend({
 					minlength : 5,
 					equalTo : "form input[name=password]"
 				},
-				phoneNumber : {
+				mobile : {
 					required : true,
 					number : true,
 					minlength : 10,
@@ -454,6 +456,8 @@ App.UserRegistrationView = Backbone.View.extend({
 			messages : {
 				firstname : $.i18n.prop('validation_firstname'),
 				lastname : $.i18n.prop('validation_lastname'),
+				firstnamelatin : $.i18n.prop('validation_firstnamelatin'),
+				lastnamelatin : $.i18n.prop('validation_lastnamelatin'),
 				username : {
 					required : $.i18n.prop('validation_username'),
 					email : $.i18n.prop('validation_username'),
@@ -468,7 +472,7 @@ App.UserRegistrationView = Backbone.View.extend({
 					minlength : $.i18n.prop('validation_minlength', 5),
 					equalTo : $.i18n.prop('validation_confirmpassword')
 				},
-				phoneNumber : {
+				mobile : {
 					required : $.i18n.prop('validation_phone'),
 					number : $.i18n.prop('validation_number'),
 					minlength : $.i18n.prop('validation_minlength', 10),
@@ -489,16 +493,18 @@ App.UserRegistrationView = Backbone.View.extend({
 		var self = this;
 		
 		// Read Input
-		var username = $('form input[name=username]', this.el).val();
-		var firstname = $('form input[name=firstname]', this.el).val();
-		var lastname = $('form input[name=lastname]', this.el).val();
-		var password = $('form input[name=password]', this.el).val();
-		var phoneNumber = $('form input[name=phoneNumber]', this.el).val();
-		var address_street = $('form input[name=address_street]', this.el).val();
-		var address_number = $('form input[name=address_number]', this.el).val();
-		var address_zip = $('form input[name=address_zip]', this.el).val();
-		var address_city = $('form input[name=address_city]', this.el).val();
-		var address_country = $('form input[name=address_country]', this.el).val();
+		var username = self.$('form input[name=username]').val();
+		var firstname = self.$('form input[name=firstname]').val();
+		var lastname = self.$('form input[name=lastname]').val();
+		var firstnamelatin = self.$('form input[name=firstnamelatin]').val();
+		var lastnamelatin = self.$('form input[name=lastnamelatin]').val();
+		var password = self.$('form input[name=password]').val();
+		var mobile = self.$('form input[name=mobile]').val();
+		var address_street = self.$('form input[name=address_street]').val();
+		var address_number = self.$('form input[name=address_number]').val();
+		var address_zip = self.$('form input[name=address_zip]').val();
+		var address_city = self.$('form input[name=address_city]').val();
+		var address_country = self.$('form input[name=address_country]').val();
 		
 		// Validate
 		
@@ -509,6 +515,10 @@ App.UserRegistrationView = Backbone.View.extend({
 				"firstname" : firstname,
 				"lastname" : lastname
 			},
+			"basicInfoLatin" : {
+				"firstname" : firstnamelatin,
+				"lastname" : lastnamelatin
+			},
 			"contactInfo" : {
 				"address" : {
 					"street" : address_street,
@@ -518,18 +528,15 @@ App.UserRegistrationView = Backbone.View.extend({
 					"country" : address_country
 				},
 				"email" : username,
-				"phoneNumber" : phoneNumber
+				"mobile" : mobile
 			},
 			"password" : password
 		}, {
 			wait : true,
 			success : function(model, resp) {
-				$("#messages", self.$el).html("Η εγγραφή ολοκληρώθηκε, θα σας αποσταλεί e-mail........");
-				var popup = new App.PopupView({
-					type : "success",
-					message : $.i18n.prop("RegistrationSuccess")
+				App.router.navigate("success", {
+					trigger : true
 				});
-				popup.show();
 			},
 			error : function(model, resp, options) {
 				var popup = new App.PopupView({
@@ -624,6 +631,8 @@ App.AccountView = Backbone.View.extend({
 			rules : {
 				firstname : "required",
 				lastname : "required",
+				firstnamelatin : "required",
+				lastnamelatin : "required",
 				password : {
 					minlength : 5
 				},
@@ -631,7 +640,7 @@ App.AccountView = Backbone.View.extend({
 					minlength : 5,
 					equalTo : "form input[name=password]"
 				},
-				phoneNumber : {
+				mobile : {
 					required : true,
 					number : true,
 					minlength : 10,
@@ -651,6 +660,8 @@ App.AccountView = Backbone.View.extend({
 			messages : {
 				firstname : $.i18n.prop('validation_firstname'),
 				lastname : $.i18n.prop('validation_lastname'),
+				firstnamelatin : $.i18n.prop('validation_firstnamelatin'),
+				lastnamelatin : $.i18n.prop('validation_lastnamelatin'),
 				password : {
 					required : $.i18n.prop('validation_password'),
 					minlength : $.i18n.prop('validation_minlength', 5)
@@ -660,7 +671,7 @@ App.AccountView = Backbone.View.extend({
 					minlength : $.i18n.prop('validation_minlength', 5),
 					equalTo : $.i18n.prop('validation_confirmpassword')
 				},
-				phoneNumber : {
+				mobile : {
 					required : $.i18n.prop('validation_phone'),
 					number : $.i18n.prop('validation_number'),
 					minlength : $.i18n.prop('validation_minlength', 10),
@@ -697,16 +708,18 @@ App.AccountView = Backbone.View.extend({
 			yes : function() {
 				
 				// Read Input
-				var firstname = $('form input[name=firstname]', this.el).val();
-				var lastname = $('form input[name=lastname]', this.el).val();
-				var password = $('form input[name=password]', this.el).val();
-				var email = $('form input[name=email]', this.el).val();
-				var phoneNumber = $('form input[name=phoneNumber]', this.el).val();
-				var address_street = $('form input[name=address_street]', this.el).val();
-				var address_number = $('form input[name=address_number]', this.el).val();
-				var address_zip = $('form input[name=address_zip]', this.el).val();
-				var address_city = $('form input[name=address_city]', this.el).val();
-				var address_country = $('form input[name=address_country]', this.el).val();
+				var firstname = self.$('form input[name=firstname]').val();
+				var lastname = self.$('form input[name=lastname]').val();
+				var firstnamelatin = self.$('form input[name=firstnamelatin]').val();
+				var lastnamelatin = self.$('form input[name=lastnamelatin]').val();
+				var password = self.$('form input[name=password]').val();
+				var email = self.$('form input[name=email]').val();
+				var mobile = self.$('form input[name=mobile]').val();
+				var address_street = self.$('form input[name=address_street]').val();
+				var address_number = self.$('form input[name=address_number]').val();
+				var address_zip = self.$('form input[name=address_zip]').val();
+				var address_city = self.$('form input[name=address_city]').val();
+				var address_country = self.$('form input[name=address_country]').val();
 				
 				// Validate
 				
@@ -715,6 +728,10 @@ App.AccountView = Backbone.View.extend({
 					"basicInfo" : {
 						"firstname" : firstname,
 						"lastname" : lastname
+					},
+					"basicInfoLatin" : {
+						"firstname" : firstnamelatin,
+						"lastname" : lastnamelatin
 					},
 					"contactInfo" : {
 						"address" : {
@@ -725,7 +742,7 @@ App.AccountView = Backbone.View.extend({
 							"country" : address_country
 						},
 						"email" : email,
-						"phoneNumber" : phoneNumber
+						"mobile" : mobile
 					},
 					"password" : password
 				}, {
@@ -775,7 +792,6 @@ App.UserView = Backbone.View.extend({
 	},
 	
 	status : function(event) {
-		var userId = $(event.target).attr('user');
 		var status = $(event.target).attr('status');
 		this.model.status({
 			"status" : status
@@ -831,12 +847,12 @@ App.UserSearchView = Backbone.View.extend({
 	search : function() {
 		var self = this;
 		var searchData = {
-			username : $('form input[name=username]', this.el).val(),
-			firstname : $('form input[name=firstname]', this.el).val(),
-			lastname : $('form input[name=lastname]', this.el).val(),
-			status : $('form select[name=status]', this.el).val(),
-			role : $('form select[name=role]', this.el).val(),
-			roleStatus : $('form select[name=roleStatus]', this.el).val()
+			username : self.$('form input[name=username]').val(),
+			firstname : self.$('form input[name=firstname]').val(),
+			lastname : self.$('form input[name=lastname]').val(),
+			status : self.$('form select[name=status]').val(),
+			role : self.$('form select[name=role]').val(),
+			roleStatus : $('form select[name=roleStatus]').val()
 		};
 		App.router.navigate("users/" + JSON.stringify(searchData), {
 			trigger : false
@@ -882,9 +898,8 @@ App.UserListView = Backbone.View.extend({
 	},
 	
 	select : function(event) {
-		var self = this;
-		var selectedModel = self.collection.getByCid($(event.target).attr('user'));
-		self.collection.trigger("user:selected", selectedModel);
+		var selectedModel = this.collection.getByCid($(event.target).attr('user'));
+		this.collection.trigger("user:selected", selectedModel);
 	}
 });
 
@@ -927,14 +942,13 @@ App.RoleListView = Backbone.View.extend({
 		};
 		self.$el.html(this.template(tpl_data));
 		$("a[rel=\"tooltip\"]", self.$el).tooltip();
-		return this;
+		return self;
 	},
 	
 	select : function(event, role) {
-		var self = this;
-		var selectedModel = role ? role : self.collection.getByCid($(event.target).attr('role'));
+		var selectedModel = role ? role : this.collection.getByCid($(event.target).attr('role'));
 		if (selectedModel) {
-			self.collection.trigger("role:selected", selectedModel);
+			this.collection.trigger("role:selected", selectedModel);
 		}
 	},
 	
@@ -1373,54 +1387,54 @@ App.RoleEditView = Backbone.View.extend({
 					break;
 				case "PROFESSOR_DOMESTIC":
 					values.institution = {
-						"id" : $('form select[name=institution]', this.el).val()
+						"id" : self.$('form select[name=institution]').val()
 					};
 					values.rank = {
-						"id" : $('form select[name=rank]', this.el).val()
+						"id" : self.$('form select[name=rank]').val()
 					};
-					values.profileURL = $('form input[name=profileURL]', this.el).val();
-					values.position = $('form input[name=position]', this.el).val();
+					values.profileURL = self.$('form input[name=profileURL]').val();
+					values.position = self.$('form input[name=position]').val();
 					values.subject = {
 						"id" : self.model.has("subject") ? self.model.get("subject").id : undefined,
-						"name" : $('form textarea[name=subject]', this.el).val()
+						"name" : self.$('form textarea[name=subject]').val()
 					};
-					values.fek = $('form input[name=fek]', this.el).val();
+					values.fek = self.$('form input[name=fek]').val();
 					values.fekSubject = {
 						"id" : self.model.has("fekSubject") ? self.model.get("fekSubject").id : undefined,
-						"name" : $('form textarea[name=fekSubject]', this.el).val()
+						"name" : self.$('form textarea[name=fekSubject]').val()
 					};
 					break;
 				case "PROFESSOR_FOREIGN":
-					values.institution = $('form input[name=institution]', this.el).val();
-					values.profileURL = $('form input[name=profileURL]', this.el).val();
-					values.position = $('form input[name=position]', this.el).val();
+					values.institution = self.$('form input[name=institution]').val();
+					values.profileURL = self.$('form input[name=profileURL]').val();
+					values.position = self.$('form input[name=position]').val();
 					values.rank = {
-						"id" : $('form select[name=rank]', this.el).val()
+						"id" : self.$('form select[name=rank]').val()
 					};
 					values.subject = {
 						"id" : self.model.has("subject") ? self.model.get("subject").id : undefined,
-						"name" : $('form textarea[name=subject]', this.el).val()
+						"name" : self.$('form textarea[name=subject]').val()
 					};
 					break;
 				case "INSTITUTION_MANAGER":
 					values.institution = {
-						"id" : $('form select[name=institution]', this.el).val()
+						"id" : self.$('form select[name=institution]').val()
 					};
 					break;
 				
 				case "INSTITUTION_ASSISTANT":
 					values.institution = {
-						"id" : $('form select[name=institution]', this.el).val()
+						"id" : self.$('form select[name=institution]').val()
 					};
 					break;
 				
 				case "DEPARTMENT_MANAGER":
 					values.department = {};
-					values.department.id = $('form select[name=department]', this.el).val();
+					values.department.id = self.$('form select[name=department]').val();
 					break;
 				
 				case "MINISTRY_MANAGER":
-					values.ministry = $('form input[name=ministry]', this.el).val();
+					values.ministry = self.$('form input[name=ministry]').val();
 					break;
 				}
 				// Save to model
@@ -1576,14 +1590,14 @@ App.FileView = Backbone.View.extend({
 				}
 			}
 		});
-		$("div.modal", self.$el).on("hidden", function() {
+		self.$("div.modal").on("hidden", function() {
 			uploader.pluploadQueue().destroy();
 			uploader.empty();
 			if (self.model.hasChanged()) {
 				self.model.change();
 			}
 		});
-		$("div.modal", self.$el).modal('show');
+		self.$("div.modal").modal('show');
 	},
 	
 	deleteFile : function(event) {
@@ -1689,14 +1703,14 @@ App.FileListView = Backbone.View.extend({
 				}
 			}
 		});
-		$("div.modal", self.$el).on("hidden", function() {
+		self.$("div.modal").on("hidden", function() {
 			uploader.pluploadQueue().destroy();
 			uploader.empty();
 			if (length !== self.collection.length) {
 				self.collection.trigger("reset");
 			}
 		});
-		$("div.modal", self.$el).modal('show');
+		self.$("div.modal").modal('show');
 	},
 	
 	deleteFile : function(event) {

@@ -37,7 +37,7 @@ App.RegistrationRouter = Backbone.Router.extend({
 	
 	initialize : function() {
 		_.extend(this, Backbone.Events);
-		_.bindAll(this, "showRegisterView", "showVerificationView", "showRegisterSelectView");
+		_.bindAll(this, "showRegisterView", "showVerificationView", "showRegisterSelectView", "showRegisterSuccessView");
 		$(document).ajaxStart(App.blockUI);
 		$(document).ajaxStop(App.unblockUI);
 		
@@ -49,17 +49,30 @@ App.RegistrationRouter = Backbone.Router.extend({
 	routes : {
 		"email=:email&verification=:verificationNumber" : "showVerificationView",
 		"" : "showRegisterSelectView",
-		"profile=:role" : "showRegisterView"
+		"profile=:role" : "showRegisterView",
+		"success" : "showRegisterSuccessView"
+	},
+	
+	clear : function() {
+		$("#featured").unbind();
+		$("#featured").empty();
+		$("#featured").removeClass("well");
+		$("#sidebar").unbind();
+		$("#sidebar").empty();
+		$("#sidebar").removeClass("well");
+		$("#content").unbind();
+		$("#content").empty();
+		$("#content").removeClass("well");
 	},
 	
 	showRegisterSelectView : function() {
 		var userRegistrationSelectView = new App.UserRegistrationSelectView({});
 		$("#featured").html(userRegistrationSelectView.render().el);
 		this.currentView = userRegistrationSelectView;
-		return userRegistrationSelectView;
 	},
 	
 	showRegisterView : function(role) {
+		this.clear();
 		if (_.indexOf(App.allowedRoles, role) >= 0) {
 			var userRegistration = new App.User({
 				"roles" : [ {
@@ -79,28 +92,36 @@ App.RegistrationRouter = Backbone.Router.extend({
 		}
 	},
 	
+	showRegisterSuccessView : function() {
+		this.clear();
+		$("#content").html(_.template(tpl.get('user-registration-success')));
+	},
+	
 	showVerificationView : function(email, verificationNumber) {
 		var self = this;
+		var userRegistration;
 		
-		var userRegistration = new User({
+		self.clear();
+		
+		userRegistration = new App.User({
 			"username" : email,
 			"verificationNumber" : verificationNumber
 		});
 		
 		userRegistration.verify({
+			wait : true,
 			success : function(model, resp) {
 				var userVerificationView = new App.UserVerificationView({
 					model : userRegistration
 				});
-				$("#featured").html(userVerificationView.render().el);
+				$("#content").html(userVerificationView.render().el);
 				self.currentView = userVerificationView;
 			},
 			error : function(model, resp, options) {
-				$("#featured").html("ΣΦΑΛΜΑ " + resp.status);
+				$("#content").html($.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code")));
 				self.currentView = undefined;
 			}
 		});
-		return undefined;
 	}
 });
 

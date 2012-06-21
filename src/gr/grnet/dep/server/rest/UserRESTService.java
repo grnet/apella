@@ -14,6 +14,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Resource;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
@@ -44,6 +46,9 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class UserRESTService extends RESTService {
+
+	@Resource
+	SessionContext sc;
 
 	@GET
 	@JsonView({SimpleUserView.class})
@@ -157,6 +162,7 @@ public class UserRESTService extends RESTService {
 			em.flush(); //To catch the exception
 			return user;
 		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
 			throw new RestException(Status.FORBIDDEN, "username.not.available");
 		}
 	}
@@ -181,6 +187,7 @@ public class UserRESTService extends RESTService {
 			existingUser.setPassword(User.encodePassword(user.getPassword()));
 		}
 		existingUser.setBasicInfo(user.getBasicInfo());
+		existingUser.setBasicInfoLatin(user.getBasicInfoLatin());
 		existingUser.setContactInfo(user.getContactInfo());
 
 		return existingUser;
@@ -259,6 +266,7 @@ public class UserRESTService extends RESTService {
 					// Verify
 					u.setStatus(UserStatus.ACTIVE);
 					u.setStatusDate(new Date());
+					u.setVerificationNumber(null);
 					return u;
 				default:
 					throw new RestException(Status.FORBIDDEN, "account.status." + u.getStatus().toString().toLowerCase());

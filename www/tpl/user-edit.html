@@ -4,19 +4,31 @@
 		<div class="control-group">
 			<label class="control-label" for="username"><%= $.i18n.prop('Username') %>:</label>
 			<div class="controls">
-				<input class="input-xlarge" type="email" name="username" value="<%= username %>" disabled="disabled"/>
+				<input class="input-xlarge" type="email" name="username" value="<%= username %>" disabled="disabled" />
 			</div>
 		</div>
 		<div class="control-group">
 			<label class="control-label" for="firstname"><%= $.i18n.prop('Name') %>:</label>
 			<div class="controls">
-				<input class="input-xlarge" type="text" name="firstname" value="<%= basicInfo.firstname %>"/>
+				<input class="input-xlarge" type="text" name="firstname" value="<%= basicInfo.firstname %>" />
 			</div>
 		</div>
 		<div class="control-group">
 			<label class="control-label" for="lastname"><%= $.i18n.prop('Surname') %>:</label>
 			<div class="controls">
-				<input class="input-xlarge" type="text" name="lastname" value="<%= basicInfo.lastname %>"/>
+				<input class="input-xlarge" type="text" name="lastname" value="<%= basicInfo.lastname %>" />
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="firstnamelatin"><%= $.i18n.prop('NameLatin') %>:</label>
+			<div class="controls">
+				<input type="text" name="firstnamelatin" value="<%= basicInfoLatin.firstname %>" />
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="lastname"><%= $.i18n.prop('SurnameLatin') %>:</label>
+			<div class="controls">
+				<input type="text" name="lastnamelatin" value="<%= basicInfoLatin.lastname %>" />
 			</div>
 		</div>
 		<div class="control-group">
@@ -37,13 +49,13 @@
 		<div class="control-group">
 			<label class="control-label" for="email"><%= $.i18n.prop('EMail') %>:</label>
 			<div class="controls">
-				<input class="input-xlarge" type="text" name="email" value="<%= contactInfo.email %>"/>
+				<input class="input-xlarge" type="text" name="email" value="<%= contactInfo.email %>" />
 			</div>
 		</div>
 		<div class="control-group">
-			<label class="control-label" for="phoneNumber"><%= $.i18n.prop('Phone') %>:</label>
+			<label class="control-label" for="mobile"><%= $.i18n.prop('Mobile') %>:</label>
 			<div class="controls">
-				<input class="input-xlarge" type="text" name="phoneNumber" value="<%= contactInfo.phoneNumber %>"/>
+				<input class="input-xlarge" type="text" name="mobile" value="<%= contactInfo.mobile %>" />
 			</div>
 		</div>
 	</fieldset>
@@ -52,31 +64,31 @@
 		<div class="control-group">
 			<label class="control-label" for="address_street"><%= $.i18n.prop('Street') %>:</label>
 			<div class="controls">
-				<input class="input-xlarge" type="text" name="address_street" value="<%= contactInfo.address.street %>"/>
+				<input class="input-xlarge" type="text" name="address_street" value="<%= contactInfo.address.street %>" />
 			</div>
 		</div>
 		<div class="control-group">
 			<label class="control-label" class="control-label" for="address_number"><%= $.i18n.prop('StreetNumber') %>:</label>
 			<div class="controls">
-				<input class="input-xlarge" type="text" name="address_number" value="<%= contactInfo.address.number %>"/>
+				<input class="input-xlarge" type="text" name="address_number" value="<%= contactInfo.address.number %>" />
 			</div>
 		</div>
 		<div class="control-group">
 			<label class="control-label" for="address_zip"><%= $.i18n.prop('Zip') %>:</label>
 			<div class="controls">
-				<input class="input-xlarge" type="text" name="address_zip" value="<%= contactInfo.address.zip %>"/>
+				<input class="input-xlarge" type="text" name="address_zip" value="<%= contactInfo.address.zip %>" />
 			</div>
 		</div>
 		<div class="control-group">
 			<label class="control-label" for="address_city"><%= $.i18n.prop('City') %>:</label>
 			<div class="controls">
-				<input class="input-xlarge" type="text" name="address_city" value="<%= contactInfo.address.city %>"/>
+				<input class="input-xlarge" type="text" name="address_city" value="<%= contactInfo.address.city %>" />
 			</div>
 		</div>
 		<div class="control-group">
 			<label class="control-label" for="address_country"><%= $.i18n.prop('Country') %>:</label>
 			<div class="controls">
-				<input class="input-xlarge" type="text" name="address_country" value="<%= contactInfo.address.country %>"/>
+				<input class="input-xlarge" type="text" name="address_country" value="<%= contactInfo.address.country %>" />
 			</div>
 		</div>
 		<div class="form-actions">

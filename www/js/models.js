@@ -8,6 +8,10 @@ App.User = Backbone.Model.extend({
 			"firstname" : undefined,
 			"lastname" : undefined
 		},
+		"basicInfoLatin" : {
+			"firstname" : undefined,
+			"lastname" : undefined
+		},
 		"contactInfo" : {
 			"address" : {
 				"street" : "",
@@ -17,7 +21,7 @@ App.User = Backbone.Model.extend({
 				"country" : ""
 			},
 			"email" : "",
-			"phoneNumber" : ""
+			"mobile" : ""
 		},
 		"roles" : []
 	},

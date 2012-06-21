@@ -40,6 +40,18 @@
 				</div>
 			</div>
 			<div class="control-group">
+				<label class="control-label" for="firstnamelatin"><%= $.i18n.prop('NameLatin') %>:</label>
+				<div class="controls">
+					<input type="text" name="firstnamelatin" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="lastname"><%= $.i18n.prop('SurnameLatin') %>:</label>
+				<div class="controls">
+					<input type="text" name="lastnamelatin" />
+				</div>
+			</div>
+			<div class="control-group">
 				<label class="control-label" for="password"><%= $.i18n.prop('Password') %>:</label>
 				<div class="controls">
 					<input type="password" name="password" />
@@ -55,9 +67,9 @@
 		<fieldset>
 			<legend><%= $.i18n.prop('ContactInformation') %></legend>
 			<div class="control-group">
-				<label class="control-label" for="phoneNumber"><%= $.i18n.prop('Phone') %>:</label>
+				<label class="control-label" for="mobile"><%= $.i18n.prop('Mobile') %>:</label>
 				<div class="controls">
-					<input type="text" name="phoneNumber" />
+					<input type="text" name="mobile" />
 				</div>
 			</div>
 		</fieldset>

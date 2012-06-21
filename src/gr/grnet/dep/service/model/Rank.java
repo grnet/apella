@@ -21,7 +21,7 @@ public class Rank {
 
 	@NotNull
 	@NotEmpty
-	private String type;
+	private String category;
 
 	@NotNull
 	@NotEmpty
@@ -43,12 +43,12 @@ public class Rank {
 		this.name = name;
 	}
 
-	public String getType() {
-		return type;
+	public String getCategory() {
+		return category;
 	}
 
-	public void setType(String type) {
-		this.type = type;
+	public void setType(String category) {
+		this.category = category;
 	}
 
 }

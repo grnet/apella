@@ -25,7 +25,7 @@ public class ProfessorForeign extends Professor {
 	@ManyToOne
 	private Rank rank;
 
-	@ManyToOne(optional = false, cascade = CascadeType.ALL)
+	@ManyToOne(cascade = CascadeType.ALL)
 	private Subject subject;
 
 	public ProfessorForeign() {
