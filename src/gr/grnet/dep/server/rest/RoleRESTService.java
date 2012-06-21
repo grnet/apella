@@ -187,12 +187,12 @@ public class RoleRESTService extends RESTService {
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedRoleView.class})
 	public Role update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Role role) {
+		User loggedOn = getLoggedOn(authToken);
 		Role existingRole = em.find(Role.class, id);
 		if (existingRole == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && existingRole.getUser() != loggedOn.getId()) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !existingRole.getUser().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Check fields, if any is missing throw exception else set Status UNAPPROVED

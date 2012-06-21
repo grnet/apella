@@ -68,6 +68,9 @@ public class ProfessorForeign extends Professor {
 		setInstitution(pf.getInstitution());
 		setPosition(pf.getPosition());
 		setRank(pf.getRank());
+		if (getSubject() == null) {
+			setSubject(new Subject());
+		}
 		getSubject().setName(pf.getSubject().getName());
 		return this;
 	}
