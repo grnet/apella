@@ -6,11 +6,13 @@ App.User = Backbone.Model.extend({
 		"username" : undefined,
 		"basicInfo" : {
 			"firstname" : undefined,
-			"lastname" : undefined
+			"lastname" : undefined,
+			"fathername" : undefined
 		},
 		"basicInfoLatin" : {
 			"firstname" : undefined,
-			"lastname" : undefined
+			"lastname" : undefined,
+			"fathername" : undefined
 		},
 		"contactInfo" : {
 			"address" : {
@@ -315,7 +317,6 @@ App.Role = Backbone.Model.extend({
 		"institution" : undefined,
 		"department" : undefined,
 		"profileURL" : undefined,
-		"position" : undefined,
 		"rank" : undefined,
 		"subject" : undefined,
 		"fek" : undefined,

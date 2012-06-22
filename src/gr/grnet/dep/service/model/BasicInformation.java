@@ -16,6 +16,8 @@ public class BasicInformation {
 	@NotEmpty
 	private String lastname;
 
+	private String fathername;
+
 	public String getFirstname() {
 		return firstname;
 	}
@@ -30,6 +32,14 @@ public class BasicInformation {
 
 	public void setLastname(String lastname) {
 		this.lastname = lastname;
+	}
+
+	public String getFathername() {
+		return fathername;
+	}
+
+	public void setFathername(String fathername) {
+		this.fathername = fathername;
 	}
 
 	///////////////////////////////////////////////////////////////

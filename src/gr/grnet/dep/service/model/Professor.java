@@ -1,6 +1,7 @@
 package gr.grnet.dep.service.model;
 
 import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
 
 @Entity
 public abstract class Professor extends Role {
@@ -10,7 +11,8 @@ public abstract class Professor extends Role {
 
 	private String profileURL;
 
-	private String position;
+	@ManyToOne
+	private FileHeader profileFile;
 
 	public String getProfileURL() {
 		return profileURL;
@@ -20,12 +22,12 @@ public abstract class Professor extends Role {
 		this.profileURL = profileURL;
 	}
 
-	public String getPosition() {
-		return position;
+	public FileHeader getProfileFile() {
+		return profileFile;
 	}
 
-	public void setPosition(String position) {
-		this.position = position;
+	public void setProfileFile(FileHeader profileFile) {
+		this.profileFile = profileFile;
 	}
 
 	/////////////////////////////////////////////////////////////
@@ -33,7 +35,6 @@ public abstract class Professor extends Role {
 	@Override
 	public Role copyFrom(Role otherRole) {
 		Professor p = (Professor) otherRole;
-		setPosition(p.getPosition());
 		setProfileURL(p.getProfileURL());
 		return this;
 	}

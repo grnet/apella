@@ -20,6 +20,12 @@
 			</div>
 		</div>
 		<div class="control-group">
+			<label class="control-label" for="fathername"><%= $.i18n.prop('FatherName') %>:</label>
+			<div class="controls">
+				<input class="input-xlarge" type="text" name="fathername" value="<%= basicInfo.fathername %>" />
+			</div>
+		</div>
+		<div class="control-group">
 			<label class="control-label" for="firstnamelatin"><%= $.i18n.prop('NameLatin') %>:</label>
 			<div class="controls">
 				<input type="text" name="firstnamelatin" value="<%= basicInfoLatin.firstname %>" />
@@ -29,6 +35,12 @@
 			<label class="control-label" for="lastname"><%= $.i18n.prop('SurnameLatin') %>:</label>
 			<div class="controls">
 				<input type="text" name="lastnamelatin" value="<%= basicInfoLatin.lastname %>" />
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="fathernamelatin"><%= $.i18n.prop('FatherNameLatin') %>:</label>
+			<div class="controls">
+				<input class="input-xlarge" type="text" name="fathernamelatin" value="<%= basicInfoLatin.fathername %>" />
 			</div>
 		</div>
 		<div class="control-group">

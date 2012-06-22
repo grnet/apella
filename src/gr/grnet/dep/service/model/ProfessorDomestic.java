@@ -24,6 +24,9 @@ public class ProfessorDomestic extends Professor {
 	private Institution institution;
 
 	@ManyToOne
+	private Department department;
+
+	@ManyToOne
 	private Rank rank;
 
 	@ManyToOne(cascade = CascadeType.ALL)
@@ -82,6 +85,14 @@ public class ProfessorDomestic extends Professor {
 		this.institution = institution;
 	}
 
+	public Department getDepartment() {
+		return department;
+	}
+
+	public void setDepartment(Department department) {
+		this.department = department;
+	}
+
 	public Subject getFekSubject() {
 		return fekSubject;
 	}
@@ -101,7 +112,6 @@ public class ProfessorDomestic extends Professor {
 		super.copyFrom(otherRole);
 		ProfessorDomestic pd = (ProfessorDomestic) otherRole;
 		setInstitution(pd.getInstitution());
-		setPosition(pd.getPosition());
 		setRank(pd.getRank());
 		if (getSubject() == null) {
 			setSubject(new Subject());

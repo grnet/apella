@@ -430,8 +430,10 @@ App.UserRegistrationView = Backbone.View.extend({
 				},
 				firstname : "required",
 				lastname : "required",
+				fathername : "required",
 				firstnamelatin : "required",
 				lastnamelatin : "required",
+				fathernamelatin : "required",
 				password : {
 					required : true,
 					minlength : 5
@@ -456,8 +458,10 @@ App.UserRegistrationView = Backbone.View.extend({
 			messages : {
 				firstname : $.i18n.prop('validation_firstname'),
 				lastname : $.i18n.prop('validation_lastname'),
+				fathername : $.i18n.prop('validation_fathername'),
 				firstnamelatin : $.i18n.prop('validation_firstnamelatin'),
 				lastnamelatin : $.i18n.prop('validation_lastnamelatin'),
+				fathernamelatin : $.i18n.prop('validation_fathernamelatin'),
 				username : {
 					required : $.i18n.prop('validation_username'),
 					email : $.i18n.prop('validation_username'),
@@ -496,8 +500,10 @@ App.UserRegistrationView = Backbone.View.extend({
 		var username = self.$('form input[name=username]').val();
 		var firstname = self.$('form input[name=firstname]').val();
 		var lastname = self.$('form input[name=lastname]').val();
+		var fathername = self.$('form input[name=fathername]').val();
 		var firstnamelatin = self.$('form input[name=firstnamelatin]').val();
 		var lastnamelatin = self.$('form input[name=lastnamelatin]').val();
+		var fathernamelatin = self.$('form input[name=fathernamelatin]').val();
 		var password = self.$('form input[name=password]').val();
 		var mobile = self.$('form input[name=mobile]').val();
 		var address_street = self.$('form input[name=address_street]').val();
@@ -513,11 +519,13 @@ App.UserRegistrationView = Backbone.View.extend({
 			"username" : username,
 			"basicInfo" : {
 				"firstname" : firstname,
-				"lastname" : lastname
+				"lastname" : lastname,
+				"fathername" : fathername
 			},
 			"basicInfoLatin" : {
 				"firstname" : firstnamelatin,
-				"lastname" : lastnamelatin
+				"lastname" : lastnamelatin,
+				"fathername" : fathernamelatin
 			},
 			"contactInfo" : {
 				"address" : {
@@ -631,8 +639,10 @@ App.AccountView = Backbone.View.extend({
 			rules : {
 				firstname : "required",
 				lastname : "required",
+				fathername : "required",
 				firstnamelatin : "required",
 				lastnamelatin : "required",
+				fathernamelatin : "required",
 				password : {
 					minlength : 5
 				},
@@ -660,8 +670,10 @@ App.AccountView = Backbone.View.extend({
 			messages : {
 				firstname : $.i18n.prop('validation_firstname'),
 				lastname : $.i18n.prop('validation_lastname'),
+				fathername : $.i18n.prop('validation_fathername'),
 				firstnamelatin : $.i18n.prop('validation_firstnamelatin'),
 				lastnamelatin : $.i18n.prop('validation_lastnamelatin'),
+				fathernamelatin : $.i18n.prop('validation_fathernamelatin'),
 				password : {
 					required : $.i18n.prop('validation_password'),
 					minlength : $.i18n.prop('validation_minlength', 5)
@@ -710,8 +722,10 @@ App.AccountView = Backbone.View.extend({
 				// Read Input
 				var firstname = self.$('form input[name=firstname]').val();
 				var lastname = self.$('form input[name=lastname]').val();
+				var fathername = self.$('form input[name=fathername]').val();
 				var firstnamelatin = self.$('form input[name=firstnamelatin]').val();
 				var lastnamelatin = self.$('form input[name=lastnamelatin]').val();
+				var fathernamelatin = self.$('form input[name=fathernamelatin]').val();
 				var password = self.$('form input[name=password]').val();
 				var email = self.$('form input[name=email]').val();
 				var mobile = self.$('form input[name=mobile]').val();
@@ -727,11 +741,13 @@ App.AccountView = Backbone.View.extend({
 				self.model.save({
 					"basicInfo" : {
 						"firstname" : firstname,
-						"lastname" : lastname
+						"lastname" : lastname,
+						"fathername" : fathername
 					},
 					"basicInfoLatin" : {
 						"firstname" : firstnamelatin,
-						"lastname" : lastnamelatin
+						"lastname" : lastnamelatin,
+						"fathername" : fathernamelatin
 					},
 					"contactInfo" : {
 						"address" : {
@@ -1147,8 +1163,10 @@ App.RoleEditView = Backbone.View.extend({
 			
 			if (self.model.has("id")) {
 				self.addFile("fekFile", $("#fekFile", this.$el));
+				self.addFile("profileFile", $("#profileFile", this.$el));
 			} else {
 				$("#fekFile", self.$el).html($.i18n.prop("PressSave"));
+				$("#profileFile", self.$el).html($.i18n.prop("PressSave"));
 			}
 			
 			this.validator = $("form", this.el).validate({
@@ -1167,7 +1185,6 @@ App.RoleEditView = Backbone.View.extend({
 						url : true
 					},
 					rank : "required",
-					position : "required",
 					subject : "required",
 					fek : "required",
 					fekSubject : "required"
@@ -1176,7 +1193,6 @@ App.RoleEditView = Backbone.View.extend({
 					institution : $.i18n.prop('validation_institution'),
 					profileURL : $.i18n.prop('validation_profileURL'),
 					rank : $.i18n.prop('validation_rank'),
-					position : $.i18n.prop('validation_position'),
 					subject : $.i18n.prop('validation_subject'),
 					fek : $.i18n.prop('validation_fek'),
 					fekSubject : $.i18n.prop('validation_fekSubject')
@@ -1221,17 +1237,21 @@ App.RoleEditView = Backbone.View.extend({
 						url : true
 					},
 					rank : "required",
-					position : "required",
 					subject : "required"
 				},
 				messages : {
 					institution : $.i18n.prop('validation_institution'),
 					profileURL : $.i18n.prop('validation_profileURL'),
 					rank : $.i18n.prop('validation_rank'),
-					position : $.i18n.prop('validation_position'),
 					subject : $.i18n.prop('validation_subject')
 				}
 			});
+			
+			if (self.model.has("id")) {
+				self.addFile("profileFile", $("#profileFile", this.$el));
+			} else {
+				$("#profileFile", self.$el).html($.i18n.prop("PressSave"));
+			}
 			break;
 		case "INSTITUTION_MANAGER":
 			App.institutions = App.institutions ? App.institutions : new App.Institutions();
@@ -1393,7 +1413,6 @@ App.RoleEditView = Backbone.View.extend({
 						"id" : self.$('form select[name=rank]').val()
 					};
 					values.profileURL = self.$('form input[name=profileURL]').val();
-					values.position = self.$('form input[name=position]').val();
 					values.subject = {
 						"id" : self.model.has("subject") ? self.model.get("subject").id : undefined,
 						"name" : self.$('form textarea[name=subject]').val()
@@ -1407,7 +1426,6 @@ App.RoleEditView = Backbone.View.extend({
 				case "PROFESSOR_FOREIGN":
 					values.institution = self.$('form input[name=institution]').val();
 					values.profileURL = self.$('form input[name=profileURL]').val();
-					values.position = self.$('form input[name=position]').val();
 					values.rank = {
 						"id" : self.$('form select[name=rank]').val()
 					};

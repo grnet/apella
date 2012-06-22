@@ -5,6 +5,7 @@ import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.FileHeader;
 import gr.grnet.dep.service.model.FileHeader.DetailedFileHeaderView;
 import gr.grnet.dep.service.model.FileHeader.SimpleFileHeaderView;
+import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
@@ -253,7 +254,7 @@ public class RoleRESTService extends RESTService {
 	}
 
 	@GET
-	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599}{fileId:(/[0-9][0-9]*)?}")
+	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599|profileFile}{fileId:(/[0-9][0-9]*)?}")
 	@JsonView({DetailedFileHeaderView.class})
 	public FileHeader getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("var") String var, @PathParam("fileId") String fileId) {
 		User loggedOn = getLoggedOn(authToken);
@@ -280,6 +281,9 @@ public class RoleRESTService extends RESTService {
 		} else if ("military1599".equals(var)) {
 			Candidate candidate = (Candidate) role;
 			file = candidate.getMilitary1599();
+		} else if ("profileFile".equals(var)) {
+			Professor professor = (Professor) role;
+			file = professor.getProfileFile();
 		}
 
 		if (file != null) {
@@ -314,7 +318,7 @@ public class RoleRESTService extends RESTService {
 	}
 
 	@POST
-	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599|publications}{fileId:(/[0-9][0-9]*)?}")
+	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599|publications|profileFile}{fileId:(/[0-9][0-9]*)?}")
 	@Consumes("multipart/form-data")
 	@Produces({MediaType.APPLICATION_JSON})
 	@JsonView({SimpleFileHeaderView.class})
@@ -347,6 +351,10 @@ public class RoleRESTService extends RESTService {
 			Candidate candidate = (Candidate) role;
 			file = uploadFile(loggedOn, request, candidate.getMilitary1599());
 			candidate.setMilitary1599(file);
+		} else if ("profileFile".equals(var)) {
+			Professor professor = (Professor) role;
+			file = uploadFile(loggedOn, request, professor.getProfileFile());
+			professor.setProfileFile(file);
 		} else if ("publications".equals(var)) {
 			Candidate candidate = (Candidate) role;
 			Set<FileHeader> publications = candidate.getPublications();
@@ -379,7 +387,7 @@ public class RoleRESTService extends RESTService {
 	 * @return
 	 */
 	@DELETE
-	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599}{fileId:(/[0-9][0-9]*)?}")
+	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599|profileFile}{fileId:(/[0-9][0-9]*)?}")
 	@JsonView({DetailedFileHeaderView.class})
 	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("var") String var, @PathParam("fileId") String fileId) {
 		User loggedOn = getLoggedOn(authToken);
@@ -407,6 +415,9 @@ public class RoleRESTService extends RESTService {
 			} else if ("military1599".equals(var)) {
 				Candidate candidate = (Candidate) role;
 				candidate.setMilitary1599(null);
+			} else if ("profileFile".equals(var)) {
+				Professor professor = (Professor) role;
+				professor.setProfileFile(null);
 			}
 		}
 		return retv;

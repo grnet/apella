@@ -66,7 +66,6 @@ public class ProfessorForeign extends Professor {
 		super.copyFrom(otherRole);
 		ProfessorForeign pf = (ProfessorForeign) otherRole;
 		setInstitution(pf.getInstitution());
-		setPosition(pf.getPosition());
 		setRank(pf.getRank());
 		if (getSubject() == null) {
 			setSubject(new Subject());
