@@ -55,26 +55,13 @@ public class RoleRESTService extends RESTService {
 	@PersistenceContext(unitName = "depdb")
 	private EntityManager em;
 
-	private static final Set<Pair> forbiddenPairs;
-	static {
-		Set<Pair> aSet = new HashSet<Pair>();
-		aSet.add(new Pair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.CANDIDATE));
-		aSet.add(new Pair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.DEPARTMENT_MANAGER));
-		aSet.add(new Pair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.INSTITUTION_ASSISTANT));
-		aSet.add(new Pair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.INSTITUTION_MANAGER));
-		aSet.add(new Pair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.MINISTRY_MANAGER));
-		aSet.add(new Pair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.PROFESSOR_DOMESTIC));
-		aSet.add(new Pair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.PROFESSOR_FOREIGN));
-		forbiddenPairs = Collections.unmodifiableSet(aSet);
-	}
-
-	private static class Pair {
+	private static class RolePair {
 
 		RoleDiscriminator first;
 
 		RoleDiscriminator second;
 
-		public Pair(RoleDiscriminator first, RoleDiscriminator second) {
+		public RolePair(RoleDiscriminator first, RoleDiscriminator second) {
 			this.first = first;
 			this.second = second;
 		}
@@ -99,15 +86,59 @@ public class RoleRESTService extends RESTService {
 			if (getClass() != obj.getClass()) {
 				return false;
 			}
-			Pair other = (Pair) obj;
-			if (first != other.first) {
+			RolePair other = (RolePair) obj;
+			if (!first.equals(other.first)) {
 				return false;
 			}
-			if (second != other.second) {
+			if (!second.equals(other.second)) {
 				return false;
 			}
 			return true;
 		}
+	}
+
+	private static final Set<RolePair> forbiddenPairs;
+	static {
+		Set<RolePair> aSet = new HashSet<RolePair>();
+		// ADMINISTRATOR
+		aSet.add(new RolePair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.CANDIDATE));
+		aSet.add(new RolePair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.DEPARTMENT_MANAGER));
+		aSet.add(new RolePair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.INSTITUTION_ASSISTANT));
+		aSet.add(new RolePair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.INSTITUTION_MANAGER));
+		aSet.add(new RolePair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.MINISTRY_MANAGER));
+		aSet.add(new RolePair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.PROFESSOR_DOMESTIC));
+		aSet.add(new RolePair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.PROFESSOR_FOREIGN));
+		// CANDIDATE
+		aSet.add(new RolePair(RoleDiscriminator.CANDIDATE, RoleDiscriminator.DEPARTMENT_MANAGER));
+		aSet.add(new RolePair(RoleDiscriminator.CANDIDATE, RoleDiscriminator.INSTITUTION_ASSISTANT));
+		aSet.add(new RolePair(RoleDiscriminator.CANDIDATE, RoleDiscriminator.INSTITUTION_MANAGER));
+		aSet.add(new RolePair(RoleDiscriminator.CANDIDATE, RoleDiscriminator.MINISTRY_MANAGER));
+		// DEPARTMENT_MANAGER
+		aSet.add(new RolePair(RoleDiscriminator.DEPARTMENT_MANAGER, RoleDiscriminator.CANDIDATE));
+		aSet.add(new RolePair(RoleDiscriminator.DEPARTMENT_MANAGER, RoleDiscriminator.PROFESSOR_DOMESTIC));
+		aSet.add(new RolePair(RoleDiscriminator.DEPARTMENT_MANAGER, RoleDiscriminator.PROFESSOR_FOREIGN));
+		// INSTITUTION_ASSISTANT
+		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_ASSISTANT, RoleDiscriminator.CANDIDATE));
+		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_ASSISTANT, RoleDiscriminator.PROFESSOR_DOMESTIC));
+		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_ASSISTANT, RoleDiscriminator.PROFESSOR_FOREIGN));
+		// MINISTRY_MANAGER
+		aSet.add(new RolePair(RoleDiscriminator.MINISTRY_MANAGER, RoleDiscriminator.CANDIDATE));
+		aSet.add(new RolePair(RoleDiscriminator.MINISTRY_MANAGER, RoleDiscriminator.PROFESSOR_DOMESTIC));
+		aSet.add(new RolePair(RoleDiscriminator.MINISTRY_MANAGER, RoleDiscriminator.PROFESSOR_FOREIGN));
+		// PROFESSOR_DOMESTIC
+		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_DOMESTIC, RoleDiscriminator.DEPARTMENT_MANAGER));
+		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_DOMESTIC, RoleDiscriminator.INSTITUTION_ASSISTANT));
+		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_DOMESTIC, RoleDiscriminator.INSTITUTION_MANAGER));
+		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_DOMESTIC, RoleDiscriminator.MINISTRY_MANAGER));
+		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_DOMESTIC, RoleDiscriminator.PROFESSOR_FOREIGN));
+		// PROFESSOR_FOREIGN
+		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_FOREIGN, RoleDiscriminator.DEPARTMENT_MANAGER));
+		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_FOREIGN, RoleDiscriminator.INSTITUTION_ASSISTANT));
+		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_FOREIGN, RoleDiscriminator.INSTITUTION_MANAGER));
+		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_FOREIGN, RoleDiscriminator.MINISTRY_MANAGER));
+		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_FOREIGN, RoleDiscriminator.PROFESSOR_DOMESTIC));
+
+		forbiddenPairs = Collections.unmodifiableSet(aSet);
 	}
 
 	@GET
@@ -131,8 +162,8 @@ public class RoleRESTService extends RESTService {
 	}
 
 	private boolean isForbiddenPair(RoleDiscriminator first, RoleDiscriminator second) {
-		return forbiddenPairs.contains(new Pair(first, second))
-			|| forbiddenPairs.contains(new Pair(second, first));
+		return forbiddenPairs.contains(new RolePair(first, second))
+			|| forbiddenPairs.contains(new RolePair(second, first));
 	}
 
 	private boolean isIncompatibleRole(Role role, Collection<Role> roles) {
@@ -169,18 +200,18 @@ public class RoleRESTService extends RESTService {
 
 	@POST
 	@JsonView({DetailedRoleView.class})
-	public Role create(@HeaderParam(TOKEN_HEADER) String authToken, Role role) {
+	public Role create(@HeaderParam(TOKEN_HEADER) String authToken, Role newRole) {
 		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && (role.getUser() != loggedOn.getId() || role.getDiscriminator() == RoleDiscriminator.ADMINISTRATOR)) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !newRole.getUser().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (isIncompatibleRole(role, loggedOn.getRoles())) {
+		if (isIncompatibleRole(newRole, loggedOn.getRoles())) {
 			throw new RestException(Status.CONFLICT, "incompatible.role");
 		}
 		//Check fields, if any is missing set Status CREATED, else UNAPPROVED
 
-		em.persist(role);
-		return role;
+		em.persist(newRole);
+		return newRole;
 	}
 
 	@PUT
@@ -211,8 +242,7 @@ public class RoleRESTService extends RESTService {
 		if (role == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
-			&& role.getUser() != loggedOn.getId()) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 
@@ -232,7 +262,7 @@ public class RoleRESTService extends RESTService {
 		if (role == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && role.getUser() != loggedOn.getId()) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 
@@ -273,7 +303,7 @@ public class RoleRESTService extends RESTService {
 		if (!(role instanceof Candidate)) {
 			throw new RestException(Status.NOT_FOUND, "wrong.role");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && role.getUser() != loggedOn.getId()) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 
@@ -296,7 +326,7 @@ public class RoleRESTService extends RESTService {
 		if (role == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && role.getUser() != loggedOn.getId()) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 
