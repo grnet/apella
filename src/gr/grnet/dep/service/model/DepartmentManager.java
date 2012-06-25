@@ -48,4 +48,12 @@ public class DepartmentManager extends Role {
 		return this;
 	}
 
+	@Override
+	public boolean isMissingRequiredFields() {
+		if (this.department == null) {
+			return true;
+		}
+		return false;
+	}
+
 }

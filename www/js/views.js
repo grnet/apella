@@ -1390,6 +1390,7 @@ App.RoleEditView = Backbone.View.extend({
 			break;
 		}
 		
+		this.$('a[rel=popover]').popover();
 		return this;
 	},
 	

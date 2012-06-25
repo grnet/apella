@@ -125,4 +125,32 @@ public class ProfessorDomestic extends Professor {
 		return this;
 	}
 
+	@Override
+	public boolean isMissingRequiredFields() {
+		if (super.isMissingRequiredFields()) {
+			return true;
+		}
+		if (this.department == null) {
+			return true;
+		}
+		if (this.fek == null) {
+			return true;
+		}
+		if (this.fekFile == null) {
+			return true;
+		}
+		if (this.fekSubject == null) {
+			return true;
+		}
+		if (this.institution == null) {
+			return true;
+		}
+		if (this.rank == null) {
+			return true;
+		}
+		if (this.subject == null) {
+			return true;
+		}
+		return false;
+	}
 }

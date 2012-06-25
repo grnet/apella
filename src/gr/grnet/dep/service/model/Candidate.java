@@ -127,4 +127,23 @@ public class Candidate extends Role {
 		return this;
 	}
 
+	@Override
+	public boolean isMissingRequiredFields() {
+		if (this.cv == null) {
+			return true;
+		}
+		if (this.degrees == null) {
+			return true;
+		}
+		if (this.identity == null) {
+			return true;
+		}
+		if (this.military1599 == null) {
+			return true;
+		}
+		if (this.publications == null) {
+			return true;
+		}
+		return false;
+	}
 }

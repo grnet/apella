@@ -50,4 +50,12 @@ public class InstitutionManager extends Role {
 		return null;
 	}
 
+	@Override
+	public boolean isMissingRequiredFields() {
+		if (this.institution == null) {
+			return true;
+		}
+		return false;
+	}
+
 }

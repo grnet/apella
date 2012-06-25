@@ -7,6 +7,10 @@ body {
 	padding: 9px 0;
 }
 
+a.help:hover {
+	cursor: help;	
+}
+
 div.popup {
 	position: fixed;
 	left: 0;

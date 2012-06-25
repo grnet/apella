@@ -59,4 +59,12 @@ public class InstitutionAssistant extends Role {
 		this.setManager(ia.getManager());
 		return this;
 	}
+
+	@Override
+	public boolean isMissingRequiredFields() {
+		if (this.institution == null) {
+			return true;
+		}
+		return false;
+	}
 }

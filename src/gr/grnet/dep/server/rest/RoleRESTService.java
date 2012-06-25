@@ -10,6 +10,7 @@ import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
 
 import java.io.IOException;
@@ -209,7 +210,8 @@ public class RoleRESTService extends RESTService {
 		if (isIncompatibleRole(newRole, loggedOn.getRoles())) {
 			throw new RestException(Status.CONFLICT, "incompatible.role");
 		}
-		//Check fields, if any is missing set Status CREATED, else UNAPPROVED
+		newRole.setStatus(RoleStatus.CREATED);
+		newRole.setStatusDate(new Date());
 
 		em.persist(newRole);
 		return newRole;
@@ -221,15 +223,23 @@ public class RoleRESTService extends RESTService {
 	public Role update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Role role) {
 		User loggedOn = getLoggedOn(authToken);
 		Role existingRole = em.find(Role.class, id);
+		// Validate:
 		if (existingRole == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !existingRole.getUser().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		// Check fields, if any is missing throw exception else set Status UNAPPROVED
-
+		// Update
 		existingRole = existingRole.copyFrom(role);
+		// Check fields, if any is missing throw exception else set Status UNAPPROVED
+		if (existingRole.isMissingRequiredFields()) {
+			existingRole.setStatus(RoleStatus.CREATED);
+		} else {
+			existingRole.setStatus(RoleStatus.UNAPPROVED);
+		}
+		existingRole.setStatusDate(new Date());
+		// Return Result
 		return existingRole;
 	}
 

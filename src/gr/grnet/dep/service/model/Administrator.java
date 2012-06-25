@@ -34,4 +34,9 @@ public class Administrator extends Role {
 		return this;
 	}
 
+	@Override
+	public boolean isMissingRequiredFields() {
+		return false;
+	}
+
 }

@@ -74,4 +74,21 @@ public class ProfessorForeign extends Professor {
 		return this;
 	}
 
+	@Override
+	public boolean isMissingRequiredFields() {
+		if (super.isMissingRequiredFields()) {
+			return true;
+		}
+		if (this.institution == null) {
+			return true;
+		}
+		if (this.rank == null) {
+			return true;
+		}
+		if (this.subject == null) {
+			return true;
+		}
+		return false;
+	}
+
 }

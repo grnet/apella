@@ -39,4 +39,12 @@ public abstract class Professor extends Role {
 		return this;
 	}
 
+	@Override
+	public boolean isMissingRequiredFields() {
+		if (this.profileFile == null || profileURL == null) {
+			return true;
+		}
+		return false;
+	}
+
 }

@@ -147,4 +147,6 @@ public abstract class Role implements Serializable {
 
 	public abstract Role copyFrom(Role otherRole);
 
+	public abstract boolean isMissingRequiredFields();
+
 }

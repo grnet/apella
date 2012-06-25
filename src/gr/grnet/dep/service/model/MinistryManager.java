@@ -51,4 +51,11 @@ public class MinistryManager extends Role {
 		return this;
 	}
 
+	@Override
+	public boolean isMissingRequiredFields() {
+		if (this.ministry == null) {
+			return true;
+		}
+		return false;
+	}
 }
