@@ -17,6 +17,7 @@ import javax.persistence.InheritanceType;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.Version;
+import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.codehaus.jackson.annotate.JsonSubTypes;
@@ -87,9 +88,11 @@ public abstract class Role implements Serializable {
 
 	@Enumerated(value = EnumType.STRING)
 	@org.hibernate.annotations.Index(name = "IDX_Roles_discriminator")
+	@NotNull
 	private RoleDiscriminator discriminator;
 
 	@Enumerated(EnumType.STRING)
+	@NotNull
 	private RoleStatus status;
 
 	private Date statusDate;

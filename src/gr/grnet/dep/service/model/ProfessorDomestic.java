@@ -112,6 +112,7 @@ public class ProfessorDomestic extends Professor {
 		super.copyFrom(otherRole);
 		ProfessorDomestic pd = (ProfessorDomestic) otherRole;
 		setInstitution(pd.getInstitution());
+		setDepartment(pd.getDepartment());
 		setRank(pd.getRank());
 		if (getSubject() == null) {
 			setSubject(new Subject());

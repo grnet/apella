@@ -256,7 +256,6 @@ public class RoleRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-
 		// Delete:
 		User user = em.find(User.class, role.getUser());
 		user.removeRole(role);
@@ -386,6 +385,11 @@ public class RoleRESTService extends RESTService {
 			}
 		}
 
+		if (role.isMissingRequiredFields()) {
+			role.setStatus(RoleStatus.CREATED);
+		} else {
+			role.setStatus(RoleStatus.UNAPPROVED);
+		}
 		return file;
 	}
 
@@ -430,6 +434,11 @@ public class RoleRESTService extends RESTService {
 				professor.setProfileFile(null);
 			}
 		}
+		if (role.isMissingRequiredFields()) {
+			role.setStatus(RoleStatus.CREATED);
+		} else {
+			role.setStatus(RoleStatus.UNAPPROVED);
+		}
 		return retv;
 	}
 
@@ -465,6 +474,12 @@ public class RoleRESTService extends RESTService {
 		}
 		Response retv = deleteFileBody(publication);
 		candidate.getPublications().remove(publication);
+
+		if (role.isMissingRequiredFields()) {
+			role.setStatus(RoleStatus.CREATED);
+		} else {
+			role.setStatus(RoleStatus.UNAPPROVED);
+		}
 		return retv;
 	}
 

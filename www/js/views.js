@@ -1120,6 +1120,33 @@ App.RoleEditView = Backbone.View.extend({
 			}
 			break;
 		case "PROFESSOR_DOMESTIC":
+			// Bind change on institution selector to update department selector
+			self.$("select[name='institution']").change(function() {
+				App.departments = App.departments ? App.departments : new App.Departments();
+				App.departments.fetch({
+					cache : true,
+					success : function(collection, resp) {
+						self.$("select[name='department']").empty();
+						var selectedInstitution = parseInt($("select[name='institution']", self.$el).val());
+						collection.filter(function(department) {
+							return department.get('institution').id === selectedInstitution;
+						}).forEach(function(department) {
+							if (_.isObject(self.model.get("department")) && _.isEqual(department.id, self.model.get("department").id)) {
+								self.$("select[name='department']").append("<option value='" + department.get("id") + "' selected>" + department.get("department") + "</option>");
+							} else {
+								self.$("select[name='department']").append("<option value='" + department.get("id") + "'>" + department.get("department") + "</option>");
+							}
+						});
+					},
+					error : function(model, resp, options) {
+						var popup = new App.PopupView({
+							type : "error",
+							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						});
+						popup.show();
+					}
+				});
+			});
 			App.institutions = App.institutions ? App.institutions : new App.Institutions();
 			App.institutions.fetch({
 				cache : true,
@@ -1131,6 +1158,8 @@ App.RoleEditView = Backbone.View.extend({
 							$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
 						}
 					});
+					// Trigger change to update department selector
+					$("select[name='institution']", self.$el).change();
 				},
 				error : function(model, resp, options) {
 					var popup = new App.PopupView({
@@ -1140,6 +1169,7 @@ App.RoleEditView = Backbone.View.extend({
 					popup.show();
 				}
 			});
+			
 			App.ranks = App.ranks ? App.ranks : new App.Ranks();
 			App.ranks.fetch({
 				cache : true,
@@ -1409,6 +1439,9 @@ App.RoleEditView = Backbone.View.extend({
 				case "PROFESSOR_DOMESTIC":
 					values.institution = {
 						"id" : self.$('form select[name=institution]').val()
+					};
+					values.department = {
+						"id" : self.$('form select[name=department]').val()
 					};
 					values.rank = {
 						"id" : self.$('form select[name=rank]').val()
@@ -1800,13 +1833,10 @@ App.AnnouncementListView = Backbone.View.extend({
 		self.collection.each(function(role) {
 			if (role.get("status") !== "ACTIVE") {
 				data.announcements.push({
-					text : (function() {
-						return $.i18n.prop('RoleIsNotActive', $.i18n.prop(role.get('discriminator')));
-					})(),
+					text : $.i18n.prop('AnnouncementRoleStatus' + role.get("status"), $.i18n.prop(role.get('discriminator'))),
 					url : "#profile/" + role.id
 				});
 			}
-			
 		});
 		// 2. Show
 		self.$el.html(self.template(data));
