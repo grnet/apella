@@ -66,7 +66,6 @@ public class UserRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient-priviledges");
 		}
-		//TODO: Search for User based on input
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct u from User u " +
 			"left join fetch u.roles r " +
@@ -152,10 +151,12 @@ public class UserRESTService extends RESTService {
 			user.setStatus(UserStatus.UNVERIFIED);
 			user.setStatusDate(new Date());
 			user.setPassword(User.encodePassword(user.getPassword()));
-			user.setVerificationNumber(System.currentTimeMillis());
+			user.setVerificationNumber(user.generateVerificationNumber());
 			user.setRoles(new HashSet<Role>());
 			em.persist(user);
 			for (Role r : roles) {
+				r.setStatus(RoleStatus.CREATED);
+				r.setStatusDate(new Date());
 				user.addRole(r);
 			}
 			em.flush(); //To catch the exception
@@ -195,14 +196,13 @@ public class UserRESTService extends RESTService {
 	@Path("/{id:[0-9][0-9]*}")
 	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
 		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(id)) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		User existingUser = em.find(User.class, id);
 		if (existingUser == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		//TODO: Validate:
 
 		//Do Delete:
 		em.remove(existingUser);
@@ -224,8 +224,7 @@ public class UserRESTService extends RESTService {
 			switch (u.getStatus()) {
 				case ACTIVE:
 					if (u.getPassword().equals(User.encodePassword(password))) {
-						//TODO: Create Token: 
-						u.setAuthToken("" + System.currentTimeMillis());
+						u.setAuthToken(u.generateAuthenticationToken());
 						u = em.merge(u);
 						return Response.status(200)
 							.header(TOKEN_HEADER, u.getAuthToken())

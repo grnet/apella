@@ -285,6 +285,14 @@ public class User implements Serializable {
 		}
 	}
 
+	public Long generateVerificationNumber() {
+		return System.currentTimeMillis();
+	}
+
+	public String generateAuthenticationToken() {
+		return this.getUsername() + "" + System.currentTimeMillis();
+	}
+
 	public static void main(String[] args) {
 		String password = "anglen";
 		System.out.println(password + ": " + encodePassword(password));
