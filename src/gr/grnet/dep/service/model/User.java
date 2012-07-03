@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.Institution.RegistrationType;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 
@@ -67,7 +68,6 @@ public class User implements Serializable {
 	@GeneratedValue
 	private Long id;
 
-	@SuppressWarnings("unused")
 	@Version
 	private int version;
 
@@ -95,13 +95,13 @@ public class User implements Serializable {
 	@NotNull
 	private ContactInformation contactInfo = new ContactInformation();
 
-	/**
-	 * This will only be used for external users. (Non-shibboleth authenticated)
-	 */
-	private String password;
-
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
 	private Set<Role> roles = new HashSet<Role>();
+
+	@Enumerated(EnumType.STRING)
+	private RegistrationType registrationType;
+
+	private String password;
 
 	@NotNull
 	private Date registrationDate;
@@ -110,9 +110,6 @@ public class User implements Serializable {
 
 	private Date lastLoginDate;
 
-	/**
-	 * This is set when user is loggedin
-	 */
 	@Column(unique = true)
 	private String authToken;
 
@@ -131,6 +128,14 @@ public class User implements Serializable {
 
 	public void setUsername(String username) {
 		this.username = username;
+	}
+
+	public RegistrationType getRegistrationType() {
+		return registrationType;
+	}
+
+	public void setRegistrationType(RegistrationType registrationType) {
+		this.registrationType = registrationType;
 	}
 
 	@JsonView({SimpleUserView.class})

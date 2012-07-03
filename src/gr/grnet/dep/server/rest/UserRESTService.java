@@ -1,6 +1,10 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.model.Address;
+import gr.grnet.dep.service.model.Department;
+import gr.grnet.dep.service.model.Institution.RegistrationType;
+import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
@@ -147,6 +151,7 @@ public class UserRESTService extends RESTService {
 
 			Set<Role> roles = user.getRoles();
 
+			user.setRegistrationType(RegistrationType.REGISTRATION_FORM);
 			user.setRegistrationDate(new Date());
 			user.setStatus(UserStatus.UNVERIFIED);
 			user.setStatusDate(new Date());
@@ -240,6 +245,62 @@ public class UserRESTService extends RESTService {
 		} catch (NoResultException e) {
 			throw new RestException(Status.UNAUTHORIZED, "wrong.username");
 		}
+	}
+
+	@GET
+	@Path("/shibbolethLogin")
+	public Response shibbolethLogin(@Context HttpServletRequest request) {
+		// 1. Read Attributes from request:
+		String personalUniqueCode = readShibbolethField(request, "HTTP_SHIB_PERSONALUNIQUECODE", "Shib-PersonalUniqueCode");
+		String name = readShibbolethField(request, "HTTP_SHIB_GIVENNAME", "Shib-givenName");
+		String lastName = readShibbolethField(request, "HTTP_SHIB_SN", "Shib-sn");
+		String affiliation = readShibbolethField(request, "HTTP_SHIB_AFFILIATION", "Shib-Affiliation");
+		String email = readShibbolethField(request, "HTTP_SHIB_MAIL", "Shib-mail");
+		String eduBranch = readShibbolethField(request, "HTTP_SHIB_UNDERGRADUATEBRANCH", "Shib-UndergraduateBranch");
+		Long departmentId = eduBranch.matches("(\\d+)") ? Long.valueOf(eduBranch) : null;
+
+		// 2. Validate
+		if (personalUniqueCode == null || name == null || lastName == null || affiliation == null || email == null || eduBranch == null || departmentId == null) {
+			throw new RestException(Status.BAD_REQUEST, "shibboleth.fields.error");
+		}
+		if (!affiliation.equals("Professor") || !affiliation.equals("Researcher")) {
+			throw new RestException(Status.UNAUTHORIZED, "wrong.affiliation");
+		}
+
+		// 2. Find User
+		User u = null;
+		try {
+			u = (User) em.createQuery("")
+				.setParameter("shibPersonalUniqueCode", personalUniqueCode)
+				.getSingleResult();
+			u.setAuthToken(u.generateAuthenticationToken());
+			u = em.merge(u);
+		} catch (NoResultException e) {
+			//Create User from Shibboleth Fields 
+			u = new User();
+			u.setRegistrationType(RegistrationType.SHIBBOLETH);
+			u.setUsername(email);
+			u.getBasicInfo().setFirstname(name);
+			u.getBasicInfo().setLastname(lastName);
+			u.getContactInfo().setAddress(new Address());
+			u.setRegistrationDate(new Date());
+			u.setStatus(UserStatus.CREATED);
+			u.setStatusDate(new Date());
+
+			ProfessorDomestic pd = new ProfessorDomestic();
+			Department department = em.find(Department.class, departmentId);
+			pd.setDepartment(department);
+			pd.setInstitution(department.getInstitution());
+			pd.setStatus(RoleStatus.CREATED);
+			pd.setStatusDate(new Date());
+			//TODO:  Get Rank from affiliation
+			u.addRole(pd);
+		}
+		return Response.status(200)
+			.header(TOKEN_HEADER, u.getAuthToken())
+			.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, Integer.MAX_VALUE, false))
+			.entity(u)
+			.build();
 	}
 
 	@PUT
