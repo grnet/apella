@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>DEP Elections</title>
+<title>ΑΠΕΛΛΑ</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="">
 <meta name="author" content="">
@@ -36,9 +36,9 @@
 <script type="text/javascript" src="js/main.js"></script>
 <script type="text/javascript" src="js/models.js"></script>
 <script type="text/javascript" src="js/views.js"></script>
-<script>
+<script type="text/javascript">
 	$(document).ready(function() {
-		tpl.loadTemplates([], function() {
+		tpl.loadTemplates([ "home", "login-main", "popup", "user-edit", "role", "role-edit", "role-list", "file-edit", "confirm", "announcement-list" ], function() {
 			// Loaded templates
 			jQuery.i18n.properties({
 				name : 'messages',
@@ -46,10 +46,9 @@
 				mode : 'map',
 				callback : function() {
 					// Loaded locales
-					// App.router = new App.Router();
+					App.router = new App.Router();
 				}
 			});
-			
 		});
 	});
 </script>
@@ -64,6 +63,9 @@
 				<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"> <span class="icon-bar"></span> <span class="icon-bar"></span><span
 					class="icon-bar"></span>
 				</a> <a class="brand" href="#">ΑΠΕΛΛΑ</a>
+
+				<div id="user-menu" class="btn-group pull-right"></div>
+				<div id="menu" class="nav-collapse"></div>
 			</div>
 		</div>
 		<div id="alerts"></div>
@@ -76,7 +78,7 @@
 			<!--/row-->
 		</div>
 		<div class="row-fluid">
-			<div id="sidebar" class="span3"></div>
+			<div id="sidebar" class="span3 well"></div>
 			<!-- Center Content -->
 			<div id="content" class="span9"></div>
 			<!--/row-->
@@ -87,5 +89,8 @@
 		</footer>
 	</div>
 
+	<!-- Uploader  -->
+	<div id="uploader"></div>
 </body>
 </html>
+

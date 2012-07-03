@@ -14,9 +14,42 @@ App.MenuView = Backbone.View.extend({
 	events : {},
 	
 	render : function(eventName) {
-		this.$el.empty();
+		var self = this;
+		var menuItems = [];
+		self.$el.empty();
+		
+		menuItems.push("profile");
+		if (self.model.hasRoleWithStatus("PROFESSOR_DOMESTIC", "ACTIVE")) {
+			menuItems.push("commities");
+		}
+		if (self.model.hasRoleWithStatus("PROFESSOR_FOREIGN", "ACTIVE")) {
+			menuItems.push("commities");
+		}
+		if (self.model.hasRoleWithStatus("CANDIDATE", "ACTIVE")) {
+			menuItems.push("candidacies");
+		}
+		if (self.model.hasRoleWithStatus("INSTITUTION_MANAGER", "ACTIVE")) {
+			menuItems.push("registries");
+			menuItems.push("positions");
+		}
+		if (self.model.hasRoleWithStatus("DEPARTMENT_MANAGER", "ACTIVE")) {
+			menuItems.push("registries");
+			menuItems.push("positions");
+		}
+		if (self.model.hasRoleWithStatus("INSTITUTION_ASSISTANT", "ACTIVE")) {
+			menuItems.push("registries");
+			menuItems.push("positions");
+		}
+		if (self.model.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE")) {
+			menuItems.push("registries");
+			menuItems.push("positions");
+		}
+		
 		this.$el.append("<ul class=\"nav\">");
-		this.$el.find("ul").append("<li><a href=\"\#profile\">" + $.i18n.prop('menu_profile') + "</a></li>");
+		_.each(_.uniq(menuItems), function(menuItem) {
+			self.$("ul").append("<li><a href=\"\#" + menuItem + "\">" + $.i18n.prop("menu_" + menuItem) + "</a></li>");
+		});
+		
 		return this;
 	}
 

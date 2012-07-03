@@ -125,7 +125,163 @@ App.RegistrationRouter = Backbone.Router.extend({
 	}
 });
 
-App.RegistryRouter = Backbone.Router.extend({
+App.AdminRouter = Backbone.Router.extend({
+	
+	initialize : function() {
+		var self = this;
+		
+		_.extend(this, Backbone.Events);
+		_.bindAll(this, "start", "showLoginView", "showHomeView", "showUserSearchView", "showUserView");
+		$(document).ajaxStart(App.blockUI);
+		$(document).ajaxStop(App.unblockUI);
+		
+		// Init LoggedOnUser
+		App.loggedOnUser = new App.User();
+		App.loggedOnUser.on("user:loggedon", self.start);
+		App.loggedOnUser.fetch({
+			url : "/dep/rest/user/loggedon",
+			cache : false,
+			success : function(model, resp) {
+				App.loggedOnUser.trigger("user:loggedon");
+			},
+			error : function(model, resp, options) {
+				self.showLoginView();
+			}
+		});
+	},
+	
+	routes : {
+		"" : "showHomeView",
+		"account" : "showAccountView",
+		"users" : "showUserSearchView",
+		"users/:query" : "showUserSearchView",
+		"user/:id" : "showUserView"
+	},
+	
+	start : function(eventName, authToken) {
+		var self = this;
+		// Check that user is indeed Administrator
+		if (!App.loggedOnUser.hasRole("ADMINISTRATOR")) {
+			App.loggedOnUser = new App.User();
+			App.loggedOnUser.on("user:loggedon", self.start);
+			self.showLoginView();
+			
+			var popup = new App.PopupView({
+				type : "warning",
+				message : $.i18n.prop("error.insufficient.privileges")
+			});
+			popup.show();
+			
+			return;
+		}
+		App.loggedOnUser.off("user:loggedon", self.start);
+		
+		// Create Header, Menu, and other side content and
+		// bind them to the same loggedOnUser model
+		var adminmenuView = new App.AdminMenuView({
+			model : App.loggedOnUser
+		});
+		adminmenuView.render();
+		var usermenuView = new App.UserMenuView({
+			model : App.loggedOnUser
+		});
+		usermenuView.render();
+		
+		// Start Routing
+		Backbone.history.start();
+	},
+	
+	clear : function() {
+		$("#featured").unbind();
+		$("#featured").empty();
+		$("#featured").removeClass("well");
+		$("#sidebar").unbind();
+		$("#sidebar").empty();
+		$("#sidebar").removeClass("well");
+		$("#content").unbind();
+		$("#content").empty();
+		$("#content").removeClass("well");
+	},
+	
+	showLoginView : function() {
+		this.clear();
+		var loginView = new App.AdminLoginView({
+			model : App.loggedOnUser
+		});
+		$("#featured").html(loginView.render().el);
+		this.currentView = loginView;
+		return loginView;
+	},
+	
+	showHomeView : function() {
+		this.clear();
+		$("#content").html("<h1>HOME</h1>");
+	},
+	
+	showAccountView : function() {
+		this.clear();
+		var accountView = new App.AccountView({
+			model : App.loggedOnUser
+		});
+		$("#content").append(accountView.render().el);
+		this.currentView = accountView;
+		return accountView;
+	},
+	
+	showUserSearchView : function(query) {
+		var self = this;
+		self.clear();
+		var users = new App.Users();
+		users.on("user:selected", function(user) {
+			if (user) {
+				self.showUserView(user.id, user);
+				self.navigate("user/" + user.id, {
+					trigger : false
+				});
+			}
+		}, this);
+		var userSearchView = new App.UserSearchView({
+			"query" : query ? JSON.parse(query) : undefined,
+			collection : users
+		});
+		var userListView = new App.UserListView({
+			collection : users
+		});
+		$("#sidebar").addClass("well");
+		$("#sidebar").append(userSearchView.render().el);
+		$("#content").append(userListView.render().el);
+	},
+	
+	showUserView : function(id, user) {
+		this.clear();
+		if (_.isUndefined(user)) {
+			user = new App.User({
+				"id" : id
+			});
+		}
+		var roles = new App.Roles();
+		roles.user = id;
+		
+		var userView = new App.UserView({
+			model : user
+		});
+		var roleView = new App.RoleView({
+			collection : roles
+		});
+		user.fetch({
+			cache : false
+		});
+		roles.fetch({
+			cache : false
+		});
+		$("#sidebar").addClass("well");
+		$("#sidebar").html(userView.el);
+		$("#content").html(roleView.el);
+	},
+
+});
+
+App.Router = Backbone.Router.extend({
 	initialize : function() {
 		var self = this;
 		
@@ -289,161 +445,5 @@ App.RegistryRouter = Backbone.Router.extend({
 		this.clear();
 		$("#content").html("<h1>REQUESTS</h1>");
 	}
-
-});
-
-App.AdminRouter = Backbone.Router.extend({
-	
-	initialize : function() {
-		var self = this;
-		
-		_.extend(this, Backbone.Events);
-		_.bindAll(this, "start", "showLoginView", "showHomeView", "showUserSearchView", "showUserView");
-		$(document).ajaxStart(App.blockUI);
-		$(document).ajaxStop(App.unblockUI);
-		
-		// Init LoggedOnUser
-		App.loggedOnUser = new App.User();
-		App.loggedOnUser.on("user:loggedon", self.start);
-		App.loggedOnUser.fetch({
-			url : "/dep/rest/user/loggedon",
-			cache : false,
-			success : function(model, resp) {
-				App.loggedOnUser.trigger("user:loggedon");
-			},
-			error : function(model, resp, options) {
-				self.showLoginView();
-			}
-		});
-	},
-	
-	routes : {
-		"" : "showHomeView",
-		"account" : "showAccountView",
-		"users" : "showUserSearchView",
-		"users/:query" : "showUserSearchView",
-		"user/:id" : "showUserView"
-	},
-	
-	start : function(eventName, authToken) {
-		var self = this;
-		// Check that user is indeed Administrator
-		if (!App.loggedOnUser.hasRole("ADMINISTRATOR")) {
-			App.loggedOnUser = new App.User();
-			App.loggedOnUser.on("user:loggedon", self.start);
-			self.showLoginView();
-			
-			var popup = new App.PopupView({
-				type : "warning",
-				message : $.i18n.prop("error.insufficient.privileges")
-			});
-			popup.show();
-			
-			return;
-		}
-		App.loggedOnUser.off("user:loggedon", self.start);
-		
-		// Create Header, Menu, and other side content and
-		// bind them to the same loggedOnUser model
-		var adminmenuView = new App.AdminMenuView({
-			model : App.loggedOnUser
-		});
-		adminmenuView.render();
-		var usermenuView = new App.UserMenuView({
-			model : App.loggedOnUser
-		});
-		usermenuView.render();
-		
-		// Start Routing
-		Backbone.history.start();
-	},
-	
-	clear : function() {
-		$("#featured").unbind();
-		$("#featured").empty();
-		$("#featured").removeClass("well");
-		$("#sidebar").unbind();
-		$("#sidebar").empty();
-		$("#sidebar").removeClass("well");
-		$("#content").unbind();
-		$("#content").empty();
-		$("#content").removeClass("well");
-	},
-	
-	showLoginView : function() {
-		this.clear();
-		var loginView = new App.AdminLoginView({
-			model : App.loggedOnUser
-		});
-		$("#featured").html(loginView.render().el);
-		this.currentView = loginView;
-		return loginView;
-	},
-	
-	showHomeView : function() {
-		this.clear();
-		$("#content").html("<h1>HOME</h1>");
-	},
-	
-	showAccountView : function() {
-		this.clear();
-		var accountView = new App.AccountView({
-			model : App.loggedOnUser
-		});
-		$("#content").append(accountView.render().el);
-		this.currentView = accountView;
-		return accountView;
-	},
-	
-	showUserSearchView : function(query) {
-		var self = this;
-		self.clear();
-		var users = new App.Users();
-		users.on("user:selected", function(user) {
-			if (user) {
-				self.showUserView(user.id, user);
-				self.navigate("user/" + user.id, {
-					trigger : false
-				});
-			}
-		}, this);
-		var userSearchView = new App.UserSearchView({
-			"query" : query ? JSON.parse(query) : undefined,
-			collection : users
-		});
-		var userListView = new App.UserListView({
-			collection : users
-		});
-		$("#sidebar").addClass("well");
-		$("#sidebar").append(userSearchView.render().el);
-		$("#content").append(userListView.render().el);
-	},
-	
-	showUserView : function(id, user) {
-		this.clear();
-		if (_.isUndefined(user)) {
-			user = new App.User({
-				"id" : id
-			});
-		}
-		var roles = new App.Roles();
-		roles.user = id;
-		
-		var userView = new App.UserView({
-			model : user
-		});
-		var roleView = new App.RoleView({
-			collection : roles
-		});
-		user.fetch({
-			cache : false
-		});
-		roles.fetch({
-			cache : false
-		});
-		$("#sidebar").addClass("well");
-		$("#sidebar").html(userView.el);
-		$("#content").html(roleView.el);
-	},
 
 });
