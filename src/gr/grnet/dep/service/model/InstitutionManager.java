@@ -19,7 +19,7 @@ public class InstitutionManager extends Role {
 	@Transient
 	private Logger logger;
 
-	@ManyToOne(optional = false)
+	@ManyToOne
 	private Institution institution;
 
 	public InstitutionManager() {

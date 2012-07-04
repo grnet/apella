@@ -499,7 +499,11 @@ App.Departments = Backbone.Collection.extend({
 	url : "/dep/rest/department",
 	model : App.Department,
 	comparator : function(department) {
-		return department.get('department');
+		if (_.isObject(department.get("institution"))) {
+			return department.get('institution').name + department.get('department');
+		} else {
+			return "_" + department.get('department');
+		}
 	}
 });
 

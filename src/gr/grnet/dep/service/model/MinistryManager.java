@@ -6,9 +6,6 @@ import javax.inject.Inject;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Transient;
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.NotEmpty;
 
 @Entity
 @DiscriminatorValue("MINISTRY_MANAGER")
@@ -21,8 +18,6 @@ public class MinistryManager extends Role {
 	@Transient
 	private Logger logger;
 
-	@NotNull
-	@NotEmpty
 	private String ministry;
 
 	public MinistryManager() {
