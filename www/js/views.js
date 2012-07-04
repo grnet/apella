@@ -1623,9 +1623,7 @@ App.RoleEditView = Backbone.View.extend({
 });
 
 App.FileView = Backbone.View.extend({
-	tagName : "table",
-	
-	className : "table table-striped table-bordered table-condensed",
+	tagName : "div",
 	
 	initialize : function() {
 		this.template = _.template(tpl.get('file-edit'));
@@ -1737,9 +1735,7 @@ App.FileView = Backbone.View.extend({
 });
 
 App.FileListView = Backbone.View.extend({
-	tagName : "table",
-	
-	className : "table table-striped table-bordered table-condensed",
+	tagName : "div",
 	
 	uploader : undefined,
 	
@@ -1749,6 +1745,7 @@ App.FileListView = Backbone.View.extend({
 		this.collection.bind('reset', this.render, this);
 		this.collection.bind('remove', this.render, this);
 		this.collection.bind('add', this.render, this);
+		
 	},
 	
 	events : {
@@ -1761,6 +1758,15 @@ App.FileListView = Backbone.View.extend({
 		self.$el.html(self.template({
 			files : self.collection.toJSON()
 		}));
+		if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
+			self.$("table").dataTable({
+				"sDom" : "<''<'span6'l><'span6'f>r>t<''<'span6'i><'span6'p>>",
+				"sPaginationType" : "bootstrap",
+				"oLanguage" : {
+					"sLengthMenu" : "_MENU_ records per page"
+				}
+			});
+		}
 		return self;
 	},
 	
@@ -1838,8 +1844,9 @@ App.FileListView = Backbone.View.extend({
 	},
 	
 	close : function(eventName) {
-		$(this.el).unbind();
-		$(this.el).remove();
+		this.$el.dataTable("destory");
+		this.$el.unbind();
+		this.$el.remove();
 	}
 });
 
