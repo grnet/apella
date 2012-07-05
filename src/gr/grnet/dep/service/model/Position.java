@@ -82,10 +82,10 @@ public class Position {
 	@Temporal(TemporalType.DATE)
 	private Date fekSentDate;
 
-	private String fekNumber;
+	private String fek;
 
 	@ManyToOne
-	private FileHeader fek;
+	private FileHeader fekFile;
 
 	public Long getId() {
 		return id;
@@ -195,21 +195,21 @@ public class Position {
 	}
 
 	@JsonView(SimplePositionView.class)
-	public String getFekNumber() {
-		return fekNumber;
-	}
-
-	public void setFekNumber(String fekNumber) {
-		this.fekNumber = fekNumber;
-	}
-
-	@JsonView(SimplePositionView.class)
-	public FileHeader getFek() {
+	public String getFek() {
 		return fek;
 	}
 
-	public void setFek(FileHeader fek) {
+	public void setFek(String fek) {
 		this.fek = fek;
+	}
+
+	@JsonView(SimplePositionView.class)
+	public FileHeader getFekFile() {
+		return fekFile;
+	}
+
+	public void setFekFile(FileHeader fekFile) {
+		this.fekFile = fekFile;
 	}
 
 }

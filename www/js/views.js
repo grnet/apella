@@ -30,19 +30,19 @@ App.MenuView = Backbone.View.extend({
 		}
 		if (self.model.hasRoleWithStatus("INSTITUTION_MANAGER", "ACTIVE")) {
 			menuItems.push("registries");
-			menuItems.push("positions");
+			menuItems.push("position");
 		}
 		if (self.model.hasRoleWithStatus("DEPARTMENT_MANAGER", "ACTIVE")) {
 			menuItems.push("registries");
-			menuItems.push("positions");
+			menuItems.push("position");
 		}
 		if (self.model.hasRoleWithStatus("INSTITUTION_ASSISTANT", "ACTIVE")) {
 			menuItems.push("registries");
-			menuItems.push("positions");
+			menuItems.push("position");
 		}
 		if (self.model.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE")) {
 			menuItems.push("registries");
-			menuItems.push("positions");
+			menuItems.push("position");
 		}
 		
 		this.$el.append("<ul class=\"nav\">");
@@ -1884,4 +1884,261 @@ App.AnnouncementListView = Backbone.View.extend({
 		return self;
 	}
 
+});
+
+/*******************************************************************************
+ * ***** PositionView *********
+ ******************************************************************************/
+App.PositionListView = Backbone.View.extend({
+	tagName : "div",
+	
+	initialize : function() {
+		_.bindAll(this, "render", "select", "newPosition");
+		this.template = _.template(tpl.get('position-list'));
+		this.collection.bind("change", this.render, this);
+		this.collection.bind("reset", this.render, this);
+		this.collection.bind("add", this.render, this);
+		this.collection.bind("remove", this.render, this);
+	},
+	
+	events : {
+		"click a#createPosition" : "newPosition",
+		"click a#selectPosition" : "select"
+	},
+	
+	render : function(eventName) {
+		var self = this;
+		var tpl_data = {
+			positions : (function() {
+				var result = [];
+				self.collection.each(function(model) {
+					if (model.has("id")) {
+						var item = model.toJSON();
+						item.cid = model.cid;
+						result.push(item);
+					}
+				});
+				return result;
+			})()
+		};
+		self.$el.html(this.template(tpl_data));
+		if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
+			self.$("table").dataTable({
+				"sDom" : "<''<'span6'l><'span6'f>r>t<''<'span6'i><'span6'p>>",
+				"sPaginationType" : "bootstrap",
+				"oLanguage" : {
+					"sLengthMenu" : "_MENU_ records per page"
+				}
+			});
+		}
+		return self;
+	},
+	
+	select : function(event, position) {
+		var selectedModel = position ? position : this.collection.getByCid($(event.target).attr('data-position-cid'));
+		if (selectedModel) {
+			this.collection.trigger("position:selected", selectedModel);
+		}
+	},
+	
+	newPosition : function(event) {
+		var self = this;
+		var newPosition = new App.Position();
+		self.collection.add(newPosition);
+		self.select(undefined, newPosition);
+	}
+});
+
+App.PositionEditView = Backbone.View.extend({
+	tagName : "div",
+	
+	id : "positionview",
+	
+	className : "box",
+	
+	validator : undefined,
+	
+	initialize : function() {
+		_.bindAll(this, "render", "submit", "cancel", "addFile");
+		this.template = _.template(tpl.get('position-edit'));
+		this.model.bind('change', this.render, this);
+		this.model.bind("destroy", this.close, this);
+	},
+	
+	events : {
+		"click a#cancel" : "cancel",
+		"click a#remove" : "remove",
+		"click a#save" : function() {
+			$("form", this.el).submit();
+		},
+		"submit form" : "submit"
+	},
+	
+	render : function(eventName) {
+		var self = this;
+		self.$el.html(self.template(self.model.toJSON()));
+		
+		if (self.model.has("id")) {
+			self.addFile("fekFile", this.$("#fekFile"));
+			self.addFile("prosklisiKosmitora", this.$("#prosklisiKosmitora"));
+			self.addFile("recommendatoryReport", this.$("#recommendatoryReport"));
+			self.addFile("recommendatoryReportSecond", this.$("#recommendatoryReportSecond"));
+		} else {
+			self.$("#fekFile").html($.i18n.prop("PressSave"));
+			self.$("#prosklisiKosmitora").html($.i18n.prop("PressSave"));
+			self.$("#recommendatoryReport").html($.i18n.prop("PressSave"));
+			self.$("#recommendatoryReportSecond").html($.i18n.prop("PressSave"));
+		}
+		
+		self.validator = $("form", this.el).validate({
+			errorElement : "span",
+			errorClass : "help-inline",
+			highlight : function(element, errorClass, validClass) {
+				$(element).parent(".controls").parent(".control-group").addClass("error");
+			},
+			unhighlight : function(element, errorClass, validClass) {
+				$(element).parent(".controls").parent(".control-group").removeClass("error");
+			},
+			rules : {
+				name : "required",
+				description : "required",
+				department : "required",
+				subject : "required",
+				status : "required",
+				deanStatus : "required",
+				fek : "required",
+				fekSentDate : "required"
+			},
+			messages : {
+				name : $.i18n.prop('validation_positionName'),
+				description : $.i18n.prop('validation_description'),
+				department : $.i18n.prop('validation_department'),
+				subject : $.i18n.prop('validation_subject'),
+				status : $.i18n.prop('validation_positionStatus'),
+				deanStatus : $.i18n.prop('validation_positionDeanStatus'),
+				fek : $.i18n.prop('validation_fek'),
+				fekSentDate : $.i18n.prop('validation_fekSentDate'),
+			}
+		});
+		return self;
+	},
+	
+	submit : function(event) {
+		var self = this;
+		var confirm = new App.ConfirmView({
+			title : $.i18n.prop('Confirm'),
+			message : $.i18n.prop('AreYouSure'),
+			yes : function() {
+				var values = {};
+				// Read Input
+				values.name = self.$('form input[name=name]').val();
+				values.description = self.$('form input[name=description]').val();
+				values.department = {
+					"id" : self.$('form select[name=department]').val()
+				};
+				values.subject = {
+					"id" : self.model.has("subject") ? self.model.get("subject").id : undefined,
+					"name" : self.$('form textarea[name=subject]').val()
+				};
+				values.status = self.$('form input[name=status]').val();
+				values.deanStatus = self.$('form input[name=deanStatus]').val();
+				values.fek = self.$('form input[name=fek]').val();
+				values.fekSentDate = self.$('form input[name=fekSentDate]').val();
+				// Save to model
+				self.model.save(values, {
+					wait : true,
+					success : function(model, resp) {
+						var popup = new App.PopupView({
+							type : "success",
+							message : $.i18n.prop("Success")
+						});
+						popup.show();
+					},
+					error : function(model, resp, options) {
+						var popup = new App.PopupView({
+							type : "error",
+							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						});
+						popup.show();
+					}
+				});
+			}
+		});
+		confirm.show();
+		event.preventDefault();
+		return false;
+	},
+	
+	cancel : function(event) {
+		var self = this;
+		if (self.validator) {
+			self.validator.resetForm();
+		}
+		self.render();
+	},
+	
+	remove : function() {
+		var self = this;
+		var confirm = new App.ConfirmView({
+			title : $.i18n.prop('Confirm'),
+			message : $.i18n.prop('AreYouSure'),
+			yes : function() {
+				self.model.destroy({
+					wait : true,
+					success : function(model, resp) {
+						var popup = new App.PopupView({
+							type : "success",
+							message : $.i18n.prop("Success")
+						});
+						popup.show();
+					},
+					error : function(model, resp, options) {
+						var popup = new App.PopupView({
+							type : "error",
+							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						});
+						popup.show();
+					}
+				});
+			}
+		});
+		confirm.show();
+		return false;
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
+	},
+	
+	addFile : function(type, $el) {
+		var self = this;
+		var fileView;
+		var file;
+		var fileAttributes = self.model.has(type) ? self.model.get(type) : {};
+		fileAttributes.name = type;
+		file = new App.File(fileAttributes);
+		file.urlRoot = self.model.url() + "/" + type;
+		fileView = new App.FileView({
+			model : file
+		});
+		file.bind("change", function() {
+			self.model.set(type, file.toJSON(), {
+				silent : true
+			});
+		});
+		$el.html(fileView.render().el);
+	},
+	
+	addFileList : function(type, $el) {
+		var files = new App.Files();
+		var fileListView = new App.FileListView({
+			collection : files
+		});
+		files.url = self.model.url() + "/" + type;
+		$el.html(fileListView.el);
+		files.fetch({
+			cache : false
+		});
+	}
 });

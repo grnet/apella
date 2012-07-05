@@ -286,7 +286,7 @@ App.Router = Backbone.Router.extend({
 		var self = this;
 		
 		_.extend(self, Backbone.Events);
-		_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showRequestsView", "start");
+		_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showPositionView", "start");
 		$(document).ajaxStart(App.blockUI);
 		$(document).ajaxStop(App.unblockUI);
 		
@@ -310,6 +310,8 @@ App.Router = Backbone.Router.extend({
 		"account" : "showAccountView",
 		"profile" : "showProfileView",
 		"profile/:roleId" : "showProfileView",
+		"position" : "showPositionView",
+		"position/:positionId" : "showPositionView",
 		"requests" : "showRequestsView"
 	},
 	
@@ -441,9 +443,57 @@ App.Router = Backbone.Router.extend({
 		return roleListView;
 	},
 	
-	showRequestsView : function() {
-		this.clear();
-		$("#content").html("<h1>REQUESTS</h1>");
+	showPositionView : function(positionId) {
+		var self = this;
+		var positions = new App.Positions();
+		var positionListView = new App.PositionListView({
+			collection : positions,
+			user : App.loggedOnUser.get("id")
+		});
+		positions.on("position:selected", function(position) {
+			var positionView = new App.PositionEditView({
+				model : position
+			});
+			// Update history
+			if (position.id) {
+				App.router.navigate("position/" + position.id, {
+					trigger : false
+				});
+			} else {
+				App.router.navigate("position", {
+					trigger : false
+				});
+			}
+			$("#content").unbind();
+			$("#content").empty();
+			$("#content").html(positionView.el);
+			positionView.render();
+		});
+		
+		self.clear();
+		$("#featured").html(positionListView.el);
+		// Refresh positions from server
+		positions.fetch({
+			cache : false,
+			data : {
+				user : App.loggedOnUser.get("id")
+			},
+			success : function() {
+				if (_.isUndefined(positionId)) {
+				} else {
+					positions.trigger("position:selected", positions.get(positionId));
+				}
+			},
+			error : function(model, resp, options) {
+				var popup = new App.PopupView({
+					type : "error",
+					message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+				});
+				popup.show();
+			}
+		});
+		this.currentView = positionListView;
+		return positionListView;
 	}
 
 });

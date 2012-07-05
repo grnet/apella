@@ -519,3 +519,28 @@ App.Ranks = Backbone.Collection.extend({
 	url : "/dep/rest/rank",
 	model : App.Rank
 });
+
+App.Position = Backbone.Model.extend({
+	urlRoot : "/dep/rest/position",
+	defaults : {
+		id : undefined,
+		name : undefined,
+		description : undefined,
+		department : undefined,
+		subject : undefined,
+		status : undefined,
+		deanStatus : undefined,
+		fek : undefined,
+		fekSentDate : undefined,
+		// files
+		fekFile : undefined,
+		prosklisiKosmitora : undefined,
+		recommendatoryReport : undefined,
+		recommendatoryReportSecond : undefined
+	}
+});
+
+App.Positions = Backbone.Collection.extend({
+	url : "/dep/rest/position",
+	model : App.Position
+});

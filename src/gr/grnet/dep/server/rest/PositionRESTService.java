@@ -19,6 +19,7 @@ import gr.grnet.dep.service.model.Subject;
 import gr.grnet.dep.service.model.User;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
@@ -36,6 +37,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -71,6 +73,23 @@ public class PositionRESTService extends RESTService {
 		}
 
 		return position;
+	}
+
+	@GET
+	@JsonView({DetailedPositionView.class})
+	public List<Position> getAll(@HeaderParam(TOKEN_HEADER) String authToken, @QueryParam("user") long userId) {
+		getLoggedOn(authToken);
+
+		User requestUser = em.find(User.class, userId);
+		if (requestUser == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.user.id");
+		}
+		//TODO : Return positions based on User Roles
+		List<Position> positions = (List<Position>) em.createQuery(
+			"from Position p ")
+			.getResultList();
+
+		return positions;
 	}
 
 	@GET
@@ -125,7 +144,7 @@ public class PositionRESTService extends RESTService {
 		existingPosition.setSubject(subject);
 		existingPosition.setDeanStatus(position.getDeanStatus());
 		existingPosition.setDescription(position.getDescription());
-		existingPosition.setFekNumber(position.getFekNumber());
+		existingPosition.setFek(position.getFek());
 		existingPosition.setFekSentDate(position.getFekSentDate());
 		existingPosition.setName(position.getName());
 		existingPosition.setStatus(position.getStatus());
@@ -163,7 +182,7 @@ public class PositionRESTService extends RESTService {
 		} else if ("recommendatoryReportSecond".equals(var)) {
 			file = position.getRecommendatoryReport();
 		} else if ("fek".equals(var)) {
-			file = position.getFek();
+			file = position.getFekFile();
 		}
 
 		if (file != null) {
@@ -173,7 +192,7 @@ public class PositionRESTService extends RESTService {
 	}
 
 	@POST
-	@Path("/{id:[0-9][0-9]*}/{var:prosklisiKosmitora|recommendatoryReport|recommendatoryReportSecond|fek}")
+	@Path("/{id:[0-9][0-9]*}/{var:prosklisiKosmitora|recommendatoryReport|recommendatoryReportSecond|fekFile}")
 	@Consumes("multipart/form-data")
 	@Produces({MediaType.APPLICATION_JSON})
 	@JsonView({SimpleFileHeaderView.class})
@@ -191,9 +210,9 @@ public class PositionRESTService extends RESTService {
 		} else if ("recommendatoryReportSecond".equals(var)) {
 			file = uploadFile(loggedOn, request, position.getRecommendatoryReportSecond());
 			position.setRecommendatoryReportSecond(file);
-		} else if ("fek".equals(var)) {
-			file = uploadFile(loggedOn, request, position.getFek());
-			position.setFek(file);
+		} else if ("fekFile".equals(var)) {
+			file = uploadFile(loggedOn, request, position.getFekFile());
+			position.setFekFile(file);
 		}
 
 		return file;
@@ -208,7 +227,7 @@ public class PositionRESTService extends RESTService {
 	 * @return
 	 */
 	@DELETE
-	@Path("/{id:[0-9][0-9]*}/{var:prosklisiKosmitora|recommendatoryReport|recommendatoryReportSecond|fek}")
+	@Path("/{id:[0-9][0-9]*}/{var:prosklisiKosmitora|recommendatoryReport|recommendatoryReportSecond|fekFile}")
 	@JsonView({DetailedFileHeaderView.class})
 	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("var") String var) {
 		Position position = getAndCheckPosition(authToken, id);
@@ -228,7 +247,7 @@ public class PositionRESTService extends RESTService {
 				position.setRecommendatoryReport(null);
 			} else if ("recommendatoryReportSecond".equals(var)) {
 				position.setRecommendatoryReportSecond(null);
-			} else if ("fek".equals(var)) {
+			} else if ("fekFile".equals(var)) {
 				position.setFek(null);
 			}
 		}
