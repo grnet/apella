@@ -13,6 +13,8 @@ import gr.grnet.dep.service.model.User.DetailedUserView;
 import gr.grnet.dep.service.model.User.SimpleUserView;
 import gr.grnet.dep.service.model.User.UserStatus;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -258,6 +260,12 @@ public class UserRESTService extends RESTService {
 		String email = readShibbolethField(request, "HTTP_SHIB_MAIL", "Shib-mail");
 		String eduBranch = readShibbolethField(request, "HTTP_SHIB_UNDERGRADUATEBRANCH", "Shib-UndergraduateBranch");
 		Long departmentId = eduBranch.matches("(\\d+)") ? Long.valueOf(eduBranch) : null;
+		URI nextURL;
+		try {
+			nextURL = new URI(request.getParameter("nextURL") == null ? "" : request.getParameter("nextURL"));
+		} catch (URISyntaxException e1) {
+			throw new RestException(Status.BAD_REQUEST, "malformed.next.url");
+		}
 
 		// 2. Validate
 		if (personalUniqueCode == null || name == null || lastName == null || affiliation == null || email == null || eduBranch == null || departmentId == null) {
@@ -268,7 +276,7 @@ public class UserRESTService extends RESTService {
 		}
 
 		// 2. Find User
-		User u = null;
+		User u;
 		try {
 			u = (User) em.createQuery("")
 				.setParameter("shibPersonalUniqueCode", personalUniqueCode)
@@ -296,9 +304,11 @@ public class UserRESTService extends RESTService {
 			//TODO:  Get Rank from affiliation
 			u.addRole(pd);
 		}
+
 		return Response.status(200)
 			.header(TOKEN_HEADER, u.getAuthToken())
 			.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, Integer.MAX_VALUE, false))
+			.location(nextURL)
 			.entity(u)
 			.build();
 	}
