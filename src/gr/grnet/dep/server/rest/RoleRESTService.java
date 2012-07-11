@@ -50,7 +50,6 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class RoleRESTService extends RESTService {
 
-	@SuppressWarnings("unused")
 	@Inject
 	private Logger log;
 

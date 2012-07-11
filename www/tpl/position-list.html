@@ -4,7 +4,7 @@
 			<th><%= $.i18n.prop("PositionName") %></th>
 			<th><%= $.i18n.prop("Department") %></th>
 			<th><%= $.i18n.prop("PositionStatus") %></th>
-			<th><a href="javascript:void(0)" id="createPosition" class="btn btn-mini"><i class="icon-plus"></i> <%= $.i18n.prop('btn_add') %></a></th>
+			<th width="96px"></th>
 		</tr>
 	</thead>
 	<tbody>
@@ -13,9 +13,9 @@
 			<td><%= position.name %></td>
 			<td><% if (!_.isUndefined(position.department)) { %><%= position.department.department %><% } %></td>
 			<td><%= $.i18n.prop('PositionStatus_' + position.status) %></td>
-			<td>
+			<td width="96px">
 				<p align="center">
-					<a href="javascript:void(0)" id="selectPosition" data-position-id="<%= position.cid %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_select') %></a>
+					<a href="javascript:void(0)" id="selectPosition" data-position-cid="<%= position.cid %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_select') %></a>
 				</p>
 			</td>
 		</tr>
@@ -26,7 +26,7 @@
 			<th></th>
 			<th></th>
 			<th></th>
-			<th></th>
+			<th width="96px"><a href="javascript:void(0)" id="createPosition" class="btn btn-mini"><i class="icon-plus"></i> <%= $.i18n.prop('btn_add') %></a></th>
 		</tr>
 	</tfoot>
 </table>

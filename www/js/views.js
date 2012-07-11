@@ -1978,6 +1978,27 @@ App.PositionEditView = Backbone.View.extend({
 		var self = this;
 		self.$el.html(self.template(self.model.toJSON()));
 		
+		App.departments = App.departments ? App.departments : new App.Departments();
+		App.departments.fetch({
+			cache : true,
+			success : function(collection, resp) {
+				collection.each(function(department) {
+					if (_.isObject(self.model.get("department")) && _.isEqual(department.id, self.model.get("department").id)) {
+						$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "' selected>" + department.get("institution").name + ":" + department.get("department") + "</option>");
+					} else {
+						$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "'>" + department.get("institution").name + ":" + department.get("department") + "</option>");
+					}
+				});
+			},
+			error : function(model, resp, options) {
+				var popup = new App.PopupView({
+					type : "error",
+					message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+				});
+				popup.show();
+			}
+		});
+		
 		if (self.model.has("id")) {
 			self.addFile("fekFile", this.$("#fekFile"));
 			self.addFile("prosklisiKosmitora", this.$("#prosklisiKosmitora"));

@@ -82,7 +82,6 @@ public abstract class Role implements Serializable {
 	@GeneratedValue
 	private Long id;
 
-	@SuppressWarnings("unused")
 	@Version
 	private int version;
 

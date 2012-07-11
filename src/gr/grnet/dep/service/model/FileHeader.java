@@ -25,6 +25,8 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @XmlRootElement
 public final class FileHeader implements Serializable {
 
+	private static final long serialVersionUID = -4813579007397289759L;
+
 	// define 2 json views
 	public static interface SimpleFileHeaderView {
 	}; // shows a summary view of a FileHeader/FileBody
@@ -42,7 +44,6 @@ public final class FileHeader implements Serializable {
 	/**
 	 * Version field for optimistic locking.
 	 */
-	@SuppressWarnings("unused")
 	@Version
 	private int version;
 

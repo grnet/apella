@@ -248,8 +248,7 @@ public class RESTService {
 		} catch (PersistenceException e) {
 			// Assume it's a constraint violation
 			logger.info("Could not delete FileBody id=" + fb.getId() + ". Constraint violation.");
-			return Response.status(Status.CONFLICT).
-				header(ERROR_CODE_HEADER, "file.in.use").build();
+			return Response.status(Status.CONFLICT).header(ERROR_CODE_HEADER, "file.in.use").build();
 		}
 		if (size > 1) {
 			fh.setCurrentBody(fh.getBodies().get(size - 2));

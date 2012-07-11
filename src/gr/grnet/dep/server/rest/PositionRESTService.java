@@ -15,7 +15,6 @@ import gr.grnet.dep.service.model.RecommendatoryCommittee;
 import gr.grnet.dep.service.model.RecommendatoryCommittee.SimpleRecommendatoryCommitteeView;
 import gr.grnet.dep.service.model.RecommendatoryCommitteeMembership;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
-import gr.grnet.dep.service.model.Subject;
 import gr.grnet.dep.service.model.User;
 
 import java.io.IOException;
@@ -55,7 +54,6 @@ public class PositionRESTService extends RESTService {
 	@PersistenceContext(unitName = "depdb")
 	private EntityManager em;
 
-	@SuppressWarnings("unused")
 	@Inject
 	private Logger log;
 
@@ -113,20 +111,11 @@ public class PositionRESTService extends RESTService {
 		if (department == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.department");
 		}
-		position.setDepartment(department);
-
 		User loggedOn = getLoggedOn(authToken);
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
 			&& !loggedOn.isDepartmentUser(department)) {
 			throw new RestException(Status.FORBIDDEN, "insufficinet.privileges");
 		}
-
-		Subject subject = em.find(Subject.class, position.getSubject().getId());
-		if (subject == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.subject");
-		}
-		position.setSubject(subject);
-
 		em.persist(position);
 		return position;
 	}
@@ -137,11 +126,7 @@ public class PositionRESTService extends RESTService {
 	public Position update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Position position) {
 		Position existingPosition = getAndCheckPosition(authToken, id);
 
-		Subject subject = em.find(Subject.class, position.getSubject().getId());
-		if (subject == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.subject");
-		}
-		existingPosition.setSubject(subject);
+		existingPosition.setSubject(position.getSubject());
 		existingPosition.setDeanStatus(position.getDeanStatus());
 		existingPosition.setDescription(position.getDescription());
 		existingPosition.setFek(position.getFek());
@@ -163,7 +148,7 @@ public class PositionRESTService extends RESTService {
 	}
 
 	@GET
-	@Path("/{id:[0-9][0-9]*}/{var:prosklisiKosmitora|recommendatoryReport|recommendatoryReportSecond|fek}")
+	@Path("/{id:[0-9][0-9]*}/{var:prosklisiKosmitora|recommendatoryReport|recommendatoryReportSecond|fekFile}{fileId:(/[0-9][0-9]*)?}")
 	@JsonView({DetailedFileHeaderView.class})
 	public FileHeader getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("var") String var) {
 		FileHeader file = null;
@@ -180,8 +165,8 @@ public class PositionRESTService extends RESTService {
 		} else if ("recommendatoryReport".equals(var)) {
 			file = position.getRecommendatoryReport();
 		} else if ("recommendatoryReportSecond".equals(var)) {
-			file = position.getRecommendatoryReport();
-		} else if ("fek".equals(var)) {
+			file = position.getRecommendatoryReportSecond();
+		} else if ("fekFile".equals(var)) {
 			file = position.getFekFile();
 		}
 
@@ -192,7 +177,7 @@ public class PositionRESTService extends RESTService {
 	}
 
 	@POST
-	@Path("/{id:[0-9][0-9]*}/{var:prosklisiKosmitora|recommendatoryReport|recommendatoryReportSecond|fekFile}")
+	@Path("/{id:[0-9][0-9]*}/{var:prosklisiKosmitora|recommendatoryReport|recommendatoryReportSecond|fekFile}{fileId:(/[0-9][0-9]*)?}")
 	@Consumes("multipart/form-data")
 	@Produces({MediaType.APPLICATION_JSON})
 	@JsonView({SimpleFileHeaderView.class})
@@ -227,18 +212,15 @@ public class PositionRESTService extends RESTService {
 	 * @return
 	 */
 	@DELETE
-	@Path("/{id:[0-9][0-9]*}/{var:prosklisiKosmitora|recommendatoryReport|recommendatoryReportSecond|fekFile}")
+	@Path("/{id:[0-9][0-9]*}/{var:prosklisiKosmitora|recommendatoryReport|recommendatoryReportSecond|fekFile}{fileId:(/[0-9][0-9]*)?}")
 	@JsonView({DetailedFileHeaderView.class})
 	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("var") String var) {
 		Position position = getAndCheckPosition(authToken, id);
-
 		FileHeader file = getFile(authToken, id, var);
 		if (file == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-
 		Response retv = deleteFileBody(file);
-
 		if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
 			// Break the relationship as well
 			if ("prosklisiKosmitora".equals(var)) {
@@ -248,7 +230,7 @@ public class PositionRESTService extends RESTService {
 			} else if ("recommendatoryReportSecond".equals(var)) {
 				position.setRecommendatoryReportSecond(null);
 			} else if ("fekFile".equals(var)) {
-				position.setFek(null);
+				position.setFekFile(null);
 			}
 		}
 		return retv;

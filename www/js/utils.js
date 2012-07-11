@@ -66,16 +66,15 @@ function formatDate(formatDate, formatString) {
 		formatString = formatString.replace(/s/i, s);
 		
 		return formatString;
-	} else {
-		return "";
 	}
+	return "n/a";
 };
 
 function formatFileSize(bytes) {
 	var precision = 2;
 	var sizes = [ 'Bytes', 'KB', 'MB', 'GB', 'TB' ];
 	var posttxt = 0;
-	if (bytes == 0) {
+	if (bytes === undefined || bytes === 0) {
 		return 'n/a';
 	}
 	while (bytes >= 1024) {

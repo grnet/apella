@@ -24,7 +24,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 @Entity
 public class Position {
-	
+
 	// define 3 json views
 	public static interface IdPositionView {
 	}; // shows only id view of a Candidacy
@@ -34,14 +34,11 @@ public class Position {
 
 	public static interface DetailedPositionView extends SimplePositionView {
 	};
-	
-	
 
 	@Id
 	@GeneratedValue
 	private Long id;
 
-	@SuppressWarnings("unused")
 	@Version
 	private int version;
 
@@ -56,7 +53,7 @@ public class Position {
 	@ManyToOne(optional = false)
 	private Department department;
 
-	@ManyToOne(optional = false)
+	@ManyToOne(cascade = CascadeType.ALL)
 	private Subject subject;
 
 	@NotNull
