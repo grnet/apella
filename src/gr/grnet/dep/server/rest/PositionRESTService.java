@@ -26,6 +26,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -107,44 +108,61 @@ public class PositionRESTService extends RESTService {
 	@POST
 	@JsonView({DetailedPositionView.class})
 	public Position create(@HeaderParam(TOKEN_HEADER) String authToken, Position position) {
-		Department department = em.find(Department.class, position.getDepartment().getId());
-		if (department == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.department");
+		try {
+			Department department = em.find(Department.class, position.getDepartment().getId());
+			if (department == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.department");
+			}
+			User loggedOn = getLoggedOn(authToken);
+			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
+				&& !loggedOn.isDepartmentUser(department)) {
+				throw new RestException(Status.FORBIDDEN, "insufficinet.privileges");
+			}
+			em.persist(position);
+			em.flush();
+			return position;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
-		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)
-			&& !loggedOn.isDepartmentUser(department)) {
-			throw new RestException(Status.FORBIDDEN, "insufficinet.privileges");
-		}
-		em.persist(position);
-		return position;
 	}
 
 	@PUT
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedPositionView.class})
 	public Position update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Position position) {
-		Position existingPosition = getAndCheckPosition(authToken, id);
+		try {
+			Position existingPosition = getAndCheckPosition(authToken, id);
 
-		existingPosition.setSubject(position.getSubject());
-		existingPosition.setDeanStatus(position.getDeanStatus());
-		existingPosition.setDescription(position.getDescription());
-		existingPosition.setFek(position.getFek());
-		existingPosition.setFekSentDate(position.getFekSentDate());
-		existingPosition.setName(position.getName());
-		existingPosition.setStatus(position.getStatus());
+			existingPosition.setSubject(position.getSubject());
+			existingPosition.setDeanStatus(position.getDeanStatus());
+			existingPosition.setDescription(position.getDescription());
+			existingPosition.setFek(position.getFek());
+			existingPosition.setFekSentDate(position.getFekSentDate());
+			existingPosition.setName(position.getName());
+			existingPosition.setStatus(position.getStatus());
 
-		position = em.merge(existingPosition);
-
-		return position;
+			position = em.merge(existingPosition);
+			em.flush();
+			return position;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+		}
 	}
 
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}")
 	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
-		Position position = getAndCheckPosition(authToken, id);
-		//Do Delete:
-		em.remove(position);
+		try {
+			Position position = getAndCheckPosition(authToken, id);
+			//Do Delete:
+			em.remove(position);
+			em.flush();
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+		}
 	}
 
 	@GET
@@ -183,24 +201,28 @@ public class PositionRESTService extends RESTService {
 	@JsonView({SimpleFileHeaderView.class})
 	public FileHeader postFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("var") String var, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
-
-		Position position = getAndCheckPosition(authToken, id);
-		FileHeader file = null;
-		if ("prosklisiKosmitora".equals(var)) {
-			file = uploadFile(loggedOn, request, position.getProsklisiKosmitora());
-			position.setProsklisiKosmitora(file);
-		} else if ("recommendatoryReport".equals(var)) {
-			file = uploadFile(loggedOn, request, position.getRecommendatoryReport());
-			position.setRecommendatoryReport(file);
-		} else if ("recommendatoryReportSecond".equals(var)) {
-			file = uploadFile(loggedOn, request, position.getRecommendatoryReportSecond());
-			position.setRecommendatoryReportSecond(file);
-		} else if ("fekFile".equals(var)) {
-			file = uploadFile(loggedOn, request, position.getFekFile());
-			position.setFekFile(file);
+		try {
+			Position position = getAndCheckPosition(authToken, id);
+			FileHeader file = null;
+			if ("prosklisiKosmitora".equals(var)) {
+				file = uploadFile(loggedOn, request, position.getProsklisiKosmitora());
+				position.setProsklisiKosmitora(file);
+			} else if ("recommendatoryReport".equals(var)) {
+				file = uploadFile(loggedOn, request, position.getRecommendatoryReport());
+				position.setRecommendatoryReport(file);
+			} else if ("recommendatoryReportSecond".equals(var)) {
+				file = uploadFile(loggedOn, request, position.getRecommendatoryReportSecond());
+				position.setRecommendatoryReportSecond(file);
+			} else if ("fekFile".equals(var)) {
+				file = uploadFile(loggedOn, request, position.getFekFile());
+				position.setFekFile(file);
+			}
+			em.flush();
+			return file;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
-
-		return file;
 	}
 
 	/**
@@ -216,24 +238,30 @@ public class PositionRESTService extends RESTService {
 	@JsonView({DetailedFileHeaderView.class})
 	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("var") String var) {
 		Position position = getAndCheckPosition(authToken, id);
-		FileHeader file = getFile(authToken, id, var);
-		if (file == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
-		}
-		Response retv = deleteFileBody(file);
-		if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
-			// Break the relationship as well
-			if ("prosklisiKosmitora".equals(var)) {
-				position.setProsklisiKosmitora(null);
-			} else if ("recommendatoryReport".equals(var)) {
-				position.setRecommendatoryReport(null);
-			} else if ("recommendatoryReportSecond".equals(var)) {
-				position.setRecommendatoryReportSecond(null);
-			} else if ("fekFile".equals(var)) {
-				position.setFekFile(null);
+		try {
+			FileHeader file = getFile(authToken, id, var);
+			if (file == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.id");
 			}
+			Response retv = deleteFileBody(file);
+			if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
+				// Break the relationship as well
+				if ("prosklisiKosmitora".equals(var)) {
+					position.setProsklisiKosmitora(null);
+				} else if ("recommendatoryReport".equals(var)) {
+					position.setRecommendatoryReport(null);
+				} else if ("recommendatoryReportSecond".equals(var)) {
+					position.setRecommendatoryReportSecond(null);
+				} else if ("fekFile".equals(var)) {
+					position.setFekFile(null);
+				}
+			}
+			em.flush();
+			return retv;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
-		return retv;
 	}
 
 	@GET
@@ -259,61 +287,65 @@ public class PositionRESTService extends RESTService {
 	@JsonView({SimpleElectoralBodyView.class})
 	public ElectoralBody addToElectoralBody(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Professor p) {
 		ElectoralBody eb;
-		Position position = getAndCheckPosition(authToken, id);
-		//TODO: Will obviously not be allowed after some point in the lifecycle
 		try {
-			eb = (ElectoralBody) em.createQuery(
-				"from ElectoralBody eb " +
-					"where eb.position=:position")
-				.setParameter("position", position)
-				.getSingleResult();
-		} catch (NoResultException e) {
-			eb = new ElectoralBody();
-			eb.setPosition(position);
-		}
-		if (eb.getMembers().size() >= ElectoralBody.MAX_MEMBERS) {
-			throw new RestException(Status.CONFLICT, "max.members.exceeded");
-		}
+			Position position = getAndCheckPosition(authToken, id);
+			//TODO: Will obviously not be allowed after some point in the lifecycle
+			try {
+				eb = (ElectoralBody) em.createQuery(
+					"from ElectoralBody eb " +
+						"where eb.position=:position")
+					.setParameter("position", position)
+					.getSingleResult();
+			} catch (NoResultException e) {
+				eb = new ElectoralBody();
+				eb.setPosition(position);
+			}
+			if (eb.getMembers().size() >= ElectoralBody.MAX_MEMBERS) {
+				throw new RestException(Status.CONFLICT, "max.members.exceeded");
+			}
 
-		Professor existingProfessor = em.find(Professor.class, p.getId());
-		if (existingProfessor == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
+			Professor existingProfessor = em.find(Professor.class, p.getId());
+			if (existingProfessor == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
+			}
+			em.persist(eb);
+			eb.addMember(existingProfessor);
+			em.flush();
+			return eb;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
-		em.persist(eb);
-		em.flush();
-		eb.addMember(existingProfessor);
-
-		return eb;
 	}
 
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}/electoralbody")
 	@JsonView({SimpleElectoralBodyView.class})
-	public ElectoralBody removeFromElectoralBody(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id,
-		Professor p) {
-		ElectoralBody eb;
-
+	public ElectoralBody removeFromElectoralBody(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Professor p) {
 		Position position = getAndCheckPosition(authToken, id);
+		try {
+			//TODO: Will obviously not be allowed after some point in the lifecycle
+			ElectoralBody eb = (ElectoralBody) em.createQuery(
+				"from ElectoralBody eb " +
+					"where eb.position=:position")
+				.setParameter("position", position)
+				.getSingleResult();
 
-		//TODO: Will obviously not be allowed after some point in the lifecycle
+			Professor existingProfessor = em.find(Professor.class, p.getId());
+			if (existingProfessor == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
+			}
 
-		eb = (ElectoralBody) em.createQuery(
-			"from ElectoralBody eb " +
-				"where eb.position=:position")
-			.setParameter("position", position)
-			.getSingleResult();
+			ElectoralBodyMembership removed = eb.removeMember(existingProfessor);
+			if (removed == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.membership.id");
+			}
 
-		Professor existingProfessor = em.find(Professor.class, p.getId());
-		if (existingProfessor == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
+			return eb;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
-
-		ElectoralBodyMembership removed = eb.removeMember(existingProfessor);
-		if (removed == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.membership.id");
-		}
-
-		return eb;
 	}
 
 	@GET
@@ -339,10 +371,15 @@ public class PositionRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		ElectoralBodyMembership existingEbm = getElectoralBodyMembership(authToken, id, professorId);
-		existingEbm.setConfirmedMembership(ebm.getConfirmedMembership());
-
-		return existingEbm;
+		try {
+			ElectoralBodyMembership existingEbm = getElectoralBodyMembership(authToken, id, professorId);
+			existingEbm.setConfirmedMembership(ebm.getConfirmedMembership());
+			em.flush();
+			return existingEbm;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+		}
 	}
 
 	@GET
@@ -365,34 +402,44 @@ public class PositionRESTService extends RESTService {
 	@JsonView({SimpleFileHeaderView.class})
 	public FileHeader postFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("professorId") long professorId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
-		ElectoralBodyMembership ebm = getElectoralBodyMembership(authToken, id, professorId);
-		FileHeader file = ebm.getRecommendatoryReport();
+		try {
+			ElectoralBodyMembership ebm = getElectoralBodyMembership(authToken, id, professorId);
+			FileHeader file = ebm.getRecommendatoryReport();
+			//TODO: Security / lifecycle checks
+			file = uploadFile(loggedOn, request, file);
+			ebm.setRecommendatoryReport(file);
+			em.persist(ebm);
+			em.flush();
+			return file;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+		}
 
-		//TODO: Security / lifecycle checks
-
-		file = uploadFile(loggedOn, request, file);
-		ebm.setRecommendatoryReport(file);
-		em.persist(ebm);
-
-		return file;
 	}
 
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}/electoralbody/{professorId:[0-9][0-9]*}/report")
 	@JsonView({DetailedFileHeaderView.class})
 	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("professorId") long professorId, @Context HttpServletRequest request) throws FileUploadException, IOException {
-		ElectoralBodyMembership ebm = getElectoralBodyMembership(authToken, id, professorId);
-		FileHeader file = ebm.getRecommendatoryReport();
+		try {
+			ElectoralBodyMembership ebm = getElectoralBodyMembership(authToken, id, professorId);
+			FileHeader file = ebm.getRecommendatoryReport();
 
-		//TODO: Security / lifecycle checks
+			//TODO: Security / lifecycle checks
 
-		Response retv = deleteFileBody(file);
+			Response retv = deleteFileBody(file);
 
-		if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
-			ebm.setRecommendatoryReport(null);
+			if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
+				ebm.setRecommendatoryReport(null);
+			}
+			em.flush();
+
+			return retv;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
-
-		return retv;
 	}
 
 	@GET
@@ -410,73 +457,75 @@ public class PositionRESTService extends RESTService {
 			return rc;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
 	}
 
 	@POST
 	@Path("/{id:[0-9][0-9]*}/committee")
 	@JsonView({SimpleRecommendatoryCommitteeView.class})
-	public RecommendatoryCommittee addToRecommendatoryCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id,
-		Professor p) {
-		RecommendatoryCommittee rc;
-
+	public RecommendatoryCommittee addToRecommendatoryCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Professor p) {
 		Position position = getAndCheckPosition(authToken, id);
-
-		//TODO: Will obviously not be allowed after some point in the lifecycle
-
 		try {
-			rc = (RecommendatoryCommittee) em.createQuery(
-				"from RecommendatoryCommittee rc " +
-					"where rc.position=:position")
-				.setParameter("position", position)
-				.getSingleResult();
-		} catch (NoResultException e) {
-			rc = new RecommendatoryCommittee();
-			rc.setPosition(position);
+			RecommendatoryCommittee rc;
+			try {
+				rc = (RecommendatoryCommittee) em.createQuery(
+					"from RecommendatoryCommittee rc " +
+						"where rc.position=:position")
+					.setParameter("position", position)
+					.getSingleResult();
+			} catch (NoResultException e) {
+				rc = new RecommendatoryCommittee();
+				rc.setPosition(position);
+			}
+			if (rc.getMembers().size() >= RecommendatoryCommittee.MAX_MEMBERS) {
+				throw new RestException(Status.CONFLICT, "max.members.exceeded");
+			}
+			Professor existingProfessor = em.find(Professor.class, p.getId());
+			if (existingProfessor == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
+			}
+			em.persist(rc);
+			rc.addMember(existingProfessor);
+			em.flush();
+			return rc;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
-		if (rc.getMembers().size() >= RecommendatoryCommittee.MAX_MEMBERS) {
-			throw new RestException(Status.CONFLICT, "max.members.exceeded");
-		}
-
-		Professor existingProfessor = em.find(Professor.class, p.getId());
-		if (existingProfessor == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
-		}
-		em.persist(rc);
-		em.flush();
-		rc.addMember(existingProfessor);
-
-		return rc;
 	}
 
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}/committee")
 	@JsonView({SimpleRecommendatoryCommitteeView.class})
-	public RecommendatoryCommittee removeFromRecommendatoryCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id,
-		Professor p) {
-		RecommendatoryCommittee rc;
-
+	public RecommendatoryCommittee removeFromRecommendatoryCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Professor p) {
 		Position position = getAndCheckPosition(authToken, id);
+		try {
+			RecommendatoryCommittee rc;
+			//TODO: Will obviously not be allowed after some point in the lifecycle
+			rc = (RecommendatoryCommittee) em.createQuery(
+				"from RecommendatoryCommittee rc " +
+					"where rc.position=:position")
+				.setParameter("position", position)
+				.getSingleResult();
 
-		//TODO: Will obviously not be allowed after some point in the lifecycle
+			Professor existingProfessor = em.find(Professor.class, p.getId());
+			if (existingProfessor == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
+			}
 
-		rc = (RecommendatoryCommittee) em.createQuery(
-			"from RecommendatoryCommittee rc " +
-				"where rc.position=:position")
-			.setParameter("position", position)
-			.getSingleResult();
+			RecommendatoryCommitteeMembership removed = rc.removeMember(existingProfessor);
+			if (removed == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.membership.id");
+			}
 
-		Professor existingProfessor = em.find(Professor.class, p.getId());
-		if (existingProfessor == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
+			return rc;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
-
-		RecommendatoryCommitteeMembership removed = rc.removeMember(existingProfessor);
-		if (removed == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.membership.id");
-		}
-
-		return rc;
 	}
 
 	@GET
@@ -511,16 +560,19 @@ public class PositionRESTService extends RESTService {
 	@JsonView({SimpleFileHeaderView.class})
 	public FileHeader postFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
-		RecommendatoryCommittee rc = getRecommendatoryCommittee(authToken, id);
-		FileHeader file = rc.getRecommendatoryReport();
-
-		//TODO: Security / lifecycle checks
-
-		file = uploadFile(loggedOn, request, file);
-		rc.setRecommendatoryReport(file);
-		em.persist(rc);
-
-		return file;
+		try {
+			RecommendatoryCommittee rc = getRecommendatoryCommittee(authToken, id);
+			FileHeader file = rc.getRecommendatoryReport();
+			//TODO: Security / lifecycle checks
+			file = uploadFile(loggedOn, request, file);
+			rc.setRecommendatoryReport(file);
+			em.persist(rc);
+			em.flush();
+			return file;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+		}
 	}
 
 	@DELETE
@@ -528,17 +580,22 @@ public class PositionRESTService extends RESTService {
 	@JsonView({DetailedFileHeaderView.class})
 	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		RecommendatoryCommittee rc = getRecommendatoryCommittee(authToken, id);
-		FileHeader file = rc.getRecommendatoryReport();
+		try {
+			FileHeader file = rc.getRecommendatoryReport();
 
-		//TODO: Security / lifecycle checks
+			//TODO: Security / lifecycle checks
 
-		Response retv = deleteFileBody(file);
+			Response retv = deleteFileBody(file);
 
-		if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
-			rc.setRecommendatoryReport(null);
+			if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
+				rc.setRecommendatoryReport(null);
+			}
+			em.flush();
+			return retv;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
-
-		return retv;
 	}
 
 }

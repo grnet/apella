@@ -25,6 +25,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -203,17 +204,23 @@ public class RoleRESTService extends RESTService {
 	@JsonView({DetailedRoleView.class})
 	public Role create(@HeaderParam(TOKEN_HEADER) String authToken, Role newRole) {
 		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !newRole.getUser().equals(loggedOn.getId())) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		if (isIncompatibleRole(newRole, loggedOn.getRoles())) {
-			throw new RestException(Status.CONFLICT, "incompatible.role");
-		}
-		newRole.setStatus(RoleStatus.CREATED);
-		newRole.setStatusDate(new Date());
+		try {
+			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !newRole.getUser().equals(loggedOn.getId())) {
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+			}
+			if (isIncompatibleRole(newRole, loggedOn.getRoles())) {
+				throw new RestException(Status.CONFLICT, "incompatible.role");
+			}
+			newRole.setStatus(RoleStatus.CREATED);
+			newRole.setStatusDate(new Date());
 
-		em.persist(newRole);
-		return newRole;
+			em.persist(newRole);
+			em.flush();
+			return newRole;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+		}
 	}
 
 	@PUT
@@ -229,17 +236,23 @@ public class RoleRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !existingRole.getUser().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		// Update
-		existingRole = existingRole.copyFrom(role);
-		// Check fields, if any is missing throw exception else set Status UNAPPROVED
-		if (existingRole.isMissingRequiredFields()) {
-			existingRole.setStatus(RoleStatus.CREATED);
-		} else {
-			existingRole.setStatus(RoleStatus.UNAPPROVED);
+		try {
+			// Update
+			existingRole = existingRole.copyFrom(role);
+			// Check fields, if any is missing throw exception else set Status UNAPPROVED
+			if (existingRole.isMissingRequiredFields()) {
+				existingRole.setStatus(RoleStatus.CREATED);
+			} else {
+				existingRole.setStatus(RoleStatus.UNAPPROVED);
+			}
+			existingRole.setStatusDate(new Date());
+			// Return Result
+			em.flush();
+			return existingRole;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
-		existingRole.setStatusDate(new Date());
-		// Return Result
-		return existingRole;
 	}
 
 	@DELETE
@@ -255,10 +268,16 @@ public class RoleRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		// Delete:
-		User user = em.find(User.class, role.getUser());
-		user.removeRole(role);
-		em.remove(role);
+		try {
+			// Delete:
+			User user = em.find(User.class, role.getUser());
+			user.removeRole(role);
+			em.remove(role);
+			em.flush();
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+		}
 	}
 
 	@GET
@@ -341,55 +360,60 @@ public class RoleRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-
-		FileHeader file = null;
-		if ("fekFile".equals(var)) {
-			ProfessorDomestic professorDomestic = (ProfessorDomestic) role;
-			file = uploadFile(loggedOn, request, professorDomestic.getFekFile());
-			professorDomestic.setFekFile(file);
-		} else if ("cv".equals(var)) {
-			Candidate candidate = (Candidate) role;
-			file = uploadFile(loggedOn, request, candidate.getCv());
-			candidate.setCv(file);
-		} else if ("identity".equals(var)) {
-			Candidate candidate = (Candidate) role;
-			file = uploadFile(loggedOn, request, candidate.getIdentity());
-			candidate.setIdentity(file);
-		} else if ("military1599".equals(var)) {
-			Candidate candidate = (Candidate) role;
-			file = uploadFile(loggedOn, request, candidate.getMilitary1599());
-			candidate.setMilitary1599(file);
-		} else if ("profileFile".equals(var)) {
-			Professor professor = (Professor) role;
-			file = uploadFile(loggedOn, request, professor.getProfileFile());
-			professor.setProfileFile(file);
-		} else if ("publications".equals(var)) {
-			Candidate candidate = (Candidate) role;
-			Set<FileHeader> publications = candidate.getPublications();
-			FileHeader existingPublication = null;
-			Long fileHeaderId = (fileId.isEmpty()) ? -1L : Long.parseLong(fileId.substring(1));
-			if (fileHeaderId > 0) {
-				for (FileHeader fh : publications) {
-					if (fh.getId().equals(fileHeaderId)) {
-						existingPublication = fh;
-						break;
+		try {
+			FileHeader file = null;
+			if ("fekFile".equals(var)) {
+				ProfessorDomestic professorDomestic = (ProfessorDomestic) role;
+				file = uploadFile(loggedOn, request, professorDomestic.getFekFile());
+				professorDomestic.setFekFile(file);
+			} else if ("cv".equals(var)) {
+				Candidate candidate = (Candidate) role;
+				file = uploadFile(loggedOn, request, candidate.getCv());
+				candidate.setCv(file);
+			} else if ("identity".equals(var)) {
+				Candidate candidate = (Candidate) role;
+				file = uploadFile(loggedOn, request, candidate.getIdentity());
+				candidate.setIdentity(file);
+			} else if ("military1599".equals(var)) {
+				Candidate candidate = (Candidate) role;
+				file = uploadFile(loggedOn, request, candidate.getMilitary1599());
+				candidate.setMilitary1599(file);
+			} else if ("profileFile".equals(var)) {
+				Professor professor = (Professor) role;
+				file = uploadFile(loggedOn, request, professor.getProfileFile());
+				professor.setProfileFile(file);
+			} else if ("publications".equals(var)) {
+				Candidate candidate = (Candidate) role;
+				Set<FileHeader> publications = candidate.getPublications();
+				FileHeader existingPublication = null;
+				Long fileHeaderId = (fileId.isEmpty()) ? -1L : Long.parseLong(fileId.substring(1));
+				if (fileHeaderId > 0) {
+					for (FileHeader fh : publications) {
+						if (fh.getId().equals(fileHeaderId)) {
+							existingPublication = fh;
+							break;
+						}
 					}
 				}
+				if (existingPublication == null) {
+					file = uploadFile(loggedOn, request, null);
+					publications.add(file);
+				} else {
+					file = uploadFile(loggedOn, request, existingPublication);
+				}
 			}
-			if (existingPublication == null) {
-				file = uploadFile(loggedOn, request, null);
-				publications.add(file);
-			} else {
-				file = uploadFile(loggedOn, request, existingPublication);
-			}
-		}
 
-		if (role.isMissingRequiredFields()) {
-			role.setStatus(RoleStatus.CREATED);
-		} else {
-			role.setStatus(RoleStatus.UNAPPROVED);
+			if (role.isMissingRequiredFields()) {
+				role.setStatus(RoleStatus.CREATED);
+			} else {
+				role.setStatus(RoleStatus.UNAPPROVED);
+			}
+			em.flush();
+			return file;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
-		return file;
 	}
 
 	/**
@@ -408,37 +432,42 @@ public class RoleRESTService extends RESTService {
 		if (role == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		FileHeader file = getFile(authToken, id, var, fileId);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(file.getOwner().getId())) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		Response retv = deleteFileBody(file);
-
-		if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
-			// Break the relationship as well
-			if ("fekFile".equals(var)) {
-				ProfessorDomestic professorDomestic = (ProfessorDomestic) role;
-				professorDomestic.setFekFile(null);
-			} else if ("cv".equals(var)) {
-				Candidate candidate = (Candidate) role;
-				candidate.setCv(null);
-			} else if ("identity".equals(var)) {
-				Candidate candidate = (Candidate) role;
-				candidate.setIdentity(null);
-			} else if ("military1599".equals(var)) {
-				Candidate candidate = (Candidate) role;
-				candidate.setMilitary1599(null);
-			} else if ("profileFile".equals(var)) {
-				Professor professor = (Professor) role;
-				professor.setProfileFile(null);
+		try {
+			FileHeader file = getFile(authToken, id, var, fileId);
+			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(file.getOwner().getId())) {
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
+			Response retv = deleteFileBody(file);
+
+			if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
+				// Break the relationship as well
+				if ("fekFile".equals(var)) {
+					ProfessorDomestic professorDomestic = (ProfessorDomestic) role;
+					professorDomestic.setFekFile(null);
+				} else if ("cv".equals(var)) {
+					Candidate candidate = (Candidate) role;
+					candidate.setCv(null);
+				} else if ("identity".equals(var)) {
+					Candidate candidate = (Candidate) role;
+					candidate.setIdentity(null);
+				} else if ("military1599".equals(var)) {
+					Candidate candidate = (Candidate) role;
+					candidate.setMilitary1599(null);
+				} else if ("profileFile".equals(var)) {
+					Professor professor = (Professor) role;
+					professor.setProfileFile(null);
+				}
+			}
+			if (role.isMissingRequiredFields()) {
+				role.setStatus(RoleStatus.CREATED);
+			} else {
+				role.setStatus(RoleStatus.UNAPPROVED);
+			}
+			return retv;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
-		if (role.isMissingRequiredFields()) {
-			role.setStatus(RoleStatus.CREATED);
-		} else {
-			role.setStatus(RoleStatus.UNAPPROVED);
-		}
-		return retv;
 	}
 
 	/**
@@ -460,26 +489,32 @@ public class RoleRESTService extends RESTService {
 		if (!(role instanceof Candidate)) {
 			throw new RestException(Status.NOT_FOUND, "wrong.role");
 		}
-		Candidate candidate = (Candidate) role;
-		FileHeader publication = null;
-		for (FileHeader fh : candidate.getPublications()) {
-			if (fh.getId().equals(fileId)) {
-				publication = fh;
-				break;
+		try {
+			Candidate candidate = (Candidate) role;
+			FileHeader publication = null;
+			for (FileHeader fh : candidate.getPublications()) {
+				if (fh.getId().equals(fileId)) {
+					publication = fh;
+					break;
+				}
 			}
-		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(publication.getOwner().getId())) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		Response retv = deleteFileBody(publication);
-		candidate.getPublications().remove(publication);
+			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(publication.getOwner().getId())) {
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+			}
+			Response retv = deleteFileBody(publication);
+			candidate.getPublications().remove(publication);
 
-		if (role.isMissingRequiredFields()) {
-			role.setStatus(RoleStatus.CREATED);
-		} else {
-			role.setStatus(RoleStatus.UNAPPROVED);
+			if (role.isMissingRequiredFields()) {
+				role.setStatus(RoleStatus.CREATED);
+			} else {
+				role.setStatus(RoleStatus.UNAPPROVED);
+			}
+			em.flush();
+			return retv;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
-		return retv;
 	}
 
 	/************************************
@@ -498,11 +533,16 @@ public class RoleRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		// Update Status
-		existingRole.setStatus(requestRole.getStatus());
-		existingRole.setStatusDate(new Date());
+		try {
+			// Update Status
+			existingRole.setStatus(requestRole.getStatus());
+			existingRole.setStatusDate(new Date());
 
-		return existingRole;
+			return existingRole;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+		}
 	}
 
 }

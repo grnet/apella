@@ -27,6 +27,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -102,6 +103,8 @@ public class CandidacyRESTService extends RESTService {
 			return candidacy;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
+		} catch (PersistenceException e) {
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
 	}
 
@@ -129,6 +132,8 @@ public class CandidacyRESTService extends RESTService {
 			return existingCandidacy;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
+		} catch (PersistenceException e) {
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
 	}
 
@@ -154,6 +159,8 @@ public class CandidacyRESTService extends RESTService {
 			em.remove(existingCandidacy);
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
+		} catch (PersistenceException e) {
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
 	}
 
@@ -216,9 +223,14 @@ public class CandidacyRESTService extends RESTService {
 				.setParameter("candidacy", c)
 				.getSingleResult();
 
+
+			em.flush();
 			return cc;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
 	}
 
@@ -268,13 +280,16 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
 			}
 			em.persist(cc);
-			em.flush();
 			cc.addMember(existingProfessor);
 
+			em.flush();
 			return cc;
 
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
 	}
 
@@ -320,9 +335,13 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.NOT_FOUND, "wrong.membership.id");
 			}
 
+			em.flush();
 			return cc;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
 	}
 
@@ -359,34 +378,44 @@ public class CandidacyRESTService extends RESTService {
 	@JsonView({SimpleFileHeaderView.class})
 	public FileHeader postFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("professorId") long professorId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
-		CandidateCommitteeMembership ccm = getCommitteeMembership(authToken, id, professorId);
-		FileHeader file = ccm.getReport();
+		try {
+			CandidateCommitteeMembership ccm = getCommitteeMembership(authToken, id, professorId);
+			FileHeader file = ccm.getReport();
 
-		//TODO: Security / lifecycle checks
+			//TODO: Security / lifecycle checks
 
-		file = uploadFile(loggedOn, request, ccm.getReport());
-		ccm.setReport(file);
-		em.persist(ccm);
-
-		return file;
+			file = uploadFile(loggedOn, request, ccm.getReport());
+			ccm.setReport(file);
+			em.persist(ccm);
+			em.flush();
+			return file;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+		}
 	}
 
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}/committee/{professorId:[0-9][0-9]*}/report")
 	@JsonView({DetailedFileHeaderView.class})
 	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("professorId") long professorId, @Context HttpServletRequest request) throws FileUploadException, IOException {
-		CandidateCommitteeMembership ccm = getCommitteeMembership(authToken, id, professorId);
-		FileHeader file = ccm.getReport();
+		try {
+			CandidateCommitteeMembership ccm = getCommitteeMembership(authToken, id, professorId);
+			FileHeader file = ccm.getReport();
 
-		//TODO: Security / lifecycle checks
+			//TODO: Security / lifecycle checks
 
-		Response retv = deleteFileBody(file);
+			Response retv = deleteFileBody(file);
 
-		if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
-			ccm.setReport(null);
+			if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
+				ccm.setReport(null);
+			}
+			em.flush();
+			return retv;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
-
-		return retv;
 	}
 
 }

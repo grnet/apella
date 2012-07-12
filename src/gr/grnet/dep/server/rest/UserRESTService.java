@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.mail.MessagingException;
 import javax.persistence.NoResultException;
@@ -55,9 +53,6 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class UserRESTService extends RESTService {
-
-	@Resource
-	SessionContext sc;
 
 	@GET
 	@JsonView({SimpleUserView.class})
@@ -198,16 +193,22 @@ public class UserRESTService extends RESTService {
 		if (existingUser == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
+		try {
 
-		// Copy User Fields
-		if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-			existingUser.setPassword(User.encodePassword(user.getPassword()));
+			// Copy User Fields
+			if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+				existingUser.setPassword(User.encodePassword(user.getPassword()));
+			}
+			existingUser.setBasicInfo(user.getBasicInfo());
+			existingUser.setBasicInfoLatin(user.getBasicInfoLatin());
+			existingUser.setContactInfo(user.getContactInfo());
+
+			em.flush();
+			return existingUser;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
-		existingUser.setBasicInfo(user.getBasicInfo());
-		existingUser.setBasicInfoLatin(user.getBasicInfoLatin());
-		existingUser.setContactInfo(user.getContactInfo());
-
-		return existingUser;
 	}
 
 	@DELETE
@@ -221,9 +222,14 @@ public class UserRESTService extends RESTService {
 		if (existingUser == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-
-		//Do Delete:
-		em.remove(existingUser);
+		try {
+			//Do Delete:
+			em.remove(existingUser);
+			em.flush();
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+		}
 	}
 
 	@PUT
@@ -345,12 +351,18 @@ public class UserRESTService extends RESTService {
 					u.setStatus(UserStatus.ACTIVE);
 					u.setStatusDate(new Date());
 					u.setVerificationNumber(null);
+
+					em.flush();
 					return u;
 				default:
 					throw new RestException(Status.FORBIDDEN, "account.status." + u.getStatus().toString().toLowerCase());
 			}
+
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.username");
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
 	}
 
@@ -370,9 +382,14 @@ public class UserRESTService extends RESTService {
 				.getSingleResult();
 			u.setStatus(requestUser.getStatus());
 			u.setStatusDate(new Date());
+
+			em.flush();
 			return u;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
 	}
 

@@ -17,6 +17,8 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.Resource;
+import javax.ejb.SessionContext;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -34,6 +36,9 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.StringUtils;
 
 public class RESTService {
+
+	@Resource
+	SessionContext sc;
 
 	@PersistenceContext(unitName = "depdb")
 	protected EntityManager em;
