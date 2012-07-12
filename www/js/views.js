@@ -914,9 +914,7 @@ App.UserSearchView = Backbone.View.extend({
 });
 
 App.UserListView = Backbone.View.extend({
-	tagName : "table",
-	
-	className : "table table-striped table-bordered table-condensed",
+	tagName : "div",
 	
 	initialize : function() {
 		_.bindAll(this, "render", "select");
@@ -943,6 +941,15 @@ App.UserListView = Backbone.View.extend({
 			})()
 		};
 		self.$el.html(self.template(tpl_data));
+		if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
+			self.$("table").dataTable({
+				"sDom" : "<''<'span6'l><'span6'f>r>t<''<'span6'i><'span6'p>>",
+				"sPaginationType" : "bootstrap",
+				"oLanguage" : {
+					"sLengthMenu" : "_MENU_ records per page"
+				}
+			});
+		}
 		return self;
 	},
 	

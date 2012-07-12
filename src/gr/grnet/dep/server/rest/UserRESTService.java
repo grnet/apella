@@ -12,6 +12,7 @@ import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.DetailedUserView;
 import gr.grnet.dep.service.model.User.SimpleUserView;
 import gr.grnet.dep.service.model.User.UserStatus;
+import gr.grnet.dep.service.util.MailClient;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -19,10 +20,12 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 
 import javax.annotation.Resource;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
+import javax.mail.MessagingException;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
@@ -167,6 +170,14 @@ public class UserRESTService extends RESTService {
 				user.addRole(r);
 			}
 			em.flush(); //To catch the exception
+
+			// Send Verification E-Mail
+			try {
+				MailClient.sendVerificationEmail(user);
+			} catch (MessagingException e) {
+				logger.log(Level.SEVERE, "Error sending verification email to user " + user.getUsername(), e);
+			}
+
 			return user;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();

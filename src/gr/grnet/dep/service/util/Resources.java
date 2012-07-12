@@ -23,8 +23,6 @@ import javax.persistence.PersistenceContext;
  */
 public class Resources {
 
-	// use @SuppressWarnings to tell IDE to ignore warnings about field not being referenced directly
-	@SuppressWarnings("unused")
 	@Produces
 	@PersistenceContext(unitName = "depdb")
 	private EntityManager em;
