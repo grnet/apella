@@ -18,7 +18,6 @@ public class RegisterDomestic {
 	@GeneratedValue
 	private Long id;
 
-	@SuppressWarnings("unused")
 	@Version
 	private int version;
 

@@ -28,8 +28,6 @@ public class DEPConfigurationFactory {
 	 */
 	private static Configuration serverConfiguration = null;
 
-	private static FileChangedReloadingStrategy strategy = null;
-
 	/**
 	 * Exists only to defeat instantiation
 	 */

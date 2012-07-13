@@ -55,7 +55,6 @@ public class CandidacyRESTService extends RESTService {
 	@PersistenceContext(unitName = "depdb")
 	private EntityManager em;
 
-	@SuppressWarnings("unused")
 	@Inject
 	private Logger log;
 
@@ -222,7 +221,6 @@ public class CandidacyRESTService extends RESTService {
 					"where cc.candidacy=:candidacy")
 				.setParameter("candidacy", c)
 				.getSingleResult();
-
 
 			em.flush();
 			return cc;

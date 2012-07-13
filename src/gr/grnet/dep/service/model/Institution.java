@@ -22,7 +22,6 @@ public class Institution {
 	@GeneratedValue
 	private Long id;
 
-	@SuppressWarnings("unused")
 	@Version
 	private int version;
 

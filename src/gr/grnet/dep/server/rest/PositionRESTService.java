@@ -84,6 +84,7 @@ public class PositionRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.user.id");
 		}
 		//TODO : Return positions based on User Roles
+		@SuppressWarnings("unchecked")
 		List<Position> positions = (List<Position>) em.createQuery(
 			"from Position p ")
 			.getResultList();

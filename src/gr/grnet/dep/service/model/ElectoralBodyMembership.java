@@ -13,8 +13,12 @@ import javax.xml.bind.annotation.XmlTransient;
 @Entity
 public class ElectoralBodyMembership implements Serializable {
 
+	private static final long serialVersionUID = -1339853623265264893L;
+
 	@Embeddable
 	public static class ElectoralBodyMembershipId implements Serializable {
+
+		private static final long serialVersionUID = -6688593438801785928L;
 
 		@Column(name = "electoralBody_id")
 		private Long electoralBody_id;

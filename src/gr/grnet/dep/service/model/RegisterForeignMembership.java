@@ -12,8 +12,12 @@ import javax.persistence.ManyToOne;
 @Entity
 public class RegisterForeignMembership implements Serializable {
 
+	private static final long serialVersionUID = 533452297460873945L;
+
 	@Embeddable
 	public static class RegisterForeignMembershipId implements Serializable {
+
+		private static final long serialVersionUID = -5646724108206196710L;
 
 		@Column(name = "registerForeign_id")
 		private Long register_id;

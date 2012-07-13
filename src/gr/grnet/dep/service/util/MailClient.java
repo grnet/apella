@@ -60,7 +60,7 @@ public class MailClient {
 	}
 
 	public static void sendVerificationEmail(User u) throws MessagingException {
-		ResourceBundle resources = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-mail", Locale.forLanguageTag("el"));
+		ResourceBundle resources = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-mail", new Locale("el"));
 		String title = resources.getString("verification.title");
 		String body = resources.getString("verification.body")
 			.replace("[username]", u.getUsername())

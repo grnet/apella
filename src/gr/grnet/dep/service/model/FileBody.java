@@ -28,6 +28,8 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @XmlRootElement
 public final class FileBody implements Serializable {
 
+	private static final long serialVersionUID = -3464243460747321945L;
+
 	// define 2 json views
 	public static interface SimpleFileBodyView {
 	}; // shows a summary view of a FileHeader/FileBody
@@ -35,7 +37,6 @@ public final class FileBody implements Serializable {
 	public static interface DetailedFileBodyView extends SimpleFileBodyView {
 	};
 
-	@SuppressWarnings("unused")
 	@Inject
 	@Transient
 	private Logger logger;
@@ -51,7 +52,6 @@ public final class FileBody implements Serializable {
 	 * Version field for optimistic locking. Renamed to avoid conflict with file
 	 * body version.
 	 */
-	@SuppressWarnings("unused")
 	@Version
 	private int dbVersion;
 

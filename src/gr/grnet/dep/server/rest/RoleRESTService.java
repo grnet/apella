@@ -176,6 +176,35 @@ public class RoleRESTService extends RESTService {
 		return false;
 	}
 
+	private void refreshRoleStatus(Role role) {
+		switch (role.getStatus()) {
+			case CREATED:
+			case UNAPPROVED:
+			case ACTIVE:
+				if (role.isMissingRequiredFields()) {
+					role.setStatus(RoleStatus.CREATED);
+				} else {
+					User roleUser = em.find(User.class, role.getUser());
+					switch (roleUser.getRegistrationType()) {
+						case REGISTRATION_FORM:
+							// Needs Helpdesk Approval
+							role.setStatus(RoleStatus.UNAPPROVED);
+							break;
+						case SHIBBOLETH:
+							// Shibboleth Users do not need Helpdesk Approval
+							role.setStatus(RoleStatus.ACTIVE);
+							break;
+					}
+				}
+				role.setStatusDate(new Date());
+				break;
+			case BLOCKED:
+			case DELETED:
+				// If the role is blocked from the Helpdesk, only the Helpdesk can change it
+				break;
+		}
+	}
+
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedRoleView.class})
@@ -204,16 +233,17 @@ public class RoleRESTService extends RESTService {
 	@JsonView({DetailedRoleView.class})
 	public Role create(@HeaderParam(TOKEN_HEADER) String authToken, Role newRole) {
 		User loggedOn = getLoggedOn(authToken);
-		try {
-			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !newRole.getUser().equals(loggedOn.getId())) {
-				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-			}
-			if (isIncompatibleRole(newRole, loggedOn.getRoles())) {
-				throw new RestException(Status.CONFLICT, "incompatible.role");
-			}
-			newRole.setStatus(RoleStatus.CREATED);
-			newRole.setStatusDate(new Date());
 
+		// Validate
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !newRole.getUser().equals(loggedOn.getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		if (isIncompatibleRole(newRole, loggedOn.getRoles())) {
+			throw new RestException(Status.CONFLICT, "incompatible.role");
+		}
+		// Update
+		try {
+			refreshRoleStatus(newRole);
 			em.persist(newRole);
 			em.flush();
 			return newRole;
@@ -239,13 +269,7 @@ public class RoleRESTService extends RESTService {
 		try {
 			// Update
 			existingRole = existingRole.copyFrom(role);
-			// Check fields, if any is missing throw exception else set Status UNAPPROVED
-			if (existingRole.isMissingRequiredFields()) {
-				existingRole.setStatus(RoleStatus.CREATED);
-			} else {
-				existingRole.setStatus(RoleStatus.UNAPPROVED);
-			}
-			existingRole.setStatusDate(new Date());
+			refreshRoleStatus(existingRole);
 			// Return Result
 			em.flush();
 			return existingRole;
@@ -403,11 +427,7 @@ public class RoleRESTService extends RESTService {
 				}
 			}
 
-			if (role.isMissingRequiredFields()) {
-				role.setStatus(RoleStatus.CREATED);
-			} else {
-				role.setStatus(RoleStatus.UNAPPROVED);
-			}
+			refreshRoleStatus(role);
 			em.flush();
 			return file;
 		} catch (PersistenceException e) {
@@ -458,11 +478,8 @@ public class RoleRESTService extends RESTService {
 					professor.setProfileFile(null);
 				}
 			}
-			if (role.isMissingRequiredFields()) {
-				role.setStatus(RoleStatus.CREATED);
-			} else {
-				role.setStatus(RoleStatus.UNAPPROVED);
-			}
+
+			refreshRoleStatus(role);
 			return retv;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
@@ -504,11 +521,7 @@ public class RoleRESTService extends RESTService {
 			Response retv = deleteFileBody(publication);
 			candidate.getPublications().remove(publication);
 
-			if (role.isMissingRequiredFields()) {
-				role.setStatus(RoleStatus.CREATED);
-			} else {
-				role.setStatus(RoleStatus.UNAPPROVED);
-			}
+			refreshRoleStatus(role);
 			em.flush();
 			return retv;
 		} catch (PersistenceException e) {
@@ -527,12 +540,14 @@ public class RoleRESTService extends RESTService {
 	public Role updateStatus(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Role requestRole) {
 		User loggedOn = getLoggedOn(authToken);
 		Role existingRole = em.find(Role.class, id);
+		// Validate
 		if (existingRole == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+		// Update
 		try {
 			// Update Status
 			existingRole.setStatus(requestRole.getStatus());

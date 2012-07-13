@@ -376,7 +376,8 @@ public class UserRESTService extends RESTService {
 		}
 		try {
 			User u = (User) em.createQuery(
-				"from User u left join fetch u.roles " +
+				"from User u " +
+					"left join fetch u.roles " +
 					"where u.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();

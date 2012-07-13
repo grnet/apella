@@ -1,7 +1,5 @@
 package gr.grnet.dep.service.model;
 
-import gr.grnet.dep.service.model.ElectoralBody.SimpleElectoralBodyView;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -18,10 +16,9 @@ import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 public class RecommendatoryCommittee {
-	
+
 	public static final int MAX_MEMBERS = 3;
-	
-	
+
 	// define 3 json views
 	public static interface IdRecommendatoryCommitteeView {
 	}; // shows only id view of a RecommendatoryCommittee
@@ -31,13 +28,11 @@ public class RecommendatoryCommittee {
 
 	public static interface DetailedRecommendatoryCommitteeView extends SimpleRecommendatoryCommitteeView {
 	};
-	
 
 	@Id
 	@GeneratedValue
 	private Long id;
 
-	@SuppressWarnings("unused")
 	@Version
 	private int version;
 
@@ -84,17 +79,14 @@ public class RecommendatoryCommittee {
 	public void setRecommendatoryReport(FileHeader recommendatoryReport) {
 		this.recommendatoryReport = recommendatoryReport;
 	}
-	
-	
-	
+
 	///////////////////////////////////////////////////////////////////////////////////////
 
-	
 	public void addMember(Professor professor) {
 		RecommendatoryCommitteeMembership rcm = new RecommendatoryCommitteeMembership(this, professor);
 		members.add(rcm);
 	}
-	
+
 	public RecommendatoryCommitteeMembership removeMember(Professor professor) {
 		RecommendatoryCommitteeMembership removed = null;
 		RecommendatoryCommitteeMembership membership = new RecommendatoryCommitteeMembership(this, professor);
