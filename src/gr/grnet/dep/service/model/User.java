@@ -76,6 +76,12 @@ public class User implements Serializable {
 	private String username;
 
 	@Enumerated(EnumType.STRING)
+	private RegistrationType registrationType;
+
+	@Column(unique = true)
+	private String shibPersonalUniqueCode;
+
+	@Enumerated(EnumType.STRING)
 	private UserStatus status;
 
 	private Date statusDate;
@@ -97,9 +103,6 @@ public class User implements Serializable {
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
 	private Set<Role> roles = new HashSet<Role>();
-
-	@Enumerated(EnumType.STRING)
-	private RegistrationType registrationType;
 
 	private String password;
 
@@ -128,6 +131,14 @@ public class User implements Serializable {
 
 	public void setUsername(String username) {
 		this.username = username;
+	}
+
+	public String getShibPersonalUniqueCode() {
+		return shibPersonalUniqueCode;
+	}
+
+	public void setShibPersonalUniqueCode(String shibPersonalUniqueCode) {
+		this.shibPersonalUniqueCode = shibPersonalUniqueCode;
 	}
 
 	public RegistrationType getRegistrationType() {

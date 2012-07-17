@@ -168,15 +168,4 @@
 		<delete dir="${deps.dir}" />
 	</target>
 
-	<target name="run" description="Starts the server" depends="deploy">
-		<exec executable="${jboss.bin.dir}/run.sh" osfamily="unix">
-			<arg line="${jboss.args}" />
-		</exec>
-		<exec executable="cmd" osfamily="windows">
-			<arg value="/c" />
-			<arg value="${jboss.bin.dir}/standalone.bat" />
-			<arg line="${jboss.args}" />
-		</exec>
-	</target>
-
 </project>

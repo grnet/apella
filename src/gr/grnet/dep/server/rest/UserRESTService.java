@@ -268,6 +268,7 @@ public class UserRESTService extends RESTService {
 
 	@GET
 	@Path("/shibbolethLogin")
+	@Produces("text/html")
 	public Response shibbolethLogin(@Context HttpServletRequest request) {
 		// 1. Read Attributes from request:
 		String personalUniqueCode = readShibbolethField(request, "HTTP_SHIB_PERSONALUNIQUECODE", "Shib-PersonalUniqueCode");
@@ -276,7 +277,7 @@ public class UserRESTService extends RESTService {
 		String affiliation = readShibbolethField(request, "HTTP_SHIB_AFFILIATION", "Shib-Affiliation");
 		String email = readShibbolethField(request, "HTTP_SHIB_MAIL", "Shib-mail");
 		String eduBranch = readShibbolethField(request, "HTTP_SHIB_UNDERGRADUATEBRANCH", "Shib-UndergraduateBranch");
-		Long departmentId = eduBranch.matches("(\\d+)") ? Long.valueOf(eduBranch) : null;
+		Long departmentId = (eduBranch != null && eduBranch.matches("(\\d+)")) ? Long.valueOf(eduBranch) : null;
 		URI nextURL;
 		try {
 			nextURL = new URI(request.getParameter("nextURL") == null ? "" : request.getParameter("nextURL"));
@@ -291,20 +292,25 @@ public class UserRESTService extends RESTService {
 		if (!affiliation.equals("Professor") || !affiliation.equals("Researcher")) {
 			throw new RestException(Status.UNAUTHORIZED, "wrong.affiliation");
 		}
+		Department department = em.find(Department.class, departmentId);
+		if (department == null) {
+			throw new RestException(Status.BAD_REQUEST, "wrong.department.id");
+		}
 
-		// 2. Find User
+		// 3. Find User
 		User u;
 		try {
 			u = (User) em.createQuery("")
 				.setParameter("shibPersonalUniqueCode", personalUniqueCode)
 				.getSingleResult();
+			u.setUsername(email);
 			u.setAuthToken(u.generateAuthenticationToken());
-			u = em.merge(u);
 		} catch (NoResultException e) {
-			//Create User from Shibboleth Fields 
+			// Create User from Shibboleth Fields 
 			u = new User();
 			u.setRegistrationType(RegistrationType.SHIBBOLETH);
 			u.setUsername(email);
+			u.setShibPersonalUniqueCode(personalUniqueCode);
 			u.getBasicInfo().setFirstname(name);
 			u.getBasicInfo().setLastname(lastName);
 			u.getContactInfo().setAddress(new Address());
@@ -313,13 +319,20 @@ public class UserRESTService extends RESTService {
 			u.setStatusDate(new Date());
 
 			ProfessorDomestic pd = new ProfessorDomestic();
-			Department department = em.find(Department.class, departmentId);
 			pd.setDepartment(department);
 			pd.setInstitution(department.getInstitution());
 			pd.setStatus(RoleStatus.CREATED);
 			pd.setStatusDate(new Date());
 			//TODO:  Get Rank from affiliation
 			u.addRole(pd);
+		}
+		// 4. Persist User
+		try {
+			u = em.merge(u);
+			em.flush();
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
 
 		return Response.status(200)
