@@ -52,7 +52,7 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class CandidacyRESTService extends RESTService {
 
-	@PersistenceContext(unitName = "depdb")
+	@PersistenceContext(unitName = "apelladb")
 	private EntityManager em;
 
 	@Inject

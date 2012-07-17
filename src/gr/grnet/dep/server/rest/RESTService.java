@@ -40,7 +40,7 @@ public class RESTService {
 	@Resource
 	SessionContext sc;
 
-	@PersistenceContext(unitName = "depdb")
+	@PersistenceContext(unitName = "apelladb")
 	protected EntityManager em;
 
 	@Inject

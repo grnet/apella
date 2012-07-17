@@ -24,7 +24,7 @@ import javax.persistence.PersistenceContext;
 public class Resources {
 
 	@Produces
-	@PersistenceContext(unitName = "depdb")
+	@PersistenceContext(unitName = "apelladb")
 	private EntityManager em;
 
 	@Produces

@@ -54,7 +54,7 @@ public class RoleRESTService extends RESTService {
 	@Inject
 	private Logger log;
 
-	@PersistenceContext(unitName = "depdb")
+	@PersistenceContext(unitName = "apelladb")
 	private EntityManager em;
 
 	private static class RolePair {

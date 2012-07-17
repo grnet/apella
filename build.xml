@@ -18,7 +18,7 @@
 
 	<!-- Application server specific configuration -->
 	<property name="jboss-spec.dir" value="${basedir}/jboss" />
-	<property name="jboss-spec.conf.dir" value="${jboss-spec.dir}/conf" />
+	<property name="jboss-spec.conf.dir" value="${jboss-spec.dir}/bin" />
 	<property name="jboss-spec.modules.dir" value="${jboss-spec.dir}/modules" />
 	<property name="jboss-spec.standalone.configuration.dir" value="${jboss-spec.dir}/standalone/configuration" />
 	<property name="jboss-spec.standalone.deployments.dir" value="${jboss-spec.dir}/standalone/deployments" />
@@ -48,7 +48,7 @@
 		<!-- Include everything and get it over with! -->
 		<fileset dir="${jboss.modules.dir}" includes="**/*.jar" />
 
-		<pathelement location="${jboss-spec.deploy.dir}/postgresql-8.4-701.jdbc4.jar" />
+		<pathelement location="${jboss-spec.deploy.dir}/postgresql-9.1-902.jdbc4.jar" />
 		<fileset dir="${ear.lib.dir}" includes="**/*.jar" />
 	</path>
 
@@ -69,6 +69,9 @@
 
 	<target name="install" depends="fetch-dependencies" description="Installs the configuration files of the application server">
 		<!--Install the app configuration-->
+		<copy todir="${jboss.bin.dir}" overwrite="true" failonerror="false">
+			<fileset dir="${jboss-spec.conf.dir}" />
+		</copy>
 		<copy todir="${jboss.modules.dir}" overwrite="true" failonerror="false">
 			<fileset dir="${jboss-spec.modules.dir}" />
 		</copy>
