@@ -3,7 +3,6 @@ package gr.grnet.dep.service.util;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.logging.Logger;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -15,8 +14,6 @@ import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
  * @author chstath
  */
 public class DEPConfigurationFactory {
-
-	private static final Logger logger = Logger.getLogger(DEPConfigurationFactory.class.getName());
 
 	/**
 	 * The filename of the file containing system properties.
