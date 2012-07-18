@@ -12,7 +12,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Version;
 
 @Entity
-public class RegisterDomestic {
+public class RegistryForeign {
 
 	@Id
 	@GeneratedValue
@@ -27,8 +27,8 @@ public class RegisterDomestic {
 	@ManyToOne(optional = false)
 	private Subject subject;
 
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "register")
-	private Set<RegisterDomesticMembership> members = new HashSet<RegisterDomesticMembership>();
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "registry")
+	private Set<RegistryMembershipForeign> members = new HashSet<RegistryMembershipForeign>();
 
 	public Long getId() {
 		return id;
@@ -54,12 +54,22 @@ public class RegisterDomestic {
 		this.subject = subject;
 	}
 
-	public Set<RegisterDomesticMembership> getMembers() {
+	public Set<RegistryMembershipForeign> getMembers() {
 		return members;
 	}
 
-	public void setMembers(Set<RegisterDomesticMembership> members) {
+	public void setMembers(Set<RegistryMembershipForeign> members) {
 		this.members = members;
 	}
 
+	public RegistryForeign copyFrom(RegistryForeign registry) {
+		setInstitution(registry.getInstitution());
+		getSubject().setName(registry.getSubject().getName());
+
+		return this;
+	}
+
+	public void initializeCollections() {
+		this.members.size();
+	}
 }

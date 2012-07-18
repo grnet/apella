@@ -1,6 +1,5 @@
 package gr.grnet.dep.service.model;
 
-import gr.grnet.dep.service.model.Institution.RegistrationType;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 
@@ -76,7 +75,7 @@ public class User implements Serializable {
 	private String username;
 
 	@Enumerated(EnumType.STRING)
-	private RegistrationType registrationType;
+	private UserRegistrationType registrationType;
 
 	@Column(unique = true)
 	private String shibPersonalUniqueCode;
@@ -141,11 +140,11 @@ public class User implements Serializable {
 		this.shibPersonalUniqueCode = shibPersonalUniqueCode;
 	}
 
-	public RegistrationType getRegistrationType() {
+	public UserRegistrationType getRegistrationType() {
 		return registrationType;
 	}
 
-	public void setRegistrationType(RegistrationType registrationType) {
+	public void setRegistrationType(UserRegistrationType registrationType) {
 		this.registrationType = registrationType;
 	}
 
@@ -262,6 +261,24 @@ public class User implements Serializable {
 		for (Role r : getRoles()) {
 			if (r.getDiscriminator() == role && r.getStatus().equals(RoleStatus.ACTIVE)) {
 				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean isInstitutionUser(Institution institution) {
+		for (Role r : getRoles()) {
+			if (r.getDiscriminator() == RoleDiscriminator.INSTITUTION_MANAGER) {
+				InstitutionManager im = (InstitutionManager) r;
+				if (im.getInstitution().getId().equals(institution.getId())) {
+					return true;
+				}
+			}
+			if (r.getDiscriminator() == RoleDiscriminator.INSTITUTION_ASSISTANT) {
+				InstitutionAssistant ia = (InstitutionAssistant) r;
+				if (ia.getInstitution().getId().equals(institution.getId())) {
+					return true;
+				}
 			}
 		}
 		return false;

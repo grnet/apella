@@ -3,7 +3,6 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Address;
 import gr.grnet.dep.service.model.Department;
-import gr.grnet.dep.service.model.Institution.RegistrationType;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
@@ -12,6 +11,7 @@ import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.DetailedUserView;
 import gr.grnet.dep.service.model.User.SimpleUserView;
 import gr.grnet.dep.service.model.User.UserStatus;
+import gr.grnet.dep.service.model.UserRegistrationType;
 import gr.grnet.dep.service.util.MailClient;
 
 import java.net.URI;
@@ -151,7 +151,7 @@ public class UserRESTService extends RESTService {
 
 			Set<Role> roles = user.getRoles();
 
-			user.setRegistrationType(RegistrationType.REGISTRATION_FORM);
+			user.setRegistrationType(UserRegistrationType.REGISTRATION_FORM);
 			user.setRegistrationDate(new Date());
 			user.setStatus(UserStatus.UNVERIFIED);
 			user.setStatusDate(new Date());
@@ -308,7 +308,7 @@ public class UserRESTService extends RESTService {
 		} catch (NoResultException e) {
 			// Create User from Shibboleth Fields 
 			u = new User();
-			u.setRegistrationType(RegistrationType.SHIBBOLETH);
+			u.setRegistrationType(UserRegistrationType.SHIBBOLETH);
 			u.setUsername(email);
 			u.setShibPersonalUniqueCode(personalUniqueCode);
 			u.getBasicInfo().setFirstname(name);

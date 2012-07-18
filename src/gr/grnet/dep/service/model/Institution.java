@@ -13,11 +13,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Entity
 public class Institution {
 
-	public enum RegistrationType {
-		REGISTRATION_FORM,
-		SHIBBOLETH
-	}
-
 	@Id
 	@GeneratedValue
 	private Long id;
@@ -32,7 +27,7 @@ public class Institution {
 	@NotNull
 	@NotEmpty
 	@Enumerated(EnumType.STRING)
-	private RegistrationType registrationType = RegistrationType.SHIBBOLETH;
+	private UserRegistrationType registrationType = UserRegistrationType.SHIBBOLETH;
 
 	public Long getId() {
 		return id;
@@ -50,11 +45,11 @@ public class Institution {
 		this.name = name;
 	}
 
-	public RegistrationType getRegistrationType() {
+	public UserRegistrationType getRegistrationType() {
 		return registrationType;
 	}
 
-	public void setRegistrationType(RegistrationType registrationType) {
+	public void setRegistrationType(UserRegistrationType registrationType) {
 		this.registrationType = registrationType;
 	}
 
