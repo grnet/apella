@@ -136,11 +136,11 @@
 	</form>
 </div>
 <% } %>
-<% if (discriminator === "DEPARTMENT_MANAGER") { %>
-<div id="DEPARTMENT_MANAGER">
+<% if (discriminator === "DEPARTMENT_ASSISTANT") { %>
+<div id="DEPARTMENT_ASSISTANT">
 	<form class="form-horizontal" onsubmit="return false">
 		<fieldset>
-			<legend><%= $.i18n.prop('DEPARTMENT_MANAGER') %> <a href="javascript:void(0)" class="label label-info help" rel="popover" data-content="<%= $.i18n.prop('status' + status + 'Help') %>"><%= $.i18n.prop('status' + status) %></a></legend>
+			<legend><%= $.i18n.prop('DEPARTMENT_ASSISTANT') %> <a href="javascript:void(0)" class="label label-info help" rel="popover" data-content="<%= $.i18n.prop('status' + status + 'Help') %>"><%= $.i18n.prop('status' + status) %></a></legend>
 			<div class="control-group">
 				<label class="control-label" for="department"><%= $.i18n.prop('Department') %>:</label>
 				<div class="controls">

@@ -91,8 +91,8 @@
 	</dl>
 </div>
 <% } %>
-<% if (discriminator === "DEPARTMENT_MANAGER") { %>
-<div id="INSTITUTION_MANAGER">
+<% if (discriminator === "DEPARTMENT_ASSISTANT") { %>
+<div id="DEPARTMENT_ASSISTANT">
 	<div class="btn-group pull-right">
 		<a class="btn btn-small" href="javascript:void(0)"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
 		<a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)"><span class="caret"></span></a>
@@ -105,7 +105,7 @@
 		</ul>
 	</div>
 	<h3>
-		<%= $.i18n.prop('DEPARTMENT_MANAGER') %>
+		<%= $.i18n.prop('DEPARTMENT_ASSISTANT') %>
 	</h3>
 	<dl class="dl-table">
 		<dt><%= $.i18n.prop('Department') %></dt>

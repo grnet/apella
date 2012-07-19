@@ -62,22 +62,21 @@ public class CandidacyRESTService extends RESTService {
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedCandidacyView.class})
 	public Candidacy get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+		User loggedOn = getLoggedOn(authToken);
 		try {
-			Candidacy c = (Candidacy) em.createQuery(
+			Candidacy candidacy = (Candidacy) em.createQuery(
 				"from Candidacy c left join fetch c.files " +
 					"where c.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
-			Candidate cy = (Candidate) em.createQuery(
+			Candidate candidate = (Candidate) em.createQuery(
 				"from Candidate c where c.id=:id")
-				.setParameter("id", c.getCandidate())
+				.setParameter("id", candidacy.getCandidate())
 				.getSingleResult();
-
-			User loggedOn = getLoggedOn(authToken);
-			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser() != loggedOn.getId()) {
+			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && candidate.getUser() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
-			return c;
+			return candidacy;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}

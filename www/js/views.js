@@ -32,7 +32,7 @@ App.MenuView = Backbone.View.extend({
 			menuItems.push("registries");
 			menuItems.push("position");
 		}
-		if (self.model.hasRoleWithStatus("DEPARTMENT_MANAGER", "ACTIVE")) {
+		if (self.model.hasRoleWithStatus("DEPARTMENT_ASSISTANT", "ACTIVE")) {
 			menuItems.push("registries");
 			menuItems.push("position");
 		}
@@ -1401,7 +1401,7 @@ App.RoleEditView = Backbone.View.extend({
 			});
 			break;
 		
-		case "DEPARTMENT_MANAGER":
+		case "DEPARTMENT_ASSISTANT":
 			App.departments = App.departments ? App.departments : new App.Departments();
 			App.departments.fetch({
 				cache : true,
@@ -1520,7 +1520,7 @@ App.RoleEditView = Backbone.View.extend({
 					};
 					break;
 				
-				case "DEPARTMENT_MANAGER":
+				case "DEPARTMENT_ASSISTANT":
 					values.department = {};
 					values.department.id = self.$('form select[name=department]').val();
 					break;

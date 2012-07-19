@@ -9,8 +9,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
 @Entity
-@DiscriminatorValue("DEPARTMENT_MANAGER")
-public class DepartmentManager extends Role {
+@DiscriminatorValue("DEPARTMENT_ASSISTANT")
+public class DepartmentAssistant extends Role {
 
 	/** Default value included to remove warning. Remove or modify at will. **/
 	private static final long serialVersionUID = 1L;
@@ -22,9 +22,9 @@ public class DepartmentManager extends Role {
 	@ManyToOne
 	private Department department;
 
-	public DepartmentManager() {
+	public DepartmentAssistant() {
 		super();
-		setDiscriminator(RoleDiscriminator.DEPARTMENT_MANAGER);
+		setDiscriminator(RoleDiscriminator.DEPARTMENT_ASSISTANT);
 	}
 
 	public Department getDepartment() {
@@ -43,7 +43,7 @@ public class DepartmentManager extends Role {
 
 	@Override
 	public Role copyFrom(Role otherRole) {
-		DepartmentManager dp = (DepartmentManager) otherRole;
+		DepartmentAssistant dp = (DepartmentAssistant) otherRole;
 		this.setDepartment(dp.getDepartment());
 		return this;
 	}

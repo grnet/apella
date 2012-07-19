@@ -32,6 +32,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.codec.binary.Base64;
+import org.codehaus.jackson.annotate.JsonManagedReference;
 import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
@@ -101,6 +102,7 @@ public class User implements Serializable {
 	private ContactInformation contactInfo = new ContactInformation();
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
+	@JsonManagedReference
 	private Set<Role> roles = new HashSet<Role>();
 
 	private String password;
@@ -287,8 +289,8 @@ public class User implements Serializable {
 	public boolean isDepartmentUser(Department department) {
 		Institution institution = department.getInstitution();
 		for (Role r : getRoles()) {
-			if (r.getDiscriminator() == RoleDiscriminator.DEPARTMENT_MANAGER) {
-				DepartmentManager dm = (DepartmentManager) r;
+			if (r.getDiscriminator() == RoleDiscriminator.DEPARTMENT_ASSISTANT) {
+				DepartmentAssistant dm = (DepartmentAssistant) r;
 				if (dm.getDepartment().getId().equals(department.getId()))
 					return true;
 			}
