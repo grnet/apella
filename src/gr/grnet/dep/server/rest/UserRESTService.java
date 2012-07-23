@@ -3,6 +3,9 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Address;
 import gr.grnet.dep.service.model.Department;
+import gr.grnet.dep.service.model.DepartmentAssistant;
+import gr.grnet.dep.service.model.InstitutionAssistant;
+import gr.grnet.dep.service.model.InstitutionManager;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
@@ -19,7 +22,6 @@ import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 
 import javax.ejb.Stateless;
@@ -64,12 +66,11 @@ public class UserRESTService extends RESTService {
 		@QueryParam("lastname") String lastname,
 		@QueryParam("status") String status,
 		@QueryParam("role") String role,
-		@QueryParam("roleStatus") String roleStatus) {
+		@QueryParam("roleStatus") String roleStatus,
+		@QueryParam("manager") Long managerId) {
 
-		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient-priviledges");
-		}
+		getLoggedOn(authToken);
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct u from User u " +
 			"left join fetch u.roles r " +
@@ -85,6 +86,9 @@ public class UserRESTService extends RESTService {
 		if (roleStatus != null && !roleStatus.isEmpty()) {
 			sb.append("and r.status = :roleStatus ");
 		}
+		if (managerId != null) {
+			sb.append("and r.manager.id = :managerId ");
+		}
 		sb.append("order by u.basicInfo.lastname, u.basicInfo.firstname");
 
 		Query query = em.createQuery(sb.toString())
@@ -98,7 +102,10 @@ public class UserRESTService extends RESTService {
 			query = query.setParameter("discriminator", RoleDiscriminator.valueOf(role));
 		}
 		if (roleStatus != null && !roleStatus.isEmpty()) {
-			query = query.setParameter("roleStatus", RoleStatus.valueOf(roleStatus));
+
+		}
+		if (managerId != null) {
+			query = query.setParameter("managerId", managerId);
 		}
 		return query.getResultList();
 	}
@@ -146,11 +153,43 @@ public class UserRESTService extends RESTService {
 
 	@POST
 	@JsonView({DetailedUserView.class})
-	public User create(User user) {
+	public User create(@HeaderParam(TOKEN_HEADER) String authToken, User user) {
 		try {
-
-			Set<Role> roles = user.getRoles();
-
+			User loggedOn = null;
+			//1. Validate
+			if (user.getRoles().isEmpty() || user.getRoles().size() > 1) {
+				throw new RestException(Status.CONFLICT, "one.role.required");
+			}
+			Role firstRole = user.getRoles().iterator().next();
+			switch (firstRole.getDiscriminator()) {
+				case PROFESSOR_DOMESTIC:
+					break;
+				case PROFESSOR_FOREIGN:
+					break;
+				case INSTITUTION_MANAGER:
+					break;
+				case CANDIDATE:
+					break;
+				case INSTITUTION_ASSISTANT:
+					loggedOn = getLoggedOn(authToken);
+					if (!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_MANAGER)) {
+						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+					}
+					((InstitutionAssistant) firstRole).setManager(((InstitutionManager) loggedOn.getRole(RoleDiscriminator.INSTITUTION_MANAGER)));
+					break;
+				case DEPARTMENT_ASSISTANT:
+					loggedOn = getLoggedOn(authToken);
+					if (!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_MANAGER)) {
+						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+					}
+					((DepartmentAssistant) firstRole).setManager(((InstitutionManager) loggedOn.getRole(RoleDiscriminator.INSTITUTION_MANAGER)));
+					break;
+				case MINISTRY_MANAGER:
+					break;
+				case ADMINISTRATOR:
+					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+			}
+			//2. Update
 			user.setRegistrationType(UserRegistrationType.REGISTRATION_FORM);
 			user.setRegistrationDate(new Date());
 			user.setStatus(UserStatus.UNVERIFIED);
@@ -159,11 +198,11 @@ public class UserRESTService extends RESTService {
 			user.setVerificationNumber(user.generateVerificationNumber());
 			user.setRoles(new HashSet<Role>());
 			em.persist(user);
-			for (Role r : roles) {
-				r.setStatus(RoleStatus.CREATED);
-				r.setStatusDate(new Date());
-				user.addRole(r);
-			}
+
+			firstRole.setStatus(RoleStatus.CREATED);
+			firstRole.setStatusDate(new Date());
+			user.addRole(firstRole);
+
 			em.flush(); //To catch the exception
 
 			// Send Verification E-Mail

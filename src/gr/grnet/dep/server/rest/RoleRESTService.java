@@ -2,9 +2,11 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidate;
+import gr.grnet.dep.service.model.DepartmentAssistant;
 import gr.grnet.dep.service.model.FileHeader;
 import gr.grnet.dep.service.model.FileHeader.DetailedFileHeaderView;
 import gr.grnet.dep.service.model.FileHeader.SimpleFileHeaderView;
+import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Role;
@@ -195,22 +197,65 @@ public class RoleRESTService extends RESTService {
 	private void refreshRoleStatus(Role role) {
 		switch (role.getStatus()) {
 			case CREATED:
+				if (!role.isMissingRequiredFields()) {
+					User roleUser = em.find(User.class, role.getUser());
+					switch (roleUser.getRegistrationType()) {
+						case REGISTRATION_FORM:
+							// InstitutionAssistant, DepartmentAssistant do not need Helpdesk Approval, set to ACTIVE
+							switch (role.getDiscriminator()) {
+								case INSTITUTION_ASSISTANT:
+								case DEPARTMENT_ASSISTANT:
+									role.setStatus(RoleStatus.ACTIVE);
+									role.setStatusDate(new Date());
+									break;
+								default:
+									role.setStatus(RoleStatus.UNAPPROVED);
+									role.setStatusDate(new Date());
+									break;
+							}
+
+							break;
+						case SHIBBOLETH:
+							// Shibboleth Users do not need Helpdesk Approval, set to ACTIVE
+							role.setStatus(RoleStatus.ACTIVE);
+							role.setStatusDate(new Date());
+							break;
+					}
+				}
+				break;
 			case UNAPPROVED:
-			case ACTIVE:
 				if (role.isMissingRequiredFields()) {
 					role.setStatus(RoleStatus.CREATED);
+					role.setStatusDate(new Date());
 				} else {
 					User roleUser = em.find(User.class, role.getUser());
 					switch (roleUser.getRegistrationType()) {
 						case REGISTRATION_FORM:
-							// Needs Helpdesk Approval
-							role.setStatus(RoleStatus.UNAPPROVED);
+							// InstitutionAssistant, DepartmentAssistant do not need Helpdesk Approval, set to ACTIVE
+							switch (role.getDiscriminator()) {
+								case INSTITUTION_ASSISTANT:
+								case DEPARTMENT_ASSISTANT:
+									role.setStatus(RoleStatus.ACTIVE);
+									role.setStatusDate(new Date());
+									break;
+								default:
+									// Do not change in other cases
+									break;
+							}
+
 							break;
 						case SHIBBOLETH:
-							// Shibboleth Users do not need Helpdesk Approval
+							// Shibboleth Users do not need Helpdesk Approval, set to ACTIVE
 							role.setStatus(RoleStatus.ACTIVE);
+							role.setStatusDate(new Date());
 							break;
 					}
+				}
+				role.setStatusDate(new Date());
+				break;
+			case ACTIVE:
+				if (role.isMissingRequiredFields()) {
+					role.setStatus(RoleStatus.CREATED);
 				}
 				role.setStatusDate(new Date());
 				break;
@@ -257,6 +302,7 @@ public class RoleRESTService extends RESTService {
 		if (isIncompatibleRole(newRole, loggedOn.getRoles())) {
 			throw new RestException(Status.CONFLICT, "incompatible.role");
 		}
+
 		// Update
 		try {
 			refreshRoleStatus(newRole);
@@ -282,6 +328,25 @@ public class RoleRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !existingRole.getUser().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+		Long managerInstitutionId;
+		Long institutionId;
+		switch (existingRole.getDiscriminator()) {
+			case INSTITUTION_ASSISTANT:
+				managerInstitutionId = ((InstitutionAssistant) existingRole).getManager().getInstitution().getId();
+				institutionId = ((InstitutionAssistant) role).getInstitution().getId();
+				if (!managerInstitutionId.equals(institutionId)) {
+					throw new RestException(Status.CONFLICT, "manager.institution.mismatch");
+				}
+			case DEPARTMENT_ASSISTANT:
+				managerInstitutionId = ((InstitutionAssistant) existingRole).getManager().getInstitution().getId();
+				institutionId = ((DepartmentAssistant) role).getDepartment().getInstitution().getId();
+				if (!managerInstitutionId.equals(institutionId)) {
+					throw new RestException(Status.CONFLICT, "manager.institution.mismatch");
+				}
+			default:
+				break;
+		}
+
 		try {
 			// Update
 			existingRole = existingRole.copyFrom(role);
@@ -308,6 +373,7 @@ public class RoleRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+
 		try {
 			// Delete:
 			User user = em.find(User.class, role.getUser());
@@ -400,6 +466,7 @@ public class RoleRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+
 		try {
 			FileHeader file = null;
 			if ("fekFile".equals(var)) {

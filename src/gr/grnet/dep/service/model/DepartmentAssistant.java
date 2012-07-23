@@ -22,6 +22,9 @@ public class DepartmentAssistant extends Role {
 	@ManyToOne
 	private Department department;
 
+	@ManyToOne
+	private InstitutionManager manager;
+
 	public DepartmentAssistant() {
 		super();
 		setDiscriminator(RoleDiscriminator.DEPARTMENT_ASSISTANT);
@@ -36,6 +39,14 @@ public class DepartmentAssistant extends Role {
 	}
 
 	////////////////////////////////////////////////////////////////////////////
+
+	public InstitutionManager getManager() {
+		return manager;
+	}
+
+	public void setManager(InstitutionManager manager) {
+		this.manager = manager;
+	}
 
 	@Override
 	public void initializeCollections() {

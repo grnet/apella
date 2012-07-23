@@ -286,7 +286,7 @@ App.Router = Backbone.Router.extend({
 		var self = this;
 		
 		_.extend(self, Backbone.Events);
-		_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showPositionView", "start");
+		_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showAssistantsView", "showPositionView", "start");
 		$(document).ajaxStart(App.blockUI);
 		$(document).ajaxStop(App.unblockUI);
 		
@@ -310,6 +310,8 @@ App.Router = Backbone.Router.extend({
 		"account" : "showAccountView",
 		"profile" : "showProfileView",
 		"profile/:roleId" : "showProfileView",
+		"assistants" : "showAssistantsView",
+		"assistants/:userId" : "showAssistantsView",
 		"position" : "showPositionView",
 		"position/:positionId" : "showPositionView",
 		"requests" : "showRequestsView"
@@ -441,6 +443,48 @@ App.Router = Backbone.Router.extend({
 		});
 		this.currentView = roleListView;
 		return roleListView;
+	},
+	
+	showAssistantsView : function(userId) {
+		var self = this;
+		self.clear();
+		
+		var assistants = new App.Users();
+		assistants.on("user:selected", function(user) {
+			if (user) {
+				$("#content").empty();
+				var accountView = new App.AccountView({
+					model : user
+				});
+				if (!_.isUndefined(user.id)) {
+					self.navigate("assistant/" + user.id, {
+						trigger : false
+					});
+				}
+				$("#content").append(accountView.render().el);
+			}
+		}, this);
+		var assistantsView = new App.AssistantsView({
+			collection : assistants
+		});
+		$("#featured").append(assistantsView.el);
+		
+		assistants.fetch({
+			cache : false,
+			data : {
+				manager : _.find(App.loggedOnUser.get("roles"), function(role) {
+					return role.discriminator === "INSTITUTION_MANAGER";
+				}).id
+			},
+			success : function() {
+				if (!_.isUndefined(userId)) {
+					assistants.trigger("user:selected", assistants.get(userId));
+				}
+			}
+		});
+		
+		self.currentView = assistantsView;
+		return assistantsView;
 	},
 	
 	showPositionView : function(positionId) {

@@ -29,6 +29,7 @@ App.MenuView = Backbone.View.extend({
 			menuItems.push("candidacies");
 		}
 		if (self.model.hasRoleWithStatus("INSTITUTION_MANAGER", "ACTIVE")) {
+			menuItems.push("assistants");
 			menuItems.push("registries");
 			menuItems.push("position");
 		}
@@ -658,9 +659,13 @@ App.AccountView = Backbone.View.extend({
 	},
 	
 	render : function(eventName) {
-		$(this.el).html(this.template(this.model.toJSON()));
+		var self = this;
+		self.$el.html(this.template(self.model.toJSON()));
+		if (!self.model.isNew()) {
+			self.$("input[name=username]").attr("disabled", "disabled");
+		}
 		
-		this.validator = $("form", this.el).validate({
+		self.validator = $("form", this.el).validate({
 			errorElement : "span",
 			errorClass : "help-inline",
 			highlight : function(element, errorClass, validClass) {
@@ -670,6 +675,7 @@ App.AccountView = Backbone.View.extend({
 				$(element).parent(".controls").parent(".control-group").removeClass("error");
 			},
 			rules : {
+				username : "required",
 				firstname : "required",
 				lastname : "required",
 				fathername : "required",
@@ -677,9 +683,11 @@ App.AccountView = Backbone.View.extend({
 				lastnamelatin : "required",
 				fathernamelatin : "required",
 				password : {
+					required : self.model.isNew(),
 					minlength : 5
 				},
 				confirm_password : {
+					required : self.model.isNew(),
 					minlength : 5,
 					equalTo : "form input[name=password]"
 				},
@@ -701,6 +709,7 @@ App.AccountView = Backbone.View.extend({
 				address_country : "required"
 			},
 			messages : {
+				username : $.i18n.prop('validation_username'),
 				firstname : $.i18n.prop('validation_firstname'),
 				lastname : $.i18n.prop('validation_lastname'),
 				fathername : $.i18n.prop('validation_fathername'),
@@ -734,7 +743,7 @@ App.AccountView = Backbone.View.extend({
 				address_country : $.i18n.prop('validation_country')
 			}
 		});
-		return this;
+		return self;
 	},
 	
 	cancel : function(event) {
@@ -753,6 +762,7 @@ App.AccountView = Backbone.View.extend({
 			yes : function() {
 				
 				// Read Input
+				var username = self.$('form input[name=username]').val();
 				var firstname = self.$('form input[name=firstname]').val();
 				var lastname = self.$('form input[name=lastname]').val();
 				var fathername = self.$('form input[name=fathername]').val();
@@ -772,6 +782,7 @@ App.AccountView = Backbone.View.extend({
 				
 				// Save to model
 				self.model.save({
+					"username" : username,
 					"basicInfo" : {
 						"firstname" : firstname,
 						"lastname" : lastname,
@@ -1891,6 +1902,76 @@ App.AnnouncementListView = Backbone.View.extend({
 		return self;
 	}
 
+});
+
+/*******************************************************************************
+ * ***** AssistantsView *******************************************************
+ ******************************************************************************/
+App.AssistantsView = Backbone.View.extend({
+	tagName : "div",
+	
+	initialize : function() {
+		_.bindAll(this, "render", "select");
+		this.template = _.template(tpl.get('user-list'));
+		this.collection.bind("change", this.render, this);
+		this.collection.bind("reset", this.render, this);
+	},
+	
+	events : {
+		"click a#select" : "select",
+		"click a#createInstitutionAssistant" : "createInstitutionAssistant",
+		"click a#createDepartmentAssistant" : "createDepartmentAssistant"
+	},
+	
+	render : function(eventName) {
+		var self = this;
+		var tpl_data = {
+			users : (function() {
+				var result = [];
+				self.collection.each(function(model) {
+					var item = model.toJSON();
+					item.cid = model.cid;
+					result.push(item);
+				});
+				return result;
+			})()
+		};
+		self.$el.html(self.template(tpl_data));
+		self.$("#actions").html("<a href=\"javascript:void(0)\" id=\"createInstitutionAssistant\" class=\"btn btn-mini\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_ia') + " </a><a href=\"javascript:void(0)\" id=\"createDepartmentAssistant\" class=\"btn btn-mini\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_da') + "</a>");
+		if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
+			self.$("table").dataTable({
+				"sDom" : "<''<'span6'l><'span6'f>r>t<''<'span6'i><'span6'p>>",
+				"sPaginationType" : "bootstrap",
+				"oLanguage" : {
+					"sLengthMenu" : "_MENU_ records per page"
+				}
+			});
+		}
+		return self;
+	},
+	
+	select : function(event) {
+		var selectedModel = this.collection.getByCid($(event.target).attr('user'));
+		this.collection.trigger("user:selected", selectedModel);
+	},
+	
+	createInstitutionAssistant : function(event) {
+		var user = new App.User({
+			"roles" : [ {
+				"discriminator" : "INSTITUTION_ASSISTANT"
+			} ]
+		});
+		this.collection.trigger("user:selected", user);
+	},
+	
+	createDepartmentAssistant : function(event) {
+		var user = new App.User({
+			"roles" : [ {
+				"discriminator" : "DEPARTMENT_ASSISTANT"
+			} ]
+		});
+		this.collection.trigger("user:selected", user);
+	}
 });
 
 /*******************************************************************************

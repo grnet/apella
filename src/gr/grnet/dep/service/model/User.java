@@ -259,13 +259,17 @@ public class User implements Serializable {
 		role.setUser(null);
 	}
 
-	public boolean hasRole(RoleDiscriminator role) {
+	public Role getRole(RoleDiscriminator discriminator) {
 		for (Role r : getRoles()) {
-			if (r.getDiscriminator() == role && r.getStatus().equals(RoleStatus.ACTIVE)) {
-				return true;
+			if (r.getDiscriminator() == discriminator && r.getStatus().equals(RoleStatus.ACTIVE)) {
+				return r;
 			}
 		}
-		return false;
+		return null;
+	}
+
+	public boolean hasRole(RoleDiscriminator discriminator) {
+		return getRole(discriminator) != null;
 	}
 
 	public boolean isInstitutionUser(Institution institution) {
