@@ -60,6 +60,20 @@ App.User = Backbone.Model.extend({
 			});
 		}
 		return false;
+	},
+	
+	getAssociatedInstitutions : function() {
+		var self = this;
+		return _.reduce(self.get("roles"), function(memo, r) {
+			if (r.discriminator === "INSTITUTION_MANAGER") {
+				memo.push(r.institution);
+			} else if (r.discriminator === "INSTITUTION_ASSISTANT") {
+				memo.push(r.institution);
+			} else if (r.discriminator === "DEPARTMENT_MANAGER") {
+				memo.push(r.department.institution);
+			}
+			return memo;
+		}, []);
 	}
 });
 
@@ -543,4 +557,18 @@ App.Position = Backbone.Model.extend({
 App.Positions = Backbone.Collection.extend({
 	url : "/dep/rest/position",
 	model : App.Position
+});
+
+App.Register = Backbone.Model.extend({
+	urlRoot : "/dep/rest/register",
+	defaults : {
+		id : undefined,
+		department : undefined,
+		registerFile : undefined
+	}
+});
+
+App.Registries = Backbone.Collection.extend({
+	url : "/dep/rest/register",
+	model : App.Register
 });

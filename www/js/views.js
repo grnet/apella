@@ -30,19 +30,19 @@ App.MenuView = Backbone.View.extend({
 		}
 		if (self.model.hasRoleWithStatus("INSTITUTION_MANAGER", "ACTIVE")) {
 			menuItems.push("assistants");
-			menuItems.push("registries");
+			menuItems.push("register");
 			menuItems.push("position");
 		}
 		if (self.model.hasRoleWithStatus("DEPARTMENT_ASSISTANT", "ACTIVE")) {
-			menuItems.push("registries");
+			menuItems.push("register");
 			menuItems.push("position");
 		}
 		if (self.model.hasRoleWithStatus("INSTITUTION_ASSISTANT", "ACTIVE")) {
-			menuItems.push("registries");
+			menuItems.push("register");
 			menuItems.push("position");
 		}
 		if (self.model.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE")) {
-			menuItems.push("registries");
+			menuItems.push("register");
 			menuItems.push("position");
 		}
 		
@@ -1419,9 +1419,9 @@ App.RoleEditView = Backbone.View.extend({
 				success : function(collection, resp) {
 					collection.each(function(department) {
 						if (_.isObject(self.model.get("department")) && _.isEqual(department.id, self.model.get("department").id)) {
-							$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "' selected>" + department.get("institution").name + ":" + department.get("department") + "</option>");
+							$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "' selected>" + department.get("institution").name + ": " + department.get("department") + "</option>");
 						} else {
-							$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "'>" + department.get("institution").name + ":" + department.get("department") + "</option>");
+							$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "'>" + department.get("institution").name + ": " + department.get("department") + "</option>");
 						}
 					});
 				},
@@ -2072,9 +2072,9 @@ App.PositionEditView = Backbone.View.extend({
 			success : function(collection, resp) {
 				collection.each(function(department) {
 					if (_.isObject(self.model.get("department")) && _.isEqual(department.id, self.model.get("department").id)) {
-						$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "' selected>" + department.get("institution").name + ":" + department.get("department") + "</option>");
+						$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "' selected>" + department.get("institution").name + ": " + department.get("department") + "</option>");
 					} else {
-						$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "'>" + department.get("institution").name + ":" + department.get("department") + "</option>");
+						$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "'>" + department.get("institution").name + ": " + department.get("department") + "</option>");
 					}
 				});
 			},
@@ -2249,5 +2249,248 @@ App.PositionEditView = Backbone.View.extend({
 		files.fetch({
 			cache : false
 		});
+	}
+});
+
+/*******************************************************************************
+ * ****** RegistryEditView *****************************************************
+ ******************************************************************************/
+App.RegisterListView = Backbone.View.extend({
+	tagName : "div",
+	
+	initialize : function() {
+		_.bindAll(this, "render", "select", "newRegister");
+		this.template = _.template(tpl.get('register-list'));
+		this.collection.bind("change", this.render, this);
+		this.collection.bind("reset", this.render, this);
+		this.collection.bind("add", this.render, this);
+		this.collection.bind("remove", this.render, this);
+	},
+	
+	events : {
+		"click a#createRegister" : "newRegister",
+		"click a#select" : "select"
+	},
+	
+	render : function(eventName) {
+		var self = this;
+		var tpl_data = {
+			registries : (function() {
+				var result = [];
+				self.collection.each(function(model) {
+					if (model.has("id")) {
+						var item = model.toJSON();
+						item.cid = model.cid;
+						result.push(item);
+					}
+				});
+				return result;
+			})()
+		};
+		self.$el.html(this.template(tpl_data));
+		self.$("#actions").html("<a href=\"javascript:void(0)\" id=\"createRegister\" class=\"btn btn-mini\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_ia') + " </a>");
+		if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
+			self.$("table").dataTable({
+				"sDom" : "<''<'span6'l><'span6'f>r>t<''<'span6'i><'span6'p>>",
+				"sPaginationType" : "bootstrap",
+				"oLanguage" : {
+					"sLengthMenu" : "_MENU_ records per page"
+				}
+			});
+		}
+		return self;
+	},
+	
+	select : function(event, register) {
+		var selectedModel = register ? register : this.collection.getByCid($(event.target).attr('data-register-cid'));
+		if (selectedModel) {
+			this.collection.trigger("register:selected", selectedModel);
+		}
+	},
+	
+	newRegister : function(event) {
+		var self = this;
+		var newRegister = new App.Register();
+		self.collection.add(newRegister);
+		self.select(undefined, newRegister);
+	}
+});
+
+App.RegisterEditView = Backbone.View.extend({
+	tagName : "div",
+	
+	id : "registerview",
+	
+	className : "box",
+	
+	validator : undefined,
+	
+	initialize : function() {
+		_.bindAll(this, "render", "submit", "cancel", "addFile");
+		this.template = _.template(tpl.get('register-edit'));
+		this.model.bind('change', this.render, this);
+		this.model.bind("destroy", this.close, this);
+	},
+	
+	events : {
+		"click a#cancel" : "cancel",
+		"click a#remove" : "remove",
+		"click a#save" : function() {
+			$("form", this.el).submit();
+		},
+		"submit form" : "submit"
+	},
+	
+	render : function(eventName) {
+		var self = this;
+		self.$el.html(self.template(self.model.toJSON()));
+		
+		App.departments = App.departments ? App.departments : new App.Departments();
+		App.departments.fetch({
+			cache : true,
+			success : function(collection, resp) {
+				var associatedInstitutions = App.loggedOnUser.getAssociatedInstitutions();
+				_.each(collection.filter(function(department) {
+					return _.any(associatedInstitutions, function(institution) {
+						return institution.id === department.get("institution").id;
+					});
+				}), function(department) {
+					if (_.isObject(self.model.get("department")) && _.isEqual(department.id, self.model.get("department").id)) {
+						$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "' selected>" + department.get("institution").name + ": " + department.get("department") + "</option>");
+					} else {
+						$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "'>" + department.get("institution").name + ": " + department.get("department") + "</option>");
+					}
+				});
+			},
+			error : function(model, resp, options) {
+				var popup = new App.PopupView({
+					type : "error",
+					message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+				});
+				popup.show();
+			}
+		});
+		
+		if (self.model.has("id")) {
+			self.addFile("registerFile", this.$("#registerFile"));
+		} else {
+			self.$("#registerFile").html($.i18n.prop("PressSave"));
+		}
+		
+		self.validator = $("form", this.el).validate({
+			errorElement : "span",
+			errorClass : "help-inline",
+			highlight : function(element, errorClass, validClass) {
+				$(element).parent(".controls").parent(".control-group").addClass("error");
+			},
+			unhighlight : function(element, errorClass, validClass) {
+				$(element).parent(".controls").parent(".control-group").removeClass("error");
+			},
+			rules : {
+				department : "required"
+			},
+			messages : {
+				department : $.i18n.prop('validation_department')
+			}
+		});
+		return self;
+	},
+	
+	submit : function(event) {
+		var self = this;
+		var confirm = new App.ConfirmView({
+			title : $.i18n.prop('Confirm'),
+			message : $.i18n.prop('AreYouSure'),
+			yes : function() {
+				var values = {};
+				// Read Input
+				values.department = {
+					"id" : self.$('form select[name=department]').val(),
+					"institution" : {}
+				};
+				// Save to model
+				self.model.save(values, {
+					wait : true,
+					success : function(model, resp) {
+						var popup = new App.PopupView({
+							type : "success",
+							message : $.i18n.prop("Success")
+						});
+						popup.show();
+					},
+					error : function(model, resp, options) {
+						var popup = new App.PopupView({
+							type : "error",
+							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						});
+						popup.show();
+					}
+				});
+			}
+		});
+		confirm.show();
+		event.preventDefault();
+		return false;
+	},
+	
+	cancel : function(event) {
+		var self = this;
+		if (self.validator) {
+			self.validator.resetForm();
+		}
+		self.render();
+	},
+	
+	remove : function() {
+		var self = this;
+		var confirm = new App.ConfirmView({
+			title : $.i18n.prop('Confirm'),
+			message : $.i18n.prop('AreYouSure'),
+			yes : function() {
+				self.model.destroy({
+					wait : true,
+					success : function(model, resp) {
+						var popup = new App.PopupView({
+							type : "success",
+							message : $.i18n.prop("Success")
+						});
+						popup.show();
+					},
+					error : function(model, resp, options) {
+						var popup = new App.PopupView({
+							type : "error",
+							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						});
+						popup.show();
+					}
+				});
+			}
+		});
+		confirm.show();
+		return false;
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
+	},
+	
+	addFile : function(type, $el) {
+		var self = this;
+		var fileView;
+		var file;
+		var fileAttributes = self.model.has(type) ? self.model.get(type) : {};
+		fileAttributes.name = type;
+		file = new App.File(fileAttributes);
+		file.urlRoot = self.model.url() + "/" + type;
+		fileView = new App.FileView({
+			model : file
+		});
+		file.bind("change", function() {
+			self.model.set(type, file.toJSON(), {
+				silent : true
+			});
+		});
+		$el.html(fileView.render().el);
 	}
 });

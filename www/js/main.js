@@ -286,7 +286,7 @@ App.Router = Backbone.Router.extend({
 		var self = this;
 		
 		_.extend(self, Backbone.Events);
-		_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showAssistantsView", "showPositionView", "start");
+		_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showAssistantsView", "showPositionView", "showRegisterView", "start");
 		$(document).ajaxStart(App.blockUI);
 		$(document).ajaxStop(App.unblockUI);
 		
@@ -314,6 +314,8 @@ App.Router = Backbone.Router.extend({
 		"assistants/:userId" : "showAssistantsView",
 		"position" : "showPositionView",
 		"position/:positionId" : "showPositionView",
+		"register" : "showRegisterView",
+		"register/:registerId" : "showRegisterView",
 		"requests" : "showRequestsView"
 	},
 	
@@ -538,6 +540,63 @@ App.Router = Backbone.Router.extend({
 		});
 		this.currentView = positionListView;
 		return positionListView;
+	},
+	
+	showRegisterView : function(registerId) {
+		var self = this;
+		var registries = new App.Registries();
+		var registerListView = new App.RegisterListView({
+			collection : registries
+		});
+		registries.on("register:selected", function(register) {
+			var registerView = new App.RegisterEditView({
+				model : register
+			});
+			// Update history
+			if (register.id) {
+				App.router.navigate("register/" + register.id, {
+					trigger : false
+				});
+			} else {
+				App.router.navigate("register", {
+					trigger : false
+				});
+			}
+			$("#content").unbind();
+			$("#content").empty();
+			$("#content").html(registerView.el);
+			registerView.render();
+		});
+		
+		self.clear();
+		$("#featured").html(registerListView.el);
+		// Refresh registries from server
+		registries.fetch({
+			cache : false,
+			data : {
+				institution : (function() {
+					var institutions = App.loggedOnUser.getAssociatedInstitutions();
+					if (institutions) {
+						return institutions[0];
+					}
+				})()
+			},
+			success : function() {
+				if (_.isUndefined(registerId)) {
+				} else {
+					registries.trigger("register:selected", registries.get(registerId));
+				}
+			},
+			error : function(model, resp, options) {
+				var popup = new App.PopupView({
+					type : "error",
+					message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+				});
+				popup.show();
+			}
+		});
+		this.currentView = registerListView;
+		return registerListView;
 	}
 
 });

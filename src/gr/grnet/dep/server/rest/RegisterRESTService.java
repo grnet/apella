@@ -1,10 +1,11 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.FileHeader;
 import gr.grnet.dep.service.model.FileHeader.DetailedFileHeaderView;
 import gr.grnet.dep.service.model.FileHeader.SimpleFileHeaderView;
-import gr.grnet.dep.service.model.Registry;
+import gr.grnet.dep.service.model.Register;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
@@ -36,11 +37,11 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.commons.fileupload.FileUploadException;
 import org.codehaus.jackson.map.annotate.JsonView;
 
-@Path("/registry")
+@Path("/register")
 @Stateless
 @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-public class RegistryRESTService extends RESTService {
+public class RegisterRESTService extends RESTService {
 
 	@Inject
 	private Logger log;
@@ -49,22 +50,22 @@ public class RegistryRESTService extends RESTService {
 	private EntityManager em;
 
 	@GET
-	public Collection<Registry> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
+	public Collection<Register> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
 		getLoggedOn(authToken);
 		@SuppressWarnings("unchecked")
-		Collection<Registry> registries = (Collection<Registry>) em.createQuery(
-			"from RegistryDomestic r ")
+		Collection<Register> registries = (Collection<Register>) em.createQuery(
+			"select r from Register r ")
 			.getResultList();
 		return registries;
 	}
 
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
-	public Registry get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+	public Register get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		getLoggedOn(authToken);
 		try {
-			Registry r = (Registry) em.createQuery(
-				"from RegistryDomestic r where r.id=:id")
+			Register r = (Register) em.createQuery(
+				"select r from Register r where r.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
 			return r;
@@ -75,19 +76,22 @@ public class RegistryRESTService extends RESTService {
 	}
 
 	@POST
-	public Registry create(@HeaderParam(TOKEN_HEADER) String authToken, Registry newRegistry) {
+	public Register create(@HeaderParam(TOKEN_HEADER) String authToken, Register newRegister) {
 		User loggedOn = getLoggedOn(authToken);
-
+		Department department = em.find(Department.class, newRegister.getDepartment().getId());
 		// Validate
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(newRegistry.getDepartment())) {
+		if (department == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.department.id");
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(department)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-
 		// Update
 		try {
-			em.persist(newRegistry);
+			newRegister.setDepartment(department);
+			em.persist(newRegister);
 			em.flush();
-			return newRegistry;
+			return newRegister;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
@@ -96,26 +100,26 @@ public class RegistryRESTService extends RESTService {
 
 	@PUT
 	@Path("/{id:[0-9][0-9]*}")
-	public Registry update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Registry registry) {
+	public Register update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Register register) {
 		User loggedOn = getLoggedOn(authToken);
-		Registry existingRegistry = em.find(Registry.class, id);
+		Register existingRegister = em.find(Register.class, id);
 		// Validate:
-		if (existingRegistry == null) {
+		if (existingRegister == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(registry.getDepartment())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(register.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!existingRegistry.getDepartment().getId().equals(registry.getDepartment().getId())) {
-			throw new RestException(Status.CONFLICT, "registry.department.change");
+		if (!existingRegister.getDepartment().getId().equals(register.getDepartment().getId())) {
+			throw new RestException(Status.CONFLICT, "register.department.change");
 		}
 
 		try {
 			// Update
-			existingRegistry = existingRegistry.copyFrom(registry);
+			existingRegister = existingRegister.copyFrom(register);
 			// Return Result
 			em.flush();
-			return existingRegistry;
+			return existingRegister;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
@@ -127,17 +131,17 @@ public class RegistryRESTService extends RESTService {
 	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		User loggedOn = getLoggedOn(authToken);
 
-		Registry registry = em.find(Registry.class, id);
+		Register register = em.find(Register.class, id);
 		// Validate:
-		if (registry == null) {
+		if (register == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(registry.getDepartment())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(register.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
 			// Delete:
-			em.remove(registry);
+			em.remove(register);
 			em.flush();
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
@@ -152,17 +156,17 @@ public class RegistryRESTService extends RESTService {
 	@JsonView({SimpleFileHeaderView.class})
 	public FileHeader postFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("fileId") String fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
-		Registry registry = em.find(Registry.class, id);
+		Register register = em.find(Register.class, id);
 		// Validate:
-		if (registry == null) {
+		if (register == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(registry.getDepartment())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(register.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Do Upload
 		try {
-			FileHeader file = uploadFile(loggedOn, request, registry.getRegistryFile());
+			FileHeader file = uploadFile(loggedOn, request, register.getRegisterFile());
 			em.flush();
 			return file;
 		} catch (PersistenceException e) {
@@ -175,31 +179,31 @@ public class RegistryRESTService extends RESTService {
 	 * Deletes the last body of given file, if possible.
 	 * 
 	 * @param authToken
-	 * @param registryId
+	 * @param registerId
 	 * @return
 	 */
 	@DELETE
-	@Path("/{registryId:[0-9][0-9]*}/file/{fileId:([0-9][0-9]*)}")
+	@Path("/{registerId:[0-9][0-9]*}/file/{fileId:([0-9][0-9]*)}")
 	@JsonView({DetailedFileHeaderView.class})
-	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("registryId") long registryId, @PathParam("fileId") Long fileId) {
+	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("registerId") long registerId, @PathParam("fileId") Long fileId) {
 		User loggedOn = getLoggedOn(authToken);
-		Registry registry = em.find(Registry.class, registryId);
+		Register register = em.find(Register.class, registerId);
 		// Validate:
-		if (registry == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.registry.id");
+		if (register == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
-		if (registry.getRegistryFile() == null || !registry.getRegistryFile().getId().equals(fileId)) {
+		if (register.getRegisterFile() == null || !register.getRegisterFile().getId().equals(fileId)) {
 			throw new RestException(Status.CONFLICT, "wrong.file.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(registry.getDepartment())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(register.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
-			FileHeader file = registry.getRegistryFile();
+			FileHeader file = register.getRegisterFile();
 			Response retv = deleteFileBody(file);
 			if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
 				// Break the relationship as well
-				registry.setRegistryFile(null);
+				register.setRegisterFile(null);
 			}
 			return retv;
 		} catch (PersistenceException e) {
