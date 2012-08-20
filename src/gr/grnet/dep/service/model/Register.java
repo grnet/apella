@@ -17,6 +17,13 @@ public class Register implements Serializable {
 
 	private static final long serialVersionUID = 6147648073392341863L;
 
+	// define 2 json views
+	public static interface SimpleRegisterView {
+	}; // shows a summary view of a FileHeader/FileBody
+
+	public static interface DetailedRegisterView extends SimpleRegisterView {
+	};
+
 	@Id
 	@GeneratedValue
 	private Long id;

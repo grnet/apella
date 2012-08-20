@@ -7,7 +7,7 @@ App.MenuView = Backbone.View.extend({
 	className : "nav",
 	
 	initialize : function() {
-		_.bindAll(this, "render");
+		_.bindAll(this, "render", "close");
 		this.model.bind('change', this.render);
 	},
 	
@@ -52,6 +52,11 @@ App.MenuView = Backbone.View.extend({
 		});
 		
 		return this;
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
 	}
 
 });
@@ -65,7 +70,7 @@ App.AdminMenuView = Backbone.View.extend({
 	className : "nav",
 	
 	initialize : function() {
-		_.bindAll(this, "render");
+		_.bindAll(this, "render", "close");
 		this.model.bind('change', this.render);
 	},
 	
@@ -76,6 +81,11 @@ App.AdminMenuView = Backbone.View.extend({
 		this.$el.append("<ul class=\"nav\">");
 		this.$el.find("ul").append("<li><a href=\"\#users\">" + $.i18n.prop('adminmenu_users') + "</a></li>");
 		return this;
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
 	}
 
 });
@@ -87,7 +97,7 @@ App.UserMenuView = Backbone.View.extend({
 	className : "nav",
 	
 	initialize : function() {
-		_.bindAll(this, "render", "logout");
+		_.bindAll(this, "render", "logout", "close");
 		this.model.bind('change', this.render);
 	},
 	
@@ -114,6 +124,11 @@ App.UserMenuView = Backbone.View.extend({
 		document.cookie = "_dep_a=-1;expires=0;path=/";
 		// Send Redirect
 		window.location.href = window.location.pathname;
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
 	}
 });
 
@@ -124,7 +139,7 @@ App.LoginView = Backbone.View.extend({
 	validator : undefined,
 	
 	initialize : function() {
-		_.bindAll(this, "render", "login");
+		_.bindAll(this, "render", "login", "close");
 		this.template = _.template(tpl.get('login-main'));
 		this.model.bind('change', this.render);
 	},
@@ -197,6 +212,11 @@ App.LoginView = Backbone.View.extend({
 				popup.show();
 			}
 		});
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
 	}
 });
 
@@ -207,7 +227,7 @@ App.AdminLoginView = Backbone.View.extend({
 	validator : undefined,
 	
 	initialize : function() {
-		_.bindAll(this, "render", "login");
+		_.bindAll(this, "render", "login", "close");
 		this.template = _.template(tpl.get('login-admin'));
 		this.model.bind('change', this.render);
 	},
@@ -280,6 +300,11 @@ App.AdminLoginView = Backbone.View.extend({
 				popup.show();
 			}
 		});
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
 	}
 });
 
@@ -291,7 +316,7 @@ App.PopupView = Backbone.View.extend({
 	
 	initialize : function() {
 		this.template = _.template(tpl.get('popup'));
-		_.bindAll(this, "render", "show");
+		_.bindAll(this, "render", "show", "close");
 	},
 	
 	events : {},
@@ -321,6 +346,11 @@ App.PopupView = Backbone.View.extend({
 		var self = this;
 		self.render();
 		$('div#alerts').append(self.el);
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
 	}
 });
 
@@ -332,7 +362,7 @@ App.ConfirmView = Backbone.View.extend({
 	
 	initialize : function() {
 		this.template = _.template(tpl.get('confirm'));
-		_.bindAll(this, "render", "show");
+		_.bindAll(this, "render", "show", "close");
 	},
 	
 	events : {
@@ -353,6 +383,11 @@ App.ConfirmView = Backbone.View.extend({
 	show : function() {
 		this.render();
 		this.$el.modal();
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
 	}
 });
 
@@ -362,7 +397,7 @@ App.UserRegistrationSelectView = Backbone.View.extend({
 	validator : undefined,
 	
 	initialize : function() {
-		_.bindAll(this, "render");
+		_.bindAll(this, "render", "close");
 		this.template = _.template(tpl.get('user-registration-select'));
 	},
 	
@@ -373,6 +408,11 @@ App.UserRegistrationSelectView = Backbone.View.extend({
 			roles : App.allowedRoles
 		}));
 		return this;
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
 	}
 });
 
@@ -383,7 +423,7 @@ App.UserRegistrationView = Backbone.View.extend({
 	validator : undefined,
 	
 	initialize : function() {
-		_.bindAll(this, "render", "submit", "selectInstitution");
+		_.bindAll(this, "render", "submit", "selectInstitution", "close");
 		this.template = _.template(tpl.get('user-registration'));
 		this.model.bind('change', this.render);
 	},
@@ -598,6 +638,11 @@ App.UserRegistrationView = Backbone.View.extend({
 		var institutionId = self.$("select[name=institution]").val();
 		role.institution = App.institutions.get(institutionId).toJSON();
 		self.model.trigger("change");
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
 	}
 });
 
@@ -608,12 +653,17 @@ App.UserVerificationView = Backbone.View.extend({
 	initialize : function() {
 		this.template = _.template(tpl.get('user-verification'));
 		this.model.bind('change', this.render);
-		_.bindAll(this, "render");
+		_.bindAll(this, "render", "close");
 	},
 	
 	render : function(eventName) {
 		$(this.el).html(this.template(this.model.toJSON()));
 		return this;
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
 	}
 
 });
@@ -623,7 +673,7 @@ App.HomeView = Backbone.View.extend({
 	tagName : "div",
 	
 	initialize : function() {
-		_.bindAll(this, "render");
+		_.bindAll(this, "render", "close");
 		this.template = _.template(tpl.get('home'));
 		this.model.bind('change', this.render);
 	},
@@ -633,6 +683,11 @@ App.HomeView = Backbone.View.extend({
 	render : function(eventName) {
 		$(this.el).html(this.template(this.model.toJSON()));
 		return this;
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
 	}
 });
 
@@ -645,7 +700,7 @@ App.AccountView = Backbone.View.extend({
 	validator : undefined,
 	
 	initialize : function() {
-		_.bindAll(this, "render", "submit", "cancel");
+		_.bindAll(this, "render", "submit", "cancel", "close");
 		this.template = _.template(tpl.get('user-edit'));
 		this.model.bind('change', this.render);
 	},
@@ -827,6 +882,11 @@ App.AccountView = Backbone.View.extend({
 		confirm.show();
 		event.preventDefault();
 		return false;
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
 	}
 });
 
@@ -837,7 +897,7 @@ App.UserView = Backbone.View.extend({
 	
 	initialize : function() {
 		this.template = _.template(tpl.get('user'));
-		_.bindAll(this, "render", "status");
+		_.bindAll(this, "render", "status", "close");
 		this.model.bind("change", this.render, this);
 	},
 	
@@ -872,6 +932,11 @@ App.UserView = Backbone.View.extend({
 				popup.show();
 			}
 		});
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
 	}
 });
 
@@ -881,7 +946,7 @@ App.UserSearchView = Backbone.View.extend({
 	className : "",
 	
 	initialize : function() {
-		_.bindAll(this, "render", "search");
+		_.bindAll(this, "render", "search", "close");
 		this.template = _.template(tpl.get('user-search'));
 	},
 	
@@ -921,6 +986,11 @@ App.UserSearchView = Backbone.View.extend({
 			cache : false,
 			data : searchData
 		});
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
 	}
 });
 
@@ -928,7 +998,7 @@ App.UserListView = Backbone.View.extend({
 	tagName : "div",
 	
 	initialize : function() {
-		_.bindAll(this, "render", "select");
+		_.bindAll(this, "render", "select", "close");
 		this.template = _.template(tpl.get('user-list'));
 		this.collection.bind("change", this.render, this);
 		this.collection.bind("reset", this.render, this);
@@ -967,6 +1037,11 @@ App.UserListView = Backbone.View.extend({
 	select : function(event) {
 		var selectedModel = this.collection.getByCid($(event.target).attr('user'));
 		this.collection.trigger("user:selected", selectedModel);
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
 	}
 });
 
@@ -977,7 +1052,7 @@ App.RoleListView = Backbone.View.extend({
 	className : "sidebar-nav",
 	
 	initialize : function() {
-		_.bindAll(this, "render", "select", "newRole", "highlightSelected");
+		_.bindAll(this, "render", "select", "newRole", "highlightSelected", "close");
 		this.template = _.template(tpl.get('role-list'));
 		this.collection.bind("change", this.render, this);
 		this.collection.bind("reset", this.render, this);
@@ -1033,6 +1108,11 @@ App.RoleListView = Backbone.View.extend({
 		});
 		self.collection.add(newRole);
 		self.select(undefined, newRole);
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
 	}
 });
 
@@ -1043,7 +1123,7 @@ App.RoleView = Backbone.View.extend({
 	
 	initialize : function() {
 		this.template = _.template(tpl.get('role'));
-		_.bindAll(this, "render", "status");
+		_.bindAll(this, "render", "status", "close");
 		if (this.collection) {
 			this.collection.bind("change", this.render, this);
 			this.collection.bind("reset", this.render, this);
@@ -1122,8 +1202,8 @@ App.RoleView = Backbone.View.extend({
 	},
 	
 	close : function() {
-		this.$el.unbind();
-		this.$el.remove();
+		$(this.el).unbind();
+		$(this.el).remove();
 	}
 });
 
@@ -1137,7 +1217,7 @@ App.RoleEditView = Backbone.View.extend({
 	validator : undefined,
 	
 	initialize : function() {
-		_.bindAll(this, "render", "submit", "cancel", "addFile");
+		_.bindAll(this, "render", "submit", "cancel", "addFile", "close");
 		this.template = _.template(tpl.get('role-edit'));
 		this.model.bind('change', this.render, this);
 		this.model.bind("destroy", this.close, this);
@@ -1602,11 +1682,6 @@ App.RoleEditView = Backbone.View.extend({
 		return false;
 	},
 	
-	close : function() {
-		$(this.el).unbind();
-		$(this.el).remove();
-	},
-	
 	addFile : function(type, $el) {
 		var self = this;
 		var fileView;
@@ -1637,6 +1712,11 @@ App.RoleEditView = Backbone.View.extend({
 		files.fetch({
 			cache : false
 		});
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
 	}
 });
 
@@ -1862,7 +1942,7 @@ App.FileListView = Backbone.View.extend({
 	},
 	
 	close : function(eventName) {
-		this.$el.dataTable("destory");
+		this.$el.dataTable("destroy");
 		this.$el.unbind();
 		this.$el.remove();
 	}
@@ -1876,7 +1956,7 @@ App.AnnouncementListView = Backbone.View.extend({
 	
 	initialize : function() {
 		this.template = _.template(tpl.get('announcement-list'));
-		_.bindAll(this, "render");
+		_.bindAll(this, "render", "close");
 		this.collection.bind('reset', this.render);
 	},
 	
@@ -1900,6 +1980,11 @@ App.AnnouncementListView = Backbone.View.extend({
 		self.$el.html(self.template(data));
 		
 		return self;
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
 	}
 
 });
@@ -1911,7 +1996,7 @@ App.AssistantsView = Backbone.View.extend({
 	tagName : "div",
 	
 	initialize : function() {
-		_.bindAll(this, "render", "select");
+		_.bindAll(this, "render", "select", "close");
 		this.template = _.template(tpl.get('user-list'));
 		this.collection.bind("change", this.render, this);
 		this.collection.bind("reset", this.render, this);
@@ -1971,6 +2056,11 @@ App.AssistantsView = Backbone.View.extend({
 			} ]
 		});
 		this.collection.trigger("user:selected", user);
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
 	}
 });
 
@@ -1981,7 +2071,7 @@ App.PositionListView = Backbone.View.extend({
 	tagName : "div",
 	
 	initialize : function() {
-		_.bindAll(this, "render", "select", "newPosition");
+		_.bindAll(this, "render", "select", "newPosition", "close");
 		this.template = _.template(tpl.get('position-list'));
 		this.collection.bind("change", this.render, this);
 		this.collection.bind("reset", this.render, this);
@@ -2034,6 +2124,11 @@ App.PositionListView = Backbone.View.extend({
 		var newPosition = new App.Position();
 		self.collection.add(newPosition);
 		self.select(undefined, newPosition);
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
 	}
 });
 
@@ -2047,7 +2142,7 @@ App.PositionEditView = Backbone.View.extend({
 	validator : undefined,
 	
 	initialize : function() {
-		_.bindAll(this, "render", "submit", "cancel", "addFile");
+		_.bindAll(this, "render", "submit", "cancel", "addFile", "close");
 		this.template = _.template(tpl.get('position-edit'));
 		this.model.bind('change', this.render, this);
 		this.model.bind("destroy", this.close, this);
@@ -2215,11 +2310,6 @@ App.PositionEditView = Backbone.View.extend({
 		return false;
 	},
 	
-	close : function() {
-		$(this.el).unbind();
-		$(this.el).remove();
-	},
-	
 	addFile : function(type, $el) {
 		var self = this;
 		var fileView;
@@ -2249,7 +2339,12 @@ App.PositionEditView = Backbone.View.extend({
 		files.fetch({
 			cache : false
 		});
-	}
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
+	},
 });
 
 /*******************************************************************************
@@ -2259,7 +2354,7 @@ App.RegisterListView = Backbone.View.extend({
 	tagName : "div",
 	
 	initialize : function() {
-		_.bindAll(this, "render", "select", "newRegister");
+		_.bindAll(this, "render", "select", "newRegister", "close");
 		this.template = _.template(tpl.get('register-list'));
 		this.collection.bind("change", this.render, this);
 		this.collection.bind("reset", this.render, this);
@@ -2288,7 +2383,7 @@ App.RegisterListView = Backbone.View.extend({
 			})()
 		};
 		self.$el.html(this.template(tpl_data));
-		self.$("#actions").html("<a href=\"javascript:void(0)\" id=\"createRegister\" class=\"btn btn-mini\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_ia') + " </a>");
+		self.$("#actions").html("<a href=\"javascript:void(0)\" id=\"createRegister\" class=\"btn btn-mini\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create') + " </a>");
 		if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 			self.$("table").dataTable({
 				"sDom" : "<''<'span6'l><'span6'f>r>t<''<'span6'i><'span6'p>>",
@@ -2313,7 +2408,13 @@ App.RegisterListView = Backbone.View.extend({
 		var newRegister = new App.Register();
 		self.collection.add(newRegister);
 		self.select(undefined, newRegister);
-	}
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
+	},
+
 });
 
 App.RegisterEditView = Backbone.View.extend({
@@ -2326,7 +2427,7 @@ App.RegisterEditView = Backbone.View.extend({
 	validator : undefined,
 	
 	initialize : function() {
-		_.bindAll(this, "render", "submit", "cancel", "addFile");
+		_.bindAll(this, "render", "submit", "cancel", "addFile", "close");
 		this.template = _.template(tpl.get('register-edit'));
 		this.model.bind('change', this.render, this);
 		this.model.bind("destroy", this.close, this);
@@ -2470,11 +2571,6 @@ App.RegisterEditView = Backbone.View.extend({
 		return false;
 	},
 	
-	close : function() {
-		$(this.el).unbind();
-		$(this.el).remove();
-	},
-	
 	addFile : function(type, $el) {
 		var self = this;
 		var fileView;
@@ -2492,5 +2588,10 @@ App.RegisterEditView = Backbone.View.extend({
 			});
 		});
 		$el.html(fileView.render().el);
-	}
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
+	},
 });

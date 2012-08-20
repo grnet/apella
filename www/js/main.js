@@ -54,6 +54,17 @@ App.RegistrationRouter = Backbone.Router.extend({
 	},
 	
 	clear : function() {
+		var self = this;
+		if (_.isObject(self.currentView)) {
+			self.currentView.close();
+		}
+		if (_.isArray(self.currentView)) {
+			_.each(self.currentView, function(view) {
+				view.close();
+			});
+		}
+		self.currentView = undefined;
+		
 		$("#featured").unbind();
 		$("#featured").empty();
 		$("#featured").removeClass("well");
@@ -84,11 +95,9 @@ App.RegistrationRouter = Backbone.Router.extend({
 			});
 			$("#featured").html(userRegistrationView.render().el);
 			this.currentView = userRegistrationView;
-			return userRegistrationView;
 		} else {
 			$("#featured").empty();
 			this.currentView = undefined;
-			return undefined;
 		}
 	},
 	
@@ -192,6 +201,17 @@ App.AdminRouter = Backbone.Router.extend({
 	},
 	
 	clear : function() {
+		var self = this;
+		if (_.isObject(self.currentView)) {
+			self.currentView.close();
+		}
+		if (_.isArray(self.currentView)) {
+			_.each(self.currentView, function(view) {
+				view.close();
+			});
+		}
+		self.currentView = undefined;
+		
 		$("#featured").unbind();
 		$("#featured").empty();
 		$("#featured").removeClass("well");
@@ -203,18 +223,30 @@ App.AdminRouter = Backbone.Router.extend({
 		$("#content").removeClass("well");
 	},
 	
+	refreshBreadcrumb : function(tags) {
+		$("ul.breadcrumb").empty();
+		_.each(tags, function(tag) {
+			if (tag) {
+				$("ul.breadcrumb").append("<li><span class=\"divider\">/</span>" + tag + "</li>");
+			} else {
+				$("ul.breadcrumb").append("<li><span class=\"divider\">/</span>...</li>");
+			}
+		});
+	},
+	
 	showLoginView : function() {
 		this.clear();
 		var loginView = new App.AdminLoginView({
 			model : App.loggedOnUser
 		});
 		$("#featured").html(loginView.render().el);
+		
 		this.currentView = loginView;
-		return loginView;
 	},
 	
 	showHomeView : function() {
 		this.clear();
+		this.refreshBreadcrumb([ $.i18n.prop('menu_home') ]);
 		$("#content").html("<h1>HOME</h1>");
 	},
 	
@@ -223,9 +255,11 @@ App.AdminRouter = Backbone.Router.extend({
 		var accountView = new App.AccountView({
 			model : App.loggedOnUser
 		});
+		
+		this.refreshBreadcrumb([ $.i18n.prop('menu_account') ]);
 		$("#content").append(accountView.render().el);
+		
 		this.currentView = accountView;
-		return accountView;
 	},
 	
 	showUserSearchView : function(query) {
@@ -247,9 +281,13 @@ App.AdminRouter = Backbone.Router.extend({
 		var userListView = new App.UserListView({
 			collection : users
 		});
+		
+		this.refreshBreadcrumb([ $.i18n.prop('adminmenu_users') ]);
 		$("#sidebar").addClass("well");
 		$("#sidebar").append(userSearchView.render().el);
 		$("#content").append(userListView.render().el);
+		
+		this.currentView = [ userSearchView, userListView ];
 	},
 	
 	showUserView : function(id, user) {
@@ -274,9 +312,13 @@ App.AdminRouter = Backbone.Router.extend({
 		roles.fetch({
 			cache : false
 		});
+		
+		this.refreshBreadcrumb([ $.i18n.prop('adminmenu_users') ], [ $.i18n.prop('menu_user') ]);
 		$("#sidebar").addClass("well");
 		$("#sidebar").html(userView.el);
 		$("#content").html(roleView.el);
+		
+		this.currentView = [ userView, roleView ];
 	},
 
 });
@@ -356,6 +398,18 @@ App.Router = Backbone.Router.extend({
 	},
 	
 	clear : function() {
+		var self = this;
+		if (_.isObject(self.currentView)) {
+			self.currentView.close();
+		}
+		if (_.isArray(self.currentView)) {
+			_.each(self.currentView, function(view) {
+				view.close();
+			});
+		}
+		self.currentView = undefined;
+		
+		$("ul.breadcrumb").empty();
 		$("#featured").unbind();
 		$("#featured").empty();
 		$("#featured").removeClass("well");
@@ -367,14 +421,25 @@ App.Router = Backbone.Router.extend({
 		$("#content").removeClass("well");
 	},
 	
+	refreshBreadcrumb : function(tags) {
+		$("ul.breadcrumb").empty();
+		_.each(tags, function(tag) {
+			if (tag) {
+				$("ul.breadcrumb").append("<li><span class=\"divider\">/</span>" + tag + "</li>");
+			} else {
+				$("ul.breadcrumb").append("<li><span class=\"divider\">/</span>...</li>");
+			}
+		});
+	},
+	
 	showLoginView : function() {
 		this.clear();
 		var loginView = new App.LoginView({
 			model : App.loggedOnUser
 		});
 		$("#featured").html(loginView.render().el);
+		
 		this.currentView = loginView;
-		return loginView;
 	},
 	
 	showHomeView : function() {
@@ -386,6 +451,7 @@ App.Router = Backbone.Router.extend({
 			collection : App.roles
 		});
 		
+		this.refreshBreadcrumb([ $.i18n.prop('menu_home') ]);
 		$("#featured").html(homeView.render().el);
 		$("#featured").append(announcementsView.el);
 		App.roles.fetch({
@@ -393,7 +459,6 @@ App.Router = Backbone.Router.extend({
 		});
 		
 		this.currentView = homeView;
-		return homeView;
 	},
 	
 	showAccountView : function() {
@@ -401,15 +466,22 @@ App.Router = Backbone.Router.extend({
 		var accountView = new App.AccountView({
 			model : App.loggedOnUser
 		});
+		this.refreshBreadcrumb([ $.i18n.prop('menu_account') ]);
 		$("#content").append(accountView.render().el);
+		
 		this.currentView = accountView;
-		return accountView;
 	},
 	
 	showProfileView : function(roleId) {
+		var self = this;
+		var roleView = undefined;
 		this.clear();
+		
 		App.roles.on("role:selected", function(role) {
-			var roleView = new App.RoleEditView({
+			if (roleView) {
+				roleView.close();
+			}
+			roleView = new App.RoleEditView({
 				model : role
 			});
 			// Update history
@@ -422,16 +494,21 @@ App.Router = Backbone.Router.extend({
 					trigger : false
 				});
 			}
+			self.refreshBreadcrumb([ $.i18n.prop('menu_profile'), $.i18n.prop(role.get("discriminator")) ]);
 			$("#content").unbind();
 			$("#content").empty();
 			$("#content").html(roleView.render().el);
 		});
+		
 		var roleListView = new App.RoleListView({
 			collection : App.roles,
 			user : App.loggedOnUser.get("id")
 		});
+		
+		self.refreshBreadcrumb([ $.i18n.prop('menu_profile') ]);
 		$("#sidebar").addClass("well");
 		$("#sidebar").html(roleListView.render().el);
+		
 		// Refresh roles from server
 		App.roles.fetch({
 			cache : false,
@@ -443,19 +520,22 @@ App.Router = Backbone.Router.extend({
 				}
 			}
 		});
-		this.currentView = roleListView;
-		return roleListView;
+		
+		self.currentView = roleListView;
 	},
 	
 	showAssistantsView : function(userId) {
 		var self = this;
+		var accountView = undefined;
 		self.clear();
 		
 		var assistants = new App.Users();
 		assistants.on("user:selected", function(user) {
 			if (user) {
-				$("#content").empty();
-				var accountView = new App.AccountView({
+				if (accountView) {
+					accountView.close();
+				}
+				accountView = new App.AccountView({
 					model : user
 				});
 				if (!_.isUndefined(user.id)) {
@@ -463,12 +543,17 @@ App.Router = Backbone.Router.extend({
 						trigger : false
 					});
 				}
+				self.refreshBreadcrumb([ $.i18n.prop('menu_assistants'), user.get("username") ]);
+				$("#content").unbind();
+				$("#content").empty();
 				$("#content").append(accountView.render().el);
 			}
 		}, this);
+		
 		var assistantsView = new App.AssistantsView({
 			collection : assistants
 		});
+		self.refreshBreadcrumb([ $.i18n.prop('menu_assistants') ]);
 		$("#featured").append(assistantsView.el);
 		
 		assistants.fetch({
@@ -486,18 +571,22 @@ App.Router = Backbone.Router.extend({
 		});
 		
 		self.currentView = assistantsView;
-		return assistantsView;
 	},
 	
 	showPositionView : function(positionId) {
 		var self = this;
 		var positions = new App.Positions();
+		var positionView = undefined;
 		var positionListView = new App.PositionListView({
 			collection : positions,
 			user : App.loggedOnUser.get("id")
 		});
+		
 		positions.on("position:selected", function(position) {
-			var positionView = new App.PositionEditView({
+			if (positionView) {
+				positionView.close();
+			}
+			positionView = new App.PositionEditView({
 				model : position
 			});
 			// Update history
@@ -510,6 +599,7 @@ App.Router = Backbone.Router.extend({
 					trigger : false
 				});
 			}
+			self.refreshBreadcrumb([ $.i18n.prop('menu_position'), position.get("name") ]);
 			$("#content").unbind();
 			$("#content").empty();
 			$("#content").html(positionView.el);
@@ -517,7 +607,9 @@ App.Router = Backbone.Router.extend({
 		});
 		
 		self.clear();
+		self.refreshBreadcrumb([ $.i18n.prop('menu_position') ]);
 		$("#featured").html(positionListView.el);
+		
 		// Refresh positions from server
 		positions.fetch({
 			cache : false,
@@ -538,18 +630,22 @@ App.Router = Backbone.Router.extend({
 				popup.show();
 			}
 		});
+		
 		this.currentView = positionListView;
-		return positionListView;
 	},
 	
 	showRegisterView : function(registerId) {
 		var self = this;
 		var registries = new App.Registries();
+		var registerView = undefined;
 		var registerListView = new App.RegisterListView({
 			collection : registries
 		});
 		registries.on("register:selected", function(register) {
-			var registerView = new App.RegisterEditView({
+			if (registerView) {
+				registerView.close();
+			}
+			registerView = new App.RegisterEditView({
 				model : register
 			});
 			// Update history
@@ -562,6 +658,7 @@ App.Router = Backbone.Router.extend({
 					trigger : false
 				});
 			}
+			self.refreshBreadcrumb([ $.i18n.prop('menu_register'), register.get("id") ]);
 			$("#content").unbind();
 			$("#content").empty();
 			$("#content").html(registerView.el);
@@ -569,6 +666,7 @@ App.Router = Backbone.Router.extend({
 		});
 		
 		self.clear();
+		self.refreshBreadcrumb([ $.i18n.prop('menu_register') ]);
 		$("#featured").html(registerListView.el);
 		// Refresh registries from server
 		registries.fetch({
@@ -595,8 +693,8 @@ App.Router = Backbone.Router.extend({
 				popup.show();
 			}
 		});
+		
 		this.currentView = registerListView;
-		return registerListView;
 	}
 
 });

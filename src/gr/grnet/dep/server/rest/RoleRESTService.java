@@ -373,10 +373,15 @@ public class RoleRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-
+		User user = em.find(User.class, role.getUser());
+		if (user.getRoles().size() < 2) {
+			throw new RestException(Status.FORBIDDEN, "one.role.required");
+		}
+		if (user.getRoles().size() >= 2 && (user.hasRole(RoleDiscriminator.PROFESSOR_FOREIGN) || user.hasRole(RoleDiscriminator.PROFESSOR_DOMESTIC)) && !role.getDiscriminator().equals(RoleDiscriminator.CANDIDATE)) {
+			throw new RestException(Status.FORBIDDEN, "one.role.required");
+		}
 		try {
 			// Delete:
-			User user = em.find(User.class, role.getUser());
 			user.removeRole(role);
 			em.remove(role);
 			em.flush();

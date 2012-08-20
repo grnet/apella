@@ -3,9 +3,9 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.FileHeader;
-import gr.grnet.dep.service.model.FileHeader.DetailedFileHeaderView;
 import gr.grnet.dep.service.model.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.Register;
+import gr.grnet.dep.service.model.Register.DetailedRegisterView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
@@ -50,6 +50,7 @@ public class RegisterRESTService extends RESTService {
 	private EntityManager em;
 
 	@GET
+	@JsonView({DetailedRegisterView.class})
 	public Collection<Register> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
 		getLoggedOn(authToken);
 		@SuppressWarnings("unchecked")
@@ -61,6 +62,7 @@ public class RegisterRESTService extends RESTService {
 
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
+	@JsonView({DetailedRegisterView.class})
 	public Register get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		getLoggedOn(authToken);
 		try {
@@ -76,6 +78,7 @@ public class RegisterRESTService extends RESTService {
 	}
 
 	@POST
+	@JsonView({DetailedRegisterView.class})
 	public Register create(@HeaderParam(TOKEN_HEADER) String authToken, Register newRegister) {
 		User loggedOn = getLoggedOn(authToken);
 		Department department = em.find(Department.class, newRegister.getDepartment().getId());
@@ -100,6 +103,7 @@ public class RegisterRESTService extends RESTService {
 
 	@PUT
 	@Path("/{id:[0-9][0-9]*}")
+	@JsonView({DetailedRegisterView.class})
 	public Register update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Register register) {
 		User loggedOn = getLoggedOn(authToken);
 		Register existingRegister = em.find(Register.class, id);
@@ -150,7 +154,7 @@ public class RegisterRESTService extends RESTService {
 	}
 
 	@POST
-	@Path("/{id:[0-9][0-9]*}/file/{fileId:(/[0-9][0-9]*)?}")
+	@Path("/{id:[0-9][0-9]*}/registerFile{fileId:(/[0-9][0-9]*)?}")
 	@Consumes("multipart/form-data")
 	@Produces({MediaType.APPLICATION_JSON})
 	@JsonView({SimpleFileHeaderView.class})
@@ -167,6 +171,8 @@ public class RegisterRESTService extends RESTService {
 		// Do Upload
 		try {
 			FileHeader file = uploadFile(loggedOn, request, register.getRegisterFile());
+			register.setRegisterFile(file);
+
 			em.flush();
 			return file;
 		} catch (PersistenceException e) {
@@ -183,8 +189,7 @@ public class RegisterRESTService extends RESTService {
 	 * @return
 	 */
 	@DELETE
-	@Path("/{registerId:[0-9][0-9]*}/file/{fileId:([0-9][0-9]*)}")
-	@JsonView({DetailedFileHeaderView.class})
+	@Path("/{registerId:[0-9][0-9]*}/registerFile/{fileId:([0-9][0-9]*)}")
 	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("registerId") long registerId, @PathParam("fileId") Long fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		Register register = em.find(Register.class, registerId);
