@@ -1,10 +1,12 @@
 package gr.grnet.dep.server.rest.exceptions;
 
+import javax.ejb.ApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.jboss.resteasy.spi.NoLogWebApplicationException;
 
+@ApplicationException
 public class RestException extends NoLogWebApplicationException {
 
 	private static final long serialVersionUID = 5519873880766238330L;
