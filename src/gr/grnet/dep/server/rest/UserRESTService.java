@@ -87,14 +87,14 @@ public class UserRESTService extends RESTService {
 			sb.append("and r.status = :roleStatus ");
 		}
 		if (managerId != null) {
-			sb.append("and r.manager.id = :managerId ");
+			sb.append("and (u.id in (select ia.user from InstitutionAssistant ia where ia.manager.id = :managerId ) or u.id in (select da.user from DepartmentAssistant da where da.manager.id = :managerId )) ");
 		}
 		sb.append("order by u.basicInfo.lastname, u.basicInfo.firstname");
 
 		Query query = em.createQuery(sb.toString())
-			.setParameter("username", "%" + username + "%")
-			.setParameter("firstname", "%" + firstname + "%")
-			.setParameter("lastname", "%" + lastname + "%");
+			.setParameter("username", "%" + (username != null ? username : "") + "%")
+			.setParameter("firstname", "%" + (firstname != null ? firstname : "") + "%")
+			.setParameter("lastname", "%" + (lastname != null ? lastname : "") + "%");
 		if (status != null && !status.isEmpty()) {
 			query = query.setParameter("status", UserStatus.valueOf(status));
 		}
@@ -102,12 +102,14 @@ public class UserRESTService extends RESTService {
 			query = query.setParameter("discriminator", RoleDiscriminator.valueOf(role));
 		}
 		if (roleStatus != null && !roleStatus.isEmpty()) {
-
+			query = query.setParameter("roleStatus", RoleStatus.valueOf(roleStatus));
 		}
 		if (managerId != null) {
 			query = query.setParameter("managerId", managerId);
 		}
-		return query.getResultList();
+
+		List<User> result = query.getResultList();
+		return result;
 	}
 
 	@GET

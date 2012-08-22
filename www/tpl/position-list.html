@@ -24,10 +24,12 @@
 	</tbody>
 	<tfoot>
 		<tr>
-			<th></th>
-			<th></th>
-			<th></th>
-			<th width="96px"><a href="javascript:void(0)" id="createPosition" class="btn btn-mini"><i class="icon-plus"></i> <%= $.i18n.prop('btn_add') %></a></th>
+			<th colspan="4">
+				<div class="input-prepend input-append" id="actions">
+					<span class="add-on"></span>
+					<a href="javascript:void(0)" id="createPosition" class="btn add-on"><i class="icon-plus"></i> <%= $.i18n.prop('btn_add') %></a>
+				</div>
+			</th>
 		</tr>
 	</tfoot>
 </table>

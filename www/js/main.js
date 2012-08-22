@@ -323,6 +323,9 @@ App.AdminRouter = Backbone.Router.extend({
 
 });
 
+/****************************************************
+ ************* App.Router *************************** 
+ ****************************************************/
 App.Router = Backbone.Router.extend({
 	initialize : function() {
 		var self = this;
@@ -527,26 +530,49 @@ App.Router = Backbone.Router.extend({
 	showAssistantsView : function(userId) {
 		var self = this;
 		var accountView = undefined;
+		var roleView = undefined;
 		self.clear();
 		
 		var assistants = new App.Users();
 		assistants.on("user:selected", function(user) {
 			if (user) {
+				var roles = undefined;
+				// Clean up
 				if (accountView) {
 					accountView.close();
 				}
+				if (roleView) {
+					roleView.close();
+				}
+				$("#content").unbind();
+				$("#content").empty();
+				$("#sidebar").unbind();
+				$("#sidebar").empty();
+				
+				// Add
+				self.refreshBreadcrumb([ $.i18n.prop('menu_assistants'), user.get("username") ]);
 				accountView = new App.AccountView({
 					model : user
 				});
+				$("#content").append(accountView.render().el);
+				
 				if (!_.isUndefined(user.id)) {
-					self.navigate("assistant/" + user.id, {
+					self.navigate("assistants/" + user.id, {
+						trigger : false
+					});
+					roles = new App.Roles();
+					roles.user = user.id;
+					roleView = new App.RoleView({
+						collection : roles,
+						editable : false
+					});
+					$("#sidebar").append(roleView.el);
+					roles.fetch();
+				} else {
+					self.navigate("assistants", {
 						trigger : false
 					});
 				}
-				self.refreshBreadcrumb([ $.i18n.prop('menu_assistants'), user.get("username") ]);
-				$("#content").unbind();
-				$("#content").empty();
-				$("#content").append(accountView.render().el);
 			}
 		}, this);
 		
