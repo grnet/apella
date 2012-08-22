@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -105,6 +106,8 @@ public class User implements Serializable {
 
 	private String password;
 
+	private String passwordSalt;
+
 	@NotNull
 	private Date registrationDate;
 
@@ -199,6 +202,15 @@ public class User implements Serializable {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	@XmlTransient
+	public String getPasswordSalt() {
+		return passwordSalt;
+	}
+
+	public void setPasswordSalt(String passwordSalt) {
+		this.passwordSalt = passwordSalt;
 	}
 
 	@JsonView({DetailedUserView.class})
@@ -313,10 +325,23 @@ public class User implements Serializable {
 		return false;
 	}
 
-	public static String encodePassword(String password) {
+	public static String generatePasswordSalt() {
+		try {
+			SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
+			byte[] salt = new byte[10];
+			sr.nextBytes(salt);
+			return new String(Base64.encodeBase64(salt), "ISO-8859-1");
+		} catch (NoSuchAlgorithmException nsae) {
+			throw new EJBException(nsae);
+		} catch (UnsupportedEncodingException uee) {
+			throw new EJBException(uee);
+		}
+	}
+
+	public static String encodePassword(String password, String salt) {
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA");
-			byte[] hash = md.digest(password.getBytes("ISO-8859-1"));
+			byte[] hash = md.digest(password.concat(salt).getBytes("ISO-8859-1"));
 			return new String(Base64.encodeBase64(hash), "ISO-8859-1");
 		} catch (NoSuchAlgorithmException nsae) {
 			throw new EJBException(nsae);
@@ -335,7 +360,8 @@ public class User implements Serializable {
 
 	public static void main(String[] args) {
 		String password = "anglen";
-		System.out.println(password + ": " + encodePassword(password));
+		String salt = User.generatePasswordSalt();
+		System.out.println(password + ": " + encodePassword(password, salt));
 	}
 
 }

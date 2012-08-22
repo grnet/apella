@@ -196,7 +196,8 @@ public class UserRESTService extends RESTService {
 			user.setRegistrationDate(new Date());
 			user.setStatus(UserStatus.UNVERIFIED);
 			user.setStatusDate(new Date());
-			user.setPassword(User.encodePassword(user.getPassword()));
+			user.setPasswordSalt(User.generatePasswordSalt());
+			user.setPassword(User.encodePassword(user.getPassword(), user.getPasswordSalt()));
 			user.setVerificationNumber(user.generateVerificationNumber());
 			user.setRoles(new HashSet<Role>());
 			em.persist(user);
@@ -238,7 +239,8 @@ public class UserRESTService extends RESTService {
 
 			// Copy User Fields
 			if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-				existingUser.setPassword(User.encodePassword(user.getPassword()));
+				existingUser.setPasswordSalt(User.generatePasswordSalt());
+				existingUser.setPassword(User.encodePassword(user.getPassword(), existingUser.getPasswordSalt()));
 			}
 			existingUser.setBasicInfo(user.getBasicInfo());
 			existingUser.setBasicInfoLatin(user.getBasicInfoLatin());
@@ -288,7 +290,7 @@ public class UserRESTService extends RESTService {
 
 			switch (u.getStatus()) {
 				case ACTIVE:
-					if (u.getPassword().equals(User.encodePassword(password))) {
+					if (u.getPassword().equals(User.encodePassword(password, u.getPasswordSalt()))) {
 						u.setAuthToken(u.generateAuthenticationToken());
 						u = em.merge(u);
 						return Response.status(200)

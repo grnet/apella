@@ -700,13 +700,15 @@ App.AccountView = Backbone.View.extend({
 	validator : undefined,
 	
 	initialize : function() {
-		_.bindAll(this, "render", "submit", "cancel", "close");
+		_.bindAll(this, "render", "submit", "remove", "cancel", "close");
 		this.template = _.template(tpl.get('user-edit'));
-		this.model.bind('change', this.render);
+		this.model.bind('change', this.render, this);
+		this.model.bind("destroy", this.close, this);
 	},
 	
 	events : {
 		"click a#cancel" : "cancel",
+		"click a#remove" : "remove",
 		"click a#save" : function() {
 			$("form", this.el).submit();
 		},
@@ -716,8 +718,14 @@ App.AccountView = Backbone.View.extend({
 	render : function(eventName) {
 		var self = this;
 		self.$el.html(this.template(self.model.toJSON()));
+		
 		if (!self.model.isNew()) {
 			self.$("input[name=username]").attr("disabled", "disabled");
+		}
+		if (self.options.removable) {
+			self.$("a#remove").show();
+		} else {
+			self.$("a#remove").hide();
 		}
 		
 		self.validator = $("form", this.el).validate({
@@ -884,6 +892,35 @@ App.AccountView = Backbone.View.extend({
 		return false;
 	},
 	
+	remove : function() {
+		var self = this;
+		var confirm = new App.ConfirmView({
+			title : $.i18n.prop('Confirm'),
+			message : $.i18n.prop('AreYouSure'),
+			yes : function() {
+				self.model.destroy({
+					wait : true,
+					success : function(model, resp) {
+						var popup = new App.PopupView({
+							type : "success",
+							message : $.i18n.prop("Success")
+						});
+						popup.show();
+					},
+					error : function(model, resp, options) {
+						var popup = new App.PopupView({
+							type : "error",
+							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						});
+						popup.show();
+					}
+				});
+			}
+		});
+		confirm.show();
+		return false;
+	},
+	
 	close : function() {
 		$(this.el).unbind();
 		$(this.el).remove();
@@ -1037,6 +1074,29 @@ App.UserListView = Backbone.View.extend({
 	select : function(event) {
 		var selectedModel = this.collection.getByCid($(event.target).attr('user'));
 		this.collection.trigger("user:selected", selectedModel);
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
+	}
+});
+
+App.UserRoleInfoView = Backbone.View.extend({
+	tagName : "p",
+	
+	initialize : function() {
+		this.template = _.template(tpl.get('user-role-info'));
+		this.model.bind('change', this.render);
+		_.bindAll(this, "render", "close");
+	},
+	
+	render : function(eventName) {
+		var tpl_data = {
+			roles : this.model.get("roles")
+		};
+		$(this.el).html(this.template(tpl_data));
+		return this;
 	},
 	
 	close : function() {
@@ -2007,6 +2067,7 @@ App.AssistantsView = Backbone.View.extend({
 	initialize : function() {
 		_.bindAll(this, "render", "select", "close");
 		this.template = _.template(tpl.get('user-list'));
+		this.roleInfoTemplate = _.template(tpl.get('user-role-info'));
 		this.collection.bind("add", this.render, this);
 		this.collection.bind("remove", this.render, this);
 		this.collection.bind("change", this.render, this);
@@ -2025,9 +2086,14 @@ App.AssistantsView = Backbone.View.extend({
 			users : (function() {
 				var result = [];
 				self.collection.each(function(model) {
-					var item = model.toJSON();
-					item.cid = model.cid;
-					result.push(item);
+					if (model.has("id")) {
+						var item = model.toJSON();
+						item.cid = model.cid;
+						item.roleInfo = self.roleInfoTemplate({
+							roles : item.roles
+						});
+						result.push(item);
+					}
 				});
 				return result;
 			})()
@@ -2043,7 +2109,7 @@ App.AssistantsView = Backbone.View.extend({
 			});
 		}
 		// Add Actions:
-		self.$("#actions").html("<span class=\"add-on\"></span><a href=\"javascript:void(0)\" id=\"createInstitutionAssistant\" class=\"btn add-on\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_ia') + " </a><span class=\"add-on\"></span><select name=\"department\"></select><a href=\"javascript:void(0)\" id=\"createDepartmentAssistant\" class=\"btn add-on\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_da') + "</a>");
+		self.$("#actions").html("<div class=\"btn-group input-append\"><a href=\"javascript:void(0)\" id=\"createInstitutionAssistant\" class=\"btn btn-small add-on\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_ia') + " </a></div><div class=\"btn-group input-append\"><select name=\"department\"></select><a href=\"javascript:void(0)\" id=\"createDepartmentAssistant\" class=\"btn btn-small add-on\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_da') + "</a></div>");
 		App.departments = App.departments ? App.departments : new App.Departments();
 		App.departments.fetch({
 			cache : true,
@@ -2090,9 +2156,7 @@ App.AssistantsView = Backbone.View.extend({
 		var user = new App.User({
 			"roles" : [ {
 				"discriminator" : "DEPARTMENT_ASSISTANT",
-				"department" : {
-					id : self.$("select[name=department]").val()
-				}
+				"department" : App.departments.get(self.$("select[name=department]").val()).toJSON()
 			} ]
 		});
 		this.collection.add(user);
@@ -2426,7 +2490,7 @@ App.RegisterListView = Backbone.View.extend({
 			})()
 		};
 		self.$el.html(this.template(tpl_data));
-		self.$("#actions").html("<span class=\"add-on\"></span><a href=\"javascript:void(0)\" id=\"createRegister\" class=\"btn add-on\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_add') + " </a>");
+		self.$("#actions").html("<div class=\"btn-group\"><a href=\"javascript:void(0)\" id=\"createRegister\" class=\"btn btn-small\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_add') + " </a></div>");
 		if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 			self.$("table").dataTable({
 				"sDom" : "<''<'span6'l><'span6'f>r>t<''<'span6'i><'span6'p>>",

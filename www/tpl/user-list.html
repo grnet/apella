@@ -5,7 +5,8 @@
 			<th><%= $.i18n.prop("Username") %></th>
 			<th><%= $.i18n.prop("Name") %></th>
 			<th><%= $.i18n.prop("Surname") %></th>
-			<th><%= $.i18n.prop("Status") %></th>
+			<th><%= $.i18n.prop("UserStatus") %></th>
+			<th><%= $.i18n.prop("Profile") %></th>
 			<th width="100px"></th>
 		</tr>
 	</thead>
@@ -16,6 +17,7 @@
 			<td><%= user.basicInfo.firstname %></td>
 			<td><%= user.basicInfo.lastname%></td>
 			<td><%= $.i18n.prop('status' + user.status) %></td>
+			<td><%= user.roleInfo %></td>
 			<td width="100px">
 				<p align="center">
 					<a href="javascript:void(0)" id="select" user="<%= user.cid %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_select') %></a>
@@ -26,8 +28,8 @@
 	</tbody>
 	<tfoot>
 		<tr>
-			<th colspan="5">
-				<div class="input-prepend input-append" id="actions">
+			<th colspan="6">
+				<div class="btn-toolbar" id="actions">
 				</div>
 			</th>
 		</tr>

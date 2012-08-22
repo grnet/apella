@@ -1,0 +1,26 @@
+<script type="html/template" id="user-role-info">
+<% _.each(roles, function(role) { %>
+<% if (role.discriminator === "PROFESSOR_DOMESTIC") { %>
+<%= $.i18n.prop('PROFESSOR_DOMESTIC') %>, <%= $.i18n.prop('Institution') %>: <%= $.i18n.prop(role.institution.name) %>, <%= $.i18n.prop('Department') %>: <%= $.i18n.prop(role.department.department) %>
+<% } %>
+<% if (role.discriminator === "PROFESSOR_FOREIGN") { %>
+<%= $.i18n.prop('PROFESSOR_FOREIGN') %>, <%= $.i18n.prop('Institution') %>: <%= role.institution %>
+<% } %>
+<% if (role.discriminator === "INSTITUTION_MANAGER") { %>
+<%= $.i18n.prop('INSTITUTION_MANAGER') %>, <%= $.i18n.prop('Institution') %>: <%= $.i18n.prop(role.institution.name) %>
+<% } %>
+<% if (role.discriminator === "DEPARTMENT_ASSISTANT") { %>
+<%= $.i18n.prop('DEPARTMENT_ASSISTANT') %>, <%= $.i18n.prop('Department') %>: <%= role.department.institution.name %> - <%= role.department.department %>
+<% } %>
+<% if (role.discriminator === "INSTITUTION_ASSISTANT") { %>
+<%= $.i18n.prop('INSTITUTION_ASSISTANT') %>, <%= $.i18n.prop('Institution') %>: <%= role.institution.name %>
+<% } %>
+<% if (role.discriminator === "MINISTRY_MANAGER") { %>
+<%= $.i18n.prop('MINISTRY_MANAGER') %>, <%= $.i18n.prop('Ministry') %>: <%= role.ministry %>
+<% } %>
+<% if (role.discriminator === "CANDIDATE") { %>
+<%= $.i18n.prop('CANDIDATE') %>
+<% } %>
+<br />
+<% }); %>
+</script>
