@@ -119,7 +119,7 @@ public class PositionRESTService extends RESTService {
 				&& !loggedOn.isDepartmentUser(department)) {
 				throw new RestException(Status.FORBIDDEN, "insufficinet.privileges");
 			}
-			em.persist(position);
+			position = em.merge(position);
 			em.flush();
 			return position;
 		} catch (PersistenceException e) {

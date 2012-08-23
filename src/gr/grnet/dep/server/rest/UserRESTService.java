@@ -12,7 +12,6 @@ import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.DetailedUserView;
-import gr.grnet.dep.service.model.User.SimpleUserView;
 import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.UserRegistrationType;
 import gr.grnet.dep.service.util.MailClient;
@@ -57,7 +56,7 @@ import org.codehaus.jackson.map.annotate.JsonView;
 public class UserRESTService extends RESTService {
 
 	@GET
-	@JsonView({SimpleUserView.class})
+	@JsonView({DetailedUserView.class})
 	@SuppressWarnings("unchecked")
 	public List<User> getAll(
 		@HeaderParam(TOKEN_HEADER) String authToken,

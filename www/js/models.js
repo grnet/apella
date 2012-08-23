@@ -62,6 +62,21 @@ App.User = Backbone.Model.extend({
 		return false;
 	},
 	
+	isAssociatedWithDepartment : function(department) {
+		var self = this;
+		return _.any(self.get("roles"), function(r) {
+			if (r.discriminator === "INSTITUTION_MANAGER" && r.institution.id === department.get("institution").id) {
+				return true;
+			} else if (r.discriminator === "INSTITUTION_ASSISTANT" && r.institution.id === department.get("institution").id) {
+				return true;
+			} else if (r.discriminator === "DEPARTMENT_MANAGER" && r.department.id === department.get("id")) {
+				return true;
+			} else {
+				return false;
+			}
+		});
+	},
+	
 	getAssociatedInstitutions : function() {
 		var self = this;
 		return _.reduce(self.get("roles"), function(memo, r) {

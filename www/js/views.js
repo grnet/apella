@@ -1037,6 +1037,7 @@ App.UserListView = Backbone.View.extend({
 	initialize : function() {
 		_.bindAll(this, "render", "select", "close");
 		this.template = _.template(tpl.get('user-list'));
+		this.roleInfoTemplate = _.template(tpl.get('user-role-info'));
 		this.collection.bind("change", this.render, this);
 		this.collection.bind("reset", this.render, this);
 	},
@@ -1051,9 +1052,14 @@ App.UserListView = Backbone.View.extend({
 			users : (function() {
 				var result = [];
 				self.collection.each(function(model) {
-					var item = model.toJSON();
-					item.cid = model.cid;
-					result.push(item);
+					if (model.has("id")) {
+						var item = model.toJSON();
+						item.cid = model.cid;
+						item.roleInfo = self.roleInfoTemplate({
+							roles : item.roles
+						});
+						result.push(item);
+					}
 				});
 				return result;
 			})()
@@ -1208,12 +1214,12 @@ App.RoleView = Backbone.View.extend({
 		if (self.collection) {
 			self.collection.each(function(role) {
 				if (role.get("discriminator") !== "ADMINISTRATOR") {
-					self.$el.append($(self.template(role.toJSON())).addClass("well"));
+					self.$el.append($(self.template(role.toJSON())));
 				}
 			});
 		} else if (self.model) {
 			if (role.get("discriminator") !== "ADMINISTRATOR") {
-				self.$el.append($(self.template(self.model.toJSON())).addClass("well"));
+				self.$el.append($(self.template(self.model.toJSON())));
 			}
 		}
 		if (self.options.editable) {
@@ -2114,11 +2120,8 @@ App.AssistantsView = Backbone.View.extend({
 		App.departments.fetch({
 			cache : true,
 			success : function(collection, resp) {
-				var institutions = App.loggedOnUser.getAssociatedInstitutions();
 				_.each(collection.filter(function(department) {
-					return _.any(institutions, function(institution) {
-						return _.isEqual(institution.id, department.get("institution").id);
-					});
+					return App.loggedOnUser.isAssociatedWithDepartment(department);
 				}), function(department) {
 					$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "'>" + department.get("institution").name + ": " + department.get("department") + "</option>");
 				});
@@ -2272,7 +2275,9 @@ App.PositionEditView = Backbone.View.extend({
 		App.departments.fetch({
 			cache : true,
 			success : function(collection, resp) {
-				collection.each(function(department) {
+				_.each(collection.filter(function(department) {
+					return App.loggedOnUser.isAssociatedWithDepartment(department);
+				}), function(department) {
 					if (_.isObject(self.model.get("department")) && _.isEqual(department.id, self.model.get("department").id)) {
 						$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "' selected>" + department.get("institution").name + ": " + department.get("department") + "</option>");
 					} else {
@@ -2557,11 +2562,8 @@ App.RegisterEditView = Backbone.View.extend({
 		App.departments.fetch({
 			cache : true,
 			success : function(collection, resp) {
-				var associatedInstitutions = App.loggedOnUser.getAssociatedInstitutions();
 				_.each(collection.filter(function(department) {
-					return _.any(associatedInstitutions, function(institution) {
-						return institution.id === department.get("institution").id;
-					});
+					return App.loggedOnUser.isAssociatedWithDepartment(department);
 				}), function(department) {
 					if (_.isObject(self.model.get("department")) && _.isEqual(department.id, self.model.get("department").id)) {
 						$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "' selected>" + department.get("institution").name + ": " + department.get("department") + "</option>");

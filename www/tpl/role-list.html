@@ -1,21 +1,19 @@
 <script type="html/template" id="role-list">
-<h3><%= $.i18n.prop('Profiles') %></h3>
-<ul class="nav nav-list">
+<ul class="nav nav-tabs">
 <% _.each(roles, function(role) { %>
 <% if (role.id) { %>
 	<li><a class="selectRole" role="<%= role.cid %>" href='javascript:void(0)'><%= $.i18n.prop(role.discriminator) %></a></li>
 <% } else { %>
 	<li><a class="selectRole" role="<%= role.cid %>" href='javascript:void(0)' rel="tooltip" data-original-title="<%= $.i18n.prop('Unsaved')%>"><%= $.i18n.prop(role.discriminator) %>*</a></li>
 <% } %>	
-<% }); %> 
+<% }); %>
+	<li class="dropdown">
+		<a class="dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)"><%= $.i18n.prop('btn_add') %> <b class="caret"></b></a>
+		<ul class="dropdown-menu">
+			<% _.each(discriminators, function(discriminator) { %> 
+			<li><a class="createRole" discriminator="<%= discriminator %>" href="javascript:void(0)"><%= $.i18n.prop(discriminator) %></a></li>
+			<% }); %>
+		</ul>
+	</li> 
 </ul>
-<hr/>
-<div class="nav nav-list btn-group">
-	<a class="btn btn-primary" href="javascript:void(0)"><i class="icon-plus icon-white"></i> <%= $.i18n.prop('btn_add') %></a><a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#"><span class="caret"></span></a>
-	<ul class="dropdown-menu">
-		<% _.each(discriminators, function(discriminator) { %> 
-		<li><a class="createRole" discriminator="<%= discriminator %>" href="javascript:void(0)"><%= $.i18n.prop(discriminator) %></a></li>
-		<% }); %>
-	</ul>
-</div>
 </script>

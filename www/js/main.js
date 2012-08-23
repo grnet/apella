@@ -67,9 +67,6 @@ App.RegistrationRouter = Backbone.Router.extend({
 		$("#featured").unbind();
 		$("#featured").empty();
 		$("#featured").removeClass("well");
-		$("#sidebar").unbind();
-		$("#sidebar").empty();
-		$("#sidebar").removeClass("well");
 		$("#content").unbind();
 		$("#content").empty();
 		$("#content").removeClass("well");
@@ -213,9 +210,6 @@ App.AdminRouter = Backbone.Router.extend({
 		$("#featured").unbind();
 		$("#featured").empty();
 		$("#featured").removeClass("well");
-		$("#sidebar").unbind();
-		$("#sidebar").empty();
-		$("#sidebar").removeClass("well");
 		$("#content").unbind();
 		$("#content").empty();
 		$("#content").removeClass("well");
@@ -281,41 +275,41 @@ App.AdminRouter = Backbone.Router.extend({
 		});
 		
 		this.refreshBreadcrumb([ $.i18n.prop('adminmenu_users') ]);
-		$("#sidebar").addClass("well");
-		$("#sidebar").append(userSearchView.render().el);
+		$("#featured").addClass("well");
+		$("#featured").append(userSearchView.render().el);
 		$("#content").append(userListView.render().el);
 		
 		this.currentView = [ userSearchView, userListView ];
 	},
 	
-	showUserView : function(id, user) {
-		this.clear();
-		if (_.isUndefined(user)) {
-			user = new App.User({
-				"id" : id
-			});
-		}
+	showUserView : function(id) {
+		var self = this;
+		var user = new App.User({
+			"id" : id
+		});
 		var roles = new App.Roles();
 		roles.user = id;
 		
+		this.clear();
 		var userView = new App.UserView({
 			model : user
 		});
 		var roleView = new App.RoleView({
 			collection : roles
 		});
+		
 		user.fetch({
-			cache : false
+			cache : false,
+			success : function(model, resp) {
+				self.refreshBreadcrumb([ $.i18n.prop('adminmenu_users'), $.i18n.prop('menu_user'), user.get("username") ]);
+			}
 		});
 		roles.fetch({
 			cache : false
 		});
 		
-		this.refreshBreadcrumb([ $.i18n.prop('adminmenu_users') ], [ $.i18n.prop('menu_user') ]);
-		$("#sidebar").addClass("well");
-		$("#sidebar").html(userView.el);
-		$("#content").html(roleView.el);
-		
+		$("#content").append(userView.render().el);
+		$("#content").append(roleView.render().el);
 		this.currentView = [ userView, roleView ];
 	},
 
@@ -413,9 +407,6 @@ App.Router = Backbone.Router.extend({
 		$("#featured").unbind();
 		$("#featured").empty();
 		$("#featured").removeClass("well");
-		$("#sidebar").unbind();
-		$("#sidebar").empty();
-		$("#sidebar").removeClass("well");
 		$("#content").unbind();
 		$("#content").empty();
 		$("#content").removeClass("well");
@@ -506,8 +497,7 @@ App.Router = Backbone.Router.extend({
 		});
 		
 		self.refreshBreadcrumb([ $.i18n.prop('menu_profile') ]);
-		$("#sidebar").addClass("well");
-		$("#sidebar").html(roleListView.render().el);
+		$("#featured").html(roleListView.render().el);
 		
 		// Refresh roles from server
 		App.roles.fetch({
