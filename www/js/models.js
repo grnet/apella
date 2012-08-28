@@ -583,7 +583,25 @@ App.Register = Backbone.Model.extend({
 	}
 });
 
-App.Registries = Backbone.Collection.extend({
-	url : "/dep/rest/register",
-	model : App.Register
+App.PositionCommitteeMember = Backbone.Model.extend({
+	urlRoot : "/dep/rest/position/committee",
+	defaults : {
+		id : undefined,
+		position : undefined,
+		professor : undefined,
+		confirmedMembership : undefined,
+		// Files
+		recommendatoryReport : undefined
+	}
+});
+
+App.PositionCommittee = Backbone.Collection.extend({
+	model : App.PositionCommitteeMember,
+	initialize : function(models, options) {
+		this.position = options.position;
+	},
+	url : function() {
+		console.log(this);
+		return "/dep/rest/position/committee" + (this.position ? "?position=" + this.position : "");
+	}
 });

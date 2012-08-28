@@ -2299,11 +2299,13 @@ App.PositionEditView = Backbone.View.extend({
 			self.addFile("prosklisiKosmitora", this.$("#prosklisiKosmitora"));
 			self.addFile("recommendatoryReport", this.$("#recommendatoryReport"));
 			self.addFile("recommendatoryReportSecond", this.$("#recommendatoryReportSecond"));
+			self.addCommitteeView(this.$("#committee"));
 		} else {
 			self.$("#fekFile").html($.i18n.prop("PressSave"));
 			self.$("#prosklisiKosmitora").html($.i18n.prop("PressSave"));
 			self.$("#recommendatoryReport").html($.i18n.prop("PressSave"));
 			self.$("#recommendatoryReportSecond").html($.i18n.prop("PressSave"));
+			self.$("#committee").html($.i18n.prop("PressSave"));
 		}
 		
 		self.validator = $("form", this.el).validate({
@@ -2422,6 +2424,22 @@ App.PositionEditView = Backbone.View.extend({
 		return false;
 	},
 	
+	addCommitteeView : function($el) {
+		var self = this;
+		var committee = new App.PositionCommittee({
+		}, {
+			position : self.model.get("id")
+		});
+		var committeeView = new App.PositionCommitteeView({
+			maxmembers : 7,
+			collection : committee
+		});
+		$el.html(committeeView.el);
+		committee.fetch({
+			cache : false
+		});
+	},
+	
 	addFile : function(type, $el) {
 		var self = this;
 		var fileView;
@@ -2459,8 +2477,87 @@ App.PositionEditView = Backbone.View.extend({
 	},
 });
 
+App.PositionCommitteeView = Backbone.View.extend({
+	tagName : "div",
+	
+	uploader : undefined,
+	
+	initialize : function() {
+		this.template = _.template(tpl.get('position-committee-edit'));
+		_.bindAll(this, "render", "removeMember", "addMember", "close");
+		this.collection.bind('reset', this.render, this);
+		this.collection.bind('remove', this.render, this);
+		this.collection.bind('add', this.render, this);
+		
+	},
+	
+	events : {
+		"click a#addMember" : "addMember",
+		"click a#removeMember" : "removeMember",
+	},
+	
+	render : function(eventName) {
+		var self = this;
+		self.$el.html(self.template({
+			committee : self.collection.toJSON()
+		}));
+		return self;
+	},
+	
+	addMember : function(event) {
+		var self = this;
+		var length = self.collection.length;
+		// Create popup menu to find and select a committee member
+		self.$("div.modal div.committee-members").html("Select Member");
+		
+		self.$("div.modal").on("hidden", function() {
+			if (length !== self.collection.length) {
+				self.collection.trigger("reset");
+			}
+		});
+		self.$("div.modal").modal('show');
+	},
+	
+	removeMember : function(event) {
+		var self = this;
+		var selectedModel = self.collection.get($(event.target).data('committeeMemberId'));
+		var confirm = new App.ConfirmView({
+			title : $.i18n.prop('Confirm'),
+			message : $.i18n.prop('AreYouSure'),
+			yes : function() {
+				selectedModel.destroy({
+					wait : true,
+					success : function(model, resp) {
+						var popup = new App.PopupView({
+							type : "success",
+							message : $.i18n.prop("Success")
+						});
+						popup.show();
+					},
+					error : function(model, resp, options) {
+						var popup = new App.PopupView({
+							type : "error",
+							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						});
+						popup.show();
+					}
+				});
+			}
+		});
+		confirm.show();
+	},
+	
+	close : function(eventName) {
+		this.collection.unbind('reset', this.render, this);
+		this.collection.unbind('remove', this.render, this);
+		this.collection.unbind('add', this.render, this);
+		this.$el.unbind();
+		this.$el.remove();
+	}
+});
+
 /*******************************************************************************
- * ****** RegistryEditView *****************************************************
+ * ****** RegisterEditView *****************************************************
  ******************************************************************************/
 App.RegisterListView = Backbone.View.extend({
 	tagName : "div",

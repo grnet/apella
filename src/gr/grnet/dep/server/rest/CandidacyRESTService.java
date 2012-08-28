@@ -7,19 +7,15 @@ import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.CandidateCommittee;
 import gr.grnet.dep.service.model.CandidateCommittee.SimpleCandidateCommitteeView;
 import gr.grnet.dep.service.model.CandidateCommitteeMembership;
-import gr.grnet.dep.service.model.ElectoralBodyMembership;
 import gr.grnet.dep.service.model.FileHeader;
 import gr.grnet.dep.service.model.FileHeader.DetailedFileHeaderView;
 import gr.grnet.dep.service.model.FileHeader.SimpleFileHeaderView;
-import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Professor;
-import gr.grnet.dep.service.model.RecommendatoryCommitteeMembership;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.List;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
@@ -177,41 +173,10 @@ public class CandidacyRESTService extends RESTService {
 				"from Candidate c where c.id=:id")
 				.setParameter("id", c.getCandidate())
 				.getSingleResult();
-			Position position = em.find(Position.class, c.getPosition());
-			// Get RecommendatoryCommittee members
-			List<RecommendatoryCommitteeMembership> rc = (List<RecommendatoryCommitteeMembership>) em.createQuery(
-				"select rc.members " +
-					"from RecommendatoryCommittee rc " +
-					"where rc.position=:position")
-				.setParameter("position", position)
-				.getResultList();
-			// Get ElectoralBody members
-			List<ElectoralBodyMembership> eb = (List<ElectoralBodyMembership>) em.createQuery(
-				"select eb.members " +
-					"from ElectoralBody eb " +
-					"where eb.position=:position")
-				.setParameter("position", position)
-				.getResultList();
 
 			User loggedOn = getLoggedOn(authToken);
-			boolean ok = false;
-			if (loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) || cy.getUser() == loggedOn.getId()) {
-				ok = true;
-			}
-			for (RecommendatoryCommitteeMembership rcm : rc) {
-				if (rcm.getProfessor().getUser().equals(loggedOn.getId())) {
-					ok = true;
-					break;
-				}
-			}
-			for (ElectoralBodyMembership ebm : eb) {
-				if (ebm.getProfessor().getUser().equals(loggedOn.getId())) {
-					ok = true;
-					break;
-				}
-			}
 
-			if (!ok) {
+			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 

@@ -2,6 +2,7 @@ package gr.grnet.dep.service.model;
 
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -83,6 +84,9 @@ public class Position {
 
 	@ManyToOne
 	private FileHeader fekFile;
+
+	@OneToMany(mappedBy = "position")
+	private List<PositionCommitteeMember> commitee;
 
 	public Long getId() {
 		return id;
@@ -207,6 +211,15 @@ public class Position {
 
 	public void setFekFile(FileHeader fekFile) {
 		this.fekFile = fekFile;
+	}
+
+	@XmlTransient
+	public List<PositionCommitteeMember> getCommitee() {
+		return commitee;
+	}
+
+	public void setCommitee(List<PositionCommitteeMember> commitee) {
+		this.commitee = commitee;
 	}
 
 }

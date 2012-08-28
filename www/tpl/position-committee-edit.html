@@ -1,0 +1,42 @@
+<script type="html/template" id="position-committee-edit">
+<table class="table table-striped table-bordered">
+	<thead>
+		<tr>
+			<th><%= $.i18n.prop("ID") %></th>
+			<th><%= $.i18n.prop("Professor") %></th>
+			<th width="96px"></th>
+		</tr>
+	</thead>
+	<tbody>
+<% _.each(committee, function(committeeMember) { %>
+		<tr>
+			<td><%= committeeMember.id %></td>
+			<td><% if (!_.isUndefined(committeeMember.professor)) { %><%= committeeMember.professor.id %><% } %></td>
+			<td width="96px">
+				<p align="center">
+					<a href="javascript:void(0)" id="removeMember" data-committee-member-id="<%= committeeMember.id %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_remove') %></a>
+				</p>
+			</td>
+		</tr>
+<% }); %>
+	</tbody>
+	<tfoot>
+		<tr>
+			<td colspan="3">
+				<div class="btn-toolbar" id="actions">
+					<div class="btn-group">
+						<a href="javascript:void(0)" id="addMember" class="btn btn-small"><i class="icon-plus"></i> <%= $.i18n.prop('btn_add') %></a>
+					</div>
+					<div class="modal fade">
+						<div class="modal-header">
+							<button class="close" data-dismiss="modal">×</button>
+						</div>
+						<div class="modal-body committee-members"></div>
+						<div class="modal-footer"></div>
+					/div>
+				</div>
+			</td>
+		</tr>
+	</tfoot>
+</table>
+</script>
