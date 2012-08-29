@@ -2,7 +2,7 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.FileHeader;
-import gr.grnet.dep.service.model.FileHeader.DetailedFileHeaderView;
+import gr.grnet.dep.service.model.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
@@ -32,7 +32,7 @@ public class FileRESTService extends RESTService {
 
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
-	@JsonView({DetailedFileHeaderView.class})
+	@JsonView({SimpleFileHeaderView.class})
 	public FileHeader get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		User loggedOn = getLoggedOn(authToken);
 		try {

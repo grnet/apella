@@ -1170,7 +1170,9 @@ App.RoleListView = Backbone.View.extend({
 		var discriminator = $(event.target).attr('discriminator');
 		var newRole = new App.Role({
 			"discriminator" : discriminator,
-			user : self.options.user
+			user : {
+				id : self.options.user
+			}
 		});
 		self.collection.add(newRole);
 		self.select(undefined, newRole);

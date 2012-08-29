@@ -3,9 +3,10 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.FileHeader;
-import gr.grnet.dep.service.model.FileHeader.DetailedFileHeaderView;
+import gr.grnet.dep.service.model.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.PositionCommitteeMember;
+import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
 import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
@@ -65,6 +66,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	}
 
 	@GET
+	@JsonView({DetailedPositionCommitteeMemberView.class})
 	public List<PositionCommitteeMember> getPositionCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @QueryParam("position") Long positionId) {
 		Position position = getAndCheckPosition(authToken, positionId);
 		position.getCommitee().size();
@@ -73,6 +75,7 @@ public class PositionCommitteeRESTService extends RESTService {
 
 	@GET
 	@Path("/{cmId:[0-9][0-9]*}")
+	@JsonView({DetailedPositionCommitteeMemberView.class})
 	public PositionCommitteeMember getPositionCommitteeMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("cmId") Long cmId) {
 		PositionCommitteeMember result = em.find(PositionCommitteeMember.class, cmId);
 		if (result == null) {
@@ -82,6 +85,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	}
 
 	@POST
+	@JsonView({DetailedPositionCommitteeMemberView.class})
 	public PositionCommitteeMember createPositionCommitteeMember(@HeaderParam(TOKEN_HEADER) String authToken, PositionCommitteeMember newMembership) {
 		try {
 			Position existingPosition = getAndCheckPosition(authToken, newMembership.getPosition().getId());
@@ -125,7 +129,7 @@ public class PositionCommitteeRESTService extends RESTService {
 
 	@GET
 	@Path("/{cmId:[0-9][0-9]*}/report")
-	@JsonView({DetailedFileHeaderView.class})
+	@JsonView({SimpleFileHeaderView.class})
 	public FileHeader getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("cmId") long cmId) {
 		PositionCommitteeMember cm = getPositionCommitteeMember(authToken, cmId);
 		FileHeader file = cm.getRecommendatoryReport();
@@ -139,7 +143,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	@Path("/{cmId:[0-9][0-9]*}/report")
 	@Consumes("multipart/form-data")
 	@Produces({MediaType.APPLICATION_JSON})
-	@JsonView({DetailedFileHeaderView.class})
+	@JsonView({SimpleFileHeaderView.class})
 	public FileHeader postFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("cmId") Long cmId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		try {

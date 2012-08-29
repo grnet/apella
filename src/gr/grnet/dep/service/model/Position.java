@@ -18,7 +18,6 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
-import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -26,14 +25,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Entity
 public class Position {
 
-	// define 3 json views
-	public static interface IdPositionView {
-	}; // shows only id view of a Candidacy
-
-	public static interface SimplePositionView extends IdPositionView {
-	}; // shows a summary view of a Candidacy
-
-	public static interface DetailedPositionView extends SimplePositionView {
+	public static interface DetailedPositionView {
 	};
 
 	@Id
@@ -96,7 +88,6 @@ public class Position {
 		this.id = id;
 	}
 
-	@JsonView(SimplePositionView.class)
 	public String getName() {
 		return name;
 	}
@@ -105,7 +96,6 @@ public class Position {
 		this.name = name;
 	}
 
-	@JsonView(SimplePositionView.class)
 	public String getDescription() {
 		return description;
 	}
@@ -114,7 +104,6 @@ public class Position {
 		this.description = description;
 	}
 
-	@JsonView(SimplePositionView.class)
 	public Department getDepartment() {
 		return department;
 	}
@@ -123,7 +112,6 @@ public class Position {
 		this.department = department;
 	}
 
-	@JsonView(SimplePositionView.class)
 	public Subject getSubject() {
 		return subject;
 	}
@@ -132,7 +120,6 @@ public class Position {
 		this.subject = subject;
 	}
 
-	@JsonView(SimplePositionView.class)
 	public PositionStatus getStatus() {
 		return status;
 	}
@@ -141,7 +128,7 @@ public class Position {
 		this.status = status;
 	}
 
-	@XmlTransient
+	@JsonView({DetailedPositionView.class})
 	public Set<Candidacy> getCandidacies() {
 		return candidacies;
 	}
@@ -150,7 +137,6 @@ public class Position {
 		this.candidacies = candidacies;
 	}
 
-	@JsonView(SimplePositionView.class)
 	public FileHeader getRecommendatoryReport() {
 		return recommendatoryReport;
 	}
@@ -159,7 +145,6 @@ public class Position {
 		this.recommendatoryReport = recommendatoryReport;
 	}
 
-	@JsonView(SimplePositionView.class)
 	public FileHeader getRecommendatoryReportSecond() {
 		return recommendatoryReportSecond;
 	}
@@ -168,7 +153,6 @@ public class Position {
 		this.recommendatoryReportSecond = recommendatoryReportSecond;
 	}
 
-	@JsonView(SimplePositionView.class)
 	public PositionStatus getDeanStatus() {
 		return deanStatus;
 	}
@@ -177,7 +161,6 @@ public class Position {
 		this.deanStatus = deanStatus;
 	}
 
-	@JsonView(SimplePositionView.class)
 	public FileHeader getProsklisiKosmitora() {
 		return prosklisiKosmitora;
 	}
@@ -186,7 +169,6 @@ public class Position {
 		this.prosklisiKosmitora = prosklisiKosmitora;
 	}
 
-	@JsonView(SimplePositionView.class)
 	public Date getFekSentDate() {
 		return fekSentDate;
 	}
@@ -195,7 +177,6 @@ public class Position {
 		this.fekSentDate = fekSentDate;
 	}
 
-	@JsonView(SimplePositionView.class)
 	public String getFek() {
 		return fek;
 	}
@@ -204,7 +185,6 @@ public class Position {
 		this.fek = fek;
 	}
 
-	@JsonView(SimplePositionView.class)
 	public FileHeader getFekFile() {
 		return fekFile;
 	}
@@ -213,7 +193,7 @@ public class Position {
 		this.fekFile = fekFile;
 	}
 
-	@XmlTransient
+	@JsonView({DetailedPositionView.class})
 	public List<PositionCommitteeMember> getCommitee() {
 		return commitee;
 	}

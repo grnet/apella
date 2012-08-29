@@ -27,9 +27,8 @@ public final class FileHeader implements Serializable {
 
 	private static final long serialVersionUID = -4813579007397289759L;
 
-	// define 2 json views
 	public static interface SimpleFileHeaderView {
-	}; // shows a summary view of a FileHeader/FileBody
+	};
 
 	public static interface DetailedFileHeaderView extends SimpleFileHeaderView {
 	};

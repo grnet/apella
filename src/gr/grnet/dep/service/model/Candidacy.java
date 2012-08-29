@@ -20,14 +20,7 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Entity
 public class Candidacy {
 
-	// define 3 json views
-	public static interface IdCandidacyView {
-	}; // shows only id view of a Candidacy
-
-	public static interface SimpleCandidacyView extends IdCandidacyView {
-	}; // shows a summary view of a Candidacy
-
-	public static interface DetailedCandidacyView extends SimpleCandidacyView {
+	public static interface DetailedCandidacyView {
 	};
 
 	@Id
@@ -58,7 +51,6 @@ public class Candidacy {
 		return id;
 	}
 
-	@JsonView(SimpleCandidacyView.class)
 	public Date getDate() {
 		return date;
 	}
@@ -67,7 +59,6 @@ public class Candidacy {
 		this.date = date;
 	}
 
-	@JsonView(SimpleCandidacyView.class)
 	public Long getCandidate() {
 		return candidate;
 	}
@@ -76,7 +67,7 @@ public class Candidacy {
 		this.candidate = candidate;
 	}
 
-	@JsonView(SimpleCandidacyView.class)
+	@JsonView(DetailedCandidacyView.class)
 	public Long getPosition() {
 		return position;
 	}
@@ -85,7 +76,7 @@ public class Candidacy {
 		this.position = position;
 	}
 
-	@JsonView({DetailedCandidacyView.class})
+	@JsonView(DetailedCandidacyView.class)
 	public Set<FileBody> getFiles() {
 		return files;
 	}

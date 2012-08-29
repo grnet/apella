@@ -47,17 +47,10 @@ public class User implements Serializable {
 		CREATED, UNVERIFIED, ACTIVE, BLOCKED, DELETED
 	}
 
-	// define 3 json views
-	public static interface IdUserView {
-	}; // shows an id-only view of a User
-
-	public static interface SimpleUserView extends IdUserView {
-	}; // shows a summary view of a User
-
-	public static interface DetailedUserView extends SimpleUserView {
+	public static interface DetailedUserView {
 	};
 
-	public static interface DetailedWithPasswordUserView extends SimpleUserView {
+	public static interface DetailedWithPasswordUserView {
 	};
 
 	@Inject
@@ -126,7 +119,6 @@ public class User implements Serializable {
 		this.id = id;
 	}
 
-	@JsonView({SimpleUserView.class})
 	public String getUsername() {
 		return username;
 	}
@@ -151,7 +143,6 @@ public class User implements Serializable {
 		this.registrationType = registrationType;
 	}
 
-	@JsonView({SimpleUserView.class})
 	public UserStatus getStatus() {
 		return status;
 	}
@@ -168,7 +159,6 @@ public class User implements Serializable {
 		this.statusDate = statusDate;
 	}
 
-	@JsonView({SimpleUserView.class})
 	public BasicInformation getBasicInfo() {
 		return basicInfo;
 	}
@@ -177,7 +167,6 @@ public class User implements Serializable {
 		this.basicInfo = basicInfo;
 	}
 
-	@JsonView({SimpleUserView.class})
 	public BasicInformation getBasicInfoLatin() {
 		return basicInfoLatin;
 	}
@@ -186,7 +175,6 @@ public class User implements Serializable {
 		this.basicInfoLatin = basicInfoLatin;
 	}
 
-	@JsonView({SimpleUserView.class})
 	public ContactInformation getContactInfo() {
 		return contactInfo;
 	}
@@ -222,7 +210,6 @@ public class User implements Serializable {
 		this.roles = roles;
 	}
 
-	@JsonView({SimpleUserView.class})
 	public Date getRegistrationDate() {
 		return registrationDate;
 	}
@@ -239,7 +226,6 @@ public class User implements Serializable {
 		this.verificationNumber = verificationNumber;
 	}
 
-	@JsonView({SimpleUserView.class})
 	public Date getLastLoginDate() {
 		return lastLoginDate;
 	}
@@ -261,7 +247,7 @@ public class User implements Serializable {
 
 	public void addRole(Role role) {
 		roles.add(role);
-		role.setUser(this.getId());
+		role.setUser(this);
 	}
 
 	public void removeRole(Role role) {

@@ -8,7 +8,6 @@ import gr.grnet.dep.service.model.CandidateCommittee;
 import gr.grnet.dep.service.model.CandidateCommittee.SimpleCandidateCommitteeView;
 import gr.grnet.dep.service.model.CandidateCommitteeMembership;
 import gr.grnet.dep.service.model.FileHeader;
-import gr.grnet.dep.service.model.FileHeader.DetailedFileHeaderView;
 import gr.grnet.dep.service.model.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
@@ -69,7 +68,7 @@ public class CandidacyRESTService extends RESTService {
 				"from Candidate c where c.id=:id")
 				.setParameter("id", candidacy.getCandidate())
 				.getSingleResult();
-			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && candidate.getUser() != loggedOn.getId()) {
+			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && candidate.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			return candidacy;
@@ -88,7 +87,7 @@ public class CandidacyRESTService extends RESTService {
 				.getSingleResult();
 
 			User loggedOn = getLoggedOn(authToken);
-			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser() != loggedOn.getId()) {
+			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			candidacy.setDate(new Date());
@@ -117,7 +116,7 @@ public class CandidacyRESTService extends RESTService {
 				.getSingleResult();
 
 			User loggedOn = getLoggedOn(authToken);
-			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser() != loggedOn.getId()) {
+			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 
@@ -145,7 +144,7 @@ public class CandidacyRESTService extends RESTService {
 				.getSingleResult();
 
 			User loggedOn = getLoggedOn(authToken);
-			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser() != loggedOn.getId()) {
+			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 
@@ -176,7 +175,7 @@ public class CandidacyRESTService extends RESTService {
 
 			User loggedOn = getLoggedOn(authToken);
 
-			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser() != loggedOn.getId()) {
+			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 
@@ -214,7 +213,7 @@ public class CandidacyRESTService extends RESTService {
 
 			User loggedOn = getLoggedOn(authToken);
 			boolean ok = false;
-			if (loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) || cy.getUser() == loggedOn.getId()) {
+			if (loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) || cy.getUser().getId() == loggedOn.getId()) {
 				ok = true;
 			}
 			if (!ok) {
@@ -274,7 +273,7 @@ public class CandidacyRESTService extends RESTService {
 
 			User loggedOn = getLoggedOn(authToken);
 			boolean ok = false;
-			if (loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) || cy.getUser() == loggedOn.getId()) {
+			if (loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) || cy.getUser().getId() == loggedOn.getId()) {
 				ok = true;
 			}
 			if (!ok) {
@@ -323,7 +322,7 @@ public class CandidacyRESTService extends RESTService {
 
 	@GET
 	@Path("/{id:[0-9][0-9]*}/committee/{professorId:[0-9][0-9]*}/report")
-	@JsonView({DetailedFileHeaderView.class})
+	@JsonView({SimpleFileHeaderView.class})
 	public FileHeader getCommitteeMembershipReport(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("professorId") long professorId) {
 		CandidateCommitteeMembership ccm = getCommitteeMembership(authToken, id, professorId);
 		FileHeader file = ccm.getReport();
@@ -359,7 +358,7 @@ public class CandidacyRESTService extends RESTService {
 
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}/committee/{professorId:[0-9][0-9]*}/report")
-	@JsonView({DetailedFileHeaderView.class})
+	@JsonView({SimpleFileHeaderView.class})
 	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("professorId") long professorId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		try {
 			CandidateCommitteeMembership ccm = getCommitteeMembership(authToken, id, professorId);

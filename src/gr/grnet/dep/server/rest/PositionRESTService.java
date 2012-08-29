@@ -3,7 +3,6 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.FileHeader;
-import gr.grnet.dep.service.model.FileHeader.DetailedFileHeaderView;
 import gr.grnet.dep.service.model.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
@@ -160,7 +159,7 @@ public class PositionRESTService extends RESTService {
 
 	@GET
 	@Path("/{id:[0-9][0-9]*}/{var:prosklisiKosmitora|recommendatoryReport|recommendatoryReportSecond|fekFile}{fileId:(/[0-9][0-9]*)?}")
-	@JsonView({DetailedFileHeaderView.class})
+	@JsonView({SimpleFileHeaderView.class})
 	public FileHeader getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("var") String var) {
 		FileHeader file = null;
 		getLoggedOn(authToken);
@@ -228,7 +227,7 @@ public class PositionRESTService extends RESTService {
 	 */
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}/{var:prosklisiKosmitora|recommendatoryReport|recommendatoryReportSecond|fekFile}{fileId:(/[0-9][0-9]*)?}")
-	@JsonView({DetailedFileHeaderView.class})
+	@JsonView({SimpleFileHeaderView.class})
 	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("var") String var) {
 		Position position = getAndCheckPosition(authToken, id);
 		try {

@@ -4,7 +4,6 @@ import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.DepartmentAssistant;
 import gr.grnet.dep.service.model.FileHeader;
-import gr.grnet.dep.service.model.FileHeader.DetailedFileHeaderView;
 import gr.grnet.dep.service.model.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.Professor;
@@ -16,10 +15,12 @@ import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -28,6 +29,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
+import javax.persistence.Query;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -163,22 +165,42 @@ public class RoleRESTService extends RESTService {
 
 	@GET
 	@JsonView({DetailedRoleView.class})
-	public Collection<Role> getAll(@HeaderParam(TOKEN_HEADER) String authToken, @QueryParam("user") Long userID) {
+	public Collection<Role> getAll(@HeaderParam(TOKEN_HEADER) String authToken, @QueryParam("user") Long userID, @QueryParam("discriminator") String discriminators) {
 		getLoggedOn(authToken);
+
+		// Prepare Query
+		StringBuilder sb = new StringBuilder();
+		sb.append("select r from Role r " +
+			"where r.id is not null ");
 		if (userID != null) {
-			@SuppressWarnings("unchecked")
-			Collection<Role> roles = (Collection<Role>) em.createQuery(
-				"from Role r " +
-					"where r.user = :userID ")
-				.setParameter("userID", userID)
-				.getResultList();
-			for (Role r : roles) {
-				r.initializeCollections();
-			}
-			return roles;
-		} else {
-			throw new RestException(Status.BAD_REQUEST);
+			sb.append("and r.user.id = :userID ");
 		}
+		if (discriminators != null) {
+			sb.append("and r.discriminator in (:discriminators) ");
+		}
+		// Set Parameters
+		Query query = em.createQuery(sb.toString());
+		if (userID != null) {
+			query = query.setParameter("userID", userID);
+		}
+		if (discriminators != null) {
+			try {
+				List<RoleDiscriminator> discriminatorList = new ArrayList<Role.RoleDiscriminator>();
+				for (String discriminator : discriminators.split(",")) {
+					discriminatorList.add(RoleDiscriminator.valueOf(discriminator));
+				}
+				query = query.setParameter("discriminators", discriminatorList);
+			} catch (IllegalArgumentException e) {
+				throw new RestException(Status.BAD_REQUEST, "bad.request");
+			}
+		}
+
+		// Execute
+		List<Role> roles = query.getResultList();
+		for (Role r : roles) {
+			r.initializeCollections();
+		}
+		return roles;
 	}
 
 	private boolean isForbiddenPair(RoleDiscriminator first, RoleDiscriminator second) {
@@ -198,7 +220,7 @@ public class RoleRESTService extends RESTService {
 		switch (role.getStatus()) {
 			case CREATED:
 				if (!role.isMissingRequiredFields()) {
-					User roleUser = em.find(User.class, role.getUser());
+					User roleUser = em.find(User.class, role.getUser().getId());
 					switch (roleUser.getRegistrationType()) {
 						case REGISTRATION_FORM:
 							// InstitutionAssistant, DepartmentAssistant do not need Helpdesk Approval, set to ACTIVE
@@ -228,7 +250,7 @@ public class RoleRESTService extends RESTService {
 					role.setStatus(RoleStatus.CREATED);
 					role.setStatusDate(new Date());
 				} else {
-					User roleUser = em.find(User.class, role.getUser());
+					User roleUser = em.find(User.class, role.getUser().getId());
 					switch (roleUser.getRegistrationType()) {
 						case REGISTRATION_FORM:
 							// InstitutionAssistant, DepartmentAssistant do not need Helpdesk Approval, set to ACTIVE
@@ -296,7 +318,7 @@ public class RoleRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 
 		// Validate
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !newRole.getUser().equals(loggedOn.getId())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !newRole.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (isIncompatibleRole(newRole, loggedOn.getRoles())) {
@@ -325,7 +347,7 @@ public class RoleRESTService extends RESTService {
 		if (existingRole == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !existingRole.getUser().equals(loggedOn.getId())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !existingRole.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		Long managerInstitutionId;
@@ -370,10 +392,10 @@ public class RoleRESTService extends RESTService {
 		if (role == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().equals(loggedOn.getId())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		User user = em.find(User.class, role.getUser());
+		User user = em.find(User.class, role.getUser().getId());
 		if (user.getRoles().size() < 2) {
 			throw new RestException(Status.FORBIDDEN, "one.role.required");
 		}
@@ -393,7 +415,7 @@ public class RoleRESTService extends RESTService {
 
 	@GET
 	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599|profileFile}{fileId:(/[0-9][0-9]*)?}")
-	@JsonView({DetailedFileHeaderView.class})
+	@JsonView({SimpleFileHeaderView.class})
 	public FileHeader getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("var") String var, @PathParam("fileId") String fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
@@ -401,7 +423,7 @@ public class RoleRESTService extends RESTService {
 		if (role == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().equals(loggedOn.getId())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 
@@ -434,7 +456,7 @@ public class RoleRESTService extends RESTService {
 
 	@GET
 	@Path("/{id:[0-9][0-9]*}/publications")
-	@JsonView({DetailedFileHeaderView.class})
+	@JsonView({SimpleFileHeaderView.class})
 	public Collection<FileHeader> getPublicationFiles(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
@@ -445,7 +467,7 @@ public class RoleRESTService extends RESTService {
 		if (!(role instanceof Candidate)) {
 			throw new RestException(Status.NOT_FOUND, "wrong.role");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().equals(loggedOn.getId())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 
@@ -468,7 +490,7 @@ public class RoleRESTService extends RESTService {
 		if (role == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().equals(loggedOn.getId())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 
@@ -533,7 +555,7 @@ public class RoleRESTService extends RESTService {
 	 */
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599|profileFile}{fileId:(/[0-9][0-9]*)?}")
-	@JsonView({DetailedFileHeaderView.class})
+	@JsonView({SimpleFileHeaderView.class})
 	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("var") String var, @PathParam("fileId") String fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
@@ -584,7 +606,7 @@ public class RoleRESTService extends RESTService {
 	 */
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}/publications/{fileId:[0-9][0-9]*}")
-	@JsonView({DetailedFileHeaderView.class})
+	@JsonView({SimpleFileHeaderView.class})
 	public Response deletePublication(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("fileId") Long fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);

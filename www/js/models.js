@@ -583,6 +583,11 @@ App.Register = Backbone.Model.extend({
 	}
 });
 
+App.Registries = Backbone.Collection.extend({
+	url : "/dep/rest/register",
+	model : App.Register
+});
+
 App.PositionCommitteeMember = Backbone.Model.extend({
 	urlRoot : "/dep/rest/position/committee",
 	defaults : {

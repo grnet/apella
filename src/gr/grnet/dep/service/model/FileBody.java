@@ -2,6 +2,7 @@ package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
+import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
 import gr.grnet.dep.service.model.Register.DetailedRegisterView;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
 
@@ -103,7 +104,7 @@ public final class FileBody implements Serializable {
 		this.id = id;
 	}
 
-	@JsonView({SimpleFileHeaderView.class, SimpleFileBodyView.class, DetailedRoleView.class, DetailedRegisterView.class, DetailedPositionView.class})
+	@JsonView({SimpleFileHeaderView.class, SimpleFileBodyView.class, DetailedRoleView.class, DetailedRegisterView.class, DetailedPositionView.class, DetailedPositionCommitteeMemberView.class})
 	public int getVersion() {
 		return version;
 	}
@@ -121,7 +122,7 @@ public final class FileBody implements Serializable {
 		this.header = header;
 	}
 
-	@JsonView({SimpleFileHeaderView.class, SimpleFileBodyView.class, DetailedRoleView.class, DetailedRegisterView.class, DetailedPositionView.class})
+	@JsonView({SimpleFileHeaderView.class, SimpleFileBodyView.class, DetailedRoleView.class, DetailedRegisterView.class, DetailedPositionView.class, DetailedPositionCommitteeMemberView.class})
 	public String getMimeType() {
 		return mimeType;
 	}
@@ -130,7 +131,7 @@ public final class FileBody implements Serializable {
 		this.mimeType = mimeType;
 	}
 
-	@JsonView({SimpleFileHeaderView.class, SimpleFileBodyView.class, DetailedRoleView.class, DetailedRegisterView.class, DetailedPositionView.class})
+	@JsonView({SimpleFileHeaderView.class, SimpleFileBodyView.class, DetailedRoleView.class, DetailedRegisterView.class, DetailedPositionView.class, DetailedPositionCommitteeMemberView.class})
 	public String getOriginalFilename() {
 		return originalFilename;
 	}
@@ -148,7 +149,7 @@ public final class FileBody implements Serializable {
 		this.storedFilePath = storedFilePath;
 	}
 
-	@JsonView({SimpleFileHeaderView.class, SimpleFileBodyView.class, DetailedRoleView.class, DetailedRegisterView.class, DetailedPositionView.class})
+	@JsonView({SimpleFileHeaderView.class, SimpleFileBodyView.class, DetailedRoleView.class, DetailedRegisterView.class, DetailedPositionView.class, DetailedPositionCommitteeMemberView.class})
 	public long getFileSize() {
 		return fileSize;
 	}
@@ -157,7 +158,7 @@ public final class FileBody implements Serializable {
 		this.fileSize = fileSize;
 	}
 
-	@JsonView({SimpleFileHeaderView.class, SimpleFileBodyView.class, DetailedRoleView.class, DetailedRegisterView.class, DetailedPositionView.class})
+	@JsonView({SimpleFileHeaderView.class, SimpleFileBodyView.class, DetailedRoleView.class, DetailedRegisterView.class, DetailedPositionView.class, DetailedPositionCommitteeMemberView.class})
 	public Date getDate() {
 		return date;
 	}

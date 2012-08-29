@@ -86,7 +86,7 @@ public class UserRESTService extends RESTService {
 			sb.append("and r.status = :roleStatus ");
 		}
 		if (managerId != null) {
-			sb.append("and (u.id in (select ia.user from InstitutionAssistant ia where ia.manager.id = :managerId ) or u.id in (select da.user from DepartmentAssistant da where da.manager.id = :managerId )) ");
+			sb.append("and (u.id in (select ia.user.id from InstitutionAssistant ia where ia.manager.id = :managerId ) or u.id in (select da.user.id from DepartmentAssistant da where da.manager.id = :managerId )) ");
 		}
 		sb.append("order by u.basicInfo.lastname, u.basicInfo.firstname");
 

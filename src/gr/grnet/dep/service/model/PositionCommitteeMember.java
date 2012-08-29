@@ -7,12 +7,17 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import org.codehaus.jackson.map.annotate.JsonView;
+
 @Entity
 public class PositionCommitteeMember implements Serializable {
 
 	private static final long serialVersionUID = -1339853623265264893L;
 
 	public static final int MAX_MEMBERS = 7;
+
+	public static interface DetailedPositionCommitteeMemberView {
+	};
 
 	@Id
 	@GeneratedValue
@@ -37,6 +42,7 @@ public class PositionCommitteeMember implements Serializable {
 		this.id = id;
 	}
 
+	@JsonView({DetailedPositionCommitteeMemberView.class})
 	public Position getPosition() {
 		return position;
 	}
