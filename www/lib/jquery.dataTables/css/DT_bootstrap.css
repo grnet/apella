@@ -1,4 +1,5 @@
 div.dataTables_length label {
+	width: 460px;
 	float: left;
 	text-align: left;
 }
@@ -9,6 +10,8 @@ div.dataTables_length select {
 
 div.dataTables_filter label {
 	float: right;
+	width: 460px;
+	text-align: right;
 }
 
 div.dataTables_info {
@@ -20,11 +23,11 @@ div.dataTables_paginate {
 	margin: 0;
 }
 
-table.table {
+table.dataTable th:active {
+	outline: none;
 }
 
-table.table thead .sorting,table.table thead .sorting_asc,table.table thead .sorting_desc,table.table thead .sorting_asc_disabled,table.table thead .sorting_desc_disabled
-	{
+table.table thead .sorting,table.table thead .sorting_asc,table.table thead .sorting_desc,table.table thead .sorting_asc_disabled,table.table thead .sorting_desc_disabled {
 	cursor: pointer;
 	*cursor: hand;
 }

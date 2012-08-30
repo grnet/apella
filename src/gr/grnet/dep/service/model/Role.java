@@ -1,5 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.logging.Logger;
@@ -123,7 +125,7 @@ public abstract class Role implements Serializable {
 		this.statusDate = statusDate;
 	}
 
-	@JsonView({DetailedRoleView.class})
+	@JsonView({DetailedRoleView.class, DetailedPositionCommitteeMemberView.class})
 	public User getUser() {
 		return user;
 	}

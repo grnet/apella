@@ -606,7 +606,6 @@ App.PositionCommittee = Backbone.Collection.extend({
 		this.position = options.position;
 	},
 	url : function() {
-		console.log(this);
 		return "/dep/rest/position/committee" + (this.position ? "?position=" + this.position : "");
 	}
 });

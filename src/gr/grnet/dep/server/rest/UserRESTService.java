@@ -136,10 +136,7 @@ public class UserRESTService extends RESTService {
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedUserView.class})
 	public User get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id) throws RestException {
-		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(id)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
+		getLoggedOn(authToken);
 		try {
 			return (User) em.createQuery(
 				"from User u left join fetch u.roles " +

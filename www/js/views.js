@@ -932,6 +932,10 @@ App.UserView = Backbone.View.extend({
 	
 	className : "",
 	
+	options : {
+		editable : true
+	},
+	
 	initialize : function() {
 		this.template = _.template(tpl.get('user'));
 		_.bindAll(this, "render", "status", "close");
@@ -945,6 +949,11 @@ App.UserView = Backbone.View.extend({
 	render : function(event) {
 		var self = this;
 		self.$el.html(self.template(self.model.toJSON()));
+		if (self.options.editable) {
+			self.$("a.btn.btn-small.dropdown-toggle").removeClass("disabled");
+		} else {
+			self.$("a.btn.btn-small.dropdown-toggle").addClass("disabled");
+		}
 		return self;
 	},
 	
@@ -1067,7 +1076,7 @@ App.UserListView = Backbone.View.extend({
 		self.$el.html(self.template(tpl_data));
 		if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 			self.$("table").dataTable({
-				"sDom" : "<''<'span6'l><'span6'f>r>t<''<'span6'i><'span6'p>>",
+				"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
 				"sPaginationType" : "bootstrap",
 				"oLanguage" : {
 					"sLengthMenu" : "_MENU_ records per page"
@@ -1111,15 +1120,15 @@ App.UserRoleInfoView = Backbone.View.extend({
 	}
 });
 
-// RoleListView
-App.RoleListView = Backbone.View.extend({
+// RoleTabsView
+App.RoleTabsView = Backbone.View.extend({
 	tagName : "div",
 	
 	className : "sidebar-nav",
 	
 	initialize : function() {
 		_.bindAll(this, "render", "select", "newRole", "highlightSelected", "close");
-		this.template = _.template(tpl.get('role-list'));
+		this.template = _.template(tpl.get('role-tabs'));
 		this.collection.bind("change", this.render, this);
 		this.collection.bind("reset", this.render, this);
 		this.collection.bind("add", this.render, this);
@@ -1935,7 +1944,7 @@ App.FileListView = Backbone.View.extend({
 		}));
 		if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 			self.$("table").dataTable({
-				"sDom" : "<''<'span6'l><'span6'f>r>t<''<'span6'i><'span6'p>>",
+				"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
 				"sPaginationType" : "bootstrap",
 				"oLanguage" : {
 					"sLengthMenu" : "_MENU_ records per page"
@@ -2109,7 +2118,7 @@ App.AssistantsView = Backbone.View.extend({
 		self.$el.html(self.template(tpl_data));
 		if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 			self.$("table").dataTable({
-				"sDom" : "<''<'span6'l><'span6'f>r>t<''<'span6'i><'span6'p>>",
+				"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
 				"sPaginationType" : "bootstrap",
 				"oLanguage" : {
 					"sLengthMenu" : "_MENU_ records per page"
@@ -2214,7 +2223,7 @@ App.PositionListView = Backbone.View.extend({
 		self.$el.html(this.template(tpl_data));
 		if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 			self.$("table").dataTable({
-				"sDom" : "<''<'span6'l><'span6'f>r>t<''<'span6'i><'span6'p>>",
+				"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
 				"sPaginationType" : "bootstrap",
 				"oLanguage" : {
 					"sLengthMenu" : "_MENU_ records per page"
@@ -2428,13 +2437,16 @@ App.PositionEditView = Backbone.View.extend({
 	
 	addCommitteeView : function($el) {
 		var self = this;
-		var committee = new App.PositionCommittee({
-		}, {
+		var committee = new App.PositionCommittee({}, {
 			position : self.model.get("id")
 		});
 		var committeeView = new App.PositionCommitteeView({
 			maxmembers : 7,
-			collection : committee
+			position : {
+				id : self.model.get("id")
+			},
+			collection : committee,
+		
 		});
 		$el.html(committeeView.el);
 		committee.fetch({
@@ -2485,17 +2497,54 @@ App.PositionCommitteeView = Backbone.View.extend({
 	uploader : undefined,
 	
 	initialize : function() {
-		this.template = _.template(tpl.get('position-committee-edit'));
-		_.bindAll(this, "render", "removeMember", "addMember", "close");
-		this.collection.bind('reset', this.render, this);
-		this.collection.bind('remove', this.render, this);
-		this.collection.bind('add', this.render, this);
+		var self = this;
 		
+		self.template = _.template(tpl.get('position-committee-edit'));
+		_.bindAll(self, "render", "viewMember", "removeMember", "toggleAddMember", "close");
+		self.collection.bind('reset', this.render, this);
+		self.collection.bind('remove', this.render, this);
+		self.collection.bind('add', this.render, this);
+		
+		self.professors = new App.Roles();
+		self.professors.on("role:selected", function(role) {
+			var confirm = new App.ConfirmView({
+				title : $.i18n.prop('Confirm'),
+				message : $.i18n.prop('AreYouSure'),
+				yes : function() {
+					var positionCommitteeMember = new App.PositionCommitteeMember();
+					positionCommitteeMember.save({
+						position : {
+							id : self.options.position.id,
+						},
+						professor : role.toJSON()
+					}, {
+						wait : true,
+						success : function(model, resp) {
+							self.collection.add(model);
+							var popup = new App.PopupView({
+								type : "success",
+								message : $.i18n.prop("Success")
+							});
+							popup.show();
+						},
+						error : function(model, resp, options) {
+							var popup = new App.PopupView({
+								type : "error",
+								message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+							});
+							popup.show();
+						}
+					});
+				}
+			});
+			confirm.show();
+		});
 	},
 	
 	events : {
-		"click a#addMember" : "addMember",
 		"click a#removeMember" : "removeMember",
+		"click a#addMember" : "toggleAddMember",
+		"click a#viewMember" : "viewMember",
 	},
 	
 	render : function(eventName) {
@@ -2503,21 +2552,64 @@ App.PositionCommitteeView = Backbone.View.extend({
 		self.$el.html(self.template({
 			committee : self.collection.toJSON()
 		}));
+		
+		// Inner View
+		if (self.professorListView) {
+			self.professorListView.close();
+		}
+		self.professorListView = new App.ProfessorListView({
+			collection : self.professors
+		});
+		self.$("div#committee-members").hide();
+		self.$("div#committee-members").html(self.professorListView.el);
+		self.professors.fetch({
+			data : {
+				"discriminator" : "PROFESSOR_DOMESTIC,PROFESSOR_FOREIGN"
+			}
+		});
 		return self;
 	},
 	
-	addMember : function(event) {
+	viewMember : function(event, positionCommitteeMember) {
 		var self = this;
-		var length = self.collection.length;
-		// Create popup menu to find and select a committee member
-		self.$("div.modal div.committee-members").html("Select Member");
-		
-		self.$("div.modal").on("hidden", function() {
-			if (length !== self.collection.length) {
-				self.collection.trigger("reset");
-			}
-		});
-		self.$("div.modal").modal('show');
+		var selectedModel = positionCommitteeMember ? positionCommitteeMember : this.collection.get($(event.target).data('committeeMemberId'));
+		if (selectedModel) {
+			// Fill Details View:
+			var user = new App.User({
+				"id" : selectedModel.get("professor").user.id
+			});
+			var roles = new App.Roles();
+			roles.user = selectedModel.get("professor").user.id;
+			var userView = new App.UserView({
+				editable : false,
+				model : user
+			});
+			var roleView = new App.RoleView({
+				editable : false,
+				collection : roles
+			});
+			user.fetch({
+				cache : false,
+			});
+			roles.fetch({
+				cache : false
+			});
+			
+			self.$("div#commiteeMemberDetails div.modal-body").append(userView.render().el);
+			self.$("div#commiteeMemberDetails div.modal-body").append(roleView.render().el);
+			self.$("div#commiteeMemberDetails").on("hidden", function() {
+				userView.close();
+				roleView.close();
+				self.$("div#commiteeMemberDetails div.modal-body").empty();
+			});
+			self.$("div#commiteeMemberDetails").modal('show');
+		}
+	},
+	
+	toggleAddMember : function(event) {
+		var self = this;
+		self.$("div#committee-members").toggle();
+		self.$("a#addMember").toggleClass('active');
 	},
 	
 	removeMember : function(event) {
@@ -2550,11 +2642,14 @@ App.PositionCommitteeView = Backbone.View.extend({
 	},
 	
 	close : function(eventName) {
+		this.professors.off("role:selected");
+		this.professorListView.close();
 		this.collection.unbind('reset', this.render, this);
 		this.collection.unbind('remove', this.render, this);
 		this.collection.unbind('add', this.render, this);
 		this.$el.unbind();
 		this.$el.remove();
+		
 	}
 });
 
@@ -2597,7 +2692,7 @@ App.RegisterListView = Backbone.View.extend({
 		self.$("#actions").html("<div class=\"btn-group\"><a href=\"javascript:void(0)\" id=\"createRegister\" class=\"btn btn-small\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_add') + " </a></div>");
 		if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 			self.$("table").dataTable({
-				"sDom" : "<''<'span6'l><'span6'f>r>t<''<'span6'i><'span6'p>>",
+				"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
 				"sPaginationType" : "bootstrap",
 				"oLanguage" : {
 					"sLengthMenu" : "_MENU_ records per page"
@@ -2802,4 +2897,96 @@ App.RegisterEditView = Backbone.View.extend({
 		$(this.el).unbind();
 		$(this.el).remove();
 	},
+});
+
+// RoleTabsView
+App.ProfessorListView = Backbone.View.extend({
+	tagName : "div",
+	
+	initialize : function() {
+		_.bindAll(this, "render", "showDetails", "select", "close");
+		this.template = _.template(tpl.get('professor-list'));
+		this.collection.bind("change", this.render, this);
+		this.collection.bind("reset", this.render, this);
+	},
+	
+	events : {
+		"click a#view" : "showDetails",
+		"click a#select" : "select"
+	},
+	
+	render : function(eventName) {
+		var self = this;
+		var tpl_data = {
+			professors : (function() {
+				var result = [];
+				self.collection.each(function(model) {
+					var item = model.toJSON();
+					item.cid = model.cid;
+					result.push(item);
+				});
+				return result;
+			})()
+		};
+		self.$el.html(self.template(tpl_data));
+		
+		if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
+			self.$("table").dataTable({
+				"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+				"sPaginationType" : "bootstrap",
+				"oLanguage" : {
+					"sLengthMenu" : "_MENU_ records per page"
+				}
+			});
+		}
+		return self;
+	},
+	
+	showDetails : function(event, professor) {
+		var self = this;
+		var selectedModel = professor ? professor : this.collection.getByCid($(event.target).data('modelCid'));
+		if (selectedModel) {
+			// Fill Details View:
+			var user = new App.User({
+				"id" : selectedModel.get("user").id
+			});
+			var roles = new App.Roles();
+			roles.user = selectedModel.get("user").id;
+			var userView = new App.UserView({
+				editable : false,
+				model : user
+			});
+			var roleView = new App.RoleView({
+				editable : false,
+				collection : roles
+			});
+			user.fetch({
+				cache : false,
+			});
+			roles.fetch({
+				cache : false
+			});
+			
+			self.$("div#professorDetails div.modal-body").append(userView.render().el);
+			self.$("div#professorDetails div.modal-body").append(roleView.render().el);
+			self.$("div#professorDetails").on("hidden", function() {
+				userView.close();
+				roleView.close();
+				self.$("div#professorDetails div.modal-body").empty();
+			});
+			self.$("div#professorDetails").modal('show');
+		}
+	},
+	
+	select : function(event, professor) {
+		var selectedModel = professor ? professor : this.collection.getByCid($(event.target).data('modelCid'));
+		if (selectedModel) {
+			this.collection.trigger("role:selected", selectedModel);
+		}
+	},
+	
+	close : function() {
+		$(this.el).unbind();
+		$(this.el).remove();
+	}
 });

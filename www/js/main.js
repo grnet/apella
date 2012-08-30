@@ -491,13 +491,13 @@ App.Router = Backbone.Router.extend({
 			$("#content").html(roleView.render().el);
 		});
 		
-		var roleListView = new App.RoleListView({
+		var roleTabsView = new App.RoleTabsView({
 			collection : App.roles,
 			user : App.loggedOnUser.get("id")
 		});
 		
 		self.refreshBreadcrumb([ $.i18n.prop('menu_profile') ]);
-		$("#featured").html(roleListView.render().el);
+		$("#featured").html(roleTabsView.render().el);
 		
 		// Refresh roles from server
 		App.roles.fetch({
@@ -511,7 +511,7 @@ App.Router = Backbone.Router.extend({
 			}
 		});
 		
-		self.currentView = roleListView;
+		self.currentView = roleTabsView;
 	},
 	
 	showAssistantsView : function(userId) {
