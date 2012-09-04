@@ -34,10 +34,8 @@ public class Candidacy {
 	@Temporal(TemporalType.TIMESTAMP)
 	Date date;
 
-	// Inverse to User
-	@Basic(optional = false)
-	@Column(name = "candidate_id")
-	private Long candidate;
+	@JsonView({DetailedCandidacyView.class})
+	private Candidate candidate;
 
 	// Inverse to Position
 	@Basic(optional = false)
@@ -59,11 +57,11 @@ public class Candidacy {
 		this.date = date;
 	}
 
-	public Long getCandidate() {
+	public Candidate getCandidate() {
 		return candidate;
 	}
 
-	public void setCandidate(Long candidate) {
+	public void setCandidate(Candidate candidate) {
 		this.candidate = candidate;
 	}
 

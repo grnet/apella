@@ -108,7 +108,7 @@ public class Candidate extends Role {
 
 	public void addCandidacy(Candidacy candidacy) {
 		this.candidacies.add(candidacy);
-		candidacy.setCandidate(this.getId());
+		candidacy.setCandidate(this);
 	}
 
 	@Override

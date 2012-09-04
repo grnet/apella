@@ -157,7 +157,6 @@ public class CandidacyRESTService extends RESTService {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	@GET
 	@Path("/{id:[0-9][0-9]*}/committee")
 	@JsonView({SimpleCandidateCommitteeView.class})
