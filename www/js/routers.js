@@ -1,4 +1,4 @@
-define([ "jquery", "underscore", "backbone", "js/application", "js/models", "js/views" ], function($, _, Backbone, App, Models, Views) {
+define([ "jquery", "underscore", "backbone", "js/application", "js/models", "js/views", "lib/require/text!tpl/user-registration-success.html"], function($, _, Backbone, App, Models, Views, tpl_user_registration_success) {
 	var Routers = {};
 	
 	Routers.RegistrationRouter = Backbone.Router.extend({
@@ -67,7 +67,7 @@ define([ "jquery", "underscore", "backbone", "js/application", "js/models", "js/
 		
 		showRegisterSuccessView : function() {
 			this.clear();
-			$("#content").html(_.template(tpl.get('user-registration-success')));
+			$("#content").html(_.template(tpl_user_registration_success));
 		},
 		
 		showVerificationView : function(email, verificationNumber) {
