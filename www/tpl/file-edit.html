@@ -11,7 +11,7 @@
 <% _.each(files, function(file) { %>
 <% if (!_.isUndefined(file.id)) { %>
 	<tr>
-		<td><a href='/rest/file/<%= file.id %>' target="viewfile"><%= file.currentBody.originalFilename %></a></td>
+		<td><a href='<%= file.currentBody.url %>' target="viewfile"><%= file.currentBody.originalFilename %></a></td>
 		<td width="70px"><p align="right"><%= App.utils.formatFileSize(file.currentBody.fileSize) %></p></td>
 		<td width="140px"><p align="right"><%= App.utils.formatDate(new Date(file.currentBody.date), "dd/mm/yyyy hh:nn:ss") %></p></td>
 		<td width="100px">
