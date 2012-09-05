@@ -1,4 +1,3 @@
-<script type="html/template" id="position-committee-edit">
 <table class="table table-striped table-bordered">
 	<thead>
 		<tr>
@@ -16,7 +15,7 @@
 <% _.each(committee, function(committeeMember) { %>
 		<tr>
 			<td>
-				<a href="javascript:void(0)" id="viewMember" data-committee-member-id="<%= committeeMember.id %>" ><%= committeeMember.professor.user.username %> </a>
+				<a id="viewMember" data-committee-member-id="<%= committeeMember.id %>" ><%= committeeMember.professor.user.username %> </a>
 			</td>
 			<td><%= committeeMember.professor.user.basicInfo.firstname %></td>
 			<td><%= committeeMember.professor.user.basicInfo.lastname%></td>
@@ -34,7 +33,7 @@
 				<% } %>
 			</td>
 			<td width="72px">
-				<a href="javascript:void(0)" id="removeMember" data-committee-member-id="<%= committeeMember.id %>" class="btn btn-mini btn-danger"><i class="icon-minus icon-white"></i> <%= $.i18n.prop('btn_remove') %></a>
+				<a id="removeMember" data-committee-member-id="<%= committeeMember.id %>" class="btn btn-mini btn-danger"><i class="icon-minus icon-white"></i> <%= $.i18n.prop('btn_remove') %></a>
 			</td>
 		</tr>
 <% }); %>
@@ -44,7 +43,7 @@
 			<td colspan="8">
 				<div class="btn-toolbar" id="actions">
 					<div class="btn-group">
-						<a href="javascript:void(0)" id="addMember" class="btn btn-small"><i class="icon-plus"></i> <%= $.i18n.prop('btn_add') %></a>
+						<a id="addMember" class="btn btn-small"><i class="icon-plus"></i> <%= $.i18n.prop('btn_add') %></a>
 					</div>
 				</div>
 			</td>
@@ -60,4 +59,3 @@
 	<div class="modal-body uploader"></div>
 	<div class="modal-footer"></div>
 </div>
-</script>

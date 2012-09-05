@@ -1,17 +1,16 @@
-<script type="html/template" id="user">
 <h4><%= $.i18n.prop('Account') %></h4>
 <dl class="dl-horizontal">
 	<dt><%= $.i18n.prop('UserStatus') %></dt>
 	<dd>
 	<div class="btn-group">
-		<a class="btn btn-small" href="javascript:void(0)"><i class="icon-user"></i> <%= $.i18n.prop('status' + status) %></a>
-		<a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)"><span class="caret"></span></a>
+		<a class="btn btn-small" ><i class="icon-user"></i> <%= $.i18n.prop('status' + status) %></a>
+		<a class="btn btn-small dropdown-toggle" data-toggle="dropdown" ><span class="caret"></span></a>
 		<ul class="dropdown-menu">
-			<li><a class="status" user="<%= id %>" status="CREATED" href="javascript:void(0)"> <%= $.i18n.prop('statusCREATED') %></a></li>
-			<li><a class="status" user="<%= id %>" status="UNVERIFIED" href="javascript:void(0)"> <%= $.i18n.prop('statusUNVERIFIED') %></a></li>
-			<li><a class="status" user="<%= id %>" status="ACTIVE" href="javascript:void(0)"> <%= $.i18n.prop('statusACTIVE') %></a></li>
-			<li><a class="status" user="<%= id %>" status="BLOCKED" href="javascript:void(0)"> <%= $.i18n.prop('statusBLOCKED') %></a></li>
-			<li><a class="status" user="<%= id %>" status="DELETED" href="javascript:void(0)"> <%= $.i18n.prop('statusDELETED') %></a></li>
+			<li><a class="status" user="<%= id %>" status="CREATED" > <%= $.i18n.prop('statusCREATED') %></a></li>
+			<li><a class="status" user="<%= id %>" status="UNVERIFIED" > <%= $.i18n.prop('statusUNVERIFIED') %></a></li>
+			<li><a class="status" user="<%= id %>" status="ACTIVE" > <%= $.i18n.prop('statusACTIVE') %></a></li>
+			<li><a class="status" user="<%= id %>" status="BLOCKED" > <%= $.i18n.prop('statusBLOCKED') %></a></li>
+			<li><a class="status" user="<%= id %>" status="DELETED" > <%= $.i18n.prop('statusDELETED') %></a></li>
 		</ul>
 	</div>
 	</dd>
@@ -52,4 +51,3 @@
 	<dd><%= contactInfo.address.country %></dd>
 </dl>
 <hr/>
-</script>

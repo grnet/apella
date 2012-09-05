@@ -1,9 +1,8 @@
-<script type="html/template" id="role-edit">
 <% if (discriminator === "PROFESSOR_DOMESTIC") { %>
 <div id="PROFESSOR_DOMESTIC">
 	<form class="form-horizontal" onsubmit="return false">
 		<fieldset>
-			<legend><%= $.i18n.prop('PROFESSOR_DOMESTIC') %> <a href="javascript:void(0)" class="label label-info help" rel="popover" data-content="<%= $.i18n.prop('status' + status + 'Help') %>"><%= $.i18n.prop('status' + status) %></a></legend>
+			<legend><%= $.i18n.prop('PROFESSOR_DOMESTIC') %> <a class="label label-info help" rel="popover" data-content="<%= $.i18n.prop('status' + status + 'Help') %>"><%= $.i18n.prop('status' + status) %></a></legend>
 			<div class="control-group">
 				<label class="control-label" for="institution"><%= $.i18n.prop('Institution') %>:</label>
 				<div class="controls">
@@ -62,9 +61,9 @@
 				</div>
 			</div>
 			<div class="form-actions">
-				<a id="remove" href="javascript:void(0)" class="btn btn-danger"><i class="icon-remove icon-white"></i> <%= $.i18n.prop('btn_remove') %></a>
-				<a id="save" href="javascript:void(0)" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
-				<a id="cancel" href="javascript:void(0)" class="btn"><i class="icon-refresh"></i> <%= $.i18n.prop('btn_cancel') %></a>
+				<a id="remove" class="btn btn-danger"><i class="icon-remove icon-white"></i> <%= $.i18n.prop('btn_remove') %></a>
+				<a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
+				<a id="cancel" class="btn"><i class="icon-refresh"></i> <%= $.i18n.prop('btn_cancel') %></a>
 			</div>
 		</fieldset>
 	</form>
@@ -74,7 +73,7 @@
 <div id="PROFESSOR_FOREIGN">
 	<form class="form-horizontal" onsubmit="return false">
 		<fieldset>
-			<legend><%= $.i18n.prop('PROFESSOR_FOREIGN') %> <a href="javascript:void(0)" class="label label-info help" rel="popover" data-content="<%= $.i18n.prop('status' + status + 'Help') %>"><%= $.i18n.prop('status' + status) %></a></legend>
+			<legend><%= $.i18n.prop('PROFESSOR_FOREIGN') %> <a class="label label-info help" rel="popover" data-content="<%= $.i18n.prop('status' + status + 'Help') %>"><%= $.i18n.prop('status' + status) %></a></legend>
 			<div class="control-group">
 				<label class="control-label" for="institution"><%= $.i18n.prop('Institution') %>:</label>
 				<div class="controls">
@@ -107,9 +106,9 @@
 				</div>
 			</div>
 			<div class="form-actions">
-				<a id="remove" href="javascript:void(0)" class="btn btn-danger"><i class="icon-remove icon-white"></i> <%= $.i18n.prop('btn_remove') %></a>
-				<a id="save" href="javascript:void(0)" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
-				<a id="cancel" href="javascript:void(0)" class="btn"><i class="icon-refresh"></i> <%= $.i18n.prop('btn_cancel') %></a>
+				<a id="remove" class="btn btn-danger"><i class="icon-remove icon-white"></i> <%= $.i18n.prop('btn_remove') %></a>
+				<a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
+				<a id="cancel" class="btn"><i class="icon-refresh"></i> <%= $.i18n.prop('btn_cancel') %></a>
 			</div>
 		</fieldset>
 	</form>
@@ -119,7 +118,7 @@
 <div id="INSTITUTION_MANAGER">
 	<form class="form-horizontal" onsubmit="return false">
 		<fieldset>
-			<legend><%= $.i18n.prop('INSTITUTION_MANAGER') %> <a href="javascript:void(0)" class="label label-info help" rel="popover" data-content="<%= $.i18n.prop('status' + status + 'Help') %>"><%= $.i18n.prop('status' + status) %></a></legend>
+			<legend><%= $.i18n.prop('INSTITUTION_MANAGER') %> <a class="label label-info help" rel="popover" data-content="<%= $.i18n.prop('status' + status + 'Help') %>"><%= $.i18n.prop('status' + status) %></a></legend>
 			<div class="control-group">
 				<label class="control-label" for="institution"><%= $.i18n.prop('Institution') %>:</label>
 				<div class="controls">
@@ -128,9 +127,9 @@
 				</div>
 			</div>
 			<div class="form-actions">
-				<a id="remove" href="javascript:void(0)" class="btn btn-danger"><i class="icon-remove icon-white"></i> <%= $.i18n.prop('btn_remove') %></a>
-				<a id="save" href="javascript:void(0)" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
-				<a id="cancel" href="javascript:void(0)" class="btn"><i class="icon-refresh"></i> <%= $.i18n.prop('btn_cancel') %></a>
+				<a id="remove" class="btn btn-danger"><i class="icon-remove icon-white"></i> <%= $.i18n.prop('btn_remove') %></a>
+				<a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
+				<a id="cancel" class="btn"><i class="icon-refresh"></i> <%= $.i18n.prop('btn_cancel') %></a>
 			</div>
 		</fieldset>
 	</form>
@@ -140,7 +139,7 @@
 <div id="DEPARTMENT_ASSISTANT">
 	<form class="form-horizontal" onsubmit="return false">
 		<fieldset>
-			<legend><%= $.i18n.prop('DEPARTMENT_ASSISTANT') %> <a href="javascript:void(0)" class="label label-info help" rel="popover" data-content="<%= $.i18n.prop('status' + status + 'Help') %>"><%= $.i18n.prop('status' + status) %></a></legend>
+			<legend><%= $.i18n.prop('DEPARTMENT_ASSISTANT') %> <a class="label label-info help" rel="popover" data-content="<%= $.i18n.prop('status' + status + 'Help') %>"><%= $.i18n.prop('status' + status) %></a></legend>
 			<div class="control-group">
 				<label class="control-label" for="department"><%= $.i18n.prop('Department') %>:</label>
 				<div class="controls">
@@ -149,9 +148,9 @@
 				</div>
 			</div>
 			<div class="form-actions">
-				<a id="remove" href="javascript:void(0)" class="btn btn-danger"><i class="icon-remove icon-white"></i> <%= $.i18n.prop('btn_remove') %></a>
-				<a id="save" href="javascript:void(0)" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
-				<a id="cancel" href="javascript:void(0)" class="btn"><i class="icon-refresh"></i> <%= $.i18n.prop('btn_cancel') %></a>
+				<a id="remove" class="btn btn-danger"><i class="icon-remove icon-white"></i> <%= $.i18n.prop('btn_remove') %></a>
+				<a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
+				<a id="cancel" class="btn"><i class="icon-refresh"></i> <%= $.i18n.prop('btn_cancel') %></a>
 			</div>
 		</fieldset>
 	</form>
@@ -161,7 +160,7 @@
 <div id="INSTITUTION_ASSISTANT">
 	<form class="form-horizontal" onsubmit="return false">
 		<fieldset>
-			<legend><%= $.i18n.prop('INSTITUTION_ASSISTANT') %> <a href="javascript:void(0)" class="label label-info help" rel="popover" data-content="<%= $.i18n.prop('status' + status + 'Help') %>"><%= $.i18n.prop('status' + status) %></a></legend>
+			<legend><%= $.i18n.prop('INSTITUTION_ASSISTANT') %> <a class="label label-info help" rel="popover" data-content="<%= $.i18n.prop('status' + status + 'Help') %>"><%= $.i18n.prop('status' + status) %></a></legend>
 			<div class="control-group">
 				<label class="control-label" for="institution"><%= $.i18n.prop('Institution') %>:</label>
 				<div class="controls">
@@ -170,9 +169,9 @@
 				</div>
 			</div>
 			<div class="form-actions">
-				<a id="remove" href="javascript:void(0)" class="btn btn-danger"><i class="icon-remove icon-white"></i> <%= $.i18n.prop('btn_remove') %></a>
-				<a id="save" href="javascript:void(0)" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
-				<a id="cancel" href="javascript:void(0)" class="btn"><i class="icon-refresh"></i> <%= $.i18n.prop('btn_cancel') %></a>
+				<a id="remove" class="btn btn-danger"><i class="icon-remove icon-white"></i> <%= $.i18n.prop('btn_remove') %></a>
+				<a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
+				<a id="cancel" class="btn"><i class="icon-refresh"></i> <%= $.i18n.prop('btn_cancel') %></a>
 			</div>
 		</fieldset>
 	</form>
@@ -182,7 +181,7 @@
 <div id="MINISTRY_MANAGER">
 	<form class="form-horizontal" onsubmit="return false">
 		<fieldset>
-			<legend><%= $.i18n.prop('MINISTRY_MANAGER') %> <a href="javascript:void(0)" class="label label-info help" rel="popover" data-content="<%= $.i18n.prop('status' + status + 'Help') %>"><%= $.i18n.prop('status' + status) %></a></legend>
+			<legend><%= $.i18n.prop('MINISTRY_MANAGER') %> <a class="label label-info help" rel="popover" data-content="<%= $.i18n.prop('status' + status + 'Help') %>"><%= $.i18n.prop('status' + status) %></a></legend>
 			<div class="control-group">
 				<label class="control-label" for="ministry"><%= $.i18n.prop('Ministry') %>:</label>
 				<div class="controls">
@@ -190,9 +189,9 @@
 				</div>
 			</div>
 			<div class="form-actions">
-				<a id="remove" href="javascript:void(0)" class="btn btn-danger"><i class="icon-remove icon-white"></i> <%= $.i18n.prop('btn_remove') %></a>
-				<a id="save" href="javascript:void(0)" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
-				<a id="cancel" href="javascript:void(0)" class="btn"><i class="icon-refresh"></i> <%= $.i18n.prop('btn_cancel') %></a>
+				<a id="remove" class="btn btn-danger"><i class="icon-remove icon-white"></i> <%= $.i18n.prop('btn_remove') %></a>
+				<a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
+				<a id="cancel" class="btn"><i class="icon-refresh"></i> <%= $.i18n.prop('btn_cancel') %></a>
 			</div>
 		</fieldset>
 	</form>
@@ -202,7 +201,7 @@
 <div id="CANDIDATE">
 	<form class="form-horizontal" onsubmit="return false">
 		<fieldset>
-			<legend><%= $.i18n.prop('CANDIDATE') %> <a href="javascript:void(0)" class="label label-info help" rel="popover" data-content="<%= $.i18n.prop('status' + status + 'Help') %>"><%= $.i18n.prop('status' + status) %></a></legend>
+			<legend><%= $.i18n.prop('CANDIDATE') %> <a class="label label-info help" rel="popover" data-content="<%= $.i18n.prop('status' + status + 'Help') %>"><%= $.i18n.prop('status' + status) %></a></legend>
 			<div class="control-group">
 				<label class="control-label" for="cv"><%= $.i18n.prop('CuriculumVitaeFile') %>:</label>
 				<div class="controls">
@@ -228,12 +227,11 @@
 				</div>
 			</div>
 			<div class="form-actions">
-				<a id="remove" href="javascript:void(0)" class="btn btn-danger"><i class="icon-remove icon-white"></i> <%= $.i18n.prop('btn_remove') %></a>
-				<a id="save" href="javascript:void(0)" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
-				<a id="cancel" href="javascript:void(0)" class="btn"><i class="icon-refresh"></i> <%= $.i18n.prop('btn_cancel') %></a>
+				<a id="remove" class="btn btn-danger"><i class="icon-remove icon-white"></i> <%= $.i18n.prop('btn_remove') %></a>
+				<a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
+				<a id="cancel" class="btn"><i class="icon-refresh"></i> <%= $.i18n.prop('btn_cancel') %></a>
 			</div>
 		</fieldset>
 	</form>
 </div>
 <% } %>
-</script>

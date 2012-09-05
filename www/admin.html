@@ -20,41 +20,7 @@
 <link href="lib/jquery.dataTables/css/DT_bootstrap.css?apella=0.8.1" rel="stylesheet">
 <link rel="stylesheet" type="text/css" href="css/styles.css?apella=0.8.1" />
 
-<script type="text/javascript" src="lib/jquery-1.7.2.js?apella=0.8.1"></script>
-<script type="text/javascript" src="lib/jquery.ui/jquery-ui-1.8.20.custom.js?apella=0.8.1"></script>
-<script type="text/javascript" src="lib/bootstrap/bootstrap.js?apella=0.8.1"></script>
-<script type="text/javascript" src="lib/jquery.i18n.properties-1.0.9.js?apella=0.8.1"></script>
-<script type="text/javascript" src="lib/jquery.validate.js?apella=0.8.1"></script>
-<script type="text/javascript" src="lib/jquery.dataTables/jquery.dataTables.js?apella=0.8.1"></script>
-<script type="text/javascript" src="lib/jquery.dataTables/DT_bootstrap.js?apella=0.8.1"></script>
-<script type="text/javascript" src="lib/jquery.blockUI.js?apella=0.8.1"></script>
-
-<script type="text/javascript" src="lib/plupload/plupload.full.js?apella=0.8.1"></script>
-<script type="text/javascript" src="lib/plupload/jquery.plupload.queue/jquery.plupload.queue.js?apella=0.8.1"></script>
-
-<script type="text/javascript" src="lib/underscore.js?apella=0.8.1"></script>
-<script type="text/javascript" src="lib/backbone.js?apella=0.8.1"></script>
-<script type="text/javascript" src="lib/backbone.cache.js?apella=0.8.1"></script>
-<script type="text/javascript" src="js/utils.js?apella=0.8.1"></script>
-<script type="text/javascript" src="js/main.js?apella=0.8.1"></script>
-<script type="text/javascript" src="js/models.js?apella=0.8.1"></script>
-<script type="text/javascript" src="js/views.js?apella=0.8.1"></script>
-<script type="text/javascript">
-	$(document).ready(function() {
-		tpl.loadTemplates([ "login-admin", "user", "user-edit", "user-search", "user-list", "user-role-info", "role", "popup", "confirm" ], function() {
-			// Loaded templates
-			jQuery.i18n.properties({
-				name : 'messages',
-				path : 'locale/',
-				mode : 'map',
-				callback : function() {
-					// Loaded locales
-					App.router = new App.AdminRouter();
-				}
-			});
-		});
-	});
-</script>
+<script data-main="admin" src="lib/require/require.js"></script>
 
 </head>
 

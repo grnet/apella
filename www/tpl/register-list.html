@@ -1,4 +1,3 @@
-<script type="html/template" id="register-list">
 <table class="table table-striped table-bordered">
 	<thead>
 		<tr>
@@ -14,7 +13,7 @@
 			<td><%= register.department.department %></td>
 			<td width="100px">
 				<p align="center">
-					<a href="javascript:void(0)" id="select" data-register-cid="<%= register.cid %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_select') %></a>
+					<a id="select" data-register-cid="<%= register.cid %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_select') %></a>
 				</p>
 			</td>
 		</tr>
@@ -29,4 +28,3 @@
 		</tr>
 	</tfoot>
 </table>
-</script>
