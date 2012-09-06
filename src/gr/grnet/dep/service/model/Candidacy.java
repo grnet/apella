@@ -10,6 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
@@ -34,7 +35,7 @@ public class Candidacy {
 	@Temporal(TemporalType.TIMESTAMP)
 	Date date;
 
-	@JsonView({DetailedCandidacyView.class})
+	@ManyToOne
 	private Candidate candidate;
 
 	// Inverse to Position
@@ -57,6 +58,7 @@ public class Candidacy {
 		this.date = date;
 	}
 
+	@JsonView({DetailedCandidacyView.class})
 	public Candidate getCandidate() {
 		return candidate;
 	}

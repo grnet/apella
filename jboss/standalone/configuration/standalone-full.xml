@@ -105,7 +105,7 @@
 					</security>
 				</datasource>
 				<datasource jndi-name="java:jboss/datasources/apelladb" pool-name="apelladb" enabled="true" jta="false" use-ccm="false">
-					<connection-url>jdbc:postgresql://dbvm/apelladb</connection-url>
+					<connection-url>jdbc:postgresql://dbvm.ebs.gr:5433/apelladb</connection-url>
 					<driver>org.postgresql</driver>
 					<pool>
 						<min-pool-size>5</min-pool-size>
