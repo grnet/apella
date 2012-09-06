@@ -150,7 +150,7 @@ public class RESTService {
 		if (dotPoint > -1) {
 			extension = originalName.substring(dotPoint);
 		}
-		String subPath = getSubdirForId(id) + File.separator;
+		String subPath = getSubdirForId(id);
 		// Create if it does not exist
 		new File(savePath + File.separator + subPath).mkdirs();
 

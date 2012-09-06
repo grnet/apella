@@ -86,7 +86,7 @@ public abstract class Role implements Serializable {
 
 	@Enumerated(EnumType.STRING)
 	@NotNull
-	private RoleStatus status;
+	private RoleStatus status = RoleStatus.CREATED;
 
 	private Date statusDate;
 

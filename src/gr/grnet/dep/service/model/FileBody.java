@@ -178,7 +178,7 @@ public final class FileBody implements Serializable {
 
 	@JsonView({SimpleFileHeaderView.class, SimpleFileBodyView.class, DetailedRoleView.class, DetailedRegisterView.class, DetailedPositionView.class, DetailedPositionCommitteeMemberView.class})
 	public String getURL() {
-		return baseURL + storedFilePath.replaceAll("\\\\", "/");
+		return baseURL + storedFilePath;
 	}
 
 }

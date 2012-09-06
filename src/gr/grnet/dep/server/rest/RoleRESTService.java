@@ -327,8 +327,8 @@ public class RoleRESTService extends RESTService {
 
 		// Update
 		try {
+			newRole = em.merge(newRole);
 			refreshRoleStatus(newRole);
-			em.persist(newRole);
 			em.flush();
 			return newRole;
 		} catch (PersistenceException e) {
