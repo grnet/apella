@@ -377,7 +377,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 				if (_.isFunction(this.options.yes)) {
 					this.options.yes();
 				}
-			},
+			}
 		},
 		
 		render : function(eventName) {
@@ -1825,7 +1825,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		
 		events : {
 			"click a#upload" : "uploadFile",
-			"click a#delete" : "deleteFile",
+			"click a#delete" : "deleteFile"
 		},
 		
 		render : function(eventName) {
@@ -1942,7 +1942,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		
 		events : {
 			"click a#upload" : "uploadFile",
-			"click a#delete" : "deleteFile",
+			"click a#delete" : "deleteFile"
 		},
 		
 		render : function(eventName) {
@@ -2355,7 +2355,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 					status : $.i18n.prop('validation_positionStatus'),
 					deanStatus : $.i18n.prop('validation_positionDeanStatus'),
 					fek : $.i18n.prop('validation_fek'),
-					fekSentDate : $.i18n.prop('validation_fekSentDate'),
+					fekSentDate : $.i18n.prop('validation_fekSentDate')
 				}
 			});
 			return self;
@@ -2454,8 +2454,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 				position : {
 					id : self.model.get("id")
 				},
-				collection : committee,
-			
+				collection : committee
 			});
 			$el.html(committeeView.el);
 			committee.fetch({
@@ -2497,7 +2496,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		close : function() {
 			$(this.el).unbind();
 			$(this.el).remove();
-		},
+		}
 	});
 	
 	Views.PositionCommitteeView = Backbone.View.extend({
@@ -2523,7 +2522,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 						var positionCommitteeMember = new Models.PositionCommitteeMember();
 						positionCommitteeMember.save({
 							position : {
-								id : self.options.position.id,
+								id : self.options.position.id
 							},
 							professor : role.toJSON()
 						}, {
@@ -2553,7 +2552,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		events : {
 			"click a#removeMember" : "removeMember",
 			"click a#addMember" : "toggleAddMember",
-			"click a#viewMember" : "viewMember",
+			"click a#viewMember" : "viewMember"
 		},
 		
 		render : function(eventName) {
@@ -2598,7 +2597,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 					collection : roles
 				});
 				user.fetch({
-					cache : false,
+					cache : false
 				});
 				roles.fetch({
 					cache : false
@@ -2729,8 +2728,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		close : function() {
 			$(this.el).unbind();
 			$(this.el).remove();
-		},
-	
+		}
 	});
 	
 	Views.RegisterEditView = Backbone.View.extend({
@@ -2906,7 +2904,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		close : function() {
 			$(this.el).unbind();
 			$(this.el).remove();
-		},
+		}
 	});
 	
 	// RoleTabsView
@@ -2971,7 +2969,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 					collection : roles
 				});
 				user.fetch({
-					cache : false,
+					cache : false
 				});
 				roles.fetch({
 					cache : false

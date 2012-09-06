@@ -25,7 +25,7 @@ define([ "jquery", "bootstrap", "underscore", "backbone", "plupload", "jquery.ui
 						'z-index' : 1999,
 						backgroundColor : 'none',
 						opacity : 1.0
-					},
+					}
 				});
 			},
 			

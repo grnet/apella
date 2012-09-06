@@ -25,8 +25,7 @@ require.config({
 		"application" : "js/application",
 		"models" : "js/models",
 		"routers" : "js/routers",
-		"views" : "js/views",
-	
+		"views" : "js/views"
 	},
 	shim : {
 		"underscore" : {
@@ -47,11 +46,9 @@ require.config({
 		"jquery.dataTables.bootstrap" : [ "jquery", "jquery.dataTables", "bootstrap" ],
 		"jquery.blockUI" : [ "jquery" ],
 		"jquery.plupload" : {
-			"deps" : [ "jquery", "plupload" ],
+			"deps" : [ "jquery", "plupload" ]
 		},
-		"backbone.cache" : [ "backbone" ],
-	
+		"backbone.cache" : [ "backbone" ]
 	}
-// end Shim Configuration
 
 });

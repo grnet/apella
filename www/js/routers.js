@@ -279,7 +279,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			$("#content").append(userView.render().el);
 			$("#content").append(roleView.render().el);
 			this.currentView = [ userView, roleView ];
-		},
+		}
 	
 	});
 	
@@ -505,7 +505,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					self.refreshBreadcrumb([ $.i18n.prop('menu_assistants'), user.get("username") ]);
 					
 					userRoleInfoView = new Views.UserRoleInfoView({
-						model : user,
+						model : user
 					});
 					$("#content").append(userRoleInfoView.render().el);
 					accountView = new Views.AccountView({

@@ -52,6 +52,10 @@
 		<fileset dir="${ear.lib.dir}" includes="**/*.jar" />
 	</path>
 
+	<path id="requirejs.class.path">
+		<fileset dir="${basedir}/rjs" includes="**/*.jar" />
+	</path>
+
 	<target name="check-dependencies" description="Checks if all dependencies are present">
 		<condition property="dependencies.present">
 			<and>
@@ -88,6 +92,15 @@
 		<javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" debuglevel="lines,vars,source" source="1.6" encoding="UTF-8">
 			<classpath refid="project.class.path" />
 		</javac>
+	</target>
+
+	<target name="optimizejs" description="Optimize js files">
+		<java classname="org.mozilla.javascript.tools.shell.Main" fork="yes">
+			<arg value="${basedir}/rjs/r.js" />
+			<arg value="-o" />
+			<arg value="${basedir}/app.build.js" />
+			<classpath refid="requirejs.class.path" />
+		</java>
 	</target>
 
 	<target name="package-ejb" description="Package up the EJB classes">
@@ -157,7 +170,15 @@
 	<target name="release">
 		<antcall target="clean" />
 		<property name="draftCompile" value="" />
-		<antcall target="deploy" />
+		<antcall target="deploy-ear" />
+		<antcall target="release-www" />
+	</target>
+
+	<target name="release-www" depends="optimizejs">
+		<sync todir="${jboss.standalone.deployments.dir}/${www.dist.war}">
+			<fileset dir="${build.dir}/www" />
+		</sync>
+		<touch file="${jboss.standalone.deployments.dir}/depui.war.dodeploy" />
 	</target>
 
 	<target name="clean" description="Delete the contents of the bin and www directories">
