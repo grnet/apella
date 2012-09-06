@@ -1,4 +1,4 @@
-define([ "jquery", "underscore", "backbone", "js/application", "js/models", "js/views", "lib/require/text!tpl/user-registration-success.html"], function($, _, Backbone, App, Models, Views, tpl_user_registration_success) {
+define([ "jquery", "underscore", "backbone", "application", "models", "views", "text!tpl/user-registration-success.html"], function($, _, Backbone, App, Models, Views, tpl_user_registration_success) {
 	var Routers = {};
 	
 	Routers.RegistrationRouter = Backbone.Router.extend({

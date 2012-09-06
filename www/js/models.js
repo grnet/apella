@@ -1,4 +1,4 @@
-define([ "jquery", "underscore", "backbone", "js/application", "plupload", "bootstrap", "jquery.ui", "jquery.i18n", "jquery.validate", "jquery.dataTables", "jquery.dataTables.bootstrap", "jquery.blockUI", "jquery.plupload", "backbone.cache" ], function($, _, Backbone, App) {
+define([ "jquery", "underscore", "backbone", "application" ], function($, _, Backbone, App) {
 	
 	var Models = {};
 	

@@ -9,6 +9,7 @@ require.config({
 		"underscore" : "lib/underscore/underscore",
 		"backbone" : "lib/backbone/backbone",
 		"plupload" : "lib/plupload/plupload.full",
+		"text" : "lib/require/text",
 		
 		// Plugins
 		"jquery.ui" : "lib/jquery.ui/jquery-ui",
@@ -18,7 +19,13 @@ require.config({
 		"jquery.dataTables.bootstrap" : "lib/jquery.dataTables/DT_bootstrap",
 		"jquery.blockUI" : "lib/jquery.blockUI/jquery.blockUI",
 		"jquery.plupload" : "lib/plupload/jquery.plupload.queue/jquery.plupload.queue",
-		"backbone.cache" : "lib/backbone/backbone.cache"
+		"backbone.cache" : "lib/backbone/backbone.cache",
+		
+		// Apella Application
+		"application" : "js/application",
+		"models" : "js/models",
+		"routers" : "js/routers",
+		"views" : "js/views",
 	
 	},
 	shim : {
