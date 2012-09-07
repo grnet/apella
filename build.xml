@@ -166,6 +166,11 @@
 	<target name="undeploy-ear" description="Undeploy the project from the server">
 		<delete file="${jboss.standalone.deployments.dir}/${dist.ear}" />
 	</target>
+	
+	<target name="undeploy-www" description="Undeploy the client from the server">
+		<delete dir="${jboss.standalone.deployments.dir}/${www.dist.war}" />
+		<delete file="${jboss.standalone.deployments.dir}/${www.dist.war}.deployed" />
+	</target>
 
 	<target name="release">
 		<antcall target="clean" />

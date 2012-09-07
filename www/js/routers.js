@@ -235,7 +235,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				}
 			}, this);
 			var userSearchView = new Views.UserSearchView({
-				"query" : query ? JSON.parse(query) : undefined,
+				"query" : query ? JSON.parse(decodeURI(query)) : undefined,
 				collection : users
 			});
 			var userListView = new Views.UserListView({

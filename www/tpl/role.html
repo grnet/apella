@@ -36,7 +36,7 @@
 		<dd><% if (!_.isUndefined(fekSubject)) { %><%= fekSubject.name %><% } %></dd>
 		<dt><%= $.i18n.prop('FEKFile') %></dt>
 		<dd>
-			<% if (!_.isUndefined(fekFile)) { %><a href="#" target="file"><%= fekFile.id %></a><% } %> 
+			<% if (!_.isUndefined(fekFile)) { %><a href="<%= fekFile.currentBody.url %>" target="viewfile"><%= fekFile.currentBody.originalFilename %></a><% } %> 
 		</dd>
 	</dl>
 </div>
@@ -196,21 +196,22 @@
 		</dd>
 		<dt><%= $.i18n.prop('CuriculumVitaeFile') %></dt>
 		<dd>
-			<% if (!_.isUndefined(cv)) { %><a href="#" target="file"><%= cv.id %></a><% } %> 
+			<% if (!_.isUndefined(cv)) { %><a href="<%= cv.currentBody.url %>" target="viewfile"><%= cv.currentBody.originalFilename %></a> <% } %>
 		</dd>
 		<dt><%= $.i18n.prop('IdentityFile') %></dt>
 		<dd>
-			<% if (!_.isUndefined(identity)) { %><a href="#" target="file"><%= identity.id %></a><% } %> 
+			<% if (!_.isUndefined(identity)) { %><a href="<%= identity.currentBody.url %>" target="viewfile"><%= identity.currentBody.originalFilename %></a><% } %>
 		</dd>
 		<dt><%= $.i18n.prop('Military1599File') %></dt>
 		<dd>
-			<% if (!_.isUndefined(military1599)) { %><a href="#" target="file"><%= military1599.id %></a><% } %> 
+			<% if (!_.isUndefined(military1599)) { %><a href="<%= military1599.currentBody.url %>" target="viewfile"><%= military1599.currentBody.originalFilename %></a><% } %> 
 		</dd>
 		<dt><%= $.i18n.prop('PublicationsFiles') %></dt>
 		<dd>
 			<% if (!_.isUndefined(publications)) { %>
 			<% _.each(publications, function(publication) { %>
-				<a href="#" target="file"><%= publication.id %></a><br/>
+				<a href="<%= publication.currentBody.url %>" target="viewfile"><%= publication.currentBody.originalFilename %></a>
+				<br/>
 			<% }); %>
 			<% } %>
 		</dd>
