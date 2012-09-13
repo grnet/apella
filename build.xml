@@ -111,6 +111,7 @@
 			</zipfileset>
 			<zipfileset dir="${src.dir}">
 				<include name="import.sql" />
+				<include name="**/*.properties" />
 			</zipfileset>
 		</jar>
 	</target>
@@ -134,7 +135,6 @@
 			</zipfileset>
 			<zipfileset dir="${build.dir}">
 				<include name="ejbs.jar" />
-				<include name="${adminapp.dist.war}" />
 				<include name="${rest.dist.war}" />
 				<include name="${services.dist.sar}" />
 			</zipfileset>
@@ -166,7 +166,7 @@
 	<target name="undeploy-ear" description="Undeploy the project from the server">
 		<delete file="${jboss.standalone.deployments.dir}/${dist.ear}" />
 	</target>
-	
+
 	<target name="undeploy-www" description="Undeploy the client from the server">
 		<delete dir="${jboss.standalone.deployments.dir}/${www.dist.war}" />
 		<delete file="${jboss.standalone.deployments.dir}/${www.dist.war}.deployed" />
@@ -174,14 +174,20 @@
 
 	<target name="release">
 		<antcall target="clean" />
+		<antcall target="release-ear" />
+		<antcall target="release-www" />
+	</target>
+
+	<target name="release-ear">
 		<property name="draftCompile" value="" />
 		<antcall target="deploy-ear" />
-		<antcall target="release-www" />
 	</target>
 
 	<target name="release-www" depends="optimizejs">
 		<sync todir="${jboss.standalone.deployments.dir}/${www.dist.war}">
-			<fileset dir="${build.dir}/www" />
+			<fileset dir="${build.dir}/www">
+				<exclude name="**/tpl/*" />
+			</fileset>
 		</sync>
 		<touch file="${jboss.standalone.deployments.dir}/depui.war.dodeploy" />
 	</target>

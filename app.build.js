@@ -2,7 +2,12 @@
 	appDir : "./www",
 	baseUrl : "./",
 	dir : "./bin/www",
-	optimize : 'closure',
+	optimize : "closure",
+	closure : {
+		CompilerOptions : {},
+		CompilationLevel : 'WHITESPACE_ONLY',
+		loggingLevel : 'WARNING'
+	},
 	inlineText : true,
 	mainConfigFile : './www/main.js',
 	keepBuildDir : true,

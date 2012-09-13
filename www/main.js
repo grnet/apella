@@ -9,6 +9,7 @@ require.config({
 		"underscore" : "lib/underscore/underscore",
 		"backbone" : "lib/backbone/backbone",
 		"plupload" : "lib/plupload/plupload.full",
+		
 		"text" : "lib/require/text",
 		
 		// Plugins
@@ -45,9 +46,7 @@ require.config({
 		"jquery.dataTables" : [ "jquery" ],
 		"jquery.dataTables.bootstrap" : [ "jquery", "jquery.dataTables", "bootstrap" ],
 		"jquery.blockUI" : [ "jquery" ],
-		"jquery.plupload" : {
-			"deps" : [ "jquery", "plupload" ]
-		},
+		"jquery.plupload" : [ "jquery", "plupload" ],
 		"backbone.cache" : [ "backbone" ]
 	}
 

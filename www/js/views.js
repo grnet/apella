@@ -1839,14 +1839,12 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		uploadFile : function(event) {
 			var self = this;
 			var uploader = $("div.uploader", self.$el).pluploadQueue({
-				runtimes : 'html5,flash,browserplus',
+				runtimes : 'html5,flash',
 				url : self.model.url(),
 				max_file_size : '30mb',
 				unique_names : true,
 				// Flash settings
 				flash_swf_url : 'lib/plupload/plupload.flash.swf',
-				// Silverlight settings
-				silverlight_xap_url : 'lib/plupload/plupload.silverlight.xap',
 				headers : {
 					"X-Auth-Token" : App.authToken
 				},
@@ -1966,14 +1964,12 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 			var self = this;
 			var length = self.collection.length;
 			var uploader = $("div.uploader", self.$el).pluploadQueue({
-				runtimes : 'html5,flash,browserplus',
+				runtimes : 'html5,flash',
 				url : self.collection.url,
 				max_file_size : '30mb',
 				unique_names : true,
 				// Flash settings
 				flash_swf_url : 'lib/plupload/plupload.flash.swf',
-				// Silverlight settings
-				silverlight_xap_url : 'lib/plupload/plupload.silverlight.xap',
 				headers : {
 					"X-Auth-Token" : App.authToken
 				},

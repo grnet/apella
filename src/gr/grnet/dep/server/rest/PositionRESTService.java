@@ -84,6 +84,18 @@ public class PositionRESTService extends RESTService {
 	}
 
 	@GET
+	@Path("/public")
+	@JsonView({DetailedPositionView.class})
+	public List<Position> getPublic(@HeaderParam(TOKEN_HEADER) String authToken) {
+		//TODO : Return positions that should be publicly displayed in forum (skourtis)
+		@SuppressWarnings("unchecked")
+		List<Position> positions = (List<Position>) em.createQuery(
+			"from Position p ")
+			.getResultList();
+		return positions;
+	}
+
+	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedPositionView.class})
 	public Position get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
