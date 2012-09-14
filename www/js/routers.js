@@ -1,4 +1,4 @@
-define([ "jquery", "underscore", "backbone", "application", "models", "views", "text!tpl/user-registration-success.html"], function($, _, Backbone, App, Models, Views, tpl_user_registration_success) {
+define([ "jquery", "underscore", "backbone", "application", "models", "views", "text!tpl/user-registration-success.html" ], function($, _, Backbone, App, Models, Views, tpl_user_registration_success) {
 	var Routers = {};
 	
 	Routers.RegistrationRouter = Backbone.Router.extend({
@@ -10,6 +10,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			$(document).ajaxStop(App.unblockUI);
 			
 			App.institutions = new Models.Institutions();
+			var languageView = new Views.LanguageView({});
+			languageView.render();
 			
 			Backbone.history.start();
 		},
@@ -107,6 +109,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			_.bindAll(this, "start", "showLoginView", "showHomeView", "showUserSearchView", "showUserView");
 			$(document).ajaxStart(App.blockUI);
 			$(document).ajaxStop(App.unblockUI);
+			
+			var languageView = new Views.LanguageView({});
+			languageView.render();
 			
 			// Init LoggedOnUser
 			App.loggedOnUser = new Models.User();
@@ -294,6 +299,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showAssistantsView", "showPositionView", "showRegisterView", "start");
 			$(document).ajaxStart(App.blockUI);
 			$(document).ajaxStop(App.unblockUI);
+			
+			var languageView = new Views.LanguageView({});
+			languageView.render();
 			
 			// Init LoggedOnUser
 			App.loggedOnUser = new Models.User();

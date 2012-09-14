@@ -1,5 +1,5 @@
-define([ "jquery", "underscore", "backbone", "plupload", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/position-committee-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html", "text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html" ], function($, _, Backbone, plupload, App, Models, tpl_announcement_list, tpl_confirm, tpl_file_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup,
-		tpl_position_committee_edit, tpl_position_edit, tpl_position_list, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user) {
+define([ "jquery", "underscore", "backbone", "plupload", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/position-committee-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html", "text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html" ], function($, _, Backbone, plupload, App, Models, tpl_announcement_list, tpl_confirm, tpl_file_edit, tpl_home, tpl_login_admin,
+		tpl_login_main, tpl_popup, tpl_position_committee_edit, tpl_position_edit, tpl_position_list, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language) {
 	
 	var Views = {};
 	// MenuView
@@ -56,6 +56,45 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 			});
 			
 			return this;
+		},
+		
+		close : function() {
+			$(this.el).unbind();
+			$(this.el).remove();
+		}
+	
+	});
+	
+	// LanguageView
+	Views.LanguageView = Backbone.View.extend({
+		el : "div#language",
+		
+		initialize : function() {
+			_.bindAll(this, "render", "selectLanguage", "close");
+			this.template = _.template(tpl_language);
+		},
+		
+		events : {
+			"click a:not(.active)" : "selectLanguage"
+		},
+		
+		render : function(eventName) {
+			var self = this;
+			var language = App.utils.getCookie("apella-lang");
+			self.$el.html(self.template());
+			if (!language) {
+				language = "el";
+			}
+			self.$("a[data-language=" + language + "]").addClass("active");
+			return self;
+		},
+		
+		selectLanguage : function(event) {
+			var language = $(event.currentTarget).data('language');
+			// Set Language Cookie:
+			App.utils.addCookie('apella-lang', language);
+			// Trigger refresh
+			location.reload(true);
 		},
 		
 		close : function() {
@@ -965,7 +1004,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		},
 		
 		status : function(event) {
-			var status = $(event.target).attr('status');
+			var status = $(event.currentTarget).attr('status');
 			this.model.status({
 				"status" : status
 			}, {
@@ -1094,7 +1133,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		},
 		
 		select : function(event) {
-			var selectedModel = this.collection.getByCid($(event.target).attr('user'));
+			var selectedModel = this.collection.getByCid($(event.currentTarget).attr('user'));
 			this.collection.trigger("user:selected", selectedModel);
 		},
 		
@@ -1170,7 +1209,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		},
 		
 		select : function(event, role) {
-			var selectedModel = role ? role : this.collection.getByCid($(event.target).attr('role'));
+			var selectedModel = role ? role : this.collection.getByCid($(event.currentTarget).attr('role'));
 			if (selectedModel) {
 				this.collection.trigger("role:selected", selectedModel);
 			}
@@ -1183,7 +1222,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		
 		newRole : function(event) {
 			var self = this;
-			var discriminator = $(event.target).attr('discriminator');
+			var discriminator = $(event.currentTarget).attr('discriminator');
 			var newRole = new Models.Role({
 				"discriminator" : discriminator,
 				user : {
@@ -1249,8 +1288,8 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		},
 		
 		status : function(event) {
-			var roleId = $(event.target).attr('role');
-			var status = $(event.target).attr('status');
+			var roleId = $(event.currentTarget).attr('role');
+			var status = $(event.currentTarget).attr('status');
 			if (this.model) {
 				this.model.status({
 					"status" : status
@@ -1994,7 +2033,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		
 		deleteFile : function(event) {
 			var self = this;
-			var selectedModel = self.collection.get($(event.target).attr('fileId'));
+			var selectedModel = self.collection.get($(event.currentTarget).attr('fileId'));
 			var confirm = new Views.ConfirmView({
 				title : $.i18n.prop('Confirm'),
 				message : $.i18n.prop('AreYouSure'),
@@ -2154,7 +2193,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		},
 		
 		select : function(event) {
-			var selectedModel = this.collection.getByCid($(event.target).attr('user'));
+			var selectedModel = this.collection.getByCid($(event.currentTarget).attr('user'));
 			this.collection.trigger("user:selected", selectedModel);
 		},
 		
@@ -2239,7 +2278,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		},
 		
 		select : function(event, position) {
-			var selectedModel = position ? position : this.collection.getByCid($(event.target).attr('data-position-cid'));
+			var selectedModel = position ? position : this.collection.getByCid($(event.currentTarget).attr('data-position-cid'));
 			if (selectedModel) {
 				this.collection.trigger("position:selected", selectedModel);
 			}
@@ -2576,7 +2615,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		
 		viewMember : function(event, positionCommitteeMember) {
 			var self = this;
-			var selectedModel = positionCommitteeMember ? positionCommitteeMember : this.collection.get($(event.target).data('committeeMemberId'));
+			var selectedModel = positionCommitteeMember ? positionCommitteeMember : this.collection.get($(event.currentTarget).data('committeeMemberId'));
 			if (selectedModel) {
 				// Fill Details View:
 				var user = new Models.User({
@@ -2618,7 +2657,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		
 		removeMember : function(event) {
 			var self = this;
-			var selectedModel = self.collection.get($(event.target).data('committeeMemberId'));
+			var selectedModel = self.collection.get($(event.currentTarget).data('committeeMemberId'));
 			var confirm = new Views.ConfirmView({
 				title : $.i18n.prop('Confirm'),
 				message : $.i18n.prop('AreYouSure'),
@@ -2708,7 +2747,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		},
 		
 		select : function(event, register) {
-			var selectedModel = register ? register : this.collection.getByCid($(event.target).attr('data-register-cid'));
+			var selectedModel = register ? register : this.collection.getByCid($(event.currentTarget).attr('data-register-cid'));
 			if (selectedModel) {
 				this.collection.trigger("register:selected", selectedModel);
 			}
@@ -2948,7 +2987,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		
 		showDetails : function(event, professor) {
 			var self = this;
-			var selectedModel = professor ? professor : this.collection.getByCid($(event.target).data('modelCid'));
+			var selectedModel = professor ? professor : this.collection.getByCid($(event.currentTarget).data('modelCid'));
 			if (selectedModel) {
 				// Fill Details View:
 				var user = new Models.User({
@@ -2983,7 +3022,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		},
 		
 		select : function(event, professor) {
-			var selectedModel = professor ? professor : this.collection.getByCid($(event.target).data('modelCid'));
+			var selectedModel = professor ? professor : this.collection.getByCid($(event.currentTarget).data('modelCid'));
 			if (selectedModel) {
 				this.collection.trigger("role:selected", selectedModel);
 			}
