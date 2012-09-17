@@ -311,6 +311,11 @@ public class User implements Serializable {
 		return false;
 	}
 
+	public static String generatePassword() {
+		//TODO:
+		return "anglen";
+	}
+
 	public static String generatePasswordSalt() {
 		try {
 			SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");

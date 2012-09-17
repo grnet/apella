@@ -183,6 +183,10 @@ public class UserRESTService extends RESTService {
 					((DepartmentAssistant) firstRole).setManager(((InstitutionManager) loggedOn.getRole(RoleDiscriminator.INSTITUTION_MANAGER)));
 					break;
 				case MINISTRY_MANAGER:
+					loggedOn = getLoggedOn(authToken);
+					if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
+						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+					}
 					break;
 				case ADMINISTRATOR:
 					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -380,6 +384,58 @@ public class UserRESTService extends RESTService {
 			.location(nextURL)
 			.entity(u)
 			.build();
+	}
+
+	@PUT
+	@Path("/resetPassword")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response resetPassword(@FormParam("username") String username) {
+		try {
+			User u = (User) em.createQuery(
+				"from User u " +
+					"left join fetch u.roles " +
+					"where u.username = :username")
+				.setParameter("username", username)
+				.getSingleResult();
+			// Reset password
+			String newPassword = User.generatePassword();
+			u.setPasswordSalt(User.generatePasswordSalt());
+			u.setPassword(User.encodePassword(newPassword, u.getPasswordSalt()));
+			// Send email
+			try {
+				MailClient.sendPasswordResetEmail(u, newPassword);
+			} catch (MessagingException e) {
+				logger.log(Level.SEVERE, "Error sending reset password email to user " + u.getUsername(), e);
+				sc.setRollbackOnly();
+				throw new RestException(Status.INTERNAL_SERVER_ERROR, "cannot.persist");
+			}
+			return Response.ok().build();
+		} catch (NoResultException e) {
+			throw new RestException(Status.NOT_FOUND, "wrong.username");
+		}
+	}
+
+	@PUT
+	@Path("/sendVerificationEmail")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response sendVerificationEmail(@FormParam("username") String username) {
+		try {
+			User u = (User) em.createQuery(
+				"from User u " +
+					"left join fetch u.roles " +
+					"where u.username = :username")
+				.setParameter("username", username)
+				.getSingleResult();
+			// Send email
+			try {
+				MailClient.sendVerificationEmail(u);
+			} catch (MessagingException e) {
+				logger.log(Level.SEVERE, "Error sending reset password email to user " + u.getUsername(), e);
+			}
+			return Response.ok().build();
+		} catch (NoResultException e) {
+			throw new RestException(Status.NOT_FOUND, "wrong.username");
+		}
 	}
 
 	@PUT

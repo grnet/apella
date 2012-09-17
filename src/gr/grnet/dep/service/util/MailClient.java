@@ -70,6 +70,17 @@ public class MailClient {
 		sendEmail(u.getContactInfo().getEmail(), title, body);
 	}
 
+	public static void sendPasswordResetEmail(User u, String newPassword) throws MessagingException {
+		ResourceBundle resources = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-mail", new Locale("el"));
+		String title = resources.getString("password.reset.title");
+		String body = resources.getString("password.reset.body")
+			.replace("[username]", u.getUsername())
+			.replace("[firstname]", u.getBasicInfo().getFirstname())
+			.replace("[lastname]", u.getBasicInfo().getLastname())
+			.replace("[newPassword]", newPassword);
+		sendEmail(u.getContactInfo().getEmail(), title, body);
+	}
+
 	private static void sendEmail(String aToEmailAddr, String aSubject, String aBody) throws MessagingException {
 		logger.log(Level.INFO, "Sending email to " + aToEmailAddr + " " + aSubject + "\n" + aBody);
 		Session session = Session.getInstance(props, authenticator);

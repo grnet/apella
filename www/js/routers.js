@@ -204,7 +204,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			var loginView = new Views.AdminLoginView({
 				model : App.loggedOnUser
 			});
-			$("#featured").html(loginView.render().el);
+			$("#content").html(loginView.render().el);
 			
 			this.currentView = loginView;
 		},
@@ -404,7 +404,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			var loginView = new Views.LoginView({
 				model : App.loggedOnUser
 			});
-			$("#featured").html(loginView.render().el);
+			$("#content").html(loginView.render().el);
 			
 			this.currentView = loginView;
 		},

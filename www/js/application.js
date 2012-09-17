@@ -1,7 +1,17 @@
 define([ "jquery", "bootstrap", "underscore", "backbone", "plupload", "jquery.ui", "jquery.i18n", "jquery.validate", "jquery.dataTables", "jquery.dataTables.bootstrap", "jquery.blockUI", "jquery.plupload", "backbone.cache" ], function($, _, Backbone) {
 	if (!window.App) {
+		
+		// Additional Validation methods
+		jQuery.validator.addMethod("onlyLatin", function(value, element) {
+			return this.optional(element) || /^[a-zA-Z]*$/.test(value);
+		}, "Please type only latin characters");
+		
+		jQuery.validator.addMethod("pwd", function(value, element) {
+			return this.optional(element) || /^[a-zA-Z0-9!@#$%^&*()]*$/.test(value);
+		}, "Please type only latin characters");
+		
 		window.App = {
-			allowedRoles : [ "PROFESSOR_DOMESTIC", "PROFESSOR_FOREIGN", "CANDIDATE", "INSTITUTION_MANAGER", "MINISTRY_MANAGER" ],
+			allowedRoles : [ "PROFESSOR_DOMESTIC", "PROFESSOR_FOREIGN", "CANDIDATE", "INSTITUTION_MANAGER" ],
 			
 			blockUI : function() {
 				$.blockUI({

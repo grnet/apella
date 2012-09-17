@@ -179,25 +179,40 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 	Views.LoginView = Backbone.View.extend({
 		tagName : "div",
 		
-		validator : undefined,
+		validatorLogin : undefined,
+		validatorResetPasswordForm : undefined,
+		validatorResendVerificationEmail : undefined,
 		
 		initialize : function() {
-			_.bindAll(this, "render", "login", "close");
+			_.bindAll(this, "render", "showResetPassword", "showResendVerificationEmailForm", "resetPassword", "resendVerificationEmail", "login", "close");
 			this.template = _.template(tpl_login_main);
 			this.model.bind('change', this.render);
 		},
 		
 		events : {
-			"click a#save" : function() {
-				this.$("form").submit();
+			"click a#login" : function() {
+				this.$("form#loginForm").submit();
 			},
-			"submit form" : "login"
+			"click a#resetPassword" : function() {
+				this.$("form#resetPasswordForm").submit();
+			},
+			"click a#resendVerificationEmail" : function() {
+				this.$("form#resendVerificationEmailForm").submit();
+			},
+			"click a#forgotPassword" : "showResetPassword",
+			"click a#haveNotReceivedVerification" : "showResendVerificationEmailForm",
+			"submit form#loginForm" : "login",
+			"submit form#resetPasswordForm" : "resetPassword",
+			"submit form#resendVerificationEmailForm" : "resendVerificationEmail"
 		},
 		
 		render : function(eventName) {
-			$(this.el).html(this.template(this.model.toJSON()));
+			var self = this;
+			self.$el.html(self.template(self.model.toJSON()));
+			self.$("#resetPasswordForm").hide();
+			self.$("#resendVerificationEmailForm").hide();
 			
-			this.validator = $("form", this.el).validate({
+			self.validatorLogin = $("form#loginForm", this.el).validate({
 				errorElement : "span",
 				errorClass : "help-inline",
 				highlight : function(element, errorClass, validClass) {
@@ -228,13 +243,71 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 				}
 			});
 			
-			return this;
+			self.validatorResetPasswordForm = $("form#resetPasswordForm", this.el).validate({
+				errorElement : "span",
+				errorClass : "help-inline",
+				highlight : function(element, errorClass, validClass) {
+					$(element).addClass("error");
+				},
+				unhighlight : function(element, errorClass, validClass) {
+					$(element).removeClass("error");
+				},
+				rules : {
+					username : {
+						required : true,
+						minlength : 2
+					}
+				},
+				messages : {
+					username : {
+						required : $.i18n.prop('validation_username'),
+						minlength : $.i18n.prop('validation_minlength', 2)
+					}
+				}
+			});
+			
+			self.validatorResendVerificationEmail = $("form#resendVerificationEmailForm", this.el).validate({
+				errorElement : "span",
+				errorClass : "help-inline",
+				highlight : function(element, errorClass, validClass) {
+					$(element).addClass("error");
+				},
+				unhighlight : function(element, errorClass, validClass) {
+					$(element).removeClass("error");
+				},
+				rules : {
+					username : {
+						required : true,
+						minlength : 2
+					}
+				},
+				messages : {
+					username : {
+						required : $.i18n.prop('validation_username'),
+						minlength : $.i18n.prop('validation_minlength', 2)
+					}
+				}
+			});
+			
+			return self;
+		},
+		
+		showResetPassword : function(event) {
+			var self = this;
+			self.$("#resetPasswordForm").toggle();
+			self.$("#resendVerificationEmailForm").hide();
+		},
+		
+		showResendVerificationEmailForm : function(event) {
+			var self = this;
+			self.$("#resendVerificationEmailForm").toggle();
+			self.$("#resetPasswordForm").hide();
 		},
 		
 		login : function(event) {
 			var self = this;
-			var username = self.$('form input[name=username]').val();
-			var password = self.$('form input[name=password]').val();
+			var username = self.$('form#loginForm input[name=username]').val();
+			var password = self.$('form#loginForm input[name=password]').val();
 			
 			// Save to model
 			self.model.login({
@@ -258,13 +331,65 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 			});
 		},
 		
+		resetPassword : function(event) {
+			var self = this;
+			var username = self.$('form#resetPasswordForm input[name=username]').val();
+			
+			// Save to model
+			self.model.resetPassword({
+				"username" : username,
+			}, {
+				wait : true,
+				success : function(model, resp) {
+					var popup = new Views.PopupView({
+						type : "success",
+						message : $.i18n.prop("PasswordReset")
+					});
+					popup.show();
+				},
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+		},
+		
+		resendVerificationEmail : function(event) {
+			var self = this;
+			var username = self.$('form#resendVerificationEmailForm input[name=username]').val();
+			
+			// Save to model
+			self.model.resendVerificationEmail({
+				"username" : username,
+			}, {
+				wait : true,
+				success : function(model, resp) {
+					var popup = new Views.PopupView({
+						type : "success",
+						message : $.i18n.prop("VerificationEmailResent")
+					});
+					popup.show();
+				},
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+		},
+		
 		close : function() {
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
 	});
 	
-	// LoginView
+	// AdminLoginView
 	Views.AdminLoginView = Backbone.View.extend({
 		tagName : "div",
 		
@@ -284,7 +409,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		},
 		
 		render : function(eventName) {
-			$(this.el).html(this.template(this.model.toJSON()));
+			self.$el.html(this.template(this.model.toJSON()));
 			
 			this.validator = $("form", this.el).validate({
 				errorElement : "span",
@@ -551,17 +676,32 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 					firstname : "required",
 					lastname : "required",
 					fathername : "required",
-					firstnamelatin : "required",
-					lastnamelatin : "required",
-					fathernamelatin : "required",
+					firstnamelatin : {
+						required : true,
+						onlyLatin : true
+					},
+					lastnamelatin : {
+						required : true,
+						onlyLatin : true
+					},
+					fathernamelatin : {
+						required : true,
+						onlyLatin : true
+					},
 					password : {
 						required : true,
+						pwd : true,
 						minlength : 5
 					},
 					confirm_password : {
 						required : true,
 						minlength : 5,
 						equalTo : "form input[name=password]"
+					},
+					email : {
+						required : true,
+						email : true,
+						minlength : 2
 					},
 					mobile : {
 						required : true,
@@ -579,9 +719,18 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 					firstname : $.i18n.prop('validation_firstname'),
 					lastname : $.i18n.prop('validation_lastname'),
 					fathername : $.i18n.prop('validation_fathername'),
-					firstnamelatin : $.i18n.prop('validation_firstnamelatin'),
-					lastnamelatin : $.i18n.prop('validation_lastnamelatin'),
-					fathernamelatin : $.i18n.prop('validation_fathernamelatin'),
+					firstnamelatin : {
+						required : $.i18n.prop('validation_firstnamelatin'),
+						onlyLatin : $.i18n.prop('validation_latin'),
+					},
+					lastnamelatin : {
+						required : $.i18n.prop('validation_lastnamelatin'),
+						onlyLatin : $.i18n.prop('validation_latin'),
+					},
+					fathernamelatin : {
+						required : $.i18n.prop('validation_fathernamelatin'),
+						onlyLatin : $.i18n.prop('validation_latin'),
+					},
 					username : {
 						required : $.i18n.prop('validation_username'),
 						email : $.i18n.prop('validation_username'),
@@ -589,12 +738,18 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 					},
 					password : {
 						required : $.i18n.prop('validation_password'),
+						pwd : $.i18n.prop('validation_password'),
 						minlength : $.i18n.prop('validation_minlength', 5)
 					},
 					confirm_password : {
 						required : $.i18n.prop('validation_password'),
 						minlength : $.i18n.prop('validation_minlength', 5),
 						equalTo : $.i18n.prop('validation_confirmpassword')
+					},
+					email : {
+						required : $.i18n.prop('validation_email'),
+						email : $.i18n.prop('validation_email'),
+						minlength : $.i18n.prop('validation_minlength', 2),
 					},
 					mobile : {
 						required : $.i18n.prop('validation_phone'),
@@ -626,6 +781,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 			var fathernamelatin = self.$('form input[name=fathernamelatin]').val();
 			var password = self.$('form input[name=password]').val();
 			var mobile = self.$('form input[name=mobile]').val();
+			var email = self.$('form input[name=email]').val();
 			var address_street = self.$('form input[name=address_street]').val();
 			var address_number = self.$('form input[name=address_number]').val();
 			var address_zip = self.$('form input[name=address_zip]').val();
@@ -655,7 +811,7 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 						"city" : address_city,
 						"country" : address_country
 					},
-					"email" : username,
+					"email" : email,
 					"mobile" : mobile
 				},
 				"password" : password
@@ -788,11 +944,21 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 					firstname : "required",
 					lastname : "required",
 					fathername : "required",
-					firstnamelatin : "required",
-					lastnamelatin : "required",
-					fathernamelatin : "required",
+					firstnamelatin : {
+						required : true,
+						onlyLatin : true
+					},
+					lastnamelatin : {
+						required : true,
+						onlyLatin : true
+					},
+					fathernamelatin : {
+						required : true,
+						onlyLatin : true
+					},
 					password : {
 						required : self.model.isNew(),
+						pwd : true,
 						minlength : 5
 					},
 					confirm_password : {
@@ -822,11 +988,21 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 					firstname : $.i18n.prop('validation_firstname'),
 					lastname : $.i18n.prop('validation_lastname'),
 					fathername : $.i18n.prop('validation_fathername'),
-					firstnamelatin : $.i18n.prop('validation_firstnamelatin'),
-					lastnamelatin : $.i18n.prop('validation_lastnamelatin'),
-					fathernamelatin : $.i18n.prop('validation_fathernamelatin'),
+					firstnamelatin : {
+						required : $.i18n.prop('validation_firstnamelatin'),
+						onlyLatin : $.i18n.prop('validation_latin'),
+					},
+					lastnamelatin : {
+						required : $.i18n.prop('validation_lastnamelatin'),
+						onlyLatin : $.i18n.prop('validation_latin'),
+					},
+					fathernamelatin : {
+						required : $.i18n.prop('validation_fathernamelatin'),
+						onlyLatin : $.i18n.prop('validation_latin'),
+					},
 					password : {
 						required : $.i18n.prop('validation_password'),
+						pwd : $.i18n.prop('validation_password'),
 						minlength : $.i18n.prop('validation_minlength', 5)
 					},
 					confirm_password : {
