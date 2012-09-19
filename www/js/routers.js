@@ -201,6 +201,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 		
 		showLoginView : function() {
 			this.clear();
+			
 			var loginView = new Views.AdminLoginView({
 				model : App.loggedOnUser
 			});
@@ -363,6 +364,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				model : App.loggedOnUser
 			});
 			usermenuView.render();
+			$("ul.breadcrumb").show();
 			
 			// Start Routing
 			Backbone.history.start();
@@ -401,10 +403,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 		
 		showLoginView : function() {
 			this.clear();
+			$("ul.breadcrumb").hide();
 			var loginView = new Views.LoginView({
 				model : App.loggedOnUser
 			});
-			$("#content").html(loginView.render().el);
+			$("#featured").html(loginView.render().el);
 			
 			this.currentView = loginView;
 		},
