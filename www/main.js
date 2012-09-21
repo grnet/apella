@@ -9,10 +9,7 @@ require.config({
 		"bootstrap" : "lib/bootstrap/bootstrap",
 		"underscore" : "lib/underscore/underscore",
 		"backbone" : "lib/backbone/backbone",
-		"plupload" : "lib/plupload/plupload.full",
-		
 		"text" : "lib/require/text",
-		
 		// Plugins
 		"jquery.ui" : "lib/jquery.ui/jquery-ui",
 		"jquery.i18n" : "lib/jquery.i18n/jquery.i18n.properties-1.0.9",
@@ -20,7 +17,9 @@ require.config({
 		"jquery.dataTables" : "lib/jquery.dataTables/jquery.dataTables",
 		"jquery.dataTables.bootstrap" : "lib/jquery.dataTables/DT_bootstrap",
 		"jquery.blockUI" : "lib/jquery.blockUI/jquery.blockUI",
-		"jquery.plupload" : "lib/plupload/jquery.plupload.queue/jquery.plupload.queue",
+		"jquery.iframe-transport" : "lib/jquery.file.upload/jquery.iframe-transport",
+		"jquery.file.upload" : "lib/jquery.file.upload/jquery.fileupload",
+		
 		"backbone.cache" : "lib/backbone/backbone.cache",
 		
 		// Apella Application
@@ -47,7 +46,9 @@ require.config({
 		"jquery.dataTables" : [ "jquery" ],
 		"jquery.dataTables.bootstrap" : [ "jquery", "jquery.dataTables", "bootstrap" ],
 		"jquery.blockUI" : [ "jquery" ],
-		"jquery.plupload" : [ "jquery", "plupload" ],
+		"jquery.iframe-transport" : [ "jquery" ],
+		"jquery.file.upload" : [ "jquery", "jquery.iframe-transport" ],
+		
 		"backbone.cache" : [ "backbone" ]
 	}
 
