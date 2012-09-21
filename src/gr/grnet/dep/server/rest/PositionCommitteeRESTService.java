@@ -2,8 +2,6 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Department;
-import gr.grnet.dep.service.model.FileHeader;
-import gr.grnet.dep.service.model.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.PositionCommitteeMember;
 import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
@@ -11,7 +9,6 @@ import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -20,7 +17,6 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -30,12 +26,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.commons.fileupload.FileUploadException;
 import org.codehaus.jackson.map.annotate.JsonView;
 
 @Path("/position/committee")
@@ -127,64 +120,4 @@ public class PositionCommitteeRESTService extends RESTService {
 		}
 	}
 
-	@GET
-	@Path("/{cmId:[0-9][0-9]*}/report")
-	@JsonView({SimpleFileHeaderView.class})
-	public FileHeader getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("cmId") long cmId) {
-		PositionCommitteeMember cm = getPositionCommitteeMember(authToken, cmId);
-		FileHeader file = cm.getRecommendatoryReport();
-		if (file != null) {
-			file.getBodies().size();
-		}
-		return file;
-	}
-
-	@POST
-	@Path("/{cmId:[0-9][0-9]*}/report")
-	@Consumes("multipart/form-data")
-	@Produces({MediaType.APPLICATION_JSON})
-	@JsonView({SimpleFileHeaderView.class})
-	public FileHeader postFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("cmId") Long cmId, @Context HttpServletRequest request) throws FileUploadException, IOException {
-		User loggedOn = getLoggedOn(authToken);
-		try {
-			PositionCommitteeMember cm = getPositionCommitteeMember(authToken, cmId);
-			FileHeader file = cm.getRecommendatoryReport();
-
-			//TODO: Security / lifecycle checks
-
-			// Update
-			file = uploadFile(loggedOn, request, file);
-			cm.setRecommendatoryReport(file);
-			em.persist(cm);
-			em.flush();
-			return file;
-		} catch (PersistenceException e) {
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
-		}
-
-	}
-
-	@DELETE
-	@Path("/{cmId:[0-9][0-9]*}/report")
-	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("cmId") long cmId, @Context HttpServletRequest request) throws FileUploadException, IOException {
-		try {
-			PositionCommitteeMember cm = getPositionCommitteeMember(authToken, cmId);
-			FileHeader file = cm.getRecommendatoryReport();
-
-			//TODO: Security / lifecycle checks
-
-			Response retv = deleteFileBody(file);
-
-			if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
-				cm.setRecommendatoryReport(null);
-			}
-			em.flush();
-
-			return retv;
-		} catch (PersistenceException e) {
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
-		}
-	}
 }

@@ -1,11 +1,12 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.model.FileBody;
-import gr.grnet.dep.service.model.FileHeader;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.UserStatus;
+import gr.grnet.dep.service.model.file.FileBody;
+import gr.grnet.dep.service.model.file.FileHeader;
+import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 
 import java.io.File;
@@ -157,78 +158,62 @@ public class RESTService {
 		return subPath + File.separator + prefix + "-" + id + extension;
 	}
 
-	public FileHeader uploadFile(User loggedOn, HttpServletRequest request, FileHeader header) throws FileUploadException, IOException
-	{
-		FileBody body = null;
-		DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
-		ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
-		servletFileUpload.setSizeMax(30 * 1024 * 1024);
-		servletFileUpload.setHeaderEncoding("UTF-8");
-		@SuppressWarnings("unchecked")
-		List<FileItem> fileItems = servletFileUpload.parseRequest(request);
+	public void uploadFile(User loggedOn, HttpServletRequest request, FileHeader header) throws IOException {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(header.getOwner().getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		try {
+			DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
+			ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
+			servletFileUpload.setSizeMax(30 * 1024 * 1024);
+			servletFileUpload.setHeaderEncoding("UTF-8");
+			@SuppressWarnings("unchecked")
+			List<FileItem> fileItems = servletFileUpload.parseRequest(request);
 
-		for (FileItem fileItem : fileItems) {
-			if (fileItem.isFormField()) {
-				logger.info("Incoming text data: '" + fileItem.getFieldName() + "'=" + fileItem.getString("UTF-8") + "\n");
-			} else {
-				body = new FileBody();
-				if (header == null) {
-					// Create
-					header = new FileHeader();
-					header.setOwner(loggedOn);
-					//header.setName(name);
-					//header.setDescription(description);
+			for (FileItem fileItem : fileItems) {
+				if (fileItem.isFormField()) {
+					logger.info("Incoming text data: '" + fileItem.getFieldName() + "'=" + fileItem.getString("UTF-8") + "\n");
+					if (fileItem.getFieldName().equals("type")) {
+						header.setType(FileType.valueOf(fileItem.getString("UTF-8")));
+					} else if (fileItem.getFieldName().equals("name")) {
+						header.setName(fileItem.getString("UTF-8"));
+					} else if (fileItem.getFieldName().equals("description")) {
+						header.setDescription(fileItem.getString("UTF-8"));
+					}
 				} else {
-					// Update
-					if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(header.getOwner().getId()))
-						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-				}
-				header.addBody(body);
-				em.persist(header);
-				em.persist(body);
-				em.flush(); // Get an id
+					FileBody body = new FileBody();
+					header.addBody(body);
+					em.persist(header);
+					em.persist(body);
+					em.flush(); // Get an id
 
-				String filename = fileItem.getName();
-				String newFilename = suggestFilename(body.getId(), "upl", filename);
-				File file = new File(savePath + newFilename);
-				StringBuilder sb = (new StringBuilder("Saving file. Original filename='"))
-					.append(filename)
-					.append("', filename='")
-					.append(file.getCanonicalPath())
-					.append("' ");
+					String filename = fileItem.getName();
+					String newFilename = suggestFilename(body.getId(), "upl", filename);
+					File file = new File(savePath + newFilename);
 
-				String mimeType = fileItem.getContentType();
-				if (StringUtils.isEmpty(mimeType) || "application/octet-stream".equals(mimeType)
-					|| "application/download".equals(mimeType) || "application/force-download".equals(mimeType)
-					|| "octet/stream".equals(mimeType) || "application/unknown".equals(mimeType)) {
-					body.setMimeType(identifyMimeType(filename));
-				} else {
-					body.setMimeType(mimeType);
-				}
-				body.setOriginalFilename(fileItem.getName());
-				body.setStoredFilePath(newFilename);
-				body.setFileSize(fileItem.getSize());
-				body.setDate(new Date());
+					String mimeType = fileItem.getContentType();
+					if (StringUtils.isEmpty(mimeType) || "application/octet-stream".equals(mimeType)
+						|| "application/download".equals(mimeType) || "application/force-download".equals(mimeType)
+						|| "octet/stream".equals(mimeType) || "application/unknown".equals(mimeType)) {
+						body.setMimeType(identifyMimeType(filename));
+					} else {
+						body.setMimeType(mimeType);
+					}
+					body.setOriginalFilename(fileItem.getName());
+					body.setStoredFilePath(newFilename);
+					body.setFileSize(fileItem.getSize());
+					body.setDate(new Date());
 
-				try {
 					fileItem.write(file);
-
-					sb.append("OK.");
-					logger.info(sb.toString());
-				} catch (FileUploadException ex) {
-					sb.append("ERROR");
-					logger.info(sb.toString());
-					logger.log(Level.SEVERE, "Error encountered while parsing the request", ex);
-					throw new RestException(Status.INTERNAL_SERVER_ERROR, "generic");
-				} catch (Exception e) {
-					sb.append("ERROR");
-					logger.info(sb.toString());
-					logger.log(Level.SEVERE, "Error encountered while uploading file", e);
-					throw new RestException(Status.INTERNAL_SERVER_ERROR, "generic");
 				}
 			}
+		} catch (FileUploadException ex) {
+			logger.log(Level.SEVERE, "Error encountered while parsing the request", ex);
+			throw new RestException(Status.INTERNAL_SERVER_ERROR, "generic");
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "Error encountered while uploading file", e);
+			throw new RestException(Status.INTERNAL_SERVER_ERROR, "generic");
 		}
-		return header;
 	}
 
 	/**

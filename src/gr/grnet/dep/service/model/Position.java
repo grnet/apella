@@ -1,5 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.file.PositionFile;
+
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -51,34 +53,21 @@ public class Position {
 
 	@NotNull
 	@Enumerated(EnumType.ORDINAL)
-	private PositionStatus status = PositionStatus.ANAMONI_EGKRISIS;
-
-	@NotNull
-	@Enumerated(EnumType.ORDINAL)
-	private PositionStatus deanStatus = PositionStatus.ANAMONI_EGKRISIS;
-
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "position")
-	private Set<Candidacy> candidacies = new HashSet<Candidacy>();
-
-	@ManyToOne
-	private FileHeader prosklisiKosmitora;
-
-	@ManyToOne
-	private FileHeader recommendatoryReport;
-
-	@ManyToOne
-	private FileHeader recommendatoryReportSecond;
+	private PositionStatus status = PositionStatus.ENTAGMENI;
 
 	@Temporal(TemporalType.DATE)
 	private Date fekSentDate;
 
 	private String fek;
 
-	@ManyToOne
-	private FileHeader fekFile;
+	@OneToMany(mappedBy = "position", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<PositionFile> files = new HashSet<PositionFile>();
 
 	@OneToMany(mappedBy = "position")
 	private List<PositionCommitteeMember> commitee;
+
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "position")
+	private Set<Candidacy> candidacies = new HashSet<Candidacy>();
 
 	public Long getId() {
 		return id;
@@ -137,38 +126,6 @@ public class Position {
 		this.candidacies = candidacies;
 	}
 
-	public FileHeader getRecommendatoryReport() {
-		return recommendatoryReport;
-	}
-
-	public void setRecommendatoryReport(FileHeader recommendatoryReport) {
-		this.recommendatoryReport = recommendatoryReport;
-	}
-
-	public FileHeader getRecommendatoryReportSecond() {
-		return recommendatoryReportSecond;
-	}
-
-	public void setRecommendatoryReportSecond(FileHeader recommendatoryReportSecond) {
-		this.recommendatoryReportSecond = recommendatoryReportSecond;
-	}
-
-	public PositionStatus getDeanStatus() {
-		return deanStatus;
-	}
-
-	public void setDeanStatus(PositionStatus deanStatus) {
-		this.deanStatus = deanStatus;
-	}
-
-	public FileHeader getProsklisiKosmitora() {
-		return prosklisiKosmitora;
-	}
-
-	public void setProsklisiKosmitora(FileHeader prosklisiKosmitora) {
-		this.prosklisiKosmitora = prosklisiKosmitora;
-	}
-
 	public Date getFekSentDate() {
 		return fekSentDate;
 	}
@@ -185,12 +142,12 @@ public class Position {
 		this.fek = fek;
 	}
 
-	public FileHeader getFekFile() {
-		return fekFile;
+	public Set<PositionFile> getFiles() {
+		return files;
 	}
 
-	public void setFekFile(FileHeader fekFile) {
-		this.fekFile = fekFile;
+	public void setFiles(Set<PositionFile> files) {
+		this.files = files;
 	}
 
 	@JsonView({DetailedPositionView.class})

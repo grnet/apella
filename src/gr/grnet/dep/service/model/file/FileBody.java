@@ -1,10 +1,14 @@
-package gr.grnet.dep.service.model;
+package gr.grnet.dep.service.model.file;
 
-import gr.grnet.dep.service.model.FileHeader.SimpleFileHeaderView;
+import gr.grnet.dep.service.model.Position;
+import gr.grnet.dep.service.model.PositionCommitteeMember;
+import gr.grnet.dep.service.model.Register;
+import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
 import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
 import gr.grnet.dep.service.model.Register.DetailedRegisterView;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
+import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 
 import java.io.Serializable;

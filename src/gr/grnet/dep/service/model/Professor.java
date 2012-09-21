@@ -1,7 +1,13 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.file.ProfessorFile;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 @Entity
 public abstract class Professor extends Role {
@@ -11,8 +17,8 @@ public abstract class Professor extends Role {
 
 	private String profileURL;
 
-	@ManyToOne
-	private FileHeader profileFile;
+	@OneToMany(mappedBy = "professor", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<ProfessorFile> files = new HashSet<ProfessorFile>();
 
 	public String getProfileURL() {
 		return profileURL;
@@ -22,15 +28,20 @@ public abstract class Professor extends Role {
 		this.profileURL = profileURL;
 	}
 
-	public FileHeader getProfileFile() {
-		return profileFile;
-	}
-
-	public void setProfileFile(FileHeader profileFile) {
-		this.profileFile = profileFile;
-	}
-
 	/////////////////////////////////////////////////////////////
+
+	public Set<ProfessorFile> getFiles() {
+		return files;
+	}
+
+	public void setFiles(Set<ProfessorFile> files) {
+		this.files = files;
+	}
+
+	public void addFile(ProfessorFile professorFile) {
+		this.files.add(professorFile);
+		professorFile.setProfessor(this);
+	}
 
 	@Override
 	public Role copyFrom(Role otherRole) {
@@ -41,10 +52,9 @@ public abstract class Professor extends Role {
 
 	@Override
 	public boolean isMissingRequiredFields() {
-		if (this.profileFile == null || profileURL == null) {
+		if (this.files.isEmpty() || profileURL == null) {
 			return true;
 		}
 		return false;
 	}
-
 }

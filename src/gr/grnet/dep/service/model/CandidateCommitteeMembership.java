@@ -1,13 +1,19 @@
 package gr.grnet.dep.service.model;
 
-import java.io.Serializable;
+import gr.grnet.dep.service.model.file.CandidateCommitteeMembershipFile;
 
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.xml.bind.annotation.XmlTransient;
 
 @Entity
@@ -77,8 +83,8 @@ public class CandidateCommitteeMembership implements Serializable {
 	@JoinColumn(name = "professor_id", insertable = false, updatable = false)
 	private Professor professor;
 
-	@ManyToOne
-	private FileHeader report;
+	@OneToMany(mappedBy = "candidateCommitteeMembership", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<CandidateCommitteeMembershipFile> files = new HashSet<CandidateCommitteeMembershipFile>();
 
 	public CandidateCommitteeMembership() {
 	}
@@ -124,12 +130,13 @@ public class CandidateCommitteeMembership implements Serializable {
 		this.professor = professor;
 	}
 
-	public FileHeader getReport() {
-		return report;
+	@XmlTransient
+	public Set<CandidateCommitteeMembershipFile> getFiles() {
+		return files;
 	}
 
-	public void setReport(FileHeader report) {
-		this.report = report;
+	public void setFiles(Set<CandidateCommitteeMembershipFile> files) {
+		this.files = files;
 	}
 
 }

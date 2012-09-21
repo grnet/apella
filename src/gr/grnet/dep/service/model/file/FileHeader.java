@@ -1,4 +1,6 @@
-package gr.grnet.dep.service.model;
+package gr.grnet.dep.service.model.file;
+
+import gr.grnet.dep.service.model.User;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -9,6 +11,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -18,12 +22,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 
-/**
- * The immutable part of the structure of a file.
- */
 @Entity
+@Inheritance(strategy = InheritanceType.JOINED)
 @XmlRootElement
-public final class FileHeader implements Serializable {
+public class FileHeader implements Serializable {
 
 	private static final long serialVersionUID = -4813579007397289759L;
 
@@ -45,6 +47,8 @@ public final class FileHeader implements Serializable {
 	 */
 	@Version
 	private int version;
+
+	private FileType type;
 
 	/**
 	 * An optional description. (E.g. "My CV")
@@ -87,6 +91,18 @@ public final class FileHeader implements Serializable {
 
 	public Long getId() {
 		return id;
+	}
+
+	public FileType getType() {
+		return type;
+	}
+
+	public void setType(FileType type) {
+		this.type = type;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public String getName() {
@@ -145,23 +161,24 @@ public final class FileHeader implements Serializable {
 	 * @param body InfoItemBody The body to add.
 	 */
 	public void addBody(final FileBody body) {
-		if (body == null)
+		if (body == null) {
 			throw new IllegalArgumentException("Can't add a null FileBody.");
+		}
 		// Remove from old header
-		if (body.getHeader() != null)
+		if (body.getHeader() != null) {
 			throw new IllegalArgumentException("Trying to add a FileBody that already belongs to a FileHeader.");
-
+		}
 		// Set child in parent
 		getBodies().add(body);
 		// Set parent in child
 		body.setHeader(this);
 
 		// Update version number
-		if (currentBody == null)
+		if (currentBody == null) {
 			body.setVersion(1);
-		else
+		} else {
 			body.setVersion(currentBody.getVersion() + 1);
-
+		}
 		currentBody = body;
 	}
 

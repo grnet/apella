@@ -7,13 +7,10 @@ import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.CandidateCommittee;
 import gr.grnet.dep.service.model.CandidateCommittee.SimpleCandidateCommitteeView;
 import gr.grnet.dep.service.model.CandidateCommitteeMembership;
-import gr.grnet.dep.service.model.FileHeader;
-import gr.grnet.dep.service.model.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.logging.Logger;
 
@@ -23,7 +20,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -33,12 +29,9 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.commons.fileupload.FileUploadException;
 import org.codehaus.jackson.map.annotate.JsonView;
 
 @Path("/candidacy")
@@ -317,65 +310,6 @@ public class CandidacyRESTService extends RESTService {
 			}
 		}
 		throw new RestException(Status.NOT_FOUND, "membership.not.found");
-	}
-
-	@GET
-	@Path("/{id:[0-9][0-9]*}/committee/{professorId:[0-9][0-9]*}/report")
-	@JsonView({SimpleFileHeaderView.class})
-	public FileHeader getCommitteeMembershipReport(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("professorId") long professorId) {
-		CandidateCommitteeMembership ccm = getCommitteeMembership(authToken, id, professorId);
-		FileHeader file = ccm.getReport();
-		if (file != null) {
-			file.getBodies().size();
-		}
-		return file;
-	}
-
-	@POST
-	@Path("/{id:[0-9][0-9]*}/committee/{professorId:[0-9][0-9]*}/report")
-	@Consumes("multipart/form-data")
-	@Produces({MediaType.APPLICATION_JSON})
-	@JsonView({SimpleFileHeaderView.class})
-	public FileHeader postFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("professorId") long professorId, @Context HttpServletRequest request) throws FileUploadException, IOException {
-		User loggedOn = getLoggedOn(authToken);
-		try {
-			CandidateCommitteeMembership ccm = getCommitteeMembership(authToken, id, professorId);
-			FileHeader file = ccm.getReport();
-
-			//TODO: Security / lifecycle checks
-
-			file = uploadFile(loggedOn, request, ccm.getReport());
-			ccm.setReport(file);
-			em.persist(ccm);
-			em.flush();
-			return file;
-		} catch (PersistenceException e) {
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
-		}
-	}
-
-	@DELETE
-	@Path("/{id:[0-9][0-9]*}/committee/{professorId:[0-9][0-9]*}/report")
-	@JsonView({SimpleFileHeaderView.class})
-	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("professorId") long professorId, @Context HttpServletRequest request) throws FileUploadException, IOException {
-		try {
-			CandidateCommitteeMembership ccm = getCommitteeMembership(authToken, id, professorId);
-			FileHeader file = ccm.getReport();
-
-			//TODO: Security / lifecycle checks
-
-			Response retv = deleteFileBody(file);
-
-			if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
-				ccm.setReport(null);
-			}
-			em.flush();
-			return retv;
-		} catch (PersistenceException e) {
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
-		}
 	}
 
 }

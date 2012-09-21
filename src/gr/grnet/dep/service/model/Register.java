@@ -1,11 +1,17 @@
 package gr.grnet.dep.service.model;
 
-import java.io.Serializable;
+import gr.grnet.dep.service.model.file.RegisterFile;
 
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -27,8 +33,8 @@ public class Register implements Serializable {
 	@ManyToOne(optional = false)
 	private Department department;
 
-	@ManyToOne
-	private FileHeader registerFile;
+	@OneToMany(mappedBy = "register", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<RegisterFile> files = new HashSet<RegisterFile>();
 
 	public Long getId() {
 		return id;
@@ -46,12 +52,12 @@ public class Register implements Serializable {
 		this.department = department;
 	}
 
-	public FileHeader getRegisterFile() {
-		return registerFile;
+	public Set<RegisterFile> getFiles() {
+		return files;
 	}
 
-	public void setRegisterFile(FileHeader registerFile) {
-		this.registerFile = registerFile;
+	public void setFiles(Set<RegisterFile> files) {
+		this.files = files;
 	}
 
 	public Register copyFrom(Register register) {

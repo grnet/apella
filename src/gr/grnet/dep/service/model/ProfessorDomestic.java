@@ -37,9 +37,6 @@ public class ProfessorDomestic extends Professor {
 	@ManyToOne(cascade = CascadeType.ALL)
 	private Subject fekSubject;
 
-	@ManyToOne
-	private FileHeader fekFile;
-
 	public ProfessorDomestic() {
 		super();
 		setDiscriminator(RoleDiscriminator.PROFESSOR_DOMESTIC);
@@ -67,14 +64,6 @@ public class ProfessorDomestic extends Professor {
 
 	public void setFek(String fek) {
 		this.fek = fek;
-	}
-
-	public FileHeader getFekFile() {
-		return fekFile;
-	}
-
-	public void setFekFile(FileHeader fekFile) {
-		this.fekFile = fekFile;
 	}
 
 	public Institution getInstitution() {
@@ -135,9 +124,6 @@ public class ProfessorDomestic extends Professor {
 			return true;
 		}
 		if (this.fek == null) {
-			return true;
-		}
-		if (this.fekFile == null) {
 			return true;
 		}
 		if (this.fekSubject == null) {

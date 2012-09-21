@@ -3,16 +3,18 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.DepartmentAssistant;
-import gr.grnet.dep.service.model.FileHeader;
-import gr.grnet.dep.service.model.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.Professor;
-import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.model.file.CandidateFile;
+import gr.grnet.dep.service.model.file.FileHeader;
+import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
+import gr.grnet.dep.service.model.file.FileType;
+import gr.grnet.dep.service.model.file.ProfessorFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,12 +29,14 @@ import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -414,9 +418,9 @@ public class RoleRESTService extends RESTService {
 	}
 
 	@GET
-	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599|profileFile}{fileId:(/[0-9][0-9]*)?}")
+	@Path("/{id:[0-9][0-9]*}/file")
 	@JsonView({SimpleFileHeaderView.class})
-	public FileHeader getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("var") String var, @PathParam("fileId") String fileId) {
+	public Response getFiles(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
 		// Validate:
@@ -426,66 +430,26 @@ public class RoleRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-
-		// Get File
-		FileHeader file = null;
-		if ("fekFile".equals(var)) {
-			ProfessorDomestic professorDomestic = (ProfessorDomestic) role;
-			file = professorDomestic.getFekFile();
-		} else if ("cv".equals(var)) {
+		// Return Result
+		if (role instanceof Candidate) {
 			Candidate candidate = (Candidate) role;
-			file = candidate.getCv();
-		} else if ("identity".equals(var)) {
-			Candidate candidate = (Candidate) role;
-			file = candidate.getIdentity();
-		} else if ("military1599".equals(var)) {
-			Candidate candidate = (Candidate) role;
-			file = candidate.getMilitary1599();
-		} else if ("profileFile".equals(var)) {
+			return Response.ok().entity(candidate.getFiles()).build();
+		} else if (role instanceof Professor) {
 			Professor professor = (Professor) role;
-			file = professor.getProfileFile();
+			return Response.ok().entity(professor.getFiles()).build();
 		}
-
-		if (file != null) {
-			file.getBodies().size();
-		} else {
-			throw new RestException(Status.NOT_FOUND, "missing.file");
-		}
-		return file;
-	}
-
-	@GET
-	@Path("/{id:[0-9][0-9]*}/publications")
-	@JsonView({SimpleFileHeaderView.class})
-	public Collection<FileHeader> getPublicationFiles(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
-		User loggedOn = getLoggedOn(authToken);
-		Role role = em.find(Role.class, id);
-		// Validate:
-		if (role == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
-		}
-		if (!(role instanceof Candidate)) {
-			throw new RestException(Status.NOT_FOUND, "wrong.role");
-		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-
-		// Get File
-		Candidate c = (Candidate) role;
-		c.getPublications().size();
-		return c.getPublications();
+		// Default Action
+		throw new RestException(Status.BAD_REQUEST, "wrong.id");
 	}
 
 	@POST
-	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599|publications|profileFile}{fileId:(/[0-9][0-9]*)?}")
+	@Path("/{id:[0-9][0-9]*}/file")
 	@Consumes("multipart/form-data")
 	@Produces({MediaType.APPLICATION_JSON})
 	@JsonView({SimpleFileHeaderView.class})
-	public FileHeader postFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("var") String var, @PathParam("fileId") String fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	public FileHeader postFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @FormParam("type") String type, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
-
 		// Validate:
 		if (role == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
@@ -493,53 +457,43 @@ public class RoleRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-
 		try {
-			FileHeader file = null;
-			if ("fekFile".equals(var)) {
-				ProfessorDomestic professorDomestic = (ProfessorDomestic) role;
-				file = uploadFile(loggedOn, request, professorDomestic.getFekFile());
-				professorDomestic.setFekFile(file);
-			} else if ("cv".equals(var)) {
+			// Return Result
+			if (role instanceof Candidate) {
 				Candidate candidate = (Candidate) role;
-				file = uploadFile(loggedOn, request, candidate.getCv());
-				candidate.setCv(file);
-			} else if ("identity".equals(var)) {
-				Candidate candidate = (Candidate) role;
-				file = uploadFile(loggedOn, request, candidate.getIdentity());
-				candidate.setIdentity(file);
-			} else if ("military1599".equals(var)) {
-				Candidate candidate = (Candidate) role;
-				file = uploadFile(loggedOn, request, candidate.getMilitary1599());
-				candidate.setMilitary1599(file);
-			} else if ("profileFile".equals(var)) {
-				Professor professor = (Professor) role;
-				file = uploadFile(loggedOn, request, professor.getProfileFile());
-				professor.setProfileFile(file);
-			} else if ("publications".equals(var)) {
-				Candidate candidate = (Candidate) role;
-				Set<FileHeader> publications = candidate.getPublications();
-				FileHeader existingPublication = null;
-				Long fileHeaderId = (fileId.isEmpty()) ? -1L : Long.parseLong(fileId.substring(1));
-				if (fileHeaderId > 0) {
-					for (FileHeader fh : publications) {
-						if (fh.getId().equals(fileHeaderId)) {
-							existingPublication = fh;
-							break;
-						}
-					}
-				}
-				if (existingPublication == null) {
-					file = uploadFile(loggedOn, request, null);
-					publications.add(file);
+				if (CandidateFile.fileTypes.containsKey(FileType.valueOf(type))) {
+					//TODO: Validate number of types allowed (one, many) against existing
+					CandidateFile candidateFile = new CandidateFile();
+					candidateFile.setCandidate(candidate);
+					uploadFile(loggedOn, request, candidateFile);
+					candidate.addFile(candidateFile);
+
+					refreshRoleStatus(role);
+					em.flush();
+
+					return candidateFile;
 				} else {
-					file = uploadFile(loggedOn, request, existingPublication);
+					throw new RestException(Status.CONFLICT, "wrong.file.type");
 				}
-			}
+			} else if (role instanceof Professor) {
+				Professor professor = (Professor) role;
+				if (ProfessorFile.fileTypes.containsKey(FileType.valueOf(type))) {
+					//TODO: Validate number of types allowed (one, many) against existing
+					ProfessorFile professorFile = new ProfessorFile();
+					professorFile.setProfessor(professor);
+					uploadFile(loggedOn, request, professorFile);
+					professor.addFile(professorFile);
 
-			refreshRoleStatus(role);
-			em.flush();
-			return file;
+					refreshRoleStatus(role);
+					em.flush();
+
+					return professorFile;
+				} else {
+					throw new RestException(Status.CONFLICT, "wrong.file.type");
+				}
+			} else {
+				throw new RestException(Status.CONFLICT, "wrong.file.type");
+			}
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
@@ -554,86 +508,65 @@ public class RoleRESTService extends RESTService {
 	 * @return
 	 */
 	@DELETE
-	@Path("/{id:[0-9][0-9]*}/{var:fekFile|cv|identity|military1599|profileFile}{fileId:(/[0-9][0-9]*)?}")
+	@Path("/{id:[0-9]+}/file/{fileId:([0-9]+)?}")
 	@JsonView({SimpleFileHeaderView.class})
-	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("var") String var, @PathParam("fileId") String fileId) {
+	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("fileId") Long fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
 		if (role == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		try {
-			FileHeader file = getFile(authToken, id, var, fileId);
-			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(file.getOwner().getId())) {
-				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-			}
-			Response retv = deleteFileBody(file);
-
-			if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
-				// Break the relationship as well
-				if ("fekFile".equals(var)) {
-					ProfessorDomestic professorDomestic = (ProfessorDomestic) role;
-					professorDomestic.setFekFile(null);
-				} else if ("cv".equals(var)) {
-					Candidate candidate = (Candidate) role;
-					candidate.setCv(null);
-				} else if ("identity".equals(var)) {
-					Candidate candidate = (Candidate) role;
-					candidate.setIdentity(null);
-				} else if ("military1599".equals(var)) {
-					Candidate candidate = (Candidate) role;
-					candidate.setMilitary1599(null);
-				} else if ("profileFile".equals(var)) {
-					Professor professor = (Professor) role;
-					professor.setProfileFile(null);
-				}
-			}
-
-			refreshRoleStatus(role);
-			return retv;
-		} catch (PersistenceException e) {
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
-		}
-	}
-
-	/**
-	 * Deletes the last body of given file, if possible.
-	 * 
-	 * @param authToken
-	 * @param id
-	 * @return
-	 */
-	@DELETE
-	@Path("/{id:[0-9][0-9]*}/publications/{fileId:[0-9][0-9]*}")
-	@JsonView({SimpleFileHeaderView.class})
-	public Response deletePublication(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("fileId") Long fileId) {
-		User loggedOn = getLoggedOn(authToken);
-		Role role = em.find(Role.class, id);
-		if (role == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
-		}
-		if (!(role instanceof Candidate)) {
-			throw new RestException(Status.NOT_FOUND, "wrong.role");
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
-			Candidate candidate = (Candidate) role;
-			FileHeader publication = null;
-			for (FileHeader fh : candidate.getPublications()) {
-				if (fh.getId().equals(fileId)) {
-					publication = fh;
-					break;
+			if (role instanceof Candidate) {
+				try {
+					CandidateFile candidateFile = (CandidateFile) em.createQuery(
+						"select cf from CandidateFile cf " +
+							"where cf.candidate.id = :candidateId " +
+							"and cf.fileHeader.id = :fileId")
+						.setParameter("candidateId", id)
+						.setParameter("fileId", fileId)
+						.getSingleResult();
+					if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(candidateFile.getOwner().getId())) {
+						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+					}
+					Response retv = deleteFileBody(candidateFile);
+					if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
+						// Remove from Role
+						em.remove(candidateFile);
+						refreshRoleStatus(role);
+					}
+					return retv;
+				} catch (NoResultException e) {
+					throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+				}
+			} else if (role instanceof Professor) {
+				try {
+					ProfessorFile professorFile = (ProfessorFile) em.createQuery(
+						"select cf from ProfessorFile cf " +
+							"where cf.candidate.id = :candidateId " +
+							"and cf.fileHeader.id = :fileId")
+						.setParameter("candidateId", id)
+						.setParameter("fileId", fileId)
+						.getSingleResult();
+					if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(professorFile.getOwner().getId())) {
+						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+					}
+					Response retv = deleteFileBody(professorFile);
+					if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
+						// Remove from Role
+						em.remove(professorFile);
+						refreshRoleStatus(role);
+					}
+					return retv;
+				} catch (NoResultException e) {
+					throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 				}
 			}
-			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(publication.getOwner().getId())) {
-				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-			}
-			Response retv = deleteFileBody(publication);
-			candidate.getPublications().remove(publication);
-
-			refreshRoleStatus(role);
-			em.flush();
-			return retv;
+			// Default Action
+			throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");

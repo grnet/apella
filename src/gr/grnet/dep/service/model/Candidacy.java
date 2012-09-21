@@ -1,5 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.file.FileBody;
+
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
