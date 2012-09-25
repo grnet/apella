@@ -11,6 +11,15 @@ a.help:hover {
 	cursor: help;
 }
 
+.file-table {
+	width: 0px;
+}
+
+.file-table td {
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
 /* Footer
 -------------------------------------------------- */
 .footer {

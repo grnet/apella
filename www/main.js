@@ -37,9 +37,6 @@ require.config({
 			"exports" : "Backbone" // attaches "Backbone" to the window object
 		},
 		"bootstrap" : [ "jquery" ],
-		"plupload" : {
-			"exports" : "plupload"
-		},
 		"jquery.ui" : [ "jquery" ],
 		"jquery.i18n" : [ "jquery" ],
 		"jquery.validate" : [ "jquery" ],
@@ -47,7 +44,7 @@ require.config({
 		"jquery.dataTables.bootstrap" : [ "jquery", "jquery.dataTables", "bootstrap" ],
 		"jquery.blockUI" : [ "jquery" ],
 		"jquery.iframe-transport" : [ "jquery" ],
-		"jquery.file.upload" : [ "jquery", "jquery.iframe-transport" ],
+		"jquery.file.upload" : [ "jquery", "jquery.ui", "jquery.iframe-transport" ],
 		
 		"backbone.cache" : [ "backbone" ]
 	}

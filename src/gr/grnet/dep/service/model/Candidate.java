@@ -66,6 +66,7 @@ public class Candidate extends Role {
 
 	@Override
 	public void initializeCollections() {
+		getFiles().size();
 		getCandidacies().size();
 	}
 

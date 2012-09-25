@@ -669,6 +669,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 	Models.File = Backbone.Model.extend({
 		defaults : {
 			"id" : undefined,
+			"type" : undefined,
 			"name" : undefined,
 			"description" : undefined,
 			"currentBody" : {
@@ -683,8 +684,8 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 	});
 	
 	Models.Files = Backbone.Collection.extend({
-		name : undefined,
-		model : Models.File
+		model : Models.File,
+		type : undefined
 	});
 	
 	Models.Institution = Backbone.Model.extend({

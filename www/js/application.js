@@ -1,4 +1,4 @@
-define([ "jquery", "bootstrap", "underscore", "backbone", "plupload", "jquery.ui", "jquery.i18n", "jquery.validate", "jquery.dataTables", "jquery.dataTables.bootstrap", "jquery.blockUI", "jquery.plupload", "backbone.cache" ], function($, _, Backbone) {
+define([ "jquery", "bootstrap", "underscore", "backbone", "jquery.ui", "jquery.i18n", "jquery.validate", "jquery.dataTables", "jquery.dataTables.bootstrap", "jquery.blockUI", "jquery.file.upload", "backbone.cache" ], function($, _, Backbone) {
 	if (!window.App) {
 		
 		// Additional Validation methods
@@ -91,7 +91,7 @@ define([ "jquery", "bootstrap", "underscore", "backbone", "plupload", "jquery.ui
 						posttxt++;
 						bytes = bytes / 1024;
 					}
-					return bytes.toFixed(precision) + " " + sizes[posttxt];
+					return bytes.toFixed(precision) + "" + sizes[posttxt];
 				},
 				
 				// Cookies

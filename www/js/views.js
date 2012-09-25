@@ -1,5 +1,5 @@
-define([ "jquery", "underscore", "backbone", "plupload", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/position-committee-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html", "text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html" ], function($, _, Backbone, plupload, App, Models, tpl_announcement_list, tpl_confirm, tpl_file_edit, tpl_home, tpl_login_admin,
-		tpl_login_main, tpl_popup, tpl_position_committee_edit, tpl_position_edit, tpl_position_list, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language) {
+define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/position-committee-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html", "text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html", "text!tpl/file-multiple-edit.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file_edit, tpl_home,
+		tpl_login_admin, tpl_login_main, tpl_popup, tpl_position_committee_edit, tpl_position_edit, tpl_position_list, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_file_multiple_edit) {
 	
 	var Views = {};
 	// MenuView
@@ -1524,6 +1524,8 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		
 		validator : undefined,
 		
+		innerViews : [],
+		
 		initialize : function() {
 			_.bindAll(this, "render", "submit", "cancel", "addFile", "close");
 			this.template = _.template(tpl_role_edit);
@@ -1542,19 +1544,32 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		
 		render : function(eventName) {
 			var self = this;
+			_.each(self.innerViews, function(innerView) {
+				innerView.close();
+			});
+			self.innerViews = [];
+			
 			self.$el.html(this.template(this.model.toJSON()));
 			
 			switch (self.model.get("discriminator")) {
 			case "CANDIDATE":
 				if (self.model.get("id") !== undefined) {
-					self.addFile("cv", $("#cv", this.$el));
-					self.addFile("identity", $("#identity", this.$el));
-					self.addFile("military1599", $("#military1599", this.$el));
-					self.addFileList("publications", $("#publications", this.$el));
+					var files = new Models.Files();
+					files.url = self.model.url() + "/file";
+					files.fetch({
+						cache : false,
+						success : function(collection, response) {
+							self.addFile(collection, "TAYTOTHTA", self.$("#tautotitaFile"));
+							self.addFile(collection, "BEBAIWSH_STRATIOTIKIS_THITIAS", self.$("#bebaiwsiStratiwtikisThitiasFile"));
+							self.addFile(collection, "BIOGRAFIKO", self.$("#biografikoFile"));
+							self.addFileList(collection, "PTYXIO", self.$("#ptyxioFileList"));
+							self.addFileList(collection, "DIMOSIEYSI", self.$("#dimosieusiFileList"));
+						}
+					});
 				} else {
-					$("#cv", self.$el).html($.i18n.prop("PressSave"));
 					$("#identity", self.$el).html($.i18n.prop("PressSave"));
 					$("#military1599", self.$el).html($.i18n.prop("PressSave"));
+					$("#cv", self.$el).html($.i18n.prop("PressSave"));
 					$("#publications", self.$el).html($.i18n.prop("PressSave"));
 				}
 				break;
@@ -1632,8 +1647,16 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 				});
 				
 				if (self.model.has("id")) {
-					self.addFile("fekFile", $("#fekFile", this.$el));
-					self.addFile("profileFile", $("#profileFile", this.$el));
+					var files = new Models.Files({
+						urlRoot : self.model.url() + "/file"
+					});
+					files.fetch({
+						cache : false,
+						success : function(collection, response) {
+							self.addFile(collection, "PROFILE", self.$("#profileFile"));
+							self.addFile(collection, "FEK", self.$("#fekFile"));
+						}
+					});
 				} else {
 					$("#fekFile", self.$el).html($.i18n.prop("PressSave"));
 					$("#profileFile", self.$el).html($.i18n.prop("PressSave"));
@@ -1991,39 +2014,46 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 			return false;
 		},
 		
-		addFile : function(type, $el) {
+		addFile : function(collection, type, $el) {
 			var self = this;
 			var fileView;
-			var file;
-			var fileAttributes = self.model.has(type) ? self.model.get(type) : {};
-			fileAttributes.name = type;
-			file = new Models.File(fileAttributes);
-			file.urlRoot = self.model.url() + "/" + type;
+			var file = collection.find(function(model) {
+				return _.isEqual(model.get("type"), type);
+			});
+			if (_.isUndefined(file)) {
+				file = new Models.File({
+					"type" : type
+				});
+			}
+			file.urlRoot = collection.url;
 			fileView = new Views.FileView({
 				model : file
 			});
-			file.bind("change", function() {
-				self.model.set(type, file.toJSON(), {
-					silent : true
-				});
-			});
 			$el.html(fileView.render().el);
+			self.innerViews.push(fileView);
 		},
 		
-		addFileList : function(type, $el) {
+		addFileList : function(collection, type, $el) {
 			var self = this;
 			var files = new Models.Files();
-			files.url = self.model.url() + "/" + type;
+			files.type = type;
+			files.url = collection.url;
+			_.each(collection.filter(function(model) {
+				return _.isEqual(model.get("type"), type);
+			}), function(model) {
+				files.add(model);
+			});
 			var fileListView = new Views.FileListView({
+				withMetadata : true,
 				collection : files
 			});
-			$el.html(fileListView.el);
-			files.fetch({
-				cache : false
-			});
+			$el.html(fileListView.render().el);
 		},
 		
 		close : function() {
+			_.each(this.innerViews, function(innerView) {
+				innerView.close();
+			});
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -2034,76 +2064,112 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		
 		initialize : function() {
 			this.template = _.template(tpl_file_edit);
-			_.bindAll(this, "render", "deleteFile", "uploadFile", "close");
+			_.bindAll(this, "render", "deleteFile", "close");
 			this.model.bind('change', this.render, this);
 		},
 		
 		events : {
-			"click a#upload" : "uploadFile",
-			"click a#delete" : "deleteFile"
+			"click a#delete" : "deleteFile",
 		},
 		
 		render : function(eventName) {
 			var self = this;
-			self.$el.html(self.template({
-				files : [ self.model.toJSON() ]
-			}));
+			var tpl_data = {
+				withMetadata : self.options.withMetadata,
+				file : self.model.toJSON()
+			};
+			if (_.isObject(tpl_data.file.currentBody)) {
+				tpl_data.file.currentBody.url = self.model.url() + "/body";
+			}
+			self.$el.html(self.template(tpl_data));
+			// Options
+			if (self.options.editable) {
+				self.$('a#delete').hide();
+				self.$("#uploader").hide();
+			} else {
+				self.$('a#delete').show();
+				self.$("#uploader").show();
+			}
+			if (self.options.withMetadata) {
+				self.$("input[name=name]").show();
+				self.$("textarea[name=description]").show();
+			} else {
+				self.$("input[name=name]").hide();
+				self.$("textarea[name=description]").hide();
+			}
+			self.$('div.progress').hide();
+			
+			// Initialize FileUpload widget
+			self.$('input[name=file]').fileupload({
+				dataType : 'json',
+				url : self.model.url(),
+				replaceFileInput : false,
+				add : function(e, data) {
+					self.$("a#upload").bind("click", function(e) {
+						self.$('div.progress').show();
+						self.$("a#upload").unbind("click");
+						data.formData = {
+							"type" : self.$("input[name=type]").val(),
+							"name" : self.$("input[name=name]").val(),
+							"description" : self.$("textarea[name=description]").val()
+						};
+						data.submit();
+					});
+				},
+				progressall : function(e, data) {
+					var progress = parseInt(data.loaded / data.total * 100, 10);
+					self.$('div.progress .bar').css('width', progress + '%');
+				},
+				done : function(e, data) {
+					self.$('div.progress').fadeOut('slow', function() {
+						self.$('div.progress .bar').css('width', '0%');
+						self.model.set(JSON.parse(data.jqXHR.responseText));
+					});
+					var popup = new Views.PopupView({
+						type : "success",
+						message : $.i18n.prop("Success")
+					});
+					popup.show();
+				},
+				fail : function(e, data) {
+					var resp = data.jqXHR;
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+					self.$('#progress.bar').hide('slow', function() {
+						self.$('#progress .bar').css('width', '0%');
+					});
+					
+				},
+			});
 			return self;
 		},
-		
-		uploadFile : function(event) {
-			var self = this;
-			var uploader = $("div.uploader", self.$el).pluploadQueue({
-				runtimes : 'html5,flash',
-				url : self.model.url(),
-				max_file_size : '30mb',
-				unique_names : true,
-				// Flash settings
-				flash_swf_url : 'lib/plupload/plupload.flash.swf',
-				headers : {
-					"X-Auth-Token" : App.authToken
-				},
-				init : {
-					FilesAdded : function(uploader, files) {
-						var i, len = uploader.files.length;
-						for (i = 0; i < len - 1; i++) {
-							uploader.removeFile(uploader.files[i]);
-						}
-					},
-					FileUploaded : function(uploader, file, response) {
-						var attributes = JSON.parse(response.response);
-						self.model.set(attributes, {
-							silent : true
-						});
-					}
-				}
-			});
-			self.$("div.modal").on("hidden", function() {
-				uploader.pluploadQueue().destroy();
-				uploader.empty();
-				if (self.model.hasChanged()) {
-					self.model.change();
-				}
-			});
-			self.$("div.modal").modal('show');
-		},
-		
 		deleteFile : function(event) {
 			var self = this;
 			var confirm = new Views.ConfirmView({
 				title : $.i18n.prop('Confirm'),
 				message : $.i18n.prop('AreYouSure'),
 				yes : function() {
+					var tmp = {
+						type : self.model.get("type"),
+						url : self.model.url,
+						urlRoot : self.model.urlRoot
+					};
 					self.model.destroy({
 						wait : true,
 						success : function(model, resp) {
-							var name = model.get("name");
 							var popup;
 							if (_.isNull(resp)) {
-								self.model.set(self.model.defaults, {
-									silent : true
+								// Reset Object to empty (without id) status
+								self.model.urlRoot = tmp.urlRoot;
+								self.model.url = self.model.url;
+								self.model.set(_.extend(self.model.defaults, {
+									"type" : tmp.type
+								}), {
+									silent : false
 								});
-								self.model.set("name", name);
 								popup = new Views.PopupView({
 									type : "success",
 									message : $.i18n.prop("Success")
@@ -2131,11 +2197,9 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		},
 		
 		close : function(eventName) {
-			if (!_.isUndefined(this.uploader)) {
-				this.uploader.destroy();
-			}
-			$(this.el).unbind();
-			$(this.el).remove();
+			this.$('input[name=file]').fileupload("destroy");
+			this.$el.unbind();
+			this.$el.remove();
 		}
 	});
 	
@@ -2145,71 +2209,113 @@ define([ "jquery", "underscore", "backbone", "plupload", "application", "models"
 		uploader : undefined,
 		
 		initialize : function() {
-			this.template = _.template(tpl_file_edit);
-			_.bindAll(this, "render", "deleteFile", "uploadFile", "close");
+			this.template = _.template(tpl_file_multiple_edit);
+			_.bindAll(this, "render", "deleteFile", "close");
 			this.collection.bind('reset', this.render, this);
 			this.collection.bind('remove', this.render, this);
 			this.collection.bind('add', this.render, this);
-			
 		},
 		
 		events : {
-			"click a#upload" : "uploadFile",
 			"click a#delete" : "deleteFile"
 		},
 		
 		render : function(eventName) {
 			var self = this;
-			self.$el.html(self.template({
-				files : self.collection.toJSON()
-			}));
-			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
-				self.$("table").dataTable({
-					"sDom" : "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
-					"sPaginationType" : "bootstrap",
-					"oLanguage" : {
-						"sLengthMenu" : "_MENU_ records per page"
-					}
-				});
+			var tpl_data = {
+				type : self.collection.type,
+				withMetadata : self.options.withMetadata,
+				files : []
+			};
+			self.collection.each(function(model) {
+				var file = model.toJSON();
+				if (_.isObject(file.currentBody)) {
+					file.currentBody.url = model.url() + "/body";
+				}
+				tpl_data.files.push(file);
+			});
+			self.$el.html(self.template(tpl_data));
+			
+			// if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
+			// self.$("table").dataTable({
+			// "sDom" :
+			// "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+			// "sPaginationType" : "bootstrap",
+			// "oLanguage" : {
+			// "sLengthMenu" : "_MENU_ records per page"
+			// }
+			// });
+			// }
+			// Options
+			if (self.options.editable) {
+				self.$('a#delete').hide();
+				self.$('a#update').hide();
+			} else {
+				self.$('a#delete').show();
+				self.$('a#update').show();
 			}
-			return self;
-		},
-		
-		uploadFile : function(event) {
-			var self = this;
-			var length = self.collection.length;
-			var uploader = $("div.uploader", self.$el).pluploadQueue({
-				runtimes : 'html5,flash',
+			if (self.options.withMetadata) {
+				self.$("input[name=name]").show();
+				self.$("textarea[name=description]").show();
+			} else {
+				self.$("input[name=name]").hide();
+				self.$("textarea[name=description]").hide();
+			}
+			self.$('div.progress').hide();
+			// Initialize FileUpload widget
+			self.$('input[name=file]').fileupload({
+				dataType : 'json',
 				url : self.collection.url,
-				max_file_size : '30mb',
-				unique_names : true,
-				// Flash settings
-				flash_swf_url : 'lib/plupload/plupload.flash.swf',
-				headers : {
-					"X-Auth-Token" : App.authToken
+				replaceFileInput : false,
+				add : function(e, data) {
+					self.$("a#upload").bind("click", function(e) {
+						self.$('div.progress').show();
+						self.$("a#upload").unbind("click");
+						data.formData = {
+							"type" : self.$("input[name=type]").val(),
+							"name" : self.$("input[name=name]").val(),
+							"description" : self.$("textarea[name=description]").val()
+						};
+						data.submit();
+					});
 				},
-				init : {
-					FileUploaded : function(uploader, file, response) {
-						var attributes = JSON.parse(response.response);
-						self.collection.add(new Models.File(attributes), {
-							silent : true
-						});
-					}
-				}
+				progressall : function(e, data) {
+					var progress = parseInt(data.loaded / data.total * 100, 10);
+					self.$('div.progress .bar').css('width', progress + '%');
+				},
+				done : function(e, data) {
+					self.$('div.progress').fadeOut('slow', function() {
+						self.$('div.progress .bar').css('width', '0%');
+						var newFile = new Models.File(JSON.parse(data.jqXHR.responseText));
+						newFile.urlRoot = self.collection.url;
+						self.collection.add(newFile);
+					});
+					var popup = new Views.PopupView({
+						type : "success",
+						message : $.i18n.prop("Success")
+					});
+					popup.show();
+				},
+				fail : function(e, data) {
+					var resp = data.jqXHR;
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+					self.$('#progress.bar').hide('slow', function() {
+						self.$('#progress .bar').css('width', '0%');
+					});
+					
+				},
 			});
-			self.$("div.modal").on("hidden", function() {
-				uploader.pluploadQueue().destroy();
-				uploader.empty();
-				if (length !== self.collection.length) {
-					self.collection.trigger("reset");
-				}
-			});
-			self.$("div.modal").modal('show');
+			
+			return self;
 		},
 		
 		deleteFile : function(event) {
 			var self = this;
-			var selectedModel = self.collection.get($(event.currentTarget).attr('fileId'));
+			var selectedModel = self.collection.get($(event.currentTarget).data('fileId'));
 			var confirm = new Views.ConfirmView({
 				title : $.i18n.prop('Confirm'),
 				message : $.i18n.prop('AreYouSure'),

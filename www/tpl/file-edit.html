@@ -1,40 +1,36 @@
-<table class="table table-striped table-bordered">
-	<thead>
-		<tr>
-			<th><%= $.i18n.prop("fileName") %></th>
-			<th width="70px"><%= $.i18n.prop("fileSize") %></th>
-			<th width="140px"><%= $.i18n.prop("fileDate") %></th>
-			<th width="100px"><%= $.i18n.prop("fileOptions") %></th>
-		</tr>
-	</thead>
-	<tbody>
-		<% if (!_.isUndefined(file.id)) { %>
-		<tr>
-			<td><a href='<%= file.currentBody.url %>' target="viewfile"><%= file.currentBody.originalFilename %></a></td>
-			<td width="70px"><p align="right"><%= App.utils.formatFileSize(file.currentBody.fileSize) %></p></td>
-			<td width="140px"><p align="right"><%= App.utils.formatDate(new Date(file.currentBody.date), "dd/mm/yyyy hh:nn:ss") %></p></td>
-			<td width="100px">
-				<p align="center">
-					<a id="delete" data-file-id="<%= file.id %>" class="btn btn-mini btn-danger"><i class="icon-trash icon-white"></i> <%= $.i18n.prop('btn_delete') %></a>
-				</p>
-			</td>
-		</tr>
-		<% } %>
-	</tbody>
-	<tfoot>
-		<tr>
-			<td colspan="4">
-				<form id="uploader" class="form-inline" method="POST" enctype="multipart/form-data">
-					<input type="hidden" name="type" />
-					<input type="file" name="file" class="input-small" />
-					<input type="text" name="name" class="input-small" placeholder="<%= $.i18n.prop("FileName") %>" />
-					<textarea name="description" rows="1" placeholder="<%= $.i18n.prop("FileDescription") %></textarea>
-					<a id="upload" data-file-id="<%= file.id %>" class="btn"><i class="icon-upload icon-white"></i> <%= $.i18n.prop('btn_upload') %></a>
-					<div id="progress">
-						<div class="bar" style="width: 0%;"></div>
-					</div>
-				</form>
-			</td>
-		</tr>
-	</tfoot>
+<table class="table table-bordered">
+	<% if (!_.isUndefined(file.id)) { %>
+	<tr id=info>
+		<td><i class="icon-asterisk"></i></td>
+<% if (withMetadata) { %>	
+		<td><%= file.name %></td>
+		<td><%= file.description %></td>
+<% } %>	
+		<td><a href='<%= file.currentBody.url %>' target="viewfile"> <%= file.currentBody.originalFilename %></a></td>
+		<td><%= App.utils.formatFileSize(file.currentBody.fileSize) %></td>
+		<td><%= App.utils.formatDate(new Date(file.currentBody.date), "dd/mm/yyyy hh:nn:ss") %></td>
+		
+		<td width="140px">
+			<a id="delete" data-file-id="<%= file.id %>" class="btn btn-small btn-danger pull-right"><i class="icon-trash icon-white"></i> <%= $.i18n.prop('btn_delete') %></a>
+		</td>
+	</tr>
+	<% } %>
+	<tr id="uploader">
+		<td><input type="hidden" name="type" value="<%= file.type %>" /></td>
+<% if (withMetadata) { %>	
+		<td>
+			<input type="text" name="name" class="input-medium" placeholder="<%= $.i18n.prop('FileName') %>" value="<%= file.name %>" />
+		</td>
+		<td><textarea name="description" rows="1" placeholder="<%= $.i18n.prop('FileDescription') %>"><%= file.description %></textarea></td>
+<% } %>
+		<td colspan='3'>
+			<input type="file" name="file" />
+			<div class="progress">
+				<div class="bar" style="width: 0%;"></div>
+			</div>
+		</td>
+		<td width="140px">
+			<a id="upload" data-file-id="<%= file.id %>" class="btn btn-small pull-right"><i class="icon-upload"></i> <%= $.i18n.prop('btn_upload') %></a>
+		</td>
+	</tr>
 </table>

@@ -9,9 +9,13 @@ import java.util.Map;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
+import javax.xml.bind.annotation.XmlRootElement;
+
+import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 @DiscriminatorValue("PositionCommitteeMemberFile")
+@XmlRootElement
 public class PositionCommitteeMemberFile extends FileHeader {
 
 	private static final long serialVersionUID = -3461035817248854894L;
@@ -28,6 +32,7 @@ public class PositionCommitteeMemberFile extends FileHeader {
 	@ManyToOne
 	private PositionCommitteeMember positionCommitteeMember;
 
+	@JsonView({DetailedFileHeaderView.class})
 	public PositionCommitteeMember getPositionCommitteeMember() {
 		return positionCommitteeMember;
 	}

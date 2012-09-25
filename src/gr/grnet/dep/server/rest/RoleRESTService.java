@@ -36,7 +36,6 @@ import javax.persistence.Query;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -46,10 +45,12 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.codehaus.jackson.map.annotate.JsonView;
 
@@ -433,10 +434,14 @@ public class RoleRESTService extends RESTService {
 		// Return Result
 		if (role instanceof Candidate) {
 			Candidate candidate = (Candidate) role;
-			return Response.ok().entity(candidate.getFiles()).build();
+			candidate.initializeCollections();
+			GenericEntity<Set<CandidateFile>> entity = new GenericEntity<Set<CandidateFile>>(candidate.getFiles()) {};
+			return Response.ok(entity).build();
 		} else if (role instanceof Professor) {
 			Professor professor = (Professor) role;
-			return Response.ok().entity(professor.getFiles()).build();
+			professor.initializeCollections();
+			GenericEntity<Set<ProfessorFile>> entity = new GenericEntity<Set<ProfessorFile>>(professor.getFiles()) {};
+			return Response.ok(entity).build();
 		}
 		// Default Action
 		throw new RestException(Status.BAD_REQUEST, "wrong.id");
@@ -447,7 +452,7 @@ public class RoleRESTService extends RESTService {
 	@Consumes("multipart/form-data")
 	@Produces({MediaType.APPLICATION_JSON})
 	@JsonView({SimpleFileHeaderView.class})
-	public FileHeader postFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @FormParam("type") String type, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	public FileHeader createFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
 		// Validate:
@@ -457,15 +462,29 @@ public class RoleRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+		// Parse Request
+		List<FileItem> fileItems = readMultipartFormData(request);
+		// Find required type:
+		FileType type = null;
+		for (FileItem fileItem : fileItems) {
+			if (fileItem.isFormField() && fileItem.getFieldName().equals("type")) {
+				type = FileType.valueOf(fileItem.getString("UTF-8"));
+				break;
+			}
+		}
+		if (type == null) {
+			throw new RestException(Status.BAD_REQUEST, "missing.file.type");
+		}
 		try {
 			// Return Result
 			if (role instanceof Candidate) {
 				Candidate candidate = (Candidate) role;
-				if (CandidateFile.fileTypes.containsKey(FileType.valueOf(type))) {
+				if (CandidateFile.fileTypes.containsKey(type)) {
 					//TODO: Validate number of types allowed (one, many) against existing
 					CandidateFile candidateFile = new CandidateFile();
 					candidateFile.setCandidate(candidate);
-					uploadFile(loggedOn, request, candidateFile);
+					candidateFile.setOwner(candidate.getUser());
+					saveFile(loggedOn, fileItems, candidateFile);
 					candidate.addFile(candidateFile);
 
 					refreshRoleStatus(role);
@@ -477,11 +496,12 @@ public class RoleRESTService extends RESTService {
 				}
 			} else if (role instanceof Professor) {
 				Professor professor = (Professor) role;
-				if (ProfessorFile.fileTypes.containsKey(FileType.valueOf(type))) {
+				if (ProfessorFile.fileTypes.containsKey(type)) {
 					//TODO: Validate number of types allowed (one, many) against existing
 					ProfessorFile professorFile = new ProfessorFile();
 					professorFile.setProfessor(professor);
-					uploadFile(loggedOn, request, professorFile);
+					professorFile.setOwner(professor.getUser());
+					saveFile(loggedOn, fileItems, professorFile);
 					professor.addFile(professorFile);
 
 					refreshRoleStatus(role);
@@ -491,6 +511,77 @@ public class RoleRESTService extends RESTService {
 				} else {
 					throw new RestException(Status.CONFLICT, "wrong.file.type");
 				}
+			} else {
+				throw new RestException(Status.CONFLICT, "wrong.file.type");
+			}
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+		}
+	}
+
+	@POST
+	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}")
+	@Consumes("multipart/form-data")
+	@Produces({MediaType.APPLICATION_JSON})
+	@JsonView({SimpleFileHeaderView.class})
+	public FileHeader updateFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+		User loggedOn = getLoggedOn(authToken);
+		Role role = em.find(Role.class, id);
+		// Validate:
+		if (role == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.id");
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Parse Request
+		List<FileItem> fileItems = readMultipartFormData(request);
+		// Find required type:
+		FileType type = null;
+		for (FileItem fileItem : fileItems) {
+			if (fileItem.isFormField() && fileItem.getFieldName().equals("type")) {
+				type = FileType.valueOf(fileItem.getString("UTF-8"));
+				break;
+			}
+		}
+		if (type == null) {
+			throw new RestException(Status.BAD_REQUEST, "missing.file.type");
+		}
+		try {
+			// Return Result
+			if (role instanceof Candidate) {
+				Candidate candidate = (Candidate) role;
+				CandidateFile candidateFile = null;
+				for (CandidateFile file : candidate.getFiles()) {
+					if (file.getId().equals(fileId)) {
+						candidateFile = file;
+						break;
+					}
+				}
+				if (candidateFile == null) {
+					throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+				}
+				saveFile(loggedOn, fileItems, candidateFile);
+				refreshRoleStatus(role);
+				em.flush();
+				return candidateFile;
+			} else if (role instanceof Professor) {
+				Professor professor = (Professor) role;
+				ProfessorFile professorFile = null;
+				for (ProfessorFile file : professor.getFiles()) {
+					if (file.getId().equals(fileId)) {
+						professorFile = file;
+						break;
+					}
+				}
+				if (professorFile == null) {
+					throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+				}
+				saveFile(loggedOn, fileItems, professorFile);
+				refreshRoleStatus(role);
+				em.flush();
+				return professorFile;
 			} else {
 				throw new RestException(Status.CONFLICT, "wrong.file.type");
 			}
@@ -525,7 +616,7 @@ public class RoleRESTService extends RESTService {
 					CandidateFile candidateFile = (CandidateFile) em.createQuery(
 						"select cf from CandidateFile cf " +
 							"where cf.candidate.id = :candidateId " +
-							"and cf.fileHeader.id = :fileId")
+							"and cf.id = :fileId")
 						.setParameter("candidateId", id)
 						.setParameter("fileId", fileId)
 						.getSingleResult();
@@ -547,7 +638,7 @@ public class RoleRESTService extends RESTService {
 					ProfessorFile professorFile = (ProfessorFile) em.createQuery(
 						"select cf from ProfessorFile cf " +
 							"where cf.candidate.id = :candidateId " +
-							"and cf.fileHeader.id = :fileId")
+							"and cf.id = :fileId")
 						.setParameter("candidateId", id)
 						.setParameter("fileId", fileId)
 						.getSingleResult();

@@ -158,10 +158,7 @@ public class RESTService {
 		return subPath + File.separator + prefix + "-" + id + extension;
 	}
 
-	public void uploadFile(User loggedOn, HttpServletRequest request, FileHeader header) throws IOException {
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(header.getOwner().getId())) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
+	public List<FileItem> readMultipartFormData(HttpServletRequest request) {
 		try {
 			DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
 			ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
@@ -169,7 +166,19 @@ public class RESTService {
 			servletFileUpload.setHeaderEncoding("UTF-8");
 			@SuppressWarnings("unchecked")
 			List<FileItem> fileItems = servletFileUpload.parseRequest(request);
+			return fileItems;
+		} catch (FileUploadException e) {
+			logger.log(Level.SEVERE, "Error encountered while parsing the request", e);
+			throw new RestException(Status.INTERNAL_SERVER_ERROR, "generic");
+		}
+	}
 
+	public void saveFile(User loggedOn, List<FileItem> fileItems, FileHeader header) throws IOException {
+
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(header.getOwner().getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		try {
 			for (FileItem fileItem : fileItems) {
 				if (fileItem.isFormField()) {
 					logger.info("Incoming text data: '" + fileItem.getFieldName() + "'=" + fileItem.getString("UTF-8") + "\n");

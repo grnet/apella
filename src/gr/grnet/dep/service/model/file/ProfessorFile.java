@@ -9,9 +9,13 @@ import java.util.Map;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
+import javax.xml.bind.annotation.XmlRootElement;
+
+import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 @DiscriminatorValue("ProfessorFile")
+@XmlRootElement
 public class ProfessorFile extends FileHeader {
 
 	private static final long serialVersionUID = -3078442579988112911L;
@@ -28,6 +32,7 @@ public class ProfessorFile extends FileHeader {
 	@ManyToOne
 	private Professor professor;
 
+	@JsonView({DetailedFileHeaderView.class})
 	public Professor getProfessor() {
 		return professor;
 	}

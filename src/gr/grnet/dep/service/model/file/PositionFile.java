@@ -9,9 +9,13 @@ import java.util.Map;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
+import javax.xml.bind.annotation.XmlRootElement;
+
+import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 @DiscriminatorValue("PositionFile")
+@XmlRootElement
 public class PositionFile extends FileHeader {
 
 	private static final long serialVersionUID = -3407870200478760438L;
@@ -45,6 +49,7 @@ public class PositionFile extends FileHeader {
 	@ManyToOne
 	private Position position;
 
+	@JsonView({DetailedFileHeaderView.class})
 	public Position getPosition() {
 		return position;
 	}
