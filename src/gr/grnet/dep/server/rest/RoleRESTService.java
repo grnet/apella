@@ -2,13 +2,11 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.DepartmentAssistant;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
-import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.CandidateFile;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
@@ -112,7 +110,6 @@ public class RoleRESTService extends RESTService {
 		Set<RolePair> aSet = new HashSet<RolePair>();
 		// ADMINISTRATOR
 		aSet.add(new RolePair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.CANDIDATE));
-		aSet.add(new RolePair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.DEPARTMENT_ASSISTANT));
 		aSet.add(new RolePair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.INSTITUTION_ASSISTANT));
 		aSet.add(new RolePair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.INSTITUTION_MANAGER));
 		aSet.add(new RolePair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.MINISTRY_MANAGER));
@@ -120,7 +117,6 @@ public class RoleRESTService extends RESTService {
 		aSet.add(new RolePair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.PROFESSOR_FOREIGN));
 		// CANDIDATE
 		aSet.add(new RolePair(RoleDiscriminator.CANDIDATE, RoleDiscriminator.INSTITUTION_MANAGER));
-		aSet.add(new RolePair(RoleDiscriminator.CANDIDATE, RoleDiscriminator.DEPARTMENT_ASSISTANT));
 		aSet.add(new RolePair(RoleDiscriminator.CANDIDATE, RoleDiscriminator.INSTITUTION_ASSISTANT));
 		aSet.add(new RolePair(RoleDiscriminator.CANDIDATE, RoleDiscriminator.MINISTRY_MANAGER));
 		// INSTITUTION_MANAGER
@@ -128,37 +124,25 @@ public class RoleRESTService extends RESTService {
 		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_MANAGER, RoleDiscriminator.PROFESSOR_DOMESTIC));
 		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_MANAGER, RoleDiscriminator.PROFESSOR_FOREIGN));
 		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_MANAGER, RoleDiscriminator.INSTITUTION_ASSISTANT));
-		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_MANAGER, RoleDiscriminator.DEPARTMENT_ASSISTANT));
 		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_MANAGER, RoleDiscriminator.MINISTRY_MANAGER));
 		// INSTITUTION_ASSISTANT
 		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_ASSISTANT, RoleDiscriminator.CANDIDATE));
 		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_ASSISTANT, RoleDiscriminator.PROFESSOR_DOMESTIC));
 		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_ASSISTANT, RoleDiscriminator.PROFESSOR_FOREIGN));
 		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_ASSISTANT, RoleDiscriminator.INSTITUTION_MANAGER));
-		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_ASSISTANT, RoleDiscriminator.DEPARTMENT_ASSISTANT));
 		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_ASSISTANT, RoleDiscriminator.MINISTRY_MANAGER));
-		// DEPARTMENT_ASSISTANT
-		aSet.add(new RolePair(RoleDiscriminator.DEPARTMENT_ASSISTANT, RoleDiscriminator.CANDIDATE));
-		aSet.add(new RolePair(RoleDiscriminator.DEPARTMENT_ASSISTANT, RoleDiscriminator.PROFESSOR_DOMESTIC));
-		aSet.add(new RolePair(RoleDiscriminator.DEPARTMENT_ASSISTANT, RoleDiscriminator.PROFESSOR_FOREIGN));
-		aSet.add(new RolePair(RoleDiscriminator.DEPARTMENT_ASSISTANT, RoleDiscriminator.INSTITUTION_MANAGER));
-		aSet.add(new RolePair(RoleDiscriminator.DEPARTMENT_ASSISTANT, RoleDiscriminator.INSTITUTION_ASSISTANT));
-		aSet.add(new RolePair(RoleDiscriminator.DEPARTMENT_ASSISTANT, RoleDiscriminator.MINISTRY_MANAGER));
 		// MINISTRY_MANAGER
 		aSet.add(new RolePair(RoleDiscriminator.MINISTRY_MANAGER, RoleDiscriminator.CANDIDATE));
 		aSet.add(new RolePair(RoleDiscriminator.MINISTRY_MANAGER, RoleDiscriminator.PROFESSOR_DOMESTIC));
 		aSet.add(new RolePair(RoleDiscriminator.MINISTRY_MANAGER, RoleDiscriminator.PROFESSOR_FOREIGN));
 		aSet.add(new RolePair(RoleDiscriminator.MINISTRY_MANAGER, RoleDiscriminator.INSTITUTION_MANAGER));
 		aSet.add(new RolePair(RoleDiscriminator.MINISTRY_MANAGER, RoleDiscriminator.INSTITUTION_ASSISTANT));
-		aSet.add(new RolePair(RoleDiscriminator.MINISTRY_MANAGER, RoleDiscriminator.DEPARTMENT_ASSISTANT));
 		// PROFESSOR_DOMESTIC
-		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_DOMESTIC, RoleDiscriminator.DEPARTMENT_ASSISTANT));
 		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_DOMESTIC, RoleDiscriminator.INSTITUTION_ASSISTANT));
 		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_DOMESTIC, RoleDiscriminator.INSTITUTION_MANAGER));
 		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_DOMESTIC, RoleDiscriminator.MINISTRY_MANAGER));
 		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_DOMESTIC, RoleDiscriminator.PROFESSOR_FOREIGN));
 		// PROFESSOR_FOREIGN
-		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_FOREIGN, RoleDiscriminator.DEPARTMENT_ASSISTANT));
 		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_FOREIGN, RoleDiscriminator.INSTITUTION_ASSISTANT));
 		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_FOREIGN, RoleDiscriminator.INSTITUTION_MANAGER));
 		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_FOREIGN, RoleDiscriminator.MINISTRY_MANAGER));
@@ -220,78 +204,6 @@ public class RoleRESTService extends RESTService {
 		return false;
 	}
 
-	private void refreshRoleStatus(Role role) {
-		switch (role.getStatus()) {
-			case CREATED:
-				if (!role.isMissingRequiredFields()) {
-					User roleUser = em.find(User.class, role.getUser().getId());
-					switch (roleUser.getRegistrationType()) {
-						case REGISTRATION_FORM:
-							// InstitutionAssistant, DepartmentAssistant do not need Helpdesk Approval, set to ACTIVE
-							switch (role.getDiscriminator()) {
-								case INSTITUTION_ASSISTANT:
-								case DEPARTMENT_ASSISTANT:
-									role.setStatus(RoleStatus.ACTIVE);
-									role.setStatusDate(new Date());
-									break;
-								default:
-									role.setStatus(RoleStatus.UNAPPROVED);
-									role.setStatusDate(new Date());
-									break;
-							}
-
-							break;
-						case SHIBBOLETH:
-							// Shibboleth Users do not need Helpdesk Approval, set to ACTIVE
-							role.setStatus(RoleStatus.ACTIVE);
-							role.setStatusDate(new Date());
-							break;
-					}
-				}
-				break;
-			case UNAPPROVED:
-				if (role.isMissingRequiredFields()) {
-					role.setStatus(RoleStatus.CREATED);
-					role.setStatusDate(new Date());
-				} else {
-					User roleUser = em.find(User.class, role.getUser().getId());
-					switch (roleUser.getRegistrationType()) {
-						case REGISTRATION_FORM:
-							// InstitutionAssistant, DepartmentAssistant do not need Helpdesk Approval, set to ACTIVE
-							switch (role.getDiscriminator()) {
-								case INSTITUTION_ASSISTANT:
-								case DEPARTMENT_ASSISTANT:
-									role.setStatus(RoleStatus.ACTIVE);
-									role.setStatusDate(new Date());
-									break;
-								default:
-									// Do not change in other cases
-									break;
-							}
-
-							break;
-						case SHIBBOLETH:
-							// Shibboleth Users do not need Helpdesk Approval, set to ACTIVE
-							role.setStatus(RoleStatus.ACTIVE);
-							role.setStatusDate(new Date());
-							break;
-					}
-				}
-				role.setStatusDate(new Date());
-				break;
-			case ACTIVE:
-				if (role.isMissingRequiredFields()) {
-					role.setStatus(RoleStatus.CREATED);
-				}
-				role.setStatusDate(new Date());
-				break;
-			case BLOCKED:
-			case DELETED:
-				// If the role is blocked from the Helpdesk, only the Helpdesk can change it
-				break;
-		}
-	}
-
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedRoleView.class})
@@ -332,7 +244,6 @@ public class RoleRESTService extends RESTService {
 		// Update
 		try {
 			newRole = em.merge(newRole);
-			refreshRoleStatus(newRole);
 			em.flush();
 			return newRole;
 		} catch (PersistenceException e) {
@@ -354,18 +265,15 @@ public class RoleRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !existingRole.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+
+		// TODO: FOR USERS: IF UNVERIFIED CONTINUE, IF ACTIVE DO NOT ALLOW CHANGES TO SOME FIELDS, ELSE BLOCK 
+
 		Long managerInstitutionId;
 		Long institutionId;
 		switch (existingRole.getDiscriminator()) {
 			case INSTITUTION_ASSISTANT:
 				managerInstitutionId = ((InstitutionAssistant) existingRole).getManager().getInstitution().getId();
 				institutionId = ((InstitutionAssistant) role).getInstitution().getId();
-				if (!managerInstitutionId.equals(institutionId)) {
-					throw new RestException(Status.CONFLICT, "manager.institution.mismatch");
-				}
-			case DEPARTMENT_ASSISTANT:
-				managerInstitutionId = ((InstitutionAssistant) existingRole).getManager().getInstitution().getId();
-				institutionId = ((DepartmentAssistant) role).getDepartment().getInstitution().getId();
 				if (!managerInstitutionId.equals(institutionId)) {
 					throw new RestException(Status.CONFLICT, "manager.institution.mismatch");
 				}
@@ -376,7 +284,6 @@ public class RoleRESTService extends RESTService {
 		try {
 			// Update
 			existingRole = existingRole.copyFrom(role);
-			refreshRoleStatus(existingRole);
 			// Return Result
 			em.flush();
 			return existingRole;
@@ -473,6 +380,9 @@ public class RoleRESTService extends RESTService {
 		if (type == null) {
 			throw new RestException(Status.BAD_REQUEST, "missing.file.type");
 		}
+
+		// TODO: FOR USERS: IF UNVERIFIED CONTINUE, IF ACTIVE DO NOT ALLOW CHANGES TO SOME TYPES, ELSE BLOCK 
+
 		try {
 			// Return Result
 			if (role instanceof Candidate) {
@@ -484,8 +394,6 @@ public class RoleRESTService extends RESTService {
 					candidateFile.setOwner(candidate.getUser());
 					saveFile(loggedOn, fileItems, candidateFile);
 					candidate.addFile(candidateFile);
-
-					refreshRoleStatus(role);
 					em.flush();
 
 					return toJSON(candidateFile, SimpleFileHeaderView.class);
@@ -502,7 +410,6 @@ public class RoleRESTService extends RESTService {
 					saveFile(loggedOn, fileItems, professorFile);
 					professor.addFile(professorFile);
 
-					refreshRoleStatus(role);
 					em.flush();
 
 					return toJSON(professorFile, SimpleFileHeaderView.class);
@@ -545,6 +452,8 @@ public class RoleRESTService extends RESTService {
 		if (type == null) {
 			throw new RestException(Status.BAD_REQUEST, "missing.file.type");
 		}
+		// TODO: FOR USERS: IF UNVERIFIED CONTINUE, IF ACTIVE DO NOT ALLOW CHANGES TO SOME TYPES, ELSE BLOCK 
+
 		try {
 			// Return Result
 			if (role instanceof Candidate) {
@@ -560,7 +469,6 @@ public class RoleRESTService extends RESTService {
 					throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 				}
 				saveFile(loggedOn, fileItems, candidateFile);
-				refreshRoleStatus(role);
 				em.flush();
 				candidateFile.getBodies().size();
 				return toJSON(candidateFile, SimpleFileHeaderView.class);
@@ -577,7 +485,6 @@ public class RoleRESTService extends RESTService {
 					throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 				}
 				saveFile(loggedOn, fileItems, professorFile);
-				refreshRoleStatus(role);
 				em.flush();
 				professorFile.getBodies().size();
 				return toJSON(professorFile, SimpleFileHeaderView.class);
@@ -619,6 +526,7 @@ public class RoleRESTService extends RESTService {
 						.setParameter("candidateId", id)
 						.setParameter("fileId", fileId)
 						.getSingleResult();
+					//TODO: Validate if Delete is allowed (depending on role status)
 					if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(candidateFile.getOwner().getId())) {
 						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 					}
@@ -626,7 +534,6 @@ public class RoleRESTService extends RESTService {
 					if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
 						// Remove from Role
 						em.remove(candidateFile);
-						refreshRoleStatus(role);
 					}
 					return retv;
 				} catch (NoResultException e) {
@@ -644,11 +551,11 @@ public class RoleRESTService extends RESTService {
 					if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(professorFile.getOwner().getId())) {
 						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 					}
+					//TODO: Validate if Delete is allowed (depending on role status)
 					Response retv = deleteFileBody(professorFile);
 					if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
 						// Remove from Role
 						em.remove(professorFile);
-						refreshRoleStatus(role);
 					}
 					return retv;
 				} catch (NoResultException e) {

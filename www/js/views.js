@@ -37,10 +37,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				menuItems.push("register");
 				menuItems.push("position");
 			}
-			if (self.model.hasRoleWithStatus("DEPARTMENT_ASSISTANT", "ACTIVE")) {
-				menuItems.push("register");
-				menuItems.push("position");
-			}
 			if (self.model.hasRoleWithStatus("INSTITUTION_ASSISTANT", "ACTIVE")) {
 				menuItems.push("register");
 				menuItems.push("position");
@@ -1847,45 +1843,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				});
 				break;
 			
-			case "DEPARTMENT_ASSISTANT":
-				App.departments = App.departments ? App.departments : new Models.Departments();
-				App.departments.fetch({
-					cache : true,
-					success : function(collection, resp) {
-						collection.each(function(department) {
-							if (_.isObject(self.model.get("department")) && _.isEqual(department.id, self.model.get("department").id)) {
-								$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "' selected>" + department.get("institution").name + ": " + department.get("department") + "</option>");
-							} else {
-								$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "'>" + department.get("institution").name + ": " + department.get("department") + "</option>");
-							}
-						});
-					},
-					error : function(model, resp, options) {
-						var popup = new Views.PopupView({
-							type : "error",
-							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-						});
-						popup.show();
-					}
-				});
-				this.validator = $("form", this.el).validate({
-					errorElement : "span",
-					errorClass : "help-inline",
-					highlight : function(element, errorClass, validClass) {
-						$(element).parent(".controls").parent(".control-group").addClass("error");
-					},
-					unhighlight : function(element, errorClass, validClass) {
-						$(element).parent(".controls").parent(".control-group").removeClass("error");
-					},
-					rules : {
-						department : "required"
-					},
-					messages : {
-						department : $.i18n.prop('validation_department')
-					}
-				});
-				break;
-			
 			case "MINISTRY_MANAGER":
 				this.validator = $("form", this.el).validate({
 					errorElement : "span",
@@ -1964,11 +1921,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						values.institution = {
 							"id" : self.$('form select[name=institution]').val()
 						};
-						break;
-					
-					case "DEPARTMENT_ASSISTANT":
-						values.department = {};
-						values.department.id = self.$('form select[name=department]').val();
 						break;
 					
 					case "MINISTRY_MANAGER":
@@ -2450,7 +2402,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		events : {
 			"click a#select" : "select",
 			"click a#createInstitutionAssistant" : "createInstitutionAssistant",
-			"click a#createDepartmentAssistant" : "createDepartmentAssistant"
 		},
 		
 		render : function(eventName) {
@@ -2482,25 +2433,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				});
 			}
 			// Add Actions:
-			self.$("#actions").html("<div class=\"btn-group input-append\"><a id=\"createInstitutionAssistant\" class=\"btn btn-small add-on\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_ia') + " </a></div><div class=\"btn-group input-append\"><select name=\"department\"></select><a id=\"createDepartmentAssistant\" class=\"btn btn-small add-on\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_da') + "</a></div>");
-			App.departments = App.departments ? App.departments : new Models.Departments();
-			App.departments.fetch({
-				cache : true,
-				success : function(collection, resp) {
-					_.each(collection.filter(function(department) {
-						return App.loggedOnUser.isAssociatedWithDepartment(department);
-					}), function(department) {
-						$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "'>" + department.get("institution").name + ": " + department.get("department") + "</option>");
-					});
-				},
-				error : function(model, resp, options) {
-					var popup = new Views.PopupView({
-						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-					});
-					popup.show();
-				}
-			});
+			self.$("#actions").html("<div class=\"btn-group input-append\"><a id=\"createInstitutionAssistant\" class=\"btn btn-small add-on\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_ia') + " </a></div><div class=\"btn-group input-append\"></div>");
 			return self;
 		},
 		
@@ -2515,18 +2448,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				"roles" : [ {
 					"discriminator" : "INSTITUTION_ASSISTANT",
 					"institution" : institutions[0]
-				} ]
-			});
-			this.collection.add(user);
-			this.collection.trigger("user:selected", user);
-		},
-		
-		createDepartmentAssistant : function(event) {
-			var self = this;
-			var user = new Models.User({
-				"roles" : [ {
-					"discriminator" : "DEPARTMENT_ASSISTANT",
-					"department" : App.departments.get(self.$("select[name=department]").val()).toJSON()
 				} ]
 			});
 			this.collection.add(user);

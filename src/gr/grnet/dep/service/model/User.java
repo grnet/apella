@@ -44,7 +44,7 @@ public class User implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public enum UserStatus {
-		CREATED, UNVERIFIED, ACTIVE, BLOCKED, DELETED
+		UNVERIFIED, ACTIVE, BLOCKED, DELETED
 	}
 
 	public static interface DetailedUserView {
@@ -289,12 +289,6 @@ public class User implements Serializable {
 	public boolean isDepartmentUser(Department department) {
 		Institution institution = department.getInstitution();
 		for (Role r : getRoles()) {
-			if (r.getDiscriminator() == RoleDiscriminator.DEPARTMENT_ASSISTANT) {
-				DepartmentAssistant dm = (DepartmentAssistant) r;
-				if (dm.getDepartment().getId().equals(department.getId())) {
-					return true;
-				}
-			}
 			if (r.getDiscriminator() == RoleDiscriminator.INSTITUTION_MANAGER) {
 				InstitutionManager im = (InstitutionManager) r;
 				if (im.getInstitution().getId().equals(institution.getId())) {

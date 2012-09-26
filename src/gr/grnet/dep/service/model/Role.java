@@ -35,7 +35,6 @@ import org.codehaus.jackson.map.annotate.JsonView;
 	@JsonSubTypes.Type(value = ProfessorDomestic.class, name = "PROFESSOR_DOMESTIC"),
 	@JsonSubTypes.Type(value = ProfessorForeign.class, name = "PROFESSOR_FOREIGN"),
 	@JsonSubTypes.Type(value = InstitutionManager.class, name = "INSTITUTION_MANAGER"),
-	@JsonSubTypes.Type(value = DepartmentAssistant.class, name = "DEPARTMENT_ASSISTANT"),
 	@JsonSubTypes.Type(value = InstitutionAssistant.class, name = "INSTITUTION_ASSISTANT"),
 	@JsonSubTypes.Type(value = MinistryManager.class, name = "MINISTRY_MANAGER"),
 	@JsonSubTypes.Type(value = Candidate.class, name = "CANDIDATE"),
@@ -53,7 +52,6 @@ public abstract class Role implements Serializable {
 		PROFESSOR_DOMESTIC,
 		PROFESSOR_FOREIGN,
 		INSTITUTION_MANAGER,
-		DEPARTMENT_ASSISTANT,
 		INSTITUTION_ASSISTANT,
 		MINISTRY_MANAGER,
 		CANDIDATE,
@@ -61,7 +59,6 @@ public abstract class Role implements Serializable {
 	};
 
 	public enum RoleStatus {
-		CREATED,
 		UNAPPROVED,
 		ACTIVE,
 		BLOCKED,
@@ -86,7 +83,7 @@ public abstract class Role implements Serializable {
 
 	@Enumerated(EnumType.STRING)
 	@NotNull
-	private RoleStatus status = RoleStatus.CREATED;
+	private RoleStatus status = RoleStatus.UNAPPROVED;
 
 	private Date statusDate;
 

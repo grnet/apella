@@ -3,7 +3,6 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Address;
 import gr.grnet.dep.service.model.Department;
-import gr.grnet.dep.service.model.DepartmentAssistant;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.InstitutionManager;
 import gr.grnet.dep.service.model.ProfessorDomestic;
@@ -161,12 +160,16 @@ public class UserRESTService extends RESTService {
 			Role firstRole = user.getRoles().iterator().next();
 			switch (firstRole.getDiscriminator()) {
 				case PROFESSOR_DOMESTIC:
+					firstRole.setStatus(RoleStatus.UNAPPROVED);
 					break;
 				case PROFESSOR_FOREIGN:
+					firstRole.setStatus(RoleStatus.UNAPPROVED);
 					break;
 				case INSTITUTION_MANAGER:
+					firstRole.setStatus(RoleStatus.UNAPPROVED);
 					break;
 				case CANDIDATE:
+					firstRole.setStatus(RoleStatus.UNAPPROVED);
 					break;
 				case INSTITUTION_ASSISTANT:
 					loggedOn = getLoggedOn(authToken);
@@ -174,20 +177,10 @@ public class UserRESTService extends RESTService {
 						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 					}
 					((InstitutionAssistant) firstRole).setManager(((InstitutionManager) loggedOn.getRole(RoleDiscriminator.INSTITUTION_MANAGER)));
-					break;
-				case DEPARTMENT_ASSISTANT:
-					loggedOn = getLoggedOn(authToken);
-					if (!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_MANAGER)) {
-						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-					}
-					((DepartmentAssistant) firstRole).setManager(((InstitutionManager) loggedOn.getRole(RoleDiscriminator.INSTITUTION_MANAGER)));
+					firstRole.setStatus(RoleStatus.ACTIVE);
 					break;
 				case MINISTRY_MANAGER:
-					loggedOn = getLoggedOn(authToken);
-					if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
-						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-					}
-					break;
+					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 				case ADMINISTRATOR:
 					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
@@ -202,7 +195,6 @@ public class UserRESTService extends RESTService {
 			user.setRoles(new HashSet<Role>());
 			em.persist(user);
 
-			firstRole.setStatus(RoleStatus.CREATED);
 			firstRole.setStatusDate(new Date());
 			user.addRole(firstRole);
 
@@ -358,13 +350,13 @@ public class UserRESTService extends RESTService {
 			u.getBasicInfo().setLastname(lastName);
 			u.getContactInfo().setAddress(new Address());
 			u.setRegistrationDate(new Date());
-			u.setStatus(UserStatus.CREATED);
+			u.setStatus(UserStatus.ACTIVE); // We trust shibboleth data, and lock changes from beginning
 			u.setStatusDate(new Date());
 
 			ProfessorDomestic pd = new ProfessorDomestic();
 			pd.setDepartment(department);
 			pd.setInstitution(department.getInstitution());
-			pd.setStatus(RoleStatus.CREATED);
+			pd.setStatus(RoleStatus.ACTIVE); // We trust shibboleth data, and lock changes from beginning
 			pd.setStatusDate(new Date());
 			//TODO:  Get Rank from affiliation
 			u.addRole(pd);
