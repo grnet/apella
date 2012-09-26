@@ -409,6 +409,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 		
 		render : function(eventName) {
+			var self = this;
+			
 			self.$el.html(this.template(this.model.toJSON()));
 			
 			this.validator = $("form", this.el).validate({
@@ -1559,18 +1561,39 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					files.fetch({
 						cache : false,
 						success : function(collection, response) {
-							self.addFile(collection, "TAYTOTHTA", self.$("#tautotitaFile"));
-							self.addFile(collection, "BEBAIWSH_STRATIOTIKIS_THITIAS", self.$("#bebaiwsiStratiwtikisThitiasFile"));
-							self.addFile(collection, "BIOGRAFIKO", self.$("#biografikoFile"));
-							self.addFileList(collection, "PTYXIO", self.$("#ptyxioFileList"));
-							self.addFileList(collection, "DIMOSIEYSI", self.$("#dimosieusiFileList"));
+							self.addFile(collection, "TAYTOTHTA", self.$("#tautotitaFile"), {
+								withMetadata : false,
+								editable : _.isEqual(self.model.get("status"), "UNAPPROVED")
+							});
+							self.addFile(collection, "BEBAIWSH_STRATIOTIKIS_THITIAS", self.$("#bebaiwsiStratiwtikisThitiasFile"), {
+								withMetadata : false,
+								editable : _.isEqual(self.model.get("status"), "UNAPPROVED")
+							});
+							self.addFile(collection, "FORMA_SYMMETOXIS", self.$("#formaSymmetoxisFile"), {
+								withMetadata : false,
+								editable : _.isEqual(self.model.get("status"), "UNAPPROVED")
+							});
+							self.addFile(collection, "BIOGRAFIKO", self.$("#biografikoFile"), {
+								withMetadata : false,
+								editable : true
+							});
+							self.addFileList(collection, "PTYXIO", self.$("#ptyxioFileList"), {
+								withMetadata : true,
+								editable : true
+							});
+							self.addFileList(collection, "DIMOSIEYSI", self.$("#dimosieusiFileList"), {
+								withMetadata : true,
+								editable : true
+							});
 						}
 					});
 				} else {
-					$("#identity", self.$el).html($.i18n.prop("PressSave"));
-					$("#military1599", self.$el).html($.i18n.prop("PressSave"));
-					$("#cv", self.$el).html($.i18n.prop("PressSave"));
-					$("#publications", self.$el).html($.i18n.prop("PressSave"));
+					self.$("#tautotitaFile").html($.i18n.prop("PressSave"));
+					self.$("#bebaiwsiStratiwtikisThitiasFile").html($.i18n.prop("PressSave"));
+					self.$("#formaSymmetoxisFile").html($.i18n.prop("PressSave"));
+					self.$("#biografikoFile").html($.i18n.prop("PressSave"));
+					self.$("#ptyxioFileList").html($.i18n.prop("PressSave"));
+					self.$("#dimosieusiFileList").html($.i18n.prop("PressSave"));
 				}
 				break;
 			case "PROFESSOR_DOMESTIC":
@@ -2014,28 +2037,31 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			return false;
 		},
 		
-		addFile : function(collection, type, $el) {
+		addFile : function(collection, type, $el, options) {
 			var self = this;
 			var fileView;
 			var file = collection.find(function(model) {
 				return _.isEqual(model.get("type"), type);
 			});
+			options = options ? options : {};
 			if (_.isUndefined(file)) {
 				file = new Models.File({
 					"type" : type
 				});
 			}
 			file.urlRoot = collection.url;
-			fileView = new Views.FileView({
+			fileView = new Views.FileView(_.extend({
 				model : file
-			});
+			}, options));
 			$el.html(fileView.render().el);
 			self.innerViews.push(fileView);
 		},
 		
-		addFileList : function(collection, type, $el) {
+		addFileList : function(collection, type, $el, options) {
 			var self = this;
 			var files = new Models.Files();
+			options = options ? options : {};
+			
 			files.type = type;
 			files.url = collection.url;
 			_.each(collection.filter(function(model) {
@@ -2043,10 +2069,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}), function(model) {
 				files.add(model);
 			});
-			var fileListView = new Views.FileListView({
-				withMetadata : true,
+			var fileListView = new Views.FileListView(_.extend({
 				collection : files
-			});
+			}, options));
 			$el.html(fileListView.render().el);
 		},
 		
@@ -2084,11 +2109,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.$el.html(self.template(tpl_data));
 			// Options
 			if (self.options.editable) {
-				self.$('a#delete').hide();
-				self.$("#uploader").hide();
-			} else {
 				self.$('a#delete').show();
 				self.$("#uploader").show();
+			} else {
+				self.$('a#delete').hide();
+				self.$("#uploader").hide();
 			}
 			if (self.options.withMetadata) {
 				self.$("input[name=name]").show();
@@ -2248,12 +2273,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			// }
 			// Options
 			if (self.options.editable) {
-				self.$('a#delete').hide();
-				self.$('a#update').hide();
-			} else {
 				self.$('a#delete').show();
-				self.$('a#update').show();
+				self.$('#uploader').show();
+			} else {
+				self.$('a#delete').hide();
+				self.$('#uploader').hide();
 			}
+			
 			if (self.options.withMetadata) {
 				self.$("input[name=name]").show();
 				self.$("textarea[name=description]").show();

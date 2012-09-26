@@ -9,7 +9,6 @@
 		<td><a href='<%= file.currentBody.url %>' target="viewfile"> <%= file.currentBody.originalFilename %></a></td>
 		<td><%= App.utils.formatFileSize(file.currentBody.fileSize) %></td>
 		<td><%= App.utils.formatDate(new Date(file.currentBody.date), "dd/mm/yyyy hh:nn:ss") %></td>
-		
 		<td width="140px">
 			<a id="delete" data-file-id="<%= file.id %>" class="btn btn-small btn-danger pull-right"><i class="icon-trash icon-white"></i> <%= $.i18n.prop('btn_delete') %></a>
 		</td>
