@@ -11,7 +11,6 @@ import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.CandidateFile;
-import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.file.ProfessorFile;
@@ -450,9 +449,8 @@ public class RoleRESTService extends RESTService {
 	@POST
 	@Path("/{id:[0-9][0-9]*}/file")
 	@Consumes("multipart/form-data")
-	@Produces({MediaType.APPLICATION_JSON})
-	@JsonView({SimpleFileHeaderView.class})
-	public FileHeader createFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
+	public String createFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
 		// Validate:
@@ -490,7 +488,7 @@ public class RoleRESTService extends RESTService {
 					refreshRoleStatus(role);
 					em.flush();
 
-					return candidateFile;
+					return toJSON(candidateFile, SimpleFileHeaderView.class);
 				} else {
 					throw new RestException(Status.CONFLICT, "wrong.file.type");
 				}
@@ -507,7 +505,7 @@ public class RoleRESTService extends RESTService {
 					refreshRoleStatus(role);
 					em.flush();
 
-					return professorFile;
+					return toJSON(professorFile, SimpleFileHeaderView.class);
 				} else {
 					throw new RestException(Status.CONFLICT, "wrong.file.type");
 				}
@@ -523,9 +521,8 @@ public class RoleRESTService extends RESTService {
 	@POST
 	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}")
 	@Consumes("multipart/form-data")
-	@Produces({MediaType.APPLICATION_JSON})
-	@JsonView({SimpleFileHeaderView.class})
-	public FileHeader updateFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
+	public String updateFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
 		// Validate:
@@ -565,7 +562,8 @@ public class RoleRESTService extends RESTService {
 				saveFile(loggedOn, fileItems, candidateFile);
 				refreshRoleStatus(role);
 				em.flush();
-				return candidateFile;
+				candidateFile.getBodies().size();
+				return toJSON(candidateFile, SimpleFileHeaderView.class);
 			} else if (role instanceof Professor) {
 				Professor professor = (Professor) role;
 				ProfessorFile professorFile = null;
@@ -581,7 +579,8 @@ public class RoleRESTService extends RESTService {
 				saveFile(loggedOn, fileItems, professorFile);
 				refreshRoleStatus(role);
 				em.flush();
-				return professorFile;
+				professorFile.getBodies().size();
+				return toJSON(professorFile, SimpleFileHeaderView.class);
 			} else {
 				throw new RestException(Status.CONFLICT, "wrong.file.type");
 			}

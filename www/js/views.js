@@ -2127,8 +2127,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			// Initialize FileUpload widget
 			self.$('input[name=file]').fileupload({
 				dataType : 'json',
-				url : self.model.url(),
+				url : self.model.url() + "?X-Auth-Token=" + App.authToken,
 				replaceFileInput : false,
+				forceIframeTransport : true,
 				add : function(e, data) {
 					self.$("a#upload").bind("click", function(e) {
 						self.$('div.progress').show();
@@ -2148,7 +2149,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				done : function(e, data) {
 					self.$('div.progress').fadeOut('slow', function() {
 						self.$('div.progress .bar').css('width', '0%');
-						self.model.set(JSON.parse(data.jqXHR.responseText));
+						self.model.set(data.result);
 					});
 					var popup = new Views.PopupView({
 						type : "success",
@@ -2157,6 +2158,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					popup.show();
 				},
 				fail : function(e, data) {
+					self.$('div.progress').fadeOut('slow', function() {
+						self.$('div.progress .bar').css('width', '0%');
+					});
 					var resp = data.jqXHR;
 					var popup = new Views.PopupView({
 						type : "error",
@@ -2291,7 +2295,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			// Initialize FileUpload widget
 			self.$('input[name=file]').fileupload({
 				dataType : 'json',
-				url : self.collection.url,
+				url : self.collection.url + "?X-Auth-Token=" + App.authToken,
 				replaceFileInput : false,
 				add : function(e, data) {
 					self.$("a#upload").bind("click", function(e) {
@@ -2312,7 +2316,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				done : function(e, data) {
 					self.$('div.progress').fadeOut('slow', function() {
 						self.$('div.progress .bar').css('width', '0%');
-						var newFile = new Models.File(JSON.parse(data.jqXHR.responseText));
+						var newFile = new Models.File(data.result);
 						newFile.urlRoot = self.collection.url;
 						self.collection.add(newFile);
 					});

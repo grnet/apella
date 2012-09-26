@@ -26,8 +26,12 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.ext.ContextResolver;
+import javax.ws.rs.ext.Providers;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.fileupload.FileItem;
@@ -35,6 +39,9 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 
 public class RESTService {
 
@@ -46,6 +53,9 @@ public class RESTService {
 
 	@Inject
 	protected Logger logger;
+
+	@Context
+	protected Providers providers;
 
 	/**
 	 * The default MIME type for files without an explicit one.
@@ -266,5 +276,26 @@ public class RESTService {
 			logger.info("Deleted FileBody id=" + fb.getId() + " PLUS FileHeader id=" + fh.getId());
 			return Response.noContent().build();
 		}
+	}
+
+	public String toJSON(Object object, Class<?> view) throws JsonMappingException {
+		try {
+			ContextResolver<ObjectMapper> resolver = providers.getContextResolver(ObjectMapper.class, MediaType.APPLICATION_JSON_TYPE);
+			ObjectMapper mapper = resolver.getContext(object.getClass());
+			if (view == null) {
+				return mapper.writeValueAsString(object);
+			} else {
+				return mapper.writerWithView(view).writeValueAsString(object);
+			}
+		} catch (JsonGenerationException e) {
+			logger.log(Level.SEVERE, "", e);
+		} catch (JsonMappingException e) {
+			logger.log(Level.SEVERE, "", e);
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, "", e);
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "", e);
+		}
+		return null;
 	}
 }
