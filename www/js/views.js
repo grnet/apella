@@ -2,8 +2,49 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		tpl_login_admin, tpl_login_main, tpl_popup, tpl_position_committee_edit, tpl_position_edit, tpl_position_list, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_file_multiple_edit) {
 	
 	var Views = {};
+	
+	Views.BaseView = Backbone.View.extend({
+		addFile : function(collection, type, $el, options) {
+			var self = this;
+			var fileView;
+			var file = collection.find(function(model) {
+				return _.isEqual(model.get("type"), type);
+			});
+			options = options ? options : {};
+			if (_.isUndefined(file)) {
+				file = new Models.File({
+					"type" : type
+				});
+			}
+			file.urlRoot = collection.url;
+			fileView = new Views.FileView(_.extend({
+				model : file
+			}, options));
+			$el.html(fileView.render().el);
+			self.innerViews.push(fileView);
+		},
+		
+		addFileList : function(collection, type, $el, options) {
+			var self = this;
+			var files = new Models.Files();
+			options = options ? options : {};
+			
+			files.type = type;
+			files.url = collection.url;
+			_.each(collection.filter(function(model) {
+				return _.isEqual(model.get("type"), type);
+			}), function(model) {
+				files.add(model);
+			});
+			var fileListView = new Views.FileListView(_.extend({
+				collection : files
+			}, options));
+			$el.html(fileListView.render().el);
+		},
+	});
+	
 	// MenuView
-	Views.MenuView = Backbone.View.extend({
+	Views.MenuView = Views.BaseView.extend({
 		el : "div#menu",
 		
 		tagName : "ul",
@@ -62,7 +103,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 	
 	// LanguageView
-	Views.LanguageView = Backbone.View.extend({
+	Views.LanguageView = Views.BaseView.extend({
 		el : "div#language",
 		
 		initialize : function() {
@@ -101,7 +142,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 	
 	// MenuView
-	Views.AdminMenuView = Backbone.View.extend({
+	Views.AdminMenuView = Views.BaseView.extend({
 		el : "div#menu",
 		
 		tagName : "ul",
@@ -130,7 +171,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 	
 	// UserMenuView
-	Views.UserMenuView = Backbone.View.extend({
+	Views.UserMenuView = Views.BaseView.extend({
 		el : "div#user-menu",
 		
 		className : "nav",
@@ -172,7 +213,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 	
 	// LoginView
-	Views.LoginView = Backbone.View.extend({
+	Views.LoginView = Views.BaseView.extend({
 		tagName : "div",
 		
 		validatorLogin : undefined,
@@ -386,7 +427,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 	
 	// AdminLoginView
-	Views.AdminLoginView = Backbone.View.extend({
+	Views.AdminLoginView = Views.BaseView.extend({
 		tagName : "div",
 		
 		validator : undefined,
@@ -477,7 +518,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 	
 	// PopupView
-	Views.PopupView = Backbone.View.extend({
+	Views.PopupView = Views.BaseView.extend({
 		tagName : "div",
 		
 		className : "alert fade in",
@@ -523,7 +564,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 	
 	// ConfirmView
-	Views.ConfirmView = Backbone.View.extend({
+	Views.ConfirmView = Views.BaseView.extend({
 		tagName : "div",
 		
 		className : "modal",
@@ -559,7 +600,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
-	Views.UserRegistrationSelectView = Backbone.View.extend({
+	Views.UserRegistrationSelectView = Views.BaseView.extend({
 		tagName : "div",
 		
 		validator : undefined,
@@ -585,7 +626,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 	
 	// UserRegistrationView
-	Views.UserRegistrationView = Backbone.View.extend({
+	Views.UserRegistrationView = Views.BaseView.extend({
 		tagName : "div",
 		
 		validator : undefined,
@@ -847,7 +888,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 	
 	// UserVerificationView
-	Views.UserVerificationView = Backbone.View.extend({
+	Views.UserVerificationView = Views.BaseView.extend({
 		tagName : "div",
 		
 		initialize : function() {
@@ -869,7 +910,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 	
 	// LoginView
-	Views.HomeView = Backbone.View.extend({
+	Views.HomeView = Views.BaseView.extend({
 		tagName : "div",
 		
 		initialize : function() {
@@ -892,7 +933,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 	
 	// AccountView
-	Views.AccountView = Backbone.View.extend({
+	Views.AccountView = Views.BaseView.extend({
 		tagName : "div",
 		
 		className : "box",
@@ -917,17 +958,40 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		
 		render : function(eventName) {
 			var self = this;
+			// 1. Render
 			self.$el.html(this.template(self.model.toJSON()));
-			
-			if (!self.model.isNew()) {
-				self.$("input[name=username]").attr("disabled", "disabled");
+			// 2. Check State to enable/disable fields
+			if (self.model.isNew()) {
+				self.$("input[name=username]").removeAttr("disabled");
+				self.$("input[name=firstname]").removeAttr("disabled");
+				self.$("input[name=lastname]").removeAttr("disabled");
+				self.$("input[name=fathername]").removeAttr("disabled");
+				self.$("input[name=firstnamelatin]").removeAttr("disabled");
+				self.$("input[name=lastnamelatin]").removeAttr("disabled");
+				self.$("input[name=fathernamelatin]").removeAttr("disabled");
+			} else if (_.isEqual(self.model.get("status"), "UNAPPROVED")) {
+				self.$("input[name=username]").attr("disabled", true);
+				self.$("input[name=firstname]").removeAttr("disabled");
+				self.$("input[name=lastname]").removeAttr("disabled");
+				self.$("input[name=fathername]").removeAttr("disabled");
+				self.$("input[name=firstnamelatin]").removeAttr("disabled");
+				self.$("input[name=lastnamelatin]").removeAttr("disabled");
+				self.$("input[name=fathernamelatin]").removeAttr("disabled");
+			} else {
+				self.$("input[name=username]").attr("disabled", true);
+				self.$("input[name=firstname]").attr("disabled", true);
+				self.$("input[name=lastname]").attr("disabled", true);
+				self.$("input[name=fathername]").attr("disabled", true);
+				self.$("input[name=firstnamelatin]").attr("disabled", true);
+				self.$("input[name=lastnamelatin]").attr("disabled", true);
+				self.$("input[name=fathernamelatin]").attr("disabled", true);
 			}
 			if (self.options.removable) {
 				self.$("a#remove").show();
 			} else {
 				self.$("a#remove").hide();
 			}
-			
+			// 3. Add Validator
 			self.validator = $("form", this.el).validate({
 				errorElement : "span",
 				errorClass : "help-inline",
@@ -1026,6 +1090,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					address_country : $.i18n.prop('validation_country')
 				}
 			});
+			// Return
 			return self;
 		},
 		
@@ -1147,7 +1212,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
-	Views.UserView = Backbone.View.extend({
+	Views.UserView = Views.BaseView.extend({
 		tagName : "div",
 		
 		className : "",
@@ -1206,7 +1271,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
-	Views.UserSearchView = Backbone.View.extend({
+	Views.UserSearchView = Views.BaseView.extend({
 		tagName : "div",
 		
 		className : "",
@@ -1260,7 +1325,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
-	Views.UserListView = Backbone.View.extend({
+	Views.UserListView = Views.BaseView.extend({
 		tagName : "div",
 		
 		initialize : function() {
@@ -1317,7 +1382,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
-	Views.UserRoleInfoView = Backbone.View.extend({
+	Views.UserRoleInfoView = Views.BaseView.extend({
 		tagName : "p",
 		
 		initialize : function() {
@@ -1341,7 +1406,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 	
 	// RoleTabsView
-	Views.RoleTabsView = Backbone.View.extend({
+	Views.RoleTabsView = Views.BaseView.extend({
 		tagName : "div",
 		
 		className : "sidebar-nav",
@@ -1413,7 +1478,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
-	Views.RoleView = Backbone.View.extend({
+	Views.RoleView = Views.BaseView.extend({
 		tagName : "div",
 		
 		className : "",
@@ -1513,7 +1578,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
-	Views.RoleEditView = Backbone.View.extend({
+	Views.RoleEditView = Views.BaseView.extend({
 		tagName : "div",
 		
 		id : "roleview",
@@ -1525,7 +1590,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		innerViews : [],
 		
 		initialize : function() {
-			_.bindAll(this, "render", "submit", "cancel", "addFile", "close");
+			_.bindAll(this, "render", "submit", "cancel", "addFile", "addFileList", "close");
 			this.template = _.template(tpl_role_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
@@ -1666,19 +1731,38 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				});
 				
 				if (self.model.has("id")) {
-					var files = new Models.Files({
-						urlRoot : self.model.url() + "/file"
-					});
+					var files = new Models.Files();
+					files.url = self.model.url() + "/file";
 					files.fetch({
 						cache : false,
 						success : function(collection, response) {
-							self.addFile(collection, "PROFILE", self.$("#profileFile"));
-							self.addFile(collection, "FEK", self.$("#fekFile"));
+							self.addFile(collection, "PROFILE", self.$("#profileFile"), {
+								withMetadata : false,
+								editable : true
+							});
+							self.addFile(collection, "FEK", self.$("#fekFile"), {
+								withMetadata : false,
+								editable : true
+							});
+							self.addFileList(collection, "DIMOSIEYSI", self.$("#dimosieusiFileList"), {
+								withMetadata : true,
+								editable : true
+							});
 						}
 					});
+					// Set Read-Only fields if is ACTIVE
+					if (_.isEqual(self.model.get("status"), "UNAPPROVED")) {
+						self.$("select[name=institution]").removeAttr("disabled");
+						self.$("select[name=department]").removeAttr("disabled");
+					} else {
+						self.$("select[name=institution]").attr("disabled", true);
+						self.$("select[name=department]").attr("disabled", true);
+					}
 				} else {
 					$("#fekFile", self.$el).html($.i18n.prop("PressSave"));
 					$("#profileFile", self.$el).html($.i18n.prop("PressSave"));
+					self.$("select[name=institution]").removeAttr("disabled");
+					self.$("select[name=department]").removeAttr("disabled");
 				}
 				
 				this.validator = $("form", this.el).validate({
@@ -1758,11 +1842,27 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						subject : $.i18n.prop('validation_subject')
 					}
 				});
-				
 				if (self.model.has("id")) {
-					self.addFile("profileFile", $("#profileFile", this.$el));
+					var files = new Models.Files();
+					files.url = self.model.url() + "/file";
+					files.fetch({
+						cache : false,
+						success : function(collection, response) {
+							self.addFile(collection, "PROFILE", self.$("#profileFile"), {
+								withMetadata : false,
+								editable : true
+							});
+						}
+					});
+					// Set Read-Only fields if is ACTIVE
+					if (_.isEqual(self.model.get("status"), "UNAPPROVED")) {
+						self.$("input[name=institution]").removeAttr("disabled");
+					} else {
+						self.$("input[name=institution]").attr("disabled", true);
+					}
 				} else {
-					$("#profileFile", self.$el).html($.i18n.prop("PressSave"));
+					self.$("#profileFile").html($.i18n.prop("PressSave"));
+					self.$("input[name=institution]").removeAttr("disabled");
 				}
 				break;
 			case "INSTITUTION_MANAGER":
@@ -1786,6 +1886,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						popup.show();
 					}
 				});
+				// Set Read-Only fields if is ACTIVE
+				if (_.isEqual(self.model.get("status"), "UNAPPROVED")) {
+					self.$("select[name=institution]").removeAttr("disabled");
+				} else {
+					self.$("select[name=institution]").attr("disabled", true);
+				}
+				
 				this.validator = $("form", this.el).validate({
 					errorElement : "span",
 					errorClass : "help-inline",
@@ -1825,6 +1932,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						popup.show();
 					}
 				});
+				// Set Read-Only fields if is ACTIVE
+				if (_.isEqual(self.model.get("status"), "UNAPPROVED")) {
+					self.$("select[name=institution]").removeAttr("disabled");
+				} else {
+					self.$("select[name=institution]").attr("disabled", true);
+				}
 				this.validator = $("form", this.el).validate({
 					errorElement : "span",
 					errorClass : "help-inline",
@@ -1844,6 +1957,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				break;
 			
 			case "MINISTRY_MANAGER":
+				// Set Read-Only fields if is ACTIVE
+				if (_.isEqual(self.model.get("status"), "UNAPPROVED")) {
+					self.$("input[name=ministry]").removeAttr("disabled");
+				} else {
+					self.$("input[name=ministry]").attr("disabled", true);
+				}
 				this.validator = $("form", this.el).validate({
 					errorElement : "span",
 					errorClass : "help-inline",
@@ -1989,44 +2108,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			return false;
 		},
 		
-		addFile : function(collection, type, $el, options) {
-			var self = this;
-			var fileView;
-			var file = collection.find(function(model) {
-				return _.isEqual(model.get("type"), type);
-			});
-			options = options ? options : {};
-			if (_.isUndefined(file)) {
-				file = new Models.File({
-					"type" : type
-				});
-			}
-			file.urlRoot = collection.url;
-			fileView = new Views.FileView(_.extend({
-				model : file
-			}, options));
-			$el.html(fileView.render().el);
-			self.innerViews.push(fileView);
-		},
-		
-		addFileList : function(collection, type, $el, options) {
-			var self = this;
-			var files = new Models.Files();
-			options = options ? options : {};
-			
-			files.type = type;
-			files.url = collection.url;
-			_.each(collection.filter(function(model) {
-				return _.isEqual(model.get("type"), type);
-			}), function(model) {
-				files.add(model);
-			});
-			var fileListView = new Views.FileListView(_.extend({
-				collection : files
-			}, options));
-			$el.html(fileListView.render().el);
-		},
-		
 		close : function() {
 			_.each(this.innerViews, function(innerView) {
 				innerView.close();
@@ -2036,7 +2117,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
-	Views.FileView = Backbone.View.extend({
+	Views.FileView = Views.BaseView.extend({
 		tagName : "div",
 		
 		initialize : function() {
@@ -2184,7 +2265,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
-	Views.FileListView = Backbone.View.extend({
+	Views.FileListView = Views.BaseView.extend({
 		tagName : "div",
 		
 		uploader : undefined,
@@ -2342,7 +2423,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 	
 	// AnnouncementsView
-	Views.AnnouncementListView = Backbone.View.extend({
+	Views.AnnouncementListView = Views.BaseView.extend({
 		tagName : "div",
 		
 		className : "well",
@@ -2386,7 +2467,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	 * ***** AssistantsView
 	 * *******************************************************
 	 **************************************************************************/
-	Views.AssistantsView = Backbone.View.extend({
+	Views.AssistantsView = Views.BaseView.extend({
 		tagName : "div",
 		
 		initialize : function() {
@@ -2465,7 +2546,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	/***************************************************************************
 	 * ***** PositionView *********
 	 **************************************************************************/
-	Views.PositionListView = Backbone.View.extend({
+	Views.PositionListView = Views.BaseView.extend({
 		tagName : "div",
 		
 		initialize : function() {
@@ -2530,7 +2611,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
-	Views.PositionEditView = Backbone.View.extend({
+	Views.PositionEditView = Views.BaseView.extend({
 		tagName : "div",
 		
 		id : "positionview",
@@ -2540,7 +2621,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		validator : undefined,
 		
 		initialize : function() {
-			_.bindAll(this, "render", "submit", "cancel", "addFile", "close");
+			_.bindAll(this, "render", "submit", "cancel", "addFile", "addFileList", "close");
 			this.template = _.template(tpl_position_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
@@ -2582,6 +2663,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				}
 			});
 			
+			// TODO:
 			if (self.model.has("id")) {
 				self.addFile("fekFile", this.$("#fekFile"));
 				self.addFile("prosklisiKosmitora", this.$("#prosklisiKosmitora"));
@@ -2730,44 +2812,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			});
 		},
 		
-		addFile : function(type, $el) {
-			var self = this;
-			var fileView;
-			var file;
-			var fileAttributes = self.model.has(type) ? self.model.get(type) : {};
-			fileAttributes.name = type;
-			file = new Models.File(fileAttributes);
-			file.urlRoot = self.model.url() + "/" + type;
-			fileView = new Views.FileView({
-				model : file
-			});
-			file.bind("change", function() {
-				self.model.set(type, file.toJSON(), {
-					silent : true
-				});
-			});
-			$el.html(fileView.render().el);
-		},
-		
-		addFileList : function(type, $el) {
-			var files = new Models.Files();
-			var fileListView = new Views.FileListView({
-				collection : files
-			});
-			files.url = self.model.url() + "/" + type;
-			$el.html(fileListView.el);
-			files.fetch({
-				cache : false
-			});
-		},
-		
 		close : function() {
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
 	});
 	
-	Views.PositionCommitteeView = Backbone.View.extend({
+	Views.PositionCommitteeView = Views.BaseView.extend({
 		tagName : "div",
 		
 		uploader : undefined,
@@ -2933,7 +2984,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	 * ****** RegisterEditView
 	 * *****************************************************
 	 **************************************************************************/
-	Views.RegisterListView = Backbone.View.extend({
+	Views.RegisterListView = Views.BaseView.extend({
 		tagName : "div",
 		
 		initialize : function() {
@@ -2999,7 +3050,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
-	Views.RegisterEditView = Backbone.View.extend({
+	Views.RegisterEditView = Views.BaseView.extend({
 		tagName : "div",
 		
 		id : "registerview",
@@ -3150,25 +3201,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			return false;
 		},
 		
-		addFile : function(type, $el) {
-			var self = this;
-			var fileView;
-			var file;
-			var fileAttributes = self.model.has(type) ? self.model.get(type) : {};
-			fileAttributes.name = type;
-			file = new Models.File(fileAttributes);
-			file.urlRoot = self.model.url() + "/" + type;
-			fileView = new Views.FileView({
-				model : file
-			});
-			file.bind("change", function() {
-				self.model.set(type, file.toJSON(), {
-					silent : true
-				});
-			});
-			$el.html(fileView.render().el);
-		},
-		
 		close : function() {
 			$(this.el).unbind();
 			$(this.el).remove();
@@ -3176,7 +3208,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 	
 	// RoleTabsView
-	Views.ProfessorListView = Backbone.View.extend({
+	Views.ProfessorListView = Views.BaseView.extend({
 		tagName : "div",
 		
 		initialize : function() {

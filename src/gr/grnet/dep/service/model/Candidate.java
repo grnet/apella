@@ -44,6 +44,7 @@ public class Candidate extends Role {
 		this.candidacies = candidacies;
 	}
 
+	@XmlTransient
 	public Set<CandidateFile> getFiles() {
 		return files;
 	}
@@ -78,24 +79,9 @@ public class Candidate extends Role {
 
 	@Override
 	public boolean isMissingRequiredFields() {
-		//TODO:
-		/*
-		if (this.cv == null) {
+		if (this.files.isEmpty()) {
 			return true;
 		}
-		if (this.degrees == null) {
-			return true;
-		}
-		if (this.identity == null) {
-			return true;
-		}
-		if (this.military1599 == null) {
-			return true;
-		}
-		if (this.publications == null) {
-			return true;
-		}
-		*/
 		return false;
 	}
 }

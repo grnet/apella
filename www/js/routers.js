@@ -323,7 +323,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			"" : "showHomeView",
 			"account" : "showAccountView",
 			"profile" : "showProfileView",
-			"profile/:roleId" : "showProfileView",
 			"assistants" : "showAssistantsView",
 			"assistants/:userId" : "showAssistantsView",
 			"position" : "showPositionView",
@@ -442,55 +441,22 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			this.currentView = accountView;
 		},
 		
-		showProfileView : function(roleId) {
+		showProfileView : function() {
 			var self = this;
-			var roleView = undefined;
-			this.clear();
-			
-			App.roles.on("role:selected", function(role) {
-				if (roleView) {
-					roleView.close();
-				}
-				roleView = new Views.RoleEditView({
-					model : role
-				});
-				// Update history
-				if (role.id) {
-					App.router.navigate("profile/" + role.id, {
-						trigger : false
-					});
-				} else {
-					App.router.navigate("profile", {
-						trigger : false
-					});
-				}
-				self.refreshBreadcrumb([ $.i18n.prop('menu_profile'), $.i18n.prop(role.get("discriminator")) ]);
-				$("#content").unbind();
-				$("#content").empty();
-				$("#content").html(roleView.render().el);
-			});
-			
-			var roleTabsView = new Views.RoleTabsView({
-				collection : App.roles,
-				user : App.loggedOnUser.get("id")
-			});
-			
-			self.refreshBreadcrumb([ $.i18n.prop('menu_profile') ]);
-			$("#featured").html(roleTabsView.render().el);
-			
+			self.clear();
 			// Refresh roles from server
 			App.roles.fetch({
 				cache : false,
-				success : function() {
-					if (_.isUndefined(roleId)) {
-						App.roles.trigger("role:selected", App.roles.at(0));
-					} else {
-						App.roles.trigger("role:selected", App.roles.get(roleId));
-					}
+				success : function(collection, response) {
+					// We assume collection has ONE primary role, after role
+					// redesign
+					var roleView = new Views.RoleEditView({
+						model : collection.at(0)
+					});
+					$("#content").html(roleView.render().el);
 				}
 			});
-			
-			self.currentView = roleTabsView;
+			self.refreshBreadcrumb([ $.i18n.prop('menu_profile') ]);
 		},
 		
 		showAssistantsView : function(userId) {

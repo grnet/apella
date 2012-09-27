@@ -61,8 +61,7 @@ public abstract class Role implements Serializable {
 	public enum RoleStatus {
 		UNAPPROVED,
 		ACTIVE,
-		BLOCKED,
-		DELETED
+		BLOCKED
 	};
 
 	@Inject

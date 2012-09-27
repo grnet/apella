@@ -107,6 +107,9 @@ public class UserRESTService extends RESTService {
 		}
 
 		List<User> result = query.getResultList();
+		for (User u : result) {
+			u.initializeCollections();
+		}
 		return result;
 	}
 
@@ -124,6 +127,7 @@ public class UserRESTService extends RESTService {
 			}
 		}
 		User u = super.getLoggedOn(authToken);
+		u.initializeCollections();
 		return Response.status(200)
 			.header(TOKEN_HEADER, u.getAuthToken())
 			.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, Integer.MAX_VALUE, false))
@@ -137,11 +141,13 @@ public class UserRESTService extends RESTService {
 	public User get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id) throws RestException {
 		getLoggedOn(authToken);
 		try {
-			return (User) em.createQuery(
+			User u = (User) em.createQuery(
 				"from User u left join fetch u.roles " +
 					"where u.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
+			u.initializeCollections();
+			return u;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
@@ -207,6 +213,7 @@ public class UserRESTService extends RESTService {
 				logger.log(Level.SEVERE, "Error sending verification email to user " + user.getUsername(), e);
 			}
 
+			user.initializeCollections();
 			return user;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
@@ -239,6 +246,7 @@ public class UserRESTService extends RESTService {
 			existingUser.setContactInfo(user.getContactInfo());
 
 			em.flush();
+			existingUser.initializeCollections();
 			return existingUser;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
@@ -285,6 +293,7 @@ public class UserRESTService extends RESTService {
 					if (u.getPassword().equals(User.encodePassword(password, u.getPasswordSalt()))) {
 						u.setAuthToken(u.generateAuthenticationToken());
 						u = em.merge(u);
+						u.initializeCollections();
 						return Response.status(200)
 							.header(TOKEN_HEADER, u.getAuthToken())
 							.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, Integer.MAX_VALUE, false))

@@ -245,6 +245,7 @@ public class RoleRESTService extends RESTService {
 		try {
 			newRole = em.merge(newRole);
 			em.flush();
+			newRole.initializeCollections();
 			return newRole;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
@@ -286,6 +287,7 @@ public class RoleRESTService extends RESTService {
 			existingRole = existingRole.copyFrom(role);
 			// Return Result
 			em.flush();
+			existingRole.initializeCollections();
 			return existingRole;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
@@ -592,7 +594,7 @@ public class RoleRESTService extends RESTService {
 			// Update Status
 			existingRole.setStatus(requestRole.getStatus());
 			existingRole.setStatusDate(new Date());
-
+			existingRole.initializeCollections();
 			return existingRole;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();

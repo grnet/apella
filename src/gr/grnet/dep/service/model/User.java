@@ -44,7 +44,7 @@ public class User implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public enum UserStatus {
-		UNVERIFIED, ACTIVE, BLOCKED, DELETED
+		UNVERIFIED, ACTIVE, BLOCKED
 	}
 
 	public static interface DetailedUserView {
@@ -347,6 +347,13 @@ public class User implements Serializable {
 		String password = "anglen";
 		String salt = User.generatePasswordSalt();
 		System.out.println(password + ": " + encodePassword(password, salt));
+	}
+
+	public void initializeCollections() {
+		this.roles.size();
+		for (Role r : roles) {
+			r.initializeCollections();
+		}
 	}
 
 }

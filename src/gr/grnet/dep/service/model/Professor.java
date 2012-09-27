@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
+import javax.xml.bind.annotation.XmlTransient;
 
 @Entity
 public abstract class Professor extends Role {
@@ -30,6 +31,7 @@ public abstract class Professor extends Role {
 
 	/////////////////////////////////////////////////////////////
 
+	@XmlTransient
 	public Set<ProfessorFile> getFiles() {
 		return files;
 	}
