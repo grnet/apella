@@ -941,26 +941,28 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		validator : undefined,
 		
 		initialize : function() {
-			_.bindAll(this, "render", "submit", "remove", "cancel", "close");
+			_.bindAll(this, "render", "submit", "remove", "status", "cancel", "close", "applyRules");
 			this.template = _.template(tpl_user_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
 		},
 		
 		events : {
-			"click a#cancel" : "cancel",
-			"click a#remove" : "remove",
 			"click a#save" : function() {
 				$("form", this.el).submit();
 			},
+			"click a[data-action=status]" : "status",
+			"click a#remove" : "remove",
+			"click a#cancel" : "cancel",
 			"submit form" : "submit"
 		},
 		
-		render : function(eventName) {
+		applyRules : function() {
 			var self = this;
-			// 1. Render
-			self.$el.html(this.template(self.model.toJSON()));
-			// 2. Check State to enable/disable fields
+			// Actions:
+			self.$("a#remove").hide();
+			self.$("a#status").addClass("disabled");
+			// Fields:
 			if (self.model.isNew()) {
 				self.$("input[name=username]").removeAttr("disabled");
 				self.$("input[name=firstname]").removeAttr("disabled");
@@ -986,13 +988,16 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("input[name=lastnamelatin]").attr("disabled", true);
 				self.$("input[name=fathernamelatin]").attr("disabled", true);
 			}
-			if (self.options.removable) {
-				self.$("a#remove").show();
-			} else {
-				self.$("a#remove").hide();
-			}
+		},
+		
+		render : function(eventName) {
+			var self = this;
+			// 1. Render
+			self.$el.html(this.template(self.model.toJSON()));
+			// 2. Check State to enable/disable fields
+			self.applyRules();
 			// 3. Add Validator
-			self.validator = $("form", this.el).validate({
+			self.validator = self.$("form").validate({
 				errorElement : "span",
 				errorClass : "help-inline",
 				highlight : function(element, errorClass, validClass) {
@@ -1173,7 +1178,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				}
 			});
 			confirm.show();
-			event.preventDefault();
 			return false;
 		},
 		
@@ -1206,6 +1210,29 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			return false;
 		},
 		
+		status : function(event) {
+			var self = this;
+			self.model.status({
+				"status" : $(event.currentTarget).attr('status')
+			}, {
+				wait : true,
+				success : function(model, resp) {
+					var popup = new Views.PopupView({
+						type : "success",
+						message : $.i18n.prop("Success")
+					});
+					popup.show();
+				},
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+		},
+		
 		close : function() {
 			$(this.el).unbind();
 			$(this.el).remove();
@@ -1227,42 +1254,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			this.model.bind("change", this.render, this);
 		},
 		
-		events : {
-			"click a.status" : "status"
-		},
-		
 		render : function(event) {
 			var self = this;
 			self.$el.html(self.template(self.model.toJSON()));
-			if (self.options.editable) {
-				self.$("a.btn.btn-small.dropdown-toggle").removeClass("disabled");
-			} else {
-				self.$("a.btn.btn-small.dropdown-toggle").addClass("disabled");
-			}
 			return self;
-		},
-		
-		status : function(event) {
-			var status = $(event.currentTarget).attr('status');
-			this.model.status({
-				"status" : status
-			}, {
-				wait : true,
-				success : function(model, resp) {
-					var popup = new Views.PopupView({
-						type : "success",
-						message : $.i18n.prop("Success")
-					});
-					popup.show();
-				},
-				error : function(model, resp, options) {
-					var popup = new Views.PopupView({
-						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-					});
-					popup.show();
-				}
-			});
 		},
 		
 		close : function() {
@@ -1386,90 +1381,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		tagName : "p",
 		
 		initialize : function() {
-			this.template = _.template(tpl_user_role_info);
-			this.model.bind('change', this.render);
 			_.bindAll(this, "render", "close");
-		},
-		
-		render : function(eventName) {
-			var tpl_data = {
-				roles : this.model.get("roles")
-			};
-			$(this.el).html(this.template(tpl_data));
-			return this;
-		},
-		
-		close : function() {
-			$(this.el).unbind();
-			$(this.el).remove();
-		}
-	});
-	
-	// RoleTabsView
-	Views.RoleTabsView = Views.BaseView.extend({
-		tagName : "div",
-		
-		className : "sidebar-nav",
-		
-		initialize : function() {
-			_.bindAll(this, "render", "select", "newRole", "highlightSelected", "close");
-			this.template = _.template(tpl_role_tabs);
-			this.collection.bind("change", this.render, this);
-			this.collection.bind("reset", this.render, this);
-			this.collection.bind("add", this.render, this);
-			this.collection.bind("remove", this.render, this);
-			this.collection.bind("role:selected", this.highlightSelected, this);
-		},
-		
-		events : {
-			"click a.createRole" : "newRole",
-			"click a.selectRole" : "select"
+			this.template = _.template(tpl_user_role_info);
+			this.model.bind('change', this.render, this);
 		},
 		
 		render : function(eventName) {
 			var self = this;
 			var tpl_data = {
-				roles : (function() {
-					var result = [];
-					self.collection.each(function(model) {
-						var item = model.toJSON();
-						item.cid = model.cid;
-						result.push(item);
-					});
-					return result;
-				})(),
-				discriminators : _.filter(App.allowedRoles, function(discriminator) {
-					return true;
-				})
+				roles : self.model.get("roles")
 			};
-			self.$el.html(this.template(tpl_data));
-			$("a[rel=\"tooltip\"]", self.$el).tooltip();
+			self.$el.html(self.template(tpl_data));
 			return self;
-		},
-		
-		select : function(event, role) {
-			var selectedModel = role ? role : this.collection.getByCid($(event.currentTarget).attr('role'));
-			if (selectedModel) {
-				this.collection.trigger("role:selected", selectedModel);
-			}
-		},
-		
-		highlightSelected : function(role) {
-			$("li.active", this.$el).removeClass("active");
-			$("a[role=" + role.cid + "]", this.$el).parent("li").addClass("active");
-		},
-		
-		newRole : function(event) {
-			var self = this;
-			var discriminator = $(event.currentTarget).attr('discriminator');
-			var newRole = new Models.Role({
-				"discriminator" : discriminator,
-				user : {
-					id : self.options.user
-				}
-			});
-			self.collection.add(newRole);
-			self.select(undefined, newRole);
 		},
 		
 		close : function() {
@@ -1483,10 +1406,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		
 		className : "",
 		
-		options : {
-			editable : true
-		},
-		
 		initialize : function() {
 			this.template = _.template(tpl_role);
 			_.bindAll(this, "render", "status", "close");
@@ -1498,10 +1417,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			} else if (this.model) {
 				this.model.bind("change", this.render, this);
 			}
-		},
-		
-		events : {
-			"click a.status" : "status"
 		},
 		
 		render : function(eventName) {
@@ -1518,58 +1433,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.$el.append($(self.template(self.model.toJSON())));
 				}
 			}
-			if (self.options.editable) {
-				self.$("a.btn.btn-small.dropdown-toggle").removeClass("disabled");
-			} else {
-				self.$("a.btn.btn-small.dropdown-toggle").addClass("disabled");
-			}
 			return self;
-		},
-		
-		status : function(event) {
-			var roleId = $(event.currentTarget).attr('role');
-			var status = $(event.currentTarget).attr('status');
-			if (this.model) {
-				this.model.status({
-					"status" : status
-				}, {
-					wait : true,
-					success : function(model, resp) {
-						var popup = new Views.PopupView({
-							type : "success",
-							message : $.i18n.prop("Success")
-						});
-						popup.show();
-					},
-					error : function(model, resp, options) {
-						var popup = new Views.PopupView({
-							type : "error",
-							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-						});
-						popup.show();
-					}
-				});
-			} else if (this.collection) {
-				this.collection.get(roleId).status({
-					"status" : status
-				}, {
-					wait : true,
-					success : function(model, resp) {
-						var popup = new Views.PopupView({
-							type : "success",
-							message : $.i18n.prop("Success")
-						});
-						popup.show();
-					},
-					error : function(model, resp, options) {
-						var popup = new Views.PopupView({
-							type : "error",
-							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-						});
-						popup.show();
-					}
-				});
-			}
 		},
 		
 		close : function() {
@@ -1597,23 +1461,30 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 		
 		events : {
-			"click a#cancel" : "cancel",
-			"click a#remove" : "remove",
 			"click a#save" : function() {
 				$("form", this.el).submit();
 			},
+			"click a[data-action=status]" : "status",
+			"click a#remove" : "remove",
+			"click a#cancel" : "cancel",
 			"submit form" : "submit"
 		},
 		
 		render : function(eventName) {
 			var self = this;
+			// Close inner views (fileviews)
 			_.each(self.innerViews, function(innerView) {
 				innerView.close();
 			});
 			self.innerViews = [];
 			
+			// Re-render
 			self.$el.html(this.template(this.model.toJSON()));
 			
+			// Apply Global Rules
+			self.$("a#status").addClass("disabled");
+			
+			// Apply Specific Rule and fields per discriminator
 			switch (self.model.get("discriminator")) {
 			case "CANDIDATE":
 				if (self.model.get("id") !== undefined) {
@@ -2108,6 +1979,29 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			return false;
 		},
 		
+		status : function(event) {
+			var self = this;
+			self.model.status({
+				"status" : $(event.currentTarget).attr('status')
+			}, {
+				wait : true,
+				success : function(model, resp) {
+					var popup = new Views.PopupView({
+						type : "success",
+						message : $.i18n.prop("Success")
+					});
+					popup.show();
+				},
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+		},
+		
 		close : function() {
 			_.each(this.innerViews, function(innerView) {
 				innerView.close();
@@ -2541,6 +2435,30 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
+	});
+	
+	Views.AssistantAccountView = Views.AccountView.extend({
+		initialize : function(options) {
+			this._super('initialize', [ options ]);
+		},
+		
+		applyRules : function() {
+			var self = this;
+			// Actions:
+			if (self.model.isNew()) {
+				self.$("a#save").show();
+				self.$("input").removeAttr("disabled");
+			} else {
+				self.$("a#save").hide();
+				self.$("input").attr("disabled", true);
+			}
+			self.$("a#status").addClass("disabled");
+			self.$("a#remove").hide();
+		},
+		
+		render : function(eventName) {
+			return this._super('render', [ eventName ]);
+		},
 	});
 	
 	/***************************************************************************

@@ -1,7 +1,6 @@
-define([ "jquery", "bootstrap", "underscore", "backbone", "jquery.ui", "jquery.i18n", "jquery.validate", "jquery.dataTables", "jquery.dataTables.bootstrap", "jquery.blockUI", "jquery.file.upload", "backbone.cache" ], function($, _, Backbone) {
+define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i18n", "jquery.validate", "jquery.dataTables", "jquery.dataTables.bootstrap", "jquery.blockUI", "jquery.file.upload", "backbone.cache" ], function($, _, Backbone) {
 	if (!window.App) {
-		
-		// Additional Validation methods
+		// Configuration
 		jQuery.validator.addMethod("onlyLatin", function(value, element) {
 			return this.optional(element) || /^[a-zA-Z]*$/.test(value);
 		}, "Please type only latin characters");
@@ -9,6 +8,29 @@ define([ "jquery", "bootstrap", "underscore", "backbone", "jquery.ui", "jquery.i
 		jQuery.validator.addMethod("pwd", function(value, element) {
 			return this.optional(element) || /^[a-zA-Z0-9!@#$%^&*()]*$/.test(value);
 		}, "Please type only latin characters");
+		
+		// Add _super function in Model, Views
+		(function(Backbone) {
+			function _super(methodName, args) {
+				this._superCallObjects || (this._superCallObjects = {});
+				var currentObject = this._superCallObjects[methodName] || this, parentObject = findSuper(methodName, currentObject);
+				this._superCallObjects[methodName] = parentObject;
+				var result = parentObject[methodName].apply(this, args || []);
+				delete this._superCallObjects[methodName];
+				return result;
+			}
+			function findSuper(methodName, childObject) {
+				var object = childObject;
+				while (object[methodName] === childObject[methodName]) {
+					object = object.constructor.__super__;
+				}
+				return object;
+			}
+			_.each([ "Model", "Collection", "View", "Router" ], function(klass) {
+				Backbone[klass].prototype._super = _super;
+			});
+			
+		})(Backbone);
 		
 		window.App = {
 			allowedRoles : [ "PROFESSOR_DOMESTIC", "PROFESSOR_FOREIGN", "CANDIDATE", "INSTITUTION_MANAGER" ],

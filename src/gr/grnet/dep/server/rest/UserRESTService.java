@@ -85,7 +85,7 @@ public class UserRESTService extends RESTService {
 			sb.append("and r.status = :roleStatus ");
 		}
 		if (managerId != null) {
-			sb.append("and (u.id in (select ia.user.id from InstitutionAssistant ia where ia.manager.id = :managerId ) or u.id in (select da.user.id from DepartmentAssistant da where da.manager.id = :managerId )) ");
+			sb.append("and (u.id in (select ia.user.id from InstitutionAssistant ia where ia.manager.id = :managerId )) ");
 		}
 		sb.append("order by u.basicInfo.lastname, u.basicInfo.firstname");
 
@@ -258,12 +258,13 @@ public class UserRESTService extends RESTService {
 	@Path("/{id:[0-9][0-9]*}")
 	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
 		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
 		User existingUser = em.find(User.class, id);
 		if (existingUser == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
+			(existingUser.hasRole(RoleDiscriminator.INSTITUTION_ASSISTANT) && !((InstitutionAssistant) existingUser.getRole(RoleDiscriminator.INSTITUTION_ASSISTANT)).getManager().getUser().getId().equals(loggedOn.getId()))) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
 			//Do Delete:

@@ -2,6 +2,18 @@
 	<fieldset>
 		<legend><%= $.i18n.prop('Account') %></legend>
 		<div class="control-group">
+			<label class="control-label" for="username"><%= $.i18n.prop('UserStatus') %>:</label>
+			<div class="controls btn-group">
+				<a id="status" class="btn btn-small"><i class="icon-user"></i> <%= $.i18n.prop('status' + status) %></a>
+				<a id="status" class="btn btn-small dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
+				<ul class="dropdown-menu">
+					<li><a data-action="status" status="UNVERIFIED"> <%= $.i18n.prop('statusUNVERIFIED') %></a></li>
+					<li><a data-action="status" status="ACTIVE"> <%= $.i18n.prop('statusACTIVE') %></a></li>
+					<li><a data-action="status" status="BLOCKED"> <%= $.i18n.prop('statusBLOCKED') %></a></li>
+				</ul>
+			</div>
+		</div>
+		<div class="control-group">
 			<label class="control-label" for="username"><%= $.i18n.prop('Username') %>:</label>
 			<div class="controls">
 				<input class="input-xlarge" type="email" name="username" value="<%= username %>" />

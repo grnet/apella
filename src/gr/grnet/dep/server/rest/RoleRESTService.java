@@ -3,10 +3,12 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.InstitutionAssistant;
+import gr.grnet.dep.service.model.InstitutionManager;
 import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.CandidateFile;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
@@ -589,6 +591,25 @@ public class RoleRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+		//Validate Change
+		if (existingRole instanceof InstitutionManager) {
+			if (requestRole.getStatus().equals(RoleStatus.ACTIVE)) {
+				try {
+					InstitutionManager im = (InstitutionManager) existingRole;
+					// Check if exists active IM for same Institution:
+					em.createQuery("select im from InstitutionManager im " +
+						"where im.status = :status " +
+						"and im.institution.id = :instituionId")
+						.setParameter("status", RoleStatus.ACTIVE)
+						.setParameter("instituionId", im.getInstitution().getId())
+						.setMaxResults(1)
+						.getSingleResult();
+					throw new RestException(Status.CONFLICT, "exists.active.manager");
+				} catch (NoResultException e) {
+				}
+			}
+		}
+
 		// Update
 		try {
 			// Update Status
@@ -601,5 +622,4 @@ public class RoleRESTService extends RESTService {
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
 	}
-
 }

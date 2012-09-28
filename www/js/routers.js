@@ -485,9 +485,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 						model : user
 					});
 					$("#content").append(userRoleInfoView.render().el);
-					accountView = new Views.AccountView({
+					accountView = new Views.AssistantAccountView({
 						model : user,
-						removable : true
 					});
 					$("#content").append(accountView.render().el);
 					
