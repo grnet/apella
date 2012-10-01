@@ -547,9 +547,9 @@ public class RoleRESTService extends RESTService {
 				try {
 					ProfessorFile professorFile = (ProfessorFile) em.createQuery(
 						"select cf from ProfessorFile cf " +
-							"where cf.candidate.id = :candidateId " +
+							"where cf.professor.id = :professorId " +
 							"and cf.id = :fileId")
-						.setParameter("candidateId", id)
+						.setParameter("professorId", id)
 						.setParameter("fileId", fileId)
 						.getSingleResult();
 					if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(professorFile.getOwner().getId())) {

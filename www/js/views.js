@@ -2097,6 +2097,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	Views.FileView = Views.BaseView.extend({
 		tagName : "div",
 		
+		className : "",
+		
 		initialize : function() {
 			this.template = _.template(tpl_file_edit);
 			_.bindAll(this, "render", "deleteFile", "close");
@@ -2248,7 +2250,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	Views.FileListView = Views.BaseView.extend({
 		tagName : "div",
 		
-		uploader : undefined,
+		className : "",
 		
 		initialize : function() {
 			this.template = _.template(tpl_file_multiple_edit);
