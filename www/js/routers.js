@@ -36,10 +36,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			
 			$("#featured").unbind();
 			$("#featured").empty();
-			$("#featured").removeClass("well");
 			$("#content").unbind();
 			$("#content").empty();
-			$("#content").removeClass("well");
 		},
 		
 		showRegisterSelectView : function() {
@@ -182,10 +180,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			
 			$("#featured").unbind();
 			$("#featured").empty();
-			$("#featured").removeClass("well");
 			$("#content").unbind();
 			$("#content").empty();
-			$("#content").removeClass("well");
 		},
 		
 		refreshBreadcrumb : function(tags) {
@@ -249,7 +245,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			});
 			
 			this.refreshBreadcrumb([ $.i18n.prop('adminmenu_users') ]);
-			$("#featured").addClass("well");
 			$("#featured").append(userSearchView.render().el);
 			$("#content").append(userListView.render().el);
 			
@@ -258,33 +253,43 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 		
 		showUserView : function(id) {
 			var self = this;
-			var user = new Models.User({
+			var user, userView;
+			var roles, roleView;
+			
+			// Create Models
+			user = new Models.User({
 				"id" : id
 			});
-			var roles = new Models.Roles();
+			roles = new Models.Roles();
 			roles.user = id;
 			
-			this.clear();
-			var userView = new Views.UserView({
-				model : user
-			});
-			var roleView = new Views.RoleView({
-				collection : roles
-			});
+			// Create Views, Add them to page
+			self.clear();
 			
+			// Refresh Data
 			user.fetch({
 				cache : false,
 				success : function(model, resp) {
+					userView = new Views.AdminAccountView({
+						model : user
+					});
 					self.refreshBreadcrumb([ $.i18n.prop('adminmenu_users'), $.i18n.prop('menu_user'), user.get("username") ]);
+					roles.fetch({
+						cache : false,
+						success : function(collection, response) {
+							// We assume collection has ONE primary role,
+							// after role redesign
+							roleView = new Views.AdminRoleEditView({
+								model : collection.at(0)
+							});
+							
+							$("#featured").append(userView.render().el);
+							$("#content").append(roleView.render().el);
+							self.currentView = [ userView, roleView ];
+						}
+					});
 				}
 			});
-			roles.fetch({
-				cache : false
-			});
-			
-			$("#content").append(userView.render().el);
-			$("#content").append(roleView.render().el);
-			this.currentView = [ userView, roleView ];
 		}
 	
 	});
@@ -383,10 +388,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			$("ul.breadcrumb").empty();
 			$("#featured").unbind();
 			$("#featured").empty();
-			$("#featured").removeClass("well");
 			$("#content").unbind();
 			$("#content").empty();
-			$("#content").removeClass("well");
 		},
 		
 		refreshBreadcrumb : function(tags) {

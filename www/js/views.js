@@ -3,7 +3,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	
 	var Views = {};
 	
+	/***************************************************************************
+	 * BaseView ****************************************************************
+	 **************************************************************************/
 	Views.BaseView = Backbone.View.extend({
+		className : "span12",
+		
 		addFile : function(collection, type, $el, options) {
 			var self = this;
 			var fileView;
@@ -43,7 +48,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 	});
 	
-	// MenuView
+	/***************************************************************************
+	 * MenuView ****************************************************************
+	 **************************************************************************/
 	Views.MenuView = Views.BaseView.extend({
 		el : "div#menu",
 		
@@ -102,7 +109,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	
 	});
 	
-	// LanguageView
+	/***************************************************************************
+	 * LanguageView ************************************************************
+	 **************************************************************************/
 	Views.LanguageView = Views.BaseView.extend({
 		el : "div#language",
 		
@@ -141,7 +150,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	
 	});
 	
-	// MenuView
+	/***************************************************************************
+	 * AdminMenuView ***********************************************************
+	 **************************************************************************/
 	Views.AdminMenuView = Views.BaseView.extend({
 		el : "div#menu",
 		
@@ -170,7 +181,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	
 	});
 	
-	// UserMenuView
+	/***************************************************************************
+	 * UserMenuView ************************************************************
+	 **************************************************************************/
 	Views.UserMenuView = Views.BaseView.extend({
 		el : "div#user-menu",
 		
@@ -212,7 +225,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
-	// LoginView
+	/***************************************************************************
+	 * LoginView **********************************************************
+	 **************************************************************************/
 	Views.LoginView = Views.BaseView.extend({
 		tagName : "div",
 		
@@ -426,7 +441,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
-	// AdminLoginView
+	/***************************************************************************
+	 * AdminLoginView **********************************************************
+	 **************************************************************************/
 	Views.AdminLoginView = Views.BaseView.extend({
 		tagName : "div",
 		
@@ -517,7 +534,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
-	// PopupView
+	/***************************************************************************
+	 * PopupView ***************************************************************
+	 **************************************************************************/
 	Views.PopupView = Views.BaseView.extend({
 		tagName : "div",
 		
@@ -563,7 +582,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
-	// ConfirmView
+	/***************************************************************************
+	 * ConfirmView *************************************************************
+	 **************************************************************************/
 	Views.ConfirmView = Views.BaseView.extend({
 		tagName : "div",
 		
@@ -600,6 +621,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
+	/***************************************************************************
+	 * UserRegistrationSelectView **********************************************
+	 **************************************************************************/
 	Views.UserRegistrationSelectView = Views.BaseView.extend({
 		tagName : "div",
 		
@@ -625,7 +649,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
-	// UserRegistrationView
+	/***************************************************************************
+	 * UserRegistrationView ****************************************************
+	 **************************************************************************/
 	Views.UserRegistrationView = Views.BaseView.extend({
 		tagName : "div",
 		
@@ -887,7 +913,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
-	// UserVerificationView
+	/***************************************************************************
+	 * UserVerificationView ****************************************************
+	 **************************************************************************/
 	Views.UserVerificationView = Views.BaseView.extend({
 		tagName : "div",
 		
@@ -909,7 +937,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	
 	});
 	
-	// LoginView
+	/***************************************************************************
+	 * HomeView ****************************************************************
+	 **************************************************************************/
 	Views.HomeView = Views.BaseView.extend({
 		tagName : "div",
 		
@@ -935,8 +965,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	// AccountView
 	Views.AccountView = Views.BaseView.extend({
 		tagName : "div",
-		
-		className : "box",
 		
 		validator : undefined,
 		
@@ -1239,10 +1267,32 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
+	/***************************************************************************
+	 * AdminAccountView ********************************************************
+	 **************************************************************************/
+	Views.AdminAccountView = Views.AccountView.extend({
+		initialize : function(options) {
+			this._super('initialize', [ options ]);
+		},
+		
+		applyRules : function() {
+			var self = this;
+			self.$("input").removeAttr("disable");
+			self.$("a#status").removeClass("disabled");
+			self.$("a#save").show();
+			self.$("a#remove").show();
+		},
+		
+		render : function(eventName) {
+			return this._super('render', [ eventName ]);
+		},
+	});
+	
+	/***************************************************************************
+	 * UserView ****************************************************************
+	 **************************************************************************/
 	Views.UserView = Views.BaseView.extend({
 		tagName : "div",
-		
-		className : "",
 		
 		options : {
 			editable : true
@@ -1266,10 +1316,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
+	/***************************************************************************
+	 * UserSearchView **********************************************************
+	 **************************************************************************/
 	Views.UserSearchView = Views.BaseView.extend({
 		tagName : "div",
 		
-		className : "",
+		className : "span12 well",
 		
 		initialize : function() {
 			_.bindAll(this, "render", "search", "close");
@@ -1320,6 +1373,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
+	/***************************************************************************
+	 * UserListView ************************************************************
+	 **************************************************************************/
 	Views.UserListView = Views.BaseView.extend({
 		tagName : "div",
 		
@@ -1377,6 +1433,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
+	/***************************************************************************
+	 * UserRoleInfoView ********************************************************
+	 **************************************************************************/
 	Views.UserRoleInfoView = Views.BaseView.extend({
 		tagName : "p",
 		
@@ -1401,10 +1460,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
+	/***************************************************************************
+	 * RoleView ****************************************************************
+	 **************************************************************************/
 	Views.RoleView = Views.BaseView.extend({
 		tagName : "div",
-		
-		className : "",
 		
 		initialize : function() {
 			this.template = _.template(tpl_role);
@@ -1442,12 +1502,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
+	/***************************************************************************
+	 * RoleEditView ************************************************************
+	 **************************************************************************/
 	Views.RoleEditView = Views.BaseView.extend({
 		tagName : "div",
 		
 		id : "roleview",
-		
-		className : "box",
 		
 		validator : undefined,
 		
@@ -2011,6 +2072,28 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
+	/***************************************************************************
+	 * AdminRoleEditView *******************************************************
+	 **************************************************************************/
+	Views.AdminRoleEditView = Views.RoleEditView.extend({
+		initialize : function(options) {
+			this._super('initialize', [ options ]);
+		},
+		
+		render : function(eventName) {
+			var self = this;
+			self._super('render', [ eventName ]);
+			// Enable All
+			self.$("input").removeAttr("disabled");
+			self.$("select").removeAttr("disabled");
+			self.$("a#status").removeClass("disabled");
+			return self;
+		},
+	});
+	
+	/***************************************************************************
+	 * FileView ****************************************************************
+	 **************************************************************************/
 	Views.FileView = Views.BaseView.extend({
 		tagName : "div",
 		
@@ -2159,6 +2242,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
+	/***************************************************************************
+	 * FileListView ************************************************************
+	 **************************************************************************/
 	Views.FileListView = Views.BaseView.extend({
 		tagName : "div",
 		
@@ -2316,11 +2402,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
-	// AnnouncementsView
+	/***************************************************************************
+	 * AnnouncementListView ****************************************************
+	 **************************************************************************/
 	Views.AnnouncementListView = Views.BaseView.extend({
 		tagName : "div",
 		
-		className : "well",
+		className : "span12 well",
 		
 		initialize : function() {
 			this.template = _.template(tpl_announcement_list);
@@ -2358,8 +2446,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 	
 	/***************************************************************************
-	 * ***** AssistantsView
-	 * *******************************************************
+	 * AssistantsView **********************************************************
 	 **************************************************************************/
 	Views.AssistantsView = Views.BaseView.extend({
 		tagName : "div",
@@ -2437,6 +2524,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
+	/***************************************************************************
+	 * AssistantAccountView ****************************************************
+	 **************************************************************************/
 	Views.AssistantAccountView = Views.AccountView.extend({
 		initialize : function(options) {
 			this._super('initialize', [ options ]);
@@ -2462,7 +2552,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 	
 	/***************************************************************************
-	 * ***** PositionView *********
+	 * PositionListView ********************************************************
 	 **************************************************************************/
 	Views.PositionListView = Views.BaseView.extend({
 		tagName : "div",
@@ -2529,12 +2619,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
+	/***************************************************************************
+	 * PositionEditView ********************************************************
+	 **************************************************************************/
 	Views.PositionEditView = Views.BaseView.extend({
 		tagName : "div",
 		
 		id : "positionview",
-		
-		className : "box",
 		
 		validator : undefined,
 		
@@ -2736,6 +2827,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
+	/***************************************************************************
+	 * PositionCommitteeView ***************************************************
+	 **************************************************************************/
 	Views.PositionCommitteeView = Views.BaseView.extend({
 		tagName : "div",
 		
@@ -2899,9 +2993,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 	
 	/***************************************************************************
-	 * ****** RegisterEditView
-	 * *****************************************************
+	 * RegisterListView ********************************************************
 	 **************************************************************************/
+	
 	Views.RegisterListView = Views.BaseView.extend({
 		tagName : "div",
 		
@@ -2968,12 +3062,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
+	/***************************************************************************
+	 * RegisterEditView ********************************************************
+	 **************************************************************************/
+	
 	Views.RegisterEditView = Views.BaseView.extend({
 		tagName : "div",
 		
 		id : "registerview",
-		
-		className : "box",
 		
 		validator : undefined,
 		
@@ -3125,7 +3221,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		}
 	});
 	
-	// RoleTabsView
+	/***************************************************************************
+	 * ProfessorListView *******************************************************
+	 **************************************************************************/
+	
 	Views.ProfessorListView = Views.BaseView.extend({
 		tagName : "div",
 		
