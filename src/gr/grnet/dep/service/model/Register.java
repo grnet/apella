@@ -12,13 +12,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @Entity
 @XmlRootElement
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"department_id"})})
 public class Register implements Serializable {
 
 	private static final long serialVersionUID = 6147648073392341863L;
@@ -30,8 +27,10 @@ public class Register implements Serializable {
 	@GeneratedValue
 	private Long id;
 
+	private String title;
+
 	@ManyToOne(optional = false)
-	private Department department;
+	private Institution institution;
 
 	@OneToMany(mappedBy = "register", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<RegisterFile> files = new HashSet<RegisterFile>();
@@ -44,12 +43,20 @@ public class Register implements Serializable {
 		this.id = id;
 	}
 
-	public Department getDepartment() {
-		return department;
+	public String getTitle() {
+		return title;
 	}
 
-	public void setDepartment(Department department) {
-		this.department = department;
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public Institution getInstitution() {
+		return institution;
+	}
+
+	public void setInstitution(Institution institution) {
+		this.institution = institution;
 	}
 
 	public Set<RegisterFile> getFiles() {
@@ -60,8 +67,14 @@ public class Register implements Serializable {
 		this.files = files;
 	}
 
+	public void addFile(RegisterFile file) {
+		this.files.add(file);
+		file.setRegister(this);
+	}
+
 	public Register copyFrom(Register register) {
-		setDepartment(register.getDepartment());
+		setTitle(register.getTitle());
+		setInstitution(register.getInstitution());
 		return this;
 	}
 }

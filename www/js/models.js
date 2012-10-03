@@ -81,6 +81,21 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			});
 		},
 		
+		isAssociatedWithInstitution : function(institution) {
+			var self = this;
+			return _.any(self.get("roles"), function(r) {
+				if (r.discriminator === "INSTITUTION_MANAGER" && r.institution.id === institution.get("id")) {
+					return true;
+				} else if (r.discriminator === "INSTITUTION_ASSISTANT" && r.institution.id === institution.get("id")) {
+					return true;
+				} else if (r.discriminator === "DEPARTMENT_MANAGER" && r.institution.id === institution.get("id")) {
+					return true;
+				} else {
+					return false;
+				}
+			});
+		},
+		
 		getAssociatedInstitutions : function() {
 			var self = this;
 			return _.reduce(self.get("roles"), function(memo, r) {
@@ -769,8 +784,8 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		urlRoot : "/dep/rest/register",
 		defaults : {
 			id : undefined,
-			department : undefined,
-			registerFile : undefined
+			title : undefined,
+			institution : undefined,
 		}
 	});
 	

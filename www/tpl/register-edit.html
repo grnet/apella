@@ -2,16 +2,22 @@
 	<fieldset>
 		<legend><%= $.i18n.prop('Register') %></legend>
 		<div class="control-group">
-			<label class="control-label" for="department"><%= $.i18n.prop('Department') %>:</label>
+			<label class="control-label" for="title"><%= $.i18n.prop('Title') %>:</label>
 			<div class="controls">
-				<select class="input-xlarge" name="department">
+				<input class="input-xlarge" name="title" value ="<%= title %>">
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="institution"><%= $.i18n.prop('Institution') %>:</label>
+			<div class="controls">
+				<select class="input-xlarge" name="institution">
 				</select>
 			</div>
 		</div>
 		<div class="control-group">
-			<label class="control-label" for="registerFile"><%= $.i18n.prop('RegisterFile') %>:</label>
+			<label class="control-label" for="mitrooFileList"><%= $.i18n.prop('MitrooFileList') %>:</label>
 			<div class="controls">
-				<span id="registerFile"></span>
+				<span id="mitrooFileList"></span>
 			</div>
 		</div>
 		<div class="form-actions">

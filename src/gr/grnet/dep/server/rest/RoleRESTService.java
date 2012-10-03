@@ -11,6 +11,7 @@ import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.CandidateFile;
+import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.file.ProfessorFile;
@@ -352,6 +353,39 @@ public class RoleRESTService extends RESTService {
 			professor.initializeCollections();
 			GenericEntity<Set<ProfessorFile>> entity = new GenericEntity<Set<ProfessorFile>>(professor.getFiles()) {};
 			return Response.ok(entity).build();
+		}
+		// Default Action
+		throw new RestException(Status.BAD_REQUEST, "wrong.id");
+	}
+
+	@GET
+	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}")
+	@JsonView({SimpleFileHeaderView.class})
+	public FileHeader getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("fileId") Long fileId) {
+		User loggedOn = getLoggedOn(authToken);
+		Role role = em.find(Role.class, id);
+		// Validate:
+		if (role == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.id");
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Return Result
+		if (role instanceof Candidate) {
+			Candidate candidate = (Candidate) role;
+			for (CandidateFile cf : candidate.getFiles()) {
+				if (cf.getId().equals(fileId)) {
+					return cf;
+				}
+			}
+		} else if (role instanceof Professor) {
+			Professor professor = (Professor) role;
+			for (ProfessorFile pf : professor.getFiles()) {
+				if (pf.getId().equals(fileId)) {
+					return pf;
+				}
+			}
 		}
 		// Default Action
 		throw new RestException(Status.BAD_REQUEST, "wrong.id");

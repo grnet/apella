@@ -46,7 +46,7 @@ public class Position {
 	private String description;
 
 	@ManyToOne(optional = false)
-	private Department department;
+	private Institution institution;
 
 	@ManyToOne(cascade = CascadeType.ALL)
 	private Subject subject;
@@ -55,10 +55,10 @@ public class Position {
 	@Enumerated(EnumType.ORDINAL)
 	private PositionStatus status = PositionStatus.ENTAGMENI;
 
+	private String fek;
+
 	@Temporal(TemporalType.DATE)
 	private Date fekSentDate;
-
-	private String fek;
 
 	@OneToMany(mappedBy = "position", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<PositionFile> files = new HashSet<PositionFile>();
@@ -93,12 +93,12 @@ public class Position {
 		this.description = description;
 	}
 
-	public Department getDepartment() {
-		return department;
+	public Institution getInstitution() {
+		return institution;
 	}
 
-	public void setDepartment(Department department) {
-		this.department = department;
+	public void setInstitution(Institution institution) {
+		this.institution = institution;
 	}
 
 	public Subject getSubject() {
@@ -157,6 +157,11 @@ public class Position {
 
 	public void setCommitee(List<PositionCommitteeMember> commitee) {
 		this.commitee = commitee;
+	}
+
+	public void addFile(PositionFile file) {
+		this.files.add(file);
+		file.setPosition(this);
 	}
 
 }

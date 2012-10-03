@@ -3095,17 +3095,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var self = this;
 			self.$el.html(self.template(self.model.toJSON()));
 			
-			App.departments = App.departments ? App.departments : new Models.Departments();
-			App.departments.fetch({
+			// Add institutions in selector:
+			App.institutions = App.institutions ? App.institutions : new Models.Institutions();
+			App.institutions.fetch({
 				cache : true,
 				success : function(collection, resp) {
-					_.each(collection.filter(function(department) {
-						return App.loggedOnUser.isAssociatedWithDepartment(department);
-					}), function(department) {
-						if (_.isObject(self.model.get("department")) && _.isEqual(department.id, self.model.get("department").id)) {
-							$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "' selected>" + department.get("institution").name + ": " + department.get("department") + "</option>");
+					_.each(collection.filter(function(institution) {
+						return App.loggedOnUser.isAssociatedWithInstitution(institution);
+					}), function(institution) {
+						if (_.isObject(self.model.get("institution")) && _.isEqual(institution.id, self.model.get("institution").id)) {
+							self.$("select[name='institution']").append("<option value='" + institution.get("id") + "' selected>" + institution.get("name") + "</option>");
 						} else {
-							$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "'>" + department.get("institution").name + ": " + department.get("department") + "</option>");
+							self.$("select[name='institution']").append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
 						}
 					});
 				},
@@ -3119,9 +3120,19 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			});
 			
 			if (self.model.has("id")) {
-				self.addFile("registerFile", this.$("#registerFile"));
+				var files = new Models.Files();
+				files.url = self.model.url() + "/file";
+				files.fetch({
+					cache : false,
+					success : function(collection, response) {
+						self.addFileList(collection, "MITROO", self.$("#mitrooFileList"), {
+							withMetadata : true,
+							editable : true
+						});
+					}
+				});
 			} else {
-				self.$("#registerFile").html($.i18n.prop("PressSave"));
+				self.$("#mitrooFileList").html($.i18n.prop("PressSave"));
 			}
 			
 			self.validator = $("form", this.el).validate({
@@ -3134,10 +3145,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					$(element).parent(".controls").parent(".control-group").removeClass("error");
 				},
 				rules : {
-					department : "required"
+					"title" : "required",
+					"institution" : "required"
 				},
 				messages : {
-					department : $.i18n.prop('validation_department')
+					"title" : $.i18n.prop('validation_title'),
+					"institution" : $.i18n.prop('validation_institution')
 				}
 			});
 			return self;
@@ -3151,14 +3164,17 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				yes : function() {
 					var values = {};
 					// Read Input
-					values.department = {
-						"id" : self.$('form select[name=department]').val(),
-						"institution" : {}
+					values.title = self.$('form input[name=title]').val();
+					values.institution = {
+						"id" : self.$('form select[name=institution]').val(),
 					};
 					// Save to model
 					self.model.save(values, {
 						wait : true,
 						success : function(model, resp) {
+							App.router.navigate("register/" + self.model.id, {
+								trigger : false
+							});
 							var popup = new Views.PopupView({
 								type : "success",
 								message : $.i18n.prop("Success")
@@ -3197,6 +3213,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.model.destroy({
 						wait : true,
 						success : function(model, resp) {
+							App.router.navigate("register", {
+								trigger : false
+							});
 							var popup = new Views.PopupView({
 								type : "success",
 								message : $.i18n.prop("Success")

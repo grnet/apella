@@ -53,6 +53,7 @@ public class FileHeader implements Serializable {
 	/**
 	 * An optional description. (E.g. "My CV")
 	 */
+	@Column(columnDefinition = " character varying(4000)")
 	private String description;
 
 	/**
