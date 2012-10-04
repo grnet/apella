@@ -24,23 +24,18 @@ public class PositionFile extends FileHeader {
 	public static final Map<FileType, Integer> fileTypes = Collections.unmodifiableMap(new HashMap<FileType, Integer>() {
 
 		{
-			// TODO:
-			put(FileType.ANAFORA, 1);
-			put(FileType.EISIGITIKI_ANAFORA, 1);
-			put(FileType.FEK, 1);
-			put(FileType.PROFILE, 1);
-			put(FileType.MITROO, 1);
-			put(FileType.PRAKTIKO_SYNEDRIASIS, 1);
-			put(FileType.TEKMIRIOSI_AKSIOLOGITI, 1);
-			put(FileType.AITIMA_EPITROPIS, 1);
-			put(FileType.AKSIOLOGISI, 1);
-			put(FileType.EISIGISI, 1);
+			put(FileType.PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES, 1);
+			put(FileType.TEKMIRIOSI_EPITROPIS_GIA_AKSIOLOGITES, 1);
+			put(FileType.AITIMA_EPITROPIS_PROS_AKSIOLOGITES, 1);
+			put(FileType.AKSIOLOGISI_PROTOU_AKSIOLOGITI, Integer.MAX_VALUE);
+			put(FileType.AKSIOLOGISI_DEUTEROU_AKSIOLOGITI, Integer.MAX_VALUE);
 			put(FileType.PROSKLISI_KOSMITORA, 1);
+			put(FileType.EISIGISI_DEP_YPOPSIFIOU, Integer.MAX_VALUE);
 			put(FileType.PRAKTIKO_EPILOGIS, 1);
 			put(FileType.DIAVIVASTIKO_PRAKTIKOU, 1);
 			put(FileType.PRAKSI_DIORISMOU, 1);
+			put(FileType.DIOIKITIKO_EGGRAFO, Integer.MAX_VALUE);
 			put(FileType.APOFASI_ANAPOMPIS, 1);
-			put(FileType.DIOIKITIKO_EGGRAFO, 1);
 			put(FileType.ORGANISMOS, 1);
 			put(FileType.ESWTERIKOS_KANONISMOS, 1);
 		}

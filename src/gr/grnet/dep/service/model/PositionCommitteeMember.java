@@ -1,17 +1,11 @@
 package gr.grnet.dep.service.model;
 
-import gr.grnet.dep.service.model.file.PositionCommitteeMemberFile;
-
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 
@@ -37,8 +31,8 @@ public class PositionCommitteeMember implements Serializable {
 
 	private Boolean confirmedMembership;
 
-	@OneToMany(mappedBy = "positionCommitteeMember", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<PositionCommitteeMemberFile> files = new HashSet<PositionCommitteeMemberFile>();
+	//	@OneToMany(mappedBy = "positionCommitteeMember", cascade = CascadeType.ALL, orphanRemoval = true)
+	//	private Set<PositionCommitteeMemberFile> files = new HashSet<PositionCommitteeMemberFile>();
 
 	public Long getId() {
 		return id;
@@ -71,14 +65,6 @@ public class PositionCommitteeMember implements Serializable {
 
 	public void setConfirmedMembership(Boolean confirmedMembership) {
 		this.confirmedMembership = confirmedMembership;
-	}
-
-	public Set<PositionCommitteeMemberFile> getFiles() {
-		return files;
-	}
-
-	public void setFiles(Set<PositionCommitteeMemberFile> files) {
-		this.files = files;
 	}
 
 }

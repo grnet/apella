@@ -1,7 +1,7 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.model.Institution;
+import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
@@ -56,9 +56,9 @@ public class PositionRESTService extends RESTService {
 			"from Position p where p.id=:id")
 			.setParameter("id", positionId)
 			.getSingleResult();
-		Institution institution = position.getInstitution();
+		Department department = position.getDepartment();
 		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(institution)) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(department)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		return position;
@@ -112,13 +112,13 @@ public class PositionRESTService extends RESTService {
 	@JsonView({DetailedPositionView.class})
 	public Position create(@HeaderParam(TOKEN_HEADER) String authToken, Position position) {
 		try {
-			Institution institution = em.find(Institution.class, position.getInstitution().getId());
-			if (institution == null) {
+			Department department = position.getDepartment();
+			if (department == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.department");
 			}
 			User loggedOn = getLoggedOn(authToken);
-			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(institution)) {
-				throw new RestException(Status.FORBIDDEN, "insufficinet.privileges");
+			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(department)) {
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			position = em.merge(position);
 			em.flush();
@@ -135,14 +135,7 @@ public class PositionRESTService extends RESTService {
 	public Position update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Position position) {
 		try {
 			Position existingPosition = getAndCheckPosition(authToken, id);
-
-			existingPosition.setSubject(position.getSubject());
-			existingPosition.setDescription(position.getDescription());
-			existingPosition.setFek(position.getFek());
-			existingPosition.setFekSentDate(position.getFekSentDate());
-			existingPosition.setName(position.getName());
-			existingPosition.setStatus(position.getStatus());
-
+			existingPosition.copyFrom(position);
 			position = em.merge(existingPosition);
 			em.flush();
 			return position;
@@ -157,7 +150,6 @@ public class PositionRESTService extends RESTService {
 	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		try {
 			Position position = getAndCheckPosition(authToken, id);
-			//Do Delete:
 			em.remove(position);
 			em.flush();
 		} catch (PersistenceException e) {
@@ -181,7 +173,7 @@ public class PositionRESTService extends RESTService {
 		if (position == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(position.getInstitution())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Parse Request
@@ -228,7 +220,7 @@ public class PositionRESTService extends RESTService {
 		if (position == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(position.getInstitution())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Parse Request
@@ -288,7 +280,7 @@ public class PositionRESTService extends RESTService {
 		if (position == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(position.getInstitution())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {

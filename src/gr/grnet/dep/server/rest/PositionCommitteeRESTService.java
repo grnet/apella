@@ -1,7 +1,6 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.PositionCommitteeMember;
 import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
@@ -48,10 +47,8 @@ public class PositionCommitteeRESTService extends RESTService {
 			"from Position p where p.id=:id")
 			.setParameter("id", positionId)
 			.getSingleResult();
-		Institution institution = position.getInstitution();
-
 		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(institution)) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 
