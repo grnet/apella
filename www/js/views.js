@@ -9,6 +9,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	Views.BaseView = Backbone.View.extend({
 		className : "span12",
 		
+		innerViews : [],
+		
 		addFile : function(collection, type, $el, options) {
 			var self = this;
 			var fileView;
@@ -1512,8 +1514,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		
 		validator : undefined,
 		
-		innerViews : [],
-		
 		initialize : function() {
 			_.bindAll(this, "render", "submit", "cancel", "addFile", "addFileList", "close");
 			this.template = _.template(tpl_role_edit);
@@ -2649,8 +2649,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		
 		render : function(eventName) {
 			var self = this;
+			_.each(self.innerViews, function(innerView) {
+				innerView.close();
+			});
+			self.innerViews = [];
 			self.$el.html(self.template(self.model.toJSON()));
 			
+			// Departments
 			App.departments = App.departments ? App.departments : new Models.Departments();
 			App.departments.fetch({
 				cache : true,
@@ -2674,21 +2679,91 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				}
 			});
 			
-			// TODO:
+			// Files:
 			if (self.model.has("id")) {
-				self.addFile("fekFile", this.$("#fekFile"));
-				self.addFile("prosklisiKosmitora", this.$("#prosklisiKosmitora"));
-				self.addFile("recommendatoryReport", this.$("#recommendatoryReport"));
-				self.addFile("recommendatoryReportSecond", this.$("#recommendatoryReportSecond"));
-				self.addCommitteeView(this.$("#committee"));
+				var files = new Models.Files();
+				files.url = self.model.url() + "/file";
+				files.fetch({
+					cache : false,
+					success : function(collection, response) {
+						self.addFile(collection, "PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES", self.$("#praktikoSynedriasisEpitropisGiaAksiologitesFile"), {
+							withMetadata : true,
+							editable : true
+						});
+						self.addFile(collection, "TEKMIRIOSI_EPITROPIS_GIA_AKSIOLOGITES", self.$("#tekmiriosiEpitropisGiaAksiologitesFile"), {
+							withMetadata : true,
+							editable : true
+						});
+						self.addFile(collection, "AITIMA_EPITROPIS_PROS_AKSIOLOGITES", self.$("#aitimaEpitropisProsAksiologitesFile"), {
+							withMetadata : true,
+							editable : true
+						});
+						self.addFileList(collection, "AKSIOLOGISI_PROTOU_AKSIOLOGITI", self.$("#aksiologisiProtouAksiologitiFileList"), {
+							withMetadata : true,
+							editable : true
+						});
+						self.addFileList(collection, "AKSIOLOGISI_DEUTEROU_AKSIOLOGITI", self.$("#aksiologisiDeuterouAksiologitiFileList"), {
+							withMetadata : true,
+							editable : true
+						});
+						self.addFile(collection, "PROSKLISI_KOSMITORA", self.$("#prosklisiKosmitoraFile"), {
+							withMetadata : true,
+							editable : true
+						});
+						self.addFileList(collection, "EISIGISI_DEP_YPOPSIFIOU", self.$("#eisigisiDEPYpopsifiouFileList"), {
+							withMetadata : true,
+							editable : true
+						});
+						self.addFile(collection, "PRAKTIKO_EPILOGIS", self.$("#praktikoEpilogisFile"), {
+							withMetadata : true,
+							editable : true
+						});
+						self.addFile(collection, "DIAVIVASTIKO_PRAKTIKOU", self.$("#diavivastikoPraktikouFile"), {
+							withMetadata : true,
+							editable : true
+						});
+						self.addFile(collection, "PRAKSI_DIORISMOU", self.$("#praksiDiorismouFile"), {
+							withMetadata : true,
+							editable : true
+						});
+						self.addFileList(collection, "DIOIKITIKO_EGGRAFO", self.$("#dioikitikoEggrafoFileList"), {
+							withMetadata : true,
+							editable : true
+						});
+						self.addFile(collection, "APOFASI_ANAPOMPIS", self.$("#apofasiAnapompisFile"), {
+							withMetadata : true,
+							editable : true
+						});
+						self.addFile(collection, "ORGANISMOS", self.$("#organismosFile"), {
+							withMetadata : true,
+							editable : true
+						});
+						self.addFile(collection, "ESWTERIKOS_KANONISMOS", self.$("#eswterikosKanonismosFile"), {
+							withMetadata : true,
+							editable : true
+						});
+					}
+				});
 			} else {
-				self.$("#fekFile").html($.i18n.prop("PressSave"));
-				self.$("#prosklisiKosmitora").html($.i18n.prop("PressSave"));
-				self.$("#recommendatoryReport").html($.i18n.prop("PressSave"));
-				self.$("#recommendatoryReportSecond").html($.i18n.prop("PressSave"));
-				self.$("#committee").html($.i18n.prop("PressSave"));
+				self.$("#prosklisiKosmitoraFile").html($.i18n.prop("PressSave"));
+				self.$("#eisigisiDEPYpopsifiouFileList").html($.i18n.prop("PressSave"));
+				self.$("#praktikoEpilogisFile").html($.i18n.prop("PressSave"));
+				self.$("#diavivastikoPraktikouFile").html($.i18n.prop("PressSave"));
+				self.$("#praksiDiorismouFile").html($.i18n.prop("PressSave"));
+				self.$("#dioikitikoEggrafoFileList").html($.i18n.prop("PressSave"));
+				self.$("#apofasiAnapompisFile").html($.i18n.prop("PressSave"));
+				self.$("#organismosFile").html($.i18n.prop("PressSave"));
+				self.$("#eswterikosKanonismosFile").html($.i18n.prop("PressSave"));
+				self.$("#praktikoSynedriasisEpitropisGiaAksiologitesFile").html($.i18n.prop("PressSave"));
+				self.$("#tekmiriosiEpitropisGiaAksiologitesFile").html($.i18n.prop("PressSave"));
+				self.$("#aitimaEpitropisProsAksiologitesFile").html($.i18n.prop("PressSave"));
+				self.$("#aksiologisiProtouAksiologitiFileList").html($.i18n.prop("PressSave"));
+				self.$("#aksiologisiDeuterouAksiologitiFileList").html($.i18n.prop("PressSave"));
 			}
+			// End of files
 			
+			// Widgets
+			self.$("input[data-input-type=date]").datepicker();
 			self.validator = $("form", this.el).validate({
 				errorElement : "span",
 				errorClass : "help-inline",
@@ -2704,9 +2779,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					department : "required",
 					subject : "required",
 					status : "required",
-					deanStatus : "required",
 					fek : "required",
-					fekSentDate : "required"
+					fekSentDate : "required",
+					openingDate : "required",
+					closingDate : "required"
 				},
 				messages : {
 					name : $.i18n.prop('validation_positionName'),
@@ -2714,9 +2790,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					department : $.i18n.prop('validation_department'),
 					subject : $.i18n.prop('validation_subject'),
 					status : $.i18n.prop('validation_positionStatus'),
-					deanStatus : $.i18n.prop('validation_positionDeanStatus'),
 					fek : $.i18n.prop('validation_fek'),
-					fekSentDate : $.i18n.prop('validation_fekSentDate')
+					fekSentDate : $.i18n.prop('validation_fekSentDate'),
+					openingDate : $.i18n.prop('validation_openingDate'),
+					closingDate : $.i18n.prop('validation_closingDate')
 				}
 			});
 			return self;
@@ -2731,7 +2808,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					var values = {};
 					// Read Input
 					values.name = self.$('form input[name=name]').val();
-					values.description = self.$('form input[name=description]').val();
+					values.description = self.$('form textarea[name=description]').val();
 					values.department = {
 						"id" : self.$('form select[name=department]').val()
 					};
@@ -2739,14 +2816,22 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						"id" : self.model.has("subject") ? self.model.get("subject").id : undefined,
 						"name" : self.$('form textarea[name=subject]').val()
 					};
-					values.status = self.$('form input[name=status]').val();
-					values.deanStatus = self.$('form input[name=deanStatus]').val();
 					values.fek = self.$('form input[name=fek]').val();
 					values.fekSentDate = self.$('form input[name=fekSentDate]').val();
+					values.openingDate = self.$('form input[name=openingDate]').val();
+					values.closingDate = self.$('form input[name=closingDate]').val();
+					values.committeeMeetingDate = self.$('form input[name=committeeMeetingDate]').val();
+					values.nominationCommitteeConvergenceDate = self.$('form input[name=nominationCommitteeConvergenceDate]').val();
+					values.nominationToETDate = self.$('form input[name=nominationToETDate]').val();
+					values.nominationFEK = self.$('form input[name=nominationFEK]').val();
+					
 					// Save to model
 					self.model.save(values, {
 						wait : true,
 						success : function(model, resp) {
+							App.router.navigate("position/" + self.model.id, {
+								trigger : false
+							});
 							var popup = new Views.PopupView({
 								type : "success",
 								message : $.i18n.prop("Success")
@@ -2785,6 +2870,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.model.destroy({
 						wait : true,
 						success : function(model, resp) {
+							App.router.navigate("position", {
+								trigger : false
+							});
 							var popup = new Views.PopupView({
 								type : "success",
 								message : $.i18n.prop("Success")
@@ -2824,6 +2912,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 		
 		close : function() {
+			_.each(self.innerViews, function(innerView) {
+				innerView.close();
+			});
 			$(this.el).unbind();
 			$(this.el).remove();
 		}

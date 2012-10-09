@@ -14,6 +14,7 @@ import gr.grnet.dep.service.model.file.RegisterFile;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
@@ -101,6 +102,7 @@ public class RegisterRESTService extends RESTService {
 			em.flush();
 			return newRegister;
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
@@ -130,6 +132,7 @@ public class RegisterRESTService extends RESTService {
 			em.flush();
 			return existingRegister;
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
@@ -152,6 +155,7 @@ public class RegisterRESTService extends RESTService {
 			em.remove(register);
 			em.flush();
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
@@ -243,6 +247,7 @@ public class RegisterRESTService extends RESTService {
 
 			return toJSON(registerFile, SimpleFileHeaderView.class);
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
@@ -296,6 +301,7 @@ public class RegisterRESTService extends RESTService {
 			registerFile.getBodies().size();
 			return toJSON(registerFile, SimpleFileHeaderView.class);
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
@@ -339,6 +345,7 @@ public class RegisterRESTService extends RESTService {
 			}
 			return retv;
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}

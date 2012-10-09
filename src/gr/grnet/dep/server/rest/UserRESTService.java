@@ -21,8 +21,10 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.mail.MessagingException;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
@@ -53,6 +55,9 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class UserRESTService extends RESTService {
+
+	@Inject
+	private Logger log;
 
 	@GET
 	@JsonView({DetailedUserView.class})
@@ -216,6 +221,7 @@ public class UserRESTService extends RESTService {
 			user.initializeCollections();
 			return user;
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.FORBIDDEN, "username.not.available");
 		}
@@ -249,6 +255,7 @@ public class UserRESTService extends RESTService {
 			existingUser.initializeCollections();
 			return existingUser;
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
@@ -271,6 +278,7 @@ public class UserRESTService extends RESTService {
 			em.remove(existingUser);
 			em.flush();
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
@@ -376,6 +384,7 @@ public class UserRESTService extends RESTService {
 			u = em.merge(u);
 			em.flush();
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
@@ -471,6 +480,7 @@ public class UserRESTService extends RESTService {
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.username");
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
@@ -499,6 +509,7 @@ public class UserRESTService extends RESTService {
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}

@@ -241,7 +241,7 @@ public class Position {
 	public void copyFrom(Position position) {
 		this.name = position.getName();
 		this.description = position.getDescription();
-		this.subject = position.getSubject();
+		this.subject.setName(position.getSubject().getName());
 		this.fek = position.getFek();
 		this.fekSentDate = position.getFekSentDate();
 		this.openingDate = position.getOpeningDate();

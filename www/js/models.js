@@ -764,14 +764,14 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			department : undefined,
 			subject : undefined,
 			status : undefined,
-			deanStatus : undefined,
 			fek : undefined,
 			fekSentDate : undefined,
-			// files
-			fekFile : undefined,
-			prosklisiKosmitora : undefined,
-			recommendatoryReport : undefined,
-			recommendatoryReportSecond : undefined
+			openingDate : undefined,
+			closingDate : undefined,
+			committeeMeetingDate : undefined,
+			nominationCommitteeConvergenceDate : undefined,
+			nominationToETDate : undefined,
+			nominationFEK : undefined
 		}
 	});
 	

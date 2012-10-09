@@ -8,6 +8,9 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 		jQuery.validator.addMethod("pwd", function(value, element) {
 			return this.optional(element) || /^[a-zA-Z0-9!@#$%^&*()]*$/.test(value);
 		}, "Please type only latin characters");
+		jQuery.datepicker.setDefaults({
+			dateFormat : "dd/mm/yy"
+		});
 		
 		// Add _super function in Model, Views
 		(function(Backbone) {

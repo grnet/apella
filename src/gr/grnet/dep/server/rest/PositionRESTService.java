@@ -6,12 +6,15 @@ import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.file.PositionFile;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
@@ -112,7 +115,7 @@ public class PositionRESTService extends RESTService {
 	@JsonView({DetailedPositionView.class})
 	public Position create(@HeaderParam(TOKEN_HEADER) String authToken, Position position) {
 		try {
-			Department department = position.getDepartment();
+			Department department = em.find(Department.class, position.getDepartment().getId());
 			if (department == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.department");
 			}
@@ -124,6 +127,7 @@ public class PositionRESTService extends RESTService {
 			em.flush();
 			return position;
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
@@ -136,10 +140,10 @@ public class PositionRESTService extends RESTService {
 		try {
 			Position existingPosition = getAndCheckPosition(authToken, id);
 			existingPosition.copyFrom(position);
-			position = em.merge(existingPosition);
 			em.flush();
-			return position;
+			return existingPosition;
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
@@ -153,6 +157,7 @@ public class PositionRESTService extends RESTService {
 			em.remove(position);
 			em.flush();
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
@@ -161,6 +166,46 @@ public class PositionRESTService extends RESTService {
 	/**********************
 	 * File Functions *****
 	 ***********************/
+
+	@GET
+	@Path("/{id:[0-9][0-9]*}/file")
+	@JsonView({SimpleFileHeaderView.class})
+	public Collection<PositionFile> getFiles(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
+		User loggedOn = getLoggedOn(authToken);
+		Position position = em.find(Position.class, positionId);
+		// Validate:
+		if (position == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Return Result
+		position.getFiles().size();
+		return position.getFiles();
+	}
+
+	@GET
+	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}")
+	@JsonView({SimpleFileHeaderView.class})
+	public FileHeader getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("fileId") Long fileId) {
+		User loggedOn = getLoggedOn(authToken);
+		Position position = em.find(Position.class, positionId);
+		// Validate:
+		if (position == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Return Result
+		for (PositionFile file : position.getFiles()) {
+			if (file.getId().equals(fileId)) {
+				return file;
+			}
+		}
+		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+	}
 
 	@POST
 	@Path("/{id:[0-9][0-9]*}/file")
@@ -204,6 +249,7 @@ public class PositionRESTService extends RESTService {
 
 			return toJSON(positionFile, SimpleFileHeaderView.class);
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
@@ -258,6 +304,7 @@ public class PositionRESTService extends RESTService {
 			positionFile.getBodies().size();
 			return toJSON(positionFile, SimpleFileHeaderView.class);
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
@@ -301,6 +348,7 @@ public class PositionRESTService extends RESTService {
 			}
 			return retv;
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}

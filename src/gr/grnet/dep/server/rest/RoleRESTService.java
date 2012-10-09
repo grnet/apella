@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
@@ -251,6 +252,7 @@ public class RoleRESTService extends RESTService {
 			newRole.initializeCollections();
 			return newRole;
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
@@ -293,6 +295,7 @@ public class RoleRESTService extends RESTService {
 			existingRole.initializeCollections();
 			return existingRole;
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
@@ -324,6 +327,7 @@ public class RoleRESTService extends RESTService {
 			em.remove(role);
 			em.flush();
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
@@ -458,6 +462,7 @@ public class RoleRESTService extends RESTService {
 				throw new RestException(Status.CONFLICT, "wrong.file.type");
 			}
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
@@ -530,6 +535,7 @@ public class RoleRESTService extends RESTService {
 				throw new RestException(Status.CONFLICT, "wrong.file.type");
 			}
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
@@ -603,6 +609,7 @@ public class RoleRESTService extends RESTService {
 			// Default Action
 			throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
@@ -652,6 +659,7 @@ public class RoleRESTService extends RESTService {
 			existingRole.initializeCollections();
 			return existingRole;
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}

@@ -425,7 +425,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			
 			this.refreshBreadcrumb([ $.i18n.prop('menu_home') ]);
 			$("#featured").html(homeView.render().el);
-			$("#featured").append(announcementsView.el);
+			$("#content").html(announcementsView.el);
 			App.roles.fetch({
 				cache : false
 			});
