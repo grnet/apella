@@ -683,6 +683,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			// Login
 			if (role.discriminator === "PROFESSOR_DOMESTIC") {
 				// Add institutions in selector:
+				self.$("select[name='institution']").change(function(event) {
+					self.$("select[name='institution']").next(".help-block").html(jQuery("select[name='institution'] option:selected").text());
+				});
 				App.institutions = App.institutions ? App.institutions : new Models.Institutions();
 				App.institutions.fetch({
 					cache : true,
@@ -694,6 +697,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
 							}
 						});
+						self.$("select[name='institution']").change();
 					},
 					error : function(model, resp, options) {
 						var popup = new Views.PopupView({
@@ -1592,7 +1596,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			case "PROFESSOR_DOMESTIC":
 				// Bind change on institution selector to update department
 				// selector
+				self.$("select[name='department']").change(function(event) {
+					self.$("select[name='department']").next(".help-block").html(jQuery("select[name='department'] option:selected").text());
+				});
 				self.$("select[name='institution']").change(function() {
+					self.$("select[name='institution']").next(".help-block").html(jQuery("select[name='institution'] option:selected").text());
+					
 					App.departments = App.departments ? App.departments : new Models.Departments();
 					App.departments.fetch({
 						cache : true,
@@ -1608,6 +1617,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 									self.$("select[name='department']").append("<option value='" + department.get("id") + "'>" + department.get("department") + "</option>");
 								}
 							});
+							self.$("select[name='department']").change();
 						},
 						error : function(model, resp, options) {
 							var popup = new Views.PopupView({
@@ -1629,8 +1639,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
 							}
 						});
-						// Trigger change to update department selector
-						$("select[name='institution']", self.$el).change();
+						self.$("select[name='institution']").change();
 					},
 					error : function(model, resp, options) {
 						var popup = new Views.PopupView({
@@ -1652,6 +1661,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								$("select[name='rank']", self.$el).append("<option value='" + rank.get("id") + "'>" + rank.get("name") + "</option>");
 							}
 						});
+						self.$("select[name='rank']").change();
+						
 					},
 					error : function(model, resp, options) {
 						var popup = new Views.PopupView({
@@ -1798,6 +1809,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				}
 				break;
 			case "INSTITUTION_MANAGER":
+				self.$("select[name='institution']").change(function(event) {
+					self.$("select[name='institution']").next(".help-block").html(jQuery("select[name='institution'] option:selected").text());
+				});
 				App.institutions = App.institutions ? App.institutions : new Models.Institutions();
 				App.institutions.fetch({
 					cache : true,
@@ -1809,6 +1823,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
 							}
 						});
+						self.$("select[name='institution']").change();
 					},
 					error : function(model, resp, options) {
 						var popup = new Views.PopupView({
@@ -1844,6 +1859,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				break;
 			
 			case "INSTITUTION_ASSISTANT":
+				self.$("select[name='institution']").change(function(event) {
+					self.$("select[name='institution']").next(".help-block").html(jQuery("select[name='institution'] option:selected").text());
+				});
 				App.institutions = App.institutions ? App.institutions : new Models.Institutions();
 				App.institutions.fetch({
 					cache : true,
@@ -1855,6 +1873,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
 							}
 						});
+						self.$("select[name='institution']").change();
 					},
 					error : function(model, resp, options) {
 						var popup = new Views.PopupView({
@@ -2656,6 +2675,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.$el.html(self.template(self.model.toJSON()));
 			
 			// Departments
+			self.$("select[name='department']").change(function(event) {
+				self.$("select[name='department']").next(".help-block").html(jQuery("select[name='department'] option:selected").text());
+			});
 			App.departments = App.departments ? App.departments : new Models.Departments();
 			App.departments.fetch({
 				cache : true,
@@ -2669,6 +2691,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "'>" + department.get("institution").name + ": " + department.get("department") + "</option>");
 						}
 					});
+					self.$("select[name='department']").change();
 				},
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
@@ -3187,6 +3210,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.$el.html(self.template(self.model.toJSON()));
 			
 			// Add institutions in selector:
+			self.$("select[name='institution']").change(function(event) {
+				self.$("select[name='institution']").next(".help-block").html(jQuery("select[name='institution'] option:selected").text());
+			});
 			App.institutions = App.institutions ? App.institutions : new Models.Institutions();
 			App.institutions.fetch({
 				cache : true,
@@ -3200,6 +3226,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							self.$("select[name='institution']").append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
 						}
 					});
+					self.$("select[name='institution']").change();
 				},
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({

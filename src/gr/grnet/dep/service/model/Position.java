@@ -1,6 +1,8 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.file.PositionFile;
+import gr.grnet.dep.service.util.SimpleDateDeserializer;
+import gr.grnet.dep.service.util.SimpleDateSerializer;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -20,6 +22,8 @@ import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonView;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -129,50 +133,62 @@ public class Position {
 		this.fek = fek;
 	}
 
+	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getFekSentDate() {
 		return fekSentDate;
 	}
 
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setFekSentDate(Date fekSentDate) {
 		this.fekSentDate = fekSentDate;
 	}
 
+	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getOpeningDate() {
 		return openingDate;
 	}
 
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setOpeningDate(Date openingDate) {
 		this.openingDate = openingDate;
 	}
 
+	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getClosingDate() {
 		return closingDate;
 	}
 
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setClosingDate(Date closingDate) {
 		this.closingDate = closingDate;
 	}
 
+	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getCommitteeMeetingDate() {
 		return committeeMeetingDate;
 	}
 
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setCommitteeMeetingDate(Date committeeMeetingDate) {
 		this.committeeMeetingDate = committeeMeetingDate;
 	}
 
+	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getNominationCommitteeConvergenceDate() {
 		return nominationCommitteeConvergenceDate;
 	}
 
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setNominationCommitteeConvergenceDate(Date nominationCommitteeConvergenceDate) {
 		this.nominationCommitteeConvergenceDate = nominationCommitteeConvergenceDate;
 	}
 
+	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getNominationToETDate() {
 		return nominationToETDate;
 	}
 
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setNominationToETDate(Date nominationToETDate) {
 		this.nominationToETDate = nominationToETDate;
 	}

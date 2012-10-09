@@ -1,7 +1,5 @@
 package gr.grnet.dep.server.jaxrs.util;
 
-import java.text.SimpleDateFormat;
-
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.ContextResolver;
@@ -10,6 +8,7 @@ import javax.ws.rs.ext.Provider;
 import org.codehaus.jackson.map.AnnotationIntrospector;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.introspect.JacksonAnnotationIntrospector;
 import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
@@ -32,11 +31,10 @@ public class JacksonContextResolver implements ContextResolver<ObjectMapper> {
 
 		this.objectMapper = new ObjectMapper()
 			.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-			//.configure(SerializationConfig.Feature.WRITE_DATES_AS_TIMESTAMPS, false)
-			//.configure(SerializationConfig.Feature.WRITE_DATE_KEYS_AS_TIMESTAMPS, false)
+			.configure(SerializationConfig.Feature.WRITE_DATES_AS_TIMESTAMPS, false)
+			.configure(SerializationConfig.Feature.WRITE_DATE_KEYS_AS_TIMESTAMPS, false)
 			.setAnnotationIntrospector(pair)
 			.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
-		this.objectMapper.setDateFormat(new SimpleDateFormat("dd/MM/yyyy hh:mm:ss"));
 		this.objectMapper.registerModule(new HibernateModule());
 	}
 
