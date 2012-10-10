@@ -4,6 +4,7 @@ import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
+import gr.grnet.dep.service.model.Position.PublicPositionView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.FileBody;
@@ -13,7 +14,10 @@ import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.file.PositionFile;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,8 +49,6 @@ import org.codehaus.jackson.map.annotate.JsonView;
 
 @Path("/position")
 @Stateless
-@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class PositionRESTService extends RESTService {
 
 	@PersistenceContext(unitName = "apelladb")
@@ -88,14 +90,22 @@ public class PositionRESTService extends RESTService {
 
 	@GET
 	@Path("/public")
-	@JsonView({DetailedPositionView.class})
-	public List<Position> getPublic(@HeaderParam(TOKEN_HEADER) String authToken) {
-		//TODO : Return positions that should be publicly displayed in forum (skourtis)
-		@SuppressWarnings("unchecked")
-		List<Position> positions = (List<Position>) em.createQuery(
-			"from Position p ")
-			.getResultList();
-		return positions;
+	@JsonView({PublicPositionView.class})
+	public List<Position> getPublic() {
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+			Date today = sdf.parse(sdf.format(new Date()));
+			@SuppressWarnings("unchecked")
+			List<Position> positions = (List<Position>) em.createQuery(
+				"from Position p " +
+					"where p.openingDate <= :today and p.closingDate >= :today ")
+				.setParameter("today", today)
+				.getResultList();
+			return positions;
+		} catch (ParseException e) {
+			throw new RestException(Status.INTERNAL_SERVER_ERROR);
+		}
+
 	}
 
 	@GET

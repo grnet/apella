@@ -16,6 +16,9 @@ public class SimpleDateDeserializer extends JsonDeserializer<Date> {
 
 	@Override
 	public Date deserialize(JsonParser parser, DeserializationContext ctx) throws IOException, JsonProcessingException {
+		if (parser.getText() == null || parser.getText().trim().isEmpty()) {
+			return null;
+		}
 		try {
 			return dateFormat.parse(parser.getText());
 		} catch (ParseException e) {

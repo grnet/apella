@@ -58,8 +58,6 @@ import org.codehaus.jackson.map.annotate.JsonView;
 
 @Path("/role")
 @Stateless
-@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class RoleRESTService extends RESTService {
 
 	@Inject

@@ -30,7 +30,10 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Entity
 public class Position {
 
-	public static interface DetailedPositionView {
+	public static interface PublicPositionView {
+	};
+
+	public static interface DetailedPositionView extends PublicPositionView {
 	};
 
 	@Id
@@ -163,6 +166,7 @@ public class Position {
 		this.closingDate = closingDate;
 	}
 
+	@JsonView({DetailedPositionView.class})
 	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getCommitteeMeetingDate() {
 		return committeeMeetingDate;
@@ -173,6 +177,7 @@ public class Position {
 		this.committeeMeetingDate = committeeMeetingDate;
 	}
 
+	@JsonView({DetailedPositionView.class})
 	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getNominationCommitteeConvergenceDate() {
 		return nominationCommitteeConvergenceDate;
@@ -183,6 +188,7 @@ public class Position {
 		this.nominationCommitteeConvergenceDate = nominationCommitteeConvergenceDate;
 	}
 
+	@JsonView({DetailedPositionView.class})
 	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getNominationToETDate() {
 		return nominationToETDate;
@@ -193,6 +199,7 @@ public class Position {
 		this.nominationToETDate = nominationToETDate;
 	}
 
+	@JsonView({DetailedPositionView.class})
 	public String getNominationFEK() {
 		return nominationFEK;
 	}
@@ -210,7 +217,7 @@ public class Position {
 		this.files = files;
 	}
 
-	@JsonView({DetailedPositionView.class})
+	@XmlTransient
 	public Set<Candidacy> getCandidacies() {
 		return candidacies;
 	}
@@ -219,7 +226,7 @@ public class Position {
 		this.candidacies = candidacies;
 	}
 
-	@JsonView({DetailedPositionView.class})
+	@XmlTransient
 	public List<PositionCommitteeMember> getCommitee() {
 		return commitee;
 	}

@@ -52,8 +52,6 @@ import org.codehaus.jackson.map.annotate.JsonView;
 
 @Path("/user")
 @Stateless
-@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class UserRESTService extends RESTService {
 
 	@Inject

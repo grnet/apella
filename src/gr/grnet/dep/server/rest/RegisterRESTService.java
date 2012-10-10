@@ -46,8 +46,6 @@ import org.codehaus.jackson.map.annotate.JsonView;
 
 @Path("/register")
 @Stateless
-@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class RegisterRESTService extends RESTService {
 
 	@Inject
