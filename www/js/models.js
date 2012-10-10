@@ -785,7 +785,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		defaults : {
 			id : undefined,
 			title : undefined,
-			institution : undefined,
+			institution : undefined
 		}
 	});
 	

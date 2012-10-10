@@ -47,7 +47,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				collection : files
 			}, options));
 			$el.html(fileListView.render().el);
-		},
+		}
 	});
 	
 	/***************************************************************************
@@ -391,7 +391,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			
 			// Save to model
 			self.model.resetPassword({
-				"username" : username,
+				"username" : username
 			}, {
 				wait : true,
 				success : function(model, resp) {
@@ -417,7 +417,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			
 			// Save to model
 			self.model.resendVerificationEmail({
-				"username" : username,
+				"username" : username
 			}, {
 				wait : true,
 				success : function(model, resp) {
@@ -792,15 +792,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					fathername : $.i18n.prop('validation_fathername'),
 					firstnamelatin : {
 						required : $.i18n.prop('validation_firstnamelatin'),
-						onlyLatin : $.i18n.prop('validation_latin'),
+						onlyLatin : $.i18n.prop('validation_latin')
 					},
 					lastnamelatin : {
 						required : $.i18n.prop('validation_lastnamelatin'),
-						onlyLatin : $.i18n.prop('validation_latin'),
+						onlyLatin : $.i18n.prop('validation_latin')
 					},
 					fathernamelatin : {
 						required : $.i18n.prop('validation_fathernamelatin'),
-						onlyLatin : $.i18n.prop('validation_latin'),
+						onlyLatin : $.i18n.prop('validation_latin')
 					},
 					username : {
 						required : $.i18n.prop('validation_username'),
@@ -820,7 +820,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					email : {
 						required : $.i18n.prop('validation_email'),
 						email : $.i18n.prop('validation_email'),
-						minlength : $.i18n.prop('validation_minlength', 2),
+						minlength : $.i18n.prop('validation_minlength', 2)
 					},
 					mobile : {
 						required : $.i18n.prop('validation_phone'),
@@ -1091,15 +1091,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					fathername : $.i18n.prop('validation_fathername'),
 					firstnamelatin : {
 						required : $.i18n.prop('validation_firstnamelatin'),
-						onlyLatin : $.i18n.prop('validation_latin'),
+						onlyLatin : $.i18n.prop('validation_latin')
 					},
 					lastnamelatin : {
 						required : $.i18n.prop('validation_lastnamelatin'),
-						onlyLatin : $.i18n.prop('validation_latin'),
+						onlyLatin : $.i18n.prop('validation_latin')
 					},
 					fathernamelatin : {
 						required : $.i18n.prop('validation_fathernamelatin'),
-						onlyLatin : $.i18n.prop('validation_latin'),
+						onlyLatin : $.i18n.prop('validation_latin')
 					},
 					password : {
 						required : $.i18n.prop('validation_password'),
@@ -1291,7 +1291,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		
 		render : function(eventName) {
 			return this._super('render', [ eventName ]);
-		},
+		}
 	});
 	
 	/***************************************************************************
@@ -2107,7 +2107,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.$("select").removeAttr("disabled");
 			self.$("a#status").removeClass("disabled");
 			return self;
-		},
+		}
 	});
 	
 	/***************************************************************************
@@ -2125,7 +2125,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 		
 		events : {
-			"click a#delete" : "deleteFile",
+			"click a#delete" : "deleteFile"
 		},
 		
 		render : function(eventName) {
@@ -2161,6 +2161,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				url : self.model.url() + "?X-Auth-Token=" + App.authToken,
 				replaceFileInput : false,
 				forceIframeTransport : true,
+				multipart : true,
 				add : function(e, data) {
 					self.$("a#upload").bind("click", function(e) {
 						self.$('div.progress').show();
@@ -2202,7 +2203,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						self.$('#progress .bar').css('width', '0%');
 					});
 					
-				},
+				}
 			});
 			return self;
 		},
@@ -2331,6 +2332,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				dataType : 'json',
 				url : self.collection.url + "?X-Auth-Token=" + App.authToken,
 				replaceFileInput : false,
+				forceIframeTransport : true,
 				add : function(e, data) {
 					self.$("a#upload").bind("click", function(e) {
 						self.$('div.progress').show();
@@ -2371,7 +2373,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						self.$('#progress .bar').css('width', '0%');
 					});
 					
-				},
+				}
 			});
 			
 			return self;
@@ -2484,7 +2486,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		
 		events : {
 			"click a#select" : "select",
-			"click a#createInstitutionAssistant" : "createInstitutionAssistant",
+			"click a#createInstitutionAssistant" : "createInstitutionAssistant"
 		},
 		
 		render : function(eventName) {
@@ -2569,7 +2571,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		
 		render : function(eventName) {
 			return this._super('render', [ eventName ]);
-		},
+		}
 	});
 	
 	/***************************************************************************
@@ -3284,7 +3286,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					// Read Input
 					values.title = self.$('form input[name=title]').val();
 					values.institution = {
-						"id" : self.$('form select[name=institution]').val(),
+						"id" : self.$('form select[name=institution]').val()
 					};
 					// Save to model
 					self.model.save(values, {
