@@ -2135,7 +2135,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				file : self.model.toJSON()
 			};
 			if (_.isObject(tpl_data.file.currentBody)) {
-				tpl_data.file.currentBody.url = self.model.url() + "/body";
+				tpl_data.file.currentBody.url = self.model.url() + "/body/" + tpl_data.file.currentBody.id + "?X-Auth-Token=" + App.authToken;
 			}
 			self.$el.html(self.template(tpl_data));
 			// Options
@@ -2294,22 +2294,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.collection.each(function(model) {
 				var file = model.toJSON();
 				if (_.isObject(file.currentBody)) {
-					file.currentBody.url = model.url() + "/body";
+					file.currentBody.url = model.url() + "/body/" + file.currentBody.id + "?X-Auth-Token=" + App.authToken;
 				}
 				tpl_data.files.push(file);
 			});
 			self.$el.html(self.template(tpl_data));
 			
-			// if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
-			// self.$("table").dataTable({
-			// "sDom" :
-			// "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
-			// "sPaginationType" : "bootstrap",
-			// "oLanguage" : {
-			// "sLengthMenu" : "_MENU_ records per page"
-			// }
-			// });
-			// }
 			// Options
 			if (self.options.editable) {
 				self.$('a#delete').show();

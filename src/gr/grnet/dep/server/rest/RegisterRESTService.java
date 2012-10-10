@@ -6,6 +6,7 @@ import gr.grnet.dep.service.model.Register;
 import gr.grnet.dep.service.model.Register.DetailedRegisterView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
@@ -200,6 +201,34 @@ public class RegisterRESTService extends RESTService {
 		for (RegisterFile file : register.getFiles()) {
 			if (file.getId().equals(fileId)) {
 				return file;
+			}
+		}
+		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+	}
+
+	@GET
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
+	public Response getFileBody(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
+		User loggedOn = getLoggedOn(authToken);
+		Register register = em.find(Register.class, registerId);
+		// Validate:
+		if (register == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Return Result
+		for (RegisterFile file : register.getFiles()) {
+			if (file.getId().equals(fileId)) {
+				if (file.getId().equals(fileId)) {
+					for (FileBody fb : file.getBodies()) {
+						if (fb.getId().equals(bodyId)) {
+							return sendFileBody(fb);
+						}
+					}
+				}
 			}
 		}
 		throw new RestException(Status.NOT_FOUND, "wrong.file.id");

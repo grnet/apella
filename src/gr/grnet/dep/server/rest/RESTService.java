@@ -10,8 +10,11 @@ import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -19,6 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
+import javax.ejb.EJBException;
 import javax.ejb.SessionContext;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -275,6 +279,23 @@ public class RESTService {
 		} else {
 			logger.info("Deleted FileBody id=" + fb.getId() + " PLUS FileHeader id=" + fh.getId());
 			return Response.noContent().build();
+		}
+	}
+
+	public Response sendFileBody(FileBody fb) {
+		try {
+			String fullPath = savePath + File.separator + fb.getStoredFilePath();
+			return Response.ok(new FileInputStream(new File(fullPath)))
+				.type(MediaType.APPLICATION_OCTET_STREAM)
+				.header("charset", "UTF-8")
+				.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(fb.getOriginalFilename(), "UTF-8") + "\"")
+				.build();
+		} catch (FileNotFoundException e) {
+			logger.log(Level.SEVERE, "sendFileBody", e);
+			throw new EJBException(e);
+		} catch (UnsupportedEncodingException e) {
+			logger.log(Level.SEVERE, "sendFileBody", e);
+			throw new EJBException(e);
 		}
 	}
 

@@ -6,6 +6,7 @@ import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
@@ -202,6 +203,34 @@ public class PositionRESTService extends RESTService {
 		for (PositionFile file : position.getFiles()) {
 			if (file.getId().equals(fileId)) {
 				return file;
+			}
+		}
+		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+	}
+
+	@GET
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
+	public Response getFileBody(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
+		User loggedOn = getLoggedOn(authToken);
+		Position position = em.find(Position.class, positionId);
+		// Validate:
+		if (position == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Return Result
+		for (PositionFile file : position.getFiles()) {
+			if (file.getId().equals(fileId)) {
+				if (file.getId().equals(fileId)) {
+					for (FileBody fb : file.getBodies()) {
+						if (fb.getId().equals(bodyId)) {
+							return sendFileBody(fb);
+						}
+					}
+				}
 			}
 		}
 		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
