@@ -470,6 +470,7 @@ public class UserRESTService extends RESTService {
 					u.setVerificationNumber(null);
 
 					em.flush();
+					u.initializeCollections();
 					return u;
 				default:
 					throw new RestException(Status.FORBIDDEN, "account.status." + u.getStatus().toString().toLowerCase());
@@ -501,8 +502,9 @@ public class UserRESTService extends RESTService {
 				.getSingleResult();
 			u.setStatus(requestUser.getStatus());
 			u.setStatusDate(new Date());
-
 			em.flush();
+
+			u.initializeCollections();
 			return u;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");

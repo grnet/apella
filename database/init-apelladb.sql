@@ -737,9 +737,10 @@ INSERT INTO institutionmanager VALUES (109, 1);
 -- Data for Name: rank; Type: TABLE DATA; Schema: public; Owner: apella
 --
 
-INSERT INTO rank VALUES (1, 'Καθηγητής', 'Λέκτορας', 0);
-INSERT INTO rank VALUES (2, 'Ερευνητής', '401', 0);
-INSERT INTO rank VALUES (3, 'Καθηγητής', 'Καθηγητής', 0);
+INSERT INTO rank VALUES (1, 'Καθηγητής', 'Αναπληρωτής', 0);
+INSERT INTO rank VALUES (2, 'Καθηγητής', 'Καθηγητής', 0);
+INSERT INTO rank VALUES (3, 'Ερευνητής', 'Διευθυντής Ερευνών', 0);
+INSERT INTO rank VALUES (4, 'Ερευνητής', 'Κύριος Ερευνητής', 0);
 
 
 --

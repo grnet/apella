@@ -2441,7 +2441,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				if (role.get("status") !== "ACTIVE") {
 					data.announcements.push({
 						text : $.i18n.prop('AnnouncementRoleStatus' + role.get("status"), $.i18n.prop(role.get('discriminator'))),
-						url : "#profile/" + role.id
+						url : "#profile"
 					});
 				}
 			});
