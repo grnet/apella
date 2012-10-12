@@ -38,6 +38,18 @@ public class MinistryManager extends Role {
 	}
 
 	@Override
+	public boolean compareCriticalFields(Role role) {
+		if (!(role instanceof MinistryManager)) {
+			return false;
+		}
+		MinistryManager other = (MinistryManager) role;
+		if (!compare(this.ministry, other.getMinistry())) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
 	public boolean isMissingRequiredFields() {
 		if (this.ministry == null) {
 			return true;

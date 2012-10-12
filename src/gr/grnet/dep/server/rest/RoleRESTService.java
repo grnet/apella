@@ -270,9 +270,9 @@ public class RoleRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !existingRole.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-
-		// TODO: FOR USERS: IF UNVERIFIED CONTINUE, IF ACTIVE DO NOT ALLOW CHANGES TO SOME FIELDS, ELSE BLOCK 
-
+		if (!existingRole.getStatus().equals(RoleStatus.UNAPPROVED) && !existingRole.compareCriticalFields(role)) {
+			throw new RestException(Status.FORBIDDEN, "cannot.change.critical.fields");
+		}
 		Long managerInstitutionId;
 		Long institutionId;
 		switch (existingRole.getDiscriminator()) {
@@ -462,42 +462,48 @@ public class RoleRESTService extends RESTService {
 		if (type == null) {
 			throw new RestException(Status.BAD_REQUEST, "missing.file.type");
 		}
-
-		// TODO: FOR USERS: IF UNVERIFIED CONTINUE, IF ACTIVE DO NOT ALLOW CHANGES TO SOME TYPES, ELSE BLOCK 
-
 		try {
 			// Return Result
 			if (role instanceof Candidate) {
 				Candidate candidate = (Candidate) role;
-				if (CandidateFile.fileTypes.containsKey(type)) {
-					//TODO: Validate number of types allowed (one, many) against existing
-					CandidateFile candidateFile = new CandidateFile();
-					candidateFile.setCandidate(candidate);
-					candidateFile.setOwner(candidate.getUser());
-					saveFile(loggedOn, fileItems, candidateFile);
-					candidate.addFile(candidateFile);
-					em.flush();
-
-					return toJSON(candidateFile, SimpleFileHeaderView.class);
-				} else {
+				// Check if file can be changed(active role)
+				if (!candidate.getStatus().equals(RoleStatus.UNAPPROVED)) {
+					switch (type) {
+						case TAYTOTHTA:
+						case FORMA_SYMMETOXIS:
+						case BEBAIWSH_STRATIOTIKIS_THITIAS:
+							throw new RestException(Status.FORBIDDEN, "cannot.change.critical.fields");
+						default:
+					}
+				}
+				// Check number of file types
+				Set<CandidateFile> existingFiles = FileHeader.filter(candidate.getFiles(), type);
+				if (!CandidateFile.fileTypes.containsKey(type) || existingFiles.size() >= CandidateFile.fileTypes.get(type)) {
 					throw new RestException(Status.CONFLICT, "wrong.file.type");
 				}
+				//Create File
+				CandidateFile candidateFile = new CandidateFile();
+				candidateFile.setCandidate(candidate);
+				candidateFile.setOwner(candidate.getUser());
+				saveFile(loggedOn, fileItems, candidateFile);
+				candidate.addFile(candidateFile);
+				em.flush();
+				return toJSON(candidateFile, SimpleFileHeaderView.class);
 			} else if (role instanceof Professor) {
 				Professor professor = (Professor) role;
-				if (ProfessorFile.fileTypes.containsKey(type)) {
-					//TODO: Validate number of types allowed (one, many) against existing
-					ProfessorFile professorFile = new ProfessorFile();
-					professorFile.setProfessor(professor);
-					professorFile.setOwner(professor.getUser());
-					saveFile(loggedOn, fileItems, professorFile);
-					professor.addFile(professorFile);
-
-					em.flush();
-
-					return toJSON(professorFile, SimpleFileHeaderView.class);
-				} else {
+				// Check number of file types
+				Set<ProfessorFile> existingFiles = FileHeader.filter(professor.getFiles(), type);
+				if (!ProfessorFile.fileTypes.containsKey(type) || existingFiles.size() >= ProfessorFile.fileTypes.get(type)) {
 					throw new RestException(Status.CONFLICT, "wrong.file.type");
 				}
+				// Create File
+				ProfessorFile professorFile = new ProfessorFile();
+				professorFile.setProfessor(professor);
+				professorFile.setOwner(professor.getUser());
+				saveFile(loggedOn, fileItems, professorFile);
+				professor.addFile(professorFile);
+				em.flush();
+				return toJSON(professorFile, SimpleFileHeaderView.class);
 			} else {
 				throw new RestException(Status.CONFLICT, "wrong.file.type");
 			}
@@ -535,12 +541,11 @@ public class RoleRESTService extends RESTService {
 		if (type == null) {
 			throw new RestException(Status.BAD_REQUEST, "missing.file.type");
 		}
-		// TODO: FOR USERS: IF UNVERIFIED CONTINUE, IF ACTIVE DO NOT ALLOW CHANGES TO SOME TYPES, ELSE BLOCK 
-
 		try {
 			// Return Result
 			if (role instanceof Candidate) {
 				Candidate candidate = (Candidate) role;
+				// Check if it exists
 				CandidateFile candidateFile = null;
 				for (CandidateFile file : candidate.getFiles()) {
 					if (file.getId().equals(fileId)) {
@@ -551,6 +556,17 @@ public class RoleRESTService extends RESTService {
 				if (candidateFile == null) {
 					throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 				}
+				// Check if file can be changed(active role)
+				if (!candidate.getStatus().equals(RoleStatus.UNAPPROVED)) {
+					switch (candidateFile.getType()) {
+						case TAYTOTHTA:
+						case FORMA_SYMMETOXIS:
+						case BEBAIWSH_STRATIOTIKIS_THITIAS:
+							throw new RestException(Status.FORBIDDEN, "cannot.change.critical.fields");
+						default:
+					}
+				}
+				// Update File
 				saveFile(loggedOn, fileItems, candidateFile);
 				em.flush();
 				candidateFile.getBodies().size();
@@ -602,6 +618,7 @@ public class RoleRESTService extends RESTService {
 		}
 		try {
 			if (role instanceof Candidate) {
+				Candidate candidate = (Candidate) role;
 				try {
 					CandidateFile candidateFile = (CandidateFile) em.createQuery(
 						"select cf from CandidateFile cf " +
@@ -610,10 +627,17 @@ public class RoleRESTService extends RESTService {
 						.setParameter("candidateId", id)
 						.setParameter("fileId", fileId)
 						.getSingleResult();
-					//TODO: Validate if Delete is allowed (depending on role status)
-					if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(candidateFile.getOwner().getId())) {
-						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+					//Validate delete
+					if (!candidate.getStatus().equals(RoleStatus.UNAPPROVED)) {
+						switch (candidateFile.getType()) {
+							case TAYTOTHTA:
+							case FORMA_SYMMETOXIS:
+							case BEBAIWSH_STRATIOTIKIS_THITIAS:
+								throw new RestException(Status.FORBIDDEN, "cannot.change.critical.fields");
+							default:
+						}
 					}
+					// Do delete
 					Response retv = deleteFileBody(candidateFile);
 					if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
 						// Remove from Role
@@ -632,10 +656,6 @@ public class RoleRESTService extends RESTService {
 						.setParameter("professorId", id)
 						.setParameter("fileId", fileId)
 						.getSingleResult();
-					if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(professorFile.getOwner().getId())) {
-						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-					}
-					//TODO: Validate if Delete is allowed (depending on role status)
 					Response retv = deleteFileBody(professorFile);
 					if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
 						// Remove from Role

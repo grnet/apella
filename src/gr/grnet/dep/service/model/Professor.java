@@ -53,6 +53,14 @@ public abstract class Professor extends Role {
 	}
 
 	@Override
+	public boolean compareCriticalFields(Role role) {
+		if (!(role instanceof ProfessorDomestic)) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
 	public boolean isMissingRequiredFields() {
 		if (this.files.isEmpty() || profileURL == null) {
 			return true;

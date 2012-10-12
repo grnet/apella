@@ -374,7 +374,7 @@ public class UserRESTService extends RESTService {
 			pd.setInstitution(department.getInstitution());
 			pd.setStatus(RoleStatus.ACTIVE); // We trust shibboleth data, and lock changes from beginning
 			pd.setStatusDate(new Date());
-			//TODO:  Get Rank from affiliation
+			//TODO: Shibboleth login: Get Rank from affiliation
 			u.addRole(pd);
 		}
 		// 4. Persist User

@@ -8,8 +8,10 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -268,6 +270,23 @@ public class User implements Serializable {
 		return getRole(discriminator) != null;
 	}
 
+	@XmlTransient
+	public List<Institution> getAssociatedInstitutions() {
+		List<Institution> institutions = new ArrayList<Institution>();
+		for (Role r : getRoles()) {
+			if (r.getDiscriminator() == RoleDiscriminator.INSTITUTION_MANAGER) {
+				InstitutionManager im = (InstitutionManager) r;
+				institutions.add(im.getInstitution());
+			}
+			if (r.getDiscriminator() == RoleDiscriminator.INSTITUTION_ASSISTANT) {
+				InstitutionAssistant ia = (InstitutionAssistant) r;
+				institutions.add(ia.getInstitution());
+			}
+		}
+		return institutions;
+	}
+
+	@XmlTransient
 	public boolean isInstitutionUser(Institution institution) {
 		for (Role r : getRoles()) {
 			if (r.getDiscriminator() == RoleDiscriminator.INSTITUTION_MANAGER) {
@@ -286,6 +305,7 @@ public class User implements Serializable {
 		return false;
 	}
 
+	@XmlTransient
 	public boolean isDepartmentUser(Department department) {
 		Institution institution = department.getInstitution();
 		for (Role r : getRoles()) {
@@ -305,9 +325,33 @@ public class User implements Serializable {
 		return false;
 	}
 
+	public void initializeCollections() {
+		this.roles.size();
+		for (Role r : roles) {
+			r.initializeCollections();
+		}
+	}
+
+	/**
+	 * Static Functions
+	 */
+
+	private static final String letters = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789+@";
+
+	private static final int PASSWORD_LENGTH = 8;
+
 	public static String generatePassword() {
-		//TODO:
-		return "anglen";
+		try {
+			SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
+			String pw = "";
+			for (int i = 0; i < PASSWORD_LENGTH; i++) {
+				int index = (int) (sr.nextDouble() * letters.length());
+				pw += letters.substring(index, index + 1);
+			}
+			return pw;
+		} catch (NoSuchAlgorithmException nsae) {
+			throw new EJBException(nsae);
+		}
 	}
 
 	public static String generatePasswordSalt() {
@@ -336,24 +380,30 @@ public class User implements Serializable {
 	}
 
 	public Long generateVerificationNumber() {
-		return System.currentTimeMillis();
+		try {
+			SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
+			return sr.nextLong();
+		} catch (NoSuchAlgorithmException nsae) {
+			throw new EJBException(nsae);
+		}
 	}
 
 	public String generateAuthenticationToken() {
-		return this.getUsername() + "" + System.currentTimeMillis();
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA");
+			byte[] hash = md.digest((this.getUsername() + System.currentTimeMillis()).getBytes("ISO-8859-1"));
+			return new String(Base64.encodeBase64(hash), "ISO-8859-1");
+		} catch (NoSuchAlgorithmException nsae) {
+			throw new EJBException(nsae);
+		} catch (UnsupportedEncodingException uee) {
+			throw new EJBException(uee);
+		}
 	}
 
 	public static void main(String[] args) {
 		String password = "anglen";
 		String salt = User.generatePasswordSalt();
 		System.out.println(password + ": " + encodePassword(password, salt));
-	}
-
-	public void initializeCollections() {
-		this.roles.size();
-		for (Role r : roles) {
-			r.initializeCollections();
-		}
 	}
 
 }

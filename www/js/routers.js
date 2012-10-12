@@ -568,9 +568,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			// Refresh positions from server
 			positions.fetch({
 				cache : false,
-				data : {
-					user : App.loggedOnUser.get("id")
-				},
 				success : function() {
 					if (_.isUndefined(positionId)) {
 					} else {

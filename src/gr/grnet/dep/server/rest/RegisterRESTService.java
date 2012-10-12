@@ -15,6 +15,7 @@ import gr.grnet.dep.service.model.file.RegisterFile;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -259,10 +260,11 @@ public class RegisterRESTService extends RESTService {
 		if (type == null) {
 			throw new RestException(Status.BAD_REQUEST, "missing.file.type");
 		}
-		if (!RegisterFile.fileTypes.containsKey(type)) {
+		// Check number of file types
+		Set<RegisterFile> existingFiles = FileHeader.filter(register.getFiles(), type);
+		if (!RegisterFile.fileTypes.containsKey(type) || existingFiles.size() >= RegisterFile.fileTypes.get(type)) {
 			throw new RestException(Status.CONFLICT, "wrong.file.type");
 		}
-
 		// Create
 		try {
 			RegisterFile registerFile = new RegisterFile();

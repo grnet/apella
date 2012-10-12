@@ -4,7 +4,9 @@ import gr.grnet.dep.service.model.User;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -183,4 +185,13 @@ public class FileHeader implements Serializable {
 		currentBody = body;
 	}
 
+	public static <T extends FileHeader> Set<T> filter(Set<T> files, FileType type) {
+		Set<T> result = new HashSet<T>();
+		for (T file : files) {
+			if (file.getType().equals(type)) {
+				result.add(file);
+			}
+		}
+		return result;
+	}
 }

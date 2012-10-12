@@ -138,4 +138,11 @@ public abstract class Role implements Serializable {
 
 	public abstract boolean isMissingRequiredFields();
 
+	public abstract boolean compareCriticalFields(Role other);
+
+	public boolean compare(Object a, Object b) {
+		return a == null ?
+			(b == null ? true : false) :
+			(b == null ? false : a.equals(b));
+	}
 }

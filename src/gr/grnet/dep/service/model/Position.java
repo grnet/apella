@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.file.PositionFile;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
@@ -257,8 +258,14 @@ public class Position {
 	}
 
 	private boolean isCompletedWithNomination() {
-		// TODO: Also check PRAKSI_DIORISMOU
-		return nominationFEK != null;
+		boolean hasPraksiDiorismou = false;
+		for (PositionFile file : files) {
+			if (file.getType().equals(FileType.PRAKSI_DIORISMOU)) {
+				hasPraksiDiorismou = true;
+				break;
+			}
+		}
+		return hasPraksiDiorismou || (nominationFEK != null);
 	}
 
 	public void copyFrom(Position position) {

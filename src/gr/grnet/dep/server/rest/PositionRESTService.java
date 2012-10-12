@@ -2,6 +2,7 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Department;
+import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
 import gr.grnet.dep.service.model.Position.PublicPositionView;
@@ -16,9 +17,11 @@ import gr.grnet.dep.service.model.file.PositionFile;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -72,17 +75,28 @@ public class PositionRESTService extends RESTService {
 
 	@GET
 	@JsonView({DetailedPositionView.class})
-	public List<Position> getAll(@HeaderParam(TOKEN_HEADER) String authToken, @QueryParam("user") long userId) {
-		getLoggedOn(authToken);
+	public List<Position> getAll(@HeaderParam(TOKEN_HEADER) String authToken, @QueryParam("institution") Long institutionId) {
+		User loggedOnUser = getLoggedOn(authToken);
 
-		User requestUser = em.find(User.class, userId);
-		if (requestUser == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.user.id");
+		List<Institution> institutions = new ArrayList<Institution>();
+		if (institutionId != null) {
+			Institution institution = em.find(Institution.class, institutionId);
+			if (institution == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.institution.id");
+			}
+			if (!loggedOnUser.isInstitutionUser(institution)) {
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+			}
+			institutions.add(institution);
+		} else {
+			institutions.addAll(loggedOnUser.getAssociatedInstitutions());
 		}
-		//TODO : Return positions based on User Roles
+
 		@SuppressWarnings("unchecked")
 		List<Position> positions = (List<Position>) em.createQuery(
-			"from Position p ")
+			"from Position p " +
+				"where p.department.institution in (:institutions)")
+			.setParameter("institutions", institutions)
 			.getResultList();
 
 		return positions;
@@ -273,10 +287,11 @@ public class PositionRESTService extends RESTService {
 		if (type == null) {
 			throw new RestException(Status.BAD_REQUEST, "missing.file.type");
 		}
-		if (!PositionFile.fileTypes.containsKey(type)) {
+		// Check number of file types
+		Set<PositionFile> existingFiles = FileHeader.filter(position.getFiles(), type);
+		if (!PositionFile.fileTypes.containsKey(type) || existingFiles.size() >= PositionFile.fileTypes.get(type)) {
 			throw new RestException(Status.CONFLICT, "wrong.file.type");
 		}
-
 		// Create
 		try {
 			PositionFile positionFile = new PositionFile();

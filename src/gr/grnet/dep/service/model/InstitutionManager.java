@@ -51,6 +51,18 @@ public class InstitutionManager extends Role {
 	}
 
 	@Override
+	public boolean compareCriticalFields(Role role) {
+		if (!(role instanceof InstitutionManager)) {
+			return false;
+		}
+		InstitutionManager other = (InstitutionManager) role;
+		if (!compare(this.institution.getId(), other.getInstitution().getId())) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
 	public boolean isMissingRequiredFields() {
 		if (this.institution == null) {
 			return true;

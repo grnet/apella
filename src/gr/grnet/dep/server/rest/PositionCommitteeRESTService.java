@@ -100,7 +100,7 @@ public class PositionCommitteeRESTService extends RESTService {
 		try {
 			PositionCommitteeMember existingCM = getPositionCommitteeMember(authToken, cmId);
 
-			//TODO: Will obviously not be allowed after some point in the lifecycle
+			//TODO: removePositionCommiteeMember: Will obviously not be allowed after some point in the lifecycle
 
 			// Remove
 			existingCM.getPosition().getCommitee().remove(existingCM);

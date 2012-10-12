@@ -24,7 +24,7 @@ public class RegisterFile extends FileHeader {
 	public static final Map<FileType, Integer> fileTypes = Collections.unmodifiableMap(new HashMap<FileType, Integer>() {
 
 		{
-			put(FileType.MITROO, -1);
+			put(FileType.MITROO, Integer.MAX_VALUE);
 		}
 	});
 

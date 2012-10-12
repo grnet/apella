@@ -78,6 +78,14 @@ public class Candidate extends Role {
 	}
 
 	@Override
+	public boolean compareCriticalFields(Role role) {
+		if (!(role instanceof Candidate)) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
 	public boolean isMissingRequiredFields() {
 		if (this.files.isEmpty()) {
 			return true;

@@ -117,8 +117,35 @@ public class ProfessorDomestic extends Professor {
 	}
 
 	@Override
+	public boolean compareCriticalFields(Role role) {
+		if (!super.compareCriticalFields(role)) {
+			return false;
+		}
+		if (!(role instanceof ProfessorDomestic)) {
+			return false;
+		}
+		ProfessorDomestic other = (ProfessorDomestic) role;
+		if (!compare(this.institution.getId(), other.getInstitution().getId())) {
+			return false;
+		}
+		if (!compare(this.department.getId(), other.getDepartment().getId())) {
+			return false;
+		}
+		if (!compare(this.fek, other.getFek())) {
+			return false;
+		}
+		if (!compare(this.fekSubject, other.getFekSubject())) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
 	public boolean isMissingRequiredFields() {
 		if (super.isMissingRequiredFields()) {
+			return true;
+		}
+		if (this.institution == null) {
 			return true;
 		}
 		if (this.department == null) {
@@ -130,9 +157,6 @@ public class ProfessorDomestic extends Professor {
 		if (this.fekSubject == null) {
 			return true;
 		}
-		if (this.institution == null) {
-			return true;
-		}
 		if (this.rank == null) {
 			return true;
 		}
@@ -141,4 +165,5 @@ public class ProfessorDomestic extends Professor {
 		}
 		return false;
 	}
+
 }

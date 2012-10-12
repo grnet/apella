@@ -28,8 +28,8 @@ public class CandidateFile extends FileHeader {
 			put(FileType.TAYTOTHTA, 1);
 			put(FileType.FORMA_SYMMETOXIS, 1);
 			put(FileType.BEBAIWSH_STRATIOTIKIS_THITIAS, 1);
-			put(FileType.PTYXIO, -1);
-			put(FileType.DIMOSIEYSI, -1);
+			put(FileType.PTYXIO, Integer.MAX_VALUE);
+			put(FileType.DIMOSIEYSI, Integer.MAX_VALUE);
 		}
 	});
 
