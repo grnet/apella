@@ -6,10 +6,15 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
+@Table(uniqueConstraints = {
+	@UniqueConstraint(columnNames = {"position_id", "professor_id"})
+})
 public class PositionCommitteeMember implements Serializable {
 
 	private static final long serialVersionUID = -1339853623265264893L;
@@ -28,8 +33,6 @@ public class PositionCommitteeMember implements Serializable {
 
 	@ManyToOne
 	private Professor professor;
-
-	private Boolean confirmedMembership;
 
 	public Long getId() {
 		return id;
@@ -54,14 +57,6 @@ public class PositionCommitteeMember implements Serializable {
 
 	public void setProfessor(Professor professor) {
 		this.professor = professor;
-	}
-
-	public Boolean getConfirmedMembership() {
-		return confirmedMembership;
-	}
-
-	public void setConfirmedMembership(Boolean confirmedMembership) {
-		this.confirmedMembership = confirmedMembership;
 	}
 
 }

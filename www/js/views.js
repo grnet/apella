@@ -2220,7 +2220,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			// Initialize FileUpload widget
 			self.$('input[name=file]').fileupload({
 				dataType : 'json',
-				url : self.model.url() + "?X-Auth-Token=" + App.authToken,
+				url : self.model.url() + "?X-Auth-Token=" + encodeURIComponent(App.authToken),
 				replaceFileInput : false,
 				forceIframeTransport : true,
 				multipart : true,
@@ -2382,7 +2382,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			// Initialize FileUpload widget
 			self.$('input[name=file]').fileupload({
 				dataType : 'json',
-				url : self.collection.url + "?X-Auth-Token=" + App.authToken,
+				url : self.collection.url + "?X-Auth-Token=" + encodeURIComponent(App.authToken),
 				replaceFileInput : false,
 				forceIframeTransport : true,
 				add : function(e, data) {
@@ -3019,7 +3019,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.collection.bind('remove', this.render, this);
 			self.collection.bind('add', this.render, this);
 			
-			self.professors = new Models.Roles();
+			self.professors = new Models.Professors();
 			self.professors.on("role:selected", function(role) {
 				var confirm = new Views.ConfirmView({
 					title : $.i18n.prop('Confirm'),
@@ -3076,11 +3076,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			});
 			self.$("div#committee-members").hide();
 			self.$("div#committee-members").html(self.professorListView.el);
-			self.professors.fetch({
-				data : {
-					"discriminator" : "PROFESSOR_DOMESTIC,PROFESSOR_FOREIGN"
-				}
-			});
+			self.professors.fetch();
 			return self;
 		},
 		

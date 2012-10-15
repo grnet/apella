@@ -680,6 +680,10 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		}
 	});
 	
+	Models.Professors = Models.Roles.extend({
+		url : "/dep/rest/professor"
+	});
+	
 	// File
 	Models.File = Backbone.Model.extend({
 		defaults : {

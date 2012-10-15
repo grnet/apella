@@ -94,7 +94,7 @@ public class ProfessorDomestic extends Professor {
 
 	@Override
 	public void initializeCollections() {
-		this.getFiles().size();
+		super.initializeCollections();
 	}
 
 	@Override

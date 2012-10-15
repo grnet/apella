@@ -59,7 +59,7 @@ public class ProfessorForeign extends Professor {
 
 	@Override
 	public void initializeCollections() {
-		this.getFiles().size();
+		super.initializeCollections();
 	}
 
 	@Override

@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlTransient;
 
 @Entity
@@ -21,6 +22,12 @@ public abstract class Professor extends Role {
 	@OneToMany(mappedBy = "professor", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<ProfessorFile> files = new HashSet<ProfessorFile>();
 
+	@OneToMany(mappedBy = "professor", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<PositionCommitteeMember> committees = new HashSet<PositionCommitteeMember>();
+
+	@Transient
+	private Integer committeesCount;
+
 	public String getProfileURL() {
 		return profileURL;
 	}
@@ -28,8 +35,6 @@ public abstract class Professor extends Role {
 	public void setProfileURL(String profileURL) {
 		this.profileURL = profileURL;
 	}
-
-	/////////////////////////////////////////////////////////////
 
 	@XmlTransient
 	public Set<ProfessorFile> getFiles() {
@@ -40,9 +45,34 @@ public abstract class Professor extends Role {
 		this.files = files;
 	}
 
+	@XmlTransient
+	public Set<PositionCommitteeMember> getCommittees() {
+		return committees;
+	}
+
+	public void setCommittees(Set<PositionCommitteeMember> committees) {
+		this.committees = committees;
+	}
+
+	public Integer getCommitteesCount() {
+		return committeesCount;
+	}
+
+	public void setCommitteesCount(Integer committeesCount) {
+		this.committeesCount = committeesCount;
+	}
+
+	/////////////////////////////////////////////////////
+
 	public void addFile(ProfessorFile professorFile) {
 		this.files.add(professorFile);
 		professorFile.setProfessor(this);
+	}
+
+	@Override
+	public void initializeCollections() {
+		this.getCommittees().size();
+		this.getFiles().size();
 	}
 
 	@Override
