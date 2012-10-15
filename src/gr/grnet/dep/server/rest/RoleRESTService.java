@@ -342,7 +342,11 @@ public class RoleRESTService extends RESTService {
 		if (role == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
+			!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -371,7 +375,11 @@ public class RoleRESTService extends RESTService {
 		if (role == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
+			!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -404,7 +412,11 @@ public class RoleRESTService extends RESTService {
 		if (role == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.role.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
+			!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result

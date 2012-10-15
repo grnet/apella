@@ -1475,29 +1475,91 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		initialize : function() {
 			this.template = _.template(tpl_role);
 			_.bindAll(this, "render", "close");
-			if (this.collection) {
-				this.collection.bind("change", this.render, this);
-				this.collection.bind("reset", this.render, this);
-				this.collection.bind("add", this.render, this);
-				this.collection.bind("remove", this.render, this);
-			} else if (this.model) {
-				this.model.bind("change", this.render, this);
-			}
+			this.model.bind("change", this.render, this);
 		},
 		
 		render : function(eventName) {
 			var self = this;
 			self.$el.empty();
-			if (self.collection) {
-				self.collection.each(function(role) {
-					if (role.get("discriminator") !== "ADMINISTRATOR") {
-						self.$el.append($(self.template(role.toJSON())));
-					}
-				});
-			} else if (self.model) {
-				if (role.get("discriminator") !== "ADMINISTRATOR") {
-					self.$el.append($(self.template(self.model.toJSON())));
+			if (self.model.get("discriminator") !== "ADMINISTRATOR") {
+				self.$el.append($(self.template(self.model.toJSON())));
+				
+				switch (self.model.get("discriminator")) {
+				case "CANDIDATE":
+					var files = new Models.Files();
+					files.url = self.model.url() + "/file";
+					files.fetch({
+						cache : false,
+						success : function(collection, response) {
+							self.addFile(collection, "TAYTOTHTA", self.$("#tautotitaFile"), {
+								withMetadata : false,
+								editable : false
+							});
+							self.addFile(collection, "BEBAIWSH_STRATIOTIKIS_THITIAS", self.$("#bebaiwsiStratiwtikisThitiasFile"), {
+								withMetadata : false,
+								editable : false
+							});
+							self.addFile(collection, "FORMA_SYMMETOXIS", self.$("#formaSymmetoxisFile"), {
+								withMetadata : false,
+								editable : false
+							});
+							self.addFile(collection, "BIOGRAFIKO", self.$("#biografikoFile"), {
+								withMetadata : false,
+								editable : false
+							});
+							self.addFileList(collection, "PTYXIO", self.$("#ptyxioFileList"), {
+								withMetadata : true,
+								editable : false
+							});
+							self.addFileList(collection, "DIMOSIEYSI", self.$("#dimosieusiFileList"), {
+								withMetadata : true,
+								editable : false
+							});
+						}
+					});
+					break;
+				case "PROFESSOR_DOMESTIC":
+					var files = new Models.Files();
+					files.url = self.model.url() + "/file";
+					files.fetch({
+						cache : false,
+						success : function(collection, response) {
+							self.addFile(collection, "PROFILE", self.$("#profileFile"), {
+								withMetadata : false,
+								editable : false
+							});
+							self.addFile(collection, "FEK", self.$("#fekFile"), {
+								withMetadata : false,
+								editable : false
+							});
+							self.addFileList(collection, "DIMOSIEYSI", self.$("#dimosieusiFileList"), {
+								withMetadata : true,
+								editable : false
+							});
+						}
+					});
+					break;
+				case "PROFESSOR_FOREIGN":
+					var files = new Models.Files();
+					files.url = self.model.url() + "/file";
+					files.fetch({
+						cache : false,
+						success : function(collection, response) {
+							self.addFile(collection, "PROFILE", self.$("#profileFile"), {
+								withMetadata : false,
+								editable : false
+							});
+						}
+					});
+					break;
+				case "INSTITUTION_MANAGER":
+					break;
+				case "INSTITUTION_ASSISTANT":
+					break;
+				case "MINISTRY_MANAGER":
+					break;
 				}
+				
 			}
 			return self;
 		},
@@ -2135,7 +2197,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				file : self.model.toJSON()
 			};
 			if (_.isObject(tpl_data.file.currentBody)) {
-				tpl_data.file.currentBody.url = self.model.url() + "/body/" + tpl_data.file.currentBody.id + "?X-Auth-Token=" + App.authToken;
+				tpl_data.file.currentBody.url = self.model.url() + "/body/" + tpl_data.file.currentBody.id + "?X-Auth-Token=" + encodeURIComponent(App.authToken);
 			}
 			self.$el.html(self.template(tpl_data));
 			// Options
@@ -2294,7 +2356,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.collection.each(function(model) {
 				var file = model.toJSON();
 				if (_.isObject(file.currentBody)) {
-					file.currentBody.url = model.url() + "/body/" + file.currentBody.id + "?X-Auth-Token=" + App.authToken;
+					file.currentBody.url = model.url() + "/body/" + file.currentBody.id + "?X-Auth-Token=" + encodeURIComponent(App.authToken);
 				}
 				tpl_data.files.push(file);
 			});
@@ -3026,34 +3088,47 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var self = this;
 			var selectedModel = positionCommitteeMember ? positionCommitteeMember : this.collection.get($(event.currentTarget).data('committeeMemberId'));
 			if (selectedModel) {
+				var user;
+				var userView = undefined;
+				var roles;
+				var roleView = undefined;
+				
 				// Fill Details View:
-				var user = new Models.User({
+				user = new Models.User({
 					"id" : selectedModel.get("professor").user.id
 				});
-				var roles = new Models.Roles();
-				roles.user = selectedModel.get("professor").user.id;
-				var userView = new Views.UserView({
-					editable : false,
-					model : user
-				});
-				var roleView = new Views.RoleView({
-					editable : false,
-					collection : roles
-				});
 				user.fetch({
-					cache : false
-				});
-				roles.fetch({
-					cache : false
+					cache : false,
+					success : function(model, resp) {
+						userView = new Views.UserView({
+							model : user
+						});
+						self.$("div#commiteeMemberDetails div.modal-body").append(userView.render().el);
+					},
 				});
 				
-				self.$("div#commiteeMemberDetails div.modal-body").append(userView.render().el);
-				self.$("div#commiteeMemberDetails div.modal-body").append(roleView.render().el);
+				roles = new Models.Roles();
+				roles.user = selectedModel.get("professor").user.id;
+				roles.fetch({
+					cache : false,
+					success : function(collection, resp) {
+						roleView = new Views.RoleView({
+							model : collection.at(0)
+						});
+						self.$("div#commiteeMemberDetails div.modal-body").append(roleView.render().el);
+					},
+				});
+				
 				self.$("div#commiteeMemberDetails").on("hidden", function() {
-					userView.close();
-					roleView.close();
+					if (userView) {
+						userView.close();
+					}
+					if (roleView) {
+						roleView.close();
+					}
 					self.$("div#commiteeMemberDetails div.modal-body").empty();
 				});
+				
 				self.$("div#commiteeMemberDetails").modal('show');
 			}
 		},
@@ -3407,34 +3482,48 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var self = this;
 			var selectedModel = professor ? professor : this.collection.getByCid($(event.currentTarget).data('modelCid'));
 			if (selectedModel) {
+				var user;
+				var userView = undefined;
+				var roles;
+				var roleView = undefined;
+				
 				// Fill Details View:
-				var user = new Models.User({
+				user = new Models.User({
 					"id" : selectedModel.get("user").id
 				});
-				var roles = new Models.Roles();
-				roles.user = selectedModel.get("user").id;
-				var userView = new Views.UserView({
-					editable : false,
-					model : user
-				});
-				var roleView = new Views.RoleView({
-					editable : false,
-					collection : roles
-				});
 				user.fetch({
-					cache : false
-				});
-				roles.fetch({
-					cache : false
+					cache : false,
+					success : function(model, resp) {
+						userView = new Views.UserView({
+							model : user
+						});
+						self.$("div#professorDetails div.modal-body").prepend(userView.render().el);
+					}
 				});
 				
-				self.$("div#professorDetails div.modal-body").append(userView.render().el);
-				self.$("div#professorDetails div.modal-body").append(roleView.render().el);
+				roles = new Models.Roles();
+				roles.user = selectedModel.get("user").id;
+				
+				roles.fetch({
+					cache : false,
+					success : function(collection, resp) {
+						roleView = new Views.RoleView({
+							model : collection.at(0)
+						});
+						self.$("div#professorDetails div.modal-body").append(roleView.render().el);
+					}
+				});
+				
 				self.$("div#professorDetails").on("hidden", function() {
-					userView.close();
-					roleView.close();
+					if (userView) {
+						userView.close();
+					}
+					if (roleView) {
+						roleView.close();
+					}
 					self.$("div#professorDetails div.modal-body").empty();
 				});
+				
 				self.$("div#professorDetails").modal('show');
 			}
 		},
