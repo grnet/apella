@@ -1,5 +1,5 @@
-define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/position-committee-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html", "text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html", "text!tpl/file-multiple-edit.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file_edit, tpl_home,
-		tpl_login_admin, tpl_login_main, tpl_popup, tpl_position_committee_edit, tpl_position_edit, tpl_position_list, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_file_multiple_edit) {
+define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/position-committee-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html", "text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html", "text!tpl/file-multiple-edit.html", "text!tpl/professor-committees.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm,
+		tpl_file_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_position_committee_edit, tpl_position_edit, tpl_position_list, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_file_multiple_edit, tpl_professor_committees) {
 	
 	var Views = {};
 	
@@ -74,10 +74,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			
 			menuItems.push("profile");
 			if (self.model.hasRoleWithStatus("PROFESSOR_DOMESTIC", "ACTIVE")) {
-				menuItems.push("commities");
+				menuItems.push("professorCommittees");
 			}
 			if (self.model.hasRoleWithStatus("PROFESSOR_FOREIGN", "ACTIVE")) {
-				menuItems.push("commities");
+				menuItems.push("professorCommittees");
 			}
 			if (self.model.hasRoleWithStatus("CANDIDATE", "ACTIVE")) {
 				menuItems.push("candidacies");
@@ -3534,6 +3534,53 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		close : function() {
 			$(this.el).unbind();
 			$(this.el).remove();
+		}
+	});
+	
+	/***************************************************************************
+	 * ProfessorCommitteesView *************************************************
+	 **************************************************************************/
+	Views.ProfessorCommitteesView = Views.BaseView.extend({
+		tagName : "div",
+		
+		initialize : function() {
+			var self = this;
+			_.bindAll(self, "render", "select", "close");
+			self.template = _.template(tpl_professor_committees);
+			self.collection.bind('reset', self.render, self);
+		},
+		
+		events : {
+			"click a#select" : "select"
+		},
+		
+		render : function(eventName) {
+			var self = this;
+			self.$el.html(self.template({
+				committees : self.collection.toJSON()
+			}));
+			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
+				self.$("table").dataTable({
+					"sDom" : "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+					"sPaginationType" : "bootstrap",
+					"oLanguage" : {
+						"sLengthMenu" : "_MENU_ records per page"
+					}
+				});
+			}
+			return self;
+		},
+		
+		select : function(event, positionCommitteeMember) {
+			var self = this;
+			var selectedModel = positionCommitteeMember ? positionCommitteeMember : self.collection.get($(event.currentTarget).data('committeeMemberId'));
+			// TODO: Route to position/id
+		},
+		
+		close : function(eventName) {
+			this.collection.unbind('reset', this.render, this);
+			this.$el.unbind();
+			this.$el.remove();
 		}
 	});
 	

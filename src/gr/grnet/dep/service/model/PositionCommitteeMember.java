@@ -21,6 +21,9 @@ public class PositionCommitteeMember implements Serializable {
 
 	public static final int MAX_MEMBERS = 7;
 
+	public static interface ProfessorCommitteesView {
+	};
+
 	public static interface DetailedPositionCommitteeMemberView {
 	};
 
@@ -42,7 +45,7 @@ public class PositionCommitteeMember implements Serializable {
 		this.id = id;
 	}
 
-	@JsonView({DetailedPositionCommitteeMemberView.class})
+	@JsonView({ProfessorCommitteesView.class, DetailedPositionCommitteeMemberView.class})
 	public Position getPosition() {
 		return position;
 	}
@@ -51,6 +54,7 @@ public class PositionCommitteeMember implements Serializable {
 		this.position = position;
 	}
 
+	@JsonView({DetailedPositionCommitteeMemberView.class})
 	public Professor getProfessor() {
 		return professor;
 	}

@@ -302,7 +302,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			var self = this;
 			
 			_.extend(self, Backbone.Events);
-			_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showAssistantsView", "showPositionView", "showRegisterView", "start");
+			_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showAssistantsView", "showPositionView", "showRegisterView", "showProfessorCommitteesView", "start");
 			$(document).ajaxStart(App.blockUI);
 			$(document).ajaxStop(App.unblockUI);
 			
@@ -334,7 +334,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			"position/:positionId" : "showPositionView",
 			"register" : "showRegisterView",
 			"register/:registerId" : "showRegisterView",
-			"requests" : "showRequestsView"
+			"requests" : "showRequestsView",
+			"professorCommittees" : "showProfessorCommitteesView"
 		},
 		
 		start : function(eventName, authToken) {
@@ -647,7 +648,34 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			});
 			
 			this.currentView = registerListView;
-		}
+		},
+		
+		showProfessorCommitteesView : function() {
+			var self = this;
+			var professorCommittees = new Models.ProfessorCommittees({}, {
+				professor : App.loggedOnUser.get("roles")[0].id,
+			});
+			var professorCommitteesView = new Views.ProfessorCommitteesView({
+				collection : professorCommittees
+			});
+			self.clear();
+			self.refreshBreadcrumb([ $.i18n.prop('menu_professorCommittees') ]);
+			$("#content").html(professorCommitteesView.el);
+			
+			// Refresh professorCommittees from server
+			professorCommittees.fetch({
+				cache : false,
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+			
+			this.currentView = professorCommitteesView;
+		},
 	
 	});
 	

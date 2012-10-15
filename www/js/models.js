@@ -824,6 +824,17 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		}
 	});
 	
+	Models.ProfessorCommittees = Backbone.Collection.extend({
+		professor : undefined,
+		model : Models.PositionCommitteeMember,
+		initialize : function(models, options) {
+			this.professor = options.professor;
+		},
+		url : function() {
+			return "/dep/rest/professor/" + this.professor + "/committees";
+		}
+	});
+	
 	return Models;
 	
 });

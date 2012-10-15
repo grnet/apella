@@ -1,10 +1,13 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.model.PositionCommitteeMember;
+import gr.grnet.dep.service.model.PositionCommitteeMember.ProfessorCommitteesView;
 import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.User;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -86,4 +89,22 @@ public class ProfessorRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
 		}
 	}
+
+	@GET
+	@Path("/{id:[0-9]+}/committees")
+	@JsonView({ProfessorCommitteesView.class})
+	public Collection<PositionCommitteeMember> getCommittees(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long professorId) {
+		User loggedOn = getLoggedOn(authToken);
+		Professor p = em.find(Professor.class, professorId);
+		if (p == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !p.getUser().getId().equals(loggedOn.getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		p.initializeCollections();
+
+		return p.getCommittees();
+	}
+
 }
