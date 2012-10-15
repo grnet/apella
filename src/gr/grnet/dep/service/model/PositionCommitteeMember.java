@@ -31,9 +31,6 @@ public class PositionCommitteeMember implements Serializable {
 
 	private Boolean confirmedMembership;
 
-	//	@OneToMany(mappedBy = "positionCommitteeMember", cascade = CascadeType.ALL, orphanRemoval = true)
-	//	private Set<PositionCommitteeMemberFile> files = new HashSet<PositionCommitteeMemberFile>();
-
 	public Long getId() {
 		return id;
 	}

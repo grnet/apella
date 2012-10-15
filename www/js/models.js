@@ -795,7 +795,10 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 	});
 	
 	Models.PositionCommitteeMember = Backbone.Model.extend({
-		urlRoot : "/dep/rest/position/committee",
+		position : undefined,
+		urlRoot : function() {
+			return "/dep/rest/position/" + this.attributes.position.id + "/committee";
+		},
 		defaults : {
 			id : undefined,
 			position : undefined,
@@ -807,12 +810,13 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 	});
 	
 	Models.PositionCommittee = Backbone.Collection.extend({
+		position : undefined,
 		model : Models.PositionCommitteeMember,
 		initialize : function(models, options) {
 			this.position = options.position;
 		},
 		url : function() {
-			return "/dep/rest/position/committee" + (this.position ? "?position=" + this.position : "");
+			return "/dep/rest/position/" + this.position + "/committee";
 		}
 	});
 	

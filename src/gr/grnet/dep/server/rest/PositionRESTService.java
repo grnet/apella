@@ -6,6 +6,9 @@ import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
 import gr.grnet.dep.service.model.Position.PublicPositionView;
+import gr.grnet.dep.service.model.PositionCommitteeMember;
+import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
+import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.FileBody;
@@ -403,6 +406,87 @@ public class PositionRESTService extends RESTService {
 			return retv;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+		}
+	}
+
+	/************************
+	 * Committee Functions **
+	 ************************/
+
+	@GET
+	@Path("/{id:[0-9][0-9]*}/committee")
+	@JsonView({DetailedPositionCommitteeMemberView.class})
+	public List<PositionCommitteeMember> getPositionCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
+		Position position = getAndCheckPosition(authToken, positionId);
+		for (PositionCommitteeMember member : position.getCommitee()) {
+			member.getProfessor().initializeCollections();
+		}
+		return position.getCommitee();
+	}
+
+	@GET
+	@Path("/{id:[0-9][0-9]*}/committee/{cmId:[0-9][0-9]*}")
+	@JsonView({DetailedPositionCommitteeMemberView.class})
+	public PositionCommitteeMember getPositionCommitteeMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cmId") Long cmId) {
+		PositionCommitteeMember result = em.find(PositionCommitteeMember.class, cmId);
+		if (result == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.commitee.member.id");
+		}
+		if (!result.getPosition().getId().equals(positionId)) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
+		}
+		result.getProfessor().initializeCollections();
+
+		return result;
+	}
+
+	@POST
+	@Path("/{id:[0-9][0-9]*}/committee")
+	@JsonView({DetailedPositionCommitteeMemberView.class})
+	public PositionCommitteeMember createPositionCommitteeMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, PositionCommitteeMember newMembership) {
+		try {
+			Position existingPosition = getAndCheckPosition(authToken, positionId);
+			if (existingPosition.getCommitee().size() >= PositionCommitteeMember.MAX_MEMBERS) {
+				throw new RestException(Status.CONFLICT, "max.members.exceeded");
+			}
+			Professor existingProfessor = em.find(Professor.class, newMembership.getProfessor().getId());
+			if (existingProfessor == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
+			}
+			// Check if already exists:
+			for (PositionCommitteeMember existingMember : existingPosition.getCommitee()) {
+				if (existingMember.getProfessor().getId().equals(existingProfessor.getId())) {
+					throw new RestException(Status.NOT_FOUND, "member.already.exists");
+				}
+			}
+			// Update
+			newMembership.setPosition(existingPosition);
+			newMembership.setProfessor(existingProfessor);
+			existingPosition.getCommitee().add(newMembership);
+			newMembership = em.merge(newMembership);
+			em.flush();
+
+			// Return result
+			newMembership.getProfessor().initializeCollections();
+			return newMembership;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+		}
+	}
+
+	@DELETE
+	@Path("/{id:[0-9][0-9]*}/committee/{cmId:[0-9][0-9]*}")
+	public void removePositionCommiteeMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cmId") Long cmId) {
+		try {
+			PositionCommitteeMember existingCM = getPositionCommitteeMember(authToken, positionId, cmId);
+			// Remove
+			existingCM.getPosition().getCommitee().remove(existingCM);
+			em.remove(existingCM);
+			em.flush();
+		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}

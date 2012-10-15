@@ -1306,7 +1306,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		
 		initialize : function() {
 			this.template = _.template(tpl_user);
-			_.bindAll(this, "render", "status", "close");
+			_.bindAll(this, "render", "close");
 			this.model.bind("change", this.render, this);
 		},
 		
@@ -1474,7 +1474,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		
 		initialize : function() {
 			this.template = _.template(tpl_role);
-			_.bindAll(this, "render", "status", "close");
+			_.bindAll(this, "render", "close");
 			if (this.collection) {
 				this.collection.bind("change", this.render, this);
 				this.collection.bind("reset", this.render, this);
@@ -2694,7 +2694,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				}
 			});
 			
-			// Files:
+			// Dependencies (Files, Committee):
 			if (self.model.has("id")) {
 				var files = new Models.Files();
 				files.url = self.model.url() + "/file";
@@ -2759,6 +2759,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						});
 					}
 				});
+				
+				self.addCommitteeView(self.$("#positionCommittee"));
 			} else {
 				self.$("#prosklisiKosmitoraFile").html($.i18n.prop("PressSave"));
 				self.$("#eisigisiDEPYpopsifiouFileList").html($.i18n.prop("PressSave"));
@@ -2774,6 +2776,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("#aitimaEpitropisProsAksiologitesFile").html($.i18n.prop("PressSave"));
 				self.$("#aksiologisiProtouAksiologitiFileList").html($.i18n.prop("PressSave"));
 				self.$("#aksiologisiDeuterouAksiologitiFileList").html($.i18n.prop("PressSave"));
+				
+				self.$("#positionCommittee").html($.i18n.prop("PressSave"));
 			}
 			// End of files
 			
@@ -2920,6 +2924,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				},
 				collection : committee
 			});
+			
 			$el.html(committeeView.el);
 			committee.fetch({
 				cache : false
