@@ -1,7 +1,36 @@
 <h2><%= $.i18n.prop('VerificationForm') %></h2>
-<ul>
-	<li><%= $.i18n.prop('EMail') %>: <%= email %> </li>
-	<li><%= $.i18n.prop('Name') %>: <%= firstname %> </li>
-	<li><%= $.i18n.prop('Surname') %>: <%= lastname %> </li>
-</ul>
-<p><%= $.i18n.prop('Instructions_Verification') %></p>
+<p><%= $.i18n.prop('Instructions_VerificationSuccess') %></p>
+<h3><%= $.i18n.prop('Account') %></h3>
+<dl class="dl-table">
+	<dt><%= $.i18n.prop('Username') %></dt>
+	<dd><%= username %></dd>
+	<dt><%= $.i18n.prop('Name') %></dt>
+	<dd><%= basicInfo.firstname %></dd>
+	<dt><%= $.i18n.prop('Surname') %></dt>
+	<dd><%= basicInfo.lastname %></dd>
+	<dt><%= $.i18n.prop('NameLatin') %></dt>
+	<dd><%= basicInfoLatin.firstname %></dd>
+	<dt><%= $.i18n.prop('SurnameLatin') %></dt>
+	<dd><%= basicInfoLatin.lastname %></dd>
+</dl>
+<h3><%= $.i18n.prop('ContactInformation') %></h3>
+<dl class="dl-table">
+	<dt><%= $.i18n.prop('EMail') %></dt>
+	<dd><%= contactInfo.email %></dd>
+	<dt><%= $.i18n.prop('Mobile') %></dt>
+	<dd><%= contactInfo.mobile %></dd>
+</dl>
+<h3><%= $.i18n.prop('Address') %></h3>
+<dl class="dl-table">
+	<dt><%= $.i18n.prop('Street') %></dt>
+	<dd><%= contactInfo.address.street %></dd>
+	<dt><%= $.i18n.prop('StreetNumber') %></dt>
+	<dd><%= contactInfo.address.number %></dd>
+	<dt><%= $.i18n.prop('Zip') %></dt>
+	<dd><%= contactInfo.address.zip %></dd>
+	<dt><%= $.i18n.prop('City') %></dt>
+	<dd><%= contactInfo.address.city %></dd>
+	<dt><%= $.i18n.prop('Country') %></dt>
+	<dd><%= contactInfo.address.country %></dd>
+</dl>
+<a href="index.html"><%= $.i18n.prop('Login') %></a>

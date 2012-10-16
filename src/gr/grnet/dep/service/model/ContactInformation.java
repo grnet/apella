@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.model;
 
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
 import javax.validation.Valid;
@@ -21,12 +22,13 @@ public class ContactInformation {
 	@NotNull
 	@NotEmpty
 	@Email
+	@Column(unique = true)
 	private String email;
 
 	@NotNull
 	@Size(min = 10, max = 12)
 	@Digits(fraction = 0, integer = 12)
-	private String phoneNumber;
+	private String mobile;
 
 	public Address getAddress() {
 		return address;
@@ -44,12 +46,12 @@ public class ContactInformation {
 		this.email = email;
 	}
 
-	public String getPhoneNumber() {
-		return phoneNumber;
+	public String getMobile() {
+		return mobile;
 	}
 
-	public void setPhoneNumber(String phoneNumber) {
-		this.phoneNumber = phoneNumber;
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
 	}
 
 }

@@ -1,7 +1,18 @@
-<div class="span6">
-	<h2><%= $.i18n.prop('Login') %></h2>
-	<form class="form-horizontal" onsubmit="return false">
-		<fieldset>
+<div id="logo" class="hero-unit">
+	<div class="row-fluid">
+		<div class="span3">
+			<img src="./css/images/apella_logo.png"/>
+		</div>
+		<div class="span9">
+			<h1 align="center"><%= $.i18n.prop('ApellaTitle') %></h1>
+		</div>
+	</div>
+	
+</div>
+<div class="row-fluid">
+	<form id="loginForm" onsubmit="return false">
+		<div class="span6">
+			<legend><%= $.i18n.prop('Login') %></legend>
 			<div class="control-group">
 				<label class="control-label" for="username"><%= $.i18n.prop('Username') %>:</label>
 				<div class="controls">
@@ -14,19 +25,51 @@
 					<input class="input-xlarge" type="password" name="password" />
 				</div>
 			</div>
-			<div class="form-actions">
-				<a id="save" href="javascript:void(0)" class="btn btn-primary"><%= $.i18n.prop('btn_login') %></a>
+			<div class="control-group">
+				<label class="control-label"></label>
+				<div class="controls">
+					<a id="login" class="btn btn-success"><%= $.i18n.prop('btn_login') %></a>
+				</div>
 			</div>
-		</fieldset>
+			<div class="control-group">
+				<label class="control-label"></label>
+				<div class="controls">
+					<a id="forgotPassword"><%= $.i18n.prop('btn_forgotPassword') %></a>
+				</div>
+				<div class="controls">
+					<a id="haveNotReceivedVerification"><%= $.i18n.prop('btn_haveNotReceivedVerification') %></a>
+				</div>
+			</div>
+		</div>
+		<div class="span6">
+			<legend><%= $.i18n.prop('ShibbolethLogin') %></legend>
+			<div class="control-group">
+				<label class="control-label"></label>
+				<span class="help-block"><%= $.i18n.prop('Instructions_ShibbolethLogin') %></span>
+				<div class="controls">
+					<a href="/dep/rest/user/shibbolethLogin?nextURL=/depui" class="btn btn-success"><%= $.i18n.prop('btn_login') %></a>
+				</div>
+			</div>
+		</div>
 	</form>
 </div>
-<div class="span6">
-	<h2><%= $.i18n.prop('Instructions') %></h2>
-	<p><%= $.i18n.prop('Instructions_Login') %></p>
-	<p>
-		<a href="registration.html"><%= $.i18n.prop('Register') %></a>
-	</p>
-	<p>
-		<a href="javascript:void(0)"><%= $.i18n.prop('ShibbolethLogin') %></a>
-	</p>
+<div class="row-fluid">
+	<form id="resetPasswordForm" class="form-inline" onsubmit="return false">
+		<div class="span12">
+			<span class="help-block"><%= $.i18n.prop('Instructions_ResetPasswordForm') %></span>
+			<label class="control-label" for="username"><%= $.i18n.prop('Username') %>:</label>
+			<input class="input-xlarge" type="email" name="username" />
+			<a id="resetPassword" class="btn btn-warning"><%= $.i18n.prop('btn_resetPassword') %></a>
+		</div>
+	</form>
+</div>
+<div class="row-fluid">
+	<form id="resendVerificationEmailForm" class="form-inline" onsubmit="return false">
+		<div class="span12">
+			<span class="help-block"><%= $.i18n.prop('Instructions_ResendVerificationEmail') %></span>
+			<label class="control-label" for="username"><%= $.i18n.prop('Username') %>:</label>
+			<input class="input-xlarge" type="email" name="username" />
+			<a id="resendVerificationEmail" class="btn btn-warning"><%= $.i18n.prop('btn_resendVerificationEmail') %></a>
+		</div>
+	</form>
 </div>

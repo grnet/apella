@@ -18,7 +18,7 @@
 
 	<!-- Application server specific configuration -->
 	<property name="jboss-spec.dir" value="${basedir}/jboss" />
-	<property name="jboss-spec.conf.dir" value="${jboss-spec.dir}/conf" />
+	<property name="jboss-spec.conf.dir" value="${jboss-spec.dir}/bin" />
 	<property name="jboss-spec.modules.dir" value="${jboss-spec.dir}/modules" />
 	<property name="jboss-spec.standalone.configuration.dir" value="${jboss-spec.dir}/standalone/configuration" />
 	<property name="jboss-spec.standalone.deployments.dir" value="${jboss-spec.dir}/standalone/deployments" />
@@ -48,8 +48,12 @@
 		<!-- Include everything and get it over with! -->
 		<fileset dir="${jboss.modules.dir}" includes="**/*.jar" />
 
-		<pathelement location="${jboss-spec.deploy.dir}/postgresql-8.4-701.jdbc4.jar" />
+		<pathelement location="${jboss-spec.deploy.dir}/postgresql-9.1-902.jdbc4.jar" />
 		<fileset dir="${ear.lib.dir}" includes="**/*.jar" />
+	</path>
+
+	<path id="requirejs.class.path">
+		<fileset dir="${basedir}/rjs" includes="**/*.jar" />
 	</path>
 
 	<target name="check-dependencies" description="Checks if all dependencies are present">
@@ -69,6 +73,9 @@
 
 	<target name="install" depends="fetch-dependencies" description="Installs the configuration files of the application server">
 		<!--Install the app configuration-->
+		<copy todir="${jboss.bin.dir}" overwrite="true" failonerror="false">
+			<fileset dir="${jboss-spec.conf.dir}" />
+		</copy>
 		<copy todir="${jboss.modules.dir}" overwrite="true" failonerror="false">
 			<fileset dir="${jboss-spec.modules.dir}" />
 		</copy>
@@ -87,6 +94,15 @@
 		</javac>
 	</target>
 
+	<target name="optimizejs" description="Optimize js files">
+		<java classname="org.mozilla.javascript.tools.shell.Main" fork="yes">
+			<arg value="${basedir}/rjs/r.js" />
+			<arg value="-o" />
+			<arg value="${basedir}/app.build.js" />
+			<classpath refid="requirejs.class.path" />
+		</java>
+	</target>
+
 	<target name="package-ejb" description="Package up the EJB classes">
 		<jar destfile="${build.dir}/ejbs.jar">
 			<metainf dir="${src.dir}/META-INF" />
@@ -95,6 +111,7 @@
 			</zipfileset>
 			<zipfileset dir="${src.dir}">
 				<include name="import.sql" />
+				<include name="**/*.properties" />
 			</zipfileset>
 		</jar>
 	</target>
@@ -118,7 +135,6 @@
 			</zipfileset>
 			<zipfileset dir="${build.dir}">
 				<include name="ejbs.jar" />
-				<include name="${adminapp.dist.war}" />
 				<include name="${rest.dist.war}" />
 				<include name="${services.dist.sar}" />
 			</zipfileset>
@@ -151,10 +167,29 @@
 		<delete file="${jboss.standalone.deployments.dir}/${dist.ear}" />
 	</target>
 
+	<target name="undeploy-www" description="Undeploy the client from the server">
+		<delete dir="${jboss.standalone.deployments.dir}/${www.dist.war}" />
+		<delete file="${jboss.standalone.deployments.dir}/${www.dist.war}.deployed" />
+	</target>
+
 	<target name="release">
 		<antcall target="clean" />
+		<antcall target="release-ear" />
+		<antcall target="release-www" />
+	</target>
+
+	<target name="release-ear">
 		<property name="draftCompile" value="" />
-		<antcall target="deploy" />
+		<antcall target="deploy-ear" />
+	</target>
+
+	<target name="release-www" depends="optimizejs">
+		<sync todir="${jboss.standalone.deployments.dir}/${www.dist.war}">
+			<fileset dir="${build.dir}/www">
+				<exclude name="**/tpl/*" />
+			</fileset>
+		</sync>
+		<touch file="${jboss.standalone.deployments.dir}/depui.war.dodeploy" />
 	</target>
 
 	<target name="clean" description="Delete the contents of the bin and www directories">
@@ -163,17 +198,6 @@
 
 	<target name="clean-dependencies" depends="clean" description="Delete all downloaded dependencies">
 		<delete dir="${deps.dir}" />
-	</target>
-
-	<target name="run" description="Starts the server" depends="deploy">
-		<exec executable="${jboss.bin.dir}/run.sh" osfamily="unix">
-			<arg line="${jboss.args}" />
-		</exec>
-		<exec executable="cmd" osfamily="windows">
-			<arg value="/c" />
-			<arg value="${jboss.bin.dir}/standalone.bat" />
-			<arg line="${jboss.args}" />
-		</exec>
 	</target>
 
 </project>

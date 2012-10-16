@@ -7,19 +7,11 @@ import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.CandidateCommittee;
 import gr.grnet.dep.service.model.CandidateCommittee.SimpleCandidateCommitteeView;
 import gr.grnet.dep.service.model.CandidateCommitteeMembership;
-import gr.grnet.dep.service.model.ElectoralBodyMembership;
-import gr.grnet.dep.service.model.FileHeader;
-import gr.grnet.dep.service.model.FileHeader.DetailedFileHeaderView;
-import gr.grnet.dep.service.model.FileHeader.SimpleFileHeaderView;
-import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Professor;
-import gr.grnet.dep.service.model.RecommendatoryCommitteeMembership;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
-import java.io.IOException;
 import java.util.Date;
-import java.util.List;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
@@ -27,8 +19,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
+import javax.persistence.PersistenceException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -36,25 +27,17 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.commons.fileupload.FileUploadException;
 import org.codehaus.jackson.map.annotate.JsonView;
 
 @Path("/candidacy")
 @Stateless
-@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class CandidacyRESTService extends RESTService {
 
-	@PersistenceContext(unitName = "depdb")
+	@PersistenceContext(unitName = "apelladb")
 	private EntityManager em;
 
-	@SuppressWarnings("unused")
 	@Inject
 	private Logger log;
 
@@ -62,22 +45,21 @@ public class CandidacyRESTService extends RESTService {
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedCandidacyView.class})
 	public Candidacy get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+		User loggedOn = getLoggedOn(authToken);
 		try {
-			Candidacy c = (Candidacy) em.createQuery(
+			Candidacy candidacy = (Candidacy) em.createQuery(
 				"from Candidacy c left join fetch c.files " +
 					"where c.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
-			Candidate cy = (Candidate) em.createQuery(
+			Candidate candidate = (Candidate) em.createQuery(
 				"from Candidate c where c.id=:id")
-				.setParameter("id", c.getCandidate())
+				.setParameter("id", candidacy.getCandidate())
 				.getSingleResult();
-
-			User loggedOn = getLoggedOn(authToken);
-			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser() != loggedOn.getId()) {
+			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && candidate.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
-			return c;
+			return candidacy;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
@@ -93,7 +75,7 @@ public class CandidacyRESTService extends RESTService {
 				.getSingleResult();
 
 			User loggedOn = getLoggedOn(authToken);
-			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser() != loggedOn.getId()) {
+			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			candidacy.setDate(new Date());
@@ -102,6 +84,8 @@ public class CandidacyRESTService extends RESTService {
 			return candidacy;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
+		} catch (PersistenceException e) {
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
 	}
 
@@ -120,7 +104,7 @@ public class CandidacyRESTService extends RESTService {
 				.getSingleResult();
 
 			User loggedOn = getLoggedOn(authToken);
-			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser() != loggedOn.getId()) {
+			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 
@@ -129,6 +113,8 @@ public class CandidacyRESTService extends RESTService {
 			return existingCandidacy;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
+		} catch (PersistenceException e) {
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
 	}
 
@@ -146,7 +132,7 @@ public class CandidacyRESTService extends RESTService {
 				.getSingleResult();
 
 			User loggedOn = getLoggedOn(authToken);
-			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser() != loggedOn.getId()) {
+			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 
@@ -154,10 +140,11 @@ public class CandidacyRESTService extends RESTService {
 			em.remove(existingCandidacy);
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
+		} catch (PersistenceException e) {
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	@GET
 	@Path("/{id:[0-9][0-9]*}/committee")
 	@JsonView({SimpleCandidateCommitteeView.class})
@@ -172,41 +159,10 @@ public class CandidacyRESTService extends RESTService {
 				"from Candidate c where c.id=:id")
 				.setParameter("id", c.getCandidate())
 				.getSingleResult();
-			Position position = em.find(Position.class, c.getPosition());
-			// Get RecommendatoryCommittee members
-			List<RecommendatoryCommitteeMembership> rc = (List<RecommendatoryCommitteeMembership>) em.createQuery(
-				"select rc.members " +
-					"from RecommendatoryCommittee rc " +
-					"where rc.position=:position")
-				.setParameter("position", position)
-				.getResultList();
-			// Get ElectoralBody members
-			List<ElectoralBodyMembership> eb = (List<ElectoralBodyMembership>) em.createQuery(
-				"select eb.members " +
-					"from ElectoralBody eb " +
-					"where eb.position=:position")
-				.setParameter("position", position)
-				.getResultList();
 
 			User loggedOn = getLoggedOn(authToken);
-			boolean ok = false;
-			if (loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) || cy.getUser() == loggedOn.getId()) {
-				ok = true;
-			}
-			for (RecommendatoryCommitteeMembership rcm : rc) {
-				if (rcm.getProfessor().getUser().equals(loggedOn.getId())) {
-					ok = true;
-					break;
-				}
-			}
-			for (ElectoralBodyMembership ebm : eb) {
-				if (ebm.getProfessor().getUser().equals(loggedOn.getId())) {
-					ok = true;
-					break;
-				}
-			}
 
-			if (!ok) {
+			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 
@@ -216,9 +172,13 @@ public class CandidacyRESTService extends RESTService {
 				.setParameter("candidacy", c)
 				.getSingleResult();
 
+			em.flush();
 			return cc;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
 	}
 
@@ -240,7 +200,7 @@ public class CandidacyRESTService extends RESTService {
 
 			User loggedOn = getLoggedOn(authToken);
 			boolean ok = false;
-			if (loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) || cy.getUser() == loggedOn.getId()) {
+			if (loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) || cy.getUser().getId() == loggedOn.getId()) {
 				ok = true;
 			}
 			if (!ok) {
@@ -268,13 +228,16 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
 			}
 			em.persist(cc);
-			em.flush();
 			cc.addMember(existingProfessor);
 
+			em.flush();
 			return cc;
 
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
 	}
 
@@ -297,7 +260,7 @@ public class CandidacyRESTService extends RESTService {
 
 			User loggedOn = getLoggedOn(authToken);
 			boolean ok = false;
-			if (loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) || cy.getUser() == loggedOn.getId()) {
+			if (loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) || cy.getUser().getId() == loggedOn.getId()) {
 				ok = true;
 			}
 			if (!ok) {
@@ -320,9 +283,13 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.NOT_FOUND, "wrong.membership.id");
 			}
 
+			em.flush();
 			return cc;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
 	}
 
@@ -338,55 +305,6 @@ public class CandidacyRESTService extends RESTService {
 			}
 		}
 		throw new RestException(Status.NOT_FOUND, "membership.not.found");
-	}
-
-	@GET
-	@Path("/{id:[0-9][0-9]*}/committee/{professorId:[0-9][0-9]*}/report")
-	@JsonView({DetailedFileHeaderView.class})
-	public FileHeader getCommitteeMembershipReport(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("professorId") long professorId) {
-		CandidateCommitteeMembership ccm = getCommitteeMembership(authToken, id, professorId);
-		FileHeader file = ccm.getReport();
-		if (file != null) {
-			file.getBodies().size();
-		}
-		return file;
-	}
-
-	@POST
-	@Path("/{id:[0-9][0-9]*}/committee/{professorId:[0-9][0-9]*}/report")
-	@Consumes("multipart/form-data")
-	@Produces({MediaType.APPLICATION_JSON})
-	@JsonView({SimpleFileHeaderView.class})
-	public FileHeader postFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("professorId") long professorId, @Context HttpServletRequest request) throws FileUploadException, IOException {
-		User loggedOn = getLoggedOn(authToken);
-		CandidateCommitteeMembership ccm = getCommitteeMembership(authToken, id, professorId);
-		FileHeader file = ccm.getReport();
-
-		//TODO: Security / lifecycle checks
-
-		file = uploadFile(loggedOn, request, ccm.getReport());
-		ccm.setReport(file);
-		em.persist(ccm);
-
-		return file;
-	}
-
-	@DELETE
-	@Path("/{id:[0-9][0-9]*}/committee/{professorId:[0-9][0-9]*}/report")
-	@JsonView({DetailedFileHeaderView.class})
-	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("professorId") long professorId, @Context HttpServletRequest request) throws FileUploadException, IOException {
-		CandidateCommitteeMembership ccm = getCommitteeMembership(authToken, id, professorId);
-		FileHeader file = ccm.getReport();
-
-		//TODO: Security / lifecycle checks
-
-		Response retv = deleteFileBody(file);
-
-		if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
-			ccm.setReport(null);
-		}
-
-		return retv;
 	}
 
 }

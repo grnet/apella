@@ -13,8 +13,12 @@ import javax.xml.bind.annotation.XmlTransient;
 @Entity
 public class CandidateCommitteeMembership implements Serializable {
 
+	private static final long serialVersionUID = -8436764731554690766L;
+
 	@Embeddable
 	public static class CandidateCommitteeMembershipId implements Serializable {
+
+		private static final long serialVersionUID = -3146562158610027791L;
 
 		@Column(name = "candidateCommittee_id")
 		private Long candidateCommittee_id;
@@ -73,8 +77,8 @@ public class CandidateCommitteeMembership implements Serializable {
 	@JoinColumn(name = "professor_id", insertable = false, updatable = false)
 	private Professor professor;
 
-	@ManyToOne
-	private FileHeader report;
+	//	@OneToMany(mappedBy = "candidateCommitteeMembership", cascade = CascadeType.ALL, orphanRemoval = true)
+	//	private Set<CandidateCommitteeMembershipFile> files = new HashSet<CandidateCommitteeMembershipFile>();
 
 	public CandidateCommitteeMembership() {
 	}
@@ -118,14 +122,6 @@ public class CandidateCommitteeMembership implements Serializable {
 
 	public void setProfessor(Professor professor) {
 		this.professor = professor;
-	}
-
-	public FileHeader getReport() {
-		return report;
-	}
-
-	public void setReport(FileHeader report) {
-		this.report = report;
 	}
 
 }

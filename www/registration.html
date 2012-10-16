@@ -7,50 +7,17 @@
 <meta name="description" content="">
 <meta name="author" content="">
 
-
-<link rel="icon" href="images/favicon.gif" type="image/x-icon" />
-<link rel="shortcut icon" href="images/favicon.gif" type="image/x-icon" />
 <!--[if lt IE 9]>
 	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 <![endif]-->
-<link rel="stylesheet" type="text/css" href="lib/jquery.ui/css/jquery-ui-1.8.20.custom.css" />
+<link rel="stylesheet" type="text/css" href="lib/jquery.ui/css/jquery-ui.css" />
 <link href="lib/bootstrap/css/bootstrap.css" rel="stylesheet">
 <link href="lib/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
-<link href="lib/plupload/jquery.plupload.queue/css/jquery.plupload.queue.css" rel="stylesheet">
+<link href="lib/jquery.file.upload/css/jquery.fileupload-ui.css" rel="stylesheet">
+<link href="lib/jquery.dataTables/css/DT_bootstrap.css" rel="stylesheet">
 <link rel="stylesheet" type="text/css" href="css/styles.css" />
 
-<script type="text/javascript" src="lib/jquery-1.7.2.js"></script>
-<script type="text/javascript" src="lib/jquery.ui/jquery-ui-1.8.20.custom.js"></script>
-<script type="text/javascript" src="lib/bootstrap/bootstrap.js"></script>
-<script type="text/javascript" src="lib/jquery.i18n.properties-1.0.9.js"></script>
-<script type="text/javascript" src="lib/jquery.validate.js"></script>
-
-<script type="text/javascript" src="lib/plupload/plupload.full.js"></script>
-<script type="text/javascript" src="lib/plupload/jquery.plupload.queue/jquery.plupload.queue.js"></script>
-
-<script type="text/javascript" src="lib/underscore.js"></script>
-<script type="text/javascript" src="lib/backbone.js"></script>
-<script type="text/javascript" src="js/utils.js"></script>
-<script type="text/javascript" src="js/main.js"></script>
-<script type="text/javascript" src="js/models.js"></script>
-<script type="text/javascript" src="js/views.js"></script>
-<script>
-	$(document).ready(function() {
-		tpl.loadTemplates([ 'user-registration-select', 'user-registration', 'user-verification', 'popup' ], function() {
-			console.log("Loaded templates");
-			jQuery.i18n.properties({
-				name : 'messages',
-				path : 'locale/',
-				mode : 'map',
-				callback : function() {
-					console.log("Loaded locales");
-					App.registrationRouter = new App.RegistrationRouter();
-				}
-			});
-			
-		});
-	});
-</script>
+<script data-main="registration" src="lib/require/require.js"></script>
 
 </head>
 
@@ -59,13 +26,14 @@
 	<div class="navbar navbar-fixed-top">
 		<div class="navbar-inner">
 			<div class="container-fluid">
-				<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"> <span class="icon-bar"></span> <span class="icon-bar"></span><span class="icon-bar"></span>
-				</a> <a class="brand" href="#">ΑΠΕΛΛΑ</a>
+				<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"> <span class="icon-bar"></span> <span class="icon-bar"></span><span
+					class="icon-bar"></span>
+				</a> <a class="brand" href="#">Μητρώο Πιστοποίησης Καθηγητών/Ερευνητών και Υποψηφίων</a>
+				<div id="language" class="btn-group pull-right" data-toggle="buttons-radio"></div>
 			</div>
 		</div>
 		<div id="alerts"></div>
 	</div>
-
 	<!-- Container -->
 	<div class="container-fluid">
 		<div class="row-fluid">
@@ -78,11 +46,10 @@
 			<div id="content" class="span9"></div>
 			<!--/row-->
 		</div>
-		<hr>
-		<footer>
-			<p>&copy; ΑΠΕΛΛΑ 2012</p>
-		</footer>
 	</div>
-
+	<!-- Footer -->
+	<div class="footer">
+		<p>&copy; ΑΠΕΛΛΑ 2012</p>
+	</div>
 </body>
 </html>

@@ -7,10 +7,104 @@ body {
 	padding: 9px 0;
 }
 
+a.help:hover {
+	cursor: help;
+}
+
+.file-table {
+	width: 0px;
+}
+
+.file-table td {
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+/* Footer
+-------------------------------------------------- */
+.footer {
+	padding: 70px 60px;
+	margin-top: 70px;
+	border-top: 1px solid #e5e5e5;
+	background-color: #f5f5f5;
+}
+
+.footer p {
+	margin-bottom: 0;
+	color: #777;
+}
+
+.footer-links {
+	margin: 10px 0;
+}
+
+.footer-links li {
+	display: inline;
+	margin-right: 10px;
+}
+
 div.popup {
 	position: fixed;
 	left: 0;
 	right: 0;
 	top: 5%;
 	z-index: 100px;
+}
+
+dl.dl-table {
+	margin: 1em 0;
+	padding: 0;
+}
+
+.dl-table dt {
+	width: 200px;
+	margin: 0;
+	padding: 5px;
+	font-weight: bold;
+}
+
+.dl-table dd {
+	margin: 0;
+	padding: 5px;
+}
+
+/* Custom Icons */
+.icon-flag-gr {
+	background-image: url("images/flag_greece.png");
+	background-position: center center;
+}
+
+.icon-flag-uk {
+	background-image: url("images/flag_united_kingdom.png");
+	background-position: center center;
+}
+
+/* File Table */
+.file-table {
+	width: auto;
+	margin-bottom: 10px;
+	border-left: 1px solid #dddddd;
+	border-right: 1px solid #dddddd;
+	border-top: 1px solid #dddddd;
+	border-bottom: 1px solid #dddddd;
+	border-collapse: collapse;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+}
+
+.file-table th,.file-table td {
+	padding: 8px;
+	line-height: 20px;
+	text-align: left;
+	vertical-align: top;
+	border-bottom: 1px solid #dddddd;
+}
+
+.file-table th {
+	font-weight: bold;
+}
+
+.file-table thead th {
+	vertical-align: bottom;
 }

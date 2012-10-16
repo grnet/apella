@@ -1,87 +1,40 @@
-<form class="form-horizontal" onsubmit="return false">
-	<fieldset>
-		<legend><%= $.i18n.prop('Account') %></legend>
-		<div class="control-group">
-			<label class="control-label" for="username"><%= $.i18n.prop('Username') %>:</label>
-			<div class="controls">
-				<input class="input-xlarge" type="email" name="username" value="<%= username %>"/>
-			</div>
-		</div>
-		<div class="control-group">
-			<label class="control-label" for="firstname"><%= $.i18n.prop('Name') %>:</label>
-			<div class="controls">
-				<input class="input-xlarge" type="text" name="firstname" value="<%= basicInfo.firstname %>"/>
-			</div>
-		</div>
-		<div class="control-group">
-			<label class="control-label" for="lastname"><%= $.i18n.prop('Surname') %>:</label>
-			<div class="controls">
-				<input class="input-xlarge" type="text" name="lastname" value="<%= basicInfo.lastname %>"/>
-			</div>
-		</div>
-		<div class="control-group">
-			<label class="control-label" for="password"><%= $.i18n.prop('Password') %>:</label>
-			<div class="controls">
-				<input class="input-xlarge" type="password" name="password" />
-			</div>
-		</div>
-		<div class="control-group">
-			<label class="control-label" for="confirm_password"><%= $.i18n.prop('ConfirmPassword') %>:</label>
-			<div class="controls">
-				<input class="input-xlarge" type="password" name="confirm_password" />
-			</div>
-		</div>
-	</fieldset>
-	<fieldset>
-		<legend><%= $.i18n.prop('ContactInformation') %></legend>
-		<div class="control-group">
-			<label class="control-label" for="email"><%= $.i18n.prop('EMail') %>:</label>
-			<div class="controls">
-				<input class="input-xlarge" type="text" name="email" value="<%= contactInfo.email %>"/>
-			</div>
-		</div>
-		<div class="control-group">
-			<label class="control-label" for="phoneNumber"><%= $.i18n.prop('Phone') %>:</label>
-			<div class="controls">
-				<input class="input-xlarge" type="text" name="phoneNumber" value="<%= contactInfo.phoneNumber %>"/>
-			</div>
-		</div>
-	</fieldset>
-	<fieldset>
-		<legend><%= $.i18n.prop('Address') %></legend>
-		<div class="control-group">
-			<label class="control-label" for="address_street"><%= $.i18n.prop('Street') %>:</label>
-			<div class="controls">
-				<input class="input-xlarge" type="text" name="address_street" value="<%= contactInfo.address.street %>"/>
-			</div>
-		</div>
-		<div class="control-group">
-			<label class="control-label" class="control-label" for="address_number"><%= $.i18n.prop('StreetNumber') %>:</label>
-			<div class="controls">
-				<input class="input-xlarge" type="text" name="address_number" value="<%= contactInfo.address.number %>"/>
-			</div>
-		</div>
-		<div class="control-group">
-			<label class="control-label" for="address_zip"><%= $.i18n.prop('Zip') %>:</label>
-			<div class="controls">
-				<input class="input-xlarge" type="text" name="address_zip" value="<%= contactInfo.address.zip %>"/>
-			</div>
-		</div>
-		<div class="control-group">
-			<label class="control-label" for="address_city"><%= $.i18n.prop('City') %>:</label>
-			<div class="controls">
-				<input class="input-xlarge" type="text" name="address_city" value="<%= contactInfo.address.city %>"/>
-			</div>
-		</div>
-		<div class="control-group">
-			<label class="control-label" for="address_country"><%= $.i18n.prop('Country') %>:</label>
-			<div class="controls">
-				<input class="input-xlarge" type="text" name="address_country" value="<%= contactInfo.address.country %>"/>
-			</div>
-		</div>
-		<div class="form-actions">
-			<a id="save" href="javascript:void(0)" class="btn btn-primary"><i class="icon-ok icon-white"></i><%= $.i18n.prop('btn_save') %></a>
-			<a id="cancel" href="javascript:void(0)" class="btn"><i class="icon-arrow-left"></i><%= $.i18n.prop('btn_cancel') %></a>
-		</div>
-	</fieldset>
-</form>
+<h4><%= $.i18n.prop('Account') %></h4>
+<dl class="dl-horizontal">
+	<dt><%= $.i18n.prop('UserStatus') %></dt>
+	<dd><%= $.i18n.prop('status' + status) %></dd>
+	<dt><%= $.i18n.prop('Username') %></dt>
+	<dd><%= username %></dd>
+	<dt><%= $.i18n.prop('Name') %></dt>
+	<dd><%= basicInfo.firstname %></dd>
+	<dt><%= $.i18n.prop('Surname') %></dt>
+	<dd><%= basicInfo.lastname %></dd>
+	<dt><%= $.i18n.prop('FatherName') %></dt>
+	<dd><%= basicInfo.fathername %></dd>
+	<dt><%= $.i18n.prop('NameLatin') %></dt>
+	<dd><%= basicInfoLatin.firstname %></dd>
+	<dt><%= $.i18n.prop('SurnameLatin') %></dt>
+	<dd><%= basicInfoLatin.lastname %></dd>
+	<dt><%= $.i18n.prop('FatherNameLatin') %></dt>
+	<dd><%= basicInfoLatin.fathername %></dd>
+</dl>
+<h4><%= $.i18n.prop('ContactInformation') %></h4>
+<dl class="dl-horizontal">
+	<dt><%= $.i18n.prop('EMail') %></dt>
+	<dd><%= contactInfo.email %></dd>
+	<dt><%= $.i18n.prop('Mobile') %></dt>
+	<dd><%= contactInfo.mobile %></dd>
+</dl>
+<h4><%= $.i18n.prop('Address') %></h4>
+<dl class="dl-horizontal">
+	<dt><%= $.i18n.prop('Street') %></dt>
+	<dd><%= contactInfo.address.street %></dd>
+	<dt><%= $.i18n.prop('StreetNumber') %></dt>
+	<dd><%= contactInfo.address.number %></dd>
+	<dt><%= $.i18n.prop('Zip') %></dt>
+	<dd><%= contactInfo.address.zip %></dd>
+	<dt><%= $.i18n.prop('City') %></dt>
+	<dd><%= contactInfo.address.city %></dd>
+	<dt><%= $.i18n.prop('Country') %></dt>
+	<dd><%= contactInfo.address.country %></dd>
+</dl>
+<hr/>

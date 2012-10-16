@@ -1,13 +1,10 @@
 package gr.grnet.dep.service.model;
 
 public enum PositionStatus {
-	ANAMONI_EGKRISIS(10),
-	APORRIPTEA(20),
-	EGKEKRIMENI(30),
-	ENTAGMENI(40),
-	ANOIXTI(50),
-	KLEISTI(60),
-	STELEXOMENI(70);
+	ENTAGMENI(10),
+	ANOIXTI(20),
+	KLEISTI(30),
+	STELEXOMENI(40);
 
 	/**
 	 * Internal storage of priority field value, please see the Enum spec for

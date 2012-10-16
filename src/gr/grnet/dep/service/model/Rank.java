@@ -15,9 +15,12 @@ public class Rank {
 	@GeneratedValue
 	private Long id;
 
-	@SuppressWarnings("unused")
 	@Version
 	private int version;
+
+	@NotNull
+	@NotEmpty
+	private String category;
 
 	@NotNull
 	@NotEmpty
@@ -37,6 +40,14 @@ public class Rank {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void setType(String category) {
+		this.category = category;
 	}
 
 }

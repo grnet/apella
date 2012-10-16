@@ -22,10 +22,10 @@ public class ProfessorForeign extends Professor {
 
 	private String institution;
 
-	@ManyToOne(optional = false, cascade = CascadeType.ALL)
+	@ManyToOne
 	private Rank rank;
 
-	@ManyToOne(optional = false, cascade = CascadeType.ALL)
+	@ManyToOne(cascade = CascadeType.ALL)
 	private Subject subject;
 
 	public ProfessorForeign() {
@@ -59,6 +59,7 @@ public class ProfessorForeign extends Professor {
 
 	@Override
 	public void initializeCollections() {
+		super.initializeCollections();
 	}
 
 	@Override
@@ -66,10 +67,29 @@ public class ProfessorForeign extends Professor {
 		super.copyFrom(otherRole);
 		ProfessorForeign pf = (ProfessorForeign) otherRole;
 		setInstitution(pf.getInstitution());
-		setPosition(pf.getPosition());
-		getRank().setName(pf.getRank().getName());
+		setRank(pf.getRank());
+		if (getSubject() == null) {
+			setSubject(new Subject());
+		}
 		getSubject().setName(pf.getSubject().getName());
 		return this;
+	}
+
+	@Override
+	public boolean isMissingRequiredFields() {
+		if (super.isMissingRequiredFields()) {
+			return true;
+		}
+		if (this.institution == null) {
+			return true;
+		}
+		if (this.rank == null) {
+			return true;
+		}
+		if (this.subject == null) {
+			return true;
+		}
+		return false;
 	}
 
 }

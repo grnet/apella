@@ -23,19 +23,19 @@ public class ProfessorDomestic extends Professor {
 	@ManyToOne
 	private Institution institution;
 
-	@ManyToOne(optional = false, cascade = CascadeType.ALL)
+	@ManyToOne
+	private Department department;
+
+	@ManyToOne
 	private Rank rank;
 
-	@ManyToOne(optional = false, cascade = CascadeType.ALL)
+	@ManyToOne(cascade = CascadeType.ALL)
 	private Subject subject;
 
 	private String fek;
 
-	@ManyToOne(optional = false, cascade = CascadeType.ALL)
+	@ManyToOne(cascade = CascadeType.ALL)
 	private Subject fekSubject;
-
-	@ManyToOne
-	private FileHeader fekFile;
 
 	public ProfessorDomestic() {
 		super();
@@ -66,20 +66,20 @@ public class ProfessorDomestic extends Professor {
 		this.fek = fek;
 	}
 
-	public FileHeader getFekFile() {
-		return fekFile;
-	}
-
-	public void setFekFile(FileHeader fekFile) {
-		this.fekFile = fekFile;
-	}
-
 	public Institution getInstitution() {
 		return institution;
 	}
 
 	public void setInstitution(Institution institution) {
 		this.institution = institution;
+	}
+
+	public Department getDepartment() {
+		return department;
+	}
+
+	public void setDepartment(Department department) {
+		this.department = department;
 	}
 
 	public Subject getFekSubject() {
@@ -94,6 +94,7 @@ public class ProfessorDomestic extends Professor {
 
 	@Override
 	public void initializeCollections() {
+		super.initializeCollections();
 	}
 
 	@Override
@@ -101,12 +102,68 @@ public class ProfessorDomestic extends Professor {
 		super.copyFrom(otherRole);
 		ProfessorDomestic pd = (ProfessorDomestic) otherRole;
 		setInstitution(pd.getInstitution());
-		setPosition(pd.getPosition());
-		getRank().setName(pd.getRank().getName());
+		setDepartment(pd.getDepartment());
+		setRank(pd.getRank());
+		if (getSubject() == null) {
+			setSubject(new Subject());
+		}
 		getSubject().setName(pd.getSubject().getName());
 		setFek(pd.getFek());
+		if (getFekSubject() == null) {
+			setFekSubject(new Subject());
+		}
 		getFekSubject().setName(pd.getFekSubject().getName());
 		return this;
+	}
+
+	@Override
+	public boolean compareCriticalFields(Role role) {
+		if (!super.compareCriticalFields(role)) {
+			return false;
+		}
+		if (!(role instanceof ProfessorDomestic)) {
+			return false;
+		}
+		ProfessorDomestic other = (ProfessorDomestic) role;
+		if (!compare(this.institution.getId(), other.getInstitution().getId())) {
+			return false;
+		}
+		if (!compare(this.department.getId(), other.getDepartment().getId())) {
+			return false;
+		}
+		if (!compare(this.fek, other.getFek())) {
+			return false;
+		}
+		if (!compare(this.fekSubject, other.getFekSubject())) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public boolean isMissingRequiredFields() {
+		if (super.isMissingRequiredFields()) {
+			return true;
+		}
+		if (this.institution == null) {
+			return true;
+		}
+		if (this.department == null) {
+			return true;
+		}
+		if (this.fek == null) {
+			return true;
+		}
+		if (this.fekSubject == null) {
+			return true;
+		}
+		if (this.rank == null) {
+			return true;
+		}
+		if (this.subject == null) {
+			return true;
+		}
+		return false;
 	}
 
 }

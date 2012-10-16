@@ -1,21 +1,34 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.model.Address;
+import gr.grnet.dep.service.model.Department;
+import gr.grnet.dep.service.model.InstitutionAssistant;
+import gr.grnet.dep.service.model.InstitutionManager;
+import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.DetailedUserView;
-import gr.grnet.dep.service.model.User.SimpleUserView;
 import gr.grnet.dep.service.model.User.UserStatus;
+import gr.grnet.dep.service.model.UserRegistrationType;
+import gr.grnet.dep.service.util.MailClient;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
+import javax.inject.Inject;
+import javax.mail.MessagingException;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
+import javax.persistence.Query;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -39,23 +52,68 @@ import org.codehaus.jackson.map.annotate.JsonView;
 
 @Path("/user")
 @Stateless
-@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class UserRESTService extends RESTService {
 
+	@Inject
+	private Logger log;
+
 	@GET
-	@JsonView({SimpleUserView.class})
+	@JsonView({DetailedUserView.class})
 	@SuppressWarnings("unchecked")
-	public List<User> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
-		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient-priviledges");
+	public List<User> getAll(
+		@HeaderParam(TOKEN_HEADER) String authToken,
+		@QueryParam("username") String username,
+		@QueryParam("firstname") String firstname,
+		@QueryParam("lastname") String lastname,
+		@QueryParam("status") String status,
+		@QueryParam("role") String role,
+		@QueryParam("roleStatus") String roleStatus,
+		@QueryParam("manager") Long managerId) {
+
+		getLoggedOn(authToken);
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct u from User u " +
+			"left join fetch u.roles r " +
+			"where u.username like :username " +
+			"and u.basicInfo.firstname like :firstname " +
+			"and u.basicInfo.lastname like :lastname ");
+		if (status != null && !status.isEmpty()) {
+			sb.append("and u.status = :status ");
 		}
-		return (List<User>) em.createQuery(
-			"select distinct u from User u " +
-				"left join fetch u.roles " +
-				"order by u.basicInfo.lastname, u.basicInfo.firstname")
-			.getResultList();
+		if (role != null && !role.isEmpty()) {
+			sb.append("and r.discriminator = :discriminator ");
+		}
+		if (roleStatus != null && !roleStatus.isEmpty()) {
+			sb.append("and r.status = :roleStatus ");
+		}
+		if (managerId != null) {
+			sb.append("and (u.id in (select ia.user.id from InstitutionAssistant ia where ia.manager.id = :managerId )) ");
+		}
+		sb.append("order by u.basicInfo.lastname, u.basicInfo.firstname");
+
+		Query query = em.createQuery(sb.toString())
+			.setParameter("username", "%" + (username != null ? username : "") + "%")
+			.setParameter("firstname", "%" + (firstname != null ? firstname : "") + "%")
+			.setParameter("lastname", "%" + (lastname != null ? lastname : "") + "%");
+		if (status != null && !status.isEmpty()) {
+			query = query.setParameter("status", UserStatus.valueOf(status));
+		}
+		if (role != null && !role.isEmpty()) {
+			query = query.setParameter("discriminator", RoleDiscriminator.valueOf(role));
+		}
+		if (roleStatus != null && !roleStatus.isEmpty()) {
+			query = query.setParameter("roleStatus", RoleStatus.valueOf(roleStatus));
+		}
+		if (managerId != null) {
+			query = query.setParameter("managerId", managerId);
+		}
+
+		List<User> result = query.getResultList();
+		for (User u : result) {
+			u.initializeCollections();
+		}
+		return result;
 	}
 
 	@GET
@@ -72,6 +130,7 @@ public class UserRESTService extends RESTService {
 			}
 		}
 		User u = super.getLoggedOn(authToken);
+		u.initializeCollections();
 		return Response.status(200)
 			.header(TOKEN_HEADER, u.getAuthToken())
 			.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, Integer.MAX_VALUE, false))
@@ -82,18 +141,16 @@ public class UserRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedUserView.class})
-	public User get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
-		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
-			loggedOn.getId() != id) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
+	public User get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id) throws RestException {
+		getLoggedOn(authToken);
 		try {
-			return (User) em.createQuery(
+			User u = (User) em.createQuery(
 				"from User u left join fetch u.roles " +
 					"where u.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
+			u.initializeCollections();
+			return u;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
@@ -102,24 +159,68 @@ public class UserRESTService extends RESTService {
 
 	@POST
 	@JsonView({DetailedUserView.class})
-	public User create(User user) {
+	public User create(@HeaderParam(TOKEN_HEADER) String authToken, User user) {
 		try {
-
-			Set<Role> roles = user.getRoles();
-
+			User loggedOn = null;
+			//1. Validate
+			if (user.getRoles().isEmpty() || user.getRoles().size() > 1) {
+				throw new RestException(Status.CONFLICT, "one.role.required");
+			}
+			Role firstRole = user.getRoles().iterator().next();
+			switch (firstRole.getDiscriminator()) {
+				case PROFESSOR_DOMESTIC:
+					firstRole.setStatus(RoleStatus.UNAPPROVED);
+					break;
+				case PROFESSOR_FOREIGN:
+					firstRole.setStatus(RoleStatus.UNAPPROVED);
+					break;
+				case INSTITUTION_MANAGER:
+					firstRole.setStatus(RoleStatus.UNAPPROVED);
+					break;
+				case CANDIDATE:
+					firstRole.setStatus(RoleStatus.UNAPPROVED);
+					break;
+				case INSTITUTION_ASSISTANT:
+					loggedOn = getLoggedOn(authToken);
+					if (!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_MANAGER)) {
+						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+					}
+					((InstitutionAssistant) firstRole).setManager(((InstitutionManager) loggedOn.getRole(RoleDiscriminator.INSTITUTION_MANAGER)));
+					firstRole.setStatus(RoleStatus.ACTIVE);
+					break;
+				case MINISTRY_MANAGER:
+					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+				case ADMINISTRATOR:
+					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+			}
+			//2. Update
+			user.setRegistrationType(UserRegistrationType.REGISTRATION_FORM);
 			user.setRegistrationDate(new Date());
 			user.setStatus(UserStatus.UNVERIFIED);
 			user.setStatusDate(new Date());
-			user.setPassword(User.encodePassword(user.getPassword()));
-			user.setVerificationNumber(System.currentTimeMillis());
+			user.setPasswordSalt(User.generatePasswordSalt());
+			user.setPassword(User.encodePassword(user.getPassword(), user.getPasswordSalt()));
+			user.setVerificationNumber(user.generateVerificationNumber());
 			user.setRoles(new HashSet<Role>());
 			em.persist(user);
-			for (Role r : roles) {
-				user.addRole(r);
-			}
+
+			firstRole.setStatusDate(new Date());
+			user.addRole(firstRole);
+
 			em.flush(); //To catch the exception
+
+			// Send Verification E-Mail
+			try {
+				MailClient.sendVerificationEmail(user);
+			} catch (MessagingException e) {
+				logger.log(Level.SEVERE, "Error sending verification email to user " + user.getUsername(), e);
+			}
+
+			user.initializeCollections();
 			return user;
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
+			sc.setRollbackOnly();
 			throw new RestException(Status.FORBIDDEN, "username.not.available");
 		}
 	}
@@ -127,10 +228,9 @@ public class UserRESTService extends RESTService {
 	@PUT
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedUserView.class})
-	public User update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, User user) {
+	public User update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, User user) {
 		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
-			loggedOn.getId() != id) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(id)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 
@@ -138,33 +238,48 @@ public class UserRESTService extends RESTService {
 		if (existingUser == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
+		try {
 
-		// Copy User Fields
-		if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-			existingUser.setPassword(User.encodePassword(user.getPassword()));
+			// Copy User Fields
+			if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+				existingUser.setPasswordSalt(User.generatePasswordSalt());
+				existingUser.setPassword(User.encodePassword(user.getPassword(), existingUser.getPasswordSalt()));
+			}
+			existingUser.setBasicInfo(user.getBasicInfo());
+			existingUser.setBasicInfoLatin(user.getBasicInfoLatin());
+			existingUser.setContactInfo(user.getContactInfo());
+
+			em.flush();
+			existingUser.initializeCollections();
+			return existingUser;
+		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
-		existingUser.setBasicInfo(user.getBasicInfo());
-		existingUser.setContactInfo(user.getContactInfo());
-
-		return existingUser;
 	}
 
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}")
-	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
 		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
-			loggedOn.getId() != id) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
 		User existingUser = em.find(User.class, id);
 		if (existingUser == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		//TODO: Validate:
-
-		//Do Delete:
-		em.remove(existingUser);
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
+			(existingUser.hasRole(RoleDiscriminator.INSTITUTION_ASSISTANT) && !((InstitutionAssistant) existingUser.getRole(RoleDiscriminator.INSTITUTION_ASSISTANT)).getManager().getUser().getId().equals(loggedOn.getId()))) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		try {
+			//Do Delete:
+			em.remove(existingUser);
+			em.flush();
+		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+		}
 	}
 
 	@PUT
@@ -182,10 +297,10 @@ public class UserRESTService extends RESTService {
 
 			switch (u.getStatus()) {
 				case ACTIVE:
-					if (u.getPassword().equals(User.encodePassword(password))) {
-						//TODO: Create Token: 
-						u.setAuthToken("" + System.currentTimeMillis());
+					if (u.getPassword().equals(User.encodePassword(password, u.getPasswordSalt()))) {
+						u.setAuthToken(u.generateAuthenticationToken());
 						u = em.merge(u);
+						u.initializeCollections();
 						return Response.status(200)
 							.header(TOKEN_HEADER, u.getAuthToken())
 							.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, Integer.MAX_VALUE, false))
@@ -199,6 +314,136 @@ public class UserRESTService extends RESTService {
 			}
 		} catch (NoResultException e) {
 			throw new RestException(Status.UNAUTHORIZED, "wrong.username");
+		}
+	}
+
+	@GET
+	@Path("/shibbolethLogin")
+	@Produces("text/html")
+	public Response shibbolethLogin(@Context HttpServletRequest request) {
+		// 1. Read Attributes from request:
+		String personalUniqueCode = readShibbolethField(request, "HTTP_SHIB_PERSONALUNIQUECODE", "Shib-PersonalUniqueCode");
+		String name = readShibbolethField(request, "HTTP_SHIB_GIVENNAME", "Shib-givenName");
+		String lastName = readShibbolethField(request, "HTTP_SHIB_SN", "Shib-sn");
+		String affiliation = readShibbolethField(request, "HTTP_SHIB_AFFILIATION", "Shib-Affiliation");
+		String email = readShibbolethField(request, "HTTP_SHIB_MAIL", "Shib-mail");
+		String eduBranch = readShibbolethField(request, "HTTP_SHIB_UNDERGRADUATEBRANCH", "Shib-UndergraduateBranch");
+		Long departmentId = (eduBranch != null && eduBranch.matches("(\\d+)")) ? Long.valueOf(eduBranch) : null;
+		URI nextURL;
+		try {
+			nextURL = new URI(request.getParameter("nextURL") == null ? "" : request.getParameter("nextURL"));
+		} catch (URISyntaxException e1) {
+			throw new RestException(Status.BAD_REQUEST, "malformed.next.url");
+		}
+
+		// 2. Validate
+		if (personalUniqueCode == null || name == null || lastName == null || affiliation == null || email == null || eduBranch == null || departmentId == null) {
+			throw new RestException(Status.BAD_REQUEST, "shibboleth.fields.error");
+		}
+		if (!affiliation.equals("Professor") || !affiliation.equals("Researcher")) {
+			throw new RestException(Status.UNAUTHORIZED, "wrong.affiliation");
+		}
+		Department department = em.find(Department.class, departmentId);
+		if (department == null) {
+			throw new RestException(Status.BAD_REQUEST, "wrong.department.id");
+		}
+
+		// 3. Find User
+		User u;
+		try {
+			u = (User) em.createQuery("")
+				.setParameter("shibPersonalUniqueCode", personalUniqueCode)
+				.getSingleResult();
+			u.setUsername(email);
+			u.setAuthToken(u.generateAuthenticationToken());
+		} catch (NoResultException e) {
+			// Create User from Shibboleth Fields 
+			u = new User();
+			u.setRegistrationType(UserRegistrationType.SHIBBOLETH);
+			u.setUsername(email);
+			u.setShibPersonalUniqueCode(personalUniqueCode);
+			u.getBasicInfo().setFirstname(name);
+			u.getBasicInfo().setLastname(lastName);
+			u.getContactInfo().setAddress(new Address());
+			u.setRegistrationDate(new Date());
+			u.setStatus(UserStatus.ACTIVE); // We trust shibboleth data, and lock changes from beginning
+			u.setStatusDate(new Date());
+
+			ProfessorDomestic pd = new ProfessorDomestic();
+			pd.setDepartment(department);
+			pd.setInstitution(department.getInstitution());
+			pd.setStatus(RoleStatus.ACTIVE); // We trust shibboleth data, and lock changes from beginning
+			pd.setStatusDate(new Date());
+			//TODO: Shibboleth login: Get Rank from affiliation
+			u.addRole(pd);
+		}
+		// 4. Persist User
+		try {
+			u = em.merge(u);
+			em.flush();
+		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+		}
+
+		return Response.status(200)
+			.header(TOKEN_HEADER, u.getAuthToken())
+			.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, Integer.MAX_VALUE, false))
+			.location(nextURL)
+			.entity(u)
+			.build();
+	}
+
+	@PUT
+	@Path("/resetPassword")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response resetPassword(@FormParam("username") String username) {
+		try {
+			User u = (User) em.createQuery(
+				"from User u " +
+					"left join fetch u.roles " +
+					"where u.username = :username")
+				.setParameter("username", username)
+				.getSingleResult();
+			// Reset password
+			String newPassword = User.generatePassword();
+			u.setPasswordSalt(User.generatePasswordSalt());
+			u.setPassword(User.encodePassword(newPassword, u.getPasswordSalt()));
+			// Send email
+			try {
+				MailClient.sendPasswordResetEmail(u, newPassword);
+			} catch (MessagingException e) {
+				logger.log(Level.SEVERE, "Error sending reset password email to user " + u.getUsername(), e);
+				sc.setRollbackOnly();
+				throw new RestException(Status.INTERNAL_SERVER_ERROR, "cannot.persist");
+			}
+			return Response.ok().build();
+		} catch (NoResultException e) {
+			throw new RestException(Status.NOT_FOUND, "wrong.username");
+		}
+	}
+
+	@PUT
+	@Path("/sendVerificationEmail")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response sendVerificationEmail(@FormParam("username") String username) {
+		try {
+			User u = (User) em.createQuery(
+				"from User u " +
+					"left join fetch u.roles " +
+					"where u.username = :username")
+				.setParameter("username", username)
+				.getSingleResult();
+			// Send email
+			try {
+				MailClient.sendVerificationEmail(u);
+			} catch (MessagingException e) {
+				logger.log(Level.SEVERE, "Error sending reset password email to user " + u.getUsername(), e);
+			}
+			return Response.ok().build();
+		} catch (NoResultException e) {
+			throw new RestException(Status.NOT_FOUND, "wrong.username");
 		}
 	}
 
@@ -222,34 +467,51 @@ public class UserRESTService extends RESTService {
 					// Verify
 					u.setStatus(UserStatus.ACTIVE);
 					u.setStatusDate(new Date());
+					u.setVerificationNumber(null);
+
+					em.flush();
+					u.initializeCollections();
 					return u;
 				default:
 					throw new RestException(Status.FORBIDDEN, "account.status." + u.getStatus().toString().toLowerCase());
 			}
+
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.username");
+		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
 	}
 
 	@PUT
 	@Path("/{id:[0-9][0-9]*}/status")
 	@JsonView({DetailedUserView.class})
-	public User updateStatus(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @QueryParam("status") String status) {
+	public User updateStatus(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, User requestUser) {
 		User loggedOn = getLoggedOn(authToken);
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
 			User u = (User) em.createQuery(
-				"from User u where u.id = :id")
+				"from User u " +
+					"left join fetch u.roles " +
+					"where u.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
-			u.setStatus(UserStatus.valueOf(status));
+			u.setStatus(requestUser.getStatus());
+			u.setStatusDate(new Date());
+			em.flush();
+
+			u.initializeCollections();
 			return u;
-		} catch (IllegalArgumentException e) {
-			throw new RestException(Status.BAD_REQUEST);
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
+		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
 	}
 

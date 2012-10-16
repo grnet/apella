@@ -1,14 +1,18 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.file.FileType;
+import gr.grnet.dep.service.model.file.PositionFile;
+import gr.grnet.dep.service.util.SimpleDateDeserializer;
+import gr.grnet.dep.service.util.SimpleDateSerializer;
+
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
@@ -19,29 +23,24 @@ import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonView;
 import org.hibernate.validator.constraints.NotEmpty;
 
 @Entity
 public class Position {
-	
-	// define 3 json views
-	public static interface IdPositionView {
-	}; // shows only id view of a Candidacy
 
-	public static interface SimplePositionView extends IdPositionView {
-	}; // shows a summary view of a Candidacy
-
-	public static interface DetailedPositionView extends SimplePositionView {
+	public static interface PublicPositionView {
 	};
-	
-	
+
+	public static interface DetailedPositionView extends PublicPositionView {
+	};
 
 	@Id
 	@GeneratedValue
 	private Long id;
 
-	@SuppressWarnings("unused")
 	@Version
 	private int version;
 
@@ -56,36 +55,39 @@ public class Position {
 	@ManyToOne(optional = false)
 	private Department department;
 
-	@ManyToOne(optional = false)
+	@ManyToOne(cascade = CascadeType.ALL)
 	private Subject subject;
 
-	@NotNull
-	@Enumerated(EnumType.ORDINAL)
-	private PositionStatus status = PositionStatus.ANAMONI_EGKRISIS;
-
-	@NotNull
-	@Enumerated(EnumType.ORDINAL)
-	private PositionStatus deanStatus = PositionStatus.ANAMONI_EGKRISIS;
-
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "position")
-	private Set<Candidacy> candidacies = new HashSet<Candidacy>();
-
-	@ManyToOne
-	private FileHeader prosklisiKosmitora;
-
-	@ManyToOne
-	private FileHeader recommendatoryReport;
-
-	@ManyToOne
-	private FileHeader recommendatoryReportSecond;
+	private String fek;
 
 	@Temporal(TemporalType.DATE)
 	private Date fekSentDate;
 
-	private String fekNumber;
+	@Temporal(TemporalType.DATE)
+	private Date openingDate; // Έναρξη υποβολών
 
-	@ManyToOne
-	private FileHeader fek;
+	@Temporal(TemporalType.DATE)
+	private Date closingDate; // Λήξη υποβολών
+
+	@Temporal(TemporalType.DATE)
+	private Date committeeMeetingDate; // Ημερομηνία Συνεδρίασης επιτροπής
+
+	@Temporal(TemporalType.DATE)
+	private Date nominationCommitteeConvergenceDate; // Ημερομηνία σύγκλισης επιτροπής για επιλογή
+
+	@Temporal(TemporalType.DATE)
+	private Date nominationToETDate; // Ημερομηνία αποστολής διορισμού στο Εθνικό Τυπογραφείο
+
+	private String nominationFEK; //ΦΕΚ Διορισμού
+
+	@OneToMany(mappedBy = "position", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<PositionFile> files = new HashSet<PositionFile>();
+
+	@OneToMany(mappedBy = "position")
+	private List<PositionCommitteeMember> commitee;
+
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "position")
+	private Set<Candidacy> candidacies = new HashSet<Candidacy>();
 
 	public Long getId() {
 		return id;
@@ -95,7 +97,6 @@ public class Position {
 		this.id = id;
 	}
 
-	@JsonView(SimplePositionView.class)
 	public String getName() {
 		return name;
 	}
@@ -104,7 +105,6 @@ public class Position {
 		this.name = name;
 	}
 
-	@JsonView(SimplePositionView.class)
 	public String getDescription() {
 		return description;
 	}
@@ -113,7 +113,6 @@ public class Position {
 		this.description = description;
 	}
 
-	@JsonView(SimplePositionView.class)
 	public Department getDepartment() {
 		return department;
 	}
@@ -122,7 +121,6 @@ public class Position {
 		this.department = department;
 	}
 
-	@JsonView(SimplePositionView.class)
 	public Subject getSubject() {
 		return subject;
 	}
@@ -131,13 +129,93 @@ public class Position {
 		this.subject = subject;
 	}
 
-	@JsonView(SimplePositionView.class)
-	public PositionStatus getStatus() {
-		return status;
+	public String getFek() {
+		return fek;
 	}
 
-	public void setStatus(PositionStatus status) {
-		this.status = status;
+	public void setFek(String fek) {
+		this.fek = fek;
+	}
+
+	@JsonSerialize(using = SimpleDateSerializer.class)
+	public Date getFekSentDate() {
+		return fekSentDate;
+	}
+
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
+	public void setFekSentDate(Date fekSentDate) {
+		this.fekSentDate = fekSentDate;
+	}
+
+	@JsonSerialize(using = SimpleDateSerializer.class)
+	public Date getOpeningDate() {
+		return openingDate;
+	}
+
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
+	public void setOpeningDate(Date openingDate) {
+		this.openingDate = openingDate;
+	}
+
+	@JsonSerialize(using = SimpleDateSerializer.class)
+	public Date getClosingDate() {
+		return closingDate;
+	}
+
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
+	public void setClosingDate(Date closingDate) {
+		this.closingDate = closingDate;
+	}
+
+	@JsonView({DetailedPositionView.class})
+	@JsonSerialize(using = SimpleDateSerializer.class)
+	public Date getCommitteeMeetingDate() {
+		return committeeMeetingDate;
+	}
+
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
+	public void setCommitteeMeetingDate(Date committeeMeetingDate) {
+		this.committeeMeetingDate = committeeMeetingDate;
+	}
+
+	@JsonView({DetailedPositionView.class})
+	@JsonSerialize(using = SimpleDateSerializer.class)
+	public Date getNominationCommitteeConvergenceDate() {
+		return nominationCommitteeConvergenceDate;
+	}
+
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
+	public void setNominationCommitteeConvergenceDate(Date nominationCommitteeConvergenceDate) {
+		this.nominationCommitteeConvergenceDate = nominationCommitteeConvergenceDate;
+	}
+
+	@JsonView({DetailedPositionView.class})
+	@JsonSerialize(using = SimpleDateSerializer.class)
+	public Date getNominationToETDate() {
+		return nominationToETDate;
+	}
+
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
+	public void setNominationToETDate(Date nominationToETDate) {
+		this.nominationToETDate = nominationToETDate;
+	}
+
+	@JsonView({DetailedPositionView.class})
+	public String getNominationFEK() {
+		return nominationFEK;
+	}
+
+	public void setNominationFEK(String nominationFEK) {
+		this.nominationFEK = nominationFEK;
+	}
+
+	@XmlTransient
+	public Set<PositionFile> getFiles() {
+		return files;
+	}
+
+	public void setFiles(Set<PositionFile> files) {
+		this.files = files;
 	}
 
 	@XmlTransient
@@ -149,67 +227,58 @@ public class Position {
 		this.candidacies = candidacies;
 	}
 
-	@JsonView(SimplePositionView.class)
-	public FileHeader getRecommendatoryReport() {
-		return recommendatoryReport;
+	@XmlTransient
+	public List<PositionCommitteeMember> getCommitee() {
+		return commitee;
 	}
 
-	public void setRecommendatoryReport(FileHeader recommendatoryReport) {
-		this.recommendatoryReport = recommendatoryReport;
+	public void setCommitee(List<PositionCommitteeMember> commitee) {
+		this.commitee = commitee;
 	}
 
-	@JsonView(SimplePositionView.class)
-	public FileHeader getRecommendatoryReportSecond() {
-		return recommendatoryReportSecond;
+	public void addFile(PositionFile file) {
+		this.files.add(file);
+		file.setPosition(this);
 	}
 
-	public void setRecommendatoryReportSecond(FileHeader recommendatoryReportSecond) {
-		this.recommendatoryReportSecond = recommendatoryReportSecond;
+	public PositionStatus getStatus() {
+		if (openingDate == null || closingDate == null) {
+			return PositionStatus.ENTAGMENI;
+		}
+		Date now = new Date();
+		if (now.compareTo(openingDate) < 0) {
+			return PositionStatus.ENTAGMENI;
+		} else if (now.compareTo(closingDate) < 0) {
+			return PositionStatus.ANOIXTI;
+		} else if (isCompletedWithNomination()) {
+			return PositionStatus.STELEXOMENI;
+		} else {
+			return PositionStatus.KLEISTI;
+		}
 	}
 
-	@JsonView(SimplePositionView.class)
-	public PositionStatus getDeanStatus() {
-		return deanStatus;
+	private boolean isCompletedWithNomination() {
+		boolean hasPraksiDiorismou = false;
+		for (PositionFile file : files) {
+			if (file.getType().equals(FileType.PRAKSI_DIORISMOU)) {
+				hasPraksiDiorismou = true;
+				break;
+			}
+		}
+		return hasPraksiDiorismou || (nominationFEK != null);
 	}
 
-	public void setDeanStatus(PositionStatus deanStatus) {
-		this.deanStatus = deanStatus;
+	public void copyFrom(Position position) {
+		this.name = position.getName();
+		this.description = position.getDescription();
+		this.subject.setName(position.getSubject().getName());
+		this.fek = position.getFek();
+		this.fekSentDate = position.getFekSentDate();
+		this.openingDate = position.getOpeningDate();
+		this.closingDate = position.getClosingDate();
+		this.committeeMeetingDate = position.getCommitteeMeetingDate();
+		this.nominationCommitteeConvergenceDate = position.getNominationCommitteeConvergenceDate();
+		this.nominationToETDate = position.getNominationToETDate();
+		this.nominationFEK = position.getNominationFEK();
 	}
-
-	@JsonView(SimplePositionView.class)
-	public FileHeader getProsklisiKosmitora() {
-		return prosklisiKosmitora;
-	}
-
-	public void setProsklisiKosmitora(FileHeader prosklisiKosmitora) {
-		this.prosklisiKosmitora = prosklisiKosmitora;
-	}
-
-	@JsonView(SimplePositionView.class)
-	public Date getFekSentDate() {
-		return fekSentDate;
-	}
-
-	public void setFekSentDate(Date fekSentDate) {
-		this.fekSentDate = fekSentDate;
-	}
-
-	@JsonView(SimplePositionView.class)
-	public String getFekNumber() {
-		return fekNumber;
-	}
-
-	public void setFekNumber(String fekNumber) {
-		this.fekNumber = fekNumber;
-	}
-
-	@JsonView(SimplePositionView.class)
-	public FileHeader getFek() {
-		return fek;
-	}
-
-	public void setFek(FileHeader fek) {
-		this.fek = fek;
-	}
-
 }

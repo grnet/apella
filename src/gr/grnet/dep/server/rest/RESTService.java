@@ -1,29 +1,43 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.model.FileBody;
-import gr.grnet.dep.service.model.FileHeader;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.UserStatus;
+import gr.grnet.dep.service.model.file.FileBody;
+import gr.grnet.dep.service.model.file.FileHeader;
+import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.Resource;
+import javax.ejb.EJBException;
+import javax.ejb.SessionContext;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.ext.ContextResolver;
+import javax.ws.rs.ext.Providers;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.fileupload.FileItem;
@@ -31,14 +45,25 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 
+@Produces({MediaType.APPLICATION_JSON})
+@Consumes({MediaType.APPLICATION_JSON})
 public class RESTService {
 
-	@PersistenceContext(unitName = "depdb")
+	@Resource
+	SessionContext sc;
+
+	@PersistenceContext(unitName = "apelladb")
 	protected EntityManager em;
 
 	@Inject
 	protected Logger logger;
+
+	@Context
+	protected Providers providers;
 
 	/**
 	 * The default MIME type for files without an explicit one.
@@ -77,6 +102,26 @@ public class RESTService {
 			return user;
 		} catch (NoResultException e) {
 			throw new RestException(Status.UNAUTHORIZED, "invalid.token");
+		}
+	}
+
+	protected String readShibbolethField(HttpServletRequest request, String attributeName, String headerName) {
+		try {
+			Object value = request.getAttribute(attributeName);
+			String field = null;
+			if (value == null || value.toString().isEmpty()) {
+				value = request.getHeader(headerName);
+			}
+			if (value != null && !value.toString().isEmpty()) {
+				field = new String(value.toString().getBytes("ISO-8859-1"), "UTF-8");
+				if (field.indexOf(";") != -1) {
+					field = field.substring(0, field.indexOf(";"));
+				}
+			}
+			return field;
+		} catch (UnsupportedEncodingException e) {
+			staticLogger.log(Level.SEVERE, "decodeAttribute: ", e);
+			return null;
 		}
 	}
 
@@ -124,85 +169,78 @@ public class RESTService {
 		if (dotPoint > -1) {
 			extension = originalName.substring(dotPoint);
 		}
-		String subPath = getSubdirForId(id) + File.separator;
+		String subPath = getSubdirForId(id);
 		// Create if it does not exist
 		new File(savePath + File.separator + subPath).mkdirs();
 
 		return subPath + File.separator + prefix + "-" + id + extension;
 	}
 
-	public FileHeader uploadFile(User loggedOn, HttpServletRequest request, FileHeader header) throws FileUploadException, IOException
-	{
-		FileBody body = null;
-		DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
-		ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
-		servletFileUpload.setSizeMax(30 * 1024 * 1024);
-		servletFileUpload.setHeaderEncoding("UTF-8");
-		@SuppressWarnings("unchecked")
-		List<FileItem> fileItems = servletFileUpload.parseRequest(request);
+	public List<FileItem> readMultipartFormData(HttpServletRequest request) {
+		try {
+			DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
+			ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
+			servletFileUpload.setSizeMax(30 * 1024 * 1024);
+			servletFileUpload.setHeaderEncoding("UTF-8");
+			@SuppressWarnings("unchecked")
+			List<FileItem> fileItems = servletFileUpload.parseRequest(request);
+			return fileItems;
+		} catch (FileUploadException e) {
+			logger.log(Level.SEVERE, "Error encountered while parsing the request", e);
+			throw new RestException(Status.INTERNAL_SERVER_ERROR, "generic");
+		}
+	}
 
-		for (FileItem fileItem : fileItems) {
-			if (fileItem.isFormField()) {
-				logger.info("Incoming text data: '" + fileItem.getFieldName() + "'=" + fileItem.getString("UTF-8") + "\n");
-			} else {
-				body = new FileBody();
-				if (header == null) {
-					// Create
-					header = new FileHeader();
-					header.setOwner(loggedOn);
-					//header.setName(name);
-					//header.setDescription(description);
+	public void saveFile(User loggedOn, List<FileItem> fileItems, FileHeader header) throws IOException {
+
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(header.getOwner().getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		try {
+			for (FileItem fileItem : fileItems) {
+				if (fileItem.isFormField()) {
+					logger.info("Incoming text data: '" + fileItem.getFieldName() + "'=" + fileItem.getString("UTF-8") + "\n");
+					if (fileItem.getFieldName().equals("type")) {
+						header.setType(FileType.valueOf(fileItem.getString("UTF-8")));
+					} else if (fileItem.getFieldName().equals("name")) {
+						header.setName(fileItem.getString("UTF-8"));
+					} else if (fileItem.getFieldName().equals("description")) {
+						header.setDescription(fileItem.getString("UTF-8"));
+					}
 				} else {
-					// Update
-					if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(header.getOwner().getId()))
-						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-				}
-				header.addBody(body);
-				em.persist(header);
-				em.persist(body);
-				em.flush(); // Get an id
+					FileBody body = new FileBody();
+					header.addBody(body);
+					em.persist(header);
+					em.persist(body);
+					em.flush(); // Get an id
 
-				String filename = fileItem.getName();
-				String newFilename = suggestFilename(body.getId(), "upl", filename);
-				File file = new File(savePath + newFilename);
-				StringBuilder sb = (new StringBuilder("Saving file. Original filename='"))
-					.append(filename)
-					.append("', filename='")
-					.append(file.getCanonicalPath())
-					.append("' ");
+					String filename = fileItem.getName();
+					String newFilename = suggestFilename(body.getId(), "upl", filename);
+					File file = new File(savePath + newFilename);
 
-				String mimeType = fileItem.getContentType();
-				if (StringUtils.isEmpty(mimeType) || "application/octet-stream".equals(mimeType)
-					|| "application/download".equals(mimeType) || "application/force-download".equals(mimeType)
-					|| "octet/stream".equals(mimeType) || "application/unknown".equals(mimeType)) {
-					body.setMimeType(identifyMimeType(filename));
-				} else {
-					body.setMimeType(mimeType);
-				}
-				body.setOriginalFilename(fileItem.getName());
-				body.setStoredFilePath(newFilename);
-				body.setFileSize(fileItem.getSize());
-				body.setDate(new Date());
+					String mimeType = fileItem.getContentType();
+					if (StringUtils.isEmpty(mimeType) || "application/octet-stream".equals(mimeType)
+						|| "application/download".equals(mimeType) || "application/force-download".equals(mimeType)
+						|| "octet/stream".equals(mimeType) || "application/unknown".equals(mimeType)) {
+						body.setMimeType(identifyMimeType(filename));
+					} else {
+						body.setMimeType(mimeType);
+					}
+					body.setOriginalFilename(fileItem.getName());
+					body.setStoredFilePath(newFilename);
+					body.setFileSize(fileItem.getSize());
+					body.setDate(new Date());
 
-				try {
 					fileItem.write(file);
-
-					sb.append("OK.");
-					logger.info(sb.toString());
-				} catch (FileUploadException ex) {
-					sb.append("ERROR");
-					logger.info(sb.toString());
-					logger.log(Level.SEVERE, "Error encountered while parsing the request", ex);
-					throw new RestException(Status.INTERNAL_SERVER_ERROR, "generic");
-				} catch (Exception e) {
-					sb.append("ERROR");
-					logger.info(sb.toString());
-					logger.log(Level.SEVERE, "Error encountered while uploading file", e);
-					throw new RestException(Status.INTERNAL_SERVER_ERROR, "generic");
 				}
 			}
+		} catch (FileUploadException ex) {
+			logger.log(Level.SEVERE, "Error encountered while parsing the request", ex);
+			throw new RestException(Status.INTERNAL_SERVER_ERROR, "generic");
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "Error encountered while uploading file", e);
+			throw new RestException(Status.INTERNAL_SERVER_ERROR, "generic");
 		}
-		return header;
 	}
 
 	/**
@@ -227,8 +265,7 @@ public class RESTService {
 		} catch (PersistenceException e) {
 			// Assume it's a constraint violation
 			logger.info("Could not delete FileBody id=" + fb.getId() + ". Constraint violation.");
-			return Response.status(Status.CONFLICT).
-				header(ERROR_CODE_HEADER, "file.in.use").build();
+			return Response.status(Status.CONFLICT).header(ERROR_CODE_HEADER, "file.in.use").build();
 		}
 		if (size > 1) {
 			fh.setCurrentBody(fh.getBodies().get(size - 2));
@@ -247,5 +284,43 @@ public class RESTService {
 			logger.info("Deleted FileBody id=" + fb.getId() + " PLUS FileHeader id=" + fh.getId());
 			return Response.noContent().build();
 		}
+	}
+
+	public Response sendFileBody(FileBody fb) {
+		try {
+			String fullPath = savePath + File.separator + fb.getStoredFilePath();
+			return Response.ok(new FileInputStream(new File(fullPath)))
+				.type(MediaType.APPLICATION_OCTET_STREAM)
+				.header("charset", "UTF-8")
+				.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(fb.getOriginalFilename(), "UTF-8") + "\"")
+				.build();
+		} catch (FileNotFoundException e) {
+			logger.log(Level.SEVERE, "sendFileBody", e);
+			throw new EJBException(e);
+		} catch (UnsupportedEncodingException e) {
+			logger.log(Level.SEVERE, "sendFileBody", e);
+			throw new EJBException(e);
+		}
+	}
+
+	public String toJSON(Object object, Class<?> view) throws JsonMappingException {
+		try {
+			ContextResolver<ObjectMapper> resolver = providers.getContextResolver(ObjectMapper.class, MediaType.APPLICATION_JSON_TYPE);
+			ObjectMapper mapper = resolver.getContext(object.getClass());
+			if (view == null) {
+				return mapper.writeValueAsString(object);
+			} else {
+				return mapper.writerWithView(view).writeValueAsString(object);
+			}
+		} catch (JsonGenerationException e) {
+			logger.log(Level.SEVERE, "", e);
+		} catch (JsonMappingException e) {
+			logger.log(Level.SEVERE, "", e);
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, "", e);
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "", e);
+		}
+		return null;
 	}
 }

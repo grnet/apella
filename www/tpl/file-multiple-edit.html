@@ -1,0 +1,50 @@
+<table class="file-table">
+<!-- 
+<thead>
+	<tr>
+		<th><%= $.i18n.prop('File') %></th>
+<% if (withMetadata) { %>
+		<th><%= $.i18n.prop('FileName') %></th>
+		<th><%= $.i18n.prop('FileDescription') %></th>
+<% } %>
+		<th></th>
+	</tr>
+</thead>
+ -->
+ <tbody>
+<% _.each(files, function(file) { %>
+<% if (!_.isUndefined(file.id)) { %>
+	<tr id="info">
+		<td><a href='<%= file.currentBody.url %>' target="viewfile"> <%= file.currentBody.originalFilename %></a>, <%= App.utils.formatFileSize(file.currentBody.fileSize) %>, <%= file.currentBody.date %></td>
+<% if (withMetadata) { %>		
+		<td><%= file.name %></td>
+		<td><%= file.description %></td>
+<% } %>	
+		<td width="140px">
+			<a id="delete" data-file-id="<%= file.id %>" class="btn btn-small btn-danger pull-right"><i class="icon-trash icon-white"></i> <%= $.i18n.prop('btn_delete') %></a>
+		</td>
+	</tr>
+<% } %>
+<% }); %>
+</tbody>
+<tfoot>
+	<tr id="uploader">
+		<td>
+			<input type="hidden" name="type" value="<%= type %>" />
+			<input type="file" name="file" />
+			<div class="progress">
+				<div class="bar" style="width: 0%;"></div>
+			</div>
+		</td>
+<% if (withMetadata) { %>	
+		<td>
+			<input type="text" name="name" class="input-medium" placeholder="<%= $.i18n.prop('FileName') %>" />
+		</td>
+		<td><textarea name="description" rows="1" placeholder="<%= $.i18n.prop('FileDescription') %>"></textarea></td>
+<% } %>	
+		<td width="140px">
+			<a id="upload" class="btn btn-small pull-right"><i class="icon-plus"></i> <%= $.i18n.prop('btn_add_file') %></a>
+		</td>
+	</tr>
+</tfoot>
+</table>

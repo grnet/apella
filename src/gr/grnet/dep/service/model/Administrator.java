@@ -34,4 +34,17 @@ public class Administrator extends Role {
 		return this;
 	}
 
+	@Override
+	public boolean compareCriticalFields(Role role) {
+		if (!(role instanceof Administrator)) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public boolean isMissingRequiredFields() {
+		return false;
+	}
+
 }

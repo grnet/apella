@@ -59,4 +59,27 @@ public class InstitutionAssistant extends Role {
 		this.setManager(ia.getManager());
 		return this;
 	}
+
+	@Override
+	public boolean compareCriticalFields(Role role) {
+		if (!(role instanceof InstitutionAssistant)) {
+			return false;
+		}
+		InstitutionAssistant other = (InstitutionAssistant) role;
+		if (!compare(this.institution.getId(), other.getInstitution().getId())) {
+			return false;
+		}
+		if (!compare(this.manager.getId(), other.getManager().getId())) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public boolean isMissingRequiredFields() {
+		if (this.institution == null) {
+			return true;
+		}
+		return false;
+	}
 }

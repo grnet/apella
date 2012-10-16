@@ -1,5 +1,7 @@
 package gr.grnet.dep.server.jaxrs.util;
 
+import java.text.SimpleDateFormat;
+
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.ContextResolver;
@@ -35,6 +37,7 @@ public class JacksonContextResolver implements ContextResolver<ObjectMapper> {
 			.configure(SerializationConfig.Feature.WRITE_DATE_KEYS_AS_TIMESTAMPS, false)
 			.setAnnotationIntrospector(pair)
 			.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
+		this.objectMapper.setDateFormat(new SimpleDateFormat("dd/MM/yyyy hh:mm:ss"));
 		this.objectMapper.registerModule(new HibernateModule());
 	}
 

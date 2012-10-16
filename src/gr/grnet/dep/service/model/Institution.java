@@ -1,6 +1,8 @@
 package gr.grnet.dep.service.model;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Version;
@@ -15,13 +17,17 @@ public class Institution {
 	@GeneratedValue
 	private Long id;
 
-	@SuppressWarnings("unused")
 	@Version
 	private int version;
 
 	@NotNull
 	@NotEmpty
 	private String name;
+
+	@NotNull
+	@NotEmpty
+	@Enumerated(EnumType.STRING)
+	private UserRegistrationType registrationType = UserRegistrationType.SHIBBOLETH;
 
 	public Long getId() {
 		return id;
@@ -37,6 +43,14 @@ public class Institution {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public UserRegistrationType getRegistrationType() {
+		return registrationType;
+	}
+
+	public void setRegistrationType(UserRegistrationType registrationType) {
+		this.registrationType = registrationType;
 	}
 
 }

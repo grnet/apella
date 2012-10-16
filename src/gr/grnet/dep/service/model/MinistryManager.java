@@ -1,28 +1,14 @@
 package gr.grnet.dep.service.model;
 
-import java.util.logging.Logger;
-
-import javax.inject.Inject;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.persistence.Transient;
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.NotEmpty;
 
 @Entity
 @DiscriminatorValue("MINISTRY_MANAGER")
 public class MinistryManager extends Role {
 
-	/** Default value included to remove warning. Remove or modify at will. **/
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = -4122778019338166729L;
 
-	@Inject
-	@Transient
-	private Logger logger;
-
-	@NotNull
-	@NotEmpty
 	private String ministry;
 
 	public MinistryManager() {
@@ -51,4 +37,23 @@ public class MinistryManager extends Role {
 		return this;
 	}
 
+	@Override
+	public boolean compareCriticalFields(Role role) {
+		if (!(role instanceof MinistryManager)) {
+			return false;
+		}
+		MinistryManager other = (MinistryManager) role;
+		if (!compare(this.ministry, other.getMinistry())) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public boolean isMissingRequiredFields() {
+		if (this.ministry == null) {
+			return true;
+		}
+		return false;
+	}
 }

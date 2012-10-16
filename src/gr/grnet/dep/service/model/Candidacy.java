@@ -1,5 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.file.FileBody;
+
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -10,6 +12,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
@@ -20,21 +23,13 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Entity
 public class Candidacy {
 
-	// define 3 json views
-	public static interface IdCandidacyView {
-	}; // shows only id view of a Candidacy
-
-	public static interface SimpleCandidacyView extends IdCandidacyView {
-	}; // shows a summary view of a Candidacy
-
-	public static interface DetailedCandidacyView extends SimpleCandidacyView {
+	public static interface DetailedCandidacyView {
 	};
 
 	@Id
 	@GeneratedValue
 	private Long id;
 
-	@SuppressWarnings("unused")
 	@Version
 	private int version;
 
@@ -42,10 +37,8 @@ public class Candidacy {
 	@Temporal(TemporalType.TIMESTAMP)
 	Date date;
 
-	// Inverse to User
-	@Basic(optional = false)
-	@Column(name = "candidate_id")
-	private Long candidate;
+	@ManyToOne
+	private Candidate candidate;
 
 	// Inverse to Position
 	@Basic(optional = false)
@@ -59,7 +52,6 @@ public class Candidacy {
 		return id;
 	}
 
-	@JsonView(SimpleCandidacyView.class)
 	public Date getDate() {
 		return date;
 	}
@@ -68,16 +60,16 @@ public class Candidacy {
 		this.date = date;
 	}
 
-	@JsonView(SimpleCandidacyView.class)
-	public Long getCandidate() {
+	@JsonView({DetailedCandidacyView.class})
+	public Candidate getCandidate() {
 		return candidate;
 	}
 
-	public void setCandidate(Long candidate) {
+	public void setCandidate(Candidate candidate) {
 		this.candidate = candidate;
 	}
 
-	@JsonView(SimpleCandidacyView.class)
+	@JsonView(DetailedCandidacyView.class)
 	public Long getPosition() {
 		return position;
 	}
@@ -86,7 +78,7 @@ public class Candidacy {
 		this.position = position;
 	}
 
-	@JsonView({DetailedCandidacyView.class})
+	@JsonView(DetailedCandidacyView.class)
 	public Set<FileBody> getFiles() {
 		return files;
 	}
