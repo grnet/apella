@@ -3100,7 +3100,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							model : user
 						});
 						self.$("div#commiteeMemberDetails div.modal-body").append(userView.render().el);
-					},
+					}
 				});
 				
 				roles = new Models.Roles();
@@ -3112,7 +3112,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							model : collection.at(0)
 						});
 						self.$("div#commiteeMemberDetails div.modal-body").append(roleView.render().el);
-					},
+					}
 				});
 				
 				self.$("div#commiteeMemberDetails").on("hidden", function() {

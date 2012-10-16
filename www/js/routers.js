@@ -653,7 +653,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 		showProfessorCommitteesView : function() {
 			var self = this;
 			var professorCommittees = new Models.ProfessorCommittees({}, {
-				professor : App.loggedOnUser.get("roles")[0].id,
+				professor : App.loggedOnUser.get("roles")[0].id
 			});
 			var professorCommitteesView = new Views.ProfessorCommitteesView({
 				collection : professorCommittees
@@ -675,8 +675,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			});
 			
 			this.currentView = professorCommitteesView;
-		},
-	
+		}
 	});
 	
 	return Routers;
