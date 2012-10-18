@@ -7,7 +7,6 @@ import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.CandidateCommittee;
 import gr.grnet.dep.service.model.CandidateCommittee.SimpleCandidateCommitteeView;
 import gr.grnet.dep.service.model.CandidateCommitteeMembership;
-import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
@@ -183,9 +182,9 @@ public class CandidacyRESTService extends RESTService {
 	}
 
 	@POST
-	@Path("/{id:[0-9][0-9]*}/committee/{email}")
+	@Path("/{id:[0-9][0-9]*}/committee")
 	@JsonView({SimpleCandidateCommitteeView.class})
-	public CandidateCommittee addToCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("email") String email) {
+	public CandidateCommittee addToCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, CandidateCommitteeMembership ccm) {
 		try {
 			CandidateCommittee cc;
 			Candidacy c = (Candidacy) em.createQuery(
@@ -218,14 +217,17 @@ public class CandidacyRESTService extends RESTService {
 			} catch (NoResultException e) {
 				cc = new CandidateCommittee();
 				cc.setCandidacy(c);
+				em.persist(cc);
 			}
 			if (cc.getMembers().size() >= CandidateCommittee.MAX_MEMBERS) {
 				throw new RestException(Status.CONFLICT, "max.members.exceeded");
 			}
+			for (CandidateCommitteeMembership ccmexisting: cc.getMembers()) {
+				if (ccmexisting.getEmail().equalsIgnoreCase(ccm.getEmail()))
+					throw new RestException(Status.CONFLICT, "error.candidacy.membership.email.already.exists");
+			}
 
-			em.persist(cc);
-			cc.addMember(email);
-
+			cc.addMember(ccm);
 			em.flush();
 			return cc;
 
@@ -238,9 +240,9 @@ public class CandidacyRESTService extends RESTService {
 	}
 
 	@DELETE
-	@Path("/{id:[0-9][0-9]*}/committee/{email}")
+	@Path("/{id:[0-9][0-9]*}/committee")
 	@JsonView({SimpleCandidateCommitteeView.class})
-	public CandidateCommittee removeFromCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("email") String email) {
+	public CandidateCommittee removeFromCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, CandidateCommitteeMembership ccm) {
 		try {
 			CandidateCommittee cc;
 
@@ -269,8 +271,8 @@ public class CandidacyRESTService extends RESTService {
 					"where cc.candidacy=:candidacy")
 				.setParameter("candidacy", c)
 				.getSingleResult();
-
-			CandidateCommitteeMembership removed = cc.removeMember(email);
+			
+			CandidateCommitteeMembership removed = cc.removeMember(ccm.getId());
 			if (removed == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.membership.id");
 			}
@@ -286,13 +288,13 @@ public class CandidacyRESTService extends RESTService {
 	}
 
 	@GET
-	@Path("/{id:[0-9][0-9]*}/committee/{email}")
+	@Path("/{id:[0-9][0-9]*}/committee/{committeeid}")
 	@JsonView({SimpleCandidateCommitteeView.class})
 	public CandidateCommitteeMembership getCommitteeMembership(@HeaderParam(TOKEN_HEADER) String authToken,
-		@PathParam("id") long id, @PathParam("email") String email) {
+		@PathParam("id") long id, @PathParam("committeeid") long committeeId) {
 		CandidateCommittee cm = getCommittee(authToken, id);
 		for (CandidateCommitteeMembership ccm : cm.getMembers()) {
-			if (ccm.getEmail().equals(email)) {
+			if (ccm.getId().equals(committeeId)) {
 				return ccm;
 			}
 		}

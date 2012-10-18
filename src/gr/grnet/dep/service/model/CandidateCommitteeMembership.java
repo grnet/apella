@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Version;
+import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlTransient;
 
 @Entity
@@ -28,6 +29,10 @@ public class CandidateCommitteeMembership implements Serializable {
 	@JoinColumn(name = "candidateCommittee_id")
 	private CandidateCommittee candidateCommittee;
 
+	@NotNull
+	private String fullname;
+	
+	@NotNull
 	private String email;
 	
 	
@@ -79,6 +84,10 @@ public class CandidateCommitteeMembership implements Serializable {
 	}
 
 	
+	public Long getId() {
+		return id;
+	}
+	
 	public String getEmail() {
 		return email;
 	}
@@ -87,6 +96,14 @@ public class CandidateCommitteeMembership implements Serializable {
 		this.email = email;
 	}
 
+	
+	public String getFullname() {
+		return fullname;
+	}
+
+	public void setFullname(String fullname) {
+		this.fullname = fullname;
+	}
 
 
 }

@@ -35,6 +35,7 @@ public class CandidateCommittee {
 	@GeneratedValue
 	private Long id;
 
+	@SuppressWarnings("unused")
 	@Version
 	private int version;
 
@@ -74,17 +75,17 @@ public class CandidateCommittee {
 	///////////////////////////////////////////////////////////////////////////////////////
 
 	
-	public void addMember(String email) {
-		CandidateCommitteeMembership ccm = new CandidateCommitteeMembership(this, email);
+	public void addMember(CandidateCommitteeMembership ccm) {
 		members.add(ccm);
+		ccm.setCandidateCommittee(this);
 	}
 	
-	public CandidateCommitteeMembership removeMember(String email) {
+	public CandidateCommitteeMembership removeMember(Long id) {
 		CandidateCommitteeMembership removed = null;
 		Iterator<CandidateCommitteeMembership> it = getMembers().iterator();
 		while (it.hasNext()) {
 			CandidateCommitteeMembership ccm = it.next();
-			if (ccm.getEmail().equals(email)) {
+			if (ccm.getId().equals(id)) {
 				it.remove();
 				removed = ccm;
 			}
