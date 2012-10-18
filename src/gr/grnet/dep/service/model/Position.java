@@ -281,4 +281,10 @@ public class Position {
 		this.nominationToETDate = position.getNominationToETDate();
 		this.nominationFEK = position.getNominationFEK();
 	}
+
+	public void initializeCollections() {
+		this.files.size();
+		this.candidacies.size();
+		this.commitee.size();
+	}
 }

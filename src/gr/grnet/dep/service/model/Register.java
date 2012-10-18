@@ -77,4 +77,8 @@ public class Register implements Serializable {
 		setInstitution(register.getInstitution());
 		return this;
 	}
+
+	public void initializeCollections() {
+		this.files.size();
+	}
 }

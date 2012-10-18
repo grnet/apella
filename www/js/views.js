@@ -291,7 +291,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						minlength : $.i18n.prop('validation_minlength', 2)
 					},
 					password : {
-						required : $.i18n.prop('validation_password'),
+						required : $.i18n.prop('validation_required'),
 						minlength : $.i18n.prop('validation_minlength', 5)
 					}
 				}
@@ -494,7 +494,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						minlength : $.i18n.prop('validation_minlength', 2)
 					},
 					password : {
-						required : $.i18n.prop('validation_password'),
+						required : $.i18n.prop('validation_required'),
 						minlength : $.i18n.prop('validation_minlength', 5)
 					}
 				}
@@ -777,8 +777,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					mobile : {
 						required : true,
 						number : true,
-						minlength : 10,
-						maxlength : 12
+						minlength : 10
 					},
 					address_street : "required",
 					address_number : "required",
@@ -808,12 +807,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						minlength : $.i18n.prop('validation_minlength', 2)
 					},
 					password : {
-						required : $.i18n.prop('validation_password'),
+						required : $.i18n.prop('validation_required'),
 						pwd : $.i18n.prop('validation_password'),
 						minlength : $.i18n.prop('validation_minlength', 5)
 					},
 					confirm_password : {
-						required : $.i18n.prop('validation_password'),
+						required : $.i18n.prop('validation_required'),
 						minlength : $.i18n.prop('validation_minlength', 5),
 						equalTo : $.i18n.prop('validation_confirmpassword')
 					},
@@ -825,8 +824,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					mobile : {
 						required : $.i18n.prop('validation_phone'),
 						number : $.i18n.prop('validation_number'),
-						minlength : $.i18n.prop('validation_minlength', 10),
-						maxlength : $.i18n.prop('validation_maxlength', 12)
+						minlength : $.i18n.prop('validation_minlength', 10)
 					},
 					address_street : $.i18n.prop('validation_street'),
 					address_number : $.i18n.prop('validation_number'),
@@ -1070,8 +1068,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					mobile : {
 						required : true,
 						number : true,
-						minlength : 10,
-						maxlength : 12
+						minlength : 10
 					},
 					email : {
 						required : true,
@@ -1102,20 +1099,19 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						onlyLatin : $.i18n.prop('validation_latin')
 					},
 					password : {
-						required : $.i18n.prop('validation_password'),
+						required : $.i18n.prop('validation_required'),
 						pwd : $.i18n.prop('validation_password'),
 						minlength : $.i18n.prop('validation_minlength', 5)
 					},
 					confirm_password : {
-						required : $.i18n.prop('validation_password'),
+						required : $.i18n.prop('validation_required'),
 						minlength : $.i18n.prop('validation_minlength', 5),
 						equalTo : $.i18n.prop('validation_confirmpassword')
 					},
 					mobile : {
 						required : $.i18n.prop('validation_phone'),
 						number : $.i18n.prop('validation_number'),
-						minlength : $.i18n.prop('validation_minlength', 10),
-						maxlength : $.i18n.prop('validation_maxlength', 12)
+						minlength : $.i18n.prop('validation_minlength', 10)
 					},
 					email : {
 						required : $.i18n.prop('validation_email'),
@@ -1283,10 +1279,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		
 		applyRules : function() {
 			var self = this;
-			self.$("input").removeAttr("disable");
+			self.$("input").attr("disabled", true);
+			self.$("input[name=username]").removeAttr("disabled");
+			self.$("input[name=firstname]").removeAttr("disabled");
+			self.$("input[name=lastname]").removeAttr("disabled");
+			self.$("input[name=fathername]").removeAttr("disabled");
+			self.$("input[name=firstnamelatin]").removeAttr("disabled");
+			self.$("input[name=lastnamelatin]").removeAttr("disabled");
+			self.$("input[name=fathernamelatin]").removeAttr("disabled");
+			
 			self.$("a#status").removeClass("disabled");
 			self.$("a#save").show();
-			self.$("a#remove").show();
+			self.$("a#remove").hide();
 		},
 		
 		render : function(eventName) {
@@ -1581,7 +1585,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		validator : undefined,
 		
 		initialize : function() {
-			_.bindAll(this, "render", "submit", "cancel", "addFile", "addFileList", "close");
+			_.bindAll(this, "render", "isEditable", "submit", "cancel", "addFile", "addFileList", "close");
 			this.template = _.template(tpl_role_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
@@ -1595,6 +1599,77 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			"click a#remove" : "remove",
 			"click a#cancel" : "cancel",
 			"submit form" : "submit"
+		},
+		
+		isEditable : function(field) {
+			var self = this;
+			
+			switch (self.model.get("discriminator")) {
+			case "CANDIDATE":
+				switch (field) {
+				case "tautotitaFile":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "bebaiwsiStratiwtikisThitiasFile":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "formaSymmetoxisFile":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "biografikoFile":
+					return true;
+				case "ptyxioFileList":
+					return true;
+				case "dimosieusiFileList":
+					return true;
+				}
+			case "PROFESSOR_DOMESTIC":
+				switch (field) {
+				case "institution":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "department":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "profileURL":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "profileFile":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "rank":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "subject":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "fekSubject":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "fekFile":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "dimosieusiFileList":
+					return true;
+				}
+			case "PROFESSOR_FOREIGN":
+				switch (field) {
+				case "institution":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "profileURL":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "profileFile":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "rank":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "subject":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				}
+			case "INSTITUTION_MANAGER":
+				switch (field) {
+				case "institution":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				}
+			case "INSTITUTION_ASSISTAN":
+				switch (field) {
+				case "institution":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				}
+			case "MINISTRY_MANAGER":
+				switch (field) {
+				case "ministry":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				}
+			}
 		},
 		
 		render : function(eventName) {
@@ -1622,27 +1697,27 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						success : function(collection, response) {
 							self.addFile(collection, "TAYTOTHTA", self.$("#tautotitaFile"), {
 								withMetadata : false,
-								editable : _.isEqual(self.model.get("status"), "UNAPPROVED")
+								editable : self.isEditable("tautotitaFile")
 							});
 							self.addFile(collection, "BEBAIWSH_STRATIOTIKIS_THITIAS", self.$("#bebaiwsiStratiwtikisThitiasFile"), {
 								withMetadata : false,
-								editable : _.isEqual(self.model.get("status"), "UNAPPROVED")
+								editable : self.isEditable("bebaiwsiStratiwtikisThitiasFile")
 							});
 							self.addFile(collection, "FORMA_SYMMETOXIS", self.$("#formaSymmetoxisFile"), {
 								withMetadata : false,
-								editable : _.isEqual(self.model.get("status"), "UNAPPROVED")
+								editable : self.isEditable("formaSymmetoxisFile")
 							});
 							self.addFile(collection, "BIOGRAFIKO", self.$("#biografikoFile"), {
 								withMetadata : false,
-								editable : true
+								editable : self.isEditable("biografikoFile")
 							});
 							self.addFileList(collection, "PTYXIO", self.$("#ptyxioFileList"), {
 								withMetadata : true,
-								editable : true
+								editable : self.isEditable("ptyxioFileList")
 							});
 							self.addFileList(collection, "DIMOSIEYSI", self.$("#dimosieusiFileList"), {
 								withMetadata : true,
-								editable : true
+								editable : self.isEditable("dimosieusiFileList")
 							});
 						}
 					});
@@ -1743,33 +1818,23 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						success : function(collection, response) {
 							self.addFile(collection, "PROFILE", self.$("#profileFile"), {
 								withMetadata : false,
-								editable : true
+								editable : self.isEditable("profileFile")
 							});
 							self.addFile(collection, "FEK", self.$("#fekFile"), {
 								withMetadata : false,
-								editable : true
+								editable : self.isEditable("fekFile")
 							});
 							self.addFileList(collection, "DIMOSIEYSI", self.$("#dimosieusiFileList"), {
 								withMetadata : true,
-								editable : true
+								editable : self.isEditable("dimosieusiFileList")
 							});
 						}
 					});
-					// Set Read-Only fields if is ACTIVE
-					if (_.isEqual(self.model.get("status"), "UNAPPROVED")) {
-						self.$("select[name=institution]").removeAttr("disabled");
-						self.$("select[name=department]").removeAttr("disabled");
-					} else {
-						self.$("select[name=institution]").attr("disabled", true);
-						self.$("select[name=department]").attr("disabled", true);
-					}
 				} else {
 					$("#fekFile", self.$el).html($.i18n.prop("PressSave"));
 					$("#profileFile", self.$el).html($.i18n.prop("PressSave"));
-					self.$("select[name=institution]").removeAttr("disabled");
-					self.$("select[name=department]").removeAttr("disabled");
+					$("#dimosieusiFileList", self.$el).html($.i18n.prop("PressSave"));
 				}
-				
 				this.validator = $("form", this.el).validate({
 					errorElement : "span",
 					errorClass : "help-inline",
@@ -1855,19 +1920,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						success : function(collection, response) {
 							self.addFile(collection, "PROFILE", self.$("#profileFile"), {
 								withMetadata : false,
-								editable : true
+								editable : self.isEditable("profileFile")
 							});
 						}
 					});
-					// Set Read-Only fields if is ACTIVE
-					if (_.isEqual(self.model.get("status"), "UNAPPROVED")) {
-						self.$("input[name=institution]").removeAttr("disabled");
-					} else {
-						self.$("input[name=institution]").attr("disabled", true);
-					}
 				} else {
 					self.$("#profileFile").html($.i18n.prop("PressSave"));
-					self.$("input[name=institution]").removeAttr("disabled");
 				}
 				break;
 			case "INSTITUTION_MANAGER":
@@ -1895,13 +1953,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						popup.show();
 					}
 				});
-				// Set Read-Only fields if is ACTIVE
-				if (_.isEqual(self.model.get("status"), "UNAPPROVED")) {
-					self.$("select[name=institution]").removeAttr("disabled");
-				} else {
-					self.$("select[name=institution]").attr("disabled", true);
-				}
-				
 				this.validator = $("form", this.el).validate({
 					errorElement : "span",
 					errorClass : "help-inline",
@@ -1945,12 +1996,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						popup.show();
 					}
 				});
-				// Set Read-Only fields if is ACTIVE
-				if (_.isEqual(self.model.get("status"), "UNAPPROVED")) {
-					self.$("select[name=institution]").removeAttr("disabled");
-				} else {
-					self.$("select[name=institution]").attr("disabled", true);
-				}
 				this.validator = $("form", this.el).validate({
 					errorElement : "span",
 					errorClass : "help-inline",
@@ -1970,12 +2015,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				break;
 			
 			case "MINISTRY_MANAGER":
-				// Set Read-Only fields if is ACTIVE
-				if (_.isEqual(self.model.get("status"), "UNAPPROVED")) {
-					self.$("input[name=ministry]").removeAttr("disabled");
-				} else {
-					self.$("input[name=ministry]").attr("disabled", true);
-				}
 				this.validator = $("form", this.el).validate({
 					errorElement : "span",
 					errorClass : "help-inline",
@@ -1995,8 +2034,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				break;
 			}
 			
-			this.$('a[rel=popover]').popover();
-			return this;
+			// Set isEditable to fields
+			self.$("select, input, textarea").each(function(index) {
+				var field = $(this).attr("name");
+				if (self.isEditable(field)) {
+					$(this).removeAttr("disabled");
+				} else {
+					$(this).attr("disabled", true);
+				}
+			});
+			
+			self.$('a[rel=popover]').popover();
+			return self;
 		},
 		
 		submit : function(event) {
@@ -2161,13 +2210,16 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			this._super('initialize', [ options ]);
 		},
 		
+		isEditable : function(field) {
+			// Cannot change any fields
+			return false;
+		},
+		
 		render : function(eventName) {
 			var self = this;
 			self._super('render', [ eventName ]);
-			// Enable All
-			self.$("input").removeAttr("disabled");
-			self.$("select").removeAttr("disabled");
 			self.$("a#status").removeClass("disabled");
+			self.$("a#save").hide();
 			return self;
 		}
 	});
@@ -2611,13 +2663,20 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var self = this;
 			// Actions:
 			if (self.model.isNew()) {
-				self.$("a#save").show();
-				self.$("input").removeAttr("disabled");
+				self.$("a#status").addClass("disabled");
+				self.$("select,input,textarea").removeAttr("disabled");
 			} else {
-				self.$("a#save").hide();
-				self.$("input").attr("disabled", true);
+				self.$("a#status").removeClass("disabled");
+				self.$("select,input,textarea").attr("disabled", true);
+				self.$("input[name=username]").removeAttr("disabled");
+				self.$("input[name=firstname]").removeAttr("disabled");
+				self.$("input[name=lastname]").removeAttr("disabled");
+				self.$("input[name=fathername]").removeAttr("disabled");
+				self.$("input[name=firstnamelatin]").removeAttr("disabled");
+				self.$("input[name=lastnamelatin]").removeAttr("disabled");
+				self.$("input[name=fathernamelatin]").removeAttr("disabled");
 			}
-			self.$("a#status").addClass("disabled");
+			self.$("a#save").show();
 			self.$("a#remove").hide();
 		},
 		

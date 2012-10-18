@@ -113,12 +113,6 @@
 		<fieldset>
 			<legend> <%= $.i18n.prop('PositionProposals') %> </legend>
 			<div class="control-group">
-				<label class="control-label" for="prosklisiKosmitoraFile"><%= $.i18n.prop('ProsklisiKosmitoraFile') %>:</label>
-				<div class="controls">
-					<span id="prosklisiKosmitoraFile"></span>
-				</div>
-			</div>
-			<div class="control-group">
 				<label class="control-label" for="eisigisiDEPYpopsifiouFileList"><%= $.i18n.prop('EisigisiDEPYpopsifiouFileList') %>:</label>
 				<div class="controls">
 					<span id="eisigisiDEPYpopsifiouFileList"></span>
@@ -127,6 +121,12 @@
 		</fieldset>
 		<fieldset>
 			<legend> <%= $.i18n.prop('PositionNomination') %> </legend>
+			<div class="control-group">
+				<label class="control-label" for="prosklisiKosmitoraFile"><%= $.i18n.prop('ProsklisiKosmitoraFile') %>:</label>
+				<div class="controls">
+					<span id="prosklisiKosmitoraFile"></span>
+				</div>
+			</div>
 			<div class="control-group">
 				<label class="control-label" for=nominationCommitteeConvergenceDate><%= $.i18n.prop('NominationCommitteeConvergenceDate') %>:</label>
 				<div class="controls">
@@ -177,21 +177,6 @@
 				</div>
 			</div>
 		</fieldset>
-				<fieldset>
-			<legend> <%= $.i18n.prop('PositionOrganization') %> </legend>
-			<div class="control-group">
-				<label class="control-label" for="organismosFile"><%= $.i18n.prop('OrganismosFile') %>:</label>
-				<div class="controls">
-					<span id="organismosFile"></span>
-				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="eswterikosKanonismosFile"><%= $.i18n.prop('EswterikosKanonismosFile') %>:</label>
-				<div class="controls">
-					<span id="eswterikosKanonismosFile"></span>
-				</div>
-			</div>
-		</fieldset>	
 		<fieldset>
 			<div class="form-actions">
 				<a id="remove" class="btn btn-danger"><i class="icon-remove icon-white"></i> <%= $.i18n.prop('btn_remove') %></a>

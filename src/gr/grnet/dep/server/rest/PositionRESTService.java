@@ -73,6 +73,7 @@ public class PositionRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(department)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+		position.initializeCollections();
 		return position;
 	}
 
@@ -98,6 +99,9 @@ public class PositionRESTService extends RESTService {
 		@SuppressWarnings("unchecked")
 		List<Position> positions = (List<Position>) em.createQuery(
 			"from Position p " +
+				"left join fetch p.files f " +
+				"left join fetch p.commitee co " +
+				"left join fetch p.candidacies ca " +
 				"where p.department.institution in (:institutions)")
 			.setParameter("institutions", institutions)
 			.getResultList();
@@ -115,12 +119,15 @@ public class PositionRESTService extends RESTService {
 			@SuppressWarnings("unchecked")
 			List<Position> positions = (List<Position>) em.createQuery(
 				"from Position p " +
+					"left join fetch p.files f " +
+					"left join fetch p.commitee co " +
+					"left join fetch p.candidacies ca " +
 					"where p.openingDate <= :today and p.closingDate >= :today ")
 				.setParameter("today", today)
 				.getResultList();
 			return positions;
 		} catch (ParseException e) {
-			throw new RestException(Status.INTERNAL_SERVER_ERROR);
+			throw new RestException(Status.INTERNAL_SERVER_ERROR, "parse.exception");
 		}
 
 	}
@@ -132,7 +139,11 @@ public class PositionRESTService extends RESTService {
 		getLoggedOn(authToken);
 
 		Position p = (Position) em.createQuery(
-			"from Position p where p.id=:id")
+			"from Position p " +
+				"left join fetch p.files f " +
+				"left join fetch p.commitee co " +
+				"left join fetch p.candidacies ca " +
+				"where p.id=:id")
 			.setParameter("id", id)
 			.getSingleResult();
 
@@ -145,7 +156,7 @@ public class PositionRESTService extends RESTService {
 		try {
 			Department department = em.find(Department.class, position.getDepartment().getId());
 			if (department == null) {
-				throw new RestException(Status.NOT_FOUND, "wrong.department");
+				throw new RestException(Status.NOT_FOUND, "wrong.department.id");
 			}
 			User loggedOn = getLoggedOn(authToken);
 			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(department)) {
@@ -153,11 +164,13 @@ public class PositionRESTService extends RESTService {
 			}
 			position = em.merge(position);
 			em.flush();
+
+			position.initializeCollections();
 			return position;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -169,11 +182,12 @@ public class PositionRESTService extends RESTService {
 			Position existingPosition = getAndCheckPosition(authToken, id);
 			existingPosition.copyFrom(position);
 			em.flush();
+			existingPosition.initializeCollections();
 			return existingPosition;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -187,7 +201,7 @@ public class PositionRESTService extends RESTService {
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -272,7 +286,7 @@ public class PositionRESTService extends RESTService {
 		Position position = em.find(Position.class, positionId);
 		// Validate:
 		if (position == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -308,7 +322,7 @@ public class PositionRESTService extends RESTService {
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -321,7 +335,7 @@ public class PositionRESTService extends RESTService {
 		Position position = em.find(Position.class, positionId);
 		// Validate:
 		if (position == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -363,7 +377,7 @@ public class PositionRESTService extends RESTService {
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -407,7 +421,7 @@ public class PositionRESTService extends RESTService {
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -473,7 +487,7 @@ public class PositionRESTService extends RESTService {
 			return newMembership;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -488,7 +502,7 @@ public class PositionRESTService extends RESTService {
 			em.flush();
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 

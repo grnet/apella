@@ -61,7 +61,7 @@ public class CandidacyRESTService extends RESTService {
 			}
 			return candidacy;
 		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 		}
 	}
 
@@ -83,9 +83,9 @@ public class CandidacyRESTService extends RESTService {
 			em.persist(candidacy);
 			return candidacy;
 		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 		} catch (PersistenceException e) {
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -96,25 +96,18 @@ public class CandidacyRESTService extends RESTService {
 		try {
 			Candidacy existingCandidacy = em.find(Candidacy.class, id);
 			if (existingCandidacy == null) {
-				throw new RestException(Status.NOT_FOUND, "wrong.id");
+				throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 			}
-			Candidate cy = (Candidate) em.createQuery(
-				"from Candidate c where c.id=:id")
-				.setParameter("id", existingCandidacy.getCandidate())
-				.getSingleResult();
-
+			Candidate cy = existingCandidacy.getCandidate();
 			User loggedOn = getLoggedOn(authToken);
 			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 
 			// So far there are no fields to update!
-
 			return existingCandidacy;
-		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		} catch (PersistenceException e) {
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -124,12 +117,9 @@ public class CandidacyRESTService extends RESTService {
 		try {
 			Candidacy existingCandidacy = em.find(Candidacy.class, id);
 			if (existingCandidacy == null) {
-				throw new RestException(Status.NOT_FOUND, "wrong.id");
+				throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 			}
-			Candidate cy = (Candidate) em.createQuery(
-				"from Candidate c where c.id=:id")
-				.setParameter("id", existingCandidacy.getCandidate())
-				.getSingleResult();
+			Candidate cy = existingCandidacy.getCandidate();
 
 			User loggedOn = getLoggedOn(authToken);
 			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser().getId() != loggedOn.getId()) {
@@ -141,7 +131,7 @@ public class CandidacyRESTService extends RESTService {
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		} catch (PersistenceException e) {
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -175,10 +165,10 @@ public class CandidacyRESTService extends RESTService {
 			em.flush();
 			return cc;
 		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -193,10 +183,7 @@ public class CandidacyRESTService extends RESTService {
 					"where c.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
-			Candidate cy = (Candidate) em.createQuery(
-				"from Candidate c where c.id=:id")
-				.setParameter("id", c.getCandidate())
-				.getSingleResult();
+			Candidate cy = c.getCandidate();
 
 			User loggedOn = getLoggedOn(authToken);
 			boolean ok = false;
@@ -234,10 +221,10 @@ public class CandidacyRESTService extends RESTService {
 			return cc;
 
 		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -253,10 +240,7 @@ public class CandidacyRESTService extends RESTService {
 					"where c.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
-			Candidate cy = (Candidate) em.createQuery(
-				"from Candidate c where c.id=:id")
-				.setParameter("id", c.getCandidate())
-				.getSingleResult();
+			Candidate cy = c.getCandidate();
 
 			User loggedOn = getLoggedOn(authToken);
 			boolean ok = false;
@@ -280,16 +264,16 @@ public class CandidacyRESTService extends RESTService {
 			}
 			CandidateCommitteeMembership removed = cc.removeMember(existingProfessor);
 			if (removed == null) {
-				throw new RestException(Status.NOT_FOUND, "wrong.membership.id");
+				throw new RestException(Status.NOT_FOUND, "wrong.candidate.committee.membership.id");
 			}
 
 			em.flush();
 			return cc;
 		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -304,7 +288,7 @@ public class CandidacyRESTService extends RESTService {
 				return ccm;
 			}
 		}
-		throw new RestException(Status.NOT_FOUND, "membership.not.found");
+		throw new RestException(Status.NOT_FOUND, "wrong.candidate.committee.membership.id");
 	}
 
 }
