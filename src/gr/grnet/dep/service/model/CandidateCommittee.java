@@ -74,18 +74,17 @@ public class CandidateCommittee {
 	///////////////////////////////////////////////////////////////////////////////////////
 
 	
-	public void addMember(Professor professor) {
-		CandidateCommitteeMembership ccm = new CandidateCommitteeMembership(this, professor);
+	public void addMember(String email) {
+		CandidateCommitteeMembership ccm = new CandidateCommitteeMembership(this, email);
 		members.add(ccm);
 	}
 	
-	public CandidateCommitteeMembership removeMember(Professor professor) {
+	public CandidateCommitteeMembership removeMember(String email) {
 		CandidateCommitteeMembership removed = null;
-		CandidateCommitteeMembership membership = new CandidateCommitteeMembership(this, professor);
 		Iterator<CandidateCommitteeMembership> it = getMembers().iterator();
 		while (it.hasNext()) {
 			CandidateCommitteeMembership ccm = it.next();
-			if (ccm.equals(membership)) {
+			if (ccm.getEmail().equals(email)) {
 				it.remove();
 				removed = ccm;
 			}

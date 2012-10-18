@@ -54,7 +54,7 @@ public class CandidacyRESTService extends RESTService {
 				.getSingleResult();
 			Candidate candidate = (Candidate) em.createQuery(
 				"from Candidate c where c.id=:id")
-				.setParameter("id", candidacy.getCandidate())
+				.setParameter("id", candidacy.getCandidate().getId())
 				.getSingleResult();
 			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && candidate.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -71,7 +71,7 @@ public class CandidacyRESTService extends RESTService {
 		try {
 			Candidate cy = (Candidate) em.createQuery(
 				"from Candidate c where c.id=:id")
-				.setParameter("id", candidacy.getCandidate())
+				.setParameter("id", candidacy.getCandidate().getId())
 				.getSingleResult();
 
 			User loggedOn = getLoggedOn(authToken);
@@ -100,7 +100,7 @@ public class CandidacyRESTService extends RESTService {
 			}
 			Candidate cy = (Candidate) em.createQuery(
 				"from Candidate c where c.id=:id")
-				.setParameter("id", existingCandidacy.getCandidate())
+				.setParameter("id", existingCandidacy.getCandidate().getId())
 				.getSingleResult();
 
 			User loggedOn = getLoggedOn(authToken);
@@ -128,7 +128,7 @@ public class CandidacyRESTService extends RESTService {
 			}
 			Candidate cy = (Candidate) em.createQuery(
 				"from Candidate c where c.id=:id")
-				.setParameter("id", existingCandidacy.getCandidate())
+				.setParameter("id", existingCandidacy.getCandidate().getId())
 				.getSingleResult();
 
 			User loggedOn = getLoggedOn(authToken);
@@ -157,7 +157,7 @@ public class CandidacyRESTService extends RESTService {
 				.getSingleResult();
 			Candidate cy = (Candidate) em.createQuery(
 				"from Candidate c where c.id=:id")
-				.setParameter("id", c.getCandidate())
+				.setParameter("id", c.getCandidate().getId())
 				.getSingleResult();
 
 			User loggedOn = getLoggedOn(authToken);
@@ -183,9 +183,9 @@ public class CandidacyRESTService extends RESTService {
 	}
 
 	@POST
-	@Path("/{id:[0-9][0-9]*}/committee")
+	@Path("/{id:[0-9][0-9]*}/committee/{email}")
 	@JsonView({SimpleCandidateCommitteeView.class})
-	public CandidateCommittee addToCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Professor p) {
+	public CandidateCommittee addToCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("email") String email) {
 		try {
 			CandidateCommittee cc;
 			Candidacy c = (Candidacy) em.createQuery(
@@ -195,7 +195,7 @@ public class CandidacyRESTService extends RESTService {
 				.getSingleResult();
 			Candidate cy = (Candidate) em.createQuery(
 				"from Candidate c where c.id=:id")
-				.setParameter("id", c.getCandidate())
+				.setParameter("id", c.getCandidate().getId())
 				.getSingleResult();
 
 			User loggedOn = getLoggedOn(authToken);
@@ -223,12 +223,8 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.CONFLICT, "max.members.exceeded");
 			}
 
-			Professor existingProfessor = em.find(Professor.class, p.getId());
-			if (existingProfessor == null) {
-				throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
-			}
 			em.persist(cc);
-			cc.addMember(existingProfessor);
+			cc.addMember(email);
 
 			em.flush();
 			return cc;
@@ -242,9 +238,9 @@ public class CandidacyRESTService extends RESTService {
 	}
 
 	@DELETE
-	@Path("/{id:[0-9][0-9]*}/committee")
+	@Path("/{id:[0-9][0-9]*}/committee/{email}")
 	@JsonView({SimpleCandidateCommitteeView.class})
-	public CandidateCommittee removeFromCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Professor p) {
+	public CandidateCommittee removeFromCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("email") String email) {
 		try {
 			CandidateCommittee cc;
 
@@ -255,7 +251,7 @@ public class CandidacyRESTService extends RESTService {
 				.getSingleResult();
 			Candidate cy = (Candidate) em.createQuery(
 				"from Candidate c where c.id=:id")
-				.setParameter("id", c.getCandidate())
+				.setParameter("id", c.getCandidate().getId())
 				.getSingleResult();
 
 			User loggedOn = getLoggedOn(authToken);
@@ -274,11 +270,7 @@ public class CandidacyRESTService extends RESTService {
 				.setParameter("candidacy", c)
 				.getSingleResult();
 
-			Professor existingProfessor = em.find(Professor.class, p.getId());
-			if (existingProfessor == null) {
-				throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
-			}
-			CandidateCommitteeMembership removed = cc.removeMember(existingProfessor);
+			CandidateCommitteeMembership removed = cc.removeMember(email);
 			if (removed == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.membership.id");
 			}
@@ -294,13 +286,13 @@ public class CandidacyRESTService extends RESTService {
 	}
 
 	@GET
-	@Path("/{id:[0-9][0-9]*}/committee/{professorId:[0-9][0-9]*}")
+	@Path("/{id:[0-9][0-9]*}/committee/{email}")
 	@JsonView({SimpleCandidateCommitteeView.class})
 	public CandidateCommitteeMembership getCommitteeMembership(@HeaderParam(TOKEN_HEADER) String authToken,
-		@PathParam("id") long id, @PathParam("professorId") long professorId) {
+		@PathParam("id") long id, @PathParam("email") String email) {
 		CandidateCommittee cm = getCommittee(authToken, id);
 		for (CandidateCommitteeMembership ccm : cm.getMembers()) {
-			if (ccm.getProfessor().getId().equals(professorId)) {
+			if (ccm.getEmail().equals(email)) {
 				return ccm;
 			}
 		}

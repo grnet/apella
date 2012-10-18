@@ -2,97 +2,49 @@ package gr.grnet.dep.service.model;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlTransient;
 
 @Entity
 public class CandidateCommitteeMembership implements Serializable {
 
-	private static final long serialVersionUID = -8436764731554690766L;
+	private static final long serialVersionUID = -8436764731554690767L;
 
-	@Embeddable
-	public static class CandidateCommitteeMembershipId implements Serializable {
 
-		private static final long serialVersionUID = -3146562158610027791L;
+	@Id
+	@GeneratedValue
+	private Long id;
 
-		@Column(name = "candidateCommittee_id")
-		private Long candidateCommittee_id;
-
-		@Column(name = "professor_id")
-		private Long professor_id;
-
-		public CandidateCommitteeMembershipId() {
-
-		}
-
-		public CandidateCommitteeMembershipId(Long candidateCommitteeId, Long professorId) {
-			this.candidateCommittee_id = candidateCommitteeId;
-			this.professor_id = professorId;
-		}
-
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) {
-				return true;
-			}
-			if (o == null || getClass() != o.getClass()) {
-				return false;
-			}
-
-			CandidateCommitteeMembershipId that = (CandidateCommitteeMembershipId) o;
-
-			if (professor_id != null ? !professor_id.equals(that.professor_id) : that.professor_id != null) {
-				return false;
-			}
-
-			if (candidateCommittee_id != null ? !candidateCommittee_id.equals(that.candidateCommittee_id) : that.candidateCommittee_id != null) {
-				return false;
-			}
-
-			return true;
-		}
-
-		@Override
-		public int hashCode() {
-			int result;
-			result = (professor_id != null ? professor_id.hashCode() : 0);
-			result = 31 * result + (candidateCommittee_id != null ? candidateCommittee_id.hashCode() : 0);
-			return result;
-		}
-	}
-
-	@EmbeddedId
-	private CandidateCommitteeMembershipId id = new CandidateCommitteeMembershipId();
+	@SuppressWarnings("unused")
+	@Version
+	private int version;
 
 	@ManyToOne
-	@JoinColumn(name = "candidateCommittee_id", insertable = false, updatable = false)
+	@JoinColumn(name = "candidateCommittee_id")
 	private CandidateCommittee candidateCommittee;
 
-	@ManyToOne
-	@JoinColumn(name = "professor_id", insertable = false, updatable = false)
-	private Professor professor;
-
-	//	@OneToMany(mappedBy = "candidateCommitteeMembership", cascade = CascadeType.ALL, orphanRemoval = true)
-	//	private Set<CandidateCommitteeMembershipFile> files = new HashSet<CandidateCommitteeMembershipFile>();
-
+	private String email;
+	
+	
 	public CandidateCommitteeMembership() {
 	}
 
-	public CandidateCommitteeMembership(CandidateCommittee cc, Professor p) {
-		this.professor = p;
+	public CandidateCommitteeMembership(CandidateCommittee cc, String email) {
 		this.candidateCommittee = cc;
-		this.id.candidateCommittee_id = cc.getId();
-		this.id.professor_id = p.getId();
+		this.email = email;
 	}
 
 	@Override
-	public int hashCode() {
-		return id.hashCode();
+	public int hashCode() {	
+		int result;
+		result = (id != null ? id.hashCode() : 0);
+		result = 31 * result + (email != null ? email.hashCode() : 0);
+		return result;
 	}
 
 	@Override
@@ -103,8 +55,18 @@ public class CandidateCommitteeMembership implements Serializable {
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
+
 		CandidateCommitteeMembership that = (CandidateCommitteeMembership) o;
-		return this.id.equals(that.id);
+
+		if (id != null ? !id.equals(that.id) : that.id != null) {
+			return false;
+		}
+
+		if (email != null ? !email.equals(that.email) : that.email != null) {
+			return false;
+		}
+
+		return true;
 	}
 
 	@XmlTransient
@@ -116,12 +78,15 @@ public class CandidateCommitteeMembership implements Serializable {
 		this.candidateCommittee = candidateCommittee;
 	}
 
-	public Professor getProfessor() {
-		return professor;
+	
+	public String getEmail() {
+		return email;
+	}
+	
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
-	public void setProfessor(Professor professor) {
-		this.professor = professor;
-	}
+
 
 }

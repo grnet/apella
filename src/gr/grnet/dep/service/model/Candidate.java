@@ -86,6 +86,7 @@ public class Candidate extends Role {
 	}
 
 	@Override
+	@XmlTransient
 	public boolean isMissingRequiredFields() {
 		if (this.files.isEmpty()) {
 			return true;
