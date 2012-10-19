@@ -1,9 +1,5 @@
 package gr.grnet.dep.service.model.file;
 
-import gr.grnet.dep.service.model.Position;
-import gr.grnet.dep.service.model.PositionCommitteeMember;
-import gr.grnet.dep.service.model.Register;
-import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
 import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
 import gr.grnet.dep.service.model.Register.DetailedRegisterView;

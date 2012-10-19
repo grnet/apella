@@ -36,8 +36,6 @@ public class PositionFile extends FileHeader {
 			put(FileType.PRAKSI_DIORISMOU, 1);
 			put(FileType.DIOIKITIKO_EGGRAFO, Integer.MAX_VALUE);
 			put(FileType.APOFASI_ANAPOMPIS, 1);
-			put(FileType.ORGANISMOS, 1);
-			put(FileType.ESWTERIKOS_KANONISMOS, 1);
 		}
 	});
 

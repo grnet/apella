@@ -25,6 +25,8 @@ public class InstitutionAssistant extends Role {
 	@ManyToOne
 	private InstitutionManager manager;
 
+	private String phone;
+
 	public InstitutionAssistant() {
 		super();
 		setDiscriminator(RoleDiscriminator.INSTITUTION_ASSISTANT);
@@ -46,6 +48,14 @@ public class InstitutionAssistant extends Role {
 		this.manager = manager;
 	}
 
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
 	////////////////////////////////////////////////////////////////////////////
 
 	@Override
@@ -57,6 +67,7 @@ public class InstitutionAssistant extends Role {
 		InstitutionAssistant ia = (InstitutionAssistant) otherRole;
 		this.setInstitution(ia.getInstitution());
 		this.setManager(ia.getManager());
+		this.setPhone(ia.getPhone());
 		return this;
 	}
 
@@ -78,6 +89,9 @@ public class InstitutionAssistant extends Role {
 	@Override
 	public boolean isMissingRequiredFields() {
 		if (this.institution == null) {
+			return true;
+		}
+		if (this.manager == null) {
 			return true;
 		}
 		return false;

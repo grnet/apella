@@ -1,5 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.file.ProfessorFile;
+
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -161,6 +163,18 @@ public class ProfessorDomestic extends Professor {
 			return true;
 		}
 		if (this.subject == null) {
+			return true;
+		}
+		boolean hasFEKFile = false;
+		for (ProfessorFile file : this.getFiles()) {
+			switch (file.getType()) {
+				case FEK:
+					hasFEKFile = true;
+					break;
+				default:
+			}
+		}
+		if (!hasFEKFile) {
 			return true;
 		}
 		return false;

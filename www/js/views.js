@@ -1607,6 +1607,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			switch (self.model.get("discriminator")) {
 			case "CANDIDATE":
 				switch (field) {
+				case "identification":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "tautotitaFile":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "bebaiwsiStratiwtikisThitiasFile":
@@ -1622,6 +1624,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				}
 			case "PROFESSOR_DOMESTIC":
 				switch (field) {
+				case "identification":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "institution":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "department":
@@ -1643,6 +1647,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				}
 			case "PROFESSOR_FOREIGN":
 				switch (field) {
+				case "identification":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "institution":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "profileURL":
@@ -1658,11 +1664,19 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				switch (field) {
 				case "institution":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "verificationAuthority":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "verificationAuthorityName":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "phone":
+					return true;
 				}
 			case "INSTITUTION_ASSISTAN":
 				switch (field) {
 				case "institution":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "phone":
+					return true;
 				}
 			case "MINISTRY_MANAGER":
 				switch (field) {
@@ -1729,6 +1743,22 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.$("#ptyxioFileList").html($.i18n.prop("PressSave"));
 					self.$("#dimosieusiFileList").html($.i18n.prop("PressSave"));
 				}
+				self.validator = $("form", this.el).validate({
+					errorElement : "span",
+					errorClass : "help-inline",
+					highlight : function(element, errorClass, validClass) {
+						$(element).parent(".controls").parent(".control-group").addClass("error");
+					},
+					unhighlight : function(element, errorClass, validClass) {
+						$(element).parent(".controls").parent(".control-group").removeClass("error");
+					},
+					rules : {
+						identification : "required"
+					},
+					messages : {
+						identification : $.i18n.prop('validation_identification')
+					}
+				});
 				break;
 			case "PROFESSOR_DOMESTIC":
 				// Bind change on institution selector to update department
@@ -1835,7 +1865,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					$("#profileFile", self.$el).html($.i18n.prop("PressSave"));
 					$("#dimosieusiFileList", self.$el).html($.i18n.prop("PressSave"));
 				}
-				this.validator = $("form", this.el).validate({
+				self.validator = $("form", this.el).validate({
 					errorElement : "span",
 					errorClass : "help-inline",
 					highlight : function(element, errorClass, validClass) {
@@ -1845,6 +1875,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						$(element).parent(".controls").parent(".control-group").removeClass("error");
 					},
 					rules : {
+						identification : "required",
 						institution : "required",
 						profileURL : {
 							required : true,
@@ -1856,6 +1887,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						fekSubject : "required"
 					},
 					messages : {
+						identification : $.i18n.prop('validation_identification'),
 						institution : $.i18n.prop('validation_institution'),
 						profileURL : $.i18n.prop('validation_profileURL'),
 						rank : $.i18n.prop('validation_rank'),
@@ -1887,31 +1919,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						popup.show();
 					}
 				});
-				this.validator = $("form", this.el).validate({
-					errorElement : "span",
-					errorClass : "help-inline",
-					highlight : function(element, errorClass, validClass) {
-						$(element).parent(".controls").parent(".control-group").addClass("error");
-					},
-					unhighlight : function(element, errorClass, validClass) {
-						$(element).parent(".controls").parent(".control-group").removeClass("error");
-					},
-					rules : {
-						institution : "required",
-						profileURL : {
-							required : true,
-							url : true
-						},
-						rank : "required",
-						subject : "required"
-					},
-					messages : {
-						institution : $.i18n.prop('validation_institution'),
-						profileURL : $.i18n.prop('validation_profileURL'),
-						rank : $.i18n.prop('validation_rank'),
-						subject : $.i18n.prop('validation_subject')
-					}
-				});
 				if (self.model.has("id")) {
 					var files = new Models.Files();
 					files.url = self.model.url() + "/file";
@@ -1927,8 +1934,41 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				} else {
 					self.$("#profileFile").html($.i18n.prop("PressSave"));
 				}
+				
+				self.validator = $("form", this.el).validate({
+					errorElement : "span",
+					errorClass : "help-inline",
+					highlight : function(element, errorClass, validClass) {
+						$(element).parent(".controls").parent(".control-group").addClass("error");
+					},
+					unhighlight : function(element, errorClass, validClass) {
+						$(element).parent(".controls").parent(".control-group").removeClass("error");
+					},
+					rules : {
+						identification : "required",
+						institution : "required",
+						profileURL : {
+							required : true,
+							url : true
+						},
+						rank : "required",
+						subject : "required"
+					},
+					messages : {
+						identification : $.i18n.prop('validation_identification'),
+						institution : $.i18n.prop('validation_institution'),
+						profileURL : $.i18n.prop('validation_profileURL'),
+						rank : $.i18n.prop('validation_rank'),
+						subject : $.i18n.prop('validation_subject')
+					}
+				});
 				break;
 			case "INSTITUTION_MANAGER":
+				self.$("select[name='verificationAuthority']").val(self.model.get("verificationAuthority"));
+				self.$("select[name='verificationAuthority']").change(function(event) {
+					self.$("label[for='verificationAuthorityName']").html($.i18n.prop('verificationAuthorityName') + " " + $.i18n.prop('verificationAuthority' + self.$("select[name='verificationAuthority']").val()));
+				});
+				
 				self.$("select[name='institution']").change(function(event) {
 					self.$("select[name='institution']").next(".help-block").html(jQuery("select[name='institution'] option:selected").text());
 				});
@@ -1953,7 +1993,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						popup.show();
 					}
 				});
-				this.validator = $("form", this.el).validate({
+				self.validator = $("form", this.el).validate({
 					errorElement : "span",
 					errorClass : "help-inline",
 					highlight : function(element, errorClass, validClass) {
@@ -1963,12 +2003,27 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						$(element).parent(".controls").parent(".control-group").removeClass("error");
 					},
 					rules : {
-						institution : "required"
+						institution : "required",
+						verificationAuthority : "required",
+						verificationAuthorityName : "required",
+						phone : {
+							required : true,
+							number : true,
+							minlength : 10
+						}
 					},
 					messages : {
-						institution : $.i18n.prop('validation_institution')
+						institution : $.i18n.prop('validation_institution'),
+						verificationAuthority : $.i18n.prop('validation_verificationAuthority'),
+						verificationAuthorityName : $.i18n.prop('validation_verificationAuthorityName'),
+						phone : {
+							required : $.i18n.prop('validation_phone'),
+							number : $.i18n.prop('validation_number'),
+							minlength : $.i18n.prop('validation_minlength', 10)
+						}
 					}
 				});
+				self.$("select[name='verificationAuthority']").change();
 				break;
 			
 			case "INSTITUTION_ASSISTANT":
@@ -1996,7 +2051,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						popup.show();
 					}
 				});
-				this.validator = $("form", this.el).validate({
+				self.validator = $("form", this.el).validate({
 					errorElement : "span",
 					errorClass : "help-inline",
 					highlight : function(element, errorClass, validClass) {
@@ -2006,16 +2061,26 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						$(element).parent(".controls").parent(".control-group").removeClass("error");
 					},
 					rules : {
-						institution : "required"
+						institution : "required",
+						phone : {
+							required : true,
+							number : true,
+							minlength : 10
+						}
 					},
 					messages : {
-						institution : $.i18n.prop('validation_institution')
+						institution : $.i18n.prop('validation_institution'),
+						phone : {
+							required : $.i18n.prop('validation_phone'),
+							number : $.i18n.prop('validation_number'),
+							minlength : $.i18n.prop('validation_minlength', 10)
+						}
 					}
 				});
 				break;
 			
 			case "MINISTRY_MANAGER":
-				this.validator = $("form", this.el).validate({
+				self.validator = $("form", this.el).validate({
 					errorElement : "span",
 					errorClass : "help-inline",
 					highlight : function(element, errorClass, validClass) {
@@ -2059,8 +2124,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					// Read Input
 					switch (self.model.get("discriminator")) {
 					case "CANDIDATE":
+						values.identification = self.$('form input[name=identification]').val();
 						break;
 					case "PROFESSOR_DOMESTIC":
+						values.identification = self.$('form input[name=identification]').val();
 						values.institution = {
 							"id" : self.$('form select[name=institution]').val()
 						};
@@ -2082,6 +2149,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						};
 						break;
 					case "PROFESSOR_FOREIGN":
+						values.identification = self.$('form input[name=identification]').val();
 						values.institution = self.$('form input[name=institution]').val();
 						values.profileURL = self.$('form input[name=profileURL]').val();
 						values.rank = {
@@ -2096,12 +2164,16 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						values.institution = {
 							"id" : self.$('form select[name=institution]').val()
 						};
+						values.verificationAuthority = self.$('form select[name=verificationAuthority]').val();
+						values.verificationAuthorityName = self.$('form input[name=verificationAuthorityName]').val();
+						values.phone = self.$('form input[name=phone]').val();
 						break;
 					
 					case "INSTITUTION_ASSISTANT":
 						values.institution = {
 							"id" : self.$('form select[name=institution]').val()
 						};
+						values.phone = self.$('form input[name=phone]').val();
 						break;
 					
 					case "MINISTRY_MANAGER":
@@ -3633,7 +3705,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		select : function(event, positionCommitteeMember) {
 			var self = this;
 			var selectedModel = positionCommitteeMember ? positionCommitteeMember : self.collection.get($(event.currentTarget).data('committeeMemberId'));
-			// TODO: Route to position/id
+			// TODO: Send to position/id
 		},
 		
 		close : function(eventName) {

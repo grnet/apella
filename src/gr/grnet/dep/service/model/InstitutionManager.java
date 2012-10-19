@@ -15,12 +15,22 @@ public class InstitutionManager extends Role {
 	/** Default value included to remove warning. Remove or modify at will. **/
 	private static final long serialVersionUID = 1L;
 
+	public enum VerificationAuthority {
+		DEAN, PRESIDENT
+	}
+
 	@Inject
 	@Transient
 	private Logger logger;
 
 	@ManyToOne
 	private Institution institution;
+
+	private VerificationAuthority verificationAuthority;
+
+	private String verificationAuthorityName;
+
+	private String phone;
 
 	public InstitutionManager() {
 		super();
@@ -35,6 +45,30 @@ public class InstitutionManager extends Role {
 		this.institution = institution;
 	}
 
+	public VerificationAuthority getVerificationAuthority() {
+		return verificationAuthority;
+	}
+
+	public void setVerificationAuthority(VerificationAuthority verificationAuthority) {
+		this.verificationAuthority = verificationAuthority;
+	}
+
+	public String getVerificationAuthorityName() {
+		return verificationAuthorityName;
+	}
+
+	public void setVerificationAuthorityName(String verificationAuthorityName) {
+		this.verificationAuthorityName = verificationAuthorityName;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
 	////////////////////////////////////////////////////////////////////////////
 
 	@Override
@@ -43,11 +77,12 @@ public class InstitutionManager extends Role {
 
 	@Override
 	public Role copyFrom(Role otherRole) {
-		if (otherRole instanceof InstitutionManager) {
-			this.setInstitution(((InstitutionManager) otherRole).getInstitution());
-			return this;
-		}
-		return null;
+		InstitutionManager im = (InstitutionManager) otherRole;
+		this.setInstitution(im.getInstitution());
+		this.setVerificationAuthority(im.getVerificationAuthority());
+		this.setVerificationAuthorityName(im.getVerificationAuthorityName());
+		this.setPhone(im.getPhone());
+		return this;
 	}
 
 	@Override
@@ -59,12 +94,24 @@ public class InstitutionManager extends Role {
 		if (!compare(this.institution.getId(), other.getInstitution().getId())) {
 			return false;
 		}
+		if (!compare(this.verificationAuthority, other.getVerificationAuthority())) {
+			return false;
+		}
+		if (!compare(this.verificationAuthorityName, other.getVerificationAuthorityName())) {
+			return false;
+		}
 		return true;
 	}
 
 	@Override
 	public boolean isMissingRequiredFields() {
 		if (this.institution == null) {
+			return true;
+		}
+		if (this.verificationAuthority == null) {
+			return true;
+		}
+		if (this.verificationAuthorityName == null) {
 			return true;
 		}
 		return false;

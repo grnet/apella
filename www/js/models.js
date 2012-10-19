@@ -548,6 +548,10 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			"statusDate" : undefined,
 			"user" : undefined,
 			// Specific Fields
+			"identification" : undefined,
+			"verificationAuthority" : undefined,
+			"verificationAuthorityName" : undefined,
+			"phone" : undefined,
 			"institution" : undefined,
 			"department" : undefined,
 			"profileURL" : undefined,
