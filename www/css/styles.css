@@ -105,3 +105,12 @@ dl.dl-table {
 .file-table thead th {
 	vertical-align: bottom;
 }
+
+/* ALERT POPUP */
+.alert-popup {
+	position: absolute;
+	z-index: 100;
+	top: 25%;
+	left: 15%;
+	right: 15%;
+}

@@ -265,7 +265,7 @@ public class Position {
 				break;
 			}
 		}
-		return hasPraksiDiorismou || (nominationFEK != null);
+		return hasPraksiDiorismou;
 	}
 
 	public void copyFrom(Position position) {

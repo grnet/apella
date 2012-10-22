@@ -4,7 +4,6 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
 import javax.validation.Valid;
-import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -26,8 +25,7 @@ public class ContactInformation {
 	private String email;
 
 	@NotNull
-	@Size(min = 10, max = 12)
-	@Digits(fraction = 0, integer = 12)
+	@Size(min = 10)
 	private String mobile;
 
 	public Address getAddress() {

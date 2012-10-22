@@ -542,7 +542,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	Views.PopupView = Views.BaseView.extend({
 		tagName : "div",
 		
-		className : "alert fade in",
+		className : "alert alert-block alert-popup fade in",
 		
 		initialize : function() {
 			this.template = _.template(tpl_popup);
@@ -552,21 +552,23 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		events : {},
 		
 		render : function(eventName) {
-			$(this.el).html(this.template({
+			var self = this;
+			
+			self.$el.html(this.template({
 				message : this.options.message
 			}));
-			switch (this.options.type) {
+			switch (self.options.type) {
 			case 'info':
-				this.$el.addClass("alert-info");
+				self.$el.addClass("alert-info");
 				break;
 			case 'success':
-				this.$el.addClass("alert-success");
+				self.$el.addClass("alert-success");
 				break;
 			case 'warning':
-				this.$el.addClass("alert-danger");
+				self.$el.addClass("alert-danger");
 				break;
 			case 'error':
-				this.$el.addClass("alert-error");
+				self.$el.addClass("alert-error");
 				break;
 			}
 			return this;
@@ -678,14 +680,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var role = self.model.get('roles')[0];
 			self.$el.html(self.template(role));
 			
-			// Especially for PROFESSOR_DOMESTIC there is a demand to select
-			// institution first in case their institution supports Shibboleth
-			// Login
 			if (role.discriminator === "PROFESSOR_DOMESTIC") {
+				// Especially for PROFESSOR_DOMESTIC there
+				// is a demand to select
+				// institution first in case their institution supports
+				// Shibboleth
+				// Login
 				// Add institutions in selector:
-				self.$("select[name='institution']").change(function(event) {
-					self.$("select[name='institution']").next(".help-block").html(jQuery("select[name='institution'] option:selected").text());
-				});
 				App.institutions = App.institutions ? App.institutions : new Models.Institutions();
 				App.institutions.fetch({
 					cache : true,
@@ -721,6 +722,41 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.$("form#institutionForm").show();
 					self.$("form#userForm").hide();
 				}
+			} else if (role.discriminator === "INSTITUTION_MANAGER") {
+				// Especially for INSTITUTION_MANAGER there is a demand to
+				// select institution first
+				
+				// Add institutions in selector:
+				App.institutions = App.institutions ? App.institutions : new Models.Institutions();
+				App.institutions.fetch({
+					cache : true,
+					success : function(collection, resp) {
+						collection.each(function(institution) {
+							if (_.isObject(role.institution) && _.isEqual(institution.id, role.institution.id)) {
+								$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "' selected>" + institution.get("name") + "</option>");
+							} else {
+								$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
+							}
+						});
+						self.$("select[name='institution']").change();
+					},
+					error : function(model, resp, options) {
+						var popup = new Views.PopupView({
+							type : "error",
+							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						});
+						popup.show();
+					}
+				});
+				// Set UI components
+				if (role.institution) {
+					self.$("form#institutionForm").hide();
+					self.$("form#userForm").show();
+				} else {
+					self.$("form#institutionForm").show();
+					self.$("form#userForm").hide();
+				}
+				self.$("#shibbolethLoginInstructions").hide();
 			} else {
 				// Set UI components
 				self.$("#shibbolethLoginInstructions").hide();

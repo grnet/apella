@@ -184,6 +184,10 @@ public class UserRESTService extends RESTService {
 			}
 
 			//2. Set Fields
+			Role firstRole = user.getRoles().iterator().next();
+			firstRole.setStatus(RoleStatus.UNAPPROVED);
+			firstRole.setStatusDate(new Date());
+
 			user.setRegistrationType(UserRegistrationType.REGISTRATION_FORM);
 			user.setRegistrationDate(new Date());
 			user.setPasswordSalt(User.generatePasswordSalt());
@@ -193,16 +197,31 @@ public class UserRESTService extends RESTService {
 			user.setVerificationNumber(user.generateVerificationNumber());
 			user.setRoles(new HashSet<Role>());
 
-			Role firstRole = user.getRoles().iterator().next();
-			firstRole.setStatus(RoleStatus.UNAPPROVED);
-			firstRole.setStatusDate(new Date());
-
 			switch (firstRole.getDiscriminator()) {
 				case PROFESSOR_DOMESTIC:
 				case PROFESSOR_FOREIGN:
-				case INSTITUTION_MANAGER:
 				case CANDIDATE:
 					// DO NOTHING
+					break;
+				case INSTITUTION_MANAGER:
+					// Validate Institution:
+					InstitutionManager newIM = (InstitutionManager) firstRole;
+					if (newIM.getInstitution() == null || newIM.getInstitution().getId() == null) {
+						throw new RestException(Status.BAD_REQUEST, "wrong.institution.id");
+					}
+					try {
+						em.createQuery(
+							"select im from InstitutionManager im " +
+								"where im.institution.id = :institutionId " +
+								"and im.status = :status ")
+							.setParameter("institutionId", newIM.getInstitution().getId())
+							.setParameter("status", RoleStatus.ACTIVE)
+							.setMaxResults(1)
+							.getSingleResult();
+						throw new RestException(Status.FORBIDDEN, "exists.active.institution.manager");
+					} catch (NoResultException e) {
+						//Not found, OK
+					}
 					break;
 				case INSTITUTION_ASSISTANT:
 					// CHECK LOGGEDON USER, ACTIVATE NEW USER

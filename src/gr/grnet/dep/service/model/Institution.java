@@ -14,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -63,6 +64,7 @@ public class Institution {
 		this.registrationType = registrationType;
 	}
 
+	@XmlTransient
 	public Set<InstitutionFile> getFiles() {
 		return files;
 	}
