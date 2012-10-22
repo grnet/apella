@@ -1939,7 +1939,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				App.ranks.fetch({
 					cache : true,
 					success : function(collection, resp) {
-						collection.each(function(rank) {
+						_.each(collection.filter(function(rank) {
+							return _.isEqual(rank.get("category"), "PROFESSOR");
+						}), function(rank) {
 							if (_.isObject(self.model.get("rank")) && _.isEqual(rank.id, self.model.get("rank").id)) {
 								$("select[name='rank']", self.$el).append("<option value='" + rank.get("id") + "' selected>" + rank.get("name") + "</option>");
 							} else {

@@ -1,6 +1,8 @@
 package gr.grnet.dep.service.model;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Version;
@@ -11,6 +13,10 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Entity
 public class Rank {
 
+	public enum Category {
+		PROFESSOR, RESEARCHER
+	}
+
 	@Id
 	@GeneratedValue
 	private Long id;
@@ -20,7 +26,8 @@ public class Rank {
 
 	@NotNull
 	@NotEmpty
-	private String category;
+	@Enumerated(EnumType.STRING)
+	private Category category;
 
 	@NotNull
 	@NotEmpty
@@ -34,20 +41,20 @@ public class Rank {
 		this.id = id;
 	}
 
+	public Category getCategory() {
+		return category;
+	}
+
+	public void setCategory(Category category) {
+		this.category = category;
+	}
+
 	public String getName() {
 		return name;
 	}
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public String getCategory() {
-		return category;
-	}
-
-	public void setType(String category) {
-		this.category = category;
 	}
 
 }
