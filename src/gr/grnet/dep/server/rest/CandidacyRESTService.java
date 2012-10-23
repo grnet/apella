@@ -3,6 +3,7 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
+import gr.grnet.dep.service.model.Candidacy.SimpleCandidacyView;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.CandidateCommittee;
 import gr.grnet.dep.service.model.CandidateCommittee.SimpleCandidateCommitteeView;
@@ -47,8 +48,7 @@ public class CandidacyRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Candidacy candidacy = (Candidacy) em.createQuery(
-				"from Candidacy c left join fetch c.files " +
-					"where c.id=:id")
+				"from Candidacy c where c.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
 			Candidate candidate = (Candidate) em.createQuery(
@@ -58,14 +58,26 @@ public class CandidacyRESTService extends RESTService {
 			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && candidate.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
+			// Initialize collections
+			candidacy.initializeSnapshot();
 			return candidacy;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
 	}
 
+	/**
+	 * Hold on to a snapshot of candidate's details in given candidacy.
+	 * 
+	 * @param candidacy
+	 */
+	private void updateSnapshot(Candidacy candidacy, Candidate candidate) {
+		candidacy.clearSnapshot();
+		candidacy.updateSnapshot(candidate);
+	}
+	
 	@POST
-	@JsonView({DetailedCandidacyView.class})
+	@JsonView({SimpleCandidacyView.class})
 	public Candidacy create(@HeaderParam(TOKEN_HEADER) String authToken, Candidacy candidacy) {
 		try {
 			Candidate cy = (Candidate) em.createQuery(
@@ -78,6 +90,7 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			candidacy.setDate(new Date());
+			updateSnapshot(candidacy, cy);
 
 			em.persist(candidacy);
 			return candidacy;
@@ -90,7 +103,7 @@ public class CandidacyRESTService extends RESTService {
 
 	@PUT
 	@Path("/{id:[0-9][0-9]*}")
-	@JsonView({DetailedCandidacyView.class})
+	@JsonView({SimpleCandidacyView.class})
 	public Candidacy update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Candidacy candidacy) {
 		try {
 			Candidacy existingCandidacy = em.find(Candidacy.class, id);
@@ -107,7 +120,7 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 
-			// So far there are no fields to update!
+			updateSnapshot(existingCandidacy, cy);
 
 			return existingCandidacy;
 		} catch (NoResultException e) {
@@ -136,12 +149,23 @@ public class CandidacyRESTService extends RESTService {
 			}
 
 			//Do Delete:
+			//Since relationship isn't explicit, we need to do it manually.
+			CandidateCommittee cc = getCandidateCommittee(existingCandidacy);
+			em.remove(cc);
 			em.remove(existingCandidacy);
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		} catch (PersistenceException e) {
 			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
 		}
+	}
+	
+	private CandidateCommittee getCandidateCommittee(Candidacy c) {
+		return (CandidateCommittee) em.createQuery(
+				"from CandidateCommittee cc left join fetch cc.members " +
+					"where cc.candidacy=:candidacy")
+				.setParameter("candidacy", c)
+				.getSingleResult();
 	}
 
 	@GET
@@ -150,8 +174,7 @@ public class CandidacyRESTService extends RESTService {
 	public CandidateCommittee getCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		try {
 			Candidacy c = (Candidacy) em.createQuery(
-				"from Candidacy c left join fetch c.files " +
-					"where c.id=:id")
+				"from Candidacy c where c.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
 			Candidate cy = (Candidate) em.createQuery(
@@ -165,11 +188,7 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 
-			CandidateCommittee cc = (CandidateCommittee) em.createQuery(
-				"from CandidateCommittee cc left join fetch cc.members " +
-					"where cc.candidacy=:candidacy")
-				.setParameter("candidacy", c)
-				.getSingleResult();
+			CandidateCommittee cc = getCandidateCommittee(c);
 
 			em.flush();
 			return cc;
@@ -188,8 +207,7 @@ public class CandidacyRESTService extends RESTService {
 		try {
 			CandidateCommittee cc;
 			Candidacy c = (Candidacy) em.createQuery(
-				"from Candidacy c left join fetch c.files " +
-					"where c.id=:id")
+				"from Candidacy c where c.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
 			Candidate cy = (Candidate) em.createQuery(
@@ -247,8 +265,7 @@ public class CandidacyRESTService extends RESTService {
 			CandidateCommittee cc;
 
 			Candidacy c = (Candidacy) em.createQuery(
-				"from Candidacy c left join fetch c.files " +
-					"where c.id=:id")
+				"from Candidacy c where c.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
 			Candidate cy = (Candidate) em.createQuery(

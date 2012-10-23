@@ -10,6 +10,7 @@
          <!-- Properties for Hibernate -->
          <property name="hibernate.hbm2ddl.auto" value="update" />
          <property name="hibernate.show_sql" value="false" />
+         <property name="hibernate.use_sql_comments" value="true" />
          <property name="hibernate.format_sql" value="true"/>
          <property name="hibernate.ejb.naming_strategy" value="org.hibernate.cfg.DefaultComponentSafeNamingStrategy" />
       </properties>
