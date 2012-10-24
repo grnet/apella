@@ -9,6 +9,8 @@ import gr.grnet.dep.service.model.Position.PublicPositionView;
 import gr.grnet.dep.service.model.PositionCommitteeMember;
 import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
 import gr.grnet.dep.service.model.Professor;
+import gr.grnet.dep.service.model.Role;
+import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.FileBody;
@@ -309,6 +311,7 @@ public class PositionRESTService extends RESTService {
 		if (!PositionFile.fileTypes.containsKey(type) || existingFiles.size() >= PositionFile.fileTypes.get(type)) {
 			throw new RestException(Status.CONFLICT, "wrong.file.type");
 		}
+
 		// Create
 		try {
 			PositionFile positionFile = new PositionFile();
@@ -317,6 +320,10 @@ public class PositionRESTService extends RESTService {
 			saveFile(loggedOn, fileItems, positionFile);
 			position.addFile(positionFile);
 			em.flush();
+
+			if (type == FileType.APOFASI_ANAPOMPIS) {
+				// TODO: CREATE CLONE OF POSITION WITH SAME FIELDS BUT WITHOUT THE APOFASI ANAPOMPIS
+			}
 
 			return toJSON(positionFile, SimpleFileHeaderView.class);
 		} catch (PersistenceException e) {
@@ -430,6 +437,31 @@ public class PositionRESTService extends RESTService {
 	 ************************/
 
 	@GET
+	@Path("/{id:[0-9][0-9]*}/professor")
+	@JsonView({DetailedRoleView.class})
+	public List<Role> getPositionProfessors(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
+		Position position = getAndCheckPosition(authToken, positionId);
+
+		// Prepare Query
+		List<RoleDiscriminator> discriminatorList = new ArrayList<Role.RoleDiscriminator>();
+		discriminatorList.add(RoleDiscriminator.PROFESSOR_DOMESTIC);
+		discriminatorList.add(RoleDiscriminator.PROFESSOR_FOREIGN);
+
+		List<Role> professors = em.createQuery(
+			"select r from Role r " +
+				"where r.id is not null " +
+				"and r.discriminator in (:discriminators) ")
+			.setParameter("discriminators", discriminatorList)
+			.getResultList();
+
+		// Execute
+		for (Role r : professors) {
+			r.initializeCollections();
+		}
+		return professors;
+	}
+
+	@GET
 	@Path("/{id:[0-9][0-9]*}/committee")
 	@JsonView({DetailedPositionCommitteeMemberView.class})
 	public List<PositionCommitteeMember> getPositionCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
@@ -462,9 +494,6 @@ public class PositionRESTService extends RESTService {
 	public PositionCommitteeMember createPositionCommitteeMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, PositionCommitteeMember newMembership) {
 		try {
 			Position existingPosition = getAndCheckPosition(authToken, positionId);
-			if (existingPosition.getCommitee().size() >= PositionCommitteeMember.MAX_MEMBERS) {
-				throw new RestException(Status.CONFLICT, "max.members.exceeded");
-			}
 			Professor existingProfessor = em.find(Professor.class, newMembership.getProfessor().getId());
 			if (existingProfessor == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
@@ -472,9 +501,19 @@ public class PositionRESTService extends RESTService {
 			// Check if already exists:
 			for (PositionCommitteeMember existingMember : existingPosition.getCommitee()) {
 				if (existingMember.getProfessor().getId().equals(existingProfessor.getId())) {
-					throw new RestException(Status.NOT_FOUND, "member.already.exists");
+					throw new RestException(Status.CONFLICT, "member.already.exists");
 				}
 			}
+			int count = 0;
+			for (PositionCommitteeMember existingMember : existingPosition.getCommitee()) {
+				if (existingMember.getType() == newMembership.getType()) {
+					count++;
+				}
+			}
+			if (count >= PositionCommitteeMember.MAX_MEMBERS) {
+				throw new RestException(Status.CONFLICT, "max.members.exceeded");
+			}
+
 			// Update
 			newMembership.setPosition(existingPosition);
 			newMembership.setProfessor(existingProfessor);
@@ -491,11 +530,49 @@ public class PositionRESTService extends RESTService {
 		}
 	}
 
+	@PUT
+	@Path("/{id:[0-9]+}/committee/{cmId:[0-9]+}")
+	@JsonView({DetailedPositionCommitteeMemberView.class})
+	public PositionCommitteeMember updatePositionCommitteeMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cmId") Long cmId, PositionCommitteeMember newMembership) {
+		try {
+			Position existingPosition = getAndCheckPosition(authToken, positionId);
+			// Check if already exists:
+			PositionCommitteeMember existingMember = null;
+			for (PositionCommitteeMember member : existingPosition.getCommitee()) {
+				if (member.getId().equals(cmId)) {
+					existingMember = member;
+				}
+			}
+			if (existingMember == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.position.committee.member.id");
+			}
+			// Update (only type allowed)
+			existingMember.setType(newMembership.getType());
+			em.flush();
+
+			// Return result
+			return existingMember;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+		}
+	}
+
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}/committee/{cmId:[0-9][0-9]*}")
 	public void removePositionCommiteeMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cmId") Long cmId) {
 		try {
-			PositionCommitteeMember existingCM = getPositionCommitteeMember(authToken, positionId, cmId);
+			Position position = getAndCheckPosition(authToken, positionId);
+			PositionCommitteeMember existingCM = null;
+			for (PositionCommitteeMember member : position.getCommitee()) {
+				if (member.getId().equals(cmId)) {
+					existingCM = member;
+					break;
+				}
+			}
+			if (existingCM == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.position.committee.member.id");
+			}
 			// Remove
 			existingCM.getPosition().getCommitee().remove(existingCM);
 			em.remove(existingCM);

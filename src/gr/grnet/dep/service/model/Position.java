@@ -250,22 +250,35 @@ public class Position {
 			return PositionStatus.ENTAGMENI;
 		} else if (now.compareTo(closingDate) < 0) {
 			return PositionStatus.ANOIXTI;
-		} else if (isCompletedWithNomination()) {
+		} else if (hasPraktikoEpilogis()) {
 			return PositionStatus.STELEXOMENI;
+		} else if (hasApofasiAnapompis()) {
+			return PositionStatus.OLOKLIROMENI;
 		} else {
 			return PositionStatus.KLEISTI;
 		}
 	}
 
-	private boolean isCompletedWithNomination() {
-		boolean hasPraksiDiorismou = false;
+	private boolean hasPraktikoEpilogis() {
+		boolean hasPraktikoEpilogis = false;
 		for (PositionFile file : files) {
-			if (file.getType().equals(FileType.PRAKSI_DIORISMOU)) {
-				hasPraksiDiorismou = true;
+			if (file.getType().equals(FileType.PRAKTIKO_EPILOGIS)) {
+				hasPraktikoEpilogis = true;
 				break;
 			}
 		}
-		return hasPraksiDiorismou;
+		return hasPraktikoEpilogis;
+	}
+
+	private boolean hasApofasiAnapompis() {
+		boolean hasApofasiAnapompis = false;
+		for (PositionFile file : files) {
+			if (file.getType().equals(FileType.APOFASI_ANAPOMPIS)) {
+				hasApofasiAnapompis = true;
+				break;
+			}
+		}
+		return hasApofasiAnapompis;
 	}
 
 	public void copyFrom(Position position) {

@@ -11,6 +11,8 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
@@ -50,6 +52,7 @@ public class FileHeader implements Serializable {
 	@Version
 	private int version;
 
+	@Enumerated(EnumType.STRING)
 	private FileType type;
 
 	/**

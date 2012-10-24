@@ -303,7 +303,7 @@ public class RESTService {
 		}
 	}
 
-	public String toJSON(Object object, Class<?> view) throws JsonMappingException {
+	public String toJSON(Object object, Class<?> view) {
 		try {
 			ContextResolver<ObjectMapper> resolver = providers.getContextResolver(ObjectMapper.class, MediaType.APPLICATION_JSON_TYPE);
 			ObjectMapper mapper = resolver.getContext(object.getClass());

@@ -65,6 +65,18 @@
 		<fieldset>
 			<legend> <%= $.i18n.prop('PositionCommittee') %> </legend>
 			<div class="control-group">
+				<label class="control-label" for="apofasiSystasisEpitropisFileList"><%= $.i18n.prop('ApofasiSystasisEpitropisFileList') %>:</label>
+				<div class="controls">
+					<span id="apofasiSystasisEpitropisFileList"></span>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="positionCommittee"><%= $.i18n.prop('PositionCommittee') %>:</label>
+				<div class="controls">
+					<span id="positionCommittee"></span>
+				</div>
+			</div>
+			<div class="control-group">
 				<label class="control-label" for="committeeMeetingDate"><%= $.i18n.prop('CommitteeMeetingDate') %>:</label>
 				<div class="controls">
 					<input class="input-xlarge" name="committeeMeetingDate" type="text" data-input-type="date"  value="<%= committeeMeetingDate %>" />
@@ -86,12 +98,6 @@
 				<label class="control-label" for="aitimaEpitropisProsAksiologitesFile"><%= $.i18n.prop('AitimaEpitropisProsAksiologitesFile') %>:</label>
 				<div class="controls">
 					<span id="aitimaEpitropisProsAksiologitesFile"></span>
-				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="positionCommittee"><%= $.i18n.prop('PositionCommittee') %>:</label>
-				<div class="controls">
-					<span id="positionCommittee"></span>
 				</div>
 			</div>
 		</fieldset>
@@ -165,15 +171,18 @@
 				</div>
 			</div>
 			<div class="control-group">
-				<label class="control-label" for="dioikitikoEggrafoFileList"><%= $.i18n.prop('DioikitikoEggrafoFileList') %>:</label>
-				<div class="controls">
-					<span id="dioikitikoEggrafoFileList"></span>
-				</div>
-			</div>
-			<div class="control-group">
 				<label class="control-label" for="apofasiAnapompisFile"><%= $.i18n.prop('ApofasiAnapompisFile') %>:</label>
 				<div class="controls">
 					<span id="apofasiAnapompisFile"></span>
+				</div>
+			</div>
+		</fieldset>
+		<fieldset>
+			<legend> <%= $.i18n.prop('PositionLoipaDioikitikaEggrafa') %> </legend>
+		<div class="control-group">
+				<label class="control-label" for="dioikitikoEggrafoFileList"><%= $.i18n.prop('DioikitikoEggrafoFileList') %>:</label>
+				<div class="controls">
+					<span id="dioikitikoEggrafoFileList"></span>
 				</div>
 			</div>
 		</fieldset>

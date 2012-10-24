@@ -3,6 +3,8 @@ package gr.grnet.dep.service.model;
 import java.io.Serializable;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
@@ -27,9 +29,16 @@ public class PositionCommitteeMember implements Serializable {
 	public static interface DetailedPositionCommitteeMemberView {
 	};
 
+	public enum MemberType {
+		REGULAR, SUBSTITUTE
+	}
+
 	@Id
 	@GeneratedValue
 	private Long id;
+
+	@Enumerated(EnumType.STRING)
+	private MemberType type;
 
 	@ManyToOne
 	private Position position;
@@ -61,6 +70,14 @@ public class PositionCommitteeMember implements Serializable {
 
 	public void setProfessor(Professor professor) {
 		this.professor = professor;
+	}
+
+	public MemberType getType() {
+		return type;
+	}
+
+	public void setType(MemberType type) {
+		this.type = type;
 	}
 
 }

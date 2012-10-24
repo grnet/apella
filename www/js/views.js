@@ -1,5 +1,5 @@
-define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/position-committee-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html", "text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html", "text!tpl/file-multiple-edit.html", "text!tpl/professor-committees.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm,
-		tpl_file_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_position_committee_edit, tpl_position_edit, tpl_position_list, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_file_multiple_edit, tpl_professor_committees) {
+define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/position-committee-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html", "text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html", "text!tpl/file-multiple-edit.html", "text!tpl/professor-committees.html", "text!tpl/position-committee-edit-professor-list.html" ], function($, _,
+		Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_position_committee_edit, tpl_position_edit, tpl_position_list, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_file_multiple_edit, tpl_professor_committees, tpl_position_committee_edit_professor_list) {
 	
 	var Views = {};
 	
@@ -2874,7 +2874,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		validator : undefined,
 		
 		initialize : function() {
-			_.bindAll(this, "render", "submit", "cancel", "addFile", "addFileList", "close");
+			_.bindAll(this, "render", "isEditable", "submit", "cancel", "addFile", "addFileList", "close");
 			this.template = _.template(tpl_position_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
@@ -2887,6 +2887,70 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				$("form", this.el).submit();
 			},
 			"submit form" : "submit"
+		},
+		
+		isEditable : function(field) {
+			var self = this;
+			if (_.isEqual(self.model.get("status"), "OLOKLIROMENI") || _.isEqual(self.model.get("status"), "STELEXOMENI")) {
+				return false;
+			}
+			switch (field) {
+			// Fields
+			case "name":
+				return self.model.isNew() || _.isEqual(self.model.get("status"), "ENTAGMENI") || _.isEqual(self.model.get("status"), "ANOIXTI");
+			case "department":
+				return self.model.isNew() || _.isEqual(self.model.get("status"), "ENTAGMENI") || _.isEqual(self.model.get("status"), "ANOIXTI");
+			case "description":
+				return self.model.isNew() || _.isEqual(self.model.get("status"), "ENTAGMENI") || _.isEqual(self.model.get("status"), "ANOIXTI");
+			case "subject":
+				return self.model.isNew() || _.isEqual(self.model.get("status"), "ENTAGMENI") || _.isEqual(self.model.get("status"), "ANOIXTI");
+			case "fek":
+				return self.model.isNew() || _.isEqual(self.model.get("status"), "ENTAGMENI") || _.isEqual(self.model.get("status"), "ANOIXTI");
+			case "fekSentDate":
+				return self.model.isNew() || _.isEqual(self.model.get("status"), "ENTAGMENI") || _.isEqual(self.model.get("status"), "ANOIXTI");
+			case "openingDate":
+				return self.model.isNew() || _.isEqual(self.model.get("status"), "ENTAGMENI") || _.isEqual(self.model.get("status"), "ANOIXTI");
+			case "closingDate":
+				return self.model.isNew() || _.isEqual(self.model.get("status"), "ENTAGMENI") || _.isEqual(self.model.get("status"), "ANOIXTI");
+			case "committeeMeetingDate":
+				return _.isEqual(self.model.get("status"), "KLEISTI");
+			case "nominationCommitteeConvergenceDate":
+				return _.isEqual(self.model.get("status"), "KLEISTI");
+			case "nominationToETDate":
+				return _.isEqual(self.model.get("status"), "KLEISTI");
+			case "nominationFEK":
+				return _.isEqual(self.model.get("status"), "KLEISTI");
+				// Files
+			case "apofasiSystasisEpitropisFileList":
+				return _.isEqual(self.model.get("status"), "KLEISTI");
+			case "prosklisiKosmitoraFile":
+				return _.isEqual(self.model.get("status"), "KLEISTI");
+			case "eisigisiDEPYpopsifiouFileList":
+				return _.isEqual(self.model.get("status"), "KLEISTI");
+			case "praktikoEpilogisFile":
+				return _.isEqual(self.model.get("status"), "KLEISTI");
+			case "diavivastikoPraktikouFile":
+				return _.isEqual(self.model.get("status"), "KLEISTI");
+			case "praksiDiorismouFile":
+				return _.isEqual(self.model.get("status"), "KLEISTI");
+			case "dioikitikoEggrafoFileList":
+				return _.isEqual(self.model.get("status"), "KLEISTI");
+			case "apofasiAnapompisFile":
+				return _.isEqual(self.model.get("status"), "KLEISTI");
+			case "praktikoSynedriasisEpitropisGiaAksiologitesFile":
+				return _.isEqual(self.model.get("status"), "KLEISTI");
+			case "tekmiriosiEpitropisGiaAksiologitesFile":
+				return _.isEqual(self.model.get("status"), "KLEISTI");
+			case "aitimaEpitropisProsAksiologitesFile":
+				return _.isEqual(self.model.get("status"), "KLEISTI");
+			case "aksiologisiProtouAksiologitiFileList":
+				return _.isEqual(self.model.get("status"), "KLEISTI");
+			case "aksiologisiDeuterouAksiologitiFileList":
+				return _.isEqual(self.model.get("status"), "KLEISTI");
+			case "positionCommittee":
+				return _.isEqual(self.model.get("status"), "KLEISTI");
+			}
+			return false;
 		},
 		
 		render : function(eventName) {
@@ -2932,67 +2996,64 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				files.fetch({
 					cache : false,
 					success : function(collection, response) {
+						self.addFile(collection, "APOFASI_SYSTASIS_EPITROPIS", self.$("#apofasiSystasisEpitropisFileList"), {
+							withMetadata : true,
+							editable : self.isEditable("apofasiSystasisEpitropisFileList")
+						});
 						self.addFile(collection, "PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES", self.$("#praktikoSynedriasisEpitropisGiaAksiologitesFile"), {
 							withMetadata : true,
-							editable : true
+							editable : self.isEditable("praktikoSynedriasisEpitropisGiaAksiologitesFile")
 						});
 						self.addFile(collection, "TEKMIRIOSI_EPITROPIS_GIA_AKSIOLOGITES", self.$("#tekmiriosiEpitropisGiaAksiologitesFile"), {
 							withMetadata : true,
-							editable : true
+							editable : self.isEditable("tekmiriosiEpitropisGiaAksiologitesFile")
 						});
 						self.addFile(collection, "AITIMA_EPITROPIS_PROS_AKSIOLOGITES", self.$("#aitimaEpitropisProsAksiologitesFile"), {
 							withMetadata : true,
-							editable : true
+							editable : self.isEditable("aitimaEpitropisProsAksiologitesFile")
 						});
 						self.addFileList(collection, "AKSIOLOGISI_PROTOU_AKSIOLOGITI", self.$("#aksiologisiProtouAksiologitiFileList"), {
 							withMetadata : true,
-							editable : true
+							editable : self.isEditable("aksiologisiProtouAksiologitiFileList")
 						});
 						self.addFileList(collection, "AKSIOLOGISI_DEUTEROU_AKSIOLOGITI", self.$("#aksiologisiDeuterouAksiologitiFileList"), {
 							withMetadata : true,
-							editable : true
+							editable : self.isEditable("aksiologisiDeuterouAksiologitiFileList")
 						});
 						self.addFile(collection, "PROSKLISI_KOSMITORA", self.$("#prosklisiKosmitoraFile"), {
 							withMetadata : true,
-							editable : true
+							editable : self.isEditable("prosklisiKosmitoraFile")
 						});
 						self.addFileList(collection, "EISIGISI_DEP_YPOPSIFIOU", self.$("#eisigisiDEPYpopsifiouFileList"), {
 							withMetadata : true,
-							editable : true
+							editable : self.isEditable("eisigisiDEPYpopsifiouFileList")
 						});
-						self.addFile(collection, "PRAKTIKO_EPILOGIS", self.$("#praktikoEpilogisFile"), {
+						self.addFileList(collection, "PRAKTIKO_EPILOGIS", self.$("#praktikoEpilogisFile"), {
 							withMetadata : true,
-							editable : true
+							editable : self.isEditable("praktikoEpilogisFile")
 						});
 						self.addFile(collection, "DIAVIVASTIKO_PRAKTIKOU", self.$("#diavivastikoPraktikouFile"), {
 							withMetadata : true,
-							editable : true
+							editable : self.isEditable("diavivastikoPraktikouFile")
 						});
 						self.addFile(collection, "PRAKSI_DIORISMOU", self.$("#praksiDiorismouFile"), {
 							withMetadata : true,
-							editable : true
+							editable : self.isEditable("praksiDiorismouFile")
 						});
 						self.addFileList(collection, "DIOIKITIKO_EGGRAFO", self.$("#dioikitikoEggrafoFileList"), {
 							withMetadata : true,
-							editable : true
+							editable : self.isEditable("dioikitikoEggrafoFileList")
 						});
 						self.addFile(collection, "APOFASI_ANAPOMPIS", self.$("#apofasiAnapompisFile"), {
 							withMetadata : true,
-							editable : true
-						});
-						self.addFile(collection, "ORGANISMOS", self.$("#organismosFile"), {
-							withMetadata : true,
-							editable : true
-						});
-						self.addFile(collection, "ESWTERIKOS_KANONISMOS", self.$("#eswterikosKanonismosFile"), {
-							withMetadata : true,
-							editable : true
+							editable : self.isEditable("apofasiAnapompisFile")
 						});
 					}
 				});
 				
 				self.addCommitteeView(self.$("#positionCommittee"));
 			} else {
+				self.$("#apofasiSystasisEpitropisFileList").html($.i18n.prop("PressSave"));
 				self.$("#prosklisiKosmitoraFile").html($.i18n.prop("PressSave"));
 				self.$("#eisigisiDEPYpopsifiouFileList").html($.i18n.prop("PressSave"));
 				self.$("#praktikoEpilogisFile").html($.i18n.prop("PressSave"));
@@ -3011,6 +3072,19 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("#positionCommittee").html($.i18n.prop("PressSave"));
 			}
 			// End of files
+			
+			// Set isEditable to fields
+			self.$("select, input, textarea").each(function(index) {
+				var field = $(this).attr("name");
+				if (self.isEditable(field)) {
+					$(this).removeAttr("disabled");
+				} else {
+					$(this).attr("disabled", true);
+				}
+			});
+			if (_.isEqual(self.model.get("status"), "OLOKLIROMENI")) {
+				self.$("a#save,a#remove").hide();
+			}
 			
 			// Widgets
 			self.$("input[data-input-type=date]").datepicker();
@@ -3148,11 +3222,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var committee = new Models.PositionCommittee({}, {
 				position : self.model.get("id")
 			});
-			var committeeView = new Views.PositionCommitteeView({
-				maxmembers : 7,
-				position : {
-					id : self.model.get("id")
-				},
+			var committeeView = new Views.PositionCommitteeEditView({
+				position : self.model,
 				collection : committee
 			});
 			
@@ -3174,7 +3245,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	/***************************************************************************
 	 * PositionCommitteeView ***************************************************
 	 **************************************************************************/
-	Views.PositionCommitteeView = Views.BaseView.extend({
+	Views.PositionCommitteeEditView = Views.BaseView.extend({
 		tagName : "div",
 		
 		uploader : undefined,
@@ -3183,51 +3254,29 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var self = this;
 			
 			self.template = _.template(tpl_position_committee_edit);
-			_.bindAll(self, "render", "viewMember", "removeMember", "toggleAddMember", "close");
+			_.bindAll(self, "render", "allowedToEdit", "viewMember", "addMember", "updateMember", "removeMember", "toggleAddMember", "close");
 			self.collection.bind('reset', this.render, this);
 			self.collection.bind('remove', this.render, this);
 			self.collection.bind('add', this.render, this);
 			
+			// Initialize Professor, no request is performed until render
 			self.professors = new Models.Professors();
-			self.professors.on("role:selected", function(role) {
-				var confirm = new Views.ConfirmView({
-					title : $.i18n.prop('Confirm'),
-					message : $.i18n.prop('AreYouSure'),
-					yes : function() {
-						var positionCommitteeMember = new Models.PositionCommitteeMember();
-						positionCommitteeMember.save({
-							position : {
-								id : self.options.position.id
-							},
-							professor : role.toJSON()
-						}, {
-							wait : true,
-							success : function(model, resp) {
-								self.collection.add(model);
-								var popup = new Views.PopupView({
-									type : "success",
-									message : $.i18n.prop("Success")
-								});
-								popup.show();
-							},
-							error : function(model, resp, options) {
-								var popup = new Views.PopupView({
-									type : "error",
-									message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-								});
-								popup.show();
-							}
-						});
-					}
-				});
-				confirm.show();
+			self.professors.url = self.options.position.url() + "/professor";
+			self.professors.on("member:add", function(role, type) {
+				self.addMember(role, type);
 			});
 		},
 		
 		events : {
 			"click a#removeMember" : "removeMember",
-			"click a#addMember" : "toggleAddMember",
-			"click a#viewMember" : "viewMember"
+			"click a#toggleAddMember" : "toggleAddMember",
+			"click a#viewMember" : "viewMember",
+			"change select[name=type]" : "updateMember"
+		},
+		
+		allowedToEdit : function() {
+			var self = this;
+			return self.options.position.get("status") === "KLEISTI";
 		},
 		
 		render : function(eventName) {
@@ -3236,16 +3285,25 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				committee : self.collection.toJSON()
 			}));
 			
-			// Inner View
-			if (self.professorListView) {
-				self.professorListView.close();
+			if (self.allowedToEdit()) {
+				// Inner View
+				if (self.professorListView) {
+					self.professorListView.close();
+				}
+				self.professorListView = new Views.PositionCommitteeEditProfessorListView({
+					collection : self.professors
+				});
+				self.$("div#committee-professor-list").hide();
+				self.$("div#committee-professor-list").html(self.professorListView.el);
+				self.$("select").removeAttr("disabled");
+				self.$("a.btn").show();
+				
+				self.professors.fetch();
+			} else {
+				self.$("div#committee-professor-list").hide();
+				self.$("select").attr("disabled", true);
+				self.$("a.btn").hide();
 			}
-			self.professorListView = new Views.ProfessorListView({
-				collection : self.professors
-			});
-			self.$("div#committee-members").hide();
-			self.$("div#committee-members").html(self.professorListView.el);
-			self.professors.fetch();
 			return self;
 		},
 		
@@ -3300,8 +3358,77 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		
 		toggleAddMember : function(event) {
 			var self = this;
-			self.$("div#committee-members").toggle();
-			self.$("a#addMember").toggleClass('active');
+			self.$("div#committee-professor-list").toggle();
+			self.$("a#toggleAddMember").toggleClass('active');
+		},
+		
+		addMember : function(professor, type) {
+			var self = this;
+			var confirm = new Views.ConfirmView({
+				title : $.i18n.prop('Confirm'),
+				message : $.i18n.prop('AreYouSure'),
+				yes : function() {
+					var positionCommitteeMember = new Models.PositionCommitteeMember();
+					positionCommitteeMember.save({
+						"position" : {
+							id : self.options.position.get("id")
+						},
+						"professor" : professor.toJSON(),
+						"type" : type
+					}, {
+						wait : true,
+						success : function(model, resp) {
+							self.collection.add(model);
+							var popup = new Views.PopupView({
+								type : "success",
+								message : $.i18n.prop("Success")
+							});
+							popup.show();
+						},
+						error : function(model, resp, options) {
+							var popup = new Views.PopupView({
+								type : "error",
+								message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+							});
+							popup.show();
+						}
+					});
+				}
+			});
+			confirm.show();
+		},
+		
+		updateMember : function(event, member) {
+			var self = this;
+			var selectedModel = member ? member : self.collection.get($(event.currentTarget).data('modelId'));
+			if (selectedModel) {
+				var confirm = new Views.ConfirmView({
+					title : $.i18n.prop('Confirm'),
+					message : $.i18n.prop('AreYouSure'),
+					yes : function() {
+						selectedModel.save({
+							"type" : $(event.currentTarget).val()
+						}, {
+							wait : true,
+							success : function(model, resp) {
+								var popup = new Views.PopupView({
+									type : "success",
+									message : $.i18n.prop("Success")
+								});
+								popup.show();
+							},
+							error : function(model, resp, options) {
+								var popup = new Views.PopupView({
+									type : "error",
+									message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+								});
+								popup.show();
+							}
+						});
+					}
+				});
+				confirm.show();
+			}
 		},
 		
 		removeMember : function(event) {
@@ -3342,6 +3469,115 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			this.$el.unbind();
 			this.$el.remove();
 			
+		}
+	});
+	
+	/***************************************************************************
+	 * PositionCommitteeEditProfessorListView **********************************
+	 **************************************************************************/
+	
+	Views.PositionCommitteeEditProfessorListView = Views.BaseView.extend({
+		tagName : "div",
+		
+		initialize : function() {
+			_.bindAll(this, "render", "showDetails", "addMember", "close");
+			this.template = _.template(tpl_position_committee_edit_professor_list);
+			this.collection.bind("change", this.render, this);
+			this.collection.bind("reset", this.render, this);
+		},
+		
+		events : {
+			"click a#view" : "showDetails",
+			"click a#addMember" : "addMember"
+		},
+		
+		render : function(eventName) {
+			var self = this;
+			var tpl_data = {
+				professors : (function() {
+					var result = [];
+					self.collection.each(function(model) {
+						var item = model.toJSON();
+						item.cid = model.cid;
+						result.push(item);
+					});
+					return result;
+				})()
+			};
+			self.$el.html(self.template(tpl_data));
+			
+			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
+				self.$("table").dataTable({
+					"sDom" : "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+					"sPaginationType" : "bootstrap",
+					"oLanguage" : {
+						"sLengthMenu" : "_MENU_ records per page"
+					}
+				});
+			}
+			return self;
+		},
+		
+		showDetails : function(event, professor) {
+			var self = this;
+			var selectedModel = professor ? professor : this.collection.getByCid($(event.currentTarget).data('modelCid'));
+			if (selectedModel) {
+				var user;
+				var userView = undefined;
+				var roles;
+				var roleView = undefined;
+				
+				// Fill Details View:
+				user = new Models.User({
+					"id" : selectedModel.get("user").id
+				});
+				user.fetch({
+					cache : false,
+					success : function(model, resp) {
+						userView = new Views.UserView({
+							model : user
+						});
+						self.$("div#professorDetails div.modal-body").prepend(userView.render().el);
+					}
+				});
+				
+				roles = new Models.Roles();
+				roles.user = selectedModel.get("user").id;
+				
+				roles.fetch({
+					cache : false,
+					success : function(collection, resp) {
+						roleView = new Views.RoleView({
+							model : collection.at(0)
+						});
+						self.$("div#professorDetails div.modal-body").append(roleView.render().el);
+					}
+				});
+				
+				self.$("div#professorDetails").on("hidden", function() {
+					if (userView) {
+						userView.close();
+					}
+					if (roleView) {
+						roleView.close();
+					}
+					self.$("div#professorDetails div.modal-body").empty();
+				});
+				
+				self.$("div#professorDetails").modal('show');
+			}
+		},
+		
+		addMember : function(event) {
+			var self = this;
+			var selectedModel = self.collection.getByCid($(event.currentTarget).data('modelCid'));
+			var type = self.$("select[name=type]").val();
+			self.collection.trigger("member:add", selectedModel, type);
+		},
+		
+		close : function() {
+			$(this.el).unbind();
+			$(this.el).remove();
 		}
 	});
 	

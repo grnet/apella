@@ -108,7 +108,7 @@ dl.dl-table {
 
 /* ALERT POPUP */
 .alert-popup {
-	position: absolute;
+	position: fixed;
 	z-index: 100;
 	top: 25%;
 	left: 15%;
