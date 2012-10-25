@@ -1,7 +1,7 @@
 define([ "jquery", "underscore", "backbone", "application" ], function($, _, Backbone, App) {
-	
+
 	var Models = {};
-	
+
 	// User
 	Models.User = Backbone.Model.extend({
 		urlRoot : "/dep/rest/user",
@@ -55,7 +55,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			}
 			return false;
 		},
-		
+
 		hasRoleWithStatus : function(role, status) {
 			var self = this;
 			if (self.has("roles")) {
@@ -65,37 +65,45 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			}
 			return false;
 		},
-		
+
 		isAssociatedWithDepartment : function(department) {
 			var self = this;
+			var institutionId;
+			if (department instanceof Backbone.Model) {
+				institutionId = department.get("institution").id;
+			} else {
+				institutionId = department.institution.id;
+			}
 			return _.any(self.get("roles"), function(r) {
-				if (r.discriminator === "INSTITUTION_MANAGER" && r.institution.id === department.get("institution").id) {
+				if (r.discriminator === "INSTITUTION_MANAGER" && r.institution.id === institutionId) {
 					return true;
-				} else if (r.discriminator === "INSTITUTION_ASSISTANT" && r.institution.id === department.get("institution").id) {
-					return true;
-				} else if (r.discriminator === "DEPARTMENT_MANAGER" && r.department.id === department.get("id")) {
+				} else if (r.discriminator === "INSTITUTION_ASSISTANT" && r.institution.id === institutionId) {
 					return true;
 				} else {
 					return false;
 				}
 			});
 		},
-		
+
 		isAssociatedWithInstitution : function(institution) {
 			var self = this;
+			var institutionId;
+			if (institution instanceof Backbone.Model) {
+				institutionId = institution.get("id");
+			} else {
+				institutionId = institution.id;
+			}
 			return _.any(self.get("roles"), function(r) {
-				if (r.discriminator === "INSTITUTION_MANAGER" && r.institution.id === institution.get("id")) {
+				if (r.discriminator === "INSTITUTION_MANAGER" && r.institution.id === institutionId) {
 					return true;
-				} else if (r.discriminator === "INSTITUTION_ASSISTANT" && r.institution.id === institution.get("id")) {
-					return true;
-				} else if (r.discriminator === "DEPARTMENT_MANAGER" && r.institution.id === institution.get("id")) {
+				} else if (r.discriminator === "INSTITUTION_ASSISTANT" && r.institution.id === institutionId) {
 					return true;
 				} else {
 					return false;
 				}
 			});
 		},
-		
+
 		getAssociatedInstitutions : function() {
 			var self = this;
 			return _.reduce(self.get("roles"), function(memo, r) {
@@ -103,14 +111,12 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 					memo.push(r.institution);
 				} else if (r.discriminator === "INSTITUTION_ASSISTANT") {
 					memo.push(r.institution);
-				} else if (r.discriminator === "DEPARTMENT_MANAGER") {
-					memo.push(r.department.institution);
 				}
 				return memo;
 			}, []);
 		}
 	});
-	
+
 	Models.User.prototype.verify = function(options) {
 		options = options ? _.clone(options) : {};
 		var model = this;
@@ -126,7 +132,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		options.error = Backbone.wrapError(options.error, model, options);
 		return (this.sync || Backbone.sync).call(this, 'verify', this, options);
 	};
-	
+
 	Models.User.prototype.login = function(key, value, options) {
 		options = options ? _.clone(options) : {};
 		var model = this;
@@ -140,7 +146,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			}
 		};
 		options.error = Backbone.wrapError(options.error, model, options);
-		
+
 		var attrs, current;
 		// Handle both `("key", value)` and `({key: value})` -style calls.
 		if (_.isObject(key) || key == null) {
@@ -151,7 +157,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			attrs[key] = value;
 		}
 		options = options ? _.clone(options) : {};
-		
+
 		// If we're "wait"-ing to set changed attributes, validate early.
 		if (options.wait) {
 			if (!this._validate(attrs, options)) {
@@ -159,7 +165,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			}
 			current = _.clone(this.attributes);
 		}
-		
+
 		// Regular saves `set` attributes before persisting to the server.
 		var silentOptions = _.extend({}, options, {
 			silent : true
@@ -188,16 +194,16 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		};
 		// Finish configuring and sending the Ajax request.
 		options.error = Backbone.wrapError(options.error, model, options);
-		
+
 		var xhr = this.sync.call(this, 'login', this, options);
-		
+
 		if (options.wait) {
 			this.set(current, silentOptions);
 		}
-		
+
 		return xhr;
 	};
-	
+
 	Models.User.prototype.status = function(key, value, options) {
 		options = options ? _.clone(options) : {};
 		var model = this;
@@ -211,7 +217,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			}
 		};
 		options.error = Backbone.wrapError(options.error, model, options);
-		
+
 		var attrs, current;
 		// Handle both `("key", value)` and `({key: value})` -style calls.
 		if (_.isObject(key) || key == null) {
@@ -222,7 +228,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			attrs[key] = value;
 		}
 		options = options ? _.clone(options) : {};
-		
+
 		// If we're "wait"-ing to set changed attributes, validate early.
 		if (options.wait) {
 			if (!this._validate(attrs, options)) {
@@ -230,7 +236,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			}
 			current = _.clone(this.attributes);
 		}
-		
+
 		// Regular saves `set` attributes before persisting to the server.
 		var silentOptions = _.extend({}, options, {
 			silent : true
@@ -259,16 +265,16 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		};
 		// Finish configuring and sending the Ajax request.
 		options.error = Backbone.wrapError(options.error, model, options);
-		
+
 		var xhr = this.sync.call(this, 'status', this, options);
-		
+
 		if (options.wait) {
 			this.set(current, silentOptions);
 		}
-		
+
 		return xhr;
 	};
-	
+
 	Models.User.prototype.resetPassword = function(key, value, options) {
 		options = options ? _.clone(options) : {};
 		var model = this;
@@ -282,7 +288,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			}
 		};
 		options.error = Backbone.wrapError(options.error, model, options);
-		
+
 		var attrs, current;
 		// Handle both `("key", value)` and `({key: value})` -style calls.
 		if (_.isObject(key) || key == null) {
@@ -293,7 +299,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			attrs[key] = value;
 		}
 		options = options ? _.clone(options) : {};
-		
+
 		// If we're "wait"-ing to set changed attributes, validate early.
 		if (options.wait) {
 			if (!this._validate(attrs, options)) {
@@ -301,7 +307,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			}
 			current = _.clone(this.attributes);
 		}
-		
+
 		// Regular saves `set` attributes before persisting to the server.
 		var silentOptions = _.extend({}, options, {
 			silent : true
@@ -330,16 +336,16 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		};
 		// Finish configuring and sending the Ajax request.
 		options.error = Backbone.wrapError(options.error, model, options);
-		
+
 		var xhr = this.sync.call(this, 'resetPassword', this, options);
-		
+
 		if (options.wait) {
 			this.set(current, silentOptions);
 		}
-		
+
 		return xhr;
 	};
-	
+
 	Models.User.prototype.resendVerificationEmail = function(key, value, options) {
 		options = options ? _.clone(options) : {};
 		var model = this;
@@ -353,7 +359,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			}
 		};
 		options.error = Backbone.wrapError(options.error, model, options);
-		
+
 		var attrs, current;
 		// Handle both `("key", value)` and `({key: value})` -style calls.
 		if (_.isObject(key) || key == null) {
@@ -364,7 +370,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			attrs[key] = value;
 		}
 		options = options ? _.clone(options) : {};
-		
+
 		// If we're "wait"-ing to set changed attributes, validate early.
 		if (options.wait) {
 			if (!this._validate(attrs, options)) {
@@ -372,7 +378,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			}
 			current = _.clone(this.attributes);
 		}
-		
+
 		// Regular saves `set` attributes before persisting to the server.
 		var silentOptions = _.extend({}, options, {
 			silent : true
@@ -401,19 +407,19 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		};
 		// Finish configuring and sending the Ajax request.
 		options.error = Backbone.wrapError(options.error, model, options);
-		
+
 		var xhr = this.sync.call(this, 'resendVerificationEmail', this, options);
-		
+
 		if (options.wait) {
 			this.set(current, silentOptions);
 		}
-		
+
 		return xhr;
 	};
-	
+
 	Models.User.prototype.sync = function(method, model, options) {
 		switch (method) {
-		
+
 		case "verify":
 			// Default options, unless specified.
 			options || (options = {});
@@ -424,7 +430,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 				contentType : 'application/json',
 				data : JSON.stringify(model.toJSON())
 			};
-			
+
 			// Ensure that we have a URL.
 			if (!options.url) {
 				if (model.url) {
@@ -435,7 +441,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			}
 			// Make the request, allowing the user to override any Ajax options.
 			return $.ajax(_.extend(params, options));
-			
+
 		case "login":
 			// Default options, unless specified.
 			options || (options = {});
@@ -458,7 +464,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			}
 			// Make the request, allowing the user to override any Ajax options.
 			return $.ajax(_.extend(params, options));
-			
+
 		case "status":
 			// Default options, unless specified.
 			options || (options = {});
@@ -482,7 +488,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			}
 			// Make the request, allowing the user to override any Ajax options.
 			return $.ajax(_.extend(params, options));
-			
+
 		case "resetPassword":
 			// Default options, unless specified.
 			options || (options = {});
@@ -504,7 +510,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			}
 			// Make the request, allowing the user to override any Ajax options.
 			return $.ajax(_.extend(params, options));
-			
+
 		case "resendVerificationEmail":
 			// Default options, unless specified.
 			options || (options = {});
@@ -526,17 +532,17 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			}
 			// Make the request, allowing the user to override any Ajax options.
 			return $.ajax(_.extend(params, options));
-			
+
 		default:
 			return (Backbone.sync).call(this, method, this, options);
 		}
 	};
-	
+
 	Models.Users = Backbone.Collection.extend({
 		model : Models.User,
 		url : "/dep/rest/user"
 	});
-	
+
 	// Role
 	Models.Role = Backbone.Model.extend({
 		urlRoot : "/dep/rest/role",
@@ -569,7 +575,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			"publications" : undefined
 		}
 	});
-	
+
 	Models.Role.prototype.status = function(key, value, options) {
 		options = options ? _.clone(options) : {};
 		var model = this;
@@ -583,7 +589,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			}
 		};
 		options.error = Backbone.wrapError(options.error, model, options);
-		
+
 		var attrs, current;
 		// Handle both `("key", value)` and `({key: value})` -style calls.
 		if (_.isObject(key) || key == null) {
@@ -594,7 +600,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			attrs[key] = value;
 		}
 		options = options ? _.clone(options) : {};
-		
+
 		// If we're "wait"-ing to set changed attributes, validate early.
 		if (options.wait) {
 			if (!this._validate(attrs, options)) {
@@ -602,7 +608,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			}
 			current = _.clone(this.attributes);
 		}
-		
+
 		// Regular saves `set` attributes before persisting to the server.
 		var silentOptions = _.extend({}, options, {
 			silent : true
@@ -631,16 +637,16 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		};
 		// Finish configuring and sending the Ajax request.
 		options.error = Backbone.wrapError(options.error, model, options);
-		
+
 		var xhr = this.sync.call(this, 'status', this, options);
-		
+
 		if (options.wait) {
 			this.set(current, silentOptions);
 		}
-		
+
 		return xhr;
 	};
-	
+
 	Models.Role.prototype.sync = function(method, model, options) {
 		switch (method) {
 		case "status":
@@ -667,12 +673,12 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			}
 			// Make the request, allowing the user to override any Ajax options.
 			return $.ajax(_.extend(params, options));
-			
+
 		default:
 			return (Backbone.sync).call(this, method, this, options);
 		}
 	};
-	
+
 	Models.Roles = Backbone.Collection.extend({
 		model : Models.Role,
 		user : undefined,
@@ -683,11 +689,11 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			return _.indexOf(App.allowedRoles, role.get('discriminator'), false);
 		}
 	});
-	
+
 	Models.Professors = Models.Roles.extend({
 		url : "/dep/rest/professor"
 	});
-	
+
 	// File
 	Models.File = Backbone.Model.extend({
 		defaults : {
@@ -705,12 +711,12 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			}
 		}
 	});
-	
+
 	Models.Files = Backbone.Collection.extend({
 		model : Models.File,
 		type : undefined
 	});
-	
+
 	Models.Institution = Backbone.Model.extend({
 		urlRoot : "/dep/rest/institution",
 		defaults : {
@@ -718,7 +724,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			"name" : undefined
 		}
 	});
-	
+
 	Models.Institutions = Backbone.Collection.extend({
 		url : "/dep/rest/institution",
 		model : Models.Institution,
@@ -726,7 +732,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			return institution.get('name');
 		}
 	});
-	
+
 	Models.Department = Backbone.Model.extend({
 		urlRoot : "/dep/rest/department",
 		defaults : {
@@ -737,7 +743,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			"institution" : undefined
 		}
 	});
-	
+
 	Models.Departments = Backbone.Collection.extend({
 		url : "/dep/rest/department",
 		model : Models.Department,
@@ -749,7 +755,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			}
 		}
 	});
-	
+
 	Models.Rank = Backbone.Model.extend({
 		urlRoot : "/dep/rest/rank",
 		defaults : {
@@ -757,12 +763,12 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			"name" : undefined
 		}
 	});
-	
+
 	Models.Ranks = Backbone.Collection.extend({
 		url : "/dep/rest/rank",
 		model : Models.Rank
 	});
-	
+
 	Models.Position = Backbone.Model.extend({
 		urlRoot : "/dep/rest/position",
 		defaults : {
@@ -782,12 +788,12 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			nominationFEK : undefined
 		}
 	});
-	
+
 	Models.Positions = Backbone.Collection.extend({
 		url : "/dep/rest/position",
 		model : Models.Position
 	});
-	
+
 	Models.Register = Backbone.Model.extend({
 		urlRoot : "/dep/rest/register",
 		defaults : {
@@ -796,12 +802,12 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			institution : undefined
 		}
 	});
-	
+
 	Models.Registries = Backbone.Collection.extend({
 		url : "/dep/rest/register",
 		model : Models.Register
 	});
-	
+
 	Models.PositionCommitteeMember = Backbone.Model.extend({
 		position : undefined,
 		urlRoot : function() {
@@ -816,7 +822,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			recommendatoryReport : undefined
 		}
 	});
-	
+
 	Models.PositionCommittee = Backbone.Collection.extend({
 		position : undefined,
 		model : Models.PositionCommitteeMember,
@@ -827,7 +833,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			return "/dep/rest/position/" + this.position + "/committee";
 		}
 	});
-	
+
 	Models.ProfessorCommittees = Backbone.Collection.extend({
 		professor : undefined,
 		model : Models.PositionCommitteeMember,
@@ -838,7 +844,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			return "/dep/rest/professor/" + this.professor + "/committees";
 		}
 	});
-	
+
 	return Models;
-	
+
 });

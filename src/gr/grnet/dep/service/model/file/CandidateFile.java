@@ -24,10 +24,10 @@ public class CandidateFile extends FileHeader {
 	public static final Map<FileType, Integer> fileTypes = Collections.unmodifiableMap(new HashMap<FileType, Integer>() {
 
 		{
-			put(FileType.BIOGRAFIKO, 1);
 			put(FileType.TAYTOTHTA, 1);
 			put(FileType.FORMA_SYMMETOXIS, 1);
 			put(FileType.BEBAIWSH_STRATIOTIKIS_THITIAS, 1);
+			put(FileType.BIOGRAFIKO, 1);
 			put(FileType.PTYXIO, Integer.MAX_VALUE);
 			put(FileType.DIMOSIEYSI, Integer.MAX_VALUE);
 		}

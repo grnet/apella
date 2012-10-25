@@ -1,17 +1,5 @@
 <table class="file-table">
-<!-- 
-<thead>
-	<tr>
-		<th><%= $.i18n.prop('File') %></th>
-<% if (withMetadata) { %>
-		<th><%= $.i18n.prop('FileName') %></th>
-		<th><%= $.i18n.prop('FileDescription') %></th>
-<% } %>
-		<th></th>
-	</tr>
-</thead>
- -->
- <tbody>
+<tbody>
 <% _.each(files, function(file) { %>
 <% if (!_.isUndefined(file.id)) { %>
 	<tr id="info">

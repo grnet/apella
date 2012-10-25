@@ -350,7 +350,7 @@ public class UserRESTService extends RESTService {
 					throw new RestException(Status.UNAUTHORIZED, "login.account.status." + u.getStatus().toString().toLowerCase());
 			}
 		} catch (NoResultException e) {
-			throw new RestException(Status.UNAUTHORIZED, "login.wrong.password");
+			throw new RestException(Status.UNAUTHORIZED, "login.wrong.username");
 		}
 	}
 

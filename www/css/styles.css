@@ -114,3 +114,42 @@ dl.dl-table {
 	left: 15%;
 	right: 15%;
 }
+
+/* Definition Lists */
+dl.dl-glossary {
+	margin: 20px auto;
+	border-bottom: 1px solid #999;
+	letter-spacing: -0.31em;
+	*letter-spacing: normal;
+	word-spacing: -0.43em;
+}
+
+dl.dl-glossary dt {
+	display: inline-block;
+	*display: inline;
+	zoom: 1;
+	letter-spacing: normal;
+	word-spacing: normal;
+	vertical-align: top;
+	width: 30%;
+	padding: 3px 2% 4px;
+	margin: 0;
+	border-top: 1px solid #999;
+}
+
+dl.dl-glossary dd {
+	display: inline-block;
+	*display: inline;
+	zoom: 1;
+	letter-spacing: normal;
+	word-spacing: normal;
+	vertical-align: top;
+	width: 62%;
+	padding: 3px 2% 4px;
+	margin: 0;
+	border-top: 1px solid #999;
+}
+
+dl.dl-glossary dt {
+	margin-right: -1px;
+}

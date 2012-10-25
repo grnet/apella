@@ -89,6 +89,9 @@ public class Position {
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "position")
 	private Set<Candidacy> candidacies = new HashSet<Candidacy>();
 
+	@Temporal(TemporalType.DATE)
+	private Date lastUpdate;
+
 	public Long getId() {
 		return id;
 	}
@@ -207,6 +210,14 @@ public class Position {
 
 	public void setNominationFEK(String nominationFEK) {
 		this.nominationFEK = nominationFEK;
+	}
+
+	public Date getLastUpdate() {
+		return lastUpdate;
+	}
+
+	public void setLastUpdate(Date lastUpdate) {
+		this.lastUpdate = lastUpdate;
 	}
 
 	@XmlTransient

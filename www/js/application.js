@@ -4,14 +4,14 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 		jQuery.validator.addMethod("onlyLatin", function(value, element) {
 			return this.optional(element) || /^[a-zA-Z]*$/.test(value);
 		}, "Please type only latin characters");
-		
+
 		jQuery.validator.addMethod("pwd", function(value, element) {
 			return this.optional(element) || /^[a-zA-Z0-9!@#$%^&*()]*$/.test(value);
 		}, "Please type only latin characters");
 		jQuery.datepicker.setDefaults({
 			dateFormat : "dd/mm/yy"
 		});
-		
+
 		// Add _super function in Model, Views
 		(function(Backbone) {
 			function _super(methodName, args) {
@@ -32,12 +32,12 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 			_.each([ "Model", "Collection", "View", "Router" ], function(klass) {
 				Backbone[klass].prototype._super = _super;
 			});
-			
+
 		})(Backbone);
-		
+
 		window.App = {
 			allowedRoles : [ "PROFESSOR_DOMESTIC", "PROFESSOR_FOREIGN", "CANDIDATE", "INSTITUTION_MANAGER" ],
-			
+
 			blockUI : function() {
 				$.blockUI({
 					message : $("<img src=\"css/images/loader.gif\" />"),
@@ -63,11 +63,11 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 					}
 				});
 			},
-			
+
 			unblockUI : function() {
 				$.unblockUI();
 			},
-			
+
 			utils : {
 				formatFileSize : function(bytes) {
 					var precision = 2;
@@ -82,7 +82,7 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 					}
 					return bytes.toFixed(precision) + "" + sizes[posttxt];
 				},
-				
+
 				// Cookies
 				addCookie : function(name, value, days) {
 					var date, expires;
@@ -95,7 +95,7 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 					}
 					document.cookie = name + "=" + value + expires + "; path=/";
 				},
-				
+
 				getCookie : function(name) {
 					var nameEQ = name + "=";
 					var ca = document.cookie.split(';');
@@ -108,7 +108,7 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 					}
 					return null;
 				},
-				
+
 				removeCookie : function(name) {
 					addCookie(name, "", -1);
 				}
