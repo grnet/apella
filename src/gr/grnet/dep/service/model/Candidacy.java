@@ -7,12 +7,16 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
@@ -59,9 +63,35 @@ public class Candidacy {
 		@Embedded
 		private BasicInformation basicInfoLatin = new BasicInformation();
 		@Embedded
+		@AttributeOverrides( {
+	        @AttributeOverride(name="email", column = @Column(unique = false) )
+		} )
 		private ContactInformation contactInfo = new ContactInformation();
 		@ManyToMany
+		@JoinTable(inverseJoinColumns={@JoinColumn(name="files_id")})
 		private Set<FileBody> files = new HashSet<FileBody>();
+		
+		// For ProfessorDomestic
+		@ManyToOne
+		private Institution institution;
+
+		@ManyToOne
+		private Department department;
+
+		@ManyToOne
+		private Rank rank;
+
+		@ManyToOne
+		private Subject subject;
+
+		private String fek;
+
+		@ManyToOne
+		private Subject fekSubject;
+		
+		// For ProfessorForeign
+		private String institutionString;
+		
 		
 		public String getUsername() {
 			return username;
@@ -98,6 +128,55 @@ public class Candidacy {
 			this.files = files;
 		}		
 		
+		public Institution getInstitution() {
+			return institution;
+		}
+		public void setInstitution(Institution institution) {
+			this.institution = institution;
+		}
+		
+		public Department getDepartment() {
+			return department;
+		}
+		public void setDepartment(Department department) {
+			this.department = department;
+		}
+		
+		public Rank getRank() {
+			return rank;
+		}
+		public void setRank(Rank rank) {
+			this.rank = rank;
+		}
+		
+		public Subject getSubject() {
+			return subject;
+		}
+		public void setSubject(Subject subject) {
+			this.subject = subject;
+		}
+		
+		public String getFek() {
+			return fek;
+		}
+		public void setFek(String fek) {
+			this.fek = fek;
+		}
+		
+		public Subject getFekSubject() {
+			return fekSubject;
+		}
+		public void setFekSubject(Subject fekSubject) {
+			this.fekSubject = fekSubject;
+		}
+		
+		public String getInstitutionString() {
+			return institutionString;
+		}
+		public void setInstitutionString(String institutionString) {
+			this.institutionString = institutionString;
+		}
+		
 		
 		public void clearFiles() {
 			getFiles().clear();
@@ -105,6 +184,8 @@ public class Candidacy {
 		public void addFile(FileBody body) {
 			getFiles().add(body);
 		}
+		
+
 	}
 	
 	@Embedded
@@ -174,7 +255,21 @@ public class Candidacy {
 		}
 		
 	}
+	
+	public void updateSnapshot(ProfessorDomestic professor) {
+		snapshot.setInstitution(professor.getInstitution());
+		snapshot.setDepartment(professor.getDepartment());
+		snapshot.setRank(professor.getRank());
+		snapshot.setSubject(professor.getSubject());
+		snapshot.setFek(professor.getFek());
+		snapshot.setFekSubject(professor.getFekSubject());		
+	}
 
+	public void updateSnapshot(ProfessorForeign professor) {
+		snapshot.setInstitutionString(professor.getInstitution());
+		snapshot.setRank(professor.getRank());
+		snapshot.setSubject(professor.getSubject());
+	}
 	
 
 }

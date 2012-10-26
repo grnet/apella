@@ -8,6 +8,8 @@ import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.CandidateCommittee;
 import gr.grnet.dep.service.model.CandidateCommittee.SimpleCandidateCommitteeView;
 import gr.grnet.dep.service.model.CandidateCommitteeMembership;
+import gr.grnet.dep.service.model.ProfessorDomestic;
+import gr.grnet.dep.service.model.ProfessorForeign;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
@@ -74,6 +76,13 @@ public class CandidacyRESTService extends RESTService {
 	private void updateSnapshot(Candidacy candidacy, Candidate candidate) {
 		candidacy.clearSnapshot();
 		candidacy.updateSnapshot(candidate);
+		User user = candidate.getUser();
+		ProfessorDomestic professorDomestic = (ProfessorDomestic) user.getRole(RoleDiscriminator.PROFESSOR_DOMESTIC);
+		ProfessorForeign professorForeign = (ProfessorForeign) user.getRole(RoleDiscriminator.PROFESSOR_FOREIGN);
+		if (professorDomestic!=null)
+			candidacy.updateSnapshot(professorDomestic);
+		else if (professorForeign!=null)
+			candidacy.updateSnapshot(professorForeign);
 	}
 	
 	@POST
