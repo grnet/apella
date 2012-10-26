@@ -27,6 +27,8 @@ public class Register implements Serializable {
 	@GeneratedValue
 	private Long id;
 
+	private boolean permanent;
+
 	private String title;
 
 	@ManyToOne(optional = false)
@@ -41,6 +43,14 @@ public class Register implements Serializable {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public boolean isPermanent() {
+		return permanent;
+	}
+
+	public void setPermanent(boolean permanent) {
+		this.permanent = permanent;
 	}
 
 	public String getTitle() {
@@ -74,7 +84,6 @@ public class Register implements Serializable {
 
 	public Register copyFrom(Register register) {
 		setTitle(register.getTitle());
-		setInstitution(register.getInstitution());
 		return this;
 	}
 

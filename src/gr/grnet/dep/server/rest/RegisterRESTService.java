@@ -101,6 +101,7 @@ public class RegisterRESTService extends RESTService {
 		// Update
 		try {
 			newRegister.setInstitution(institution);
+			newRegister.setPermanent(false);
 			em.persist(newRegister);
 			em.flush();
 
@@ -133,6 +134,8 @@ public class RegisterRESTService extends RESTService {
 		try {
 			// Update
 			existingRegister = existingRegister.copyFrom(register);
+			existingRegister.setPermanent(true);
+			existingRegister = em.merge(existingRegister);
 			em.flush();
 			// Return Result
 			existingRegister.initializeCollections();

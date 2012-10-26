@@ -1180,75 +1180,67 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		submit : function(event) {
 			var self = this;
-			var confirm = new Views.ConfirmView({
-				title : $.i18n.prop('Confirm'),
-				message : $.i18n.prop('AreYouSure'),
-				yes : function() {
+			// Read Input
+			var username = self.$('form input[name=username]').val();
+			var firstname = self.$('form input[name=firstname]').val();
+			var lastname = self.$('form input[name=lastname]').val();
+			var fathername = self.$('form input[name=fathername]').val();
+			var firstnamelatin = self.$('form input[name=firstnamelatin]').val();
+			var lastnamelatin = self.$('form input[name=lastnamelatin]').val();
+			var fathernamelatin = self.$('form input[name=fathernamelatin]').val();
+			var password = self.$('form input[name=password]').val();
+			var email = self.$('form input[name=email]').val();
+			var mobile = self.$('form input[name=mobile]').val();
+			var address_street = self.$('form input[name=address_street]').val();
+			var address_number = self.$('form input[name=address_number]').val();
+			var address_zip = self.$('form input[name=address_zip]').val();
+			var address_city = self.$('form input[name=address_city]').val();
+			var address_country = self.$('form input[name=address_country]').val();
 
-					// Read Input
-					var username = self.$('form input[name=username]').val();
-					var firstname = self.$('form input[name=firstname]').val();
-					var lastname = self.$('form input[name=lastname]').val();
-					var fathername = self.$('form input[name=fathername]').val();
-					var firstnamelatin = self.$('form input[name=firstnamelatin]').val();
-					var lastnamelatin = self.$('form input[name=lastnamelatin]').val();
-					var fathernamelatin = self.$('form input[name=fathernamelatin]').val();
-					var password = self.$('form input[name=password]').val();
-					var email = self.$('form input[name=email]').val();
-					var mobile = self.$('form input[name=mobile]').val();
-					var address_street = self.$('form input[name=address_street]').val();
-					var address_number = self.$('form input[name=address_number]').val();
-					var address_zip = self.$('form input[name=address_zip]').val();
-					var address_city = self.$('form input[name=address_city]').val();
-					var address_country = self.$('form input[name=address_country]').val();
+			// Validate
 
-					// Validate
-
-					// Save to model
-					self.model.save({
-						"username" : username,
-						"basicInfo" : {
-							"firstname" : firstname,
-							"lastname" : lastname,
-							"fathername" : fathername
-						},
-						"basicInfoLatin" : {
-							"firstname" : firstnamelatin,
-							"lastname" : lastnamelatin,
-							"fathername" : fathernamelatin
-						},
-						"contactInfo" : {
-							"address" : {
-								"street" : address_street,
-								"number" : address_number,
-								"zip" : address_zip,
-								"city" : address_city,
-								"country" : address_country
-							},
-							"email" : email,
-							"mobile" : mobile
-						},
-						"password" : password
-					}, {
-						wait : true,
-						success : function(model, resp) {
-							var popup = new Views.PopupView({
-								type : "success",
-								message : $.i18n.prop("Success")
-							});
-							popup.show();
-						},
-						error : function(model, resp, options) {
-							var popup = new Views.PopupView({
-								type : "error",
-								message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-							});
-							popup.show();
-						}
+			// Save to model
+			self.model.save({
+				"username" : username,
+				"basicInfo" : {
+					"firstname" : firstname,
+					"lastname" : lastname,
+					"fathername" : fathername
+				},
+				"basicInfoLatin" : {
+					"firstname" : firstnamelatin,
+					"lastname" : lastnamelatin,
+					"fathername" : fathernamelatin
+				},
+				"contactInfo" : {
+					"address" : {
+						"street" : address_street,
+						"number" : address_number,
+						"zip" : address_zip,
+						"city" : address_city,
+						"country" : address_country
+					},
+					"email" : email,
+					"mobile" : mobile
+				},
+				"password" : password
+			}, {
+				wait : true,
+				success : function(model, resp) {
+					var popup = new Views.PopupView({
+						type : "success",
+						message : $.i18n.prop("Success")
 					});
+					popup.show();
+				},
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
 				}
 			});
-			confirm.show();
 			return false;
 		},
 
@@ -1806,10 +1798,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				// department
 				// selector
 				self.$("select[name='department']").change(function(event) {
-					self.$("select[name='department']").next(".help-block").html(jQuery("select[name='department'] option:selected").text());
+					self.$("select[name='department']").next(".help-block").html(self.$("select[name='department'] option:selected").text());
 				});
 				self.$("select[name='institution']").change(function() {
-					self.$("select[name='institution']").next(".help-block").html(jQuery("select[name='institution'] option:selected").text());
+					self.$("select[name='institution']").next(".help-block").html(self.$("select[name='institution'] option:selected").text());
 
 					App.departments = App.departments ? App.departments : new Models.Departments();
 					App.departments.fetch({
@@ -2014,7 +2006,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				});
 
 				self.$("select[name='institution']").change(function(event) {
-					self.$("select[name='institution']").next(".help-block").html(jQuery("select[name='institution'] option:selected").text());
+					self.$("select[name='institution']").next(".help-block").html(self.$("select[name='institution'] option:selected").text());
 				});
 				App.institutions = App.institutions ? App.institutions : new Models.Institutions();
 				App.institutions.fetch({
@@ -2072,7 +2064,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			case "INSTITUTION_ASSISTANT":
 				self.$("select[name='institution']").change(function(event) {
-					self.$("select[name='institution']").next(".help-block").html(jQuery("select[name='institution'] option:selected").text());
+					self.$("select[name='institution']").next(".help-block").html(self.$("select[name='institution'] option:selected").text());
 				});
 				App.institutions = App.institutions ? App.institutions : new Models.Institutions();
 				App.institutions.fetch({
@@ -2159,92 +2151,84 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		submit : function(event) {
 			var self = this;
-			var confirm = new Views.ConfirmView({
-				title : $.i18n.prop('Confirm'),
-				message : $.i18n.prop('AreYouSure'),
-				yes : function() {
+			var values = {};
+			// Read Input
+			switch (self.model.get("discriminator")) {
+			case "CANDIDATE":
+				values.identification = self.$('form input[name=identification]').val();
+				break;
+			case "PROFESSOR_DOMESTIC":
+				values.identification = self.$('form input[name=identification]').val();
+				values.institution = {
+					"id" : self.$('form select[name=institution]').val()
+				};
+				values.department = {
+					"id" : self.$('form select[name=department]').val()
+				};
+				values.rank = {
+					"id" : self.$('form select[name=rank]').val()
+				};
+				values.profileURL = self.$('form input[name=profileURL]').val();
+				values.subject = {
+					"id" : self.model.has("subject") ? self.model.get("subject").id : undefined,
+					"name" : self.$('form textarea[name=subject]').val()
+				};
+				values.fek = self.$('form input[name=fek]').val();
+				values.fekSubject = {
+					"id" : self.model.has("fekSubject") ? self.model.get("fekSubject").id : undefined,
+					"name" : self.$('form textarea[name=fekSubject]').val()
+				};
+				break;
+			case "PROFESSOR_FOREIGN":
+				values.identification = self.$('form input[name=identification]').val();
+				values.institution = self.$('form input[name=institution]').val();
+				values.profileURL = self.$('form input[name=profileURL]').val();
+				values.rank = {
+					"id" : self.$('form select[name=rank]').val()
+				};
+				values.subject = {
+					"id" : self.model.has("subject") ? self.model.get("subject").id : undefined,
+					"name" : self.$('form textarea[name=subject]').val()
+				};
+				break;
+			case "INSTITUTION_MANAGER":
+				values.institution = {
+					"id" : self.$('form select[name=institution]').val()
+				};
+				values.verificationAuthority = self.$('form select[name=verificationAuthority]').val();
+				values.verificationAuthorityName = self.$('form input[name=verificationAuthorityName]').val();
+				values.phone = self.$('form input[name=phone]').val();
+				break;
 
-					var values = {};
-					// Read Input
-					switch (self.model.get("discriminator")) {
-					case "CANDIDATE":
-						values.identification = self.$('form input[name=identification]').val();
-						break;
-					case "PROFESSOR_DOMESTIC":
-						values.identification = self.$('form input[name=identification]').val();
-						values.institution = {
-							"id" : self.$('form select[name=institution]').val()
-						};
-						values.department = {
-							"id" : self.$('form select[name=department]').val()
-						};
-						values.rank = {
-							"id" : self.$('form select[name=rank]').val()
-						};
-						values.profileURL = self.$('form input[name=profileURL]').val();
-						values.subject = {
-							"id" : self.model.has("subject") ? self.model.get("subject").id : undefined,
-							"name" : self.$('form textarea[name=subject]').val()
-						};
-						values.fek = self.$('form input[name=fek]').val();
-						values.fekSubject = {
-							"id" : self.model.has("fekSubject") ? self.model.get("fekSubject").id : undefined,
-							"name" : self.$('form textarea[name=fekSubject]').val()
-						};
-						break;
-					case "PROFESSOR_FOREIGN":
-						values.identification = self.$('form input[name=identification]').val();
-						values.institution = self.$('form input[name=institution]').val();
-						values.profileURL = self.$('form input[name=profileURL]').val();
-						values.rank = {
-							"id" : self.$('form select[name=rank]').val()
-						};
-						values.subject = {
-							"id" : self.model.has("subject") ? self.model.get("subject").id : undefined,
-							"name" : self.$('form textarea[name=subject]').val()
-						};
-						break;
-					case "INSTITUTION_MANAGER":
-						values.institution = {
-							"id" : self.$('form select[name=institution]').val()
-						};
-						values.verificationAuthority = self.$('form select[name=verificationAuthority]').val();
-						values.verificationAuthorityName = self.$('form input[name=verificationAuthorityName]').val();
-						values.phone = self.$('form input[name=phone]').val();
-						break;
+			case "INSTITUTION_ASSISTANT":
+				values.institution = {
+					"id" : self.$('form select[name=institution]').val()
+				};
+				values.phone = self.$('form input[name=phone]').val();
+				break;
 
-					case "INSTITUTION_ASSISTANT":
-						values.institution = {
-							"id" : self.$('form select[name=institution]').val()
-						};
-						values.phone = self.$('form input[name=phone]').val();
-						break;
-
-					case "MINISTRY_MANAGER":
-						values.ministry = self.$('form input[name=ministry]').val();
-						break;
-					}
-					// Save to model
-					self.model.save(values, {
-						wait : true,
-						success : function(model, resp) {
-							var popup = new Views.PopupView({
-								type : "success",
-								message : $.i18n.prop("Success")
-							});
-							popup.show();
-						},
-						error : function(model, resp, options) {
-							var popup = new Views.PopupView({
-								type : "error",
-								message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-							});
-							popup.show();
-						}
+			case "MINISTRY_MANAGER":
+				values.ministry = self.$('form input[name=ministry]').val();
+				break;
+			}
+			// Save to model
+			self.model.save(values, {
+				wait : true,
+				success : function(model, resp) {
+					var popup = new Views.PopupView({
+						type : "success",
+						message : $.i18n.prop("Success")
 					});
+					popup.show();
+				},
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
 				}
 			});
-			confirm.show();
 			event.preventDefault();
 			return false;
 		},
@@ -2809,7 +2793,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		tagName : "div",
 
 		initialize : function() {
-			_.bindAll(this, "render", "select", "newPosition", "close");
+			_.bindAll(this, "render", "renderActions", "selectPosition", "createPosition", "close");
 			this.template = _.template(tpl_position_list);
 			this.collection.bind("change", this.render, this);
 			this.collection.bind("reset", this.render, this);
@@ -2818,8 +2802,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		events : {
-			"click a#createPosition" : "newPosition",
-			"click a#selectPosition" : "select"
+			"click a#createPosition" : "createPosition",
+			"click a#selectPosition" : "selectPosition"
 		},
 
 		render : function(eventName) {
@@ -2847,25 +2831,66 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				});
 			}
-			// Add Actions
-			if (App.loggedOnUser.hasRole("INSTITUTION_MANAGER") || App.loggedOnUser.hasRole("INSTITUTION_ASSISTANT")) {
-				self.$("#actions").html("<a id=\"createPosition\" class=\"btn btn-small\"><i class=\"icon-plus\"></i>" + $.i18n.prop('btn_add') + "</a>");
-			}
+			// Actions
+			self.renderActions();
 			return self;
 		},
 
-		select : function(event, position) {
+		renderActions : function() {
+			if (!App.loggedOnUser.hasRole("INSTITUTION_MANAGER") && !App.loggedOnUser.hasRole("INSTITUTION_ASSISTANT")) {
+				return;
+			}
+			self.$("#actions").html("<select class=\"input-xlarge\" name=\"department\"></select>");
+			self.$("#actions").append("<a id=\"createPosition\" class=\"btn\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_position') + "</a>");
+			// Departments
+			App.departments = App.departments ? App.departments : new Models.Departments();
+			App.departments.fetch({
+				cache : true,
+				success : function(collection, resp) {
+					_.each(collection.filter(function(department) {
+						return App.loggedOnUser.isAssociatedWithDepartment(department);
+					}), function(department) {
+						self.$("select[name='department']").append("<option value='" + department.get("id") + "'>" + department.get("department") + "</option>");
+					});
+				},
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+		},
+
+		selectPosition : function(event, position) {
 			var selectedModel = position ? position : this.collection.getByCid($(event.currentTarget).attr('data-position-cid'));
 			if (selectedModel) {
 				this.collection.trigger("position:selected", selectedModel);
 			}
 		},
 
-		newPosition : function(event) {
+		createPosition : function(event) {
 			var self = this;
 			var newPosition = new Models.Position();
-			self.collection.add(newPosition);
-			self.select(undefined, newPosition);
+			newPosition.save({
+				department : {
+					id : self.$("select[name='department']").val()
+				}
+			}, {
+				wait : true,
+				success : function(model, resp) {
+					self.collection.add(newPosition);
+					self.select(undefined, newPosition);
+				},
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
 		},
 
 		close : function() {
@@ -3088,7 +3113,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			// Departments
 			self.$("select[name='department']").change(function(event) {
-				self.$("select[name='department']").next(".help-block").html(jQuery("select[name='department'] option:selected").text());
+				self.$("select[name='department']").next(".help-block").html(self.$("select[name='department'] option:selected").text());
 			});
 			App.departments = App.departments ? App.departments : new Models.Departments();
 			App.departments.fetch({
@@ -3250,54 +3275,47 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		submit : function(event) {
 			var self = this;
-			var confirm = new Views.ConfirmView({
-				title : $.i18n.prop('Confirm'),
-				message : $.i18n.prop('AreYouSure'),
-				yes : function() {
-					var values = {};
-					// Read Input
-					values.name = self.$('form input[name=name]').val();
-					values.description = self.$('form textarea[name=description]').val();
-					values.department = {
-						"id" : self.$('form select[name=department]').val()
-					};
-					values.subject = {
-						"id" : self.model.has("subject") ? self.model.get("subject").id : undefined,
-						"name" : self.$('form textarea[name=subject]').val()
-					};
-					values.fek = self.$('form input[name=fek]').val();
-					values.fekSentDate = self.$('form input[name=fekSentDate]').val();
-					values.openingDate = self.$('form input[name=openingDate]').val();
-					values.closingDate = self.$('form input[name=closingDate]').val();
-					values.committeeMeetingDate = self.$('form input[name=committeeMeetingDate]').val();
-					values.nominationCommitteeConvergenceDate = self.$('form input[name=nominationCommitteeConvergenceDate]').val();
-					values.nominationToETDate = self.$('form input[name=nominationToETDate]').val();
-					values.nominationFEK = self.$('form input[name=nominationFEK]').val();
+			var values = {};
+			// Read Input
+			values.name = self.$('form input[name=name]').val();
+			values.description = self.$('form textarea[name=description]').val();
+			values.department = {
+				"id" : self.$('form select[name=department]').val()
+			};
+			values.subject = {
+				"id" : self.model.has("subject") ? self.model.get("subject").id : undefined,
+				"name" : self.$('form textarea[name=subject]').val()
+			};
+			values.fek = self.$('form input[name=fek]').val();
+			values.fekSentDate = self.$('form input[name=fekSentDate]').val();
+			values.openingDate = self.$('form input[name=openingDate]').val();
+			values.closingDate = self.$('form input[name=closingDate]').val();
+			values.committeeMeetingDate = self.$('form input[name=committeeMeetingDate]').val();
+			values.nominationCommitteeConvergenceDate = self.$('form input[name=nominationCommitteeConvergenceDate]').val();
+			values.nominationToETDate = self.$('form input[name=nominationToETDate]').val();
+			values.nominationFEK = self.$('form input[name=nominationFEK]').val();
 
-					// Save to model
-					self.model.save(values, {
-						wait : true,
-						success : function(model, resp) {
-							App.router.navigate("position/" + self.model.id, {
-								trigger : false
-							});
-							var popup = new Views.PopupView({
-								type : "success",
-								message : $.i18n.prop("Success")
-							});
-							popup.show();
-						},
-						error : function(model, resp, options) {
-							var popup = new Views.PopupView({
-								type : "error",
-								message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-							});
-							popup.show();
-						}
+			// Save to model
+			self.model.save(values, {
+				wait : true,
+				success : function(model, resp) {
+					App.router.navigate("position/" + self.model.id, {
+						trigger : false
 					});
+					var popup = new Views.PopupView({
+						type : "success",
+						message : $.i18n.prop("Success")
+					});
+					popup.show();
+				},
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
 				}
 			});
-			confirm.show();
 			event.preventDefault();
 			return false;
 		},
@@ -3571,38 +3589,31 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		addMember : function(professor, type) {
 			var self = this;
-			var confirm = new Views.ConfirmView({
-				title : $.i18n.prop('Confirm'),
-				message : $.i18n.prop('AreYouSure'),
-				yes : function() {
-					var positionCommitteeMember = new Models.PositionCommitteeMember();
-					positionCommitteeMember.save({
-						"position" : {
-							id : self.options.position.get("id")
-						},
-						"professor" : professor.toJSON(),
-						"type" : type
-					}, {
-						wait : true,
-						success : function(model, resp) {
-							self.collection.add(model);
-							var popup = new Views.PopupView({
-								type : "success",
-								message : $.i18n.prop("Success")
-							});
-							popup.show();
-						},
-						error : function(model, resp, options) {
-							var popup = new Views.PopupView({
-								type : "error",
-								message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-							});
-							popup.show();
-						}
+			var positionCommitteeMember = new Models.PositionCommitteeMember();
+			positionCommitteeMember.save({
+				"position" : {
+					id : self.options.position.get("id")
+				},
+				"professor" : professor.toJSON(),
+				"type" : type
+			}, {
+				wait : true,
+				success : function(model, resp) {
+					self.collection.add(model);
+					var popup = new Views.PopupView({
+						type : "success",
+						message : $.i18n.prop("Success")
 					});
+					popup.show();
+				},
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
 				}
 			});
-			confirm.show();
 		},
 
 		updateMember : function(event, member) {
@@ -3634,7 +3645,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						});
 					}
 				});
-				confirm.show();
 			}
 		},
 
@@ -3795,7 +3805,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		tagName : "div",
 
 		initialize : function() {
-			_.bindAll(this, "render", "select", "newRegister", "close");
+			_.bindAll(this, "render", "renderActions", "selectRegister", "createRegister", "close");
 			this.template = _.template(tpl_register_list);
 			this.collection.bind("change", this.render, this);
 			this.collection.bind("reset", this.render, this);
@@ -3804,8 +3814,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		events : {
-			"click a#createRegister" : "newRegister",
-			"click a#select" : "select"
+			"click a#createRegister" : "createRegister",
+			"click a#select" : "selectRegister"
 		},
 
 		render : function(eventName) {
@@ -3835,24 +3845,64 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				});
 			}
 			// Add Actions
-			if (App.loggedOnUser.hasRole("INSTITUTION_MANAGER") || App.loggedOnUser.hasRole("INSTITUTION_ASSISTANT")) {
-				self.$("#actions").html("<div class=\"btn-group\"><a id=\"createRegister\" class=\"btn btn-small\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_add') + " </a></div>");
-			}
+			self.renderActions();
 			return self;
 		},
 
-		select : function(event, register) {
+		renderActions : function() {
+			if (!App.loggedOnUser.hasRole("INSTITUTION_MANAGER") && !App.loggedOnUser.hasRole("INSTITUTION_ASSISTANT")) {
+				return;
+			}
+			self.$("#actions").append("<div class=\"btn-group\"><select class=\"input-xlarge\" name=\"institution\"></select><a id=\"createRegister\" class=\"btn\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_register') + " </a></div>");
+			// Add institutions in selector:
+			App.institutions = App.institutions ? App.institutions : new Models.Institutions();
+			App.institutions.fetch({
+				cache : true,
+				success : function(collection, resp) {
+					_.each(collection.filter(function(institution) {
+						return App.loggedOnUser.isAssociatedWithInstitution(institution);
+					}), function(institution) {
+						self.$("select[name='institution']").append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
+					});
+				},
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+		},
+
+		selectRegister : function(event, register) {
 			var selectedModel = register ? register : this.collection.getByCid($(event.currentTarget).attr('data-register-cid'));
 			if (selectedModel) {
 				this.collection.trigger("register:selected", selectedModel);
 			}
 		},
 
-		newRegister : function(event) {
+		createRegister : function(event) {
 			var self = this;
 			var newRegister = new Models.Register();
-			self.collection.add(newRegister);
-			self.select(undefined, newRegister);
+			newRegister.save({
+				institution : {
+					id : self.$("select[name='institution']").val()
+				}
+			}, {
+				wait : true,
+				success : function(model, resp) {
+					self.collection.add(newRegister);
+					self.selectRegister(undefined, newRegister);
+				},
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
 		},
 
 		close : function() {
@@ -3938,7 +3988,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			// Add institutions in selector:
 			self.$("select[name='institution']").change(function(event) {
-				self.$("select[name='institution']").next(".help-block").html(jQuery("select[name='institution'] option:selected").text());
+				self.$("select[name='institution']").next(".help-block").html(self.$("select[name='institution'] option:selected").text());
 			});
 			App.institutions = App.institutions ? App.institutions : new Models.Institutions();
 			App.institutions.fetch({

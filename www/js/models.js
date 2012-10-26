@@ -566,13 +566,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			"fek" : undefined,
 			"fekSubject" : undefined,
 			"manager" : undefined,
-			"ministry" : undefined,
-			// Files:
-			"fekFile" : undefined,
-			"cv" : undefined,
-			"identity" : undefined,
-			"military1599" : undefined,
-			"publications" : undefined
+			"ministry" : undefined
 		}
 	});
 
@@ -773,6 +767,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		urlRoot : "/dep/rest/position",
 		defaults : {
 			id : undefined,
+			permanent : undefined,
 			name : undefined,
 			description : undefined,
 			department : undefined,
@@ -798,6 +793,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		urlRoot : "/dep/rest/register",
 		defaults : {
 			id : undefined,
+			permanent : undefined,
 			title : undefined,
 			institution : undefined
 		}
@@ -818,8 +814,6 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			position : undefined,
 			professor : undefined,
 			confirmedMembership : undefined,
-			// Files
-			recommendatoryReport : undefined
 		}
 	});
 

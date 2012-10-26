@@ -178,6 +178,7 @@ public class PositionRESTService extends RESTService {
 			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(department)) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
+			position.setPermanent(false);
 			position.setLastUpdate(new Date());
 			position = em.merge(position);
 			em.flush();
@@ -199,6 +200,7 @@ public class PositionRESTService extends RESTService {
 		try {
 			Position existingPosition = getAndCheckPosition(loggedOn, id);
 			existingPosition.copyFrom(position);
+			existingPosition.setPermanent(true);
 			existingPosition.setLastUpdate(new Date());
 			em.flush();
 			existingPosition.initializeCollections();
@@ -513,7 +515,7 @@ public class PositionRESTService extends RESTService {
 		if (result == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.commitee.member.id");
 		}
-		
+
 		if (!result.getPosition().getId().equals(positionId)) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}

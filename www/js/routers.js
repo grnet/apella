@@ -544,7 +544,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					positionView.close();
 				}
 				// Select Edit or Simple View based on loggedOnUser
-				if (position.isNew() || App.loggedOnUser.isAssociatedWithDepartment(position.get("department"))) {
+				if (App.loggedOnUser.isAssociatedWithDepartment(position.get("department"))) {
 					positionView = new Views.PositionEditView({
 						model : position
 					});
@@ -554,15 +554,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					});
 				}
 				// Update history
-				if (position.id) {
-					App.router.navigate("position/" + position.id, {
-						trigger : false
-					});
-				} else {
-					App.router.navigate("position", {
-						trigger : false
-					});
-				}
+				App.router.navigate("position/" + position.id, {
+					trigger : false
+				});
 				// Add to UI
 				self.refreshBreadcrumb([ $.i18n.prop('menu_position'), position.get("name") ]);
 				$("#content").unbind();
