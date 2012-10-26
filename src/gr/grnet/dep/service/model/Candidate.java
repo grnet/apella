@@ -1,6 +1,7 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.file.CandidateFile;
+import gr.grnet.dep.service.model.file.FileType;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -58,6 +59,15 @@ public class Candidate extends Role {
 	public void addFile(CandidateFile file) {
 		this.files.add(file);
 		file.setCandidate(this);
+	}
+	
+	public Set<CandidateFile> getFilesOfType(FileType type) {
+		Set<CandidateFile> retv = new HashSet<CandidateFile>();
+		for (CandidateFile file : getFiles()) {
+			if (!file.isDeleted() && file.getType()==type)
+				retv.add(file);
+		}
+		return retv;
 	}
 
 	public void addCandidacy(Candidacy candidacy) {

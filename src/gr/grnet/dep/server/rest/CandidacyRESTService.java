@@ -11,6 +11,7 @@ import gr.grnet.dep.service.model.CandidateCommitteeMembership;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.ProfessorForeign;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.User;
 
 import java.util.Date;
@@ -69,9 +70,24 @@ public class CandidacyRESTService extends RESTService {
 	}
 
 	/**
+	 * Check that a (possible) Candidacy passes some basic checks before creation / update.
+	 * 
+	 * @param candidacy
+	 * @param candidate
+	 */
+	private void validateCandidacy(Candidacy candidacy, Candidate candidate) {
+		if (candidate.getFilesOfType(FileType.DIMOSIEYSI).size()==0)
+			throw new RestException(Status.CONFLICT, "validation.candidacy.no.dimosieysi");
+		if (candidate.getFilesOfType(FileType.PTYXIO).size()==0)
+			throw new RestException(Status.CONFLICT, "validation.candidacy.no.ptyxio");
+		
+	}
+	
+	/**
 	 * Hold on to a snapshot of candidate's details in given candidacy.
 	 * 
 	 * @param candidacy
+	 * @param candidate
 	 */
 	private void updateSnapshot(Candidacy candidacy, Candidate candidate) {
 		candidacy.clearSnapshot();
@@ -99,6 +115,8 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			candidacy.setDate(new Date());
+			
+			validateCandidacy(candidacy, cy);
 			updateSnapshot(candidacy, cy);
 
 			em.persist(candidacy);
@@ -129,6 +147,7 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 
+			validateCandidacy(existingCandidacy, cy);
 			updateSnapshot(existingCandidacy, cy);
 
 			return existingCandidacy;
