@@ -61,7 +61,7 @@ public abstract class Role implements Serializable {
 	public enum RoleStatus {
 		UNAPPROVED,
 		ACTIVE,
-		BLOCKED
+		INACTIVE
 	};
 
 	@Inject
@@ -85,6 +85,8 @@ public abstract class Role implements Serializable {
 	private RoleStatus status = RoleStatus.UNAPPROVED;
 
 	private Date statusDate;
+	
+	private Date statusEndDate;
 
 	@ManyToOne
 	private User user;
@@ -120,6 +122,14 @@ public abstract class Role implements Serializable {
 	public void setStatusDate(Date statusDate) {
 		this.statusDate = statusDate;
 	}
+	
+	public Date getStatusEndDate() {
+		return statusEndDate;
+	}
+
+	public void setStatusEndDate(Date statusEndDate) {
+		this.statusEndDate = statusEndDate;
+	}
 
 	@JsonView({DetailedRoleView.class, DetailedPositionCommitteeMemberView.class})
 	public User getUser() {
@@ -145,4 +155,6 @@ public abstract class Role implements Serializable {
 			(b == null ? true : false) :
 			(b == null ? false : a.equals(b));
 	}
+
+
 }
