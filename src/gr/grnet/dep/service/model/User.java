@@ -9,10 +9,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.ejb.EJBException;
@@ -97,7 +98,7 @@ public class User implements Serializable {
 	private ContactInformation contactInfo = new ContactInformation();
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
-	private Set<Role> roles = new HashSet<Role>();
+	private List<Role> roles = new ArrayList<Role>();
 
 	private String password;
 
@@ -204,11 +205,11 @@ public class User implements Serializable {
 	}
 
 	@JsonView({DetailedUserView.class})
-	public Set<Role> getRoles() {
+	public List<Role> getRoles() {
 		return roles;
 	}
 
-	public void setRoles(Set<Role> roles) {
+	public void setRoles(List<Role> roles) {
 		this.roles = roles;
 	}
 
@@ -257,6 +258,36 @@ public class User implements Serializable {
 		role.setUser(null);
 	}
 
+	private static final List<RoleDiscriminator> roleOrder = Arrays.asList(new RoleDiscriminator[] {
+		RoleDiscriminator.PROFESSOR_DOMESTIC,
+		RoleDiscriminator.PROFESSOR_FOREIGN,
+		RoleDiscriminator.CANDIDATE,
+		RoleDiscriminator.INSTITUTION_MANAGER,
+		RoleDiscriminator.INSTITUTION_ASSISTANT,
+		RoleDiscriminator.MINISTRY_MANAGER,
+		RoleDiscriminator.ADMINISTRATOR
+	});
+
+	public RoleDiscriminator getPrimaryRole() {
+		if (roles.isEmpty()) {
+			return null;
+		}
+		if (roles.size() == 1) {
+			return roles.get(0).getDiscriminator();
+		} else {
+			Collections.sort(roles, new Comparator<Role>() {
+
+				@Override
+				public int compare(Role o1, Role o2) {
+					return roleOrder.indexOf(o1.getDiscriminator()) - roleOrder.indexOf(o2.getDiscriminator());
+				}
+
+			});
+			return roles.get(0).getDiscriminator();
+		}
+	}
+
+	@XmlTransient
 	public Role getRole(RoleDiscriminator discriminator) {
 		for (Role r : getRoles()) {
 			if (r.getDiscriminator() == discriminator && r.getStatus().equals(RoleStatus.ACTIVE)) {

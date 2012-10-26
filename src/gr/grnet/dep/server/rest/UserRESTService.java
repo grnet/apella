@@ -2,6 +2,7 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Address;
+import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.InstitutionManager;
@@ -17,8 +18,8 @@ import gr.grnet.dep.service.util.MailClient;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -195,13 +196,20 @@ public class UserRESTService extends RESTService {
 			user.setStatus(UserStatus.UNVERIFIED);
 			user.setStatusDate(new Date());
 			user.setVerificationNumber(user.generateVerificationNumber());
-			user.setRoles(new HashSet<Role>());
+			user.setRoles(new ArrayList<Role>());
+			user.addRole(firstRole);
 
 			switch (firstRole.getDiscriminator()) {
 				case PROFESSOR_DOMESTIC:
+					// Add Second Role : CANDIDATE
+					Candidate secondRole = new Candidate();
+					secondRole.setStatus(RoleStatus.UNAPPROVED);
+					secondRole.setStatusDate(new Date());
+					user.addRole(secondRole);
+					break;
 				case PROFESSOR_FOREIGN:
+					break;
 				case CANDIDATE:
-					// DO NOTHING
 					break;
 				case INSTITUTION_MANAGER:
 					// Validate Institution:
@@ -240,7 +248,6 @@ public class UserRESTService extends RESTService {
 			}
 			//3. Update
 			em.persist(user);
-			user.addRole(firstRole);
 			em.flush(); //To catch the exception
 
 			//4. Send Verification E-Mail

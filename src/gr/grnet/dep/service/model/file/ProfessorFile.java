@@ -26,7 +26,6 @@ public class ProfessorFile extends FileHeader {
 		{
 			put(FileType.PROFILE, 1);
 			put(FileType.FEK, 1);
-			put(FileType.DIMOSIEYSI, Integer.MAX_VALUE);
 		}
 	});
 

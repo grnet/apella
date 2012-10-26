@@ -1504,6 +1504,63 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 
 	/***************************************************************************
+	 * RoleTabsView ************************************************************
+	 **************************************************************************/
+	Views.RoleTabsView = Backbone.View.extend({
+		tagName : "div",
+
+		initialize : function() {
+			_.bindAll(this, "render", "select", "highlightSelected", "close");
+			this.template = _.template(tpl_role_tabs);
+			this.collection.bind("change", this.render, this);
+			this.collection.bind("reset", this.render, this);
+			this.collection.bind("add", this.render, this);
+			this.collection.bind("remove", this.render, this);
+			this.collection.bind("role:selected", this.highlightSelected, this);
+		},
+
+		events : {
+			"click a.selectRole" : "select"
+		},
+
+		render : function(eventName) {
+			var self = this;
+			var tpl_data = {
+				roles : (function() {
+					var result = [];
+					self.collection.each(function(model) {
+						var item = model.toJSON();
+						item.cid = model.cid;
+						result.push(item);
+					});
+					return result;
+				})()
+			};
+			self.$el.html(this.template(tpl_data));
+			return self;
+		},
+
+		select : function(event, role) {
+			var self = this;
+			var selectedModel = role ? role : self.collection.getByCid($(event.target).attr('role'));
+			if (selectedModel) {
+				self.collection.trigger("role:selected", selectedModel);
+			}
+		},
+
+		highlightSelected : function(role) {
+			var self = this;
+			self.$("li.active").removeClass("active");
+			self.$("a[role=" + role.cid + "]").parent("li").addClass("active");
+		},
+
+		close : function() {
+			$(this.el).unbind();
+			$(this.el).remove();
+		}
+	});
+
+	/***************************************************************************
 	 * RoleView ****************************************************************
 	 **************************************************************************/
 	Views.RoleView = Views.BaseView.extend({
@@ -1675,8 +1732,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "fekFile":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
-				case "dimosieusiFileList":
-					return true;
 				}
 			case "PROFESSOR_FOREIGN":
 				switch (field) {
@@ -1887,10 +1942,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							self.addFile(collection, "FEK", self.$("#fekFile"), {
 								withMetadata : false,
 								editable : self.isEditable("fekFile")
-							});
-							self.addFileList(collection, "DIMOSIEYSI", self.$("#dimosieusiFileList"), {
-								withMetadata : true,
-								editable : self.isEditable("dimosieusiFileList")
 							});
 						}
 					});

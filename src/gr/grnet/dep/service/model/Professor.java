@@ -81,7 +81,9 @@ public abstract class Professor extends Role {
 
 	@Override
 	public void initializeCollections() {
-		this.getCommittees().size();
+		for (PositionCommitteeMember member : getCommittees()) {
+			member.getPosition().initializeCollections();
+		}
 		this.getFiles().size();
 	}
 

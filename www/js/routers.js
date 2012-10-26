@@ -329,6 +329,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			"" : "showHomeView",
 			"account" : "showAccountView",
 			"profile" : "showProfileView",
+			"profile/:roleId" : "showProfileView",
 			"assistants" : "showAssistantsView",
 			"assistants/:userId" : "showAssistantsView",
 			"position" : "showPositionView",
@@ -446,22 +447,44 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			this.currentView = accountView;
 		},
 
-		showProfileView : function() {
+		showProfileView : function(roleId) {
 			var self = this;
+			var rolesView = undefined;
+			var roleView = undefined;
 			self.clear();
-			// Refresh roles from server
-			App.roles.fetch({
-				cache : false,
-				success : function(collection, response) {
-					// We assume collection has ONE primary role, after role
-					// redesign
-					var roleView = new Views.RoleEditView({
-						model : collection.at(0)
-					});
-					$("#content").html(roleView.render().el);
+
+			App.roles.on("role:selected", function(role) {
+				if (roleView) {
+					roleView.close();
 				}
+				roleView = new Views.RoleEditView({
+					model : role
+				});
+				self.refreshBreadcrumb([ $.i18n.prop('menu_profile'), $.i18n.prop(role.get('discriminator')) ]);
+				$("#content").html(roleView.render().el);
+
+				self.navigate("profile/" + role.id, {
+					trigger : false
+				});
+			});
+
+			rolesView = new Views.RoleTabsView({
+				collection : App.roles
 			});
 			self.refreshBreadcrumb([ $.i18n.prop('menu_profile') ]);
+			$("#featured").html(rolesView.el);
+
+			App.roles.fetch({
+				cache : false,
+				success : function() {
+					if (!_.isUndefined(roleId)) {
+						App.roles.trigger("role:selected", App.roles.get(roleId));
+					} else {
+						App.roles.trigger("role:selected", App.roles.at(0));
+					}
+				}
+			});
+			self.currentView = rolesView;
 		},
 
 		showAssistantsView : function(userId) {
