@@ -2653,7 +2653,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				announcements : []
 			};
 			self.collection.each(function(role) {
-				if (role.get("status") !== "ACTIVE") {
+				if (role.get("status") == "UNVERIFIED") {
 					data.announcements.push({
 						text : $.i18n.prop('AnnouncementRoleStatus' + role.get("status"), $.i18n.prop(role.get('discriminator'))),
 						url : "#profile"
@@ -2864,9 +2864,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		selectPosition : function(event, position) {
-			var selectedModel = position ? position : this.collection.getByCid($(event.currentTarget).attr('data-position-cid'));
+			var self = this;
+			var selectedModel = position ? position : self.collection.getByCid($(event.currentTarget).attr('data-position-cid'));
 			if (selectedModel) {
-				this.collection.trigger("position:selected", selectedModel);
+				self.collection.trigger("position:selected", selectedModel);
 			}
 		},
 
@@ -2881,7 +2882,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				wait : true,
 				success : function(model, resp) {
 					self.collection.add(newPosition);
-					self.select(undefined, newPosition);
+					self.selectPosition(undefined, newPosition);
 				},
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
@@ -3034,7 +3035,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			"click a#cancel" : "cancel",
 			"click a#remove" : "remove",
 			"click a#save" : function() {
-				$("form", this.el).submit();
+				var self = this;
+				self.$("form").submit();
 			},
 			"submit form" : "submit"
 		},
@@ -3235,8 +3237,16 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			if (_.isEqual(self.model.get("status"), "OLOKLIROMENI")) {
 				self.$("a#save,a#remove").hide();
 			}
-
+			if (_.isEqual(self.model.get("status"), "ENTAGMENI") || _.isEqual(self.model.get("status"), "ANOIXTI")) {
+				self.$("#positionTabs a:not([data-target=#position])").parent("li").addClass("disabled");
+			}
 			// Widgets
+			self.$("#positionTabs a").click(function(e) {
+				e.preventDefault();
+				if (!$(this).parent("li").hasClass("disabled")) {
+					$(this).tab('show');
+				}
+			});
 			self.$("input[data-input-type=date]").datepicker();
 			self.validator = $("form", this.el).validate({
 				errorElement : "span",
