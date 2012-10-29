@@ -80,6 +80,8 @@ public class CandidacyRESTService extends RESTService {
 			throw new RestException(Status.CONFLICT, "validation.candidacy.no.dimosieysi");
 		if (candidate.getFilesOfType(FileType.PTYXIO).size()==0)
 			throw new RestException(Status.CONFLICT, "validation.candidacy.no.ptyxio");
+		if (candidate.getFilesOfType(FileType.BIOGRAFIKO).size()==0)
+			throw new RestException(Status.CONFLICT, "validation.candidacy.no.cv");
 		
 	}
 	
