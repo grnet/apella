@@ -268,6 +268,7 @@ public class User implements Serializable {
 		RoleDiscriminator.ADMINISTRATOR
 	});
 
+	@JsonView({DetailedUserView.class})
 	public RoleDiscriminator getPrimaryRole() {
 		if (roles.isEmpty()) {
 			return null;

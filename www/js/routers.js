@@ -303,7 +303,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			var self = this;
 
 			_.extend(self, Backbone.Events);
-			_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showAssistantsView", "showPositionView", "showRegisterView", "showProfessorCommitteesView", "start");
+			_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showAssistantsView", "showPositionView", "showRegisterView", "showProfessorCommitteesView", "showInstitutionRegulatoryFrameworkView", "start");
 			$(document).ajaxStart(App.blockUI);
 			$(document).ajaxStop(App.unblockUI);
 
@@ -337,7 +337,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			"register" : "showRegisterView",
 			"register/:registerId" : "showRegisterView",
 			"requests" : "showRequestsView",
-			"professorCommittees" : "showProfessorCommitteesView"
+			"professorCommittees" : "showProfessorCommitteesView",
+			"regulatoryframework" : "showInstitutionRegulatoryFrameworkView",
+			"regulatoryframework/:institutionId" : "showInstitutionRegulatoryFrameworkView"
 		},
 
 		start : function(eventName, authToken) {
@@ -721,8 +723,36 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				}
 			});
 
-			this.currentView = professorCommitteesView;
-		}
+			self.currentView = professorCommitteesView;
+		},
+
+		showInstitutionRegulatoryFrameworkView : function(institutionId) {
+			var self = this;
+			var institution = new Models.Institution({
+				id : institutionId ? institutionId : App.loggedOnUser.getAssociatedInstitutions()[0].id
+			});
+			var irfView = App.loggedOnUser.isAssociatedWithInstitution(institution) ? new Views.InstitutionRegulatoryFrameworkEditView({
+				model : institution
+			}) : new Views.InstitutionRegulatoryFrameworkView({
+				model : institution
+			});
+			self.clear();
+			self.refreshBreadcrumb([ $.i18n.prop('menu_regulatoryframework') ]);
+			$("#content").html(irfView.el);
+
+			institution.fetch({
+				cache : true,
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+			self.currentView = irfView;
+		},
+
 	});
 
 	return Routers;

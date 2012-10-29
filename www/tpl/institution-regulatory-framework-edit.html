@@ -1,0 +1,23 @@
+<form class="form-horizontal" onsubmit="return false">
+	<fieldset>
+		<legend><%= $.i18n.prop('InstitutionRegulatoryFramework') %></legend>
+		<div class="control-group">
+			<label class="control-label" for="institution"><%= $.i18n.prop('Institution') %>:</label>
+			<div class="controls">
+				<span class="help-inline"><%= name %></span>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="organismosFile"><%= $.i18n.prop('OrganismosFile') %>:</label>
+			<div class="controls">
+				<span id="organismosFile"></span>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="eswterikosKanonismosFile"><%= $.i18n.prop('EswterikosKanonismosFile') %>:</label>
+			<div class="controls">
+				<span id="eswterikosKanonismosFile"></span>
+			</div>
+		</div>
+	</fieldset>
+</form>

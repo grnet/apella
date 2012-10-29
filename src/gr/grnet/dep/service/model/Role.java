@@ -130,6 +130,7 @@ public abstract class Role implements Serializable {
 		this.user = user;
 	}
 
+	@JsonView({DetailedRoleView.class})
 	public boolean isPrimary() {
 		return this.getDiscriminator().equals(getUser().getPrimaryRole());
 	}
