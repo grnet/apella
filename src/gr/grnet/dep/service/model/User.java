@@ -265,6 +265,7 @@ public class User implements Serializable {
 		RoleDiscriminator.INSTITUTION_MANAGER,
 		RoleDiscriminator.INSTITUTION_ASSISTANT,
 		RoleDiscriminator.MINISTRY_MANAGER,
+		RoleDiscriminator.MINISTRY_ASSISTANT,
 		RoleDiscriminator.ADMINISTRATOR
 	});
 

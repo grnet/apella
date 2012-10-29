@@ -27,6 +27,7 @@ public class Administrator extends Role {
 
 	@Override
 	public void initializeCollections() {
+		isPrimary();
 	}
 
 	@Override

@@ -85,7 +85,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				menuItems.push("candidacies");
 			}
 			if (self.model.hasRoleWithStatus("INSTITUTION_MANAGER", "ACTIVE")) {
-				menuItems.push("assistants");
+				menuItems.push("iassistants");
 				menuItems.push("regulatoryframework");
 				menuItems.push("register");
 				menuItems.push("position");
@@ -96,10 +96,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				menuItems.push("position");
 			}
 			if (self.model.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE")) {
+				menuItems.push("massistants");
 				menuItems.push("register");
 				menuItems.push("position");
 			}
-
+			if (self.model.hasRoleWithStatus("MINISTRY_ASSISTANT", "ACTIVE")) {
+				menuItems.push("register");
+				menuItems.push("position");
+			}
 			this.$el.append("<ul class=\"nav\">");
 			_.each(_.uniq(menuItems), function(menuItem) {
 				self.$("ul").append("<li><a href=\"\#" + menuItem + "\">" + $.i18n.prop("menu_" + menuItem) + "</a></li>");
@@ -1654,6 +1658,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					break;
 				case "MINISTRY_MANAGER":
 					break;
+				case "MINISTRY_ASSISTANT":
+					break;
 				}
 
 			}
@@ -1714,6 +1720,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				case "dimosieusiFileList":
 					return true;
 				}
+				break;
 			case "PROFESSOR_DOMESTIC":
 				switch (field) {
 				case "identification":
@@ -1735,6 +1742,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				case "fekFile":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				}
+				break;
 			case "PROFESSOR_FOREIGN":
 				switch (field) {
 				case "identification":
@@ -1750,6 +1758,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				case "subject":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				}
+				break;
 			case "INSTITUTION_MANAGER":
 				switch (field) {
 				case "institution":
@@ -1761,6 +1770,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				case "phone":
 					return true;
 				}
+				break;
 			case "INSTITUTION_ASSISTAN":
 				switch (field) {
 				case "institution":
@@ -1768,12 +1778,17 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				case "phone":
 					return true;
 				}
+				break;
 			case "MINISTRY_MANAGER":
 				switch (field) {
 				case "ministry":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				}
+				break;
+			case "MINISTRY_ASSISTANT":
+				break;
 			}
+			return false;
 		},
 
 		render : function(eventName) {
@@ -2186,6 +2201,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				});
 				break;
+			case "MINISTRY_ASSISTANT":
+				break;
 			}
 
 			// Set isEditable to fields
@@ -2262,6 +2279,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			case "MINISTRY_MANAGER":
 				values.ministry = self.$('form input[name=ministry]').val();
+				break;
+			case "MINISTRY_ASSISTANT":
 				break;
 			}
 			// Save to model
@@ -2729,7 +2748,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	/***************************************************************************
 	 * AssistantListView *******************************************************
 	 **************************************************************************/
-	Views.AssistantListView = Views.BaseView.extend({
+	Views.InstitutionAssistantListView = Views.BaseView.extend({
 		tagName : "div",
 
 		initialize : function() {
@@ -2791,6 +2810,83 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				"roles" : [ {
 					"discriminator" : "INSTITUTION_ASSISTANT",
 					"institution" : institutions[0]
+				} ]
+			});
+			this.collection.add(user);
+			this.collection.trigger("user:selected", user);
+		},
+
+		close : function() {
+			this.collection.unbind("change", this.render, this);
+			this.collection.unbind("reset", this.render, this);
+			$(this.el).unbind();
+			$(this.el).remove();
+		}
+	});
+
+	/***************************************************************************
+	 * AssistantListView *******************************************************
+	 **************************************************************************/
+	Views.MinistryAssistantListView = Views.BaseView.extend({
+		tagName : "div",
+
+		initialize : function() {
+			_.bindAll(this, "render", "select", "close");
+			this.template = _.template(tpl_user_list);
+			this.roleInfoTemplate = _.template(tpl_user_role_info);
+			this.collection.bind("add", this.render, this);
+			this.collection.bind("remove", this.render, this);
+			this.collection.bind("change", this.render, this);
+			this.collection.bind("reset", this.render, this);
+		},
+
+		events : {
+			"click a#select" : "select",
+			"click a#createMinistryAssistant" : "createMinistryAssistant"
+		},
+
+		render : function(eventName) {
+			var self = this;
+			var tpl_data = {
+				users : (function() {
+					var result = [];
+					self.collection.each(function(model) {
+						if (model.has("id")) {
+							var item = model.toJSON();
+							item.cid = model.cid;
+							item.roleInfo = self.roleInfoTemplate({
+								roles : item.roles
+							});
+							result.push(item);
+						}
+					});
+					return result;
+				})()
+			};
+			self.$el.html(self.template(tpl_data));
+			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
+				self.$("table").dataTable({
+					"sDom" : "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+					"sPaginationType" : "bootstrap",
+					"oLanguage" : {
+						"sLengthMenu" : "_MENU_ records per page"
+					}
+				});
+			}
+			// Add Actions:
+			self.$("#actions").html("<div class=\"btn-group input-append\"><a id=\"createMinistryAssistant\" class=\"btn btn-small add-on\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_ma') + " </a></div><div class=\"btn-group input-append\"></div>");
+			return self;
+		},
+
+		select : function(event) {
+			var selectedModel = this.collection.getByCid($(event.currentTarget).attr('user'));
+			this.collection.trigger("user:selected", selectedModel);
+		},
+
+		createMinistryAssistant : function(event) {
+			var user = new Models.User({
+				"roles" : [ {
+					"discriminator" : "MINISTRY_ASSISTANT"
 				} ]
 			});
 			this.collection.add(user);

@@ -28,6 +28,7 @@ public class MinistryManager extends Role {
 
 	@Override
 	public void initializeCollections() {
+		isPrimary();
 	}
 
 	@Override

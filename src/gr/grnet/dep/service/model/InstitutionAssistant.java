@@ -60,6 +60,8 @@ public class InstitutionAssistant extends Role {
 
 	@Override
 	public void initializeCollections() {
+		isPrimary();
+		manager.initializeCollections();
 	}
 
 	@Override

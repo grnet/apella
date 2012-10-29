@@ -77,6 +77,7 @@ public class Candidate extends Role {
 
 	@Override
 	public void initializeCollections() {
+		isPrimary();
 		getFiles().size();
 		getCandidacies().size();
 	}

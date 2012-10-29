@@ -303,7 +303,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			var self = this;
 
 			_.extend(self, Backbone.Events);
-			_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showAssistantsView", "showPositionView", "showRegisterView", "showProfessorCommitteesView", "showInstitutionRegulatoryFrameworkView", "start");
+			_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showInstitutionAssistantsView", "showMinistryAssistantsView", "showPositionView", "showRegisterView", "showProfessorCommitteesView", "showInstitutionRegulatoryFrameworkView", "start");
 			$(document).ajaxStart(App.blockUI);
 			$(document).ajaxStop(App.unblockUI);
 
@@ -330,8 +330,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			"account" : "showAccountView",
 			"profile" : "showProfileView",
 			"profile/:roleId" : "showProfileView",
-			"assistants" : "showAssistantsView",
-			"assistants/:userId" : "showAssistantsView",
+			"iassistants" : "showInstitutionAssistantsView",
+			"iassistants/:userId" : "showInstitutionAssistantsView",
+			"massistants" : "showMinistryAssistantsView",
+			"massistants/:userId" : "showMinistryAssistantsView",
 			"position" : "showPositionView",
 			"position/:positionId" : "showPositionView",
 			"register" : "showRegisterView",
@@ -489,7 +491,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			self.currentView = rolesView;
 		},
 
-		showAssistantsView : function(userId) {
+		showInstitutionAssistantsView : function(userId) {
 			var self = this;
 			var accountView = undefined;
 			var userRoleInfoView = undefined;
@@ -509,7 +511,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					$("#content").empty();
 
 					// Add
-					self.refreshBreadcrumb([ $.i18n.prop('menu_assistants'), user.get("username") ]);
+					self.refreshBreadcrumb([ $.i18n.prop('menu_iassistants'), user.get("username") ]);
 
 					userRoleInfoView = new Views.UserRoleInfoView({
 						model : user
@@ -521,21 +523,21 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					$("#content").append(accountView.render().el);
 
 					if (!_.isUndefined(user.id)) {
-						self.navigate("assistants/" + user.id, {
+						self.navigate("iassistants/" + user.id, {
 							trigger : false
 						});
 					} else {
-						self.navigate("assistants", {
+						self.navigate("iassistants", {
 							trigger : false
 						});
 					}
 				}
 			}, this);
 
-			var assistantsView = new Views.AssistantListView({
+			var assistantsView = new Views.InstitutionAssistantListView({
 				collection : assistants
 			});
-			self.refreshBreadcrumb([ $.i18n.prop('menu_assistants') ]);
+			self.refreshBreadcrumb([ $.i18n.prop('menu_iassistants') ]);
 			$("#featured").append(assistantsView.el);
 
 			assistants.fetch({
@@ -543,6 +545,72 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				data : {
 					manager : _.find(App.loggedOnUser.get("roles"), function(role) {
 						return role.discriminator === "INSTITUTION_MANAGER";
+					}).id
+				},
+				success : function() {
+					if (!_.isUndefined(userId)) {
+						assistants.trigger("user:selected", assistants.get(userId));
+					}
+				}
+			});
+
+			self.currentView = assistantsView;
+		},
+
+		showMinistryAssistantsView : function(userId) {
+			var self = this;
+			var accountView = undefined;
+			var userRoleInfoView = undefined;
+			self.clear();
+
+			var assistants = new Models.Users();
+			assistants.on("user:selected", function(user) {
+				if (user) {
+					// Clean up
+					if (accountView) {
+						accountView.close();
+					}
+					if (userRoleInfoView) {
+						userRoleInfoView.close();
+					}
+					$("#content").unbind();
+					$("#content").empty();
+
+					// Add
+					self.refreshBreadcrumb([ $.i18n.prop('menu_massistants'), user.get("username") ]);
+
+					userRoleInfoView = new Views.UserRoleInfoView({
+						model : user
+					});
+					$("#content").append(userRoleInfoView.render().el);
+					accountView = new Views.AssistantAccountView({
+						model : user
+					});
+					$("#content").append(accountView.render().el);
+
+					if (!_.isUndefined(user.id)) {
+						self.navigate("massistants/" + user.id, {
+							trigger : false
+						});
+					} else {
+						self.navigate("massistants", {
+							trigger : false
+						});
+					}
+				}
+			}, this);
+
+			var assistantsView = new Views.MinistryAssistantListView({
+				collection : assistants
+			});
+			self.refreshBreadcrumb([ $.i18n.prop('menu_massistants') ]);
+			$("#featured").append(assistantsView.el);
+
+			assistants.fetch({
+				cache : false,
+				data : {
+					mm : _.find(App.loggedOnUser.get("roles"), function(role) {
+						return role.discriminator === "MINISTRY_MANAGER";
 					}).id
 				},
 				success : function() {

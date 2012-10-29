@@ -280,6 +280,28 @@
 	</form>
 </div>
 <% } %>
+<% if (discriminator === "MINISTRY_ASSISTANT") { %>
+<div id="MINISTRY_ASSISTANT">
+	<form class="form-horizontal" onsubmit="return false">
+		<fieldset>
+			<legend><%= $.i18n.prop('MINISTRY_ASSISTANT') %></legend>
+			<div class="control-group">
+				<label class="control-label" for="status"><%= $.i18n.prop('RoleStatus') %>:</label>
+				<div class="controls btn-group">
+					<a id="status" class="btn btn-small"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
+					<a id="status" class="btn btn-small dropdown-toggle" data-toggle="dropdown" ><span class="caret"></span></a>
+					<ul class="dropdown-menu">
+						<li><a data-action="status" status="UNAPPROVED" > <%= $.i18n.prop('statusUNAPPROVED') %></a></li>
+						<li><a data-action="status" status="ACTIVE" > <%= $.i18n.prop('statusACTIVE') %></a></li>
+						<li><a data-action="status" status="BLOCKED" > <%= $.i18n.prop('statusBLOCKED') %></a></li>
+					</ul>
+				</div>
+				<span class="help-inline"><%= $.i18n.prop('status' + status + 'Help') %></span>
+			</div>
+		</fieldset>
+	</form>
+</div>
+<% } %>
 <% if (discriminator === "CANDIDATE") { %>
 <div id="CANDIDATE">
 	<form class="form-horizontal" onsubmit="return false">

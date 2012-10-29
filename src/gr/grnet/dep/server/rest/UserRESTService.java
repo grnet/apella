@@ -6,6 +6,8 @@ import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.InstitutionManager;
+import gr.grnet.dep.service.model.MinistryAssistant;
+import gr.grnet.dep.service.model.MinistryManager;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
@@ -69,7 +71,8 @@ public class UserRESTService extends RESTService {
 		@QueryParam("status") String status,
 		@QueryParam("role") String role,
 		@QueryParam("roleStatus") String roleStatus,
-		@QueryParam("manager") Long managerId) {
+		@QueryParam("im") Long imId,
+		@QueryParam("mm") Long mmId) {
 
 		getLoggedOn(authToken);
 
@@ -88,8 +91,11 @@ public class UserRESTService extends RESTService {
 		if (roleStatus != null && !roleStatus.isEmpty()) {
 			sb.append("and r.status = :roleStatus ");
 		}
-		if (managerId != null) {
-			sb.append("and (u.id in (select ia.user.id from InstitutionAssistant ia where ia.manager.id = :managerId )) ");
+		if (imId != null) {
+			sb.append("and (u.id in (select ia.user.id from InstitutionAssistant ia where ia.manager.id = :imId )) ");
+		}
+		if (mmId != null) {
+			sb.append("and (u.id in (select ma.user.id from MinistryAssistant ma where ma.manager.id = :mmId )) ");
 		}
 		sb.append("order by u.basicInfo.lastname, u.basicInfo.firstname");
 
@@ -106,10 +112,12 @@ public class UserRESTService extends RESTService {
 		if (roleStatus != null && !roleStatus.isEmpty()) {
 			query = query.setParameter("roleStatus", RoleStatus.valueOf(roleStatus));
 		}
-		if (managerId != null) {
-			query = query.setParameter("managerId", managerId);
+		if (imId != null) {
+			query = query.setParameter("imId", imId);
 		}
-
+		if (mmId != null) {
+			query = query.setParameter("mmId", mmId);
+		}
 		List<User> result = query.getResultList();
 		for (User u : result) {
 			u.initializeCollections();
@@ -199,6 +207,7 @@ public class UserRESTService extends RESTService {
 			user.setRoles(new ArrayList<Role>());
 			user.addRole(firstRole);
 
+			User loggedOn = null;
 			switch (firstRole.getDiscriminator()) {
 				case PROFESSOR_DOMESTIC:
 					// Add Second Role : CANDIDATE
@@ -233,7 +242,7 @@ public class UserRESTService extends RESTService {
 					break;
 				case INSTITUTION_ASSISTANT:
 					// CHECK LOGGEDON USER, ACTIVATE NEW USER
-					User loggedOn = getLoggedOn(authToken);
+					loggedOn = getLoggedOn(authToken);
 					if (!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_MANAGER)) {
 						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 					}
@@ -243,6 +252,18 @@ public class UserRESTService extends RESTService {
 					firstRole.setStatus(RoleStatus.ACTIVE);
 					break;
 				case MINISTRY_MANAGER:
+					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+				case MINISTRY_ASSISTANT:
+					// CHECK LOGGEDON USER, ACTIVATE NEW USER
+					loggedOn = getLoggedOn(authToken);
+					if (!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER)) {
+						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+					}
+					((MinistryAssistant) firstRole).setManager(((MinistryManager) loggedOn.getRole(RoleDiscriminator.MINISTRY_MANAGER)));
+					user.setStatus(UserStatus.ACTIVE);
+					user.setVerificationNumber(null);
+					firstRole.setStatus(RoleStatus.ACTIVE);
+					break;
 				case ADMINISTRATOR:
 					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}

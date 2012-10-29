@@ -79,7 +79,9 @@ public class PositionRESTService extends RESTService {
 	public List<Position> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
 		User loggedOnUser = getLoggedOn(authToken);
 
-		if (loggedOnUser.hasRole(RoleDiscriminator.INSTITUTION_MANAGER) || loggedOnUser.hasRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+		if (loggedOnUser.hasRole(RoleDiscriminator.INSTITUTION_MANAGER) ||
+			loggedOnUser.hasRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+
 			List<Institution> institutions = new ArrayList<Institution>();
 			institutions.addAll(loggedOnUser.getAssociatedInstitutions());
 			@SuppressWarnings("unchecked")
@@ -92,7 +94,9 @@ public class PositionRESTService extends RESTService {
 				.setParameter("institutions", institutions)
 				.getResultList();
 			return positions;
-		} else if (loggedOnUser.hasRole(RoleDiscriminator.MINISTRY_MANAGER)) {
+		} else if (loggedOnUser.hasRole(RoleDiscriminator.MINISTRY_MANAGER) ||
+			loggedOnUser.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT)) {
+
 			@SuppressWarnings("unchecked")
 			List<Position> positions = (List<Position>) em.createQuery(
 				"from Position p " +
@@ -158,7 +162,10 @@ public class PositionRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		Position p = getAndCheckPosition(loggedOn, id);
 		String result = null;
-		if (loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) || loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) || loggedOn.isDepartmentUser(p.getDepartment())) {
+		if (loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) ||
+			loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) ||
+			loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) ||
+			loggedOn.isDepartmentUser(p.getDepartment())) {
 			result = toJSON(p, DetailedPositionView.class);
 		} else {
 			result = toJSON(p, PublicPositionView.class);
@@ -241,7 +248,10 @@ public class PositionRESTService extends RESTService {
 		if (position == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) && !loggedOn.isDepartmentUser(position.getDepartment())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+			!loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -259,7 +269,10 @@ public class PositionRESTService extends RESTService {
 		if (position == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) && !loggedOn.isDepartmentUser(position.getDepartment())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+			!loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -281,7 +294,10 @@ public class PositionRESTService extends RESTService {
 		if (position == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) && !loggedOn.isDepartmentUser(position.getDepartment())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+			!loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -493,7 +509,10 @@ public class PositionRESTService extends RESTService {
 	public List<PositionCommitteeMember> getPositionCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
 		User loggedOn = getLoggedOn(authToken);
 		Position position = getAndCheckPosition(loggedOn, positionId);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) && !loggedOn.isDepartmentUser(position.getDepartment())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+			!loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		for (PositionCommitteeMember member : position.getCommitee()) {
@@ -508,7 +527,10 @@ public class PositionRESTService extends RESTService {
 	public PositionCommitteeMember getPositionCommitteeMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cmId") Long cmId) {
 		User loggedOn = getLoggedOn(authToken);
 		Position position = getAndCheckPosition(loggedOn, positionId);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) && !loggedOn.isDepartmentUser(position.getDepartment())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+			!loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		PositionCommitteeMember result = em.find(PositionCommitteeMember.class, cmId);
