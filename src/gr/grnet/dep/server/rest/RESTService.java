@@ -89,7 +89,7 @@ public class RESTService {
 
 	protected User getLoggedOn(String authToken) throws RestException {
 		if (authToken == null) {
-			throw new RestException(Status.UNAUTHORIZED, "missing.token");
+			throw new RestException(Status.UNAUTHORIZED, "login.missing.token");
 		}
 		try {
 			User user = (User) em.createQuery(
@@ -101,7 +101,7 @@ public class RESTService {
 				.getSingleResult();
 			return user;
 		} catch (NoResultException e) {
-			throw new RestException(Status.UNAUTHORIZED, "invalid.token");
+			throw new RestException(Status.UNAUTHORIZED, "login.invalid.token");
 		}
 	}
 
@@ -303,7 +303,7 @@ public class RESTService {
 		}
 	}
 
-	public String toJSON(Object object, Class<?> view) throws JsonMappingException {
+	public String toJSON(Object object, Class<?> view) {
 		try {
 			ContextResolver<ObjectMapper> resolver = providers.getContextResolver(ObjectMapper.class, MediaType.APPLICATION_JSON_TYPE);
 			ObjectMapper mapper = resolver.getContext(object.getClass());

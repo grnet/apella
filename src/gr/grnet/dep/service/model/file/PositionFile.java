@@ -24,6 +24,7 @@ public class PositionFile extends FileHeader {
 	public static final Map<FileType, Integer> fileTypes = Collections.unmodifiableMap(new HashMap<FileType, Integer>() {
 
 		{
+			put(FileType.APOFASI_SYSTASIS_EPITROPIS, Integer.MAX_VALUE);
 			put(FileType.PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES, 1);
 			put(FileType.TEKMIRIOSI_EPITROPIS_GIA_AKSIOLOGITES, 1);
 			put(FileType.AITIMA_EPITROPIS_PROS_AKSIOLOGITES, 1);
@@ -31,13 +32,11 @@ public class PositionFile extends FileHeader {
 			put(FileType.AKSIOLOGISI_DEUTEROU_AKSIOLOGITI, Integer.MAX_VALUE);
 			put(FileType.PROSKLISI_KOSMITORA, 1);
 			put(FileType.EISIGISI_DEP_YPOPSIFIOU, Integer.MAX_VALUE);
-			put(FileType.PRAKTIKO_EPILOGIS, 1);
+			put(FileType.PRAKTIKO_EPILOGIS, Integer.MAX_VALUE);
 			put(FileType.DIAVIVASTIKO_PRAKTIKOU, 1);
 			put(FileType.PRAKSI_DIORISMOU, 1);
 			put(FileType.DIOIKITIKO_EGGRAFO, Integer.MAX_VALUE);
 			put(FileType.APOFASI_ANAPOMPIS, 1);
-			put(FileType.ORGANISMOS, 1);
-			put(FileType.ESWTERIKOS_KANONISMOS, 1);
 		}
 	});
 

@@ -1,6 +1,6 @@
 package gr.grnet.dep.service.model.file;
 
-import gr.grnet.dep.service.model.Professor;
+import gr.grnet.dep.service.model.Institution;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,31 +14,31 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
-@DiscriminatorValue("ProfessorFile")
+@DiscriminatorValue("RegisterFile")
 @XmlRootElement
-public class ProfessorFile extends FileHeader {
+public class InstitutionFile extends FileHeader {
 
-	private static final long serialVersionUID = -3078442579988112911L;
+	private static final long serialVersionUID = 3451155353115781870L;
 
 	@SuppressWarnings("serial")
 	public static final Map<FileType, Integer> fileTypes = Collections.unmodifiableMap(new HashMap<FileType, Integer>() {
 
 		{
-			put(FileType.PROFILE, 1);
-			put(FileType.FEK, 1);
+			put(FileType.ORGANISMOS, 1);
+			put(FileType.ESWTERIKOS_KANONISMOS, 1);
 		}
 	});
 
 	@ManyToOne
-	private Professor professor;
+	private Institution institution;
 
 	@JsonView({DetailedFileHeaderView.class})
-	public Professor getProfessor() {
-		return professor;
+	public Institution getInstitution() {
+		return institution;
 	}
 
-	public void setProfessor(Professor professor) {
-		this.professor = professor;
+	public void setInstitution(Institution institution) {
+		this.institution = institution;
 	}
 
 }

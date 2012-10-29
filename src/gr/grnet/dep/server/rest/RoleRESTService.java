@@ -203,7 +203,7 @@ public class RoleRESTService extends RESTService {
 				}
 				query = query.setParameter("discriminators", discriminatorList);
 			} catch (IllegalArgumentException e) {
-				throw new RestException(Status.BAD_REQUEST, "bad.request");
+				throw new RestException(Status.BAD_REQUEST, "illegal.argument.exception");
 			}
 		}
 
@@ -295,7 +295,7 @@ public class RoleRESTService extends RESTService {
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -307,7 +307,7 @@ public class RoleRESTService extends RESTService {
 		Role existingRole = em.find(Role.class, id);
 		// Validate:
 		if (existingRole == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.role.id");
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !existingRole.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -317,6 +317,7 @@ public class RoleRESTService extends RESTService {
 		}
 		Long managerInstitutionId;
 		Long institutionId;
+		String identification;
 		switch (existingRole.getDiscriminator()) {
 			case INSTITUTION_ASSISTANT:
 				managerInstitutionId = ((InstitutionAssistant) existingRole).getManager().getInstitution().getId();
@@ -324,6 +325,57 @@ public class RoleRESTService extends RESTService {
 				if (!managerInstitutionId.equals(institutionId)) {
 					throw new RestException(Status.CONFLICT, "manager.institution.mismatch");
 				}
+			case CANDIDATE:
+				identification = ((Candidate) role).getIdentification();
+				try {
+					Long found = (Long) em.createQuery("select c.id from Candidate c " +
+						"where c.identification = :identification " +
+						"and c.id != :id")
+						.setParameter("identification", identification)
+						.setParameter("id", id)
+						.getSingleResult();
+					log.log(Level.INFO, found.toString());
+					throw new RestException(Status.CONFLICT, "existing.identification.number");
+				} catch (NoResultException e) {
+				}
+				try {
+					Long found = (Long) em.createQuery("select p.id from Professor p " +
+						"where p.identification = :identification " +
+						"and p.id != :id")
+						.setParameter("identification", identification)
+						.setParameter("id", id)
+						.getSingleResult();
+					log.log(Level.INFO, found.toString());
+					throw new RestException(Status.CONFLICT, "existing.identification.number");
+				} catch (NoResultException e) {
+				}
+				break;
+			case PROFESSOR_DOMESTIC:
+			case PROFESSOR_FOREIGN:
+				identification = ((Professor) role).getIdentification();
+				try {
+					Long found = (Long) em.createQuery("select c.id from Candidate c " +
+						"where c.identification = :identification " +
+						"and c.id != :id")
+						.setParameter("identification", identification)
+						.setParameter("id", id)
+						.getSingleResult();
+					log.log(Level.INFO, found.toString());
+					throw new RestException(Status.CONFLICT, "existing.identification.number");
+				} catch (NoResultException e) {
+				}
+				try {
+					Long found = (Long) em.createQuery("select p.id from Professor p " +
+						"where p.identification = :identification " +
+						"and p.id != :id")
+						.setParameter("identification", identification)
+						.setParameter("id", id)
+						.getSingleResult();
+					log.log(Level.INFO, found.toString());
+					throw new RestException(Status.CONFLICT, "existing.identification.number");
+				} catch (NoResultException e) {
+				}
+				break;
 			default:
 				break;
 		}
@@ -338,7 +390,7 @@ public class RoleRESTService extends RESTService {
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -350,16 +402,13 @@ public class RoleRESTService extends RESTService {
 		Role role = em.find(Role.class, id);
 		// Validate:
 		if (role == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.role.id");
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		User user = em.find(User.class, role.getUser().getId());
 		if (user.getRoles().size() < 2) {
-			throw new RestException(Status.FORBIDDEN, "one.role.required");
-		}
-		if (user.getRoles().size() >= 2 && (user.hasRole(RoleDiscriminator.PROFESSOR_FOREIGN) || user.hasRole(RoleDiscriminator.PROFESSOR_DOMESTIC)) && !role.getDiscriminator().equals(RoleDiscriminator.CANDIDATE)) {
 			throw new RestException(Status.FORBIDDEN, "one.role.required");
 		}
 		try {
@@ -370,7 +419,7 @@ public class RoleRESTService extends RESTService {
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -564,7 +613,7 @@ public class RoleRESTService extends RESTService {
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -647,7 +696,7 @@ public class RoleRESTService extends RESTService {
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -725,7 +774,7 @@ public class RoleRESTService extends RESTService {
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -741,7 +790,7 @@ public class RoleRESTService extends RESTService {
 		Role existingRole = em.find(Role.class, id);
 		// Validate
 		if (existingRole == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.role.id");
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -759,7 +808,7 @@ public class RoleRESTService extends RESTService {
 						.setParameter("institutionId", im.getInstitution().getId())
 						.setMaxResults(1)
 						.getSingleResult();
-					throw new RestException(Status.CONFLICT, "exists.active.manager");
+					throw new RestException(Status.CONFLICT, "exists.active.institution.manager");
 				} catch (NoResultException e) {
 				}
 			}
@@ -776,7 +825,7 @@ public class RoleRESTService extends RESTService {
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 }

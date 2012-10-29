@@ -140,6 +140,10 @@ public abstract class Role implements Serializable {
 		this.user = user;
 	}
 
+	public boolean isPrimary() {
+		return this.getDiscriminator().equals(getUser().getPrimaryRole());
+	}
+
 	//////////////////////////////////////////////////////////
 
 	public abstract void initializeCollections();

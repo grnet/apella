@@ -25,6 +25,8 @@ public class Candidate extends Role {
 	@Transient
 	private Logger logger;
 
+	private String identification;
+
 	@OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<CandidateFile> files = new HashSet<CandidateFile>();
 
@@ -34,6 +36,14 @@ public class Candidate extends Role {
 	public Candidate() {
 		super();
 		setDiscriminator(RoleDiscriminator.CANDIDATE);
+	}
+
+	public String getIdentification() {
+		return identification;
+	}
+
+	public void setIdentification(String identification) {
+		this.identification = identification;
 	}
 
 	@XmlTransient
@@ -84,6 +94,7 @@ public class Candidate extends Role {
 	@Override
 	public Role copyFrom(Role otherRole) {
 		Candidate c = (Candidate) otherRole;
+		setIdentification(c.getIdentification());
 		return this;
 	}
 
@@ -98,7 +109,26 @@ public class Candidate extends Role {
 	@Override
 	@XmlTransient
 	public boolean isMissingRequiredFields() {
-		if (this.files.isEmpty()) {
+		if (this.identification == null) {
+			return true;
+		}
+		boolean hasTAYTOTHTAFile = false;
+		boolean hasFORMA_SYMMETOXISFile = false;
+		for (CandidateFile file : files) {
+			switch (file.getType()) {
+				case TAYTOTHTA:
+					hasTAYTOTHTAFile = true;
+					break;
+				case FORMA_SYMMETOXIS:
+					hasFORMA_SYMMETOXISFile = true;
+					break;
+				default:
+			}
+		}
+		if (!hasTAYTOTHTAFile) {
+			return true;
+		}
+		if (!hasFORMA_SYMMETOXISFile) {
 			return true;
 		}
 		return false;

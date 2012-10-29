@@ -5,6 +5,7 @@ import gr.grnet.dep.service.model.file.PositionFile;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -20,13 +21,11 @@ import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
-import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonView;
-import org.hibernate.validator.constraints.NotEmpty;
 
 @Entity
 public class Position {
@@ -44,9 +43,8 @@ public class Position {
 	@Version
 	private int version;
 
-	@NotNull
-	@NotEmpty
-	@Column(nullable = false)
+	private boolean permanent;
+
 	private String name;
 
 	@Column(columnDefinition = " character varying(4000)")
@@ -84,10 +82,13 @@ public class Position {
 	private Set<PositionFile> files = new HashSet<PositionFile>();
 
 	@OneToMany(mappedBy = "position")
-	private List<PositionCommitteeMember> commitee;
+	private List<PositionCommitteeMember> commitee = new ArrayList<PositionCommitteeMember>();
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "position")
 	private Set<Candidacy> candidacies = new HashSet<Candidacy>();
+
+	@Temporal(TemporalType.DATE)
+	private Date lastUpdate;
 
 	public Long getId() {
 		return id;
@@ -95,6 +96,14 @@ public class Position {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public boolean isPermanent() {
+		return permanent;
+	}
+
+	public void setPermanent(boolean permanent) {
+		this.permanent = permanent;
 	}
 
 	public String getName() {
@@ -210,6 +219,15 @@ public class Position {
 	}
 
 	@XmlTransient
+	public Date getLastUpdate() {
+		return lastUpdate;
+	}
+
+	public void setLastUpdate(Date lastUpdate) {
+		this.lastUpdate = lastUpdate;
+	}
+
+	@XmlTransient
 	public Set<PositionFile> getFiles() {
 		return files;
 	}
@@ -250,28 +268,45 @@ public class Position {
 			return PositionStatus.ENTAGMENI;
 		} else if (now.compareTo(closingDate) < 0) {
 			return PositionStatus.ANOIXTI;
-		} else if (isCompletedWithNomination()) {
+		} else if (hasPraktikoEpilogis()) {
 			return PositionStatus.STELEXOMENI;
+		} else if (hasApofasiAnapompis()) {
+			return PositionStatus.OLOKLIROMENI;
 		} else {
 			return PositionStatus.KLEISTI;
 		}
 	}
 
-	private boolean isCompletedWithNomination() {
-		boolean hasPraksiDiorismou = false;
+	private boolean hasPraktikoEpilogis() {
+		boolean hasPraktikoEpilogis = false;
 		for (PositionFile file : files) {
-			if (file.getType().equals(FileType.PRAKSI_DIORISMOU)) {
-				hasPraksiDiorismou = true;
+			if (file.getType().equals(FileType.PRAKTIKO_EPILOGIS)) {
+				hasPraktikoEpilogis = true;
 				break;
 			}
 		}
-		return hasPraksiDiorismou || (nominationFEK != null);
+		return hasPraktikoEpilogis;
+	}
+
+	private boolean hasApofasiAnapompis() {
+		boolean hasApofasiAnapompis = false;
+		for (PositionFile file : files) {
+			if (file.getType().equals(FileType.APOFASI_ANAPOMPIS)) {
+				hasApofasiAnapompis = true;
+				break;
+			}
+		}
+		return hasApofasiAnapompis;
 	}
 
 	public void copyFrom(Position position) {
 		this.name = position.getName();
 		this.description = position.getDescription();
-		this.subject.setName(position.getSubject().getName());
+		if (this.subject == null) {
+			this.subject = position.getSubject();
+		} else {
+			this.subject.setName(position.getSubject().getName());
+		}
 		this.fek = position.getFek();
 		this.fekSentDate = position.getFekSentDate();
 		this.openingDate = position.getOpeningDate();
@@ -280,5 +315,11 @@ public class Position {
 		this.nominationCommitteeConvergenceDate = position.getNominationCommitteeConvergenceDate();
 		this.nominationToETDate = position.getNominationToETDate();
 		this.nominationFEK = position.getNominationFEK();
+	}
+
+	public void initializeCollections() {
+		this.files.size();
+		this.candidacies.size();
+		this.commitee.size();
 	}
 }

@@ -1,19 +1,61 @@
-<% if (discriminator === "PROFESSOR_DOMESTIC") { %>
+<% if (user) { %>
+<h4><%= $.i18n.prop('Account') %></h4>
+<dl class="dl-horizontal">
+	<dt><%= $.i18n.prop('UserStatus') %></dt>
+	<dd><%= $.i18n.prop('status' + user.status) %></dd>
+	<dt><%= $.i18n.prop('Username') %></dt>
+	<dd><%= user.username %></dd>
+	<dt><%= $.i18n.prop('Name') %></dt>
+	<dd><%= user.basicInfo.firstname %></dd>
+	<dt><%= $.i18n.prop('Surname') %></dt>
+	<dd><%= user.basicInfo.lastname %></dd>
+	<dt><%= $.i18n.prop('FatherName') %></dt>
+	<dd><%= user.basicInfo.fathername %></dd>
+	<dt><%= $.i18n.prop('NameLatin') %></dt>
+	<dd><%= user.basicInfoLatin.firstname %></dd>
+	<dt><%= $.i18n.prop('SurnameLatin') %></dt>
+	<dd><%= user.basicInfoLatin.lastname %></dd>
+	<dt><%= $.i18n.prop('FatherNameLatin') %></dt>
+	<dd><%= user.basicInfoLatin.fathername %></dd>
+</dl>
+<h4><%= $.i18n.prop('ContactInformation') %></h4>
+<dl class="dl-horizontal">
+	<dt><%= $.i18n.prop('EMail') %></dt>
+	<dd><%= user.contactInfo.email %></dd>
+	<dt><%= $.i18n.prop('Mobile') %></dt>
+	<dd><%= user.contactInfo.mobile %></dd>
+</dl>
+<h4><%= $.i18n.prop('Address') %></h4>
+<dl class="dl-horizontal">
+	<dt><%= $.i18n.prop('Street') %></dt>
+	<dd><%= user.contactInfo.address.street %></dd>
+	<dt><%= $.i18n.prop('StreetNumber') %></dt>
+	<dd><%= user.contactInfo.address.number %></dd>
+	<dt><%= $.i18n.prop('Zip') %></dt>
+	<dd><%= user.contactInfo.address.zip %></dd>
+	<dt><%= $.i18n.prop('City') %></dt>
+	<dd><%= user.contactInfo.address.city %></dd>
+	<dt><%= $.i18n.prop('Country') %></dt>
+	<dd><%= user.contactInfo.address.country %></dd>
+</dl>
+<% } %> <% if (discriminator === "PROFESSOR_DOMESTIC") { %>
 <div id="PROFESSOR_DOMESTIC">
-	<h4>
-		<%= $.i18n.prop('PROFESSOR_DOMESTIC') %>
-	</h4>
+	<h4><%= $.i18n.prop('PROFESSOR_DOMESTIC') %></h4>
 	<dl class="dl-horizontal">
 		<dt><%= $.i18n.prop('RoleStatus') %></dt>
 		<dd><%= $.i18n.prop('status' + status) %></dd>
 		<dt><%= $.i18n.prop('Institution') %></dt>
-		<dd><%= institution.name %> </dd>
+		<dd><%= institution.name %></dd>
 		<dt><%= $.i18n.prop('Department') %></dt>
-		<dd><%= department.department %> </dd>
+		<dd><%= department.department %></dd>
 		<dt><%= $.i18n.prop('ProfileURL') %></dt>
-		<dd><a href="<%= profileURL %>" target="external"><%= profileURL %></a></dd>
+		<dd>
+			<a href="<%= profileURL %>" target="external"><%= profileURL %></a>
+		</dd>
 		<dt><%= $.i18n.prop('ProfileFile') %></dt>
-		<dd><span id="profileFile"></span></dd>
+		<dd>
+			<span id="profileFile"></span>
+		</dd>
 		<dt><%= $.i18n.prop('Rank') %></dt>
 		<dd><% if (!_.isUndefined(rank)) { %><%= rank.name %><% } %></dd>
 		<dt><%= $.i18n.prop('Subject') %></dt>
@@ -23,36 +65,37 @@
 		<dt><%= $.i18n.prop('FEKSubject') %></dt>
 		<dd><% if (!_.isUndefined(fekSubject)) { %><%= fekSubject.name %><% } %></dd>
 		<dt><%= $.i18n.prop('DimosieusiFileList') %></dt>
-		<dd><span id="dimosieusiFileList"></span></dd>
+		<dd>
+			<span id="dimosieusiFileList"></span>
+		</dd>
 	</dl>
 </div>
-<% } %>
-<% if (discriminator === "PROFESSOR_FOREIGN") { %>
+<% } %> <% if (discriminator === "PROFESSOR_FOREIGN") { %>
 <div id="PROFESSOR_FOREIGN">
-	<h4>
-		<%= $.i18n.prop('PROFESSOR_FOREIGN') %>
-	</h4>
+	<h4><%= $.i18n.prop('PROFESSOR_FOREIGN') %></h4>
 	<dl class="dl-horizontal">
 		<dt><%= $.i18n.prop('RoleStatus') %></dt>
 		<dd><%= $.i18n.prop('status' + status) %></dd>
 		<dt><%= $.i18n.prop('Institution') %></dt>
 		<dd><%= institution %></dd>
 		<dt><%= $.i18n.prop('ProfileURL') %></dt>
-		<dd><a href="<%= profileURL %>" target="external"><%= profileURL %></a></dd>
+		<dd>
+			<a href="<%= profileURL %>" target="external"><%= profileURL %></a>
+		</dd>
 		<dt><%= $.i18n.prop('ProfileFile') %></dt>
-		<dd><span id="profileFile"></span></dd>
+		<dd>
+			<span id="profileFile"></span>
+		</dd>
 		<dt><%= $.i18n.prop('Rank') %></dt>
 		<dd><% if (!_.isUndefined(rank)) { %><%= rank.name %><% } %></dd>
 		<dt><%= $.i18n.prop('Subject') %></dt>
-		<dd><% if (!_.isUndefined(subject)) { %><%= subject.name %><% } %></dd>.
+		<dd><% if (!_.isUndefined(subject)) { %><%= subject.name %><% } %></dd>
+		.
 	</dl>
 </div>
-<% } %>
-<% if (discriminator === "INSTITUTION_MANAGER") { %>
+<% } %> <% if (discriminator === "INSTITUTION_MANAGER") { %>
 <div id="INSTITUTION_MANAGER">
-	<h4>
-		<%= $.i18n.prop('INSTITUTION_MANAGER') %>
-	</h4>
+	<h4><%= $.i18n.prop('INSTITUTION_MANAGER') %></h4>
 	<dl class="dl-horizontal">
 		<dt><%= $.i18n.prop('RoleStatus') %></dt>
 		<dd><%= $.i18n.prop('status' + status) %></dd>
@@ -60,12 +103,9 @@
 		<dd><%= institution.name %></dd>
 	</dl>
 </div>
-<% } %>
-<% if (discriminator === "DEPARTMENT_ASSISTANT") { %>
+<% } %> <% if (discriminator === "DEPARTMENT_ASSISTANT") { %>
 <div id="DEPARTMENT_ASSISTANT">
-	<h4>
-		<%= $.i18n.prop('DEPARTMENT_ASSISTANT') %>
-	</h4>
+	<h4><%= $.i18n.prop('DEPARTMENT_ASSISTANT') %></h4>
 	<dl class="dl-horizontal">
 		<dt><%= $.i18n.prop('RoleStatus') %></dt>
 		<dd><%= $.i18n.prop('status' + status) %></dd>
@@ -73,12 +113,9 @@
 		<dd><%= department.institution.name %> : <%= department.department %></dd>
 	</dl>
 </div>
-<% } %>
-<% if (discriminator === "INSTITUTION_ASSISTANT") { %>
+<% } %> <% if (discriminator === "INSTITUTION_ASSISTANT") { %>
 <div id="INSTITUTION_ASSISTANT">
-	<h4>
-		<%= $.i18n.prop('INSTITUTION_ASSISTANT') %>
-	</h4>
+	<h4><%= $.i18n.prop('INSTITUTION_ASSISTANT') %></h4>
 	<dl class="dl-horizontal">
 		<dt><%= $.i18n.prop('RoleStatus') %></dt>
 		<dd><%= $.i18n.prop('status' + status) %></dd>
@@ -86,12 +123,9 @@
 		<dd><%= institution.name %></dd>
 	</dl>
 </div>
-<% } %>
-<% if (discriminator === "MINISTRY_MANAGER") { %>
+<% } %> <% if (discriminator === "MINISTRY_MANAGER") { %>
 <div id="MINISTRY_MANAGER">
-	<h4>
-		<%= $.i18n.prop('MINISTRY_MANAGER') %>
-	</h4>
+	<h4><%= $.i18n.prop('MINISTRY_MANAGER') %></h4>
 	<dl class="dl-horizontal">
 		<dt><%= $.i18n.prop('RoleStatus') %></dt>
 		<dd><%= $.i18n.prop('status' + status) %></dd>
@@ -99,21 +133,24 @@
 		<dd><%= ministry %></dd>
 	</dl>
 </div>
-<% } %>
-<% if (discriminator === "CANDIDATE") { %>
+<% } %> <% if (discriminator === "CANDIDATE") { %>
 <div id="CANDIDATE">
-	<h4>
-		<%= $.i18n.prop('CANDIDATE') %>
-	</h4>
+	<h4><%= $.i18n.prop('CANDIDATE') %></h4>
 	<dl class="dl-horizontal">
 		<dt><%= $.i18n.prop('RoleStatus') %></dt>
 		<dd><%= $.i18n.prop('status' + status) %></dd>
 		<dt><%= $.i18n.prop('BiografikoFile') %></dt>
-		<dd><span id="biografikoFile"></span></dd>
+		<dd>
+			<span id="biografikoFile"></span>
+		</dd>
 		<dt><%= $.i18n.prop('PtyxioFileList') %></dt>
-		<dd><span id="ptyxioFileList"></span></dd>
+		<dd>
+			<span id="ptyxioFileList"></span>
+		</dd>
 		<dt><%= $.i18n.prop('DimosieusiFileList') %></dt>
-		<dd><span id="dimosieusiFileList"></span></dd>		
+		<dd>
+			<span id="dimosieusiFileList"></span>
+		</dd>
 	</dl>
 </div>
 <% } %>

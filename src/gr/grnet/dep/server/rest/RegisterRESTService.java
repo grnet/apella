@@ -61,7 +61,8 @@ public class RegisterRESTService extends RESTService {
 		getLoggedOn(authToken);
 		@SuppressWarnings("unchecked")
 		Collection<Register> registries = (Collection<Register>) em.createQuery(
-			"select r from Register r ")
+			"select r from Register r " +
+				"left join fetch r.files f ")
 			.getResultList();
 		return registries;
 	}
@@ -73,12 +74,14 @@ public class RegisterRESTService extends RESTService {
 		getLoggedOn(authToken);
 		try {
 			Register r = (Register) em.createQuery(
-				"select r from Register r where r.id=:id")
+				"select r from Register r " +
+					"left join fetch r.files f " +
+					"where r.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
 			return r;
 		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
 
 	}
@@ -98,13 +101,16 @@ public class RegisterRESTService extends RESTService {
 		// Update
 		try {
 			newRegister.setInstitution(institution);
+			newRegister.setPermanent(false);
 			em.persist(newRegister);
 			em.flush();
+
+			newRegister.initializeCollections();
 			return newRegister;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -128,13 +134,16 @@ public class RegisterRESTService extends RESTService {
 		try {
 			// Update
 			existingRegister = existingRegister.copyFrom(register);
-			// Return Result
+			existingRegister.setPermanent(true);
+			existingRegister = em.merge(existingRegister);
 			em.flush();
+			// Return Result
+			existingRegister.initializeCollections();
 			return existingRegister;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -145,7 +154,7 @@ public class RegisterRESTService extends RESTService {
 		Register register = em.find(Register.class, id);
 		// Validate:
 		if (register == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -157,7 +166,7 @@ public class RegisterRESTService extends RESTService {
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -175,7 +184,7 @@ public class RegisterRESTService extends RESTService {
 		if (register == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) && !loggedOn.isInstitutionUser(register.getInstitution())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -193,7 +202,7 @@ public class RegisterRESTService extends RESTService {
 		if (register == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) && !loggedOn.isInstitutionUser(register.getInstitution())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -215,7 +224,7 @@ public class RegisterRESTService extends RESTService {
 		if (register == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) && !loggedOn.isInstitutionUser(register.getInstitution())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -278,7 +287,7 @@ public class RegisterRESTService extends RESTService {
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -332,7 +341,7 @@ public class RegisterRESTService extends RESTService {
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -351,7 +360,7 @@ public class RegisterRESTService extends RESTService {
 		Register register = em.find(Register.class, registerId);
 		// Validate:
 		if (register == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -376,7 +385,7 @@ public class RegisterRESTService extends RESTService {
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 }

@@ -1,203 +1,206 @@
-<div id="position">
-	<form class="form-horizontal" onsubmit="return false">
-		<fieldset>
-			<legend> <%= $.i18n.prop('Position') %> </legend>
-			<div class="control-group">
-				<label class="control-label" for="name"><%= $.i18n.prop('PositionName') %>:</label>
-				<div class="controls">
-					<input class="input-xlarge" type="text" name="name" value="<%= name %>" />
+<h3><%= $.i18n.prop('Position') %></h3>
+<form class="form-horizontal" onsubmit="return false">
+	<ul class="nav nav-tabs" id="positionTabs">
+	  <li class="active"><a data-target="#position"><%= $.i18n.prop('PositionMain') %></a></li>
+	  <li><a data-target="#committee"><%= $.i18n.prop('PositionCommittee') %></a></li>
+	  <li><a data-target="#evaluations"><%= $.i18n.prop('PositionEvaluations') %></a></li>
+	  <li><a data-target="#proposals"><%= $.i18n.prop('PositionProposals') %></a></li>
+	  <li><a data-target="#nomination"><%= $.i18n.prop('PositionNomination') %></a></li>
+	  <li><a data-target="#rest"><%= $.i18n.prop('PositionLoipaDioikitikaEggrafa') %></a></li>
+	</ul>
+	<div class="tab-content">
+		<div class="tab-pane active" id="position">
+			<fieldset>
+				<div class="control-group">
+					<label class="control-label" for="name"><%= $.i18n.prop('PositionName') %>:</label>
+					<div class="controls">
+						<input class="input-xlarge" type="text" name="name" value="<%= name %>" />
+					</div>
 				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="department"><%= $.i18n.prop('Department') %>:</label>
-				<div class="controls">
-					<select class="input-xlarge" name="department">
-					</select>
-					<span class="help-block"></span>
+				<div class="control-group">
+					<label class="control-label" for="department"><%= $.i18n.prop('Department') %>:</label>
+					<div class="controls">
+						<select class="input-xlarge" name="department">
+						</select>
+						<span class="help-block"></span>
+					</div>
 				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="description"><%= $.i18n.prop('Description') %>:</label>
-				<div class="controls">
-					<textarea class="input-xlarge" name="description" ><%= description %></textarea>
+				<div class="control-group">
+					<label class="control-label" for="description"><%= $.i18n.prop('Description') %>:</label>
+					<div class="controls">
+						<textarea class="input-xlarge" name="description" ><%= description %></textarea>
+					</div>
 				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="subject"><%= $.i18n.prop('Subject') %>:</label>
-				<div class="controls">
-					<textarea class="input-xlarge" name="subject" class="edit"><% if (!_.isUndefined(subject)) { %><%= subject.name %><% } %></textarea>
+				<div class="control-group">
+					<label class="control-label" for="subject"><%= $.i18n.prop('Subject') %>:</label>
+					<div class="controls">
+						<textarea class="input-xlarge" name="subject" class="edit"><% if (!_.isUndefined(subject)) { %><%= subject.name %><% } %></textarea>
+					</div>
 				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="fek"><%= $.i18n.prop('FEK') %>:</label>
-				<div class="controls">
-					<input class="input-xlarge" name="fek" type="text" value="<%= fek %>" />
+				<div class="control-group">
+					<label class="control-label" for="fek"><%= $.i18n.prop('FEK') %>:</label>
+					<div class="controls">
+						<input class="input-xlarge" name="fek" type="text" value="<%= fek %>" />
+					</div>
 				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="fekSentDate"><%= $.i18n.prop('FEKSentDate') %>:</label>
-				<div class="controls">
-					<input class="input-xlarge" name="fekSentDate" type="text" data-input-type="date" value="<%= fekSentDate %>" />
+				<div class="control-group">
+					<label class="control-label" for="fekSentDate"><%= $.i18n.prop('FEKSentDate') %>:</label>
+					<div class="controls">
+						<input class="input-xlarge" name="fekSentDate" type="text" data-input-type="date" value="<%= fekSentDate %>" />
+					</div>
 				</div>
-			</div>
-		</fieldset>
-		<fieldset>
-			<legend> <%= $.i18n.prop('PositionDates') %> </legend>
-			<div class="control-group">
-				<label class="control-label" for="status"><%= $.i18n.prop('PositionStatus') %>:</label>
-				<div class="controls">
-					<span class="input-xlarge uneditable-input"><%= $.i18n.prop('PositionStatus_' + status) %></span>
+				<div class="control-group">
+					<label class="control-label" for="status"><%= $.i18n.prop('PositionStatus') %>:</label>
+					<div class="controls">
+						<span class="input-xlarge uneditable-input"><%= $.i18n.prop('PositionStatus_' + status) %></span>
+					</div>
 				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="openingDate"><%= $.i18n.prop('PositionOpeningDate') %>:</label>
-				<div class="controls">
-					<input class="input-xlarge" name="openingDate" type="text" data-input-type="date"  value="<%= openingDate %>" />
+				<div class="control-group">
+					<label class="control-label" for="openingDate"><%= $.i18n.prop('PositionOpeningDate') %>:</label>
+					<div class="controls">
+						<input class="input-xlarge" name="openingDate" type="text" data-input-type="date"  value="<%= openingDate %>" />
+					</div>
 				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for=closingDate><%= $.i18n.prop('PositionClosingDate') %>:</label>
-				<div class="controls">
-					<input class="input-xlarge" name="closingDate" type="text" data-input-type="date"  value="<%= closingDate %>" />
+				<div class="control-group">
+					<label class="control-label" for=closingDate><%= $.i18n.prop('PositionClosingDate') %>:</label>
+					<div class="controls">
+						<input class="input-xlarge" name="closingDate" type="text" data-input-type="date"  value="<%= closingDate %>" />
+					</div>
 				</div>
-			</div>
-		</fieldset>
-		<fieldset>
-			<legend> <%= $.i18n.prop('PositionCommittee') %> </legend>
-			<div class="control-group">
-				<label class="control-label" for="committeeMeetingDate"><%= $.i18n.prop('CommitteeMeetingDate') %>:</label>
-				<div class="controls">
-					<input class="input-xlarge" name="committeeMeetingDate" type="text" data-input-type="date"  value="<%= committeeMeetingDate %>" />
+			</fieldset>
+		</div>
+		<div class="tab-pane" id="committee">
+			<fieldset>
+				<div class="control-group">
+					<label class="control-label" for="apofasiSystasisEpitropisFileList"><%= $.i18n.prop('ApofasiSystasisEpitropisFileList') %>:</label>
+					<div class="controls">
+						<span id="apofasiSystasisEpitropisFileList"></span>
+					</div>
 				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="praktikoSynedriasisEpitropisGiaAksiologitesFile"><%= $.i18n.prop('PraktikoSynedriasisEpitropisGiaAksiologitesFile') %>:</label>
-				<div class="controls">
-					<span id="praktikoSynedriasisEpitropisGiaAksiologitesFile"></span>
-				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="tekmiriosiEpitropisGiaAksiologitesFile"><%= $.i18n.prop('TekmiriosiEpitropisGiaAksiologitesFile') %>:</label>
-				<div class="controls">
-					<span id="tekmiriosiEpitropisGiaAksiologitesFile"></span>
-				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="aitimaEpitropisProsAksiologitesFile"><%= $.i18n.prop('AitimaEpitropisProsAksiologitesFile') %>:</label>
-				<div class="controls">
-					<span id="aitimaEpitropisProsAksiologitesFile"></span>
-				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="positionCommittee"><%= $.i18n.prop('PositionCommittee') %>:</label>
-				<div class="controls">
+				<div class="control-group">
+					<label class="control-label" for="positionCommittee"><%= $.i18n.prop('PositionCommittee') %>:</label>
 					<span id="positionCommittee"></span>
 				</div>
-			</div>
-		</fieldset>
-		<fieldset>
-			<legend> <%= $.i18n.prop('PositionEvaluations') %> </legend>
-			<div class="control-group">
-				<label class="control-label" for="aksiologisiProtouAksiologitiFileList"><%= $.i18n.prop('AksiologisiProtouAksiologitiFileList') %>:</label>
-				<div class="controls">
-					<span id="aksiologisiProtouAksiologitiFileList"></span>
+				<div class="control-group">
+					<label class="control-label" for="committeeMeetingDate"><%= $.i18n.prop('CommitteeMeetingDate') %>:</label>
+					<div class="controls">
+						<input class="input-xlarge" name="committeeMeetingDate" type="text" data-input-type="date"  value="<%= committeeMeetingDate %>" />
+					</div>
 				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="aksiologisiDeuterouAksiologitiFileList"><%= $.i18n.prop('AksiologisiDeuterouAksiologitiFileList') %>:</label>
-				<div class="controls">
-					<span id="aksiologisiDeuterouAksiologitiFileList"></span>
+				<div class="control-group">
+					<label class="control-label" for="praktikoSynedriasisEpitropisGiaAksiologitesFile"><%= $.i18n.prop('PraktikoSynedriasisEpitropisGiaAksiologitesFile') %>:</label>
+					<div class="controls">
+						<span id="praktikoSynedriasisEpitropisGiaAksiologitesFile"></span>
+					</div>
 				</div>
-			</div>
-		</fieldset>
-		<fieldset>
-			<legend> <%= $.i18n.prop('PositionProposals') %> </legend>
-			<div class="control-group">
-				<label class="control-label" for="prosklisiKosmitoraFile"><%= $.i18n.prop('ProsklisiKosmitoraFile') %>:</label>
-				<div class="controls">
-					<span id="prosklisiKosmitoraFile"></span>
+				<div class="control-group">
+					<label class="control-label" for="tekmiriosiEpitropisGiaAksiologitesFile"><%= $.i18n.prop('TekmiriosiEpitropisGiaAksiologitesFile') %>:</label>
+					<div class="controls">
+						<span id="tekmiriosiEpitropisGiaAksiologitesFile"></span>
+					</div>
 				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="eisigisiDEPYpopsifiouFileList"><%= $.i18n.prop('EisigisiDEPYpopsifiouFileList') %>:</label>
-				<div class="controls">
-					<span id="eisigisiDEPYpopsifiouFileList"></span>
+				<div class="control-group">
+					<label class="control-label" for="aitimaEpitropisProsAksiologitesFile"><%= $.i18n.prop('AitimaEpitropisProsAksiologitesFile') %>:</label>
+					<div class="controls">
+						<span id="aitimaEpitropisProsAksiologitesFile"></span>
+					</div>
 				</div>
-			</div>
-		</fieldset>
-		<fieldset>
-			<legend> <%= $.i18n.prop('PositionNomination') %> </legend>
-			<div class="control-group">
-				<label class="control-label" for=nominationCommitteeConvergenceDate><%= $.i18n.prop('NominationCommitteeConvergenceDate') %>:</label>
-				<div class="controls">
-					<input class="input-xlarge" name="nominationCommitteeConvergenceDate" type="text" data-input-type="date"  value="<%= nominationCommitteeConvergenceDate %>" />
+			</fieldset>
+		</div>
+		<div class="tab-pane" id="evaluations">
+			<fieldset>
+				<div class="control-group">
+					<label class="control-label" for="aksiologisiProtouAksiologitiFileList"><%= $.i18n.prop('AksiologisiProtouAksiologitiFileList') %>:</label>
+					<div class="controls">
+						<span id="aksiologisiProtouAksiologitiFileList"></span>
+					</div>
 				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="praktikoEpilogisFile"><%= $.i18n.prop('PraktikoEpilogisFile') %>:</label>
-				<div class="controls">
-					<span id="praktikoEpilogisFile"></span>
+				<div class="control-group">
+					<label class="control-label" for="aksiologisiDeuterouAksiologitiFileList"><%= $.i18n.prop('AksiologisiDeuterouAksiologitiFileList') %>:</label>
+					<div class="controls">
+						<span id="aksiologisiDeuterouAksiologitiFileList"></span>
+					</div>
 				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="diavivastikoPraktikouFile"><%= $.i18n.prop('DiavivastikoPraktikouFile') %>:</label>
-				<div class="controls">
-					<span id="diavivastikoPraktikouFile"></span>
+			</fieldset>
+		</div>
+		<div class="tab-pane" id="proposals">
+			<fieldset>
+				<div class="control-group">
+					<label class="control-label" for="eisigisiDEPYpopsifiouFileList"><%= $.i18n.prop('EisigisiDEPYpopsifiouFileList') %>:</label>
+					<div class="controls">
+						<span id="eisigisiDEPYpopsifiouFileList"></span>
+					</div>
 				</div>
-			</div>
-			
-			<div class="control-group">
-				<label class="control-label" for="praksiDiorismouFile"><%= $.i18n.prop('PraksiDiorismouFile') %>:</label>
-				<div class="controls">
-					<span id="praksiDiorismouFile"></span>
+			</fieldset>
+		</div>
+		<div class="tab-pane" id="nomination">
+			<fieldset>
+				<div class="control-group">
+					<label class="control-label" for="prosklisiKosmitoraFile"><%= $.i18n.prop('ProsklisiKosmitoraFile') %>:</label>
+					<div class="controls">
+						<span id="prosklisiKosmitoraFile"></span>
+					</div>
 				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for=nominationToETDate><%= $.i18n.prop('NominationToETDate') %>:</label>
-				<div class="controls">
-					<input class="input-xlarge" name="nominationToETDate" type="text" data-input-type="date" value="<%= nominationToETDate %>" />
+				<div class="control-group">
+					<label class="control-label" for=nominationCommitteeConvergenceDate><%= $.i18n.prop('NominationCommitteeConvergenceDate') %>:</label>
+					<div class="controls">
+						<input class="input-xlarge" name="nominationCommitteeConvergenceDate" type="text" data-input-type="date"  value="<%= nominationCommitteeConvergenceDate %>" />
+					</div>
 				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="nominationFEK"><%= $.i18n.prop('NominationFEK') %>:</label>
-				<div class="controls">
-					<input class="input-xlarge" name="nominationFEK" type="text" value="<%= nominationFEK %>" />
+				<div class="control-group">
+					<label class="control-label" for="praktikoEpilogisFile"><%= $.i18n.prop('PraktikoEpilogisFile') %>:</label>
+					<div class="controls">
+						<span id="praktikoEpilogisFile"></span>
+					</div>
 				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="dioikitikoEggrafoFileList"><%= $.i18n.prop('DioikitikoEggrafoFileList') %>:</label>
-				<div class="controls">
-					<span id="dioikitikoEggrafoFileList"></span>
+				<div class="control-group">
+					<label class="control-label" for="diavivastikoPraktikouFile"><%= $.i18n.prop('DiavivastikoPraktikouFile') %>:</label>
+					<div class="controls">
+						<span id="diavivastikoPraktikouFile"></span>
+					</div>
 				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="apofasiAnapompisFile"><%= $.i18n.prop('ApofasiAnapompisFile') %>:</label>
-				<div class="controls">
-					<span id="apofasiAnapompisFile"></span>
+				
+				<div class="control-group">
+					<label class="control-label" for="praksiDiorismouFile"><%= $.i18n.prop('PraksiDiorismouFile') %>:</label>
+					<div class="controls">
+						<span id="praksiDiorismouFile"></span>
+					</div>
 				</div>
-			</div>
-		</fieldset>
-				<fieldset>
-			<legend> <%= $.i18n.prop('PositionOrganization') %> </legend>
-			<div class="control-group">
-				<label class="control-label" for="organismosFile"><%= $.i18n.prop('OrganismosFile') %>:</label>
-				<div class="controls">
-					<span id="organismosFile"></span>
+				<div class="control-group">
+					<label class="control-label" for=nominationToETDate><%= $.i18n.prop('NominationToETDate') %>:</label>
+					<div class="controls">
+						<input class="input-xlarge" name="nominationToETDate" type="text" data-input-type="date" value="<%= nominationToETDate %>" />
+					</div>
 				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="eswterikosKanonismosFile"><%= $.i18n.prop('EswterikosKanonismosFile') %>:</label>
-				<div class="controls">
-					<span id="eswterikosKanonismosFile"></span>
+				<div class="control-group">
+					<label class="control-label" for="nominationFEK"><%= $.i18n.prop('NominationFEK') %>:</label>
+					<div class="controls">
+						<input class="input-xlarge" name="nominationFEK" type="text" value="<%= nominationFEK %>" />
+					</div>
 				</div>
-			</div>
-		</fieldset>	
+				<div class="control-group">
+					<label class="control-label" for="apofasiAnapompisFile"><%= $.i18n.prop('ApofasiAnapompisFile') %>:</label>
+					<div class="controls">
+						<span id="apofasiAnapompisFile"></span>
+					</div>
+				</div>
+			</fieldset>
+		</div>
+		<div class="tab-pane" id="rest">
+			<fieldset>
+				<div class="control-group">
+					<label class="control-label" for="dioikitikoEggrafoFileList"><%= $.i18n.prop('DioikitikoEggrafoFileList') %>:</label>
+					<div class="controls">
+						<span id="dioikitikoEggrafoFileList"></span>
+					</div>
+				</div>
+			</fieldset>
+		</div>
 		<fieldset>
 			<div class="form-actions">
-				<a id="remove" class="btn btn-danger"><i class="icon-remove icon-white"></i> <%= $.i18n.prop('btn_remove') %></a>
 				<a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
-				<a id="cancel" class="btn"><i class="icon-refresh"></i> <%= $.i18n.prop('btn_reload') %></a>
+				<a id="remove" class="btn btn-danger"><i class="icon-remove icon-white"></i> <%= $.i18n.prop('btn_remove_position') %></a>
 			</div>
 		</fieldset>
-	</form>
-</div>
+	</div>
+</form>

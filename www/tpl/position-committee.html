@@ -11,24 +11,12 @@
 					<th><%= $.i18n.prop("Profile") %></th>
 					<th><%= $.i18n.prop("Institution") %></th>
 					<th><%= $.i18n.prop("Department") %></th>
-					<th></th>
 				</tr>
-		
 			</thead>
 			<tbody>
 		<% _.each(committee, function(committeeMember) { %>
 				<tr>
-					<td>
-						<select class="input-medium" name="type" data-model-id="<%= committeeMember.id %>">
-						<% if (_.isEqual(committeeMember.type, "REGULAR")) { %>
-							<option value="REGULAR" selected><%= $.i18n.prop("PositionCommitteeMemberTypeREGULAR") %></option>
-							<option value="SUBSTITUTE"><%= $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") %></option>
-						<% } else if (_.isEqual(committeeMember.type, "SUBSTITUTE")) { %>
-							<option value="REGULAR"><%= $.i18n.prop("PositionCommitteeMemberTypeREGULAR") %></option>
-							<option value="SUBSTITUTE" selected><%= $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") %></option>
-						<% } %>
-						</select>
-					</td>
+					<td><%= $.i18n.prop("PositionCommitteeMemberType" + committeeMember.type) %></td>
 					<td><%= committeeMember.professor.id %></td>
 					<td>
 						<a id="viewMember" data-committee-member-id="<%= committeeMember.id %>" ><%= committeeMember.professor.user.username %> </a>
@@ -48,28 +36,16 @@
 							<%= committeeMember.professor.department.department %> 
 						<% } %>
 					</td>
-					<td width="82px">
-						<a id="removeMember" data-committee-member-id="<%= committeeMember.id %>" class="btn btn-mini btn-danger"><i class="icon-minus icon-white"></i> <%= $.i18n.prop('btn_remove_member') %></a>
-					</td>
 				</tr>
 		<% }); %>
 			</tbody>
 			<tfoot>
 				<tr>
 					<td colspan="9">
-						<div class="btn-toolbar" id="actions">
-							<div class="btn-group">
-								<a id="toggleAddMember" class="btn btn-small"><i class="icon-plus"></i> <%= $.i18n.prop('btn_add') %></a>
-							</div>
-						</div>
 					</td>
 				</tr>
 			</tfoot>
 		</table>
-	</div>
-</div>
-<div class="row-fluid">
-	<div id="committee-professor-list" class="span12 well">
 	</div>
 </div>
 <div id="commiteeMemberDetails" class="modal fade">

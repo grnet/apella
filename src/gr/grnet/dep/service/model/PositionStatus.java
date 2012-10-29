@@ -4,7 +4,8 @@ public enum PositionStatus {
 	ENTAGMENI(10),
 	ANOIXTI(20),
 	KLEISTI(30),
-	STELEXOMENI(40);
+	STELEXOMENI(40),
+	OLOKLIROMENI(50);
 
 	/**
 	 * Internal storage of priority field value, please see the Enum spec for

@@ -17,6 +17,12 @@
 				<span class="help-inline"><%= $.i18n.prop('status' + status + 'Help') %></span>
 			</div>
 			<div class="control-group">
+				<label class="control-label" for="identification"><%= $.i18n.prop('Identification') %>:</label>
+				<div class="controls">
+				<input class="input-xlarge" name="identification" type="text" value="<%= identification %>" />
+				</div>
+			</div>
+			<div class="control-group">
 				<label class="control-label" for="institution"><%= $.i18n.prop('Institution') %>:</label>
 				<div class="controls">
 					<select class="input-xlarge" name="institution">
@@ -83,7 +89,6 @@
 			</div>
 			<div class="form-actions">
 				<a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
-				<a id="cancel" class="btn"><i class="icon-refresh"></i> <%= $.i18n.prop('btn_reload') %></a>
 			</div>
 		</fieldset>
 	</form>
@@ -106,6 +111,12 @@
 					</ul>
 				</div>
 				<span class="help-inline"><%= $.i18n.prop('status' + status + 'Help') %></span>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="identification"><%= $.i18n.prop('Identification') %>:</label>
+				<div class="controls">
+				<input class="input-xlarge" name="identification" type="text" value="<%= identification %>" />
+				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="institution"><%= $.i18n.prop('Institution') %>:</label>
@@ -140,7 +151,6 @@
 			</div>
 			<div class="form-actions">
 				<a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
-				<a id="cancel" class="btn"><i class="icon-refresh"></i> <%= $.i18n.prop('btn_reload') %></a>
 			</div>
 		</fieldset>
 	</form>
@@ -172,9 +182,29 @@
 					<span class="help-block"></span>
 				</div>
 			</div>
+			<div class="control-group">
+				<label class="control-label" for="verificationAuthority"><%= $.i18n.prop('VerificationAuthority') %>:</label>
+				<div class="controls">
+				<select class="input-xlarge" name="verificationAuthority">
+					<option value="DEAN"><%= $.i18n.prop('VerificationAuthorityDEAN') %></option>
+					<option value="PRESIDENT"><%= $.i18n.prop('VerificationAuthorityPRESIDENT') %></option>
+				</select>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="verificationAuthorityName"><%= $.i18n.prop('VerificationAuthorityName') %>:</label>
+				<div class="controls">
+				<input class="input-xlarge" name="verificationAuthorityName" type="text" value="<%= verificationAuthorityName %>" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="phone"><%= $.i18n.prop('Phone') %>:</label>
+				<div class="controls">
+				<input class="input-xlarge" name="phone" type="text" value="<%= phone %>" />
+				</div>
+			</div>
 			<div class="form-actions">
 				<a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
-				<a id="cancel" class="btn"><i class="icon-refresh"></i> <%= $.i18n.prop('btn_reload') %></a>
 			</div>
 		</fieldset>
 	</form>
@@ -206,9 +236,14 @@
 					<span class="help-block"></span>
 				</div>
 			</div>
+			<div class="control-group">
+				<label class="control-label" for="phone"><%= $.i18n.prop('Phone') %>:</label>
+				<div class="controls">
+					<input class="input-xlarge" name="phone" type="text" value="<%= phone %>" />
+				</div>
+			</div>
 			<div class="form-actions">
 				<a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
-				<a id="cancel" class="btn"><i class="icon-refresh"></i> <%= $.i18n.prop('btn_reload') %></a>
 			</div>
 		</fieldset>
 	</form>
@@ -240,7 +275,6 @@
 			</div>
 			<div class="form-actions">
 				<a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
-				<a id="cancel" class="btn"><i class="icon-refresh"></i> <%= $.i18n.prop('btn_reload') %></a>
 			</div>
 		</fieldset>
 	</form>
@@ -264,6 +298,13 @@
 				</div>
 				<span class="help-inline"><%= $.i18n.prop('status' + status + 'Help') %></span>
 			</div>
+			<% if (primary) { %>
+			<div class="control-group">
+				<label class="control-label" for="identification"><%= $.i18n.prop('Identification') %>:</label>
+				<div class="controls">
+				<input class="input-xlarge" name="identification" type="text" value="<%= identification %>" />
+				</div>
+			</div>
 			<div class="control-group">
 				<label class="control-label" for="tautotitaFile"><%= $.i18n.prop('TautotitaFile') %>:</label>
 				<div class="controls">
@@ -282,6 +323,7 @@
 				<span id="formaSymmetoxisFile"></span>
 				</div>
 			</div>
+			<% } %>
 			<div class="control-group">
 				<label class="control-label" for="biografikoFile"><%= $.i18n.prop('BiografikoFile') %>:</label>
 				<div class="controls">
@@ -294,15 +336,8 @@
 				<span id="ptyxioFileList"></span>
 				</div>
 			</div>
-			<div class="control-group">
-				<label class="control-label" for="dimosieusiFileList"><%= $.i18n.prop('DimosieusiFileList') %>:</label>
-				<div class="controls">
-				<span id="dimosieusiFileList"></span>
-				</div>
-			</div>
 			<div class="form-actions">
 				<a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
-				<a id="cancel" class="btn"><i class="icon-refresh"></i> <%= $.i18n.prop('btn_reload') %></a>
 			</div>
 		</fieldset>
 	</form>

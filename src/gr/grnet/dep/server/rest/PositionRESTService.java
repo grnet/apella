@@ -9,6 +9,8 @@ import gr.grnet.dep.service.model.Position.PublicPositionView;
 import gr.grnet.dep.service.model.PositionCommitteeMember;
 import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
 import gr.grnet.dep.service.model.Professor;
+import gr.grnet.dep.service.model.Role;
+import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.FileBody;
@@ -63,46 +65,67 @@ public class PositionRESTService extends RESTService {
 	@Inject
 	private Logger log;
 
-	private Position getAndCheckPosition(String authToken, long positionId) {
-		Position position = (Position) em.createQuery(
-			"from Position p where p.id=:id")
-			.setParameter("id", positionId)
-			.getSingleResult();
-		Department department = position.getDepartment();
-		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(department)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+	private Position getAndCheckPosition(User loggedOn, long positionId) {
+		Position position = em.find(Position.class, positionId);
+		if (position == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
+		position.initializeCollections();
 		return position;
 	}
 
 	@GET
-	@JsonView({DetailedPositionView.class})
-	public List<Position> getAll(@HeaderParam(TOKEN_HEADER) String authToken, @QueryParam("institution") Long institutionId) {
+	@JsonView({PublicPositionView.class})
+	public List<Position> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
 		User loggedOnUser = getLoggedOn(authToken);
 
-		List<Institution> institutions = new ArrayList<Institution>();
-		if (institutionId != null) {
-			Institution institution = em.find(Institution.class, institutionId);
-			if (institution == null) {
-				throw new RestException(Status.NOT_FOUND, "wrong.institution.id");
-			}
-			if (!loggedOnUser.isInstitutionUser(institution)) {
-				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-			}
-			institutions.add(institution);
-		} else {
+		if (loggedOnUser.hasRole(RoleDiscriminator.INSTITUTION_MANAGER) || loggedOnUser.hasRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+			List<Institution> institutions = new ArrayList<Institution>();
 			institutions.addAll(loggedOnUser.getAssociatedInstitutions());
+			@SuppressWarnings("unchecked")
+			List<Position> positions = (List<Position>) em.createQuery(
+				"from Position p " +
+					"left join fetch p.files f " +
+					"left join fetch p.commitee co " +
+					"left join fetch p.candidacies ca " +
+					"where p.department.institution in (:institutions)")
+				.setParameter("institutions", institutions)
+				.getResultList();
+			return positions;
+		} else if (loggedOnUser.hasRole(RoleDiscriminator.MINISTRY_MANAGER)) {
+			@SuppressWarnings("unchecked")
+			List<Position> positions = (List<Position>) em.createQuery(
+				"from Position p " +
+					"left join fetch p.files f " +
+					"left join fetch p.commitee co " +
+					"left join fetch p.candidacies ca ")
+				.getResultList();
+			return positions;
 		}
+		throw new RestException(Status.UNAUTHORIZED, "insufficient.privileges");
+	}
 
-		@SuppressWarnings("unchecked")
-		List<Position> positions = (List<Position>) em.createQuery(
-			"from Position p " +
-				"where p.department.institution in (:institutions)")
-			.setParameter("institutions", institutions)
-			.getResultList();
-
-		return positions;
+	@GET
+	@Path("/search")
+	@JsonView({PublicPositionView.class})
+	public List<Position> search(@HeaderParam(TOKEN_HEADER) String authToken) {
+		// TODO: Search based on QueryParameter (or a Search object)
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+			Date today = sdf.parse(sdf.format(new Date()));
+			@SuppressWarnings("unchecked")
+			List<Position> positions = (List<Position>) em.createQuery(
+				"from Position p " +
+					"left join fetch p.files f " +
+					"left join fetch p.commitee co " +
+					"left join fetch p.candidacies ca " +
+					"where p.openingDate <= :today and p.closingDate >= :today ")
+				.setParameter("today", today)
+				.getResultList();
+			return positions;
+		} catch (ParseException e) {
+			throw new RestException(Status.INTERNAL_SERVER_ERROR, "parse.exception");
+		}
 	}
 
 	@GET
@@ -115,28 +138,32 @@ public class PositionRESTService extends RESTService {
 			@SuppressWarnings("unchecked")
 			List<Position> positions = (List<Position>) em.createQuery(
 				"from Position p " +
+					"left join fetch p.files f " +
+					"left join fetch p.commitee co " +
+					"left join fetch p.candidacies ca " +
 					"where p.openingDate <= :today and p.closingDate >= :today ")
 				.setParameter("today", today)
 				.getResultList();
 			return positions;
 		} catch (ParseException e) {
-			throw new RestException(Status.INTERNAL_SERVER_ERROR);
+			throw new RestException(Status.INTERNAL_SERVER_ERROR, "parse.exception");
 		}
 
 	}
 
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
-	@JsonView({DetailedPositionView.class})
-	public Position get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
-		getLoggedOn(authToken);
-
-		Position p = (Position) em.createQuery(
-			"from Position p where p.id=:id")
-			.setParameter("id", id)
-			.getSingleResult();
-
-		return p;
+	@Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
+	public String get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+		User loggedOn = getLoggedOn(authToken);
+		Position p = getAndCheckPosition(loggedOn, id);
+		String result = null;
+		if (loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) || loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) || loggedOn.isDepartmentUser(p.getDepartment())) {
+			result = toJSON(p, DetailedPositionView.class);
+		} else {
+			result = toJSON(p, PublicPositionView.class);
+		}
+		return result;
 	}
 
 	@POST
@@ -145,19 +172,23 @@ public class PositionRESTService extends RESTService {
 		try {
 			Department department = em.find(Department.class, position.getDepartment().getId());
 			if (department == null) {
-				throw new RestException(Status.NOT_FOUND, "wrong.department");
+				throw new RestException(Status.NOT_FOUND, "wrong.department.id");
 			}
 			User loggedOn = getLoggedOn(authToken);
 			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(department)) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
+			position.setPermanent(false);
+			position.setLastUpdate(new Date());
 			position = em.merge(position);
 			em.flush();
+
+			position.initializeCollections();
 			return position;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -165,29 +196,34 @@ public class PositionRESTService extends RESTService {
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedPositionView.class})
 	public Position update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Position position) {
+		User loggedOn = getLoggedOn(authToken);
 		try {
-			Position existingPosition = getAndCheckPosition(authToken, id);
+			Position existingPosition = getAndCheckPosition(loggedOn, id);
 			existingPosition.copyFrom(position);
+			existingPosition.setPermanent(true);
+			existingPosition.setLastUpdate(new Date());
 			em.flush();
+			existingPosition.initializeCollections();
 			return existingPosition;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}")
 	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+		User loggedOn = getLoggedOn(authToken);
 		try {
-			Position position = getAndCheckPosition(authToken, id);
+			Position position = getAndCheckPosition(loggedOn, id);
 			em.remove(position);
 			em.flush();
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -205,7 +241,7 @@ public class PositionRESTService extends RESTService {
 		if (position == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) && !loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -223,7 +259,7 @@ public class PositionRESTService extends RESTService {
 		if (position == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) && !loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -245,7 +281,7 @@ public class PositionRESTService extends RESTService {
 		if (position == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) && !loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -272,7 +308,7 @@ public class PositionRESTService extends RESTService {
 		Position position = em.find(Position.class, positionId);
 		// Validate:
 		if (position == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -295,6 +331,7 @@ public class PositionRESTService extends RESTService {
 		if (!PositionFile.fileTypes.containsKey(type) || existingFiles.size() >= PositionFile.fileTypes.get(type)) {
 			throw new RestException(Status.CONFLICT, "wrong.file.type");
 		}
+
 		// Create
 		try {
 			PositionFile positionFile = new PositionFile();
@@ -302,13 +339,18 @@ public class PositionRESTService extends RESTService {
 			positionFile.setOwner(loggedOn);
 			saveFile(loggedOn, fileItems, positionFile);
 			position.addFile(positionFile);
+			position.setLastUpdate(new Date());
 			em.flush();
+
+			if (type == FileType.APOFASI_ANAPOMPIS) {
+				// TODO: CREATE CLONE OF POSITION WITH SAME FIELDS BUT WITHOUT THE APOFASI ANAPOMPIS
+			}
 
 			return toJSON(positionFile, SimpleFileHeaderView.class);
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -321,7 +363,7 @@ public class PositionRESTService extends RESTService {
 		Position position = em.find(Position.class, positionId);
 		// Validate:
 		if (position == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -357,13 +399,14 @@ public class PositionRESTService extends RESTService {
 		// Update
 		try {
 			saveFile(loggedOn, fileItems, positionFile);
+			position.setLastUpdate(new Date());
 			em.flush();
 			positionFile.getBodies().size();
 			return toJSON(positionFile, SimpleFileHeaderView.class);
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -403,11 +446,12 @@ public class PositionRESTService extends RESTService {
 				// Remove from Position
 				position.getFiles().remove(positionFile);
 			}
+			position.setLastUpdate(new Date());
 			return retv;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -416,10 +460,42 @@ public class PositionRESTService extends RESTService {
 	 ************************/
 
 	@GET
+	@Path("/{id:[0-9][0-9]*}/professor")
+	@JsonView({DetailedRoleView.class})
+	public List<Role> getPositionProfessors(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
+		User loggedOn = getLoggedOn(authToken);
+		Position position = getAndCheckPosition(loggedOn, positionId);
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Prepare Query
+		List<RoleDiscriminator> discriminatorList = new ArrayList<Role.RoleDiscriminator>();
+		discriminatorList.add(RoleDiscriminator.PROFESSOR_DOMESTIC);
+		discriminatorList.add(RoleDiscriminator.PROFESSOR_FOREIGN);
+
+		List<Role> professors = em.createQuery(
+			"select r from Role r " +
+				"where r.id is not null " +
+				"and r.discriminator in (:discriminators) ")
+			.setParameter("discriminators", discriminatorList)
+			.getResultList();
+
+		// Execute
+		for (Role r : professors) {
+			r.initializeCollections();
+		}
+		return professors;
+	}
+
+	@GET
 	@Path("/{id:[0-9][0-9]*}/committee")
 	@JsonView({DetailedPositionCommitteeMemberView.class})
 	public List<PositionCommitteeMember> getPositionCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
-		Position position = getAndCheckPosition(authToken, positionId);
+		User loggedOn = getLoggedOn(authToken);
+		Position position = getAndCheckPosition(loggedOn, positionId);
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) && !loggedOn.isDepartmentUser(position.getDepartment())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
 		for (PositionCommitteeMember member : position.getCommitee()) {
 			member.getProfessor().initializeCollections();
 		}
@@ -430,10 +506,16 @@ public class PositionRESTService extends RESTService {
 	@Path("/{id:[0-9][0-9]*}/committee/{cmId:[0-9][0-9]*}")
 	@JsonView({DetailedPositionCommitteeMemberView.class})
 	public PositionCommitteeMember getPositionCommitteeMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cmId") Long cmId) {
+		User loggedOn = getLoggedOn(authToken);
+		Position position = getAndCheckPosition(loggedOn, positionId);
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) && !loggedOn.isDepartmentUser(position.getDepartment())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
 		PositionCommitteeMember result = em.find(PositionCommitteeMember.class, cmId);
 		if (result == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.commitee.member.id");
 		}
+
 		if (!result.getPosition().getId().equals(positionId)) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
@@ -446,10 +528,11 @@ public class PositionRESTService extends RESTService {
 	@Path("/{id:[0-9][0-9]*}/committee")
 	@JsonView({DetailedPositionCommitteeMemberView.class})
 	public PositionCommitteeMember createPositionCommitteeMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, PositionCommitteeMember newMembership) {
+		User loggedOn = getLoggedOn(authToken);
 		try {
-			Position existingPosition = getAndCheckPosition(authToken, positionId);
-			if (existingPosition.getCommitee().size() >= PositionCommitteeMember.MAX_MEMBERS) {
-				throw new RestException(Status.CONFLICT, "max.members.exceeded");
+			Position existingPosition = getAndCheckPosition(loggedOn, positionId);
+			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			Professor existingProfessor = em.find(Professor.class, newMembership.getProfessor().getId());
 			if (existingProfessor == null) {
@@ -458,13 +541,24 @@ public class PositionRESTService extends RESTService {
 			// Check if already exists:
 			for (PositionCommitteeMember existingMember : existingPosition.getCommitee()) {
 				if (existingMember.getProfessor().getId().equals(existingProfessor.getId())) {
-					throw new RestException(Status.NOT_FOUND, "member.already.exists");
+					throw new RestException(Status.CONFLICT, "member.already.exists");
 				}
 			}
+			int count = 0;
+			for (PositionCommitteeMember existingMember : existingPosition.getCommitee()) {
+				if (existingMember.getType() == newMembership.getType()) {
+					count++;
+				}
+			}
+			if (count >= PositionCommitteeMember.MAX_MEMBERS) {
+				throw new RestException(Status.CONFLICT, "max.members.exceeded");
+			}
+
 			// Update
 			newMembership.setPosition(existingPosition);
 			newMembership.setProfessor(existingProfessor);
 			existingPosition.getCommitee().add(newMembership);
+			existingPosition.setLastUpdate(new Date());
 			newMembership = em.merge(newMembership);
 			em.flush();
 
@@ -473,22 +567,64 @@ public class PositionRESTService extends RESTService {
 			return newMembership;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+		}
+	}
+
+	@PUT
+	@Path("/{id:[0-9]+}/committee/{cmId:[0-9]+}")
+	@JsonView({DetailedPositionCommitteeMemberView.class})
+	public PositionCommitteeMember updatePositionCommitteeMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cmId") Long cmId, PositionCommitteeMember newMembership) {
+		User loggedOn = getLoggedOn(authToken);
+		try {
+			Position existingPosition = getAndCheckPosition(loggedOn, positionId);
+			// Check if already exists:
+			PositionCommitteeMember existingMember = null;
+			for (PositionCommitteeMember member : existingPosition.getCommitee()) {
+				if (member.getId().equals(cmId)) {
+					existingMember = member;
+				}
+			}
+			if (existingMember == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.position.committee.member.id");
+			}
+			// Update (only type allowed)
+			existingMember.setType(newMembership.getType());
+			existingPosition.setLastUpdate(new Date());
+			em.flush();
+
+			// Return result
+			return existingMember;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}/committee/{cmId:[0-9][0-9]*}")
 	public void removePositionCommiteeMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cmId") Long cmId) {
+		User loggedOn = getLoggedOn(authToken);
 		try {
-			PositionCommitteeMember existingCM = getPositionCommitteeMember(authToken, positionId, cmId);
+			Position position = getAndCheckPosition(loggedOn, positionId);
+			PositionCommitteeMember existingCM = null;
+			for (PositionCommitteeMember member : position.getCommitee()) {
+				if (member.getId().equals(cmId)) {
+					existingCM = member;
+					break;
+				}
+			}
+			if (existingCM == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.position.committee.member.id");
+			}
 			// Remove
 			existingCM.getPosition().getCommitee().remove(existingCM);
 			em.remove(existingCM);
+			position.setLastUpdate(new Date());
 			em.flush();
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 

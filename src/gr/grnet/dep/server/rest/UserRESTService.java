@@ -2,6 +2,7 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Address;
+import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.InstitutionManager;
@@ -17,8 +18,8 @@ import gr.grnet.dep.service.util.MailClient;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -161,67 +162,110 @@ public class UserRESTService extends RESTService {
 	@JsonView({DetailedUserView.class})
 	public User create(@HeaderParam(TOKEN_HEADER) String authToken, User user) {
 		try {
-			User loggedOn = null;
 			//1. Validate
+			// Has one role
 			if (user.getRoles().isEmpty() || user.getRoles().size() > 1) {
 				throw new RestException(Status.CONFLICT, "one.role.required");
 			}
+			// Username availability
+			try {
+				em.createQuery("select u from User u where u.username = :username")
+					.setParameter("username", user.getUsername())
+					.getSingleResult();
+				throw new RestException(Status.FORBIDDEN, "username.not.available");
+			} catch (NoResultException e) {
+			}
+			// Contact mail availability
+			try {
+				em.createQuery("select u from User u where u.contactInfo.email = :email")
+					.setParameter("email", user.getContactInfo().getEmail())
+					.getSingleResult();
+				throw new RestException(Status.FORBIDDEN, "contact.email.not.available");
+			} catch (NoResultException e) {
+			}
+
+			//2. Set Fields
 			Role firstRole = user.getRoles().iterator().next();
+			firstRole.setStatus(RoleStatus.UNAPPROVED);
+			firstRole.setStatusDate(new Date());
+
+			user.setRegistrationType(UserRegistrationType.REGISTRATION_FORM);
+			user.setRegistrationDate(new Date());
+			user.setPasswordSalt(User.generatePasswordSalt());
+			user.setPassword(User.encodePassword(user.getPassword(), user.getPasswordSalt()));
+			user.setStatus(UserStatus.UNVERIFIED);
+			user.setStatusDate(new Date());
+			user.setVerificationNumber(user.generateVerificationNumber());
+			user.setRoles(new ArrayList<Role>());
+			user.addRole(firstRole);
+
 			switch (firstRole.getDiscriminator()) {
 				case PROFESSOR_DOMESTIC:
-					firstRole.setStatus(RoleStatus.UNAPPROVED);
+					// Add Second Role : CANDIDATE
+					Candidate secondRole = new Candidate();
+					secondRole.setStatus(RoleStatus.UNAPPROVED);
+					secondRole.setStatusDate(new Date());
+					user.addRole(secondRole);
 					break;
 				case PROFESSOR_FOREIGN:
-					firstRole.setStatus(RoleStatus.UNAPPROVED);
-					break;
-				case INSTITUTION_MANAGER:
-					firstRole.setStatus(RoleStatus.UNAPPROVED);
 					break;
 				case CANDIDATE:
-					firstRole.setStatus(RoleStatus.UNAPPROVED);
+					break;
+				case INSTITUTION_MANAGER:
+					// Validate Institution:
+					InstitutionManager newIM = (InstitutionManager) firstRole;
+					if (newIM.getInstitution() == null || newIM.getInstitution().getId() == null) {
+						throw new RestException(Status.BAD_REQUEST, "wrong.institution.id");
+					}
+					try {
+						em.createQuery(
+							"select im from InstitutionManager im " +
+								"where im.institution.id = :institutionId " +
+								"and im.status = :status ")
+							.setParameter("institutionId", newIM.getInstitution().getId())
+							.setParameter("status", RoleStatus.ACTIVE)
+							.setMaxResults(1)
+							.getSingleResult();
+						throw new RestException(Status.FORBIDDEN, "exists.active.institution.manager");
+					} catch (NoResultException e) {
+						//Not found, OK
+					}
 					break;
 				case INSTITUTION_ASSISTANT:
-					loggedOn = getLoggedOn(authToken);
+					// CHECK LOGGEDON USER, ACTIVATE NEW USER
+					User loggedOn = getLoggedOn(authToken);
 					if (!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_MANAGER)) {
 						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 					}
 					((InstitutionAssistant) firstRole).setManager(((InstitutionManager) loggedOn.getRole(RoleDiscriminator.INSTITUTION_MANAGER)));
+					user.setStatus(UserStatus.ACTIVE);
+					user.setVerificationNumber(null);
 					firstRole.setStatus(RoleStatus.ACTIVE);
 					break;
 				case MINISTRY_MANAGER:
-					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 				case ADMINISTRATOR:
 					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
-			//2. Update
-			user.setRegistrationType(UserRegistrationType.REGISTRATION_FORM);
-			user.setRegistrationDate(new Date());
-			user.setStatus(UserStatus.UNVERIFIED);
-			user.setStatusDate(new Date());
-			user.setPasswordSalt(User.generatePasswordSalt());
-			user.setPassword(User.encodePassword(user.getPassword(), user.getPasswordSalt()));
-			user.setVerificationNumber(user.generateVerificationNumber());
-			user.setRoles(new HashSet<Role>());
+			//3. Update
 			em.persist(user);
-
-			firstRole.setStatusDate(new Date());
-			user.addRole(firstRole);
-
 			em.flush(); //To catch the exception
 
-			// Send Verification E-Mail
-			try {
-				MailClient.sendVerificationEmail(user);
-			} catch (MessagingException e) {
-				logger.log(Level.SEVERE, "Error sending verification email to user " + user.getUsername(), e);
+			//4. Send Verification E-Mail
+			if (user.getStatus() == UserStatus.UNVERIFIED) {
+				try {
+					MailClient.sendVerificationEmail(user);
+				} catch (MessagingException e) {
+					logger.log(Level.SEVERE, "Error sending verification email to user " + user.getUsername(), e);
+				}
 			}
 
+			//5. Return result
 			user.initializeCollections();
 			return user;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.FORBIDDEN, "username.not.available");
+			throw new RestException(Status.INTERNAL_SERVER_ERROR, "persistence.exception");
 		}
 	}
 
@@ -236,7 +280,7 @@ public class UserRESTService extends RESTService {
 
 		User existingUser = em.find(User.class, id);
 		if (existingUser == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.user.id");
 		}
 		try {
 
@@ -255,7 +299,7 @@ public class UserRESTService extends RESTService {
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -265,7 +309,7 @@ public class UserRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		User existingUser = em.find(User.class, id);
 		if (existingUser == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.user.id");
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
 			(existingUser.hasRole(RoleDiscriminator.INSTITUTION_ASSISTANT) && !((InstitutionAssistant) existingUser.getRole(RoleDiscriminator.INSTITUTION_ASSISTANT)).getManager().getUser().getId().equals(loggedOn.getId()))) {
@@ -278,7 +322,7 @@ public class UserRESTService extends RESTService {
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -307,13 +351,13 @@ public class UserRESTService extends RESTService {
 							.entity(u)
 							.build();
 					} else {
-						throw new RestException(Status.UNAUTHORIZED, "wrong.password");
+						throw new RestException(Status.UNAUTHORIZED, "login.wrong.password");
 					}
 				default:
-					throw new RestException(Status.UNAUTHORIZED, "account.status." + u.getStatus().toString().toLowerCase());
+					throw new RestException(Status.UNAUTHORIZED, "login.account.status." + u.getStatus().toString().toLowerCase());
 			}
 		} catch (NoResultException e) {
-			throw new RestException(Status.UNAUTHORIZED, "wrong.username");
+			throw new RestException(Status.UNAUTHORIZED, "login.wrong.username");
 		}
 	}
 
@@ -384,7 +428,7 @@ public class UserRESTService extends RESTService {
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 
 		return Response.status(200)
@@ -416,7 +460,7 @@ public class UserRESTService extends RESTService {
 			} catch (MessagingException e) {
 				logger.log(Level.SEVERE, "Error sending reset password email to user " + u.getUsername(), e);
 				sc.setRollbackOnly();
-				throw new RestException(Status.INTERNAL_SERVER_ERROR, "cannot.persist");
+				throw new RestException(Status.INTERNAL_SERVER_ERROR, "messaging.exception");
 			}
 			return Response.ok().build();
 		} catch (NoResultException e) {
@@ -435,13 +479,19 @@ public class UserRESTService extends RESTService {
 					"where u.username = :username")
 				.setParameter("username", username)
 				.getSingleResult();
-			// Send email
-			try {
-				MailClient.sendVerificationEmail(u);
-			} catch (MessagingException e) {
-				logger.log(Level.SEVERE, "Error sending reset password email to user " + u.getUsername(), e);
+			// Validate
+			switch (u.getStatus()) {
+				case UNVERIFIED:
+					// Send email
+					try {
+						MailClient.sendVerificationEmail(u);
+					} catch (MessagingException e) {
+						logger.log(Level.SEVERE, "Error sending reset password email to user " + u.getUsername(), e);
+					}
+					return Response.ok().build();
+				default:
+					throw new RestException(Status.CONFLICT, "verify.account.status." + u.getStatus().toString().toLowerCase());
 			}
-			return Response.ok().build();
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.username");
 		}
@@ -462,7 +512,7 @@ public class UserRESTService extends RESTService {
 			switch (u.getStatus()) {
 				case UNVERIFIED:
 					if (user.getVerificationNumber() == null || !user.getVerificationNumber().equals(u.getVerificationNumber())) {
-						throw new RestException(Status.FORBIDDEN, "wrong.verification");
+						throw new RestException(Status.FORBIDDEN, "verify.wrong.verification");
 					}
 					// Verify
 					u.setStatus(UserStatus.ACTIVE);
@@ -473,7 +523,7 @@ public class UserRESTService extends RESTService {
 					u.initializeCollections();
 					return u;
 				default:
-					throw new RestException(Status.FORBIDDEN, "account.status." + u.getStatus().toString().toLowerCase());
+					throw new RestException(Status.FORBIDDEN, "verify.account.status." + u.getStatus().toString().toLowerCase());
 			}
 
 		} catch (NoResultException e) {
@@ -481,7 +531,7 @@ public class UserRESTService extends RESTService {
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -507,11 +557,11 @@ public class UserRESTService extends RESTService {
 			u.initializeCollections();
 			return u;
 		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.user.id");
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "cannot.persist");
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
