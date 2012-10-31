@@ -2,6 +2,7 @@ package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.file.CandidateFile;
 import gr.grnet.dep.service.model.file.FileBody;
+import gr.grnet.dep.service.model.file.FileHeader;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -54,6 +55,9 @@ public class Candidacy {
 	@Basic(optional = false)
 	@Column(name = "position_id")
 	private Long position;
+	
+	@ManyToOne
+	private FileHeader ekthesiAutoaksiologisis;
 	
 	
 	static class CandidacySnapshot {
@@ -231,6 +235,15 @@ public class Candidacy {
 	public void setSnapshot(CandidacySnapshot snapshot) {
 		this.snapshot = snapshot;
 	}
+	
+	@JsonView(DetailedCandidacyView.class)
+	public FileHeader getEkthesiAutoaksiologisis() {
+		return ekthesiAutoaksiologisis;
+	}
+
+	public void setEkthesiAutoaksiologisis(FileHeader ekthesiAutoaksiologisis) {
+		this.ekthesiAutoaksiologisis = ekthesiAutoaksiologisis;
+	}
 
 
 
@@ -270,6 +283,6 @@ public class Candidacy {
 		snapshot.setRank(professor.getRank());
 		snapshot.setSubject(professor.getSubject());
 	}
-	
 
+	
 }

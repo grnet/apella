@@ -8,13 +8,28 @@ import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.CandidateCommittee;
 import gr.grnet.dep.service.model.CandidateCommittee.SimpleCandidateCommitteeView;
 import gr.grnet.dep.service.model.CandidateCommitteeMembership;
+import gr.grnet.dep.service.model.Institution;
+import gr.grnet.dep.service.model.Position;
+import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.ProfessorForeign;
+import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.file.CandidateFile;
+import gr.grnet.dep.service.model.file.FileBody;
+import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileType;
+import gr.grnet.dep.service.model.file.InstitutionFile;
+import gr.grnet.dep.service.model.file.PositionFile;
+import gr.grnet.dep.service.model.file.ProfessorFile;
+import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.User;
 
+import java.io.IOException;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
@@ -23,6 +38,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -30,8 +47,15 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
 import org.codehaus.jackson.map.annotate.JsonView;
 
 @Path("/candidacy")
@@ -344,5 +368,125 @@ public class CandidacyRESTService extends RESTService {
 		}
 		throw new RestException(Status.NOT_FOUND, "wrong.candidate.committee.membership.id");
 	}
+
+	
+	@GET
+	@Path("/{id:[0-9]+}/ekthesi")
+	@JsonView({SimpleFileHeaderView.class})
+	public FileHeader getEkthesi(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
+		User loggedOn = getLoggedOn(authToken);
+		Candidacy candidacy = em.find(Candidacy.class, id);
+		// Validate:
+		if (candidacy == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		
+		return candidacy.getEkthesiAutoaksiologisis();
+	}
+	
+	
+	@GET
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	@Path("/{id:[0-9]+}/ekthesi/body/{bodyId:[0-9]+}")
+	public Response getEkthesiBody(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("bodyId") Long bodyId) {
+		User loggedOn = getLoggedOn(authToken);
+		Candidacy candidacy = em.find(Candidacy.class, id);
+		// Validate:
+		if (candidacy == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Return Result
+		FileHeader ekthesi = candidacy.getEkthesiAutoaksiologisis();
+		for (FileBody fb : ekthesi.getBodies()) {
+			if (fb.getId().equals(bodyId)) {
+				return sendFileBody(fb);
+			}
+		}
+		// Default Action
+		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+	}
+
+	
+	@POST
+	@Path("/{id:[0-9][0-9]*}/ekthesi")
+	@Consumes("multipart/form-data")
+	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
+	public String createOrUpdateEkthesi(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+		User loggedOn = getLoggedOn(authToken);
+		Candidacy candidacy = em.find(Candidacy.class, candidacyId);
+		// Validate:
+		if (candidacy == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Parse Request
+		List<FileItem> fileItems = readMultipartFormData(request);
+		
+		try {
+			FileHeader file = candidacy.getEkthesiAutoaksiologisis();
+			if (file==null) { // Create
+				file = new FileHeader();
+				file.setType(FileType.EKTHESI_AUTOAKSIOLOGISIS);
+				file.setOwner(loggedOn);
+			}
+			saveFile(loggedOn, fileItems, file);
+			candidacy.setEkthesiAutoaksiologisis(file);
+			em.flush();
+
+			return toJSON(file, SimpleFileHeaderView.class);
+		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+		}
+	}
+
+	
+	/**
+	 * Deletes the last body of ekthesi file, if possible.
+	 * 
+	 * @param authToken
+	 * @param id
+	 * @return
+	 */
+	@DELETE
+	@Path("/{id:[0-9]+}/ekthesi")
+	@JsonView({SimpleFileHeaderView.class})
+	public Response deleteEkthesi(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long candidacyId) {
+		User loggedOn = getLoggedOn(authToken);
+		Candidacy candidacy = em.find(Candidacy.class, candidacyId);
+		// Validate:
+		if (candidacy == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		try {
+			FileHeader ekthesi = candidacy.getEkthesiAutoaksiologisis();
+			if (ekthesi == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+			}
+			Response retv = deleteFileBody(ekthesi);
+			if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
+				// Remove from Position
+				candidacy.setEkthesiAutoaksiologisis(null);
+			}
+			return retv;
+		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+		}
+	}
+
 
 }

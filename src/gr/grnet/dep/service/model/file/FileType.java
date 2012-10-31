@@ -28,4 +28,7 @@ public enum FileType {
 	APOFASI_ANAPOMPIS, // Απόφαση αναπομπής του φακέλου επιλογής.
 	ORGANISMOS, // Οργανισμό 
 	ESWTERIKOS_KANONISMOS, //Εσωτερικό Κανονισμό του Ιδρύματος.
+	// Candidacy
+	EKTHESI_AUTOAKSIOLOGISIS,
+	
 }
