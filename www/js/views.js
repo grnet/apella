@@ -1,5 +1,5 @@
-define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/position-committee-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html", "text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html", "text!tpl/file-multiple-edit.html", "text!tpl/professor-committees.html", "text!tpl/position-committee-edit-professor-list.html", "text!tpl/position.html", "text!tpl/position-committee.html", "text!tpl/register.html", "text!tpl/institution-regulatory-framework.html", "text!tpl/institution-regulatory-framework-edit.html" ], function($, _, Backbone,
-	App, Models, tpl_announcement_list, tpl_confirm, tpl_file_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_position_committee_edit, tpl_position_edit, tpl_position_list, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_file_multiple_edit, tpl_professor_committees, tpl_position_committee_edit_professor_list, tpl_position, tpl_position_committee, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit) {
+define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/position-committee-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html", "text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html", "text!tpl/file-multiple-edit.html", "text!tpl/professor-committees.html", "text!tpl/position-committee-edit-professor-list.html", "text!tpl/position.html", "text!tpl/position-committee.html", "text!tpl/register.html", "text!tpl/institution-regulatory-framework.html", "text!tpl/institution-regulatory-framework-edit.html",
+	"text!tpl/position-search.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_position_committee_edit, tpl_position_edit, tpl_position_list, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_file_multiple_edit, tpl_professor_committees, tpl_position_committee_edit_professor_list, tpl_position, tpl_position_committee, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search) {
 
 	/** **************************************************************** */
 
@@ -82,6 +82,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				menuItems.push("professorCommittees");
 			}
 			if (self.model.hasRoleWithStatus("CANDIDATE", "ACTIVE")) {
+				menuItems.push("sposition");
 				menuItems.push("candidacies");
 			}
 			if (self.model.hasRoleWithStatus("INSTITUTION_MANAGER", "ACTIVE")) {
@@ -4628,6 +4629,64 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		close : function(eventName) {
 			this.model.unbind("change");
+			this.$el.unbind();
+			this.$el.remove();
+		}
+	});
+
+	/***************************************************************************
+	 * PositionSearchView ******************************************************
+	 **************************************************************************/
+	Views.PositionSearchView = Views.BaseView.extend({
+		tagName : "div",
+
+		initialize : function() {
+			var self = this;
+			_.bindAll(self, "render", "select", "close");
+			self.template = _.template(tpl_position_search);
+			self.collection.bind('reset', self.render, self);
+		},
+
+		events : {
+			"click a#select" : "select"
+		},
+
+		render : function(eventName) {
+			var self = this;
+			self.$el.html(self.template({
+				positions : self.collection.toJSON()
+			}));
+			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
+				self.$("table").dataTable({
+					"sDom" : "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+					"sPaginationType" : "bootstrap",
+					"oLanguage" : {
+						"sSearch" : $.i18n.prop("dataTable_sSearch"),
+						"sLengthMenu" : $.i18n.prop("dataTable_sLengthMenu"),
+						"sZeroRecords" : $.i18n.prop("dataTable_sZeroRecords"),
+						"sInfo" : $.i18n.prop("dataTable_sInfo"),
+						"sInfoEmpty" : $.i18n.prop("dataTable_sInfoEmpty"),
+						"sInfoFiltered" : $.i18n.prop("dataTable_sInfoFiltered"),
+						"oPaginate" : {
+							sFirst : $.i18n.prop("dataTable_sFirst"),
+							sPrevious : $.i18n.prop("dataTable_sPrevious"),
+							sNext : $.i18n.prop("dataTable_sNext"),
+							sLast : $.i18n.prop("dataTable_sLast")
+						}
+					}
+				});
+			}
+			return self;
+		},
+
+		select : function(event, position) {
+			var self = this;
+			var selectedModel = position ? position : self.collection.get($(event.currentTarget).data('positionId'));
+			self.collection.trigger("position:selected", selectedModel);
+		},
+
+		close : function(eventName) {
+			this.collection.unbind('reset', this.render, this);
 			this.$el.unbind();
 			this.$el.remove();
 		}

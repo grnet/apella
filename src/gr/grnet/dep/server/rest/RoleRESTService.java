@@ -196,6 +196,7 @@ public class RoleRESTService extends RESTService {
 		// Execute
 		List<Role> roles = query.getResultList();
 		for (Role r : roles) {
+			r.getUser().getPrimaryRole();
 			r.initializeCollections();
 		}
 		return roles;
@@ -234,6 +235,8 @@ public class RoleRESTService extends RESTService {
 			"from Role r where r.id=:id")
 			.setParameter("id", id)
 			.getSingleResult();
+
+		r.getUser().getPrimaryRole();
 		r.initializeCollections();
 		return r;
 	}
@@ -755,19 +758,22 @@ public class RoleRESTService extends RESTService {
 	@JsonView({DetailedRoleView.class})
 	public Role updateStatus(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Role requestRole) {
 		User loggedOn = getLoggedOn(authToken);
-		Role existingRole = em.find(Role.class, id);
+		Role primaryRole = em.find(Role.class, id);
 		// Validate
-		if (existingRole == null) {
+		if (primaryRole == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.role.id");
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+		if (!primaryRole.getDiscriminator().equals(primaryRole.getUser().getPrimaryRole())) {
+			throw new RestException(Status.CONFLICT, "not.primary.role");
+		}
 		//Validate Change
-		if (existingRole instanceof InstitutionManager) {
+		if (primaryRole instanceof InstitutionManager) {
 			if (requestRole.getStatus().equals(RoleStatus.ACTIVE)) {
 				try {
-					InstitutionManager im = (InstitutionManager) existingRole;
+					InstitutionManager im = (InstitutionManager) primaryRole;
 					// Check if exists active IM for same Institution:
 					em.createQuery("select im from InstitutionManager im " +
 						"where im.status = :status " +
@@ -784,11 +790,19 @@ public class RoleRESTService extends RESTService {
 
 		// Update
 		try {
-			// Update Status
-			existingRole.setStatus(requestRole.getStatus());
-			existingRole.setStatusDate(new Date());
-			existingRole.initializeCollections();
-			return existingRole;
+			primaryRole.setStatus(requestRole.getStatus());
+			primaryRole.setStatusDate(new Date());
+			// Update all other roles of user (applicable for Professor->Candidate
+			for (Role otherRole : primaryRole.getUser().getRoles()) {
+				// TODO: Check if INACTIVE
+				if (otherRole != primaryRole) {
+					otherRole.setStatus(requestRole.getStatus());
+					otherRole.setStatusDate(new Date());
+				}
+			}
+			// Return result
+			primaryRole.initializeCollections();
+			return primaryRole;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();

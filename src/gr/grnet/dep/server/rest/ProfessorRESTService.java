@@ -45,7 +45,6 @@ public class ProfessorRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		p.initializeCollections();
-
 		return p.getCommittees();
 	}
 

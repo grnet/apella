@@ -341,7 +341,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			"requests" : "showRequestsView",
 			"professorCommittees" : "showProfessorCommitteesView",
 			"regulatoryframework" : "showInstitutionRegulatoryFrameworkView",
-			"regulatoryframework/:institutionId" : "showInstitutionRegulatoryFrameworkView"
+			"regulatoryframework/:institutionId" : "showInstitutionRegulatoryFrameworkView",
+			"sposition" : "showPositionSearchView",
+			"sposition/:query" : "showPositionSearchView"
 		},
 
 		start : function(eventName, authToken) {
@@ -819,6 +821,37 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				}
 			});
 			self.currentView = irfView;
+		},
+
+		showPositionSearchView : function(query) {
+			var self = this;
+			self.clear();
+
+			var positions = new Models.Positions();
+			positions.url = positions.url + "/search";
+			positions.on("position:selected", function(position) {
+				if (position) {
+					// TODO: Create a Candidacy Model with position data and
+					// display CREATE CANDIDACY
+				}
+			}, this);
+			var positionSearchView = new Views.PositionSearchView({
+				"query" : query ? JSON.parse(decodeURI(query)) : undefined,
+				collection : positions
+			});
+			self.refreshBreadcrumb([ $.i18n.prop('menu_sposition') ]);
+			$("#content").append(positionSearchView.el);
+			if (query) {
+				positions.fetch({
+					cache : false,
+					data : JSON.parse(decodeURI(query))
+				});
+			} else {
+				positions.fetch({
+					cache : false
+				});
+			}
+			self.currentView = positionSearchView;
 		},
 
 	});

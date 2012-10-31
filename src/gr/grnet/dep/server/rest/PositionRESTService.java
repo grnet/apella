@@ -89,7 +89,8 @@ public class PositionRESTService extends RESTService {
 					"left join fetch p.files f " +
 					"left join fetch p.commitee co " +
 					"left join fetch p.candidacies ca " +
-					"where p.department.institution in (:institutions)")
+					"where p.permanent = true " +
+					"and p.department.institution in (:institutions)")
 				.setParameter("institutions", institutions)
 				.getResultList();
 			return positions;
@@ -101,7 +102,8 @@ public class PositionRESTService extends RESTService {
 				"from Position p " +
 					"left join fetch p.files f " +
 					"left join fetch p.commitee co " +
-					"left join fetch p.candidacies ca ")
+					"left join fetch p.candidacies ca " +
+					"where p.permanent = true")
 				.getResultList();
 			return positions;
 		}
@@ -122,7 +124,9 @@ public class PositionRESTService extends RESTService {
 					"left join fetch p.files f " +
 					"left join fetch p.commitee co " +
 					"left join fetch p.candidacies ca " +
-					"where p.openingDate <= :today and p.closingDate >= :today ")
+					"where p.permanent = true " +
+					"and p.openingDate <= :today " +
+					"and p.closingDate >= :today ")
 				.setParameter("today", today)
 				.getResultList();
 			return positions;
