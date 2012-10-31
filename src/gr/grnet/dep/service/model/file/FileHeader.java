@@ -191,7 +191,7 @@ public class FileHeader implements Serializable {
 	public static <T extends FileHeader> Set<T> filter(Set<T> files, FileType type) {
 		Set<T> result = new HashSet<T>();
 		for (T file : files) {
-			if (file.getType().equals(type)) {
+			if (!file.isDeleted() && file.getType().equals(type)) {
 				result.add(file);
 			}
 		}

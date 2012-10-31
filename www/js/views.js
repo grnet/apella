@@ -2465,14 +2465,22 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				multipart : true,
 				add : function(e, data) {
 					self.$("a#upload").bind("click", function(e) {
-						self.$('div.progress').show();
-						self.$("a#upload").unbind("click");
 						data.formData = {
 							"type" : self.$("input[name=file_type]").val(),
 							"name" : self.$("input[name=file_name]").val(),
 							"description" : self.$("textarea[name=file_description]").val()
 						};
-						data.submit();
+						if (_.isFunction(self.options.beforeUpload)) {
+							self.options.beforeUpload(data, function(data) {
+								self.$('div.progress').show();
+								self.$("a#upload").unbind("click");
+								data.submit();
+							});
+						} else {
+							self.$('div.progress').show();
+							self.$("a#upload").unbind("click");
+							data.submit();
+						}
 					});
 				},
 				progressall : function(e, data) {
@@ -2484,11 +2492,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						self.$('div.progress .bar').css('width', '0%');
 						self.model.set(data.result);
 					});
-					var popup = new Views.PopupView({
-						type : "success",
-						message : $.i18n.prop("Success")
-					});
-					popup.show();
 				},
 				fail : function(e, data) {
 					self.$('div.progress').fadeOut('slow', function() {
@@ -2627,14 +2630,22 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				forceIframeTransport : true,
 				add : function(e, data) {
 					self.$("a#upload").bind("click", function(e) {
-						self.$('div.progress').show();
-						self.$("a#upload").unbind("click");
 						data.formData = {
 							"type" : self.$("input[name=file_type]").val(),
 							"name" : self.$("input[name=file_name]").val(),
 							"description" : self.$("textarea[name=file_description]").val()
 						};
-						data.submit();
+						if (_.isFunction(self.options.beforeUpload)) {
+							self.options.beforeUpload(data, function() {
+								self.$('div.progress').show();
+								self.$("a#upload").unbind("click");
+								data.submit();
+							});
+						} else {
+							self.$('div.progress').show();
+							self.$("a#upload").unbind("click");
+							data.submit();
+						}
 					});
 				},
 				progressall : function(e, data) {
@@ -2648,11 +2659,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						newFile.urlRoot = self.collection.url;
 						self.collection.add(newFile);
 					});
-					var popup = new Views.PopupView({
-						type : "success",
-						message : $.i18n.prop("Success")
-					});
-					popup.show();
 				},
 				fail : function(e, data) {
 					var resp = data.jqXHR;

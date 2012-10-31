@@ -3,7 +3,6 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
-import gr.grnet.dep.service.model.Candidacy.SimpleCandidacyView;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.CandidateCommittee;
 import gr.grnet.dep.service.model.CandidateCommittee.SimpleCandidateCommitteeView;
@@ -11,8 +10,10 @@ import gr.grnet.dep.service.model.CandidateCommitteeMembership;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.ProfessorForeign;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
-import gr.grnet.dep.service.model.file.FileType;
+import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.model.file.FileHeader;
+import gr.grnet.dep.service.model.file.FileType;
 
 import java.util.Date;
 import java.util.logging.Logger;
@@ -70,21 +71,27 @@ public class CandidacyRESTService extends RESTService {
 	}
 
 	/**
-	 * Check that a (possible) Candidacy passes some basic checks before creation / update.
+	 * Check that a (possible) Candidacy passes some basic checks before
+	 * creation / update.
 	 * 
 	 * @param candidacy
 	 * @param candidate
 	 */
 	private void validateCandidacy(Candidacy candidacy, Candidate candidate) {
-		if (candidate.getFilesOfType(FileType.DIMOSIEYSI).size()==0)
+		if (!candidate.getStatus().equals(RoleStatus.ACTIVE)) {
+			throw new RestException(Status.CONFLICT, "validation.candidacy.inactive.role");
+		}
+		if (FileHeader.filter(candidate.getFiles(), FileType.DIMOSIEYSI).size() == 0) {
 			throw new RestException(Status.CONFLICT, "validation.candidacy.no.dimosieysi");
-		if (candidate.getFilesOfType(FileType.PTYXIO).size()==0)
+		}
+		if (FileHeader.filter(candidate.getFiles(), FileType.PTYXIO).size() == 0) {
 			throw new RestException(Status.CONFLICT, "validation.candidacy.no.ptyxio");
-		if (candidate.getFilesOfType(FileType.BIOGRAFIKO).size()==0)
+		}
+		if (FileHeader.filter(candidate.getFiles(), FileType.BIOGRAFIKO).size() == 0) {
 			throw new RestException(Status.CONFLICT, "validation.candidacy.no.cv");
-		
+		}
 	}
-	
+
 	/**
 	 * Hold on to a snapshot of candidate's details in given candidacy.
 	 * 
@@ -97,14 +104,15 @@ public class CandidacyRESTService extends RESTService {
 		User user = candidate.getUser();
 		ProfessorDomestic professorDomestic = (ProfessorDomestic) user.getRole(RoleDiscriminator.PROFESSOR_DOMESTIC);
 		ProfessorForeign professorForeign = (ProfessorForeign) user.getRole(RoleDiscriminator.PROFESSOR_FOREIGN);
-		if (professorDomestic!=null)
+		if (professorDomestic != null) {
 			candidacy.updateSnapshot(professorDomestic);
-		else if (professorForeign!=null)
+		} else if (professorForeign != null) {
 			candidacy.updateSnapshot(professorForeign);
+		}
 	}
-	
+
 	@POST
-	@JsonView({SimpleCandidacyView.class})
+	@JsonView({DetailedCandidacyView.class})
 	public Candidacy create(@HeaderParam(TOKEN_HEADER) String authToken, Candidacy candidacy) {
 		try {
 			Candidate cy = (Candidate) em.createQuery(
@@ -116,8 +124,8 @@ public class CandidacyRESTService extends RESTService {
 			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
+
 			candidacy.setDate(new Date());
-			
 			validateCandidacy(candidacy, cy);
 			updateSnapshot(candidacy, cy);
 
@@ -132,7 +140,7 @@ public class CandidacyRESTService extends RESTService {
 
 	@PUT
 	@Path("/{id:[0-9][0-9]*}")
-	@JsonView({SimpleCandidacyView.class})
+	@JsonView({DetailedCandidacyView.class})
 	public Candidacy update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Candidacy candidacy) {
 		try {
 			Candidacy existingCandidacy = em.find(Candidacy.class, id);
@@ -186,13 +194,13 @@ public class CandidacyRESTService extends RESTService {
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
-	
+
 	private CandidateCommittee getCandidateCommittee(Candidacy c) {
 		return (CandidateCommittee) em.createQuery(
-				"from CandidateCommittee cc left join fetch cc.members " +
-					"where cc.candidacy=:candidacy")
-				.setParameter("candidacy", c)
-				.getSingleResult();
+			"from CandidateCommittee cc left join fetch cc.members " +
+				"where cc.candidacy=:candidacy")
+			.setParameter("candidacy", c)
+			.getSingleResult();
 	}
 
 	@GET
@@ -267,7 +275,7 @@ public class CandidacyRESTService extends RESTService {
 			if (cc.getMembers().size() >= CandidateCommittee.MAX_MEMBERS) {
 				throw new RestException(Status.CONFLICT, "max.members.exceeded");
 			}
-			for (CandidateCommitteeMembership ccmexisting: cc.getMembers()) {
+			for (CandidateCommitteeMembership ccmexisting : cc.getMembers()) {
 				if (ccmexisting.getEmail().equalsIgnoreCase(ccm.getEmail()))
 					throw new RestException(Status.CONFLICT, "error.candidacy.membership.email.already.exists");
 			}
@@ -315,7 +323,7 @@ public class CandidacyRESTService extends RESTService {
 					"where cc.candidacy=:candidacy")
 				.setParameter("candidacy", c)
 				.getSingleResult();
-			
+
 			CandidateCommitteeMembership removed = cc.removeMember(ccm.getId());
 			if (removed == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.candidate.committee.membership.id");
