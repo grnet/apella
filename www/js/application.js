@@ -1,17 +1,16 @@
 define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i18n", "jquery.validate", "jquery.dataTables", "jquery.dataTables.bootstrap", "jquery.blockUI", "jquery.file.upload", "jquery.iframe-transport", "backbone.cache" ], function($, _, Backbone) {
 	if (!window.App) {
 		// Configuration
-		jQuery.validator.addMethod("onlyLatin", function(value, element) {
+		$.validator.addMethod("onlyLatin", function(value, element) {
 			return this.optional(element) || /^[a-zA-Z]*$/.test(value);
 		}, "Please type only latin characters");
 
-		jQuery.validator.addMethod("pwd", function(value, element) {
+		$.validator.addMethod("pwd", function(value, element) {
 			return this.optional(element) || /^[a-zA-Z0-9!@#$%^&*()]*$/.test(value);
 		}, "Please type only latin characters");
-		jQuery.datepicker.setDefaults({
+		$.datepicker.setDefaults({
 			dateFormat : "dd/mm/yy"
 		});
-
 		// Add _super function in Model, Views
 		(function(Backbone) {
 			function _super(methodName, args) {

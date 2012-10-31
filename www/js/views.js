@@ -1464,7 +1464,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					"sDom" : "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
 					"sPaginationType" : "bootstrap",
 					"oLanguage" : {
-						"sLengthMenu" : "_MENU_ records per page"
+						"sSearch" : $.i18n.prop("dataTable_sSearch"),
+						"sLengthMenu" : $.i18n.prop("dataTable_sLengthMenu"),
+						"sZeroRecords" : $.i18n.prop("dataTable_sZeroRecords"),
+						"sInfo" : $.i18n.prop("dataTable_sInfo"),
+						"sInfoEmpty" : $.i18n.prop("dataTable_sInfoEmpty"),
+						"sInfoFiltered" : $.i18n.prop("dataTable_sInfoFiltered"),
+						"oPaginate" : {
+							sFirst : $.i18n.prop("dataTable_sFirst"),
+							sPrevious : $.i18n.prop("dataTable_sPrevious"),
+							sNext : $.i18n.prop("dataTable_sNext"),
+							sLast : $.i18n.prop("dataTable_sLast")
+						}
 					}
 				});
 			}
@@ -2793,7 +2804,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					"sDom" : "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
 					"sPaginationType" : "bootstrap",
 					"oLanguage" : {
-						"sLengthMenu" : "_MENU_ records per page"
+						"sSearch" : $.i18n.prop("dataTable_sSearch"),
+						"sLengthMenu" : $.i18n.prop("dataTable_sLengthMenu"),
+						"sZeroRecords" : $.i18n.prop("dataTable_sZeroRecords"),
+						"sInfo" : $.i18n.prop("dataTable_sInfo"),
+						"sInfoEmpty" : $.i18n.prop("dataTable_sInfoEmpty"),
+						"sInfoFiltered" : $.i18n.prop("dataTable_sInfoFiltered"),
+						"oPaginate" : {
+							sFirst : $.i18n.prop("dataTable_sFirst"),
+							sPrevious : $.i18n.prop("dataTable_sPrevious"),
+							sNext : $.i18n.prop("dataTable_sNext"),
+							sLast : $.i18n.prop("dataTable_sLast")
+						}
 					}
 				});
 			}
@@ -2872,7 +2894,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					"sDom" : "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
 					"sPaginationType" : "bootstrap",
 					"oLanguage" : {
-						"sLengthMenu" : "_MENU_ records per page"
+						"sSearch" : $.i18n.prop("dataTable_sSearch"),
+						"sLengthMenu" : $.i18n.prop("dataTable_sLengthMenu"),
+						"sZeroRecords" : $.i18n.prop("dataTable_sZeroRecords"),
+						"sInfo" : $.i18n.prop("dataTable_sInfo"),
+						"sInfoEmpty" : $.i18n.prop("dataTable_sInfoEmpty"),
+						"sInfoFiltered" : $.i18n.prop("dataTable_sInfoFiltered"),
+						"oPaginate" : {
+							sFirst : $.i18n.prop("dataTable_sFirst"),
+							sPrevious : $.i18n.prop("dataTable_sPrevious"),
+							sNext : $.i18n.prop("dataTable_sNext"),
+							sLast : $.i18n.prop("dataTable_sLast")
+						}
 					}
 				});
 			}
@@ -2979,7 +3012,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					"sDom" : "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
 					"sPaginationType" : "bootstrap",
 					"oLanguage" : {
-						"sLengthMenu" : "_MENU_ records per page"
+						"sSearch" : $.i18n.prop("dataTable_sSearch"),
+						"sLengthMenu" : $.i18n.prop("dataTable_sLengthMenu"),
+						"sZeroRecords" : $.i18n.prop("dataTable_sZeroRecords"),
+						"sInfo" : $.i18n.prop("dataTable_sInfo"),
+						"sInfoEmpty" : $.i18n.prop("dataTable_sInfoEmpty"),
+						"sInfoFiltered" : $.i18n.prop("dataTable_sInfoFiltered"),
+						"oPaginate" : {
+							sFirst : $.i18n.prop("dataTable_sFirst"),
+							sPrevious : $.i18n.prop("dataTable_sPrevious"),
+							sNext : $.i18n.prop("dataTable_sNext"),
+							sLast : $.i18n.prop("dataTable_sLast")
+						}
 					}
 				});
 			}
@@ -3890,7 +3934,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					"sDom" : "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
 					"sPaginationType" : "bootstrap",
 					"oLanguage" : {
-						"sLengthMenu" : "_MENU_ records per page"
+						"sSearch" : $.i18n.prop("dataTable_sSearch"),
+						"sLengthMenu" : $.i18n.prop("dataTable_sLengthMenu"),
+						"sZeroRecords" : $.i18n.prop("dataTable_sZeroRecords"),
+						"sInfo" : $.i18n.prop("dataTable_sInfo"),
+						"sInfoEmpty" : $.i18n.prop("dataTable_sInfoEmpty"),
+						"sInfoFiltered" : $.i18n.prop("dataTable_sInfoFiltered"),
+						"oPaginate" : {
+							sFirst : $.i18n.prop("dataTable_sFirst"),
+							sPrevious : $.i18n.prop("dataTable_sPrevious"),
+							sNext : $.i18n.prop("dataTable_sNext"),
+							sLast : $.i18n.prop("dataTable_sLast")
+						}
 					}
 				});
 			}
@@ -4002,7 +4057,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					"sDom" : "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
 					"sPaginationType" : "bootstrap",
 					"oLanguage" : {
-						"sLengthMenu" : "_MENU_ records per page"
+						"sSearch" : $.i18n.prop("dataTable_sSearch"),
+						"sLengthMenu" : $.i18n.prop("dataTable_sLengthMenu"),
+						"sZeroRecords" : $.i18n.prop("dataTable_sZeroRecords"),
+						"sInfo" : $.i18n.prop("dataTable_sInfo"),
+						"sInfoEmpty" : $.i18n.prop("dataTable_sInfoEmpty"),
+						"sInfoFiltered" : $.i18n.prop("dataTable_sInfoFiltered"),
+						"oPaginate" : {
+							sFirst : $.i18n.prop("dataTable_sFirst"),
+							sPrevious : $.i18n.prop("dataTable_sPrevious"),
+							sNext : $.i18n.prop("dataTable_sNext"),
+							sLast : $.i18n.prop("dataTable_sLast")
+						}
 					}
 				});
 			}
@@ -4338,7 +4404,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					"sDom" : "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
 					"sPaginationType" : "bootstrap",
 					"oLanguage" : {
-						"sLengthMenu" : "_MENU_ records per page"
+						"sSearch" : $.i18n.prop("dataTable_sSearch"),
+						"sLengthMenu" : $.i18n.prop("dataTable_sLengthMenu"),
+						"sZeroRecords" : $.i18n.prop("dataTable_sZeroRecords"),
+						"sInfo" : $.i18n.prop("dataTable_sInfo"),
+						"sInfoEmpty" : $.i18n.prop("dataTable_sInfoEmpty"),
+						"sInfoFiltered" : $.i18n.prop("dataTable_sInfoFiltered"),
+						"oPaginate" : {
+							sFirst : $.i18n.prop("dataTable_sFirst"),
+							sPrevious : $.i18n.prop("dataTable_sPrevious"),
+							sNext : $.i18n.prop("dataTable_sNext"),
+							sLast : $.i18n.prop("dataTable_sLast")
+						}
 					}
 				});
 			}
@@ -4435,7 +4512,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					"sDom" : "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
 					"sPaginationType" : "bootstrap",
 					"oLanguage" : {
-						"sLengthMenu" : "_MENU_ records per page"
+						"sSearch" : $.i18n.prop("dataTable_sSearch"),
+						"sLengthMenu" : $.i18n.prop("dataTable_sLengthMenu"),
+						"sZeroRecords" : $.i18n.prop("dataTable_sZeroRecords"),
+						"sInfo" : $.i18n.prop("dataTable_sInfo"),
+						"sInfoEmpty" : $.i18n.prop("dataTable_sInfoEmpty"),
+						"sInfoFiltered" : $.i18n.prop("dataTable_sInfoFiltered"),
+						"oPaginate" : {
+							sFirst : $.i18n.prop("dataTable_sFirst"),
+							sPrevious : $.i18n.prop("dataTable_sPrevious"),
+							sNext : $.i18n.prop("dataTable_sNext"),
+							sLast : $.i18n.prop("dataTable_sLast")
+						}
 					}
 				});
 			}
