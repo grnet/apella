@@ -567,6 +567,14 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			"fekSubject" : undefined,
 			"manager" : undefined,
 			"ministry" : undefined
+		},
+		isPrimary : function() {
+			var self = this;
+			if (self.has("user")) {
+				return _.isEqual(self.get("discriminator"), self.get("user").primaryRole);
+			} else {
+				return false;
+			}
 		}
 	});
 

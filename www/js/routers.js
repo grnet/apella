@@ -543,7 +543,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			assistants.fetch({
 				cache : false,
 				data : {
-					manager : _.find(App.loggedOnUser.get("roles"), function(role) {
+					im : _.find(App.loggedOnUser.get("roles"), function(role) {
 						return role.discriminator === "INSTITUTION_MANAGER";
 					}).id
 				},

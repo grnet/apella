@@ -73,7 +73,6 @@ public class InstitutionManager extends Role {
 
 	@Override
 	public void initializeCollections() {
-		isPrimary();
 	}
 
 	@Override

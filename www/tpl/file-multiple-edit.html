@@ -18,7 +18,7 @@
 <tfoot>
 	<tr id="uploader">
 		<td>
-			<input type="hidden" name="type" value="<%= type %>" />
+			<input type="hidden" name="file_type" value="<%= type %>" />
 			<input type="file" name="file" />
 			<div class="progress">
 				<div class="bar" style="width: 0%;"></div>
@@ -26,9 +26,9 @@
 		</td>
 <% if (withMetadata) { %>	
 		<td>
-			<input type="text" name="name" class="input-medium" placeholder="<%= $.i18n.prop('FileName') %>" />
+			<input type="text" name="file_name" class="input-medium" placeholder="<%= $.i18n.prop('FileName') %>" />
 		</td>
-		<td><textarea name="description" rows="1" placeholder="<%= $.i18n.prop('FileDescription') %>"></textarea></td>
+		<td><textarea name="file_description" rows="1" placeholder="<%= $.i18n.prop('FileDescription') %>"></textarea></td>
 <% } %>	
 		<td width="140px">
 			<a id="upload" class="btn btn-small pull-right"><i class="icon-plus"></i> <%= $.i18n.prop('btn_add_file') %></a>

@@ -30,7 +30,6 @@ public class MinistryAssistant extends Role {
 
 	@Override
 	public void initializeCollections() {
-		isPrimary();
 		this.manager.initializeCollections();
 	}
 

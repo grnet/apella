@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 
@@ -269,7 +270,7 @@ public class User implements Serializable {
 		RoleDiscriminator.ADMINISTRATOR
 	});
 
-	@JsonView({DetailedUserView.class})
+	@JsonView({DetailedUserView.class, DetailedRoleView.class})
 	public RoleDiscriminator getPrimaryRole() {
 		if (roles.isEmpty()) {
 			return null;

@@ -1800,7 +1800,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.innerViews = [];
 
 			// Re-render
-			self.$el.html(this.template(this.model.toJSON()));
+			tpl_data = _.extend(self.model.toJSON(), {
+				"primary" : self.model.isPrimary()
+			});
+			self.$el.html(self.template(tpl_data));
 
 			// Apply Global Rules
 			self.$("a#status").addClass("disabled");
@@ -2433,11 +2436,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("#uploader").hide();
 			}
 			if (self.options.withMetadata) {
-				self.$("input[name=name]").show();
-				self.$("textarea[name=description]").show();
+				self.$("input[name=file_name]").show();
+				self.$("textarea[name=file_description]").show();
 			} else {
-				self.$("input[name=name]").hide();
-				self.$("textarea[name=description]").hide();
+				self.$("input[name=file_name]").hide();
+				self.$("textarea[name=file_description]").hide();
 			}
 			self.$('div.progress').hide();
 
@@ -2453,9 +2456,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						self.$('div.progress').show();
 						self.$("a#upload").unbind("click");
 						data.formData = {
-							"type" : self.$("input[name=type]").val(),
-							"name" : self.$("input[name=name]").val(),
-							"description" : self.$("textarea[name=description]").val()
+							"type" : self.$("input[name=file_type]").val(),
+							"name" : self.$("input[name=file_name]").val(),
+							"description" : self.$("textarea[name=file_description]").val()
 						};
 						data.submit();
 					});
@@ -2597,11 +2600,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}
 
 			if (self.options.withMetadata) {
-				self.$("input[name=name]").show();
-				self.$("textarea[name=description]").show();
+				self.$("input[name=file_name]").show();
+				self.$("textarea[name=file_description]").show();
 			} else {
-				self.$("input[name=name]").hide();
-				self.$("textarea[name=description]").hide();
+				self.$("input[name=file_name]").hide();
+				self.$("textarea[name=file_description]").hide();
 			}
 			self.$('div.progress').hide();
 			// Initialize FileUpload widget
@@ -2615,9 +2618,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						self.$('div.progress').show();
 						self.$("a#upload").unbind("click");
 						data.formData = {
-							"type" : self.$("input[name=type]").val(),
-							"name" : self.$("input[name=name]").val(),
-							"description" : self.$("textarea[name=description]").val()
+							"type" : self.$("input[name=file_type]").val(),
+							"name" : self.$("input[name=file_name]").val(),
+							"description" : self.$("textarea[name=file_description]").val()
 						};
 						data.submit();
 					});

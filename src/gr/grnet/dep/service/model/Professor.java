@@ -81,7 +81,6 @@ public abstract class Professor extends Role {
 
 	@Override
 	public void initializeCollections() {
-		isPrimary();
 		this.getFiles().size();
 	}
 
