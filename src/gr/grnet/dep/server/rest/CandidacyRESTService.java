@@ -3,12 +3,15 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
+import gr.grnet.dep.service.model.Candidacy.SimpleCandidacyView;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.CandidateCommittee;
 import gr.grnet.dep.service.model.CandidateCommittee.SimpleCandidateCommitteeView;
 import gr.grnet.dep.service.model.CandidateCommitteeMembership;
-import gr.grnet.dep.service.model.Professor;
+import gr.grnet.dep.service.model.ProfessorDomestic;
+import gr.grnet.dep.service.model.ProfessorForeign;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.User;
 
 import java.util.Date;
@@ -48,30 +51,65 @@ public class CandidacyRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Candidacy candidacy = (Candidacy) em.createQuery(
-				"from Candidacy c left join fetch c.files " +
-					"where c.id=:id")
+				"from Candidacy c where c.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
 			Candidate candidate = (Candidate) em.createQuery(
 				"from Candidate c where c.id=:id")
-				.setParameter("id", candidacy.getCandidate())
+				.setParameter("id", candidacy.getCandidate().getId())
 				.getSingleResult();
 			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && candidate.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
+			// Initialize collections
+			candidacy.initializeSnapshot();
 			return candidacy;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 		}
 	}
 
+	/**
+	 * Check that a (possible) Candidacy passes some basic checks before creation / update.
+	 * 
+	 * @param candidacy
+	 * @param candidate
+	 */
+	private void validateCandidacy(Candidacy candidacy, Candidate candidate) {
+		if (candidate.getFilesOfType(FileType.DIMOSIEYSI).size()==0)
+			throw new RestException(Status.CONFLICT, "validation.candidacy.no.dimosieysi");
+		if (candidate.getFilesOfType(FileType.PTYXIO).size()==0)
+			throw new RestException(Status.CONFLICT, "validation.candidacy.no.ptyxio");
+		if (candidate.getFilesOfType(FileType.BIOGRAFIKO).size()==0)
+			throw new RestException(Status.CONFLICT, "validation.candidacy.no.cv");
+		
+	}
+	
+	/**
+	 * Hold on to a snapshot of candidate's details in given candidacy.
+	 * 
+	 * @param candidacy
+	 * @param candidate
+	 */
+	private void updateSnapshot(Candidacy candidacy, Candidate candidate) {
+		candidacy.clearSnapshot();
+		candidacy.updateSnapshot(candidate);
+		User user = candidate.getUser();
+		ProfessorDomestic professorDomestic = (ProfessorDomestic) user.getRole(RoleDiscriminator.PROFESSOR_DOMESTIC);
+		ProfessorForeign professorForeign = (ProfessorForeign) user.getRole(RoleDiscriminator.PROFESSOR_FOREIGN);
+		if (professorDomestic!=null)
+			candidacy.updateSnapshot(professorDomestic);
+		else if (professorForeign!=null)
+			candidacy.updateSnapshot(professorForeign);
+	}
+	
 	@POST
-	@JsonView({DetailedCandidacyView.class})
+	@JsonView({SimpleCandidacyView.class})
 	public Candidacy create(@HeaderParam(TOKEN_HEADER) String authToken, Candidacy candidacy) {
 		try {
 			Candidate cy = (Candidate) em.createQuery(
 				"from Candidate c where c.id=:id")
-				.setParameter("id", candidacy.getCandidate())
+				.setParameter("id", candidacy.getCandidate().getId())
 				.getSingleResult();
 
 			User loggedOn = getLoggedOn(authToken);
@@ -79,6 +117,9 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			candidacy.setDate(new Date());
+			
+			validateCandidacy(candidacy, cy);
+			updateSnapshot(candidacy, cy);
 
 			em.persist(candidacy);
 			return candidacy;
@@ -91,20 +132,25 @@ public class CandidacyRESTService extends RESTService {
 
 	@PUT
 	@Path("/{id:[0-9][0-9]*}")
-	@JsonView({DetailedCandidacyView.class})
+	@JsonView({SimpleCandidacyView.class})
 	public Candidacy update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Candidacy candidacy) {
 		try {
 			Candidacy existingCandidacy = em.find(Candidacy.class, id);
 			if (existingCandidacy == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 			}
-			Candidate cy = existingCandidacy.getCandidate();
+			Candidate cy = (Candidate) em.createQuery(
+				"from Candidate c where c.id=:id")
+				.setParameter("id", existingCandidacy.getCandidate().getId())
+				.getSingleResult();
+
 			User loggedOn = getLoggedOn(authToken);
 			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 
-			// So far there are no fields to update!
+			validateCandidacy(existingCandidacy, cy);
+			updateSnapshot(existingCandidacy, cy);
 			return existingCandidacy;
 		} catch (PersistenceException e) {
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
@@ -119,7 +165,10 @@ public class CandidacyRESTService extends RESTService {
 			if (existingCandidacy == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 			}
-			Candidate cy = existingCandidacy.getCandidate();
+			Candidate cy = (Candidate) em.createQuery(
+				"from Candidate c where c.id=:id")
+				.setParameter("id", existingCandidacy.getCandidate().getId())
+				.getSingleResult();
 
 			User loggedOn = getLoggedOn(authToken);
 			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser().getId() != loggedOn.getId()) {
@@ -127,12 +176,23 @@ public class CandidacyRESTService extends RESTService {
 			}
 
 			//Do Delete:
+			//Since relationship isn't explicit, we need to do it manually.
+			CandidateCommittee cc = getCandidateCommittee(existingCandidacy);
+			em.remove(cc);
 			em.remove(existingCandidacy);
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		} catch (PersistenceException e) {
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
+	}
+	
+	private CandidateCommittee getCandidateCommittee(Candidacy c) {
+		return (CandidateCommittee) em.createQuery(
+				"from CandidateCommittee cc left join fetch cc.members " +
+					"where cc.candidacy=:candidacy")
+				.setParameter("candidacy", c)
+				.getSingleResult();
 	}
 
 	@GET
@@ -141,13 +201,12 @@ public class CandidacyRESTService extends RESTService {
 	public CandidateCommittee getCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		try {
 			Candidacy c = (Candidacy) em.createQuery(
-				"from Candidacy c left join fetch c.files " +
-					"where c.id=:id")
+				"from Candidacy c where c.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
 			Candidate cy = (Candidate) em.createQuery(
 				"from Candidate c where c.id=:id")
-				.setParameter("id", c.getCandidate())
+				.setParameter("id", c.getCandidate().getId())
 				.getSingleResult();
 
 			User loggedOn = getLoggedOn(authToken);
@@ -156,11 +215,7 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 
-			CandidateCommittee cc = (CandidateCommittee) em.createQuery(
-				"from CandidateCommittee cc left join fetch cc.members " +
-					"where cc.candidacy=:candidacy")
-				.setParameter("candidacy", c)
-				.getSingleResult();
+			CandidateCommittee cc = getCandidateCommittee(c);
 
 			em.flush();
 			return cc;
@@ -175,15 +230,17 @@ public class CandidacyRESTService extends RESTService {
 	@POST
 	@Path("/{id:[0-9][0-9]*}/committee")
 	@JsonView({SimpleCandidateCommitteeView.class})
-	public CandidateCommittee addToCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Professor p) {
+	public CandidateCommittee addToCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, CandidateCommitteeMembership ccm) {
 		try {
 			CandidateCommittee cc;
 			Candidacy c = (Candidacy) em.createQuery(
-				"from Candidacy c left join fetch c.files " +
-					"where c.id=:id")
+				"from Candidacy c where c.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
-			Candidate cy = c.getCandidate();
+			Candidate cy = (Candidate) em.createQuery(
+				"from Candidate c where c.id=:id")
+				.setParameter("id", c.getCandidate().getId())
+				.getSingleResult();
 
 			User loggedOn = getLoggedOn(authToken);
 			boolean ok = false;
@@ -205,18 +262,17 @@ public class CandidacyRESTService extends RESTService {
 			} catch (NoResultException e) {
 				cc = new CandidateCommittee();
 				cc.setCandidacy(c);
+				em.persist(cc);
 			}
 			if (cc.getMembers().size() >= CandidateCommittee.MAX_MEMBERS) {
 				throw new RestException(Status.CONFLICT, "max.members.exceeded");
 			}
-
-			Professor existingProfessor = em.find(Professor.class, p.getId());
-			if (existingProfessor == null) {
-				throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
+			for (CandidateCommitteeMembership ccmexisting: cc.getMembers()) {
+				if (ccmexisting.getEmail().equalsIgnoreCase(ccm.getEmail()))
+					throw new RestException(Status.CONFLICT, "error.candidacy.membership.email.already.exists");
 			}
-			em.persist(cc);
-			cc.addMember(existingProfessor);
 
+			cc.addMember(ccm);
 			em.flush();
 			return cc;
 
@@ -231,16 +287,18 @@ public class CandidacyRESTService extends RESTService {
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}/committee")
 	@JsonView({SimpleCandidateCommitteeView.class})
-	public CandidateCommittee removeFromCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Professor p) {
+	public CandidateCommittee removeFromCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, CandidateCommitteeMembership ccm) {
 		try {
 			CandidateCommittee cc;
 
 			Candidacy c = (Candidacy) em.createQuery(
-				"from Candidacy c left join fetch c.files " +
-					"where c.id=:id")
+				"from Candidacy c where c.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
-			Candidate cy = c.getCandidate();
+			Candidate cy = (Candidate) em.createQuery(
+				"from Candidate c where c.id=:id")
+				.setParameter("id", c.getCandidate().getId())
+				.getSingleResult();
 
 			User loggedOn = getLoggedOn(authToken);
 			boolean ok = false;
@@ -257,12 +315,8 @@ public class CandidacyRESTService extends RESTService {
 					"where cc.candidacy=:candidacy")
 				.setParameter("candidacy", c)
 				.getSingleResult();
-
-			Professor existingProfessor = em.find(Professor.class, p.getId());
-			if (existingProfessor == null) {
-				throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
-			}
-			CandidateCommitteeMembership removed = cc.removeMember(existingProfessor);
+			
+			CandidateCommitteeMembership removed = cc.removeMember(ccm.getId());
 			if (removed == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.candidate.committee.membership.id");
 			}
@@ -278,13 +332,13 @@ public class CandidacyRESTService extends RESTService {
 	}
 
 	@GET
-	@Path("/{id:[0-9][0-9]*}/committee/{professorId:[0-9][0-9]*}")
+	@Path("/{id:[0-9][0-9]*}/committee/{committeeid}")
 	@JsonView({SimpleCandidateCommitteeView.class})
 	public CandidateCommitteeMembership getCommitteeMembership(@HeaderParam(TOKEN_HEADER) String authToken,
-		@PathParam("id") long id, @PathParam("professorId") long professorId) {
+		@PathParam("id") long id, @PathParam("committeeid") long committeeId) {
 		CandidateCommittee cm = getCommittee(authToken, id);
 		for (CandidateCommitteeMembership ccm : cm.getMembers()) {
-			if (ccm.getProfessor().getId().equals(professorId)) {
+			if (ccm.getId().equals(committeeId)) {
 				return ccm;
 			}
 		}

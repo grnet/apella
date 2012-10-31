@@ -163,13 +163,12 @@ public class RoleRESTService extends RESTService {
 
 	@GET
 	@JsonView({DetailedRoleView.class})
-	public Collection<Role> getAll(@HeaderParam(TOKEN_HEADER) String authToken, @QueryParam("user") Long userID, @QueryParam("discriminator") String discriminators) {
+	public Collection<Role> getAll(@HeaderParam(TOKEN_HEADER) String authToken, @QueryParam("user") Long userID, @QueryParam("discriminator") String discriminators, @QueryParam("status") String statuses) {
 		getLoggedOn(authToken);
-
 		// Prepare Query
 		StringBuilder sb = new StringBuilder();
 		sb.append("select r from Role r " +
-			"where r.id is not null ");
+			"where r.status in (:statuses) ");
 		if (userID != null) {
 			sb.append("and r.user.id = :userID ");
 		}
@@ -178,6 +177,26 @@ public class RoleRESTService extends RESTService {
 		}
 		// Set Parameters
 		Query query = em.createQuery(sb.toString());
+		Set<RoleStatus> statusesList = new HashSet<RoleStatus>();
+		if (statuses != null) {
+			try {
+				for (String status : statuses.split(",")) {
+					if (status.equalsIgnoreCase("ALL")) {
+						for (RoleStatus st : RoleStatus.values()) {
+							statusesList.add(st);
+						}
+					} else {
+						statusesList.add(RoleStatus.valueOf(status));
+					}
+				}
+			} catch (IllegalArgumentException e) {
+				throw new RestException(Status.BAD_REQUEST, "bad.request");
+			}
+		} else {
+			//Default if no parameter given: ACTIVE only, not all
+			statusesList.add(RoleStatus.ACTIVE);
+		}
+		query.setParameter("statuses", statusesList);
 		if (userID != null) {
 			query = query.setParameter("userID", userID);
 		}
@@ -250,12 +269,33 @@ public class RoleRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !newRole.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (isIncompatibleRole(newRole, loggedOn.getRoles())) {
+		User existingUser = em.find(User.class, newRole.getUser().getId());
+		if (existingUser == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.id");
+		}
+		if (isIncompatibleRole(newRole, existingUser.getRoles())) {
 			throw new RestException(Status.CONFLICT, "incompatible.role");
 		}
 
 		// Update
 		try {
+			// Find if the same role already exists and is active.
+			// If it does, it should be made inactive.
+			Query query = em.createQuery("select r from Role r " +
+				"where r.status = :status " +
+				"and r.user.id = :userID " +
+				"and r.discriminator = :discriminator");
+			query.setParameter("status", RoleStatus.ACTIVE);
+			query.setParameter("userID", newRole.getUser().getId());
+			query.setParameter("discriminator", newRole.getDiscriminator());
+			List<Role> existingRoles = (List<Role>) query.getResultList();
+			for (Role existingRole : existingRoles) {
+				existingRole.setStatus(RoleStatus.INACTIVE);
+				existingRole.setStatusEndDate(new Date());
+			}
+
+			newRole.setStatusDate(new Date());
+			newRole.setId(null);
 			newRole = em.merge(newRole);
 			em.flush();
 			newRole.initializeCollections();
@@ -779,7 +819,7 @@ public class RoleRESTService extends RESTService {
 						"where im.status = :status " +
 						"and im.institution.id = :instituionId")
 						.setParameter("status", RoleStatus.ACTIVE)
-						.setParameter("instituionId", im.getInstitution().getId())
+						.setParameter("institutionId", im.getInstitution().getId())
 						.setMaxResults(1)
 						.getSingleResult();
 					throw new RestException(Status.CONFLICT, "exists.active.institution.manager");
@@ -792,12 +832,18 @@ public class RoleRESTService extends RESTService {
 		try {
 			primaryRole.setStatus(requestRole.getStatus());
 			primaryRole.setStatusDate(new Date());
+			if (requestRole.equals(RoleStatus.INACTIVE)) {
+				primaryRole.setStatusEndDate(new Date());
+			}
 			// Update all other roles of user (applicable for Professor->Candidate
 			for (Role otherRole : primaryRole.getUser().getRoles()) {
 				// TODO: Check if INACTIVE
-				if (otherRole != primaryRole) {
+				if (otherRole != primaryRole && otherRole.getStatus() != RoleStatus.INACTIVE) {
 					otherRole.setStatus(requestRole.getStatus());
 					otherRole.setStatusDate(new Date());
+					if (requestRole.equals(RoleStatus.INACTIVE)) {
+						otherRole.setStatusEndDate(new Date());
+					}
 				}
 			}
 			// Return result
