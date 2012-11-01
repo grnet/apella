@@ -5,6 +5,7 @@
 	  <li><a data-target="#committee"><%= $.i18n.prop('PositionCommittee') %></a></li>
 	  <li><a data-target="#evaluations"><%= $.i18n.prop('PositionEvaluations') %></a></li>
 	  <li><a data-target="#proposals"><%= $.i18n.prop('PositionProposals') %></a></li>
+	  <li><a data-target="#candidacies"><%= $.i18n.prop('PositionCandidacies') %></a></li>
 	  <li><a data-target="#nomination"><%= $.i18n.prop('PositionNomination') %></a></li>
 	  <li><a data-target="#rest"><%= $.i18n.prop('PositionLoipaDioikitikaEggrafa') %></a></li>
 	</ul>
@@ -130,6 +131,14 @@
 					<div class="controls">
 						<span id="eisigisiDEPYpopsifiouFileList"></span>
 					</div>
+				</div>
+			</fieldset>
+		</div>
+		<div class="tab-pane" id="candidacies">
+			<fieldset>
+				<div class="control-group">
+					<label class="control-label" for="positionCandidacyList"><%= $.i18n.prop('PositionCandidacyList') %>:</label>
+					<span id="positionCandidacyList"></span>
 				</div>
 			</fieldset>
 		</div>

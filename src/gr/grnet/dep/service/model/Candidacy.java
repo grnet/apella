@@ -22,8 +22,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
-
-import org.codehaus.jackson.map.annotate.JsonView;
+import javax.xml.bind.annotation.XmlTransient;
 
 @Entity
 public class Candidacy {
@@ -213,7 +212,7 @@ public class Candidacy {
 		this.date = date;
 	}
 
-	@JsonView({DetailedCandidacyView.class})
+	@XmlTransient
 	public Candidate getCandidate() {
 		return candidate;
 	}
@@ -222,7 +221,6 @@ public class Candidacy {
 		this.candidate = candidate;
 	}
 
-	@JsonView(DetailedCandidacyView.class)
 	public Position getPosition() {
 		return position;
 	}
@@ -237,6 +235,14 @@ public class Candidacy {
 
 	public void setSnapshot(CandidacySnapshot snapshot) {
 		this.snapshot = snapshot;
+	}
+
+	///////////////////////////////////////////////////////////////
+
+	public void initializeCollections() {
+		this.position.getFiles().size();
+		this.candidate.getFiles().size();
+		this.snapshot.getFiles().size();
 	}
 
 	public void initializeSnapshot() {

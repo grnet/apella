@@ -1,6 +1,8 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.model.Candidacy;
+import gr.grnet.dep.service.model.Candidacy.SimpleCandidacyView;
 import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.Position;
@@ -651,6 +653,24 @@ public class PositionRESTService extends RESTService {
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
+	}
+
+	@GET
+	@Path("/{id:[0-9][0-9]*}/candidacies")
+	@JsonView({SimpleCandidacyView.class})
+	public Set<Candidacy> getPositionCandidacies(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
+		User loggedOn = getLoggedOn(authToken);
+		Position position = getAndCheckPosition(loggedOn, positionId);
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+			!loggedOn.isDepartmentUser(position.getDepartment())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		for (Candidacy candidacy : position.getCandidacies()) {
+			candidacy.initializeCollections();
+		}
+		return position.getCandidacies();
 	}
 
 }

@@ -46,6 +46,15 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			}
 			return resp;
 		},
+		getRole : function(role) {
+			var self = this;
+			if (self.has("roles")) {
+				return _.find(self.get("roles"), function(r) {
+					return r.discriminator === role;
+				});
+			}
+			return undefined;
+		},
 		hasRole : function(role) {
 			var self = this;
 			if (self.has("roles")) {
@@ -844,6 +853,54 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		},
 		url : function() {
 			return "/dep/rest/professor/" + this.professor + "/committees";
+		}
+	});
+
+	Models.Candidacy = Backbone.Model.extend({
+		urlRoot : "/dep/rest/candidacy",
+		defaults : {
+			id : undefined,
+			permanent : undefined,
+			date : undefined,
+			position : {
+				id : undefined,
+				permanent : undefined,
+				name : undefined,
+				description : undefined,
+				department : undefined,
+				subject : undefined,
+				status : undefined,
+				fek : undefined,
+				fekSentDate : undefined,
+				openingDate : undefined,
+				closingDate : undefined
+			},
+			candidate : {
+				"id" : undefined
+			},
+			snapshot : {}
+		}
+	});
+
+	Models.CandidateCandidacies = Backbone.Collection.extend({
+		candidate : undefined,
+		model : Models.Candidacy,
+		initialize : function(models, options) {
+			this.candidate = options.candidate;
+		},
+		url : function() {
+			return "/dep/rest/candidate/" + this.candidate + "/candidacies";
+		}
+	});
+
+	Models.PositionCandidacies = Backbone.Collection.extend({
+		position : undefined,
+		model : Models.Candidacy,
+		initialize : function(models, options) {
+			this.position = options.position;
+		},
+		url : function() {
+			return "/dep/rest/position/" + this.position + "/candidacies";
 		}
 	});
 

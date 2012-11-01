@@ -46,7 +46,7 @@ public class CandidacyRESTService extends RESTService {
 	private Logger log;
 
 	@GET
-	@Path("/{id:[0-9][0-9]*}")
+	@Path("/{id:[0-9]+}")
 	@JsonView({DetailedCandidacyView.class})
 	public Candidacy get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		User loggedOn = getLoggedOn(authToken);
@@ -63,7 +63,7 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			// Initialize collections
-			candidacy.initializeSnapshot();
+			candidacy.initializeCollections();
 			return candidacy;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");

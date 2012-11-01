@@ -35,7 +35,7 @@ public class CandidateRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9]+}/candidacies")
 	@JsonView({DetailedCandidacyView.class})
-	public Collection<Candidacy> getCommittees(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long candidateId) {
+	public Collection<Candidacy> getCandidacies(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long candidateId) {
 		User loggedOn = getLoggedOn(authToken);
 		Candidate c = em.find(Candidate.class, candidateId);
 		if (c == null) {
@@ -45,6 +45,10 @@ public class CandidateRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		c.initializeCollections();
+
+		for (Candidacy cy : c.getCandidacies()) {
+			cy.initializeCollections();
+		}
 
 		return c.getCandidacies();
 	}
