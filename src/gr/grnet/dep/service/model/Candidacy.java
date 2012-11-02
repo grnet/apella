@@ -3,7 +3,6 @@ package gr.grnet.dep.service.model;
 import gr.grnet.dep.service.model.file.CandidacyFile;
 import gr.grnet.dep.service.model.file.CandidateFile;
 import gr.grnet.dep.service.model.file.FileBody;
-import gr.grnet.dep.service.model.file.FileHeader;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -35,7 +34,7 @@ public class Candidacy {
 
 	public static interface SimpleCandidacyView {
 	};
-	
+
 	public static interface DetailedCandidacyView extends SimpleCandidacyView {
 	};
 
@@ -45,6 +44,8 @@ public class Candidacy {
 
 	@Version
 	private int version;
+
+	private boolean permanent;
 
 	@NotNull
 	@Temporal(TemporalType.TIMESTAMP)
@@ -62,8 +63,8 @@ public class Candidacy {
 	@OneToMany(mappedBy = "candidacy", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<CandidacyEvaluator> proposedEvaluators = new HashSet<CandidacyEvaluator>();
 
-
 	static class CandidacySnapshot {
+
 		private String username;
 
 		@Embedded
@@ -73,15 +74,15 @@ public class Candidacy {
 		private BasicInformation basicInfoLatin = new BasicInformation();
 
 		@Embedded
-		@AttributeOverrides( {
-	        @AttributeOverride(name="email", column = @Column(unique = false) )
-		} )
+		@AttributeOverrides({
+			@AttributeOverride(name = "email", column = @Column(unique = false))
+		})
 		private ContactInformation contactInfo = new ContactInformation();
 
 		@ManyToMany
-		@JoinTable(inverseJoinColumns={@JoinColumn(name="files_id")})
+		@JoinTable(inverseJoinColumns = {@JoinColumn(name = "files_id")})
 		private Set<FileBody> files = new HashSet<FileBody>();
-		
+
 		// For ProfessorDomestic
 		@ManyToOne
 		private Institution institution;
@@ -99,10 +100,10 @@ public class Candidacy {
 
 		@ManyToOne
 		private Subject fekSubject;
-		
+
 		// For ProfessorForeign
 		private String institutionString;
-		
+
 		public String getUsername() {
 			return username;
 		}
@@ -110,7 +111,7 @@ public class Candidacy {
 		public void setUsername(String username) {
 			this.username = username;
 		}
-		
+
 		public BasicInformation getBasicInfo() {
 			return basicInfo;
 		}
@@ -118,7 +119,7 @@ public class Candidacy {
 		public void setBasicInfo(BasicInformation basicInfo) {
 			this.basicInfo = basicInfo;
 		}
-		
+
 		public BasicInformation getBasicInfoLatin() {
 			return basicInfoLatin;
 		}
@@ -126,7 +127,7 @@ public class Candidacy {
 		public void setBasicInfoLatin(BasicInformation basicInfoLatin) {
 			this.basicInfoLatin = basicInfoLatin;
 		}
-		
+
 		public ContactInformation getContactInfo() {
 			return contactInfo;
 		}
@@ -135,7 +136,6 @@ public class Candidacy {
 			this.contactInfo = contactInfo;
 		}
 
-
 		public Institution getInstitution() {
 			return institution;
 		}
@@ -143,7 +143,7 @@ public class Candidacy {
 		public void setInstitution(Institution institution) {
 			this.institution = institution;
 		}
-		
+
 		public Department getDepartment() {
 			return department;
 		}
@@ -151,7 +151,7 @@ public class Candidacy {
 		public void setDepartment(Department department) {
 			this.department = department;
 		}
-		
+
 		public Rank getRank() {
 			return rank;
 		}
@@ -159,7 +159,7 @@ public class Candidacy {
 		public void setRank(Rank rank) {
 			this.rank = rank;
 		}
-		
+
 		public Subject getSubject() {
 			return subject;
 		}
@@ -167,7 +167,7 @@ public class Candidacy {
 		public void setSubject(Subject subject) {
 			this.subject = subject;
 		}
-		
+
 		public String getFek() {
 			return fek;
 		}
@@ -175,7 +175,7 @@ public class Candidacy {
 		public void setFek(String fek) {
 			this.fek = fek;
 		}
-		
+
 		public Subject getFekSubject() {
 			return fekSubject;
 		}
@@ -183,7 +183,7 @@ public class Candidacy {
 		public void setFekSubject(Subject fekSubject) {
 			this.fekSubject = fekSubject;
 		}
-		
+
 		public String getInstitutionString() {
 			return institutionString;
 		}
@@ -200,6 +200,7 @@ public class Candidacy {
 		public void setFiles(Set<FileBody> files) {
 			this.files = files;
 		}
+
 		public void clearFiles() {
 			getFiles().clear();
 		}
@@ -207,14 +208,22 @@ public class Candidacy {
 		public void addFile(FileBody body) {
 			getFiles().add(body);
 		}
-		
+
 	}
-	
+
 	@Embedded
 	private CandidacySnapshot snapshot;
-	
+
 	public Long getId() {
 		return id;
+	}
+
+	public boolean isPermanent() {
+		return permanent;
+	}
+
+	public void setPermanent(boolean permanent) {
+		this.permanent = permanent;
 	}
 
 	public Date getDate() {
@@ -250,6 +259,7 @@ public class Candidacy {
 	public void setProposedEvaluators(Set<CandidacyEvaluator> proposedEvaluators) {
 		this.proposedEvaluators = proposedEvaluators;
 	}
+
 	public CandidacySnapshot getSnapshot() {
 		return snapshot;
 	}
@@ -258,7 +268,6 @@ public class Candidacy {
 		this.snapshot = snapshot;
 	}
 
-	
 	@XmlTransient
 	public Set<CandidacyFile> getFiles() {
 		return files;
@@ -292,32 +301,32 @@ public class Candidacy {
 		}
 		return result;
 	}
-	
+
 	public void clearSnapshot() {
 		if (snapshot != null) {
 			snapshot.clearFiles();
 		}
 		snapshot = new CandidacySnapshot();
 	}
-	
+
 	public void updateSnapshot(Candidate candidate) {
 		User user = candidate.getUser();
 		snapshot.setUsername(user.getUsername());
 		snapshot.setBasicInfo(user.getBasicInfo());
 		snapshot.setBasicInfoLatin(user.getBasicInfoLatin());
 		snapshot.setContactInfo(user.getContactInfo());
-		for (CandidateFile cf: candidate.getFiles()) {
+		for (CandidateFile cf : candidate.getFiles()) {
 			snapshot.addFile(cf.getCurrentBody());
 		}
 	}
-	
+
 	public void updateSnapshot(ProfessorDomestic professor) {
 		snapshot.setInstitution(professor.getInstitution());
 		snapshot.setDepartment(professor.getDepartment());
 		snapshot.setRank(professor.getRank());
 		snapshot.setSubject(professor.getSubject());
 		snapshot.setFek(professor.getFek());
-		snapshot.setFekSubject(professor.getFekSubject());		
+		snapshot.setFekSubject(professor.getFekSubject());
 	}
 
 	public void updateSnapshot(ProfessorForeign professor) {
