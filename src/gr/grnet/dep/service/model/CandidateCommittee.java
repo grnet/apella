@@ -16,10 +16,9 @@ import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 public class CandidateCommittee {
-	
+
 	public static final int MAX_MEMBERS = 2;
-	
-	
+
 	// define 3 json views
 	public static interface IdCandidateCommitteeView {
 	}; // shows only id view of a CandidateCommittee
@@ -29,13 +28,11 @@ public class CandidateCommittee {
 
 	public static interface DetailedCandidateCommitteeView extends SimpleCandidateCommitteeView {
 	};
-	
 
 	@Id
 	@GeneratedValue
 	private Long id;
 
-	@SuppressWarnings("unused")
 	@Version
 	private int version;
 
@@ -71,15 +68,13 @@ public class CandidateCommittee {
 		this.members = members;
 	}
 
-	
 	///////////////////////////////////////////////////////////////////////////////////////
 
-	
 	public void addMember(CandidateCommitteeMembership ccm) {
 		members.add(ccm);
 		ccm.setCandidateCommittee(this);
 	}
-	
+
 	public CandidateCommitteeMembership removeMember(Long id) {
 		CandidateCommitteeMembership removed = null;
 		Iterator<CandidateCommitteeMembership> it = getMembers().iterator();
@@ -92,5 +87,5 @@ public class CandidateCommittee {
 		}
 		return removed;
 	}
-	
+
 }

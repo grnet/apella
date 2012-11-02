@@ -33,7 +33,6 @@ public class Institution {
 	private String name;
 
 	@NotNull
-	@NotEmpty
 	@Enumerated(EnumType.STRING)
 	private UserRegistrationType registrationType = UserRegistrationType.SHIBBOLETH;
 

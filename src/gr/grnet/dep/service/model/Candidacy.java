@@ -10,7 +10,6 @@ import java.util.Set;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
-import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -24,6 +23,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 
@@ -40,7 +40,6 @@ public class Candidacy {
 	@GeneratedValue
 	private Long id;
 
-	@SuppressWarnings("unused")
 	@Version
 	private int version;
 
@@ -51,10 +50,8 @@ public class Candidacy {
 	@ManyToOne
 	private Candidate candidate;
 
-	// Inverse to Position
-	@Basic(optional = false)
-	@Column(name = "position_id")
-	private Long position;
+	@ManyToOne
+	private Position position;
 	
 	@ManyToOne
 	private FileHeader ekthesiAutoaksiologisis;
@@ -62,15 +59,19 @@ public class Candidacy {
 	
 	static class CandidacySnapshot {
 		private String username;
+
 		@Embedded
 		private BasicInformation basicInfo = new BasicInformation();
+
 		@Embedded
 		private BasicInformation basicInfoLatin = new BasicInformation();
+
 		@Embedded
 		@AttributeOverrides( {
 	        @AttributeOverride(name="email", column = @Column(unique = false) )
 		} )
 		private ContactInformation contactInfo = new ContactInformation();
+
 		@ManyToMany
 		@JoinTable(inverseJoinColumns={@JoinColumn(name="files_id")})
 		private Set<FileBody> files = new HashSet<FileBody>();
@@ -96,10 +97,10 @@ public class Candidacy {
 		// For ProfessorForeign
 		private String institutionString;
 		
-		
 		public String getUsername() {
 			return username;
 		}
+
 		public void setUsername(String username) {
 			this.username = username;
 		}
@@ -107,6 +108,7 @@ public class Candidacy {
 		public BasicInformation getBasicInfo() {
 			return basicInfo;
 		}
+
 		public void setBasicInfo(BasicInformation basicInfo) {
 			this.basicInfo = basicInfo;
 		}
@@ -114,6 +116,7 @@ public class Candidacy {
 		public BasicInformation getBasicInfoLatin() {
 			return basicInfoLatin;
 		}
+
 		public void setBasicInfoLatin(BasicInformation basicInfoLatin) {
 			this.basicInfoLatin = basicInfoLatin;
 		}
@@ -121,6 +124,7 @@ public class Candidacy {
 		public ContactInformation getContactInfo() {
 			return contactInfo;
 		}
+
 		public void setContactInfo(ContactInformation contactInfo) {
 			this.contactInfo = contactInfo;
 		}
@@ -128,6 +132,7 @@ public class Candidacy {
 		public Set<FileBody> getFiles() {
 			return files;
 		}
+
 		public void setFiles(Set<FileBody> files) {
 			this.files = files;
 		}		
@@ -135,6 +140,7 @@ public class Candidacy {
 		public Institution getInstitution() {
 			return institution;
 		}
+
 		public void setInstitution(Institution institution) {
 			this.institution = institution;
 		}
@@ -142,6 +148,7 @@ public class Candidacy {
 		public Department getDepartment() {
 			return department;
 		}
+
 		public void setDepartment(Department department) {
 			this.department = department;
 		}
@@ -149,6 +156,7 @@ public class Candidacy {
 		public Rank getRank() {
 			return rank;
 		}
+
 		public void setRank(Rank rank) {
 			this.rank = rank;
 		}
@@ -156,6 +164,7 @@ public class Candidacy {
 		public Subject getSubject() {
 			return subject;
 		}
+
 		public void setSubject(Subject subject) {
 			this.subject = subject;
 		}
@@ -163,6 +172,7 @@ public class Candidacy {
 		public String getFek() {
 			return fek;
 		}
+
 		public void setFek(String fek) {
 			this.fek = fek;
 		}
@@ -170,6 +180,7 @@ public class Candidacy {
 		public Subject getFekSubject() {
 			return fekSubject;
 		}
+
 		public void setFekSubject(Subject fekSubject) {
 			this.fekSubject = fekSubject;
 		}
@@ -177,26 +188,24 @@ public class Candidacy {
 		public String getInstitutionString() {
 			return institutionString;
 		}
+
 		public void setInstitutionString(String institutionString) {
 			this.institutionString = institutionString;
 		}
 		
-		
 		public void clearFiles() {
 			getFiles().clear();
 		}
+
 		public void addFile(FileBody body) {
 			getFiles().add(body);
 		}
 		
-
 	}
 	
 	@Embedded
 	private CandidacySnapshot snapshot;
 	
-	
-
 	public Long getId() {
 		return id;
 	}
@@ -209,7 +218,7 @@ public class Candidacy {
 		this.date = date;
 	}
 
-	@JsonView({DetailedCandidacyView.class})
+	@XmlTransient
 	public Candidate getCandidate() {
 		return candidate;
 	}
@@ -218,16 +227,14 @@ public class Candidacy {
 		this.candidate = candidate;
 	}
 
-	@JsonView(DetailedCandidacyView.class)
-	public Long getPosition() {
+	public Position getPosition() {
 		return position;
 	}
 
-	public void setPosition(Long position) {
+	public void setPosition(Position position) {
 		this.position = position;
 	}
 	
-	@JsonView(DetailedCandidacyView.class)
 	public CandidacySnapshot getSnapshot() {
 		return snapshot;
 	}
@@ -236,6 +243,7 @@ public class Candidacy {
 		this.snapshot = snapshot;
 	}
 	
+	///////////////////////////////////////////////////////////////
 	@JsonView(DetailedCandidacyView.class)
 	public FileHeader getEkthesiAutoaksiologisis() {
 		return ekthesiAutoaksiologisis;
@@ -243,6 +251,11 @@ public class Candidacy {
 
 	public void setEkthesiAutoaksiologisis(FileHeader ekthesiAutoaksiologisis) {
 		this.ekthesiAutoaksiologisis = ekthesiAutoaksiologisis;
+	}
+	public void initializeCollections() {
+		this.position.getFiles().size();
+		this.candidate.getFiles().size();
+		this.snapshot.getFiles().size();
 	}
 
 
@@ -252,8 +265,9 @@ public class Candidacy {
 	}
 	
 	public void clearSnapshot() {
-		if (snapshot!=null)
+		if (snapshot != null) {
 			snapshot.clearFiles();
+		}
 		snapshot = new CandidacySnapshot();
 	}
 	
@@ -266,7 +280,6 @@ public class Candidacy {
 		for (CandidateFile cf: candidate.getFiles()) {
 			snapshot.addFile(cf.getCurrentBody());
 		}
-		
 	}
 	
 	public void updateSnapshot(ProfessorDomestic professor) {
@@ -284,5 +297,4 @@ public class Candidacy {
 		snapshot.setSubject(professor.getSubject());
 	}
 
-	
 }

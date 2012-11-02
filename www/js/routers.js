@@ -303,7 +303,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			var self = this;
 
 			_.extend(self, Backbone.Events);
-			_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showAssistantsView", "showPositionView", "showRegisterView", "showProfessorCommitteesView", "start");
+			_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showInstitutionAssistantsView", "showMinistryAssistantsView", "showPositionView", "showRegisterView", "showProfessorCommitteesView", "showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "start");
 			$(document).ajaxStart(App.blockUI);
 			$(document).ajaxStop(App.unblockUI);
 
@@ -330,14 +330,22 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			"account" : "showAccountView",
 			"profile" : "showProfileView",
 			"profile/:roleId" : "showProfileView",
-			"assistants" : "showAssistantsView",
-			"assistants/:userId" : "showAssistantsView",
+			"iassistants" : "showInstitutionAssistantsView",
+			"iassistants/:userId" : "showInstitutionAssistantsView",
+			"massistants" : "showMinistryAssistantsView",
+			"massistants/:userId" : "showMinistryAssistantsView",
 			"position" : "showPositionView",
 			"position/:positionId" : "showPositionView",
 			"register" : "showRegisterView",
 			"register/:registerId" : "showRegisterView",
 			"requests" : "showRequestsView",
-			"professorCommittees" : "showProfessorCommitteesView"
+			"professorCommittees" : "showProfessorCommitteesView",
+			"regulatoryframework" : "showInstitutionRegulatoryFrameworkView",
+			"regulatoryframework/:institutionId" : "showInstitutionRegulatoryFrameworkView",
+			"sposition" : "showPositionSearchView",
+			"sposition/:query" : "showPositionSearchView",
+			"candidateCandidacies" : "showCandidateCandidacyView",
+			"candidateCandidacies/:candidacyId" : "showCandidateCandidacyView"
 		},
 
 		start : function(eventName, authToken) {
@@ -487,7 +495,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			self.currentView = rolesView;
 		},
 
-		showAssistantsView : function(userId) {
+		showInstitutionAssistantsView : function(userId) {
 			var self = this;
 			var accountView = undefined;
 			var userRoleInfoView = undefined;
@@ -507,7 +515,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					$("#content").empty();
 
 					// Add
-					self.refreshBreadcrumb([ $.i18n.prop('menu_assistants'), user.get("username") ]);
+					self.refreshBreadcrumb([ $.i18n.prop('menu_iassistants'), user.get("username") ]);
 
 					userRoleInfoView = new Views.UserRoleInfoView({
 						model : user
@@ -519,29 +527,91 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					$("#content").append(accountView.render().el);
 
 					if (!_.isUndefined(user.id)) {
-						self.navigate("assistants/" + user.id, {
+						self.navigate("iassistants/" + user.id, {
 							trigger : false
 						});
 					} else {
-						self.navigate("assistants", {
+						self.navigate("iassistants", {
 							trigger : false
 						});
 					}
 				}
 			}, this);
 
-			var assistantsView = new Views.AssistantListView({
+			var assistantsView = new Views.InstitutionAssistantListView({
 				collection : assistants
 			});
-			self.refreshBreadcrumb([ $.i18n.prop('menu_assistants') ]);
+			self.refreshBreadcrumb([ $.i18n.prop('menu_iassistants') ]);
 			$("#featured").append(assistantsView.el);
 
 			assistants.fetch({
 				cache : false,
 				data : {
-					manager : _.find(App.loggedOnUser.get("roles"), function(role) {
-						return role.discriminator === "INSTITUTION_MANAGER";
-					}).id
+					im : App.loggedOnUser.getRole("INSTITUTION_MANAGER").id
+				},
+				success : function() {
+					if (!_.isUndefined(userId)) {
+						assistants.trigger("user:selected", assistants.get(userId));
+					}
+				}
+			});
+
+			self.currentView = assistantsView;
+		},
+
+		showMinistryAssistantsView : function(userId) {
+			var self = this;
+			var accountView = undefined;
+			var userRoleInfoView = undefined;
+			self.clear();
+
+			var assistants = new Models.Users();
+			assistants.on("user:selected", function(user) {
+				if (user) {
+					// Clean up
+					if (accountView) {
+						accountView.close();
+					}
+					if (userRoleInfoView) {
+						userRoleInfoView.close();
+					}
+					$("#content").unbind();
+					$("#content").empty();
+
+					// Add
+					self.refreshBreadcrumb([ $.i18n.prop('menu_massistants'), user.get("username") ]);
+
+					userRoleInfoView = new Views.UserRoleInfoView({
+						model : user
+					});
+					$("#content").append(userRoleInfoView.render().el);
+					accountView = new Views.AssistantAccountView({
+						model : user
+					});
+					$("#content").append(accountView.render().el);
+
+					if (!_.isUndefined(user.id)) {
+						self.navigate("massistants/" + user.id, {
+							trigger : false
+						});
+					} else {
+						self.navigate("massistants", {
+							trigger : false
+						});
+					}
+				}
+			}, this);
+
+			var assistantsView = new Views.MinistryAssistantListView({
+				collection : assistants
+			});
+			self.refreshBreadcrumb([ $.i18n.prop('menu_massistants') ]);
+			$("#featured").append(assistantsView.el);
+
+			assistants.fetch({
+				cache : false,
+				data : {
+					mm : App.loggedOnUser.getRole("MINISTRY_MANAGER").id
 				},
 				success : function() {
 					if (!_.isUndefined(userId)) {
@@ -700,7 +770,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 		showProfessorCommitteesView : function() {
 			var self = this;
 			var professorCommittees = new Models.ProfessorCommittees({}, {
-				professor : App.loggedOnUser.get("roles")[0].id
+				professor : App.loggedOnUser.hasRole("PROFESSOR_DOMESTIC") ? App.loggedOnUser.getRole("PROFESSOR_DOMESTIC").id : App.loggedOnUser.getRole("PROFESSOR_FOREGIN").id
 			});
 			var professorCommitteesView = new Views.ProfessorCommitteesView({
 				collection : professorCommittees
@@ -721,8 +791,147 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				}
 			});
 
-			this.currentView = professorCommitteesView;
+			self.currentView = professorCommitteesView;
+		},
+
+		showInstitutionRegulatoryFrameworkView : function(institutionId) {
+			var self = this;
+			var institution = new Models.Institution({
+				id : institutionId ? institutionId : App.loggedOnUser.getAssociatedInstitutions()[0].id
+			});
+			var irfView = App.loggedOnUser.isAssociatedWithInstitution(institution) ? new Views.InstitutionRegulatoryFrameworkEditView({
+				model : institution
+			}) : new Views.InstitutionRegulatoryFrameworkView({
+				model : institution
+			});
+			self.clear();
+			self.refreshBreadcrumb([ $.i18n.prop('menu_regulatoryframework') ]);
+			$("#content").html(irfView.el);
+
+			institution.fetch({
+				cache : true,
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+			self.currentView = irfView;
+		},
+
+		showPositionSearchView : function(query) {
+			var self = this;
+			self.clear();
+
+			var positions = new Models.Positions();
+			positions.url = positions.url + "/search";
+			positions.on("position:selected", function(position) {
+				if (position) {
+					var newCandidacy = new Models.Candidacy();
+					newCandidacy.save({
+						candidate : App.loggedOnUser.getRole("CANDIDATE"),
+						position : position.toJSON()
+					}, {
+						wait : true,
+						success : function(model, resp) {
+							App.router.navigate("candidateCandidacies/" + self.model.id, {
+								trigger : false
+							});
+							var popup = new Views.PopupView({
+								type : "success",
+								message : $.i18n.prop("Success")
+							});
+							popup.show();
+						},
+						error : function(model, resp, options) {
+							var popup = new Views.PopupView({
+								type : "error",
+								message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+							});
+							popup.show();
+						}
+					});
+				}
+			}, this);
+			var positionSearchView = new Views.PositionSearchView({
+				"query" : query ? JSON.parse(decodeURI(query)) : undefined,
+				collection : positions
+			});
+			self.refreshBreadcrumb([ $.i18n.prop('menu_sposition') ]);
+			$("#content").append(positionSearchView.el);
+			if (query) {
+				positions.fetch({
+					cache : false,
+					data : JSON.parse(decodeURI(query))
+				});
+			} else {
+				positions.fetch({
+					cache : false
+				});
+			}
+			self.currentView = positionSearchView;
+		},
+
+		showCandidateCandidacyView : function(candidacyId) {
+			var self = this;
+			var candidacyEditView = undefined;
+			var candidateCandidacies = new Models.CandidateCandidacies({}, {
+				candidate : App.loggedOnUser.getRole("CANDIDATE").id
+			});
+			var candidateCandidacyListView = new Views.CandidateCandidacyListView({
+				collection : candidateCandidacies
+			});
+			candidateCandidacies.on("candidacy:selected", function(candidacy) {
+				if (candidacyEditView) {
+					candidacyEditView.close();
+				}
+				// Select Edit or Simple View based on loggedOnUser
+				candidacyEditView = new Views.CandidacyEditView({
+					model : candidacy
+				});
+				// Update history
+				App.router.navigate("candidateCandidacies/" + candidacy.id, {
+					trigger : false
+				});
+
+				self.refreshBreadcrumb([ $.i18n.prop('menu_candidateCandidacies'), candidacy.id ]);
+				$("#content").unbind();
+				$("#content").empty();
+				$("#content").html(candidacyEditView.el);
+
+				candidacy.fetch({
+					cache : false,
+					success : function() {
+						candidacy.trigger("change");
+					}
+				});
+			});
+
+			self.clear();
+			self.refreshBreadcrumb([ $.i18n.prop('menu_candidateCandidacies') ]);
+			$("#featured").html(candidateCandidacyListView.el);
+
+			// Refresh candidateCandidacies from server
+			candidateCandidacies.fetch({
+				cache : false,
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				},
+				success : function() {
+					if (!_.isUndefined(candidacyId)) {
+						candidateCandidacies.trigger("candidacy:selected", candidateCandidacies.get(candidacyId));
+					}
+				}
+			});
+			self.currentView = candidateCandidacyListView;
 		}
+
 	});
 
 	return Routers;

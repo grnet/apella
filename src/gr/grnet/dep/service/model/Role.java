@@ -37,6 +37,7 @@ import org.codehaus.jackson.map.annotate.JsonView;
 	@JsonSubTypes.Type(value = InstitutionManager.class, name = "INSTITUTION_MANAGER"),
 	@JsonSubTypes.Type(value = InstitutionAssistant.class, name = "INSTITUTION_ASSISTANT"),
 	@JsonSubTypes.Type(value = MinistryManager.class, name = "MINISTRY_MANAGER"),
+	@JsonSubTypes.Type(value = MinistryAssistant.class, name = "MINISTRY_ASSISTANT"),
 	@JsonSubTypes.Type(value = Candidate.class, name = "CANDIDATE"),
 	@JsonSubTypes.Type(value = Administrator.class, name = "ADMINISTRATOR")
 })
@@ -54,6 +55,7 @@ public abstract class Role implements Serializable {
 		INSTITUTION_MANAGER,
 		INSTITUTION_ASSISTANT,
 		MINISTRY_MANAGER,
+		MINISTRY_ASSISTANT,
 		CANDIDATE,
 		ADMINISTRATOR
 	};
@@ -138,10 +140,6 @@ public abstract class Role implements Serializable {
 
 	public void setUser(User user) {
 		this.user = user;
-	}
-
-	public boolean isPrimary() {
-		return this.getDiscriminator().equals(getUser().getPrimaryRole());
 	}
 
 	//////////////////////////////////////////////////////////

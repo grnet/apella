@@ -17,6 +17,9 @@
 <% if (role.discriminator === "MINISTRY_MANAGER") { %>
 <%= $.i18n.prop('MINISTRY_MANAGER') %>,<br/><%= $.i18n.prop('Ministry') %>: <%= role.ministry %>
 <% } %>
+<% if (role.discriminator === "MINISTRY_ASSISTANT") { %>
+<%= $.i18n.prop('MINISTRY_ASSISTANT') %>
+<% } %>
 <% if (role.discriminator === "CANDIDATE") { %>
 <%= $.i18n.prop('CANDIDATE') %>
 <% } %>

@@ -132,7 +132,17 @@
 		<dt><%= $.i18n.prop('Ministry') %></dt>
 		<dd><%= ministry %></dd>
 	</dl>
+</div> <% if (discriminator === "MINISTRY_ASSISTANT") { %>
+<div id="MINISTRY_ASSISTANT">
+	<h4><%= $.i18n.prop('MINISTRY_ASSISTANT') %></h4>
+	<dl class="dl-horizontal">
+		<dt><%= $.i18n.prop('RoleStatus') %></dt>
+		<dd><%= $.i18n.prop('status' + status) %></dd>
+		<dt><%= $.i18n.prop('Ministry') %></dt>
+		<dd><%= ministry %></dd>
+	</dl>
 </div>
+<% } %>
 <% } %> <% if (discriminator === "CANDIDATE") { %>
 <div id="CANDIDATE">
 	<h4><%= $.i18n.prop('CANDIDATE') %></h4>

@@ -3,7 +3,6 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
-import gr.grnet.dep.service.model.Candidacy.SimpleCandidacyView;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.CandidateCommittee;
 import gr.grnet.dep.service.model.CandidateCommittee.SimpleCandidateCommitteeView;
@@ -17,6 +16,9 @@ import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.file.CandidateFile;
 import gr.grnet.dep.service.model.file.FileBody;
+import gr.grnet.dep.service.model.file.FileHeader;
+import gr.grnet.dep.service.model.Role.RoleStatus;
+import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.file.InstitutionFile;
@@ -69,7 +71,7 @@ public class CandidacyRESTService extends RESTService {
 	private Logger log;
 
 	@GET
-	@Path("/{id:[0-9][0-9]*}")
+	@Path("/{id:[0-9]+}")
 	@JsonView({DetailedCandidacyView.class})
 	public Candidacy get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		User loggedOn = getLoggedOn(authToken);
@@ -86,7 +88,7 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			// Initialize collections
-			candidacy.initializeSnapshot();
+			candidacy.initializeCollections();
 			return candidacy;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
@@ -94,19 +96,25 @@ public class CandidacyRESTService extends RESTService {
 	}
 
 	/**
-	 * Check that a (possible) Candidacy passes some basic checks before creation / update.
+	 * Check that a (possible) Candidacy passes some basic checks before
+	 * creation / update.
 	 * 
 	 * @param candidacy
 	 * @param candidate
 	 */
 	private void validateCandidacy(Candidacy candidacy, Candidate candidate) {
-		if (candidate.getFilesOfType(FileType.DIMOSIEYSI).size()==0)
+		if (!candidate.getStatus().equals(RoleStatus.ACTIVE)) {
+			throw new RestException(Status.CONFLICT, "validation.candidacy.inactive.role");
+		}
+		if (FileHeader.filter(candidate.getFiles(), FileType.DIMOSIEYSI).size() == 0) {
 			throw new RestException(Status.CONFLICT, "validation.candidacy.no.dimosieysi");
-		if (candidate.getFilesOfType(FileType.PTYXIO).size()==0)
+		}
+		if (FileHeader.filter(candidate.getFiles(), FileType.PTYXIO).size() == 0) {
 			throw new RestException(Status.CONFLICT, "validation.candidacy.no.ptyxio");
-		if (candidate.getFilesOfType(FileType.BIOGRAFIKO).size()==0)
+		}
+		if (FileHeader.filter(candidate.getFiles(), FileType.BIOGRAFIKO).size() == 0) {
 			throw new RestException(Status.CONFLICT, "validation.candidacy.no.cv");
-		
+	}
 	}
 	
 	/**
@@ -121,14 +129,15 @@ public class CandidacyRESTService extends RESTService {
 		User user = candidate.getUser();
 		ProfessorDomestic professorDomestic = (ProfessorDomestic) user.getRole(RoleDiscriminator.PROFESSOR_DOMESTIC);
 		ProfessorForeign professorForeign = (ProfessorForeign) user.getRole(RoleDiscriminator.PROFESSOR_FOREIGN);
-		if (professorDomestic!=null)
+		if (professorDomestic != null) {
 			candidacy.updateSnapshot(professorDomestic);
-		else if (professorForeign!=null)
+		} else if (professorForeign != null) {
 			candidacy.updateSnapshot(professorForeign);
+	}
 	}
 	
 	@POST
-	@JsonView({SimpleCandidacyView.class})
+	@JsonView({DetailedCandidacyView.class})
 	public Candidacy create(@HeaderParam(TOKEN_HEADER) String authToken, Candidacy candidacy) {
 		try {
 			Candidate cy = (Candidate) em.createQuery(
@@ -140,8 +149,8 @@ public class CandidacyRESTService extends RESTService {
 			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
+
 			candidacy.setDate(new Date());
-			
 			validateCandidacy(candidacy, cy);
 			updateSnapshot(candidacy, cy);
 
@@ -156,7 +165,7 @@ public class CandidacyRESTService extends RESTService {
 
 	@PUT
 	@Path("/{id:[0-9][0-9]*}")
-	@JsonView({SimpleCandidacyView.class})
+	@JsonView({DetailedCandidacyView.class})
 	public Candidacy update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Candidacy candidacy) {
 		try {
 			Candidacy existingCandidacy = em.find(Candidacy.class, id);

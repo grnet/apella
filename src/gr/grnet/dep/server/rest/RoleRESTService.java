@@ -116,39 +116,46 @@ public class RoleRESTService extends RESTService {
 		aSet.add(new RolePair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.INSTITUTION_ASSISTANT));
 		aSet.add(new RolePair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.INSTITUTION_MANAGER));
 		aSet.add(new RolePair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.MINISTRY_MANAGER));
+		aSet.add(new RolePair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.MINISTRY_ASSISTANT));
 		aSet.add(new RolePair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.PROFESSOR_DOMESTIC));
 		aSet.add(new RolePair(RoleDiscriminator.ADMINISTRATOR, RoleDiscriminator.PROFESSOR_FOREIGN));
 		// CANDIDATE
 		aSet.add(new RolePair(RoleDiscriminator.CANDIDATE, RoleDiscriminator.INSTITUTION_MANAGER));
 		aSet.add(new RolePair(RoleDiscriminator.CANDIDATE, RoleDiscriminator.INSTITUTION_ASSISTANT));
 		aSet.add(new RolePair(RoleDiscriminator.CANDIDATE, RoleDiscriminator.MINISTRY_MANAGER));
+		aSet.add(new RolePair(RoleDiscriminator.CANDIDATE, RoleDiscriminator.MINISTRY_ASSISTANT));
 		// INSTITUTION_MANAGER
 		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_MANAGER, RoleDiscriminator.CANDIDATE));
 		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_MANAGER, RoleDiscriminator.PROFESSOR_DOMESTIC));
 		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_MANAGER, RoleDiscriminator.PROFESSOR_FOREIGN));
 		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_MANAGER, RoleDiscriminator.INSTITUTION_ASSISTANT));
 		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_MANAGER, RoleDiscriminator.MINISTRY_MANAGER));
+		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_MANAGER, RoleDiscriminator.MINISTRY_ASSISTANT));
 		// INSTITUTION_ASSISTANT
 		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_ASSISTANT, RoleDiscriminator.CANDIDATE));
 		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_ASSISTANT, RoleDiscriminator.PROFESSOR_DOMESTIC));
 		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_ASSISTANT, RoleDiscriminator.PROFESSOR_FOREIGN));
 		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_ASSISTANT, RoleDiscriminator.INSTITUTION_MANAGER));
 		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_ASSISTANT, RoleDiscriminator.MINISTRY_MANAGER));
+		aSet.add(new RolePair(RoleDiscriminator.INSTITUTION_ASSISTANT, RoleDiscriminator.MINISTRY_ASSISTANT));
 		// MINISTRY_MANAGER
 		aSet.add(new RolePair(RoleDiscriminator.MINISTRY_MANAGER, RoleDiscriminator.CANDIDATE));
 		aSet.add(new RolePair(RoleDiscriminator.MINISTRY_MANAGER, RoleDiscriminator.PROFESSOR_DOMESTIC));
 		aSet.add(new RolePair(RoleDiscriminator.MINISTRY_MANAGER, RoleDiscriminator.PROFESSOR_FOREIGN));
 		aSet.add(new RolePair(RoleDiscriminator.MINISTRY_MANAGER, RoleDiscriminator.INSTITUTION_MANAGER));
 		aSet.add(new RolePair(RoleDiscriminator.MINISTRY_MANAGER, RoleDiscriminator.INSTITUTION_ASSISTANT));
+		aSet.add(new RolePair(RoleDiscriminator.MINISTRY_MANAGER, RoleDiscriminator.MINISTRY_ASSISTANT));
 		// PROFESSOR_DOMESTIC
 		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_DOMESTIC, RoleDiscriminator.INSTITUTION_ASSISTANT));
 		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_DOMESTIC, RoleDiscriminator.INSTITUTION_MANAGER));
 		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_DOMESTIC, RoleDiscriminator.MINISTRY_MANAGER));
+		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_DOMESTIC, RoleDiscriminator.MINISTRY_ASSISTANT));
 		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_DOMESTIC, RoleDiscriminator.PROFESSOR_FOREIGN));
 		// PROFESSOR_FOREIGN
 		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_FOREIGN, RoleDiscriminator.INSTITUTION_ASSISTANT));
 		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_FOREIGN, RoleDiscriminator.INSTITUTION_MANAGER));
 		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_FOREIGN, RoleDiscriminator.MINISTRY_MANAGER));
+		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_FOREIGN, RoleDiscriminator.MINISTRY_ASSISTANT));
 		aSet.add(new RolePair(RoleDiscriminator.PROFESSOR_FOREIGN, RoleDiscriminator.PROFESSOR_DOMESTIC));
 
 		forbiddenPairs = Collections.unmodifiableSet(aSet);
@@ -156,10 +163,8 @@ public class RoleRESTService extends RESTService {
 
 	@GET
 	@JsonView({DetailedRoleView.class})
-	public Collection<Role> getAll(@HeaderParam(TOKEN_HEADER) String authToken, @QueryParam("user") Long userID, @QueryParam("discriminator") String discriminators,
-				@QueryParam("status") String statuses) {
+	public Collection<Role> getAll(@HeaderParam(TOKEN_HEADER) String authToken, @QueryParam("user") Long userID, @QueryParam("discriminator") String discriminators, @QueryParam("status") String statuses) {
 		getLoggedOn(authToken);
-
 		// Prepare Query
 		StringBuilder sb = new StringBuilder();
 		sb.append("select r from Role r " +
@@ -180,15 +185,15 @@ public class RoleRESTService extends RESTService {
 						for (RoleStatus st : RoleStatus.values()) {
 							statusesList.add(st);
 						}
-					}
-					else
+					} else {
 						statusesList.add(RoleStatus.valueOf(status));
+					}
 				}
 			} catch (IllegalArgumentException e) {
 				throw new RestException(Status.BAD_REQUEST, "bad.request");
 			}
-		}
-		else { //Default if no parameter given: ACTIVE only, not all
+		} else {
+			//Default if no parameter given: ACTIVE only, not all
 			statusesList.add(RoleStatus.ACTIVE);
 		}
 		query.setParameter("statuses", statusesList);
@@ -210,6 +215,7 @@ public class RoleRESTService extends RESTService {
 		// Execute
 		List<Role> roles = query.getResultList();
 		for (Role r : roles) {
+			r.getUser().getPrimaryRole();
 			r.initializeCollections();
 		}
 		return roles;
@@ -248,6 +254,8 @@ public class RoleRESTService extends RESTService {
 			"from Role r where r.id=:id")
 			.setParameter("id", id)
 			.getSingleResult();
+
+		r.getUser().getPrimaryRole();
 		r.initializeCollections();
 		return r;
 	}
@@ -274,9 +282,9 @@ public class RoleRESTService extends RESTService {
 			// Find if the same role already exists and is active.
 			// If it does, it should be made inactive.
 			Query query = em.createQuery("select r from Role r " +
-						"where r.status = :status " +
-						"and r.user.id = :userID " +
-						"and r.discriminator = :discriminator");
+				"where r.status = :status " +
+				"and r.user.id = :userID " +
+				"and r.discriminator = :discriminator");
 			query.setParameter("status", RoleStatus.ACTIVE);
 			query.setParameter("userID", newRole.getUser().getId());
 			query.setParameter("discriminator", newRole.getDiscriminator());
@@ -285,7 +293,7 @@ public class RoleRESTService extends RESTService {
 				existingRole.setStatus(RoleStatus.INACTIVE);
 				existingRole.setStatusEndDate(new Date());
 			}
-			
+
 			newRole.setStatusDate(new Date());
 			newRole.setId(null);
 			newRole = em.merge(newRole);
@@ -437,6 +445,7 @@ public class RoleRESTService extends RESTService {
 			!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
 			!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
 			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -470,6 +479,7 @@ public class RoleRESTService extends RESTService {
 			!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
 			!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
 			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -507,6 +517,7 @@ public class RoleRESTService extends RESTService {
 			!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
 			!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
 			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -787,19 +798,22 @@ public class RoleRESTService extends RESTService {
 	@JsonView({DetailedRoleView.class})
 	public Role updateStatus(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Role requestRole) {
 		User loggedOn = getLoggedOn(authToken);
-		Role existingRole = em.find(Role.class, id);
+		Role primaryRole = em.find(Role.class, id);
 		// Validate
-		if (existingRole == null) {
+		if (primaryRole == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.role.id");
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+		if (!primaryRole.getDiscriminator().equals(primaryRole.getUser().getPrimaryRole())) {
+			throw new RestException(Status.CONFLICT, "not.primary.role");
+		}
 		//Validate Change
-		if (existingRole instanceof InstitutionManager) {
+		if (primaryRole instanceof InstitutionManager) {
 			if (requestRole.getStatus().equals(RoleStatus.ACTIVE)) {
 				try {
-					InstitutionManager im = (InstitutionManager) existingRole;
+					InstitutionManager im = (InstitutionManager) primaryRole;
 					// Check if exists active IM for same Institution:
 					em.createQuery("select im from InstitutionManager im " +
 						"where im.status = :status " +
@@ -816,12 +830,25 @@ public class RoleRESTService extends RESTService {
 
 		// Update
 		try {
-			// Update Status
-			existingRole.setStatus(requestRole.getStatus());
-			if (requestRole.equals(RoleStatus.INACTIVE))
-				existingRole.setStatusEndDate(new Date());
-			existingRole.initializeCollections();
-			return existingRole;
+			primaryRole.setStatus(requestRole.getStatus());
+			primaryRole.setStatusDate(new Date());
+			if (requestRole.equals(RoleStatus.INACTIVE)) {
+				primaryRole.setStatusEndDate(new Date());
+			}
+			// Update all other roles of user (applicable for Professor->Candidate
+			for (Role otherRole : primaryRole.getUser().getRoles()) {
+				// TODO: Check if INACTIVE
+				if (otherRole != primaryRole && otherRole.getStatus() != RoleStatus.INACTIVE) {
+					otherRole.setStatus(requestRole.getStatus());
+					otherRole.setStatusDate(new Date());
+					if (requestRole.equals(RoleStatus.INACTIVE)) {
+						otherRole.setStatusEndDate(new Date());
+					}
+				}
+			}
+			// Return result
+			primaryRole.initializeCollections();
+			return primaryRole;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();

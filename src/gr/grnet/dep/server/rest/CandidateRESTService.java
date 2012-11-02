@@ -1,9 +1,9 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.model.PositionCommitteeMember;
-import gr.grnet.dep.service.model.PositionCommitteeMember.ProfessorCommitteesView;
-import gr.grnet.dep.service.model.Professor;
+import gr.grnet.dep.service.model.Candidacy;
+import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
+import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
@@ -22,9 +22,9 @@ import javax.ws.rs.core.Response.Status;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 
-@Path("/professor")
+@Path("/candidate")
 @Stateless
-public class ProfessorRESTService extends RESTService {
+public class CandidateRESTService extends RESTService {
 
 	@Inject
 	private Logger log;
@@ -33,19 +33,24 @@ public class ProfessorRESTService extends RESTService {
 	private EntityManager em;
 
 	@GET
-	@Path("/{id:[0-9]+}/committees")
-	@JsonView({ProfessorCommitteesView.class})
-	public Collection<PositionCommitteeMember> getCommittees(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long professorId) {
+	@Path("/{id:[0-9]+}/candidacies")
+	@JsonView({DetailedCandidacyView.class})
+	public Collection<Candidacy> getCandidacies(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long candidateId) {
 		User loggedOn = getLoggedOn(authToken);
-		Professor p = em.find(Professor.class, professorId);
-		if (p == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
+		Candidate c = em.find(Candidate.class, candidateId);
+		if (c == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.candidate.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !p.getUser().getId().equals(loggedOn.getId())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !c.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		p.initializeCollections();
-		return p.getCommittees();
+		c.initializeCollections();
+
+		for (Candidacy cy : c.getCandidacies()) {
+			cy.initializeCollections();
+		}
+
+		return c.getCandidacies();
 	}
 
 }
