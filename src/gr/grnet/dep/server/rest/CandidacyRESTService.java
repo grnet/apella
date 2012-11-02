@@ -172,8 +172,10 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 
+			existingCandidacy.copyFrom(candidacy);
 			validateCandidacy(existingCandidacy, candidate);
 			updateSnapshot(existingCandidacy, candidate);
+			existingCandidacy.initializeCollections();
 			return existingCandidacy;
 		} catch (PersistenceException e) {
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
