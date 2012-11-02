@@ -223,7 +223,6 @@ public class CandidacyRESTService extends RESTService {
 			validateCandidacy(existingCandidacy, candidate);
 
 			// Update
-			existingCandidacy.copyFrom(candidacy);
 			existingCandidacy.setProposedEvaluators(candidacy.getProposedEvaluators());
 			updateSnapshot(existingCandidacy, candidate);
 			existingCandidacy.setPermanent(true);

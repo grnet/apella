@@ -301,15 +301,8 @@ public class Candidacy {
 		}
 		return result;
 	}
-<<<<<<< HEAD
 	
-	public void copyFrom(Candidacy c) {
-		setDate(c.getDate());
-	}
-	
-=======
 
->>>>>>> 6f502828b44400793144e6898883927861b070cd
 	public void clearSnapshot() {
 		if (snapshot != null) {
 			snapshot.clearFiles();
