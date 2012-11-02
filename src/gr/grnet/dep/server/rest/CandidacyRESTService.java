@@ -4,18 +4,24 @@ import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
 import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.CandidateCommittee;
-import gr.grnet.dep.service.model.CandidateCommittee.SimpleCandidateCommitteeView;
-import gr.grnet.dep.service.model.CandidateCommitteeMembership;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.ProfessorForeign;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.model.file.CandidacyFile;
+import gr.grnet.dep.service.model.file.CandidateFile;
+import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
+import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 
+import java.io.IOException;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
@@ -24,6 +30,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -31,8 +39,15 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
 import org.codehaus.jackson.map.annotate.JsonView;
 
 @Path("/candidacy")
@@ -114,25 +129,25 @@ public class CandidacyRESTService extends RESTService {
 	@POST
 	@JsonView({DetailedCandidacyView.class})
 	public Candidacy create(@HeaderParam(TOKEN_HEADER) String authToken, Candidacy candidacy) {
+		User loggedOn = getLoggedOn(authToken);
 		try {
-			Candidate cy = (Candidate) em.createQuery(
+			Candidate candidate = (Candidate) em.createQuery(
 				"from Candidate c where c.id=:id")
 				.setParameter("id", candidacy.getCandidate().getId())
 				.getSingleResult();
-
-			User loggedOn = getLoggedOn(authToken);
-			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser().getId() != loggedOn.getId()) {
+			if (candidate.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
-
 			candidacy.setDate(new Date());
-			validateCandidacy(candidacy, cy);
-			updateSnapshot(candidacy, cy);
+			validateCandidacy(candidacy, candidate);
+			updateSnapshot(candidacy, candidate);
 
 			em.persist(candidacy);
+
+			candidacy.initializeCollections();
 			return candidacy;
 		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.candidate.id");
 		} catch (PersistenceException e) {
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
@@ -142,23 +157,23 @@ public class CandidacyRESTService extends RESTService {
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedCandidacyView.class})
 	public Candidacy update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Candidacy candidacy) {
+		User loggedOn = getLoggedOn(authToken);
 		try {
 			Candidacy existingCandidacy = em.find(Candidacy.class, id);
 			if (existingCandidacy == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 			}
-			Candidate cy = (Candidate) em.createQuery(
+			Candidate candidate = (Candidate) em.createQuery(
 				"from Candidate c where c.id=:id")
 				.setParameter("id", existingCandidacy.getCandidate().getId())
 				.getSingleResult();
 
-			User loggedOn = getLoggedOn(authToken);
-			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser().getId() != loggedOn.getId()) {
+			if (candidate.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 
-			validateCandidacy(existingCandidacy, cy);
-			updateSnapshot(existingCandidacy, cy);
+			validateCandidacy(existingCandidacy, candidate);
+			updateSnapshot(existingCandidacy, candidate);
 			return existingCandidacy;
 		} catch (PersistenceException e) {
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
@@ -182,11 +197,6 @@ public class CandidacyRESTService extends RESTService {
 			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
-
-			//Do Delete:
-			//Since relationship isn't explicit, we need to do it manually.
-			CandidateCommittee cc = getCandidateCommittee(existingCandidacy);
-			em.remove(cc);
 			em.remove(existingCandidacy);
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
@@ -195,162 +205,312 @@ public class CandidacyRESTService extends RESTService {
 		}
 	}
 
-	private CandidateCommittee getCandidateCommittee(Candidacy c) {
-		return (CandidateCommittee) em.createQuery(
-			"from CandidateCommittee cc left join fetch cc.members " +
-				"where cc.candidacy=:candidacy")
-			.setParameter("candidacy", c)
-			.getSingleResult();
+	/*******************************
+	 * Snapshot File Functions *****
+	 *******************************/
+	@GET
+	@Path("/{id:[0-9][0-9]*}/snapshot/file")
+	@JsonView({SimpleFileHeaderView.class})
+	public Collection<CandidateFile> getSnapshotFiles(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId) {
+		User loggedOn = getLoggedOn(authToken);
+		Candidacy candidacy = em.find(Candidacy.class, candidacyId);
+		// Validate:
+		if (candidacy == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+			!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Return Result
+		candidacy.getSnapshotFiles().size();
+		return candidacy.getSnapshotFiles();
 	}
 
 	@GET
-	@Path("/{id:[0-9][0-9]*}/committee")
-	@JsonView({SimpleCandidateCommitteeView.class})
-	public CandidateCommittee getCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
-		try {
-			Candidacy c = (Candidacy) em.createQuery(
-				"from Candidacy c where c.id=:id")
-				.setParameter("id", id)
-				.getSingleResult();
-			Candidate cy = (Candidate) em.createQuery(
-				"from Candidate c where c.id=:id")
-				.setParameter("id", c.getCandidate().getId())
-				.getSingleResult();
-
-			User loggedOn = getLoggedOn(authToken);
-
-			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser().getId() != loggedOn.getId()) {
-				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-			}
-
-			CandidateCommittee cc = getCandidateCommittee(c);
-
-			em.flush();
-			return cc;
-		} catch (NoResultException e) {
+	@Path("/{id:[0-9]+}/snapshot/file/{fileId:[0-9]+}")
+	@JsonView({SimpleFileHeaderView.class})
+	public CandidateFile getSnapshotFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId) {
+		User loggedOn = getLoggedOn(authToken);
+		Candidacy candidacy = em.find(Candidacy.class, candidacyId);
+		// Validate:
+		if (candidacy == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+			!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Return Result
+		for (CandidateFile file : candidacy.getSnapshotFiles()) {
+			if (file.getId().equals(fileId)) {
+				return file;
+			}
+		}
+		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+	}
+
+	@GET
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	@Path("/{id:[0-9]+}/snapshot/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
+	public Response getSnapshotFileBody(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
+		User loggedOn = getLoggedOn(authToken);
+		Candidacy candidacy = em.find(Candidacy.class, candidacyId);
+		// Validate:
+		if (candidacy == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+			!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Return Result
+		for (CandidateFile file : candidacy.getSnapshotFiles()) {
+			if (file.getId().equals(fileId) && file.getCurrentBody().getId().equals(bodyId)) {
+				return sendFileBody(file.getCurrentBody());
+			}
+		}
+		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+	}
+
+	/*******************************
+	 * Candidacy File Functions ****
+	 *******************************/
+	@GET
+	@Path("/{id:[0-9][0-9]*}/file")
+	@JsonView({SimpleFileHeaderView.class})
+	public Collection<CandidacyFile> getFiles(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId) {
+		User loggedOn = getLoggedOn(authToken);
+		Candidacy candidacy = em.find(Candidacy.class, candidacyId);
+		// Validate:
+		if (candidacy == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+			!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Return Result
+		candidacy.getFiles().size();
+		return candidacy.getFiles();
+	}
+
+	@GET
+	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}")
+	@JsonView({SimpleFileHeaderView.class})
+	public CandidacyFile getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId) {
+		User loggedOn = getLoggedOn(authToken);
+		Candidacy candidacy = em.find(Candidacy.class, candidacyId);
+		// Validate:
+		if (candidacy == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+			!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Return Result
+		for (CandidacyFile file : candidacy.getFiles()) {
+			if (file.getId().equals(fileId)) {
+				return file;
+			}
+		}
+		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+	}
+
+	@GET
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
+	public Response getFileBody(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
+		User loggedOn = getLoggedOn(authToken);
+		Candidacy candidacy = em.find(Candidacy.class, candidacyId);
+		// Validate:
+		if (candidacy == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
+		}
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+			!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Return Result
+		for (CandidacyFile file : candidacy.getFiles()) {
+			if (file.getId().equals(fileId)) {
+				if (file.getId().equals(fileId)) {
+					for (FileBody fb : file.getBodies()) {
+						if (fb.getId().equals(bodyId)) {
+							return sendFileBody(fb);
+						}
+					}
+				}
+			}
+		}
+		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+	}
+
+	@POST
+	@Path("/{id:[0-9][0-9]*}/file")
+	@Consumes("multipart/form-data")
+	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
+	public String createFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+		User loggedOn = getLoggedOn(authToken);
+		Candidacy candidacy = em.find(Candidacy.class, candidacyId);
+		// Validate:
+		if (candidacy == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
+		}
+		if (!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+
+		// Parse Request
+		List<FileItem> fileItems = readMultipartFormData(request);
+		// Find required type:
+		FileType type = null;
+		for (FileItem fileItem : fileItems) {
+			if (fileItem.isFormField() && fileItem.getFieldName().equals("type")) {
+				type = FileType.valueOf(fileItem.getString("UTF-8"));
+				break;
+			}
+		}
+		if (type == null) {
+			throw new RestException(Status.BAD_REQUEST, "missing.file.type");
+		}
+		// Check number of file types
+		Set<CandidacyFile> existingFiles = FileHeader.filter(candidacy.getFiles(), type);
+		if (!CandidacyFile.fileTypes.containsKey(type) || existingFiles.size() >= CandidacyFile.fileTypes.get(type)) {
+			throw new RestException(Status.CONFLICT, "wrong.file.type");
+		}
+		// Create
+		try {
+			CandidacyFile candidacyFile = new CandidacyFile();
+			candidacyFile.setCandidacy(candidacy);
+			candidacyFile.setOwner(loggedOn);
+			saveFile(loggedOn, fileItems, candidacyFile);
+			candidacy.addFile(candidacyFile);
+			em.flush();
+
+			return toJSON(candidacyFile, SimpleFileHeaderView.class);
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
 	@POST
-	@Path("/{id:[0-9][0-9]*}/committee")
-	@JsonView({SimpleCandidateCommitteeView.class})
-	public CandidateCommittee addToCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, CandidateCommitteeMembership ccm) {
-		try {
-			CandidateCommittee cc;
-			Candidacy c = (Candidacy) em.createQuery(
-				"from Candidacy c where c.id=:id")
-				.setParameter("id", id)
-				.getSingleResult();
-			Candidate cy = (Candidate) em.createQuery(
-				"from Candidate c where c.id=:id")
-				.setParameter("id", c.getCandidate().getId())
-				.getSingleResult();
-
-			User loggedOn = getLoggedOn(authToken);
-			boolean ok = false;
-			if (loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) || cy.getUser().getId() == loggedOn.getId()) {
-				ok = true;
-			}
-			if (!ok) {
-				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-			}
-
-			//TODO: Will obviously not be allowed after some point in the lifecycle
-
-			try {
-				cc = (CandidateCommittee) em.createQuery(
-					"from CandidateCommittee cc " +
-						"where cc.candidacy=:candidacy")
-					.setParameter("candidacy", c)
-					.getSingleResult();
-			} catch (NoResultException e) {
-				cc = new CandidateCommittee();
-				cc.setCandidacy(c);
-				em.persist(cc);
-			}
-			if (cc.getMembers().size() >= CandidateCommittee.MAX_MEMBERS) {
-				throw new RestException(Status.CONFLICT, "max.members.exceeded");
-			}
-			for (CandidateCommitteeMembership ccmexisting : cc.getMembers()) {
-				if (ccmexisting.getEmail().equalsIgnoreCase(ccm.getEmail()))
-					throw new RestException(Status.CONFLICT, "error.candidacy.membership.email.already.exists");
-			}
-
-			cc.addMember(ccm);
-			em.flush();
-			return cc;
-
-		} catch (NoResultException e) {
+	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}")
+	@Consumes("multipart/form-data")
+	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
+	public String updateFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+		User loggedOn = getLoggedOn(authToken);
+		Candidacy candidacy = em.find(Candidacy.class, candidacyId);
+		// Validate:
+		if (candidacy == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
+		}
+		if (!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+
+		// Parse Request
+		List<FileItem> fileItems = readMultipartFormData(request);
+		// Find required type:
+		FileType type = null;
+		for (FileItem fileItem : fileItems) {
+			if (fileItem.isFormField() && fileItem.getFieldName().equals("type")) {
+				type = FileType.valueOf(fileItem.getString("UTF-8"));
+				break;
+			}
+		}
+		if (type == null) {
+			throw new RestException(Status.BAD_REQUEST, "missing.file.type");
+		}
+		if (!CandidacyFile.fileTypes.containsKey(type)) {
+			throw new RestException(Status.CONFLICT, "wrong.file.type");
+		}
+		CandidacyFile candidacyFile = null;
+		for (CandidacyFile file : candidacy.getFiles()) {
+			if (file.getId().equals(fileId)) {
+				candidacyFile = file;
+				break;
+			}
+		}
+		if (candidacyFile == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+		}
+
+		// Update
+		try {
+			saveFile(loggedOn, fileItems, candidacyFile);
+			em.flush();
+			candidacyFile.getBodies().size();
+			return toJSON(candidacyFile, SimpleFileHeaderView.class);
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
+	/**
+	 * Deletes the last body of given file, if possible.
+	 * 
+	 * @param authToken
+	 * @param id
+	 * @return
+	 */
 	@DELETE
-	@Path("/{id:[0-9][0-9]*}/committee")
-	@JsonView({SimpleCandidateCommitteeView.class})
-	public CandidateCommittee removeFromCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, CandidateCommitteeMembership ccm) {
-		try {
-			CandidateCommittee cc;
-
-			Candidacy c = (Candidacy) em.createQuery(
-				"from Candidacy c where c.id=:id")
-				.setParameter("id", id)
-				.getSingleResult();
-			Candidate cy = (Candidate) em.createQuery(
-				"from Candidate c where c.id=:id")
-				.setParameter("id", c.getCandidate().getId())
-				.getSingleResult();
-
-			User loggedOn = getLoggedOn(authToken);
-			boolean ok = false;
-			if (loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) || cy.getUser().getId() == loggedOn.getId()) {
-				ok = true;
-			}
-			if (!ok) {
-				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-			}
-			//TODO: Will obviously not be allowed after some point in the lifecycle
-
-			cc = (CandidateCommittee) em.createQuery(
-				"from CandidateCommittee cc " +
-					"where cc.candidacy=:candidacy")
-				.setParameter("candidacy", c)
-				.getSingleResult();
-
-			CandidateCommitteeMembership removed = cc.removeMember(ccm.getId());
-			if (removed == null) {
-				throw new RestException(Status.NOT_FOUND, "wrong.candidate.committee.membership.id");
-			}
-
-			em.flush();
-			return cc;
-		} catch (NoResultException e) {
+	@Path("/{id:[0-9]+}/file/{fileId:([0-9]+)?}")
+	@JsonView({SimpleFileHeaderView.class})
+	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long candidacyId, @PathParam("fileId") Long fileId) {
+		User loggedOn = getLoggedOn(authToken);
+		Candidacy candidacy = em.find(Candidacy.class, candidacyId);
+		// Validate:
+		if (candidacy == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
+		}
+		if (!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+
+		try {
+			CandidacyFile candidacyFile = null;
+			for (CandidacyFile file : candidacy.getFiles()) {
+				if (file.getId().equals(fileId)) {
+					candidacyFile = file;
+					break;
+				}
+			}
+			if (candidacyFile == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+			}
+			Response retv = deleteFileBody(candidacyFile);
+			if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
+				// Remove from Position
+				candidacy.getFiles().remove(candidacyFile);
+			}
+			return retv;
 		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
-	@GET
-	@Path("/{id:[0-9][0-9]*}/committee/{committeeid}")
-	@JsonView({SimpleCandidateCommitteeView.class})
-	public CandidateCommitteeMembership getCommitteeMembership(@HeaderParam(TOKEN_HEADER) String authToken,
-		@PathParam("id") long id, @PathParam("committeeid") long committeeId) {
-		CandidateCommittee cm = getCommittee(authToken, id);
-		for (CandidateCommitteeMembership ccm : cm.getMembers()) {
-			if (ccm.getId().equals(committeeId)) {
-				return ccm;
-			}
-		}
-		throw new RestException(Status.NOT_FOUND, "wrong.candidate.committee.membership.id");
-	}
+	/***************************
+	 * Committee Functions *****
+	 ***************************/
 
 }

@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.file.CandidacyFile;
 import gr.grnet.dep.service.model.file.CandidateFile;
 import gr.grnet.dep.service.model.file.FileBody;
 
@@ -9,6 +10,7 @@ import java.util.Set;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -18,11 +20,14 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlTransient;
+
+import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 public class Candidacy {
@@ -49,6 +54,12 @@ public class Candidacy {
 
 	@ManyToOne
 	private Position position;
+
+	@OneToMany(mappedBy = "candidacy", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<CandidacyFile> files = new HashSet<CandidacyFile>();
+
+	@OneToMany(mappedBy = "candidacy", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<CandidacyEvaluator> proposedEvaluators = new HashSet<CandidacyEvaluator>();
 
 	static class CandidacySnapshot {
 
@@ -123,14 +134,6 @@ public class Candidacy {
 			this.contactInfo = contactInfo;
 		}
 
-		public Set<FileBody> getFiles() {
-			return files;
-		}
-
-		public void setFiles(Set<FileBody> files) {
-			this.files = files;
-		}
-
 		public Institution getInstitution() {
 			return institution;
 		}
@@ -187,6 +190,15 @@ public class Candidacy {
 			this.institutionString = institutionString;
 		}
 
+		@XmlTransient
+		public Set<FileBody> getFiles() {
+			return files;
+		}
+
+		public void setFiles(Set<FileBody> files) {
+			this.files = files;
+		}
+
 		public void clearFiles() {
 			getFiles().clear();
 		}
@@ -229,6 +241,15 @@ public class Candidacy {
 		this.position = position;
 	}
 
+	@JsonView({DetailedCandidacyView.class})
+	public Set<CandidacyEvaluator> getProposedEvaluators() {
+		return proposedEvaluators;
+	}
+
+	public void setProposedEvaluators(Set<CandidacyEvaluator> proposedEvaluators) {
+		this.proposedEvaluators = proposedEvaluators;
+	}
+
 	public CandidacySnapshot getSnapshot() {
 		return snapshot;
 	}
@@ -237,16 +258,38 @@ public class Candidacy {
 		this.snapshot = snapshot;
 	}
 
-	///////////////////////////////////////////////////////////////
-
-	public void initializeCollections() {
-		this.position.getFiles().size();
-		this.candidate.getFiles().size();
-		this.snapshot.getFiles().size();
+	@XmlTransient
+	public Set<CandidacyFile> getFiles() {
+		return files;
 	}
 
-	public void initializeSnapshot() {
-		snapshot.getFiles().size();
+	public void setFiles(Set<CandidacyFile> files) {
+		this.files = files;
+	}
+
+	public void addFile(CandidacyFile file) {
+		this.files.add(file);
+		file.setCandidacy(this);
+	}
+
+	///////////////////////////////////////////////////////////////
+
+	@XmlTransient
+	public Set<CandidateFile> getSnapshotFiles() {
+		Set<CandidateFile> result = new HashSet<CandidateFile>();
+		for (FileBody body : snapshot.getFiles()) {
+			CandidateFile cf = new CandidateFile();
+			cf.setDeleted(body.getHeader().isDeleted());
+			cf.setDescription(body.getHeader().getDescription());
+			cf.setId(body.getHeader().getId());
+			cf.setName(body.getHeader().getName());
+			cf.setOwner(body.getHeader().getOwner());
+			cf.setType(body.getHeader().getType());
+
+			cf.setCurrentBody(body);
+			result.add(cf);
+		}
+		return result;
 	}
 
 	public void clearSnapshot() {
@@ -280,6 +323,13 @@ public class Candidacy {
 		snapshot.setInstitutionString(professor.getInstitution());
 		snapshot.setRank(professor.getRank());
 		snapshot.setSubject(professor.getSubject());
+	}
+
+	public void initializeCollections() {
+		this.position.getFiles().size();
+		this.candidate.getFiles().size();
+		this.snapshot.getFiles().size();
+		this.proposedEvaluators.size();
 	}
 
 }

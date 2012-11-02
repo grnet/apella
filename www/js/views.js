@@ -4843,7 +4843,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		validator : undefined,
 
 		initialize : function() {
-			_.bindAll(this, "render", "submit", "cancel", "addFile", "close");
+			_.bindAll(this, "render", "isEditable", "submit", "cancel", "addFile", "close");
 			this.template = _.template(tpl_candidacy_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
@@ -4858,28 +4858,64 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			"submit form" : "submit"
 		},
 
+		isEditable : function(field) {
+			var self = this;
+			switch (field) {
+			case "evaluator_name_0":
+				return _.isEqual(self.model.get("position").status, "ANOIXTI");
+			case "evaluator_name_1":
+				return _.isEqual(self.model.get("position").status, "ANOIXTI");
+			case "evaluator_email_0":
+				return _.isEqual(self.model.get("position").status, "ANOIXTI");
+			case "evaluator_email_1":
+				return _.isEqual(self.model.get("position").status, "ANOIXTI");
+			case "ekthesiAutoaksiologisisFile":
+				return _.isEqual(self.model.get("position").status, "ANOIXTI");
+			}
+			return false;
+		},
+
 		render : function(eventName) {
 			var self = this;
 			self.$el.html(self.template(self.model.toJSON()));
 
 			if (self.model.has("id")) {
-				// TODO:
+				// Snapshot Files
+				var sfiles = new Models.Files();
+				sfiles.url = self.model.url() + "/snapshot/file";
+				sfiles.fetch({
+					cache : false,
+					success : function(collection, response) {
+						self.addFile(collection, "BIOGRAFIKO", self.$("#biografikoFile"), {
+							withMetadata : false,
+							editable : false
+						});
+						self.addFileList(collection, "PTYXIO", self.$("#ptyxioFileList"), {
+							withMetadata : true,
+							editable : false
+						});
+						self.addFileList(collection, "DIMOSIEYSI", self.$("#dimosieusiFileList"), {
+							withMetadata : true,
+							editable : false
+						});
+					}
+				});
+				// Candidacy Files
 				var files = new Models.Files();
 				files.url = self.model.url() + "/file";
 				files.fetch({
 					cache : false,
 					success : function(collection, response) {
-						self.addFileList(collection, "MITROO", self.$("#mitrooFileList"), {
+						self.addFile(collection, "EKTHESI_AUTOAKSIOLOGISIS", self.$("#ekthesiAutoaksiologisisFile"), {
 							withMetadata : true,
-							editable : true
+							editable : self.isEditable("ekthesiAutoaksiologisisFile")
 						});
 					}
 				});
 			} else {
 				self.$("#mitrooFileList").html($.i18n.prop("PressSave"));
 			}
-			// TODO:
-			self.validator = $("form", this.el).validate({
+			self.validator = self.$("form").validate({
 				errorElement : "span",
 				errorClass : "help-inline",
 				highlight : function(element, errorClass, validClass) {
@@ -4889,14 +4925,47 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					$(element).parent(".controls").parent(".control-group").removeClass("error");
 				},
 				rules : {
-					"title" : "required",
-					"institution" : "required"
+					"evaluator_name_0" : {
+						required : function(element) {
+							return self.$("input[name=evaluator_email_0]").val() !== "";
+						}
+					},
+					"evaluator_email_0" : {
+						required : function(element) {
+							return self.$("input[name=evaluator_name_0]").val() !== "";
+						},
+						email : true
+					},
+					"evaluator_name_1" : {
+						required : function(element) {
+							return self.$("input[name=evaluator_email_1]").val() !== "";
+						}
+					},
+					"evaluator_email_1" : {
+						required : function(element) {
+							return self.$("input[name=evaluator_name_1]").val() !== "";
+						},
+						email : true
+					}
 				},
 				messages : {
-					"title" : $.i18n.prop('validation_title'),
-					"institution" : $.i18n.prop('validation_institution')
+					"evaluator_name_0" : $.i18n.prop("validation_evaluator_name"),
+					"evaluator_email_0" : $.i18n.prop("validation_evaluator_email"),
+					"evaluator_name_1" : $.i18n.prop("validation_evaluator_name"),
+					"evaluator_email_1" : $.i18n.prop("validation_evaluator_email")
 				}
 			});
+
+			// Set isEditable to fields
+			self.$("select, input, textarea").each(function(index) {
+				var field = $(this).attr("name");
+				if (self.isEditable(field)) {
+					$(this).removeAttr("disabled");
+				} else {
+					$(this).attr("disabled", true);
+				}
+			});
+
 			return self;
 		},
 
@@ -4904,11 +4973,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var self = this;
 			var values = {};
 			// Read Input
-			// TODO:
-			values.title = self.$('form input[name=title]').val();
-			values.institution = {
-				"id" : self.$('form select[name=institution]').val()
-			};
+			values.proposedEvaluators = [ {
+				name : self.$('form input[name=evaluator_name_0]').val(),
+				email : self.$('form input[name=evaluator_email_0]').val()
+			}, {
+				name : self.$('form input[name=evaluator_name_1]').val(),
+				email : self.$('form input[name=evaluator_email_1]').val()
+			} ];
 			// Save to model
 			self.model.save(values, {
 				wait : true,
@@ -5001,14 +5072,35 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var self = this;
 			self.$el.html(self.template(self.model.toJSON()));
 
+			// Snapshot Files
+			var sfiles = new Models.Files();
+			sfiles.url = self.model.url() + "/snapshot/file";
+			sfiles.fetch({
+				cache : false,
+				success : function(collection, response) {
+					self.addFile(collection, "BIOGRAFIKO", self.$("#biografikoFile"), {
+						withMetadata : false,
+						editable : false
+					});
+					self.addFileList(collection, "PTYXIO", self.$("#ptyxioFileList"), {
+						withMetadata : true,
+						editable : false
+					});
+					self.addFileList(collection, "DIMOSIEYSI", self.$("#dimosieusiFileList"), {
+						withMetadata : true,
+						editable : false
+					});
+				}
+			});
+			// Candidacy Files
 			var files = new Models.Files();
 			files.url = self.model.url() + "/file";
 			files.fetch({
 				cache : false,
 				success : function(collection, response) {
-					self.addFileList(collection, "MITROO", self.$("#mitrooFileList"), {
+					self.addFile(collection, "EKTHESI_AUTOAKSIOLOGISIS", self.$("#ekthesiAutoaksiologisisFile"), {
 						withMetadata : true,
-						editable : true
+						editable : false
 					});
 				}
 			});
