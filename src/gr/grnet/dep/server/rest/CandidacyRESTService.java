@@ -125,6 +125,34 @@ public class CandidacyRESTService extends RESTService {
 			candidacy.updateSnapshot(professorForeign);
 		}
 	}
+	
+	@PUT
+	@Path("/{id:[0-9][0-9]*}/snapshot")
+	@JsonView({DetailedCandidacyView.class})
+	public Candidacy updateSnapshot(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+		User loggedOn = getLoggedOn(authToken);
+		try {
+			Candidacy existingCandidacy = em.find(Candidacy.class, id);
+			if (existingCandidacy == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
+			}
+			Candidate candidate = (Candidate) em.createQuery(
+				"from Candidate c where c.id=:id")
+				.setParameter("id", existingCandidacy.getCandidate().getId())
+				.getSingleResult();
+
+			if (candidate.getUser().getId() != loggedOn.getId()) {
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+			}
+
+			validateCandidacy(existingCandidacy, candidate);
+			updateSnapshot(existingCandidacy, candidate);
+			existingCandidacy.initializeCollections();
+			return existingCandidacy;
+		} catch (PersistenceException e) {
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+		}
+	}
 
 	@POST
 	@JsonView({DetailedCandidacyView.class})
