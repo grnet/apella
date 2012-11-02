@@ -1,24 +1,33 @@
 <table class="table table-striped table-bordered">
 	<thead>
 		<tr>
-			<th><%= $.i18n.prop("Candidate") %></th>
-			<th><%= $.i18n.prop("PositionName") %></th>
-			<th><%= $.i18n.prop("Department") %></th>
-			<th><%= $.i18n.prop("PositionStatus") %></th>
+			<th><%= $.i18n.prop("Username") %></th>
+			<th><%= $.i18n.prop("FirstName") %></th>
+			<th><%= $.i18n.prop("LastName") %></th>
+			<th><%= $.i18n.prop("FatherName") %></th>
 			<th width="96px"></th>
 		</tr>
 	</thead>
 	<tbody>
 <% _.each(candidacies, function(candidacy) { %>
 		<tr>
-			<td>candidacy.snapshot.user.username</td>
-			<td><%= candidacy.position.name %></td>
-			<td><%= candidacy.position.department.department %></td>
-			<td><%= $.i18n.prop('PositionStatus_' + candidacy.position.status) %></td>
+			<td><%= candidacy.snapshot.username %></td>
+			<td><%= candidacy.snapshot.basicInfo.firstname %> (<%= candidacy.snapshot.basicInfoLatin.firstname %>)</td>
+			<td><%= candidacy.snapshot.basicInfo.lastname %> (<%= candidacy.snapshot.basicInfoLatin.lastname %>)</td>
+			<td><%= candidacy.snapshot.basicInfo.fathername %> (<%= candidacy.snapshot.basicInfoLatin.fathername %>)</td>
 			<td width="96px">
 				<p align="center">
-					<a id="selectCandidacy" data-candidacy-id="<%= candidacy.id %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>
+					<a id="viewCandidacy" data-candidacy-id="<%= candidacy.id %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>
 				</p>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="5" data-candidacy-id="<%= candidacy.id %>" style="display:none">
+				<div class="row-fluid" >
+					<a id="closeCandidacy" data-candidacy-id="<%= candidacy.id %>" class="btn btn-mini btn-warning pull-right"><i class="icon-remove-sign"></i></a>
+					<div data-candidacy-id="<%= candidacy.id %>">
+					</div>
+				</div>
 			</td>
 		</tr>
 <% }); %>

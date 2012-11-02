@@ -73,11 +73,12 @@ public class CandidacyRESTService extends RESTService {
 				"from Candidacy c where c.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
-			Candidate candidate = (Candidate) em.createQuery(
-				"from Candidate c where c.id=:id")
-				.setParameter("id", candidacy.getCandidate().getId())
-				.getSingleResult();
-			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && candidate.getUser().getId() != loggedOn.getId()) {
+			Candidate candidate = candidacy.getCandidate();
+			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
+				!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.isDepartmentUser(candidacy.getPosition().getDepartment()) &&
+				!candidate.getUser().getId().equals(loggedOn.getId())) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			// Initialize collections
@@ -249,7 +250,8 @@ public class CandidacyRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
+			!loggedOn.isDepartmentUser(candidacy.getPosition().getDepartment()) &&
+			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -270,7 +272,8 @@ public class CandidacyRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
+			!loggedOn.isDepartmentUser(candidacy.getPosition().getDepartment()) &&
+			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -295,7 +298,8 @@ public class CandidacyRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
+			!loggedOn.isDepartmentUser(candidacy.getPosition().getDepartment()) &&
+			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -323,7 +327,8 @@ public class CandidacyRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
+			!loggedOn.isDepartmentUser(candidacy.getPosition().getDepartment()) &&
+			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -344,7 +349,8 @@ public class CandidacyRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
+			!loggedOn.isDepartmentUser(candidacy.getPosition().getDepartment()) &&
+			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -369,7 +375,8 @@ public class CandidacyRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
+			!loggedOn.isDepartmentUser(candidacy.getPosition().getDepartment()) &&
+			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
