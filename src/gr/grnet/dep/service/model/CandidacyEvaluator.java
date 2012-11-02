@@ -14,6 +14,8 @@ public class CandidacyEvaluator implements Serializable {
 
 	private static final long serialVersionUID = -8436764731554690767L;
 
+	public static final int MAX_MEMBERS = 2;
+
 	@Id
 	@GeneratedValue
 	private Long id;

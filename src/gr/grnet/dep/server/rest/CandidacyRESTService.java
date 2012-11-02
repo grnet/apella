@@ -3,7 +3,10 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
+import gr.grnet.dep.service.model.CandidacyEvaluator;
 import gr.grnet.dep.service.model.Candidate;
+import gr.grnet.dep.service.model.Position;
+import gr.grnet.dep.service.model.PositionStatus;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.ProfessorForeign;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
@@ -159,23 +162,37 @@ public class CandidacyRESTService extends RESTService {
 	public Candidacy create(@HeaderParam(TOKEN_HEADER) String authToken, Candidacy candidacy) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
-			Candidate candidate = (Candidate) em.createQuery(
-				"from Candidate c where c.id=:id")
-				.setParameter("id", candidacy.getCandidate().getId())
-				.getSingleResult();
+			// Validate
+			Candidate candidate = em.find(Candidate.class, candidacy.getCandidate().getId());
+			if (candidate == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.candidate.id");
+			}
 			if (candidate.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
+			Position position = em.find(Position.class, candidacy.getPosition().getId());
+			if (position == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.position.id");
+			}
+			if (!position.getStatus().equals(PositionStatus.ANOIXTI)) {
+				throw new RestException(Status.NOT_FOUND, "wrong.position.status");
+			}
+
+			// Create
+			candidacy.setCandidate(candidate);
+			candidacy.setPosition(position);
 			candidacy.setDate(new Date());
+			candidacy.setPermanent(false);
+			candidacy.getProposedEvaluators().clear();
 			validateCandidacy(candidacy, candidate);
 			updateSnapshot(candidacy, candidate);
 
 			em.persist(candidacy);
+			em.flush();
 
+			// Return Results
 			candidacy.initializeCollections();
 			return candidacy;
-		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "wrong.candidate.id");
 		} catch (PersistenceException e) {
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
@@ -187,22 +204,31 @@ public class CandidacyRESTService extends RESTService {
 	public Candidacy update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Candidacy candidacy) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
+			// Validate
 			Candidacy existingCandidacy = em.find(Candidacy.class, id);
 			if (existingCandidacy == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 			}
-			Candidate candidate = (Candidate) em.createQuery(
-				"from Candidate c where c.id=:id")
-				.setParameter("id", existingCandidacy.getCandidate().getId())
-				.getSingleResult();
-
+			Candidate candidate = existingCandidacy.getCandidate();
 			if (candidate.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
-
-			existingCandidacy.copyFrom(candidacy);
+			Position position = existingCandidacy.getPosition();
+			if (!position.getStatus().equals(PositionStatus.ANOIXTI)) {
+				throw new RestException(Status.NOT_FOUND, "wrong.position.status");
+			}
+			if (candidacy.getProposedEvaluators().size() > CandidacyEvaluator.MAX_MEMBERS) {
+				throw new RestException(Status.CONFLICT, "max.evaluators.exceeded");
+			}
 			validateCandidacy(existingCandidacy, candidate);
+
+			// Update
+			existingCandidacy.copyFrom(candidacy);
+			existingCandidacy.setProposedEvaluators(candidacy.getProposedEvaluators());
 			updateSnapshot(existingCandidacy, candidate);
+			existingCandidacy.setPermanent(true);
+
+			// Return
 			existingCandidacy.initializeCollections();
 			return existingCandidacy;
 		} catch (PersistenceException e) {
@@ -213,23 +239,24 @@ public class CandidacyRESTService extends RESTService {
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}")
 	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+		User loggedOn = getLoggedOn(authToken);
 		try {
+			// Validate
 			Candidacy existingCandidacy = em.find(Candidacy.class, id);
 			if (existingCandidacy == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 			}
-			Candidate cy = (Candidate) em.createQuery(
-				"from Candidate c where c.id=:id")
-				.setParameter("id", existingCandidacy.getCandidate().getId())
-				.getSingleResult();
-
-			User loggedOn = getLoggedOn(authToken);
-			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && cy.getUser().getId() != loggedOn.getId()) {
+			Candidate candidate = existingCandidacy.getCandidate();
+			if (candidate.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
+			Position position = existingCandidacy.getPosition();
+			if (!position.getStatus().equals(PositionStatus.ANOIXTI)) {
+				throw new RestException(Status.CONFLICT, "wrong.position.status");
+			}
+
+			// Update
 			em.remove(existingCandidacy);
-		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		} catch (PersistenceException e) {
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
@@ -403,6 +430,9 @@ public class CandidacyRESTService extends RESTService {
 		if (!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+		if (!candidacy.getPosition().getStatus().equals(PositionStatus.ANOIXTI)) {
+			throw new RestException(Status.CONFLICT, "wrong.position.status");
+		}
 
 		// Parse Request
 		List<FileItem> fileItems = readMultipartFormData(request);
@@ -452,6 +482,9 @@ public class CandidacyRESTService extends RESTService {
 		}
 		if (!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		if (!candidacy.getPosition().getStatus().equals(PositionStatus.ANOIXTI)) {
+			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 
 		// Parse Request
@@ -513,6 +546,9 @@ public class CandidacyRESTService extends RESTService {
 		}
 		if (!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		if (!candidacy.getPosition().getStatus().equals(PositionStatus.ANOIXTI)) {
+			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 
 		try {
