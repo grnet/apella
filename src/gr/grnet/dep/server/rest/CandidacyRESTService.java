@@ -150,7 +150,17 @@ public class CandidacyRESTService extends RESTService {
 			if (!position.getStatus().equals(PositionStatus.ANOIXTI)) {
 				throw new RestException(Status.NOT_FOUND, "wrong.position.status");
 			}
-
+			try {
+				Candidacy existingCandidacy = (Candidacy) em.createQuery(
+					"select c from Candidacy c" +
+						"where c.candidate.id = :candidateId " +
+						"and c.position.id = :positionId")
+					.getSingleResult();
+				// Return Results
+				existingCandidacy.initializeCollections();
+				return existingCandidacy;
+			} catch (NoResultException e) {
+			}
 			// Create
 			candidacy.setCandidate(candidate);
 			candidacy.setPosition(position);
@@ -196,7 +206,12 @@ public class CandidacyRESTService extends RESTService {
 			validateCandidacy(existingCandidacy, candidate);
 
 			// Update
-			existingCandidacy.setProposedEvaluators(candidacy.getProposedEvaluators());
+			existingCandidacy.getProposedEvaluators().clear();
+			for (CandidacyEvaluator evaluator : candidacy.getProposedEvaluators()) {
+				if (!evaluator.isMissingRequiredField()) {
+					existingCandidacy.addProposedEvaluator(evaluator);
+				}
+			}
 			updateSnapshot(existingCandidacy, candidate);
 			existingCandidacy.setPermanent(true);
 

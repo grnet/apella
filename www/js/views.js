@@ -4894,9 +4894,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		isEditable : function(field) {
 			var self = this;
 			switch (field) {
-			case "evaluator_name_0":
+			case "evaluator_fullname_0":
 				return _.isEqual(self.model.get("position").status, "ANOIXTI");
-			case "evaluator_name_1":
+			case "evaluator_fullname_1":
 				return _.isEqual(self.model.get("position").status, "ANOIXTI");
 			case "evaluator_email_0":
 				return _.isEqual(self.model.get("position").status, "ANOIXTI");
@@ -4958,33 +4958,33 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					$(element).parent(".controls").parent(".control-group").removeClass("error");
 				},
 				rules : {
-					"evaluator_name_0" : {
+					"evaluator_fullname_0" : {
 						required : function(element) {
 							return self.$("input[name=evaluator_email_0]").val() !== "";
 						}
 					},
 					"evaluator_email_0" : {
 						required : function(element) {
-							return self.$("input[name=evaluator_name_0]").val() !== "";
+							return self.$("input[name=evaluator_fullname_0]").val() !== "";
 						},
 						email : true
 					},
-					"evaluator_name_1" : {
+					"evaluator_fullname_1" : {
 						required : function(element) {
 							return self.$("input[name=evaluator_email_1]").val() !== "";
 						}
 					},
 					"evaluator_email_1" : {
 						required : function(element) {
-							return self.$("input[name=evaluator_name_1]").val() !== "";
+							return self.$("input[name=evaluator_fullname_1]").val() !== "";
 						},
 						email : true
 					}
 				},
 				messages : {
-					"evaluator_name_0" : $.i18n.prop("validation_evaluator_name"),
+					"evaluator_fullname_0" : $.i18n.prop("validation_evaluator_fullname"),
 					"evaluator_email_0" : $.i18n.prop("validation_evaluator_email"),
-					"evaluator_name_1" : $.i18n.prop("validation_evaluator_name"),
+					"evaluator_fullname_1" : $.i18n.prop("validation_evaluator_fullname"),
 					"evaluator_email_1" : $.i18n.prop("validation_evaluator_email")
 				}
 			});
@@ -5007,10 +5007,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var values = {};
 			// Read Input
 			values.proposedEvaluators = [ {
-				name : self.$('form input[name=evaluator_name_0]').val(),
+				fullname : self.$('form input[name=evaluator_fullname_0]').val(),
 				email : self.$('form input[name=evaluator_email_0]').val()
 			}, {
-				name : self.$('form input[name=evaluator_name_1]').val(),
+				fullname : self.$('form input[name=evaluator_fullname_1]').val(),
 				email : self.$('form input[name=evaluator_email_1]').val()
 			} ];
 			// Save to model

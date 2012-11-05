@@ -32,10 +32,7 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Entity
 public class Candidacy {
 
-	public static interface SimpleCandidacyView {
-	};
-
-	public static interface DetailedCandidacyView extends SimpleCandidacyView {
+	public static interface DetailedCandidacyView {
 	};
 
 	@Id
@@ -234,7 +231,6 @@ public class Candidacy {
 		this.date = date;
 	}
 
-	@XmlTransient
 	public Candidate getCandidate() {
 		return candidate;
 	}
@@ -258,6 +254,11 @@ public class Candidacy {
 
 	public void setProposedEvaluators(Set<CandidacyEvaluator> proposedEvaluators) {
 		this.proposedEvaluators = proposedEvaluators;
+	}
+
+	public void addProposedEvaluator(CandidacyEvaluator evaluator) {
+		this.proposedEvaluators.add(evaluator);
+		evaluator.setCandidacy(this);
 	}
 
 	public CandidacySnapshot getSnapshot() {

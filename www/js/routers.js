@@ -836,8 +836,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					}, {
 						wait : true,
 						success : function(model, resp) {
-							App.router.navigate("candidateCandidacies/" + self.model.id, {
-								trigger : false
+							App.router.navigate("candidateCandidacies/" + model.id, {
+								trigger : true
 							});
 							var popup = new Views.PopupView({
 								type : "success",

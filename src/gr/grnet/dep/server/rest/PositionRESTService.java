@@ -2,7 +2,6 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
-import gr.grnet.dep.service.model.Candidacy.SimpleCandidacyView;
 import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.Position;
@@ -10,6 +9,7 @@ import gr.grnet.dep.service.model.Position.DetailedPositionView;
 import gr.grnet.dep.service.model.Position.PublicPositionView;
 import gr.grnet.dep.service.model.PositionCommitteeMember;
 import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
+import gr.grnet.dep.service.model.PositionStatus;
 import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
@@ -334,6 +334,9 @@ public class PositionRESTService extends RESTService {
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+		if (!position.getStatus().equals(PositionStatus.KLEISTI)) {
+			throw new RestException(Status.CONFLICT, "wrong.position.status");
+		}
 		// Parse Request
 		List<FileItem> fileItems = readMultipartFormData(request);
 		// Find required type:
@@ -364,7 +367,7 @@ public class PositionRESTService extends RESTService {
 			em.flush();
 
 			if (type == FileType.APOFASI_ANAPOMPIS) {
-				// TODO: CREATE CLONE OF POSITION WITH SAME FIELDS BUT WITHOUT THE APOFASI ANAPOMPIS
+				//TODO:
 			}
 
 			return toJSON(positionFile, SimpleFileHeaderView.class);
@@ -388,6 +391,9 @@ public class PositionRESTService extends RESTService {
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		if (!position.getStatus().equals(PositionStatus.KLEISTI)) {
+			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		// Parse Request
 		List<FileItem> fileItems = readMultipartFormData(request);
@@ -450,6 +456,9 @@ public class PositionRESTService extends RESTService {
 		}
 		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		if (!position.getStatus().equals(PositionStatus.KLEISTI)) {
+			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		try {
 			PositionFile positionFile = null;
@@ -561,10 +570,14 @@ public class PositionRESTService extends RESTService {
 			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
+			if (!existingPosition.getStatus().equals(PositionStatus.KLEISTI)) {
+				throw new RestException(Status.CONFLICT, "wrong.position.status");
+			}
 			Professor existingProfessor = em.find(Professor.class, newMembership.getProfessor().getId());
 			if (existingProfessor == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
 			}
+
 			// Check if already exists:
 			for (PositionCommitteeMember existingMember : existingPosition.getCommitee()) {
 				if (existingMember.getProfessor().getId().equals(existingProfessor.getId())) {
@@ -605,6 +618,9 @@ public class PositionRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Position existingPosition = getAndCheckPosition(loggedOn, positionId);
+			if (!existingPosition.getStatus().equals(PositionStatus.KLEISTI)) {
+				throw new RestException(Status.CONFLICT, "wrong.position.status");
+			}
 			// Check if already exists:
 			PositionCommitteeMember existingMember = null;
 			for (PositionCommitteeMember member : existingPosition.getCommitee()) {
@@ -634,6 +650,9 @@ public class PositionRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Position position = getAndCheckPosition(loggedOn, positionId);
+			if (!position.getStatus().equals(PositionStatus.KLEISTI)) {
+				throw new RestException(Status.CONFLICT, "wrong.position.status");
+			}
 			PositionCommitteeMember existingCM = null;
 			for (PositionCommitteeMember member : position.getCommitee()) {
 				if (member.getId().equals(cmId)) {
@@ -657,7 +676,6 @@ public class PositionRESTService extends RESTService {
 
 	@GET
 	@Path("/{id:[0-9][0-9]*}/candidacies")
-	@JsonView({SimpleCandidacyView.class})
 	public Set<Candidacy> getPositionCandidacies(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
 		User loggedOn = getLoggedOn(authToken);
 		Position position = getAndCheckPosition(loggedOn, positionId);

@@ -9,12 +9,17 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 
+import org.codehaus.jackson.map.annotate.JsonView;
+
 @Entity
 public class CandidacyEvaluator implements Serializable {
 
 	private static final long serialVersionUID = -8436764731554690767L;
 
 	public static final int MAX_MEMBERS = 2;
+
+	public static interface DetailedCandidacyEvaluatorView {
+	};
 
 	@Id
 	@GeneratedValue
@@ -40,6 +45,7 @@ public class CandidacyEvaluator implements Serializable {
 		this.id = id;
 	}
 
+	@JsonView({DetailedCandidacyEvaluatorView.class})
 	public Candidacy getCandidacy() {
 		return candidacy;
 	}
@@ -62,6 +68,12 @@ public class CandidacyEvaluator implements Serializable {
 
 	public void setFullname(String fullname) {
 		this.fullname = fullname;
+	}
+
+	//////////////////////////////////////
+
+	public boolean isMissingRequiredField() {
+		return this.fullname == null || this.email == null;
 	}
 
 }
