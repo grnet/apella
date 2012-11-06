@@ -193,7 +193,8 @@ public class RoleRESTService extends RESTService {
 				throw new RestException(Status.BAD_REQUEST, "bad.request");
 			}
 		} else {
-			//Default if no parameter given: ACTIVE only, not all
+			//Default if no parameter given: 
+			statusesList.add(RoleStatus.UNAPPROVED);
 			statusesList.add(RoleStatus.ACTIVE);
 		}
 		query.setParameter("statuses", statusesList);
