@@ -466,6 +466,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					roleView.close();
 				}
 				roleView = new Views.RoleEditView({
+					collection : App.roles,
 					model : role
 				});
 				self.refreshBreadcrumb([ $.i18n.prop('menu_profile'), $.i18n.prop(role.get('discriminator')) ]);

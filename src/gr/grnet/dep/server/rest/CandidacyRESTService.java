@@ -29,9 +29,7 @@ import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -56,9 +54,6 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Path("/candidacy")
 @Stateless
 public class CandidacyRESTService extends RESTService {
-
-	@PersistenceContext(unitName = "apelladb")
-	private EntityManager em;
 
 	@Inject
 	private Logger log;
@@ -129,7 +124,7 @@ public class CandidacyRESTService extends RESTService {
 			candidacy.updateSnapshot(professorForeign);
 		}
 	}
-	
+
 	@PUT
 	@Path("/{id:[0-9][0-9]*}/snapshot")
 	@JsonView({DetailedCandidacyView.class})

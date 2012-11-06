@@ -14,8 +14,6 @@ import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -33,40 +31,36 @@ public class CandidateRESTService extends RESTService {
 	@Inject
 	private Logger log;
 
-	@PersistenceContext(unitName = "apelladb")
-	private EntityManager em;
-
 	@GET
 	@Path("/{id:[0-9]+}/candidacies")
 	@JsonView({DetailedCandidacyView.class})
 	public Collection<Candidacy> getCandidacies(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long candidateId, @QueryParam("open") String open) {
 		User loggedOn = getLoggedOn(authToken);
-		Candidate c = em.find(Candidate.class, candidateId);
-		if (c == null) {
+		Candidate candidate = em.find(Candidate.class, candidateId);
+		if (candidate == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidate.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !c.getUser().getId().equals(loggedOn.getId())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !candidate.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		
-		String queryString = "from Candidacy c where c.candidate=:candidate";
-		if (open!=null) {
+
+		String queryString = "from Candidacy c where c.candidate = :candidate";
+		if (open != null) {
 			queryString += " and c.position.closingDate >= :now";
 		}
-		
-		Query query = em.createQuery(queryString);
-		query.setParameter("candidate", c);
-		if (open!=null) {
+		Query query = em.createQuery(queryString)
+			.setParameter("candidate", candidate);
+
+		if (open != null) {
 			Date now = new Date();
 			query.setParameter("now", now);
 		}
-		
-		List<Candidacy> retv = query.getResultList();
 
+		@SuppressWarnings("unchecked")
+		List<Candidacy> retv = query.getResultList();
 		for (Candidacy cy : retv) {
 			cy.initializeCollections();
 		}
-
 		return retv;
 	}
 

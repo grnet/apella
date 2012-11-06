@@ -30,9 +30,7 @@ import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.servlet.http.HttpServletRequest;
@@ -62,9 +60,6 @@ public class RoleRESTService extends RESTService {
 
 	@Inject
 	private Logger log;
-
-	@PersistenceContext(unitName = "apelladb")
-	private EntityManager em;
 
 	private static class RolePair {
 
@@ -311,7 +306,7 @@ public class RoleRESTService extends RESTService {
 	@PUT
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedRoleView.class})
-	public Role update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Role role) {
+	public Role update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @QueryParam("updateCandidacies") Boolean updateCandidacies, Role role) {
 		User loggedOn = getLoggedOn(authToken);
 		Role existingRole = em.find(Role.class, id);
 		// Validate:
@@ -818,7 +813,7 @@ public class RoleRESTService extends RESTService {
 					// Check if exists active IM for same Institution:
 					em.createQuery("select im from InstitutionManager im " +
 						"where im.status = :status " +
-						"and im.institution.id = :instituionId")
+						"and im.institution.id = :institutionId")
 						.setParameter("status", RoleStatus.ACTIVE)
 						.setParameter("institutionId", im.getInstitution().getId())
 						.setMaxResults(1)
