@@ -302,6 +302,7 @@ public class Candidacy {
 		}
 		return result;
 	}
+	
 
 	public void clearSnapshot() {
 		if (snapshot != null) {
