@@ -3461,7 +3461,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("a#save,a#remove").hide();
 			}
 			if (_.isEqual(self.model.get("status"), "ENTAGMENI") || _.isEqual(self.model.get("status"), "ANOIXTI")) {
-				self.$("#positionTabs a:not([data-target=#position])").parent("li").addClass("disabled");
+				self.$("#positionTabs a[data-target=#committee]").parent("li").addClass("disabled");
+				self.$("#positionTabs a[data-target=#evaluations]").parent("li").addClass("disabled");
+				self.$("#positionTabs a[data-target=#proposals]").parent("li").addClass("disabled");
+				self.$("#positionTabs a[data-target=#nomination]").parent("li").addClass("disabled");
+				self.$("#positionTabs a[data-target=#rest]").parent("li").addClass("disabled");
 			}
 			// Widgets
 			self.$("#positionTabs a").click(function(e) {

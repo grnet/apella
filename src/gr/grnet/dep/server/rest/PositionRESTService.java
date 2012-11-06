@@ -2,6 +2,8 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
+import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
+import gr.grnet.dep.service.model.CandidacyEvaluator;
 import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.Position;
@@ -13,7 +15,9 @@ import gr.grnet.dep.service.model.PositionStatus;
 import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.Subject;
 import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.model.file.CandidacyFile;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
@@ -230,6 +234,10 @@ public class PositionRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Position position = getAndCheckPosition(loggedOn, id);
+			if (!position.getStatus().equals(PositionStatus.ENTAGMENI)) {
+				throw new RestException(Status.CONFLICT, "wrong.position.status");
+			}
+
 			em.remove(position);
 			em.flush();
 		} catch (PersistenceException e) {
@@ -365,10 +373,6 @@ public class PositionRESTService extends RESTService {
 			position.addFile(positionFile);
 			position.setLastUpdate(new Date());
 			em.flush();
-
-			if (type == FileType.APOFASI_ANAPOMPIS) {
-				//TODO:
-			}
 
 			return toJSON(positionFile, SimpleFileHeaderView.class);
 		} catch (PersistenceException e) {
@@ -676,6 +680,7 @@ public class PositionRESTService extends RESTService {
 
 	@GET
 	@Path("/{id:[0-9][0-9]*}/candidacies")
+	@JsonView({DetailedCandidacyView.class})
 	public Set<Candidacy> getPositionCandidacies(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
 		User loggedOn = getLoggedOn(authToken);
 		Position position = getAndCheckPosition(loggedOn, positionId);
@@ -691,4 +696,135 @@ public class PositionRESTService extends RESTService {
 		return position.getCandidacies();
 	}
 
+	/**********************
+	 * Utility Functions **
+	 ***********************/
+
+	private Position clonePosition(Position oldPosition) {
+		try {
+			Position newPosition = new Position();
+			// Copy Fields:
+			newPosition.setClosingDate(oldPosition.getClosingDate());
+			newPosition.setCommitteeMeetingDate(oldPosition.getCommitteeMeetingDate());
+			newPosition.setDepartment(oldPosition.getDepartment());
+			newPosition.setDescription(oldPosition.getDescription());
+			newPosition.setFek(oldPosition.getFek());
+			newPosition.setLastUpdate(new Date());
+			newPosition.setName(oldPosition.getName());
+			newPosition.setNominationCommitteeConvergenceDate(oldPosition.getNominationCommitteeConvergenceDate());
+			newPosition.setNominationFEK(oldPosition.getNominationFEK());
+			newPosition.setNominationToETDate(oldPosition.getNominationToETDate());
+			newPosition.setOpeningDate(oldPosition.getOpeningDate());
+			newPosition.setPermanent(oldPosition.isPermanent());
+			Subject newSubject = new Subject();
+			newSubject.setName(oldPosition.getSubject().getName());
+			newPosition.setSubject(newSubject);
+
+			// Get an ID
+			newPosition = em.merge(newPosition);
+
+			// Copy Committee Members:
+			for (PositionCommitteeMember oldMember : oldPosition.getCommitee()) {
+				PositionCommitteeMember newMember = new PositionCommitteeMember();
+				newMember.setType(oldMember.getType());
+				newMember.setProfessor(oldMember.getProfessor());
+				newMember.setPosition(newPosition);
+
+				newMember = em.merge(newMember);
+				newPosition.getCommitee().add(newMember);
+			}
+
+			// Copy Candidacies
+			for (Candidacy oldCandidacy : oldPosition.getCandidacies()) {
+				Candidacy newCandidacy = new Candidacy();
+				newCandidacy.setCandidate(oldCandidacy.getCandidate());
+				newCandidacy.setPosition(newPosition);
+
+				newCandidacy.setDate(oldCandidacy.getDate());
+				newCandidacy.setPermanent(oldCandidacy.isPermanent());
+				newCandidacy.setSnapshot(oldCandidacy.getSnapshot());
+				for (FileBody body : oldCandidacy.getSnapshot().getFiles()) {
+					newCandidacy.getSnapshot().addFile(body);
+				}
+				for (CandidacyEvaluator oldEvaluator : oldCandidacy.getProposedEvaluators()) {
+					CandidacyEvaluator newEvaluator = new CandidacyEvaluator();
+					newEvaluator.setFullname(oldEvaluator.getFullname());
+					newEvaluator.setEmail(oldEvaluator.getEmail());
+					newCandidacy.addProposedEvaluator(newEvaluator);
+				}
+				newCandidacy = em.merge(newCandidacy);
+
+				// Copy Candidacy Files:
+				for (CandidacyFile oldFile : oldCandidacy.getFiles()) {
+					CandidacyFile newFile = new CandidacyFile();
+					newFile.setCandidacy(newCandidacy);
+					newFile.setDeleted(oldFile.isDeleted());
+					newFile.setType(oldFile.getType());
+					newFile.setName(oldFile.getName());
+					newFile.setDescription(oldFile.getDescription());
+					newFile.setOwner(oldFile.getOwner());
+
+					newFile = em.merge(newFile);
+
+					FileBody newBody = new FileBody();
+					newFile.addBody(newBody);
+					em.persist(newBody); // Get ID
+
+					newBody.setFileSize(oldFile.getCurrentBody().getFileSize());
+					newBody.setMimeType(oldFile.getCurrentBody().getMimeType());
+					newBody.setOriginalFilename(oldFile.getCurrentBody().getOriginalFilename());
+					newBody.setDate(oldFile.getCurrentBody().getDate());
+
+					String newFilename = suggestFilename(newBody.getId(), "upl", oldFile.getCurrentBody().getOriginalFilename());
+					copyFile(oldFile.getCurrentBody().getStoredFilePath(), newFilename);
+					newBody.setStoredFilePath(newFilename);
+
+					newCandidacy.addFile(newFile);
+				}
+
+			}
+			// Copy Position Files: 
+			for (PositionFile oldFile : oldPosition.getFiles()) {
+				PositionFile newFile = new PositionFile();
+				newFile.setPosition(newPosition);
+				newFile.setDeleted(oldFile.isDeleted());
+				newFile.setType(oldFile.getType());
+				newFile.setName(oldFile.getName());
+				newFile.setDescription(oldFile.getDescription());
+				newFile.setOwner(oldFile.getOwner());
+
+				newFile = em.merge(newFile);
+
+				FileBody newBody = new FileBody();
+				newFile.addBody(newBody);
+				em.persist(newBody); // Get ID
+
+				newBody.setFileSize(oldFile.getCurrentBody().getFileSize());
+				newBody.setMimeType(oldFile.getCurrentBody().getMimeType());
+				newBody.setOriginalFilename(oldFile.getCurrentBody().getOriginalFilename());
+				newBody.setDate(oldFile.getCurrentBody().getDate());
+
+				String newFilename = suggestFilename(newBody.getId(), "upl", oldFile.getCurrentBody().getOriginalFilename());
+				copyFile(oldFile.getCurrentBody().getStoredFilePath(), newFilename);
+				newBody.setStoredFilePath(newFilename);
+
+				newPosition.addFile(newFile);
+			}
+
+			em.flush();
+			return newPosition;
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, "", e);
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+		} catch (PersistenceException e) {
+			logger.log(Level.SEVERE, "", e);
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+		} catch (RuntimeException e) {
+			logger.log(Level.SEVERE, "", e);
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+		}
+	}
 }

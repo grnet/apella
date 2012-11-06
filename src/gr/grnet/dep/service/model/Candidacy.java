@@ -60,7 +60,7 @@ public class Candidacy {
 	@OneToMany(mappedBy = "candidacy", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<CandidacyEvaluator> proposedEvaluators = new HashSet<CandidacyEvaluator>();
 
-	static class CandidacySnapshot {
+	public static class CandidacySnapshot {
 
 		private String username;
 

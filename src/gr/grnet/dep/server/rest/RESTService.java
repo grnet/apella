@@ -12,7 +12,10 @@ import gr.grnet.dep.service.util.DEPConfigurationFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Date;
@@ -163,7 +166,7 @@ public class RESTService {
 		return (subdir < 10) ? "0" + subdir : String.valueOf(subdir);
 	}
 
-	private String suggestFilename(Long id, String prefix, String originalName) throws IOException {
+	protected String suggestFilename(Long id, String prefix, String originalName) throws IOException {
 		int dotPoint = originalName.lastIndexOf('.');
 		String extension = "";
 		if (dotPoint > -1) {
@@ -240,6 +243,29 @@ public class RESTService {
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Error encountered while uploading file", e);
 			throw new RestException(Status.INTERNAL_SERVER_ERROR, "generic");
+		}
+	}
+
+	protected void copyFile(String sourceFilename, String targetFilename) throws IOException {
+		InputStream in = null;
+		OutputStream out = null;
+		try {
+			File sourceFile = new File(savePath + sourceFilename);
+			File targetFile = new File(savePath + targetFilename);
+			in = new FileInputStream(sourceFile);
+			out = new FileOutputStream(targetFile);
+			byte[] buf = new byte[1024];
+			int len;
+			while ((len = in.read(buf)) > 0) {
+				out.write(buf, 0, len);
+			}
+		} finally {
+			if (in != null) {
+				in.close();
+			}
+			if (out != null) {
+				out.close();
+			}
 		}
 	}
 

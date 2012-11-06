@@ -567,9 +567,4 @@ public class CandidacyRESTService extends RESTService {
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
-
-	/***************************
-	 * Committee Functions *****
-	 ***************************/
-
 }
