@@ -830,7 +830,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			id : undefined,
 			position : undefined,
 			professor : undefined,
-			confirmedMembership : undefined,
+			confirmedMembership : undefined
 		}
 	});
 
