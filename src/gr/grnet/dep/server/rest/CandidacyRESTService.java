@@ -175,9 +175,11 @@ public class CandidacyRESTService extends RESTService {
 			}
 			try {
 				Candidacy existingCandidacy = (Candidacy) em.createQuery(
-					"select c from Candidacy c" +
+					"select c from Candidacy c " +
 						"where c.candidate.id = :candidateId " +
 						"and c.position.id = :positionId")
+					.setParameter("candidateId", candidate.getId())
+					.setParameter("positionId", position.getId())
 					.getSingleResult();
 				// Return Results
 				existingCandidacy.initializeCollections();
