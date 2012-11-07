@@ -17,6 +17,7 @@ import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.file.ProfessorFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -242,7 +243,7 @@ public class RoleRESTService extends RESTService {
 				break;
 			}
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !roleBelongsToUser) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !roleBelongsToUser) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 
@@ -262,7 +263,7 @@ public class RoleRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 
 		// Validate
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !newRole.getUser().getId().equals(loggedOn.getId())) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !newRole.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		User existingUser = em.find(User.class, newRole.getUser().getId());
@@ -313,11 +314,14 @@ public class RoleRESTService extends RESTService {
 		if (existingRole == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.role.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !existingRole.getUser().getId().equals(loggedOn.getId())) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !existingRole.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (!existingRole.getStatus().equals(RoleStatus.UNAPPROVED) && !existingRole.compareCriticalFields(role)) {
 			throw new RestException(Status.FORBIDDEN, "cannot.change.critical.fields");
+		}
+		if (updateCandidacies == null) {
+			updateCandidacies = false;
 		}
 		Long managerInstitutionId;
 		Long institutionId;
@@ -387,8 +391,20 @@ public class RoleRESTService extends RESTService {
 		try {
 			// Update
 			existingRole = existingRole.copyFrom(role);
+			// Check open candidacies
+			if (updateCandidacies && existingRole.getUser().hasActiveRole(RoleDiscriminator.CANDIDATE)) {
+				try {
+					Candidate candidate = (Candidate) existingRole.getUser().getActiveRole(RoleDiscriminator.CANDIDATE);
+					updateOpenCandidacies(candidate);
+				} catch (RestException e) {
+					log.log(Level.WARNING, e.getMessage(), e);
+					sc.setRollbackOnly();
+					throw e;
+				}
+			}
 			// Return Result
 			em.flush();
+
 			existingRole.initializeCollections();
 			return existingRole;
 		} catch (PersistenceException e) {
@@ -398,34 +414,9 @@ public class RoleRESTService extends RESTService {
 		}
 	}
 
-	@DELETE
-	@Path("/{id:[0-9][0-9]*}")
-	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
-		User loggedOn = getLoggedOn(authToken);
-
-		Role role = em.find(Role.class, id);
-		// Validate:
-		if (role == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.role.id");
-		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		User user = em.find(User.class, role.getUser().getId());
-		if (user.getRoles().size() < 2) {
-			throw new RestException(Status.FORBIDDEN, "one.role.required");
-		}
-		try {
-			// Delete:
-			user.removeRole(role);
-			em.remove(role);
-			em.flush();
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
-		}
-	}
+	/***************************
+	 * File Functions **********
+	 ***************************/
 
 	@GET
 	@Path("/{id:[0-9][0-9]*}/file")
@@ -437,11 +428,11 @@ public class RoleRESTService extends RESTService {
 		if (role == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
-			!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -471,11 +462,11 @@ public class RoleRESTService extends RESTService {
 		if (role == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
-			!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -509,11 +500,11 @@ public class RoleRESTService extends RESTService {
 		if (role == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.role.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
-			!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -556,17 +547,19 @@ public class RoleRESTService extends RESTService {
 		if (role == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Parse Request
 		List<FileItem> fileItems = readMultipartFormData(request);
 		// Find required type:
 		FileType type = null;
+		Boolean updateCandidacies = false;
 		for (FileItem fileItem : fileItems) {
 			if (fileItem.isFormField() && fileItem.getFieldName().equals("type")) {
 				type = FileType.valueOf(fileItem.getString("UTF-8"));
-				break;
+			} else if (fileItem.isFormField() && fileItem.getFieldName().equals("updateCandidacies")) {
+				updateCandidacies = Boolean.valueOf(fileItem.getString("UTF-8"));
 			}
 		}
 		if (type == null) {
@@ -595,8 +588,21 @@ public class RoleRESTService extends RESTService {
 				CandidateFile candidateFile = new CandidateFile();
 				candidateFile.setCandidate(candidate);
 				candidateFile.setOwner(candidate.getUser());
-				saveFile(loggedOn, fileItems, candidateFile);
+				File file = saveFile(loggedOn, fileItems, candidateFile);
 				candidate.addFile(candidateFile);
+
+				// Check open candidacies
+				if (updateCandidacies) {
+					try {
+						updateOpenCandidacies(candidate);
+					} catch (RestException e) {
+						log.log(Level.WARNING, e.getMessage(), e);
+						file.delete();
+						sc.setRollbackOnly();
+						throw e;
+					}
+				}
+
 				em.flush();
 				return toJSON(candidateFile, SimpleFileHeaderView.class);
 			} else if (role instanceof Professor) {
@@ -610,8 +616,21 @@ public class RoleRESTService extends RESTService {
 				ProfessorFile professorFile = new ProfessorFile();
 				professorFile.setProfessor(professor);
 				professorFile.setOwner(professor.getUser());
-				saveFile(loggedOn, fileItems, professorFile);
+				File file = saveFile(loggedOn, fileItems, professorFile);
 				professor.addFile(professorFile);
+
+				// Check open candidacies
+				if (updateCandidacies && professor.getUser().hasActiveRole(RoleDiscriminator.CANDIDATE)) {
+					try {
+						Candidate candidate = (Candidate) professor.getUser().getActiveRole(RoleDiscriminator.CANDIDATE);
+						updateOpenCandidacies(candidate);
+					} catch (RestException e) {
+						log.log(Level.WARNING, e.getMessage(), e);
+						file.delete();
+						sc.setRollbackOnly();
+						throw e;
+					}
+				}
 				em.flush();
 				return toJSON(professorFile, SimpleFileHeaderView.class);
 			} else {
@@ -635,17 +654,19 @@ public class RoleRESTService extends RESTService {
 		if (role == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Parse Request
 		List<FileItem> fileItems = readMultipartFormData(request);
 		// Find required type:
 		FileType type = null;
+		Boolean updateCandidacies = false;
 		for (FileItem fileItem : fileItems) {
 			if (fileItem.isFormField() && fileItem.getFieldName().equals("type")) {
 				type = FileType.valueOf(fileItem.getString("UTF-8"));
-				break;
+			} else if (fileItem.isFormField() && fileItem.getFieldName().equals("updateCandidacies")) {
+				updateCandidacies = Boolean.valueOf(fileItem.getString("UTF-8"));
 			}
 		}
 		if (type == null) {
@@ -677,7 +698,18 @@ public class RoleRESTService extends RESTService {
 					}
 				}
 				// Update File
-				saveFile(loggedOn, fileItems, candidateFile);
+				File file = saveFile(loggedOn, fileItems, candidateFile);
+				// Check open candidacies
+				if (updateCandidacies) {
+					try {
+						updateOpenCandidacies(candidate);
+					} catch (RestException e) {
+						log.log(Level.WARNING, e.getMessage(), e);
+						file.delete();
+						sc.setRollbackOnly();
+						throw e;
+					}
+				}
 				em.flush();
 				candidateFile.getBodies().size();
 				return toJSON(candidateFile, SimpleFileHeaderView.class);
@@ -693,7 +725,19 @@ public class RoleRESTService extends RESTService {
 				if (professorFile == null) {
 					throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 				}
-				saveFile(loggedOn, fileItems, professorFile);
+				File file = saveFile(loggedOn, fileItems, professorFile);
+				// Check open candidacies
+				if (updateCandidacies && professor.getUser().hasActiveRole(RoleDiscriminator.CANDIDATE)) {
+					try {
+						Candidate candidate = (Candidate) professor.getUser().getActiveRole(RoleDiscriminator.CANDIDATE);
+						updateOpenCandidacies(candidate);
+					} catch (RestException e) {
+						log.log(Level.WARNING, e.getMessage(), e);
+						file.delete();
+						sc.setRollbackOnly();
+						throw e;
+					}
+				}
 				em.flush();
 				professorFile.getBodies().size();
 				return toJSON(professorFile, SimpleFileHeaderView.class);
@@ -717,14 +761,17 @@ public class RoleRESTService extends RESTService {
 	@DELETE
 	@Path("/{id:[0-9]+}/file/{fileId:([0-9]+)?}")
 	@JsonView({SimpleFileHeaderView.class})
-	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("fileId") Long fileId) {
+	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("fileId") Long fileId, @QueryParam("updateCandidacies") Boolean updateCandidacies) {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
 		if (role == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		if (updateCandidacies == null) {
+			updateCandidacies = false;
 		}
 		try {
 			if (role instanceof Candidate) {
@@ -748,16 +795,29 @@ public class RoleRESTService extends RESTService {
 						}
 					}
 					// Do delete
-					Response retv = deleteFileBody(candidateFile);
-					if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
-						// Remove from Role
-						em.remove(candidateFile);
+					File file = deleteFileBody(candidateFile);
+					// Check open candidacies
+					if (updateCandidacies) {
+						try {
+							updateOpenCandidacies(candidate);
+						} catch (RestException e) {
+							log.log(Level.WARNING, e.getMessage(), e);
+							sc.setRollbackOnly();
+							throw e;
+						}
 					}
-					return retv;
+					file.delete();
+					if (candidateFile.getCurrentBody() == null) {
+						candidate.getFiles().remove(candidateFile);
+						return Response.noContent().build();
+					} else {
+						return Response.ok(candidateFile).build();
+					}
 				} catch (NoResultException e) {
 					throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 				}
 			} else if (role instanceof Professor) {
+				Professor professor = (Professor) role;
 				try {
 					ProfessorFile professorFile = (ProfessorFile) em.createQuery(
 						"select cf from ProfessorFile cf " +
@@ -766,12 +826,26 @@ public class RoleRESTService extends RESTService {
 						.setParameter("professorId", id)
 						.setParameter("fileId", fileId)
 						.getSingleResult();
-					Response retv = deleteFileBody(professorFile);
-					if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
-						// Remove from Role
-						em.remove(professorFile);
+
+					File file = deleteFileBody(professorFile);
+					// Check open candidacies
+					if (updateCandidacies && professor.getUser().hasActiveRole(RoleDiscriminator.CANDIDATE)) {
+						try {
+							Candidate candidate = (Candidate) professor.getUser().getActiveRole(RoleDiscriminator.CANDIDATE);
+							updateOpenCandidacies(candidate);
+						} catch (RestException e) {
+							log.log(Level.WARNING, e.getMessage(), e);
+							sc.setRollbackOnly();
+							throw e;
+						}
 					}
-					return retv;
+					file.delete();
+					if (professorFile.getCurrentBody() == null) {
+						professor.getFiles().remove(professorFile);
+						return Response.noContent().build();
+					} else {
+						return Response.ok(professorFile).build();
+					}
 				} catch (NoResultException e) {
 					throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 				}
@@ -799,7 +873,7 @@ public class RoleRESTService extends RESTService {
 		if (primaryRole == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.role.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (!primaryRole.getDiscriminator().equals(primaryRole.getUser().getPrimaryRole())) {
@@ -833,7 +907,6 @@ public class RoleRESTService extends RESTService {
 			}
 			// Update all other roles of user (applicable for Professor->Candidate
 			for (Role otherRole : primaryRole.getUser().getRoles()) {
-				// TODO: Check if INACTIVE
 				if (otherRole != primaryRole && otherRole.getStatus() != RoleStatus.INACTIVE) {
 					otherRole.setStatus(requestRole.getStatus());
 					otherRole.setStatusDate(new Date());

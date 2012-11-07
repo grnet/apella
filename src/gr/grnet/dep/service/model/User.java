@@ -291,7 +291,7 @@ public class User implements Serializable {
 	}
 
 	@XmlTransient
-	public Role getRole(RoleDiscriminator discriminator) {
+	public Role getActiveRole(RoleDiscriminator discriminator) {
 		for (Role r : getRoles()) {
 			if (r.getDiscriminator() == discriminator && r.getStatus().equals(RoleStatus.ACTIVE)) {
 				return r;
@@ -300,8 +300,13 @@ public class User implements Serializable {
 		return null;
 	}
 
-	public boolean hasRole(RoleDiscriminator discriminator) {
-		return getRole(discriminator) != null;
+	public boolean hasActiveRole(RoleDiscriminator discriminator) {
+		for (Role r : getRoles()) {
+			if (r.getDiscriminator() == discriminator && r.getStatus().equals(RoleStatus.ACTIVE)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@XmlTransient

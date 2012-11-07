@@ -12,6 +12,7 @@ import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.file.RegisterFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -90,7 +91,7 @@ public class RegisterRESTService extends RESTService {
 		if (institution == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.department.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(institution)) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(institution)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Update
@@ -119,7 +120,7 @@ public class RegisterRESTService extends RESTService {
 		if (existingRegister == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (!existingRegister.getInstitution().getId().equals(register.getInstitution().getId())) {
@@ -151,7 +152,7 @@ public class RegisterRESTService extends RESTService {
 		if (register == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
@@ -179,9 +180,9 @@ public class RegisterRESTService extends RESTService {
 		if (register == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isInstitutionUser(register.getInstitution())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -200,9 +201,9 @@ public class RegisterRESTService extends RESTService {
 		if (register == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isInstitutionUser(register.getInstitution())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -225,9 +226,9 @@ public class RegisterRESTService extends RESTService {
 		if (register == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isInstitutionUser(register.getInstitution())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -257,7 +258,7 @@ public class RegisterRESTService extends RESTService {
 		if (register == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Parse Request
@@ -306,7 +307,7 @@ public class RegisterRESTService extends RESTService {
 		if (register == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Parse Request
@@ -366,7 +367,7 @@ public class RegisterRESTService extends RESTService {
 		if (register == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
@@ -380,12 +381,15 @@ public class RegisterRESTService extends RESTService {
 			if (registerFile == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 			}
-			Response retv = deleteFileBody(registerFile);
-			if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
-				// Remove from Position
+			File file = deleteFileBody(registerFile);
+			file.delete();
+			if (registerFile.getCurrentBody() == null) {
+				// Remove from Register
 				register.getFiles().remove(registerFile);
+				return Response.noContent().build();
+			} else {
+				return Response.ok(registerFile).build();
 			}
-			return retv;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();

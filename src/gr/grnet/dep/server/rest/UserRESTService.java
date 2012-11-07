@@ -243,10 +243,10 @@ public class UserRESTService extends RESTService {
 				case INSTITUTION_ASSISTANT:
 					// CHECK LOGGEDON USER, ACTIVATE NEW USER
 					loggedOn = getLoggedOn(authToken);
-					if (!loggedOn.hasRole(RoleDiscriminator.INSTITUTION_MANAGER)) {
+					if (!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER)) {
 						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 					}
-					((InstitutionAssistant) firstRole).setManager(((InstitutionManager) loggedOn.getRole(RoleDiscriminator.INSTITUTION_MANAGER)));
+					((InstitutionAssistant) firstRole).setManager(((InstitutionManager) loggedOn.getActiveRole(RoleDiscriminator.INSTITUTION_MANAGER)));
 					user.setStatus(UserStatus.ACTIVE);
 					user.setVerificationNumber(null);
 					firstRole.setStatus(RoleStatus.ACTIVE);
@@ -256,10 +256,10 @@ public class UserRESTService extends RESTService {
 				case MINISTRY_ASSISTANT:
 					// CHECK LOGGEDON USER, ACTIVATE NEW USER
 					loggedOn = getLoggedOn(authToken);
-					if (!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER)) {
+					if (!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER)) {
 						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 					}
-					((MinistryAssistant) firstRole).setManager(((MinistryManager) loggedOn.getRole(RoleDiscriminator.MINISTRY_MANAGER)));
+					((MinistryAssistant) firstRole).setManager(((MinistryManager) loggedOn.getActiveRole(RoleDiscriminator.MINISTRY_MANAGER)));
 					user.setStatus(UserStatus.ACTIVE);
 					user.setVerificationNumber(null);
 					firstRole.setStatus(RoleStatus.ACTIVE);
@@ -295,7 +295,7 @@ public class UserRESTService extends RESTService {
 	@JsonView({DetailedUserView.class})
 	public User update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, User user) {
 		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(id)) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(id)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 
@@ -332,8 +332,8 @@ public class UserRESTService extends RESTService {
 		if (existingUser == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.user.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
-			(existingUser.hasRole(RoleDiscriminator.INSTITUTION_ASSISTANT) && !((InstitutionAssistant) existingUser.getRole(RoleDiscriminator.INSTITUTION_ASSISTANT)).getManager().getUser().getId().equals(loggedOn.getId()))) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			(existingUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT) && !((InstitutionAssistant) existingUser.getActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)).getManager().getUser().getId().equals(loggedOn.getId()))) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
@@ -561,7 +561,7 @@ public class UserRESTService extends RESTService {
 	@JsonView({DetailedUserView.class})
 	public User updateStatus(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, User requestUser) {
 		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR)) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {

@@ -36,7 +36,7 @@ public class ProfessorRESTService extends RESTService {
 		if (professor == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !professor.getUser().getId().equals(loggedOn.getId())) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !professor.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		professor.initializeCollections();

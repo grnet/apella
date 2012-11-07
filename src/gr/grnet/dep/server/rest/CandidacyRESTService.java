@@ -7,10 +7,7 @@ import gr.grnet.dep.service.model.CandidacyEvaluator;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.PositionStatus;
-import gr.grnet.dep.service.model.ProfessorDomestic;
-import gr.grnet.dep.service.model.ProfessorForeign;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
-import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.CandidacyFile;
 import gr.grnet.dep.service.model.file.CandidateFile;
@@ -19,6 +16,7 @@ import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
@@ -69,9 +67,9 @@ public class CandidacyRESTService extends RESTService {
 				.setParameter("id", id)
 				.getSingleResult();
 			Candidate candidate = candidacy.getCandidate();
-			if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
-				!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-				!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+			if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 				!loggedOn.isDepartmentUser(candidacy.getPosition().getDepartment()) &&
 				!candidate.getUser().getId().equals(loggedOn.getId())) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -81,75 +79,6 @@ public class CandidacyRESTService extends RESTService {
 			return candidacy;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
-		}
-	}
-
-	/**
-	 * Check that a (possible) Candidacy passes some basic checks before
-	 * creation / update.
-	 * 
-	 * @param candidacy
-	 * @param candidate
-	 */
-	private void validateCandidacy(Candidacy candidacy, Candidate candidate) {
-		if (!candidate.getStatus().equals(RoleStatus.ACTIVE)) {
-			throw new RestException(Status.CONFLICT, "validation.candidacy.inactive.role");
-		}
-		if (FileHeader.filter(candidate.getFiles(), FileType.DIMOSIEYSI).size() == 0) {
-			throw new RestException(Status.CONFLICT, "validation.candidacy.no.dimosieysi");
-		}
-		if (FileHeader.filter(candidate.getFiles(), FileType.PTYXIO).size() == 0) {
-			throw new RestException(Status.CONFLICT, "validation.candidacy.no.ptyxio");
-		}
-		if (FileHeader.filter(candidate.getFiles(), FileType.BIOGRAFIKO).size() == 0) {
-			throw new RestException(Status.CONFLICT, "validation.candidacy.no.cv");
-		}
-	}
-
-	/**
-	 * Hold on to a snapshot of candidate's details in given candidacy.
-	 * 
-	 * @param candidacy
-	 * @param candidate
-	 */
-	private void updateSnapshot(Candidacy candidacy, Candidate candidate) {
-		candidacy.clearSnapshot();
-		candidacy.updateSnapshot(candidate);
-		User user = candidate.getUser();
-		ProfessorDomestic professorDomestic = (ProfessorDomestic) user.getRole(RoleDiscriminator.PROFESSOR_DOMESTIC);
-		ProfessorForeign professorForeign = (ProfessorForeign) user.getRole(RoleDiscriminator.PROFESSOR_FOREIGN);
-		if (professorDomestic != null) {
-			candidacy.updateSnapshot(professorDomestic);
-		} else if (professorForeign != null) {
-			candidacy.updateSnapshot(professorForeign);
-		}
-	}
-
-	@PUT
-	@Path("/{id:[0-9][0-9]*}/snapshot")
-	@JsonView({DetailedCandidacyView.class})
-	public Candidacy updateSnapshot(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
-		User loggedOn = getLoggedOn(authToken);
-		try {
-			Candidacy existingCandidacy = em.find(Candidacy.class, id);
-			if (existingCandidacy == null) {
-				throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
-			}
-			Candidate candidate = (Candidate) em.createQuery(
-				"from Candidate c where c.id=:id")
-				.setParameter("id", existingCandidacy.getCandidate().getId())
-				.getSingleResult();
-
-			if (candidate.getUser().getId() != loggedOn.getId()) {
-				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-			}
-
-			validateCandidacy(existingCandidacy, candidate);
-			updateSnapshot(existingCandidacy, candidate);
-			existingCandidacy.initializeCollections();
-			return existingCandidacy;
-		} catch (PersistenceException e) {
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -287,9 +216,9 @@ public class CandidacyRESTService extends RESTService {
 		if (candidacy == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(candidacy.getPosition().getDepartment()) &&
 			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -309,9 +238,9 @@ public class CandidacyRESTService extends RESTService {
 		if (candidacy == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(candidacy.getPosition().getDepartment()) &&
 			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -335,9 +264,9 @@ public class CandidacyRESTService extends RESTService {
 		if (candidacy == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(candidacy.getPosition().getDepartment()) &&
 			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -364,9 +293,9 @@ public class CandidacyRESTService extends RESTService {
 		if (candidacy == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(candidacy.getPosition().getDepartment()) &&
 			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -386,9 +315,9 @@ public class CandidacyRESTService extends RESTService {
 		if (candidacy == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(candidacy.getPosition().getDepartment()) &&
 			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -412,9 +341,9 @@ public class CandidacyRESTService extends RESTService {
 		if (candidacy == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(candidacy.getPosition().getDepartment()) &&
 			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -580,12 +509,15 @@ public class CandidacyRESTService extends RESTService {
 			if (candidacyFile == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 			}
-			Response retv = deleteFileBody(candidacyFile);
-			if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
+			File file = deleteFileBody(candidacyFile);
+			file.delete();
+			if (candidacyFile.getCurrentBody() == null) {
 				// Remove from Position
 				candidacy.getFiles().remove(candidacyFile);
+				return Response.noContent().build();
+			} else {
+				return Response.ok(candidacyFile).build();
 			}
-			return retv;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();

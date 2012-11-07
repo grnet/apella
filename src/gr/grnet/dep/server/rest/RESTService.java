@@ -1,7 +1,12 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.model.Candidacy;
+import gr.grnet.dep.service.model.Candidate;
+import gr.grnet.dep.service.model.ProfessorDomestic;
+import gr.grnet.dep.service.model.ProfessorForeign;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.file.FileBody;
@@ -31,7 +36,6 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
@@ -90,6 +94,10 @@ public class RESTService {
 		}
 	}
 
+	/******************************
+	 * Login Functions ************
+	 ******************************/
+
 	protected User getLoggedOn(String authToken) throws RestException {
 		if (authToken == null) {
 			throw new RestException(Status.UNAUTHORIZED, "login.missing.token");
@@ -125,6 +133,206 @@ public class RESTService {
 		} catch (UnsupportedEncodingException e) {
 			staticLogger.log(Level.SEVERE, "decodeAttribute: ", e);
 			return null;
+		}
+	}
+
+	/******************************
+	 * Candidacy Snapshot *********
+	 ******************************/
+
+	/**
+	 * Check that a (possible) Candidacy passes some basic checks before
+	 * creation / update. Takes into account all roles
+	 * 
+	 * @param candidacy
+	 * @param candidate
+	 */
+	protected void validateCandidacy(Candidacy candidacy, Candidate candidate) {
+		if (!candidate.getStatus().equals(RoleStatus.ACTIVE)) {
+			throw new RestException(Status.CONFLICT, "validation.candidacy.inactive.role");
+		}
+		if (FileHeader.filter(candidate.getFiles(), FileType.DIMOSIEYSI).size() == 0) {
+			throw new RestException(Status.CONFLICT, "validation.candidacy.no.dimosieysi");
+		}
+		if (FileHeader.filter(candidate.getFiles(), FileType.PTYXIO).size() == 0) {
+			throw new RestException(Status.CONFLICT, "validation.candidacy.no.ptyxio");
+		}
+		if (FileHeader.filter(candidate.getFiles(), FileType.BIOGRAFIKO).size() == 0) {
+			throw new RestException(Status.CONFLICT, "validation.candidacy.no.cv");
+		}
+	}
+
+	/**
+	 * Hold on to a snapshot of candidate's details in given candidacy. Takes
+	 * into account all roles
+	 * 
+	 * @param candidacy
+	 * @param candidate
+	 */
+	protected void updateSnapshot(Candidacy candidacy, Candidate candidate) {
+		candidacy.clearSnapshot();
+		candidacy.updateSnapshot(candidate);
+		User user = candidate.getUser();
+		ProfessorDomestic professorDomestic = (ProfessorDomestic) user.getActiveRole(RoleDiscriminator.PROFESSOR_DOMESTIC);
+		ProfessorForeign professorForeign = (ProfessorForeign) user.getActiveRole(RoleDiscriminator.PROFESSOR_FOREIGN);
+		if (professorDomestic != null) {
+			candidacy.updateSnapshot(professorDomestic);
+		} else if (professorForeign != null) {
+			candidacy.updateSnapshot(professorForeign);
+		}
+	}
+
+	protected void updateOpenCandidacies(Candidate candidate) {
+		// Get Open Candidacies
+		@SuppressWarnings("unchecked")
+		List<Candidacy> openCandidacies = em.createQuery(
+			"from Candidacy c where c.candidate = :candidate " +
+				"and c.position.closingDate >= :now")
+			.setParameter("candidate", candidate)
+			.setParameter("now", new Date())
+			.getResultList();
+
+		// Validate all candidacies
+		for (Candidacy candidacy : openCandidacies) {
+			validateCandidacy(candidacy, candidate);
+		}
+		// If all valid, update
+		for (Candidacy candidacy : openCandidacies) {
+			updateSnapshot(candidacy, candidate);
+		}
+	}
+
+	/******************************
+	 * File Functions *************
+	 ******************************/
+
+	public File saveFile(User loggedOn, List<FileItem> fileItems, FileHeader header) throws IOException {
+		try {
+			File file = null;
+			for (FileItem fileItem : fileItems) {
+				if (fileItem.isFormField()) {
+					logger.info("Incoming text data: '" + fileItem.getFieldName() + "'=" + fileItem.getString("UTF-8") + "\n");
+					if (fileItem.getFieldName().equals("type")) {
+						header.setType(FileType.valueOf(fileItem.getString("UTF-8")));
+					} else if (fileItem.getFieldName().equals("name")) {
+						header.setName(fileItem.getString("UTF-8"));
+					} else if (fileItem.getFieldName().equals("description")) {
+						header.setDescription(fileItem.getString("UTF-8"));
+					}
+				} else {
+					FileBody body = new FileBody();
+					header.addBody(body);
+					em.persist(header);
+					em.persist(body);
+					em.flush(); // Get an id
+
+					String filename = fileItem.getName();
+					String newFilename = suggestFilename(body.getId(), "upl", filename);
+					file = new File(savePath + newFilename);
+
+					String mimeType = fileItem.getContentType();
+					if (StringUtils.isEmpty(mimeType) || "application/octet-stream".equals(mimeType)
+						|| "application/download".equals(mimeType) || "application/force-download".equals(mimeType)
+						|| "octet/stream".equals(mimeType) || "application/unknown".equals(mimeType)) {
+						body.setMimeType(identifyMimeType(filename));
+					} else {
+						body.setMimeType(mimeType);
+					}
+					body.setOriginalFilename(fileItem.getName());
+					body.setStoredFilePath(newFilename);
+					body.setFileSize(fileItem.getSize());
+					body.setDate(new Date());
+
+					fileItem.write(file);
+				}
+			}
+
+			return file;
+		} catch (FileUploadException ex) {
+			logger.log(Level.SEVERE, "Error encountered while parsing the request", ex);
+			throw new RestException(Status.INTERNAL_SERVER_ERROR, "generic");
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "Error encountered while uploading file", e);
+			throw new RestException(Status.INTERNAL_SERVER_ERROR, "generic");
+		}
+	}
+
+	/**
+	 * Deletes the last body of given file, if possible.
+	 * 
+	 * @param fh
+	 * @return
+	 */
+	protected File deleteFileBody(FileHeader fh) {
+		int size = fh.getBodies().size();
+		// Delete the file itself, if possible.
+		FileBody fb = fh.getCurrentBody();
+
+		// Validate:
+		try {
+			em.createQuery("select c.id from Candidacy c " +
+				"left join c.snapshot.files fb " +
+				"where fb.id = :bodyId")
+				.setParameter("bodyId", fb.getId())
+				.setMaxResults(1)
+				.getSingleResult();
+			logger.log(Level.INFO, "Could not delete FileBody id=" + fb.getId() + ". Constraint violation. ");
+			throw new RestException(Status.CONFLICT, "file.in.use");
+		} catch (NoResultException e) {
+		}
+		// Reference physical file
+		String fullPath = savePath + File.separator + fb.getStoredFilePath();
+		File file = new File(fullPath);
+		// Delete
+		fh.getBodies().remove(size - 1);
+		fh.setCurrentBody(null);
+		em.remove(fb);
+		if (size > 1) {
+			fh.setCurrentBody(fh.getBodies().get(size - 2));
+		} else {
+			em.remove(fh);
+		}
+		//Return physical file, should be deleted by caller of function
+		return file;
+	}
+
+	protected Response sendFileBody(FileBody fb) {
+		try {
+			String fullPath = savePath + File.separator + fb.getStoredFilePath();
+			return Response.ok(new FileInputStream(new File(fullPath)))
+				.type(MediaType.APPLICATION_OCTET_STREAM)
+				.header("charset", "UTF-8")
+				.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(fb.getOriginalFilename(), "UTF-8") + "\"")
+				.build();
+		} catch (FileNotFoundException e) {
+			logger.log(Level.SEVERE, "sendFileBody", e);
+			throw new EJBException(e);
+		} catch (UnsupportedEncodingException e) {
+			logger.log(Level.SEVERE, "sendFileBody", e);
+			throw new EJBException(e);
+		}
+	}
+
+	protected void copyFile(String sourceFilename, String targetFilename) throws IOException {
+		InputStream in = null;
+		OutputStream out = null;
+		try {
+			File sourceFile = new File(savePath + sourceFilename);
+			File targetFile = new File(savePath + targetFilename);
+			in = new FileInputStream(sourceFile);
+			out = new FileOutputStream(targetFile);
+			byte[] buf = new byte[1024];
+			int len;
+			while ((len = in.read(buf)) > 0) {
+				out.write(buf, 0, len);
+			}
+		} finally {
+			if (in != null) {
+				in.close();
+			}
+			if (out != null) {
+				out.close();
+			}
 		}
 	}
 
@@ -194,140 +402,9 @@ public class RESTService {
 		}
 	}
 
-	public void saveFile(User loggedOn, List<FileItem> fileItems, FileHeader header) throws IOException {
-
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(header.getOwner().getId())) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		try {
-			for (FileItem fileItem : fileItems) {
-				if (fileItem.isFormField()) {
-					logger.info("Incoming text data: '" + fileItem.getFieldName() + "'=" + fileItem.getString("UTF-8") + "\n");
-					if (fileItem.getFieldName().equals("type")) {
-						header.setType(FileType.valueOf(fileItem.getString("UTF-8")));
-					} else if (fileItem.getFieldName().equals("name")) {
-						header.setName(fileItem.getString("UTF-8"));
-					} else if (fileItem.getFieldName().equals("description")) {
-						header.setDescription(fileItem.getString("UTF-8"));
-					}
-				} else {
-					FileBody body = new FileBody();
-					header.addBody(body);
-					em.persist(header);
-					em.persist(body);
-					em.flush(); // Get an id
-
-					String filename = fileItem.getName();
-					String newFilename = suggestFilename(body.getId(), "upl", filename);
-					File file = new File(savePath + newFilename);
-
-					String mimeType = fileItem.getContentType();
-					if (StringUtils.isEmpty(mimeType) || "application/octet-stream".equals(mimeType)
-						|| "application/download".equals(mimeType) || "application/force-download".equals(mimeType)
-						|| "octet/stream".equals(mimeType) || "application/unknown".equals(mimeType)) {
-						body.setMimeType(identifyMimeType(filename));
-					} else {
-						body.setMimeType(mimeType);
-					}
-					body.setOriginalFilename(fileItem.getName());
-					body.setStoredFilePath(newFilename);
-					body.setFileSize(fileItem.getSize());
-					body.setDate(new Date());
-
-					fileItem.write(file);
-				}
-			}
-		} catch (FileUploadException ex) {
-			logger.log(Level.SEVERE, "Error encountered while parsing the request", ex);
-			throw new RestException(Status.INTERNAL_SERVER_ERROR, "generic");
-		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Error encountered while uploading file", e);
-			throw new RestException(Status.INTERNAL_SERVER_ERROR, "generic");
-		}
-	}
-
-	protected void copyFile(String sourceFilename, String targetFilename) throws IOException {
-		InputStream in = null;
-		OutputStream out = null;
-		try {
-			File sourceFile = new File(savePath + sourceFilename);
-			File targetFile = new File(savePath + targetFilename);
-			in = new FileInputStream(sourceFile);
-			out = new FileOutputStream(targetFile);
-			byte[] buf = new byte[1024];
-			int len;
-			while ((len = in.read(buf)) > 0) {
-				out.write(buf, 0, len);
-			}
-		} finally {
-			if (in != null) {
-				in.close();
-			}
-			if (out != null) {
-				out.close();
-			}
-		}
-	}
-
-	/**
-	 * Deletes the last body of given file, if possible.
-	 * 
-	 * @param fh
-	 * @return
-	 */
-	public Response deleteFileBody(FileHeader fh) {
-		int size = fh.getBodies().size();
-		// Delete the file itself, if possible.
-		FileBody fb = fh.getCurrentBody();
-		logger.info("Attempting to delete FileBody id=" + fb.getId() + " of FileHeader id=" + fh.getId());
-		String fullPath = savePath + File.separator + fb.getStoredFilePath();
-		File file = new File(fullPath);
-
-		fh.getBodies().remove(size - 1);
-		fh.setCurrentBody(null);
-		try {
-			em.remove(fb);
-			em.flush();
-		} catch (PersistenceException e) {
-			// Assume it's a constraint violation
-			logger.info("Could not delete FileBody id=" + fb.getId() + ". Constraint violation.");
-			return Response.status(Status.CONFLICT).header(ERROR_CODE_HEADER, "file.in.use").build();
-		}
-		if (size > 1) {
-			fh.setCurrentBody(fh.getBodies().get(size - 2));
-		} else {
-			em.remove(fh);
-		}
-		boolean deleted = file.delete();
-		if (!deleted) {
-			logger.log(Level.WARNING, "Could not delete file '" + fullPath + "'.");
-			// Do something? What?
-		}
-		if (size > 1) {
-			logger.info("Deleted FileBody id=" + fb.getId());
-			return Response.ok(fh).build();
-		} else {
-			logger.info("Deleted FileBody id=" + fb.getId() + " PLUS FileHeader id=" + fh.getId());
-			return Response.noContent().build();
-		}
-	}
-
-	public Response sendFileBody(FileBody fb) {
-		try {
-			String fullPath = savePath + File.separator + fb.getStoredFilePath();
-			return Response.ok(new FileInputStream(new File(fullPath)))
-				.type(MediaType.APPLICATION_OCTET_STREAM)
-				.header("charset", "UTF-8")
-				.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(fb.getOriginalFilename(), "UTF-8") + "\"")
-				.build();
-		} catch (FileNotFoundException e) {
-			logger.log(Level.SEVERE, "sendFileBody", e);
-			throw new EJBException(e);
-		} catch (UnsupportedEncodingException e) {
-			logger.log(Level.SEVERE, "sendFileBody", e);
-			throw new EJBException(e);
-		}
-	}
+	/******************************
+	 * JSON Utility Functions *****
+	 ******************************/
 
 	public String toJSON(Object object, Class<?> view) {
 		try {

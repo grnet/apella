@@ -10,6 +10,7 @@ import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.file.InstitutionFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -82,7 +83,7 @@ public class InstitutionRESTService extends RESTService {
 		if (institution == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.institution.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(institution)) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(institution)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -100,7 +101,7 @@ public class InstitutionRESTService extends RESTService {
 		if (institution == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.institution.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(institution)) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(institution)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -122,7 +123,7 @@ public class InstitutionRESTService extends RESTService {
 		if (institution == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.institution.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(institution)) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(institution)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -151,7 +152,7 @@ public class InstitutionRESTService extends RESTService {
 		if (institution == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.institution.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(institution)) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(institution)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Parse Request
@@ -200,7 +201,7 @@ public class InstitutionRESTService extends RESTService {
 		if (institution == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.institution.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(institution)) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(institution)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Parse Request
@@ -261,7 +262,7 @@ public class InstitutionRESTService extends RESTService {
 		if (institution == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.institution.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(institution)) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(institution)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
@@ -275,12 +276,15 @@ public class InstitutionRESTService extends RESTService {
 			if (institutionFile == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 			}
-			Response retv = deleteFileBody(institutionFile);
-			if (retv.getStatus() == Status.NO_CONTENT.getStatusCode()) {
-				// Remove from Institution
+			File file = deleteFileBody(institutionFile);
+			file.delete();
+			if (institutionFile.getCurrentBody() == null) {
+				// Remove from Position
 				institution.getFiles().remove(institutionFile);
+				return Response.noContent().build();
+			} else {
+				return Response.ok(institutionFile).build();
 			}
-			return retv;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
