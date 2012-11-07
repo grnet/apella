@@ -37,15 +37,18 @@ public class ProfessorRESTService extends RESTService {
 	@JsonView({ProfessorCommitteesView.class})
 	public Collection<PositionCommitteeMember> getCommittees(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long professorId) {
 		User loggedOn = getLoggedOn(authToken);
-		Professor p = em.find(Professor.class, professorId);
-		if (p == null) {
+		Professor professor = em.find(Professor.class, professorId);
+		if (professor == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
 		}
-		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !p.getUser().getId().equals(loggedOn.getId())) {
+		if (!loggedOn.hasRole(RoleDiscriminator.ADMINISTRATOR) && !professor.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		p.initializeCollections();
-		return p.getCommittees();
+		professor.initializeCollections();
+		for (PositionCommitteeMember member : professor.getCommittees()) {
+			member.getPosition().initializeCollections();
+		}
+		return professor.getCommittees();
 	}
 
 }
