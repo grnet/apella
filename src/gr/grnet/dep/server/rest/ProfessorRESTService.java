@@ -1,8 +1,8 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.model.PositionCommitteeMember;
-import gr.grnet.dep.service.model.PositionCommitteeMember.ProfessorCommitteesView;
+import gr.grnet.dep.service.model.CommitteeMember;
+import gr.grnet.dep.service.model.CommitteeMember.ProfessorCommitteesView;
 import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
@@ -30,7 +30,7 @@ public class ProfessorRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9]+}/committees")
 	@JsonView({ProfessorCommitteesView.class})
-	public Collection<PositionCommitteeMember> getCommittees(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long professorId) {
+	public Collection<CommitteeMember> getCommittees(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long professorId) {
 		User loggedOn = getLoggedOn(authToken);
 		Professor professor = em.find(Professor.class, professorId);
 		if (professor == null) {
@@ -40,8 +40,8 @@ public class ProfessorRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		professor.initializeCollections();
-		for (PositionCommitteeMember member : professor.getCommittees()) {
-			member.getPosition().initializeCollections();
+		for (CommitteeMember member : professor.getCommittees()) {
+			member.getCommittee().getPosition().initializeCollections();
 		}
 		return professor.getCommittees();
 	}

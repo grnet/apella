@@ -1,6 +1,7 @@
 package gr.grnet.dep.service.model.file;
 
 import gr.grnet.dep.service.model.Position;
+import gr.grnet.dep.service.model.PositionPhase;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,24 +25,18 @@ public class PositionFile extends FileHeader {
 	public static final Map<FileType, Integer> fileTypes = Collections.unmodifiableMap(new HashMap<FileType, Integer>() {
 
 		{
-			put(FileType.APOFASI_SYSTASIS_EPITROPIS, Integer.MAX_VALUE);
-			put(FileType.PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES, 1);
-			put(FileType.TEKMIRIOSI_EPITROPIS_GIA_AKSIOLOGITES, 1);
-			put(FileType.AITIMA_EPITROPIS_PROS_AKSIOLOGITES, 1);
 			put(FileType.AKSIOLOGISI_PROTOU_AKSIOLOGITI, Integer.MAX_VALUE);
 			put(FileType.AKSIOLOGISI_DEUTEROU_AKSIOLOGITI, Integer.MAX_VALUE);
-			put(FileType.PROSKLISI_KOSMITORA, 1);
 			put(FileType.EISIGISI_DEP_YPOPSIFIOU, Integer.MAX_VALUE);
-			put(FileType.PRAKTIKO_EPILOGIS, Integer.MAX_VALUE);
-			put(FileType.DIAVIVASTIKO_PRAKTIKOU, 1);
-			put(FileType.PRAKSI_DIORISMOU, 1);
 			put(FileType.DIOIKITIKO_EGGRAFO, Integer.MAX_VALUE);
-			put(FileType.APOFASI_ANAPOMPIS, 1);
 		}
 	});
 
 	@ManyToOne
 	private Position position;
+
+	@ManyToOne
+	private PositionPhase phase;
 
 	@JsonView({DetailedFileHeaderView.class})
 	public Position getPosition() {
@@ -50,6 +45,14 @@ public class PositionFile extends FileHeader {
 
 	public void setPosition(Position position) {
 		this.position = position;
+	}
+
+	public PositionPhase getPhase() {
+		return phase;
+	}
+
+	public void setPhase(PositionPhase phase) {
+		this.phase = phase;
 	}
 
 }

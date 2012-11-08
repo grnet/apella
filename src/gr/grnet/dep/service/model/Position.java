@@ -1,15 +1,11 @@
 package gr.grnet.dep.service.model;
 
-import gr.grnet.dep.service.model.file.FileType;
-import gr.grnet.dep.service.model.file.PositionFile;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -21,11 +17,9 @@ import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
-import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 public class Position {
@@ -35,6 +29,14 @@ public class Position {
 
 	public static interface DetailedPositionView extends PublicPositionView {
 	};
+
+	public enum PositionStatus {
+		ENTAGMENI,
+		ANOIXTI,
+		EPILOGI,
+		STELEXOMENI,
+		ANAPOMPI
+	}
 
 	@Id
 	@GeneratedValue
@@ -61,34 +63,10 @@ public class Position {
 	@Temporal(TemporalType.DATE)
 	private Date fekSentDate;
 
-	@Temporal(TemporalType.DATE)
-	private Date openingDate; // Έναρξη υποβολών
-
-	@Temporal(TemporalType.DATE)
-	private Date closingDate; // Λήξη υποβολών
-
-	@Temporal(TemporalType.DATE)
-	private Date committeeMeetingDate; // Ημερομηνία Συνεδρίασης επιτροπής
-
-	@Temporal(TemporalType.DATE)
-	private Date nominationCommitteeConvergenceDate; // Ημερομηνία σύγκλισης επιτροπής για επιλογή
-
-	@Temporal(TemporalType.DATE)
-	private Date nominationToETDate; // Ημερομηνία αποστολής διορισμού στο Εθνικό Τυπογραφείο
-
-	private String nominationFEK; //ΦΕΚ Διορισμού
+	private PositionPhase phase;
 
 	@OneToMany(mappedBy = "position", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<PositionFile> files = new HashSet<PositionFile>();
-
-	@OneToMany(mappedBy = "position")
-	private List<PositionCommitteeMember> commitee = new ArrayList<PositionCommitteeMember>();
-
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "position")
-	private Set<Candidacy> candidacies = new HashSet<Candidacy>();
-
-	@Temporal(TemporalType.DATE)
-	private Date lastUpdate;
+	private List<PositionPhase> phases = new ArrayList<PositionPhase>();
 
 	public Long getId() {
 		return id;
@@ -156,147 +134,12 @@ public class Position {
 		this.fekSentDate = fekSentDate;
 	}
 
-	@JsonSerialize(using = SimpleDateSerializer.class)
-	public Date getOpeningDate() {
-		return openingDate;
+	public PositionPhase getPhase() {
+		return phase;
 	}
 
-	@JsonDeserialize(using = SimpleDateDeserializer.class)
-	public void setOpeningDate(Date openingDate) {
-		this.openingDate = openingDate;
-	}
-
-	@JsonSerialize(using = SimpleDateSerializer.class)
-	public Date getClosingDate() {
-		return closingDate;
-	}
-
-	@JsonDeserialize(using = SimpleDateDeserializer.class)
-	public void setClosingDate(Date closingDate) {
-		this.closingDate = closingDate;
-	}
-
-	@JsonView({DetailedPositionView.class})
-	@JsonSerialize(using = SimpleDateSerializer.class)
-	public Date getCommitteeMeetingDate() {
-		return committeeMeetingDate;
-	}
-
-	@JsonDeserialize(using = SimpleDateDeserializer.class)
-	public void setCommitteeMeetingDate(Date committeeMeetingDate) {
-		this.committeeMeetingDate = committeeMeetingDate;
-	}
-
-	@JsonView({DetailedPositionView.class})
-	@JsonSerialize(using = SimpleDateSerializer.class)
-	public Date getNominationCommitteeConvergenceDate() {
-		return nominationCommitteeConvergenceDate;
-	}
-
-	@JsonDeserialize(using = SimpleDateDeserializer.class)
-	public void setNominationCommitteeConvergenceDate(Date nominationCommitteeConvergenceDate) {
-		this.nominationCommitteeConvergenceDate = nominationCommitteeConvergenceDate;
-	}
-
-	@JsonView({DetailedPositionView.class})
-	@JsonSerialize(using = SimpleDateSerializer.class)
-	public Date getNominationToETDate() {
-		return nominationToETDate;
-	}
-
-	@JsonDeserialize(using = SimpleDateDeserializer.class)
-	public void setNominationToETDate(Date nominationToETDate) {
-		this.nominationToETDate = nominationToETDate;
-	}
-
-	@JsonView({DetailedPositionView.class})
-	public String getNominationFEK() {
-		return nominationFEK;
-	}
-
-	public void setNominationFEK(String nominationFEK) {
-		this.nominationFEK = nominationFEK;
-	}
-
-	@XmlTransient
-	public Date getLastUpdate() {
-		return lastUpdate;
-	}
-
-	public void setLastUpdate(Date lastUpdate) {
-		this.lastUpdate = lastUpdate;
-	}
-
-	@XmlTransient
-	public Set<PositionFile> getFiles() {
-		return files;
-	}
-
-	public void setFiles(Set<PositionFile> files) {
-		this.files = files;
-	}
-
-	@XmlTransient
-	public Set<Candidacy> getCandidacies() {
-		return candidacies;
-	}
-
-	public void setCandidacies(Set<Candidacy> candidacies) {
-		this.candidacies = candidacies;
-	}
-
-	@XmlTransient
-	public List<PositionCommitteeMember> getCommitee() {
-		return commitee;
-	}
-
-	public void setCommitee(List<PositionCommitteeMember> commitee) {
-		this.commitee = commitee;
-	}
-
-	public void addFile(PositionFile file) {
-		this.files.add(file);
-		file.setPosition(this);
-	}
-
-	public PositionStatus getStatus() {
-		if (openingDate == null || closingDate == null) {
-			return PositionStatus.ENTAGMENI;
-		}
-		Date now = new Date();
-		if (now.compareTo(openingDate) < 0) {
-			return PositionStatus.ENTAGMENI;
-		} else if (now.compareTo(closingDate) < 0) {
-			return PositionStatus.ANOIXTI;
-		} else if (hasPraktikoEpilogis()) {
-			return PositionStatus.STELEXOMENI;
-		} else if (hasApofasiAnapompis()) {
-			return PositionStatus.OLOKLIROMENI;
-		} else {
-			return PositionStatus.KLEISTI;
-		}
-	}
-
-	private boolean hasPraktikoEpilogis() {
-		boolean hasPraktikoEpilogis = false;
-		for (PositionFile file : files) {
-			if (file.getType().equals(FileType.PRAKTIKO_EPILOGIS)) {
-				hasPraktikoEpilogis = true;
-				break;
-			}
-		}
-		return hasPraktikoEpilogis;
-	}
-
-	private boolean hasApofasiAnapompis() {
-		boolean hasApofasiAnapompis = false;
-		for (PositionFile file : files) {
-			if (file.getType().equals(FileType.APOFASI_ANAPOMPIS)) {
-				hasApofasiAnapompis = true;
-				break;
-			}
-		}
-		return hasApofasiAnapompis;
+	public void setPhase(PositionPhase phase) {
+		this.phase = phase;
 	}
 
 	public void copyFrom(Position position) {
@@ -309,17 +152,10 @@ public class Position {
 		}
 		this.fek = position.getFek();
 		this.fekSentDate = position.getFekSentDate();
-		this.openingDate = position.getOpeningDate();
-		this.closingDate = position.getClosingDate();
-		this.committeeMeetingDate = position.getCommitteeMeetingDate();
-		this.nominationCommitteeConvergenceDate = position.getNominationCommitteeConvergenceDate();
-		this.nominationToETDate = position.getNominationToETDate();
-		this.nominationFEK = position.getNominationFEK();
+		// TODO:
 	}
 
 	public void initializeCollections() {
-		this.files.size();
-		this.candidacies.size();
-		this.commitee.size();
+		// TODO:
 	}
 }

@@ -3,21 +3,18 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
-import gr.grnet.dep.service.model.CandidacyEvaluator;
+import gr.grnet.dep.service.model.CommitteeMember;
+import gr.grnet.dep.service.model.CommitteeMember.DetailedPositionCommitteeMemberView;
 import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
+import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.Position.PublicPositionView;
-import gr.grnet.dep.service.model.PositionCommitteeMember;
-import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
-import gr.grnet.dep.service.model.PositionStatus;
 import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
-import gr.grnet.dep.service.model.Subject;
 import gr.grnet.dep.service.model.User;
-import gr.grnet.dep.service.model.file.CandidacyFile;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
@@ -191,7 +188,6 @@ public class PositionRESTService extends RESTService {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			position.setPermanent(false);
-			position.setLastUpdate(new Date());
 			position = em.merge(position);
 			em.flush();
 
@@ -213,7 +209,6 @@ public class PositionRESTService extends RESTService {
 			Position existingPosition = getAndCheckPosition(loggedOn, id);
 			existingPosition.copyFrom(position);
 			existingPosition.setPermanent(true);
-			existingPosition.setLastUpdate(new Date());
 			em.flush();
 			existingPosition.initializeCollections();
 			return existingPosition;
@@ -230,7 +225,7 @@ public class PositionRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Position position = getAndCheckPosition(loggedOn, id);
-			if (!position.getStatus().equals(PositionStatus.ENTAGMENI)) {
+			if (!position.getPhase().getStatus().equals(PositionStatus.ENTAGMENI)) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
 
@@ -264,8 +259,8 @@ public class PositionRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
-		position.getFiles().size();
-		return position.getFiles();
+		position.getPhase().getFiles().size();
+		return position.getPhase().getFiles();
 	}
 
 	@GET
@@ -285,7 +280,7 @@ public class PositionRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
-		for (PositionFile file : position.getFiles()) {
+		for (PositionFile file : position.getPhase().getFiles()) {
 			if (file.getId().equals(fileId)) {
 				return file;
 			}
@@ -310,7 +305,7 @@ public class PositionRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
-		for (PositionFile file : position.getFiles()) {
+		for (PositionFile file : position.getPhase().getFiles()) {
 			if (file.getId().equals(fileId)) {
 				if (file.getId().equals(fileId)) {
 					for (FileBody fb : file.getBodies()) {
@@ -338,7 +333,7 @@ public class PositionRESTService extends RESTService {
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!position.getStatus().equals(PositionStatus.KLEISTI)) {
+		if (!position.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		// Parse Request
@@ -355,7 +350,7 @@ public class PositionRESTService extends RESTService {
 			throw new RestException(Status.BAD_REQUEST, "missing.file.type");
 		}
 		// Check number of file types
-		Set<PositionFile> existingFiles = FileHeader.filter(position.getFiles(), type);
+		Set<PositionFile> existingFiles = FileHeader.filter(position.getPhase().getFiles(), type);
 		if (!PositionFile.fileTypes.containsKey(type) || existingFiles.size() >= PositionFile.fileTypes.get(type)) {
 			throw new RestException(Status.CONFLICT, "wrong.file.type");
 		}
@@ -366,8 +361,7 @@ public class PositionRESTService extends RESTService {
 			positionFile.setPosition(position);
 			positionFile.setOwner(loggedOn);
 			saveFile(loggedOn, fileItems, positionFile);
-			position.addFile(positionFile);
-			position.setLastUpdate(new Date());
+			position.getPhase().addFile(positionFile);
 			em.flush();
 
 			return toJSON(positionFile, SimpleFileHeaderView.class);
@@ -392,7 +386,7 @@ public class PositionRESTService extends RESTService {
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!position.getStatus().equals(PositionStatus.KLEISTI)) {
+		if (!position.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		// Parse Request
@@ -413,7 +407,7 @@ public class PositionRESTService extends RESTService {
 			throw new RestException(Status.CONFLICT, "wrong.file.type");
 		}
 		PositionFile positionFile = null;
-		for (PositionFile file : position.getFiles()) {
+		for (PositionFile file : position.getPhase().getFiles()) {
 			if (file.getId().equals(fileId)) {
 				positionFile = file;
 				break;
@@ -426,7 +420,6 @@ public class PositionRESTService extends RESTService {
 		// Update
 		try {
 			saveFile(loggedOn, fileItems, positionFile);
-			position.setLastUpdate(new Date());
 			em.flush();
 			positionFile.getBodies().size();
 			return toJSON(positionFile, SimpleFileHeaderView.class);
@@ -457,12 +450,12 @@ public class PositionRESTService extends RESTService {
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!position.getStatus().equals(PositionStatus.KLEISTI)) {
+		if (!position.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		try {
 			PositionFile positionFile = null;
-			for (PositionFile file : position.getFiles()) {
+			for (PositionFile file : position.getPhase().getFiles()) {
 				if (file.getId().equals(fileId)) {
 					positionFile = file;
 					break;
@@ -473,10 +466,9 @@ public class PositionRESTService extends RESTService {
 			}
 			File file = deleteFileBody(positionFile);
 			file.delete();
-			position.setLastUpdate(new Date());
 			if (positionFile.getCurrentBody() == null) {
 				// Remove from Position
-				position.getFiles().remove(positionFile);
+				position.getPhase().getFiles().remove(positionFile);
 				return Response.noContent().build();
 			} else {
 				return Response.ok(positionFile).build();
@@ -524,7 +516,7 @@ public class PositionRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9][0-9]*}/committee")
 	@JsonView({DetailedPositionCommitteeMemberView.class})
-	public List<PositionCommitteeMember> getPositionCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
+	public List<CommitteeMember> getPositionCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
 		User loggedOn = getLoggedOn(authToken);
 		Position position = getAndCheckPosition(loggedOn, positionId);
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
@@ -533,16 +525,16 @@ public class PositionRESTService extends RESTService {
 			!loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		for (PositionCommitteeMember member : position.getCommitee()) {
+		for (CommitteeMember member : position.getPhase().getCommittee().getMembers()) {
 			member.getProfessor().initializeCollections();
 		}
-		return position.getCommitee();
+		return position.getPhase().getCommittee().getMembers();
 	}
 
 	@GET
 	@Path("/{id:[0-9][0-9]*}/committee/{cmId:[0-9][0-9]*}")
 	@JsonView({DetailedPositionCommitteeMemberView.class})
-	public PositionCommitteeMember getPositionCommitteeMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cmId") Long cmId) {
+	public CommitteeMember getPositionCommitteeMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cmId") Long cmId) {
 		User loggedOn = getLoggedOn(authToken);
 		Position position = getAndCheckPosition(loggedOn, positionId);
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
@@ -551,12 +543,12 @@ public class PositionRESTService extends RESTService {
 			!loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		PositionCommitteeMember result = em.find(PositionCommitteeMember.class, cmId);
+		CommitteeMember result = em.find(CommitteeMember.class, cmId);
 		if (result == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.commitee.member.id");
 		}
 
-		if (!result.getPosition().getId().equals(positionId)) {
+		if (!result.getCommittee().getPosition().getId().equals(positionId)) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
 		result.getProfessor().initializeCollections();
@@ -567,14 +559,14 @@ public class PositionRESTService extends RESTService {
 	@POST
 	@Path("/{id:[0-9][0-9]*}/committee")
 	@JsonView({DetailedPositionCommitteeMemberView.class})
-	public PositionCommitteeMember createPositionCommitteeMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, PositionCommitteeMember newMembership) {
+	public CommitteeMember createPositionCommitteeMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, CommitteeMember newMembership) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Position existingPosition = getAndCheckPosition(loggedOn, positionId);
 			if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
-			if (!existingPosition.getStatus().equals(PositionStatus.KLEISTI)) {
+			if (!existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
 			Professor existingProfessor = em.find(Professor.class, newMembership.getProfessor().getId());
@@ -583,26 +575,25 @@ public class PositionRESTService extends RESTService {
 			}
 
 			// Check if already exists:
-			for (PositionCommitteeMember existingMember : existingPosition.getCommitee()) {
+			for (CommitteeMember existingMember : existingPosition.getPhase().getCommittee().getMembers()) {
 				if (existingMember.getProfessor().getId().equals(existingProfessor.getId())) {
 					throw new RestException(Status.CONFLICT, "member.already.exists");
 				}
 			}
 			int count = 0;
-			for (PositionCommitteeMember existingMember : existingPosition.getCommitee()) {
+			for (CommitteeMember existingMember : existingPosition.getPhase().getCommittee().getMembers()) {
 				if (existingMember.getType() == newMembership.getType()) {
 					count++;
 				}
 			}
-			if (count >= PositionCommitteeMember.MAX_MEMBERS) {
+			if (count >= CommitteeMember.MAX_MEMBERS) {
 				throw new RestException(Status.CONFLICT, "max.members.exceeded");
 			}
 
 			// Update
-			newMembership.setPosition(existingPosition);
+			newMembership.setCommittee(existingPosition.getPhase().getCommittee());
 			newMembership.setProfessor(existingProfessor);
-			existingPosition.getCommitee().add(newMembership);
-			existingPosition.setLastUpdate(new Date());
+			existingPosition.getPhase().getCommittee().getMembers().add(newMembership);
 			newMembership = em.merge(newMembership);
 			em.flush();
 
@@ -618,16 +609,16 @@ public class PositionRESTService extends RESTService {
 	@PUT
 	@Path("/{id:[0-9]+}/committee/{cmId:[0-9]+}")
 	@JsonView({DetailedPositionCommitteeMemberView.class})
-	public PositionCommitteeMember updatePositionCommitteeMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cmId") Long cmId, PositionCommitteeMember newMembership) {
+	public CommitteeMember updatePositionCommitteeMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cmId") Long cmId, CommitteeMember newMembership) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Position existingPosition = getAndCheckPosition(loggedOn, positionId);
-			if (!existingPosition.getStatus().equals(PositionStatus.KLEISTI)) {
+			if (!existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
 			// Check if already exists:
-			PositionCommitteeMember existingMember = null;
-			for (PositionCommitteeMember member : existingPosition.getCommitee()) {
+			CommitteeMember existingMember = null;
+			for (CommitteeMember member : existingPosition.getPhase().getCommittee().getMembers()) {
 				if (member.getId().equals(cmId)) {
 					existingMember = member;
 				}
@@ -637,7 +628,6 @@ public class PositionRESTService extends RESTService {
 			}
 			// Update (only type allowed)
 			existingMember.setType(newMembership.getType());
-			existingPosition.setLastUpdate(new Date());
 			em.flush();
 
 			// Return result
@@ -654,11 +644,11 @@ public class PositionRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Position position = getAndCheckPosition(loggedOn, positionId);
-			if (!position.getStatus().equals(PositionStatus.KLEISTI)) {
+			if (!position.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
-			PositionCommitteeMember existingCM = null;
-			for (PositionCommitteeMember member : position.getCommitee()) {
+			CommitteeMember existingCM = null;
+			for (CommitteeMember member : position.getPhase().getCommittee().getMembers()) {
 				if (member.getId().equals(cmId)) {
 					existingCM = member;
 					break;
@@ -668,9 +658,8 @@ public class PositionRESTService extends RESTService {
 				throw new RestException(Status.NOT_FOUND, "wrong.position.committee.member.id");
 			}
 			// Remove
-			existingCM.getPosition().getCommitee().remove(existingCM);
+			existingCM.getCommittee().getMembers().remove(existingCM);
 			em.remove(existingCM);
-			position.setLastUpdate(new Date());
 			em.flush();
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
@@ -690,16 +679,16 @@ public class PositionRESTService extends RESTService {
 			!loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		for (Candidacy candidacy : position.getCandidacies()) {
+		for (Candidacy candidacy : position.getPhase().getCandidacies().getCandidacies()) {
 			candidacy.initializeCollections();
 		}
-		return position.getCandidacies();
+		return position.getPhase().getCandidacies().getCandidacies();
 	}
 
 	/**********************
 	 * Utility Functions **
 	 ***********************/
-
+	/*
 	private Position clonePosition(Position oldPosition) {
 		try {
 			Position newPosition = new Position();
@@ -724,8 +713,8 @@ public class PositionRESTService extends RESTService {
 			newPosition = em.merge(newPosition);
 
 			// Copy Committee Members:
-			for (PositionCommitteeMember oldMember : oldPosition.getCommitee()) {
-				PositionCommitteeMember newMember = new PositionCommitteeMember();
+			for (CommitteeMember oldMember : oldPosition.getCommitee()) {
+				CommitteeMember newMember = new CommitteeMember();
 				newMember.setType(oldMember.getType());
 				newMember.setProfessor(oldMember.getProfessor());
 				newMember.setPosition(newPosition);
@@ -826,5 +815,7 @@ public class PositionRESTService extends RESTService {
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
+		
 	}
+	*/
 }

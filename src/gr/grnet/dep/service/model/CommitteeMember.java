@@ -17,7 +17,7 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Table(uniqueConstraints = {
 	@UniqueConstraint(columnNames = {"position_id", "professor_id"})
 })
-public class PositionCommitteeMember implements Serializable {
+public class CommitteeMember implements Serializable {
 
 	private static final long serialVersionUID = -1339853623265264893L;
 
@@ -41,7 +41,7 @@ public class PositionCommitteeMember implements Serializable {
 	private MemberType type;
 
 	@ManyToOne
-	private Position position;
+	private Committee committee;
 
 	@ManyToOne
 	private Professor professor;
@@ -55,12 +55,12 @@ public class PositionCommitteeMember implements Serializable {
 	}
 
 	@JsonView({ProfessorCommitteesView.class, DetailedPositionCommitteeMemberView.class})
-	public Position getPosition() {
-		return position;
+	public Committee getCommittee() {
+		return committee;
 	}
 
-	public void setPosition(Position position) {
-		this.position = position;
+	public void setCommittee(Committee committee) {
+		this.committee = committee;
 	}
 
 	@JsonView({DetailedPositionCommitteeMemberView.class})

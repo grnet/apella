@@ -52,7 +52,7 @@ public class Candidacy {
 	private Candidate candidate;
 
 	@ManyToOne
-	private Position position;
+	private Candidacies candidacies;
 
 	@OneToMany(mappedBy = "candidacy", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<CandidacyFile> files = new HashSet<CandidacyFile>();
@@ -239,12 +239,12 @@ public class Candidacy {
 		this.candidate = candidate;
 	}
 
-	public Position getPosition() {
-		return position;
+	public Candidacies getCandidacies() {
+		return candidacies;
 	}
 
-	public void setPosition(Position position) {
-		this.position = position;
+	public void setCandidacies(Candidacies candidacies) {
+		this.candidacies = candidacies;
 	}
 
 	@JsonView({DetailedCandidacyView.class})
@@ -302,7 +302,6 @@ public class Candidacy {
 		}
 		return result;
 	}
-	
 
 	public void clearSnapshot() {
 		if (snapshot != null) {
@@ -338,7 +337,6 @@ public class Candidacy {
 	}
 
 	public void initializeCollections() {
-		this.position.getFiles().size();
 		this.candidate.getFiles().size();
 		this.snapshot.getFiles().size();
 		this.proposedEvaluators.size();
