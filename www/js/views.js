@@ -1695,7 +1695,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		validator : undefined,
 
 		initialize : function() {
-			_.bindAll(this, "render", "isEditable", "beforeUpload", "submit", "cancel", "addFile", "addFileList", "close");
+			_.bindAll(this, "render", "isEditable", "beforeUpload", "beforeDelete", "submit", "cancel", "addFile", "addFileList", "close");
 			this.template = _.template(tpl_role_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
@@ -1842,6 +1842,46 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}
 		},
 
+		beforeDelete : function(file, doDelete) {
+			var self = this;
+			var candidate = self.collection.find(function(role) {
+				return (role.get("discriminator") === "CANDIDATE" && role.get("status") === "ACTIVE");
+			});
+			if (candidate) {
+				openCandidacies = new Models.CandidateCandidacies({}, {
+					candidate : App.loggedOnUser.getRole("CANDIDATE").id
+				});
+				openCandidacies.fetch({
+					data : {
+						"open" : "true"
+					},
+					cache : false,
+					success : function(collection, resp) {
+						var candidacyUpdateConfirmView = undefined;
+						if (collection.length > 0) {
+							candidacyUpdateConfirmView = new Views.CandidacyUpdateConfirmView({
+								"collection" : collection,
+								"answer" : function(confirm) {
+									if (confirm) {
+										doDelete({
+											"updateCandidacies" : true
+										});
+									} else {
+										doDelete();
+									}
+								}
+							});
+							candidacyUpdateConfirmView.show();
+						} else {
+							doDelete();
+						}
+					}
+				});
+			} else {
+				doDelete();
+			}
+		},
+
 		render : function(eventName) {
 			var self = this;
 			// Close inner views (fileviews)
@@ -1883,17 +1923,20 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							self.addFile(collection, "BIOGRAFIKO", self.$("#biografikoFile"), {
 								withMetadata : false,
 								editable : self.isEditable("biografikoFile"),
-								beforeUpload : self.beforeUpload
+								beforeUpload : self.beforeUpload,
+								beforeDelete : self.beforeDelete
 							});
 							self.addFileList(collection, "PTYXIO", self.$("#ptyxioFileList"), {
 								withMetadata : true,
 								editable : self.isEditable("ptyxioFileList"),
-								beforeUpload : self.beforeUpload
+								beforeUpload : self.beforeUpload,
+								beforeDelete : self.beforeDelete
 							});
 							self.addFileList(collection, "DIMOSIEYSI", self.$("#dimosieusiFileList"), {
 								withMetadata : true,
 								editable : self.isEditable("dimosieusiFileList"),
-								beforeUpload : self.beforeUpload
+								beforeUpload : self.beforeUpload,
+								beforeDelete : self.beforeDelete
 							});
 						}
 					});
@@ -2620,50 +2663,59 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 		deleteFile : function(event) {
 			var self = this;
+			var doDelete = function(options) {
+				options = _.extend({}, options);
+				var tmp = {
+					type : self.model.get("type"),
+					url : self.model.url,
+					urlRoot : self.model.urlRoot
+				};
+				self.model.destroy({
+					url : self.model.url() + (options.updateCandidacies ? "?updateCandidacies=true" : ""),
+					wait : true,
+					success : function(model, resp) {
+						var popup;
+						if (_.isNull(resp)) {
+							// Reset Object to empty (without id)
+							// status
+							self.model.urlRoot = tmp.urlRoot;
+							self.model.url = self.model.url;
+							self.model.set(_.extend(self.model.defaults, {
+								"type" : tmp.type
+							}), {
+								silent : false
+							});
+							popup = new Views.PopupView({
+								type : "success",
+								message : $.i18n.prop("Success")
+							});
+						} else {
+							self.model.set(resp);
+							popup = new Views.PopupView({
+								type : "warning",
+								message : $.i18n.prop("FileReverted")
+							});
+						}
+						popup.show();
+					},
+					error : function(model, resp, options) {
+						var popup = new Views.PopupView({
+							type : "error",
+							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						});
+						popup.show();
+					}
+				});
+			};
 			var confirm = new Views.ConfirmView({
 				title : $.i18n.prop('Confirm'),
 				message : $.i18n.prop('AreYouSure'),
 				yes : function() {
-					var tmp = {
-						type : self.model.get("type"),
-						url : self.model.url,
-						urlRoot : self.model.urlRoot
-					};
-					self.model.destroy({
-						wait : true,
-						success : function(model, resp) {
-							var popup;
-							if (_.isNull(resp)) {
-								// Reset Object to empty (without id)
-								// status
-								self.model.urlRoot = tmp.urlRoot;
-								self.model.url = self.model.url;
-								self.model.set(_.extend(self.model.defaults, {
-									"type" : tmp.type
-								}), {
-									silent : false
-								});
-								popup = new Views.PopupView({
-									type : "success",
-									message : $.i18n.prop("Success")
-								});
-							} else {
-								self.model.set(resp);
-								popup = new Views.PopupView({
-									type : "warning",
-									message : $.i18n.prop("FileReverted")
-								});
-							}
-							popup.show();
-						},
-						error : function(model, resp, options) {
-							var popup = new Views.PopupView({
-								type : "error",
-								message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-							});
-							popup.show();
-						}
-					});
+					if (_.isFunction(self.options.beforeDelete)) {
+						self.options.beforeDelete(self.model, doDelete);
+					} else {
+						doDelete();
+					}
 				}
 			});
 			confirm.show();
@@ -2787,37 +2839,46 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		deleteFile : function(event) {
 			var self = this;
 			var selectedModel = self.collection.get($(event.currentTarget).data('fileId'));
+			var doDelete = function(options) {
+				options = _.extend({}, options);
+				selectedModel.destroy({
+					url : selectedModel.url() + (options.updateCandidacies ? "?updateCandidacies=true" : ""),
+					wait : true,
+					success : function(model, resp) {
+						var popup;
+						if (_.isNull(resp)) {
+							popup = new Views.PopupView({
+								type : "success",
+								message : $.i18n.prop("Success")
+							});
+						} else {
+							selectedModel.set(resp);
+							self.collection.add(selectedModel);
+							popup = new Views.PopupView({
+								type : "warning",
+								message : $.i18n.prop("FileReverted")
+							});
+						}
+						popup.show();
+					},
+					error : function(model, resp, options) {
+						var popup = new Views.PopupView({
+							type : "error",
+							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						});
+						popup.show();
+					}
+				});
+			};
 			var confirm = new Views.ConfirmView({
 				title : $.i18n.prop('Confirm'),
 				message : $.i18n.prop('AreYouSure'),
 				yes : function() {
-					selectedModel.destroy({
-						wait : true,
-						success : function(model, resp) {
-							var popup;
-							if (_.isNull(resp)) {
-								popup = new Views.PopupView({
-									type : "success",
-									message : $.i18n.prop("Success")
-								});
-							} else {
-								selectedModel.set(resp);
-								self.collection.add(selectedModel);
-								popup = new Views.PopupView({
-									type : "warning",
-									message : $.i18n.prop("FileReverted")
-								});
-							}
-							popup.show();
-						},
-						error : function(model, resp, options) {
-							var popup = new Views.PopupView({
-								type : "error",
-								message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-							});
-							popup.show();
-						}
-					});
+					if (_.isFunction(self.options.beforeDelete)) {
+						self.options.beforeDelete(self.model, doDelete);
+					} else {
+						doDelete();
+					}
 				}
 			});
 			confirm.show();
