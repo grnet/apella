@@ -1,6 +1,7 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.file.PositionNominationFile;
+import gr.grnet.dep.service.util.SimpleDateSerializer;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -16,6 +17,8 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlTransient;
+
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 @Entity
 public class Nomination {
@@ -58,6 +61,7 @@ public class Nomination {
 		this.id = id;
 	}
 
+	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getNominationCommitteeConvergenceDate() {
 		return nominationCommitteeConvergenceDate;
 	}
@@ -66,6 +70,7 @@ public class Nomination {
 		this.nominationCommitteeConvergenceDate = nominationCommitteeConvergenceDate;
 	}
 
+	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getNominationToETDate() {
 		return nominationToETDate;
 	}
@@ -80,6 +85,41 @@ public class Nomination {
 
 	public void setNominationFEK(String nominationFEK) {
 		this.nominationFEK = nominationFEK;
+	}
+
+	public Position getPosition() {
+		return position;
+	}
+
+	public void setPosition(Position position) {
+		this.position = position;
+	}
+
+	@XmlTransient
+	public Set<PositionPhase> getPhases() {
+		return phases;
+	}
+
+	public void setPhases(Set<PositionPhase> phases) {
+		this.phases = phases;
+	}
+
+	@JsonSerialize(using = SimpleDateSerializer.class)
+	public Date getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(Date createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	@JsonSerialize(using = SimpleDateSerializer.class)
+	public Date getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(Date updatedAt) {
+		this.updatedAt = updatedAt;
 	}
 
 	@XmlTransient

@@ -1,6 +1,7 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.file.PositionCommitteeFile;
+import gr.grnet.dep.service.util.SimpleDateSerializer;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -17,6 +18,9 @@ import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
+import javax.xml.bind.annotation.XmlTransient;
+
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 @Entity
 public class Committee {
@@ -37,10 +41,10 @@ public class Committee {
 	@Temporal(TemporalType.DATE)
 	private Date committeeMeetingDate; // Ημερομηνία Συνεδρίασης επιτροπής
 
-	@OneToMany(mappedBy = "position", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "committee", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<PositionCommitteeFile> files = new HashSet<PositionCommitteeFile>();
 
-	@OneToMany(mappedBy = "position")
+	@OneToMany(mappedBy = "committee")
 	private List<CommitteeMember> members = new ArrayList<CommitteeMember>();
 
 	@Temporal(TemporalType.DATE)
@@ -57,6 +61,7 @@ public class Committee {
 		this.id = id;
 	}
 
+	@XmlTransient
 	public Position getPosition() {
 		return position;
 	}
@@ -65,6 +70,7 @@ public class Committee {
 		this.position = position;
 	}
 
+	@XmlTransient
 	public Set<PositionPhase> getPhases() {
 		return phases;
 	}
@@ -73,6 +79,7 @@ public class Committee {
 		this.phases = phases;
 	}
 
+	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getCommitteeMeetingDate() {
 		return committeeMeetingDate;
 	}
@@ -81,6 +88,7 @@ public class Committee {
 		this.committeeMeetingDate = committeeMeetingDate;
 	}
 
+	@XmlTransient
 	public Set<PositionCommitteeFile> getFiles() {
 		return files;
 	}
@@ -89,6 +97,12 @@ public class Committee {
 		this.files = files;
 	}
 
+	public void addFile(PositionCommitteeFile file) {
+		file.setCommittee(this);
+		this.files.add(file);
+	}
+
+	@XmlTransient
 	public List<CommitteeMember> getMembers() {
 		return members;
 	}
@@ -97,6 +111,7 @@ public class Committee {
 		this.members = members;
 	}
 
+	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getCreatedAt() {
 		return createdAt;
 	}
@@ -105,6 +120,7 @@ public class Committee {
 		this.createdAt = createdAt;
 	}
 
+	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getUpdatedAt() {
 		return updatedAt;
 	}

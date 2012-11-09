@@ -17,6 +17,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
@@ -63,6 +64,7 @@ public class Position {
 	@Temporal(TemporalType.DATE)
 	private Date fekSentDate;
 
+	@ManyToOne(cascade = CascadeType.ALL)
 	private PositionPhase phase;
 
 	@OneToMany(mappedBy = "position", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -140,6 +142,41 @@ public class Position {
 
 	public void setPhase(PositionPhase phase) {
 		this.phase = phase;
+	}
+
+	@XmlTransient
+	public List<PositionPhase> getPhases() {
+		return phases;
+	}
+
+	public void setPhases(List<PositionPhase> phases) {
+		this.phases = phases;
+	}
+
+	public void addPhase(PositionPhase phase) {
+		phase.setPosition(this);
+		phase.setOrder(this.getPhases().size() - 1);
+		phase.setCreatedAt(new Date());
+		phase.setUpdatedAt(new Date());
+
+		this.phases.add(phase);
+		this.phase = phase;
+	}
+
+	public Position as(Integer order) {
+		Position position = new Position();
+		// Copy basic fields
+		position.setDepartment(this.department);
+		position.setDescription(this.description);
+		position.setFek(this.fek);
+		position.setId(this.id);
+		position.setName(this.name);
+		position.setPermanent(this.permanent);
+		position.setSubject(this.subject);
+		// Add selected phase
+		position.setPhase(phases.get(order));
+
+		return position;
 	}
 
 	public void copyFrom(Position position) {

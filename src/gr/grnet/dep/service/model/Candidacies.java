@@ -16,6 +16,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
@@ -42,7 +43,7 @@ public class Candidacies {
 	@Temporal(TemporalType.DATE)
 	private Date closingDate; // Λήξη υποβολών
 
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "position")
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "candidacies")
 	private Set<Candidacy> candidacies = new HashSet<Candidacy>();
 
 	@Temporal(TemporalType.DATE)
@@ -59,6 +60,7 @@ public class Candidacies {
 		this.id = id;
 	}
 
+	@XmlTransient
 	public Position getPosition() {
 		return position;
 	}
@@ -67,6 +69,7 @@ public class Candidacies {
 		this.position = position;
 	}
 
+	@XmlTransient
 	public Set<PositionPhase> getPhases() {
 		return phases;
 	}
@@ -75,6 +78,7 @@ public class Candidacies {
 		this.phases = phases;
 	}
 
+	@XmlTransient
 	public Set<Candidacy> getCandidacies() {
 		return candidacies;
 	}
@@ -83,6 +87,7 @@ public class Candidacies {
 		this.candidacies = candidacies;
 	}
 
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public Date getCreatedAt() {
 		return createdAt;
 	}
@@ -91,6 +96,7 @@ public class Candidacies {
 		this.createdAt = createdAt;
 	}
 
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public Date getUpdatedAt() {
 		return updatedAt;
 	}

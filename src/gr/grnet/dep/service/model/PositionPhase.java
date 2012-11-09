@@ -1,17 +1,15 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.Position.PositionStatus;
-import gr.grnet.dep.service.model.file.PositionFile;
 
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.OrderColumn;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -20,6 +18,7 @@ import javax.persistence.TemporalType;
 public class PositionPhase {
 
 	@Id
+	@GeneratedValue
 	private Long id;
 
 	@ManyToOne
@@ -28,19 +27,20 @@ public class PositionPhase {
 	private PositionStatus status;
 
 	@OrderColumn
+	@Column(name = "orderno")
 	private Integer order;
 
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.ALL)
 	private Candidacies candidacies;
 
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.ALL)
 	private Committee committee;
 
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.ALL)
 	private Nomination nomination;
 
-	@OneToMany(mappedBy = "phase", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<PositionFile> files = new HashSet<PositionFile>();
+	@ManyToOne(cascade = CascadeType.ALL)
+	private ComplementaryDocuments complementaryDocuments;
 
 	@Temporal(TemporalType.DATE)
 	private Date createdAt;
@@ -104,6 +104,14 @@ public class PositionPhase {
 		this.nomination = nomination;
 	}
 
+	public ComplementaryDocuments getComplementaryDocuments() {
+		return complementaryDocuments;
+	}
+
+	public void setComplementaryDocuments(ComplementaryDocuments complementaryDocuments) {
+		this.complementaryDocuments = complementaryDocuments;
+	}
+
 	public Date getCreatedAt() {
 		return createdAt;
 	}
@@ -120,17 +128,4 @@ public class PositionPhase {
 		this.updatedAt = updatedAt;
 	}
 
-	public Set<PositionFile> getFiles() {
-		return files;
-	}
-
-	public void setFiles(Set<PositionFile> files) {
-		this.files = files;
-	}
-
-	public void addFile(PositionFile file) {
-		file.setPhase(this);
-		file.setPosition(this.position);
-		this.files.add(file);
-	}
 }

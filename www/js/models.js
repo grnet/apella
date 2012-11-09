@@ -792,12 +792,29 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			status : undefined,
 			fek : undefined,
 			fekSentDate : undefined,
-			openingDate : undefined,
-			closingDate : undefined,
-			committeeMeetingDate : undefined,
-			nominationCommitteeConvergenceDate : undefined,
-			nominationToETDate : undefined,
-			nominationFEK : undefined
+			phase : {
+				id : undefined,
+				status : undefined,
+				order : undefined,
+				candidacies : {
+					id : undefined,
+					openingDate : undefined,
+					closingDate : undefined
+				},
+				committee : {
+					id : undefined,
+					committeeMeetingDate : undefined,
+				},
+				nomination : {
+					id : undefined,
+					nominationCommitteeConvergenceDate : undefined,
+					nominationToETDate : undefined,
+					nominationFEK : undefined
+				},
+				complementaryDocuments : {
+					id : undefined
+				}
+			}
 		}
 	});
 

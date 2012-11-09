@@ -3,23 +3,29 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
+import gr.grnet.dep.service.model.Committee;
 import gr.grnet.dep.service.model.CommitteeMember;
 import gr.grnet.dep.service.model.CommitteeMember.DetailedPositionCommitteeMemberView;
+import gr.grnet.dep.service.model.ComplementaryDocuments;
 import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.Institution;
+import gr.grnet.dep.service.model.Nomination;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.Position.PublicPositionView;
+import gr.grnet.dep.service.model.PositionPhase;
 import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.model.file.ComplementaryDocumentsFile;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
-import gr.grnet.dep.service.model.file.PositionFile;
+import gr.grnet.dep.service.model.file.PositionCommitteeFile;
+import gr.grnet.dep.service.model.file.PositionNominationFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -76,7 +82,6 @@ public class PositionRESTService extends RESTService {
 	@JsonView({PublicPositionView.class})
 	public List<Position> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
 		User loggedOnUser = getLoggedOn(authToken);
-
 		if (loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) ||
 			loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
 
@@ -85,13 +90,14 @@ public class PositionRESTService extends RESTService {
 			@SuppressWarnings("unchecked")
 			List<Position> positions = (List<Position>) em.createQuery(
 				"from Position p " +
-					"left join fetch p.files f " +
-					"left join fetch p.commitee co " +
-					"left join fetch p.candidacies ca " +
 					"where p.permanent = true " +
 					"and p.department.institution in (:institutions)")
 				.setParameter("institutions", institutions)
 				.getResultList();
+
+			for (Position position : positions) {
+				position.initializeCollections();
+			}
 			return positions;
 		} else if (loggedOnUser.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) ||
 			loggedOnUser.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT)) {
@@ -99,11 +105,11 @@ public class PositionRESTService extends RESTService {
 			@SuppressWarnings("unchecked")
 			List<Position> positions = (List<Position>) em.createQuery(
 				"from Position p " +
-					"left join fetch p.files f " +
-					"left join fetch p.commitee co " +
-					"left join fetch p.candidacies ca " +
 					"where p.permanent = true")
 				.getResultList();
+			for (Position position : positions) {
+				position.initializeCollections();
+			}
 			return positions;
 		}
 		throw new RestException(Status.UNAUTHORIZED, "insufficient.privileges");
@@ -120,14 +126,14 @@ public class PositionRESTService extends RESTService {
 			@SuppressWarnings("unchecked")
 			List<Position> positions = (List<Position>) em.createQuery(
 				"from Position p " +
-					"left join fetch p.files f " +
-					"left join fetch p.commitee co " +
-					"left join fetch p.candidacies ca " +
 					"where p.permanent = true " +
-					"and p.openingDate <= :today " +
-					"and p.closingDate >= :today ")
+					"and p.phase.closingDate >= :today ")
 				.setParameter("today", today)
 				.getResultList();
+
+			for (Position position : positions) {
+				position.initializeCollections();
+			}
 			return positions;
 		} catch (ParseException e) {
 			throw new RestException(Status.INTERNAL_SERVER_ERROR, "parse.exception");
@@ -144,12 +150,13 @@ public class PositionRESTService extends RESTService {
 			@SuppressWarnings("unchecked")
 			List<Position> positions = (List<Position>) em.createQuery(
 				"from Position p " +
-					"left join fetch p.files f " +
-					"left join fetch p.commitee co " +
-					"left join fetch p.candidacies ca " +
-					"where p.openingDate <= :today and p.closingDate >= :today ")
+					"where p.closingDate >= :today ")
 				.setParameter("today", today)
 				.getResultList();
+
+			for (Position position : positions) {
+				position.initializeCollections();
+			}
 			return positions;
 		} catch (ParseException e) {
 			throw new RestException(Status.INTERNAL_SERVER_ERROR, "parse.exception");
@@ -160,17 +167,26 @@ public class PositionRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	@Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-	public String get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+	public String get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @QueryParam("phase") Integer order) {
 		User loggedOn = getLoggedOn(authToken);
-		Position p = getAndCheckPosition(loggedOn, id);
+		Position p = getAndCheckPosition(loggedOn, positionId);
+
 		String result = null;
 		if (loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) ||
 			loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) ||
 			loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) ||
 			loggedOn.isDepartmentUser(p.getDepartment())) {
-			result = toJSON(p, DetailedPositionView.class);
+			if (order != null) {
+				result = toJSON(p.as(order), DetailedPositionView.class);
+			} else {
+				result = toJSON(p, DetailedPositionView.class);
+			}
 		} else {
-			result = toJSON(p, PublicPositionView.class);
+			if (order != null) {
+				result = toJSON(p.as(order), PublicPositionView.class);
+			} else {
+				result = toJSON(p, PublicPositionView.class);
+			}
 		}
 		return result;
 	}
@@ -188,6 +204,8 @@ public class PositionRESTService extends RESTService {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			position.setPermanent(false);
+			position.getPhase().setOrder(0);
+			position.getPhase().setStatus(PositionStatus.ENTAGMENI);
 			position = em.merge(position);
 			em.flush();
 
@@ -228,9 +246,121 @@ public class PositionRESTService extends RESTService {
 			if (!position.getPhase().getStatus().equals(PositionStatus.ENTAGMENI)) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
-
 			em.remove(position);
 			em.flush();
+		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+		}
+	}
+
+	@POST
+	@Path("/{id:[0-9][0-9]*}/phase")
+	@JsonView({DetailedPositionView.class})
+	public Position addPhase(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long positionId, PositionStatus newStatus) {
+		User loggedOn = getLoggedOn(authToken);
+		try {
+			Position existingPosition = getAndCheckPosition(loggedOn, positionId);
+			PositionPhase existingPhase = existingPosition.getPhase();
+			PositionPhase newPhase = null;
+			// Go through all transition scenarios, 
+			// update when needed or throw exception if transition not allowed
+			switch (existingPhase.getStatus()) {
+				case ENTAGMENI:
+					switch (newStatus) {
+						case ENTAGMENI:
+							break;
+						case ANOIXTI:
+							newPhase = new PositionPhase();
+							newPhase.setStatus(PositionStatus.ANOIXTI);
+							newPhase.setCandidacies(existingPhase.getCandidacies());
+							// Add to Position
+							existingPosition.addPhase(newPhase);
+							break;
+						case EPILOGI:
+						case ANAPOMPI:
+						case STELEXOMENI:
+							throw new RestException(Status.CONFLICT, "wrong.position.status");
+					}
+					break;
+				case ANOIXTI:
+					switch (newStatus) {
+						case ENTAGMENI:
+							throw new RestException(Status.CONFLICT, "wrong.position.status");
+						case ANOIXTI:
+							break;
+						case EPILOGI:
+							newPhase = new PositionPhase();
+							newPhase.setStatus(PositionStatus.EPILOGI);
+							newPhase.setCandidacies(existingPhase.getCandidacies());
+							newPhase.setCommittee(new Committee());
+							newPhase.setNomination(new Nomination());
+							newPhase.setComplementaryDocuments(new ComplementaryDocuments());
+							// Add to Position
+							existingPosition.addPhase(newPhase);
+							break;
+						case ANAPOMPI:
+						case STELEXOMENI:
+							throw new RestException(Status.CONFLICT, "wrong.position.status");
+					}
+					break;
+				case EPILOGI:
+					switch (newStatus) {
+						case ENTAGMENI:
+						case ANOIXTI:
+							throw new RestException(Status.CONFLICT, "wrong.position.status");
+						case EPILOGI:
+							break;
+						case ANAPOMPI:
+							newPhase = new PositionPhase();
+							newPhase.setStatus(PositionStatus.ANAPOMPI);
+							newPhase.setCandidacies(existingPhase.getCandidacies());
+							newPhase.setCommittee(existingPhase.getCommittee());
+							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
+							newPhase.setNomination(existingPhase.getNomination());
+							// Add to Position
+							existingPosition.addPhase(newPhase);
+							break;
+						case STELEXOMENI:
+							newPhase = new PositionPhase();
+							newPhase.setStatus(PositionStatus.STELEXOMENI);
+							newPhase.setCandidacies(existingPhase.getCandidacies());
+							newPhase.setCommittee(existingPhase.getCommittee());
+							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
+							newPhase.setNomination(existingPhase.getNomination());
+							// Add to Position
+							existingPosition.addPhase(newPhase);
+							break;
+					}
+					break;
+				case STELEXOMENI:
+					throw new RestException(Status.CONFLICT, "wrong.position.status");
+				case ANAPOMPI:
+					switch (newStatus) {
+						case ENTAGMENI:
+						case ANOIXTI:
+							throw new RestException(Status.CONFLICT, "wrong.position.status");
+						case EPILOGI:
+							newPhase = new PositionPhase();
+							newPhase.setStatus(PositionStatus.EPILOGI);
+							newPhase.setCandidacies(existingPhase.getCandidacies());
+							newPhase.setCommittee(existingPhase.getCommittee()); // Must be changed if an update occurs
+							// Add to Position
+							existingPosition.addPhase(newPhase);
+							break;
+						case ANAPOMPI:
+							throw new RestException(Status.CONFLICT, "wrong.position.status");
+						case STELEXOMENI:
+							throw new RestException(Status.CONFLICT, "wrong.position.status");
+
+					}
+					break;
+			}
+
+			em.flush();
+			existingPosition.initializeCollections();
+			return existingPosition;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
@@ -242,31 +372,16 @@ public class PositionRESTService extends RESTService {
 	 * File Functions *****
 	 ***********************/
 
-	@GET
-	@Path("/{id:[0-9][0-9]*}/file")
-	@JsonView({SimpleFileHeaderView.class})
-	public Collection<PositionFile> getFiles(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
-		User loggedOn = getLoggedOn(authToken);
-		Position position = em.find(Position.class, positionId);
-		// Validate:
-		if (position == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
-		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isDepartmentUser(position.getDepartment())) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		// Return Result
-		position.getPhase().getFiles().size();
-		return position.getPhase().getFiles();
+	private enum FileDiscriminator {
+		committee,
+		complementaryDocuments,
+		nomination
 	}
 
 	@GET
-	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}")
+	@Path("/{id:[0-9][0-9]*}/{discriminator}/file")
 	@JsonView({SimpleFileHeaderView.class})
-	public FileHeader getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("fileId") Long fileId) {
+	public Collection<? extends FileHeader> getFiles(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("discriminator") FileDiscriminator discriminator) {
 		User loggedOn = getLoggedOn(authToken);
 		Position position = em.find(Position.class, positionId);
 		// Validate:
@@ -280,7 +395,51 @@ public class PositionRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
-		for (PositionFile file : position.getPhase().getFiles()) {
+		List<FileHeader> files = new ArrayList<FileHeader>();
+		switch (discriminator) {
+			case committee:
+				files.addAll(position.getPhase().getCommittee().getFiles());
+				break;
+			case complementaryDocuments:
+				files.addAll(position.getPhase().getComplementaryDocuments().getFiles());
+				break;
+			case nomination:
+				files.addAll(position.getPhase().getNomination().getFiles());
+				break;
+		}
+		return files;
+	}
+
+	@GET
+	@Path("/{id:[0-9]+}/{discriminator}/file/{fileId:[0-9]+}")
+	@JsonView({SimpleFileHeaderView.class})
+	public FileHeader getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("discriminator") FileDiscriminator discriminator, @PathParam("fileId") Long fileId) {
+		User loggedOn = getLoggedOn(authToken);
+		Position position = em.find(Position.class, positionId);
+		// Validate:
+		if (position == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
+		}
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+			!loggedOn.isDepartmentUser(position.getDepartment())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Return Result
+		List<FileHeader> files = new ArrayList<FileHeader>();
+		switch (discriminator) {
+			case committee:
+				files.addAll(position.getPhase().getCommittee().getFiles());
+				break;
+			case complementaryDocuments:
+				files.addAll(position.getPhase().getComplementaryDocuments().getFiles());
+				break;
+			case nomination:
+				files.addAll(position.getPhase().getNomination().getFiles());
+				break;
+		}
+		for (FileHeader file : files) {
 			if (file.getId().equals(fileId)) {
 				return file;
 			}
@@ -290,8 +449,8 @@ public class PositionRESTService extends RESTService {
 
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
-	public Response getFileBody(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
+	@Path("/{id:[0-9]+}/{discriminator}/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
+	public Response getFileBody(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("discriminator") FileDiscriminator discriminator, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
 		User loggedOn = getLoggedOn(authToken);
 		Position position = em.find(Position.class, positionId);
 		// Validate:
@@ -305,7 +464,19 @@ public class PositionRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
-		for (PositionFile file : position.getPhase().getFiles()) {
+		List<FileHeader> files = new ArrayList<FileHeader>();
+		switch (discriminator) {
+			case committee:
+				files.addAll(position.getPhase().getCommittee().getFiles());
+				break;
+			case complementaryDocuments:
+				files.addAll(position.getPhase().getComplementaryDocuments().getFiles());
+				break;
+			case nomination:
+				files.addAll(position.getPhase().getNomination().getFiles());
+				break;
+		}
+		for (FileHeader file : files) {
 			if (file.getId().equals(fileId)) {
 				if (file.getId().equals(fileId)) {
 					for (FileBody fb : file.getBodies()) {
@@ -320,10 +491,10 @@ public class PositionRESTService extends RESTService {
 	}
 
 	@POST
-	@Path("/{id:[0-9][0-9]*}/file")
+	@Path("/{id:[0-9][0-9]*}/{discriminator}/file")
 	@Consumes("multipart/form-data")
 	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
-	public String createFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	public String createFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("discriminator") FileDiscriminator discriminator, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		Position position = em.find(Position.class, positionId);
 		// Validate:
@@ -349,34 +520,64 @@ public class PositionRESTService extends RESTService {
 		if (type == null) {
 			throw new RestException(Status.BAD_REQUEST, "missing.file.type");
 		}
-		// Check number of file types
-		Set<PositionFile> existingFiles = FileHeader.filter(position.getPhase().getFiles(), type);
-		if (!PositionFile.fileTypes.containsKey(type) || existingFiles.size() >= PositionFile.fileTypes.get(type)) {
-			throw new RestException(Status.CONFLICT, "wrong.file.type");
-		}
-
-		// Create
 		try {
-			PositionFile positionFile = new PositionFile();
-			positionFile.setPosition(position);
-			positionFile.setOwner(loggedOn);
-			saveFile(loggedOn, fileItems, positionFile);
-			position.getPhase().addFile(positionFile);
-			em.flush();
+			switch (discriminator) {
+				case committee:
+					Set<PositionCommitteeFile> pcFiles = FileHeader.filter(position.getPhase().getCommittee().getFiles(), type);
+					if (!PositionCommitteeFile.fileTypes.containsKey(type) || pcFiles.size() >= PositionCommitteeFile.fileTypes.get(type)) {
+						throw new RestException(Status.CONFLICT, "wrong.file.type");
+					}
+					// Create
+					PositionCommitteeFile pcFile = new PositionCommitteeFile();
+					pcFile.setCommittee(position.getPhase().getCommittee());
+					pcFile.setOwner(loggedOn);
+					saveFile(loggedOn, fileItems, pcFile);
+					position.getPhase().getCommittee().addFile(pcFile);
+					em.flush();
 
-			return toJSON(positionFile, SimpleFileHeaderView.class);
+					return toJSON(pcFile, SimpleFileHeaderView.class);
+				case complementaryDocuments:
+					Set<ComplementaryDocumentsFile> cdFiles = FileHeader.filter(position.getPhase().getComplementaryDocuments().getFiles(), type);
+					if (!ComplementaryDocumentsFile.fileTypes.containsKey(type) || cdFiles.size() >= ComplementaryDocumentsFile.fileTypes.get(type)) {
+						throw new RestException(Status.CONFLICT, "wrong.file.type");
+					}
+					// Create
+					ComplementaryDocumentsFile cdFile = new ComplementaryDocumentsFile();
+					cdFile.setComplementaryDocuments(position.getPhase().getComplementaryDocuments());
+					cdFile.setOwner(loggedOn);
+					saveFile(loggedOn, fileItems, cdFile);
+					position.getPhase().getComplementaryDocuments().addFile(cdFile);
+					em.flush();
+
+					return toJSON(cdFiles, SimpleFileHeaderView.class);
+				case nomination:
+					Set<PositionNominationFile> nominationFiles = FileHeader.filter(position.getPhase().getNomination().getFiles(), type);
+					if (!PositionNominationFile.fileTypes.containsKey(type) || nominationFiles.size() >= PositionNominationFile.fileTypes.get(type)) {
+						throw new RestException(Status.CONFLICT, "wrong.file.type");
+					}
+					// Create
+					PositionNominationFile nominationFile = new PositionNominationFile();
+					nominationFile.setNomination(position.getPhase().getNomination());
+					nominationFile.setOwner(loggedOn);
+					saveFile(loggedOn, fileItems, nominationFile);
+					position.getPhase().getNomination().addFile(nominationFile);
+					em.flush();
+
+					return toJSON(nominationFile, SimpleFileHeaderView.class);
+			}
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
+		throw new RestException(Status.BAD_REQUEST, "wrong.file.type");
 	}
 
 	@POST
-	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}")
+	@Path("/{id:[0-9]+}/{discriminator}/file/{fileId:[0-9]+}")
 	@Consumes("multipart/form-data")
 	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
-	public String updateFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	public String updateFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("discriminator") FileDiscriminator discriminator, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		Position position = em.find(Position.class, positionId);
 		// Validate:
@@ -403,26 +604,69 @@ public class PositionRESTService extends RESTService {
 		if (type == null) {
 			throw new RestException(Status.BAD_REQUEST, "missing.file.type");
 		}
-		if (!PositionFile.fileTypes.containsKey(type)) {
-			throw new RestException(Status.CONFLICT, "wrong.file.type");
-		}
-		PositionFile positionFile = null;
-		for (PositionFile file : position.getPhase().getFiles()) {
-			if (file.getId().equals(fileId)) {
-				positionFile = file;
-				break;
-			}
-		}
-		if (positionFile == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.file.id");
-		}
-
-		// Update
 		try {
-			saveFile(loggedOn, fileItems, positionFile);
-			em.flush();
-			positionFile.getBodies().size();
-			return toJSON(positionFile, SimpleFileHeaderView.class);
+			switch (discriminator) {
+				case committee:
+					if (!PositionCommitteeFile.fileTypes.containsKey(type)) {
+						throw new RestException(Status.CONFLICT, "wrong.file.type");
+					}
+					PositionCommitteeFile committeeFile = null;
+					for (PositionCommitteeFile file : position.getPhase().getCommittee().getFiles()) {
+						if (file.getId().equals(fileId)) {
+							committeeFile = file;
+							break;
+						}
+					}
+					if (committeeFile == null) {
+						throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+					}
+					// Update
+					saveFile(loggedOn, fileItems, committeeFile);
+					em.flush();
+					committeeFile.getBodies().size();
+					return toJSON(committeeFile, SimpleFileHeaderView.class);
+				case complementaryDocuments:
+					if (!ComplementaryDocumentsFile.fileTypes.containsKey(type)) {
+						throw new RestException(Status.CONFLICT, "wrong.file.type");
+					}
+					ComplementaryDocumentsFile complementaryDocumentsFile = null;
+					for (ComplementaryDocumentsFile file : position.getPhase().getComplementaryDocuments().getFiles()) {
+						if (file.getId().equals(fileId)) {
+							complementaryDocumentsFile = file;
+							break;
+						}
+					}
+					if (complementaryDocumentsFile == null) {
+						throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+					}
+					// Update
+					saveFile(loggedOn, fileItems, complementaryDocumentsFile);
+					em.flush();
+					complementaryDocumentsFile.getBodies().size();
+					return toJSON(complementaryDocumentsFile, SimpleFileHeaderView.class);
+				case nomination:
+					if (!PositionNominationFile.fileTypes.containsKey(type)) {
+						throw new RestException(Status.CONFLICT, "wrong.file.type");
+					}
+					PositionNominationFile nominationFile = null;
+					for (PositionNominationFile file : position.getPhase().getNomination().getFiles()) {
+						if (file.getId().equals(fileId)) {
+							nominationFile = file;
+							break;
+						}
+					}
+					if (nominationFile == null) {
+						throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+					}
+					// Update
+					saveFile(loggedOn, fileItems, nominationFile);
+					em.flush();
+					nominationFile.getBodies().size();
+					return toJSON(nominationFile, SimpleFileHeaderView.class);
+				default:
+					throw new RestException(Status.BAD_REQUEST, "wrong.file.discriminator");
+
+			}
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
@@ -438,9 +682,9 @@ public class PositionRESTService extends RESTService {
 	 * @return
 	 */
 	@DELETE
-	@Path("/{id:[0-9]+}/file/{fileId:([0-9]+)?}")
+	@Path("/{id:[0-9]+}/{discriminator}/file/{fileId:([0-9]+)?}")
 	@JsonView({SimpleFileHeaderView.class})
-	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long positionId, @PathParam("fileId") Long fileId) {
+	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("discriminator") FileDiscriminator discriminator, @PathParam("id") long positionId, @PathParam("fileId") Long fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		Position position = em.find(Position.class, positionId);
 		// Validate:
@@ -454,26 +698,71 @@ public class PositionRESTService extends RESTService {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		try {
-			PositionFile positionFile = null;
-			for (PositionFile file : position.getPhase().getFiles()) {
-				if (file.getId().equals(fileId)) {
-					positionFile = file;
-					break;
-				}
-			}
-			if (positionFile == null) {
-				throw new RestException(Status.NOT_FOUND, "wrong.file.id");
-			}
-			File file = deleteFileBody(positionFile);
-			file.delete();
-			if (positionFile.getCurrentBody() == null) {
-				// Remove from Position
-				position.getPhase().getFiles().remove(positionFile);
-				return Response.noContent().build();
-			} else {
-				return Response.ok(positionFile).build();
-			}
+			switch (discriminator) {
+				case committee:
+					PositionCommitteeFile committeeFile = null;
+					for (PositionCommitteeFile file : position.getPhase().getCommittee().getFiles()) {
+						if (file.getId().equals(fileId)) {
+							committeeFile = file;
+							break;
+						}
+					}
+					if (committeeFile == null) {
+						throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+					}
+					File cPhysicalFile = deleteFileBody(committeeFile);
+					cPhysicalFile.delete();
+					if (committeeFile.getCurrentBody() == null) {
+						// Remove from Position
+						position.getPhase().getComplementaryDocuments().getFiles().remove(committeeFile);
+						return Response.noContent().build();
+					} else {
+						return Response.ok(committeeFile).build();
+					}
+				case complementaryDocuments:
+					ComplementaryDocumentsFile complementaryDocumentsFile = null;
+					for (ComplementaryDocumentsFile file : position.getPhase().getComplementaryDocuments().getFiles()) {
+						if (file.getId().equals(fileId)) {
+							complementaryDocumentsFile = file;
+							break;
+						}
+					}
+					if (complementaryDocumentsFile == null) {
+						throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+					}
+					File cdPhysicalFile = deleteFileBody(complementaryDocumentsFile);
+					cdPhysicalFile.delete();
+					if (complementaryDocumentsFile.getCurrentBody() == null) {
+						// Remove from Position
+						position.getPhase().getComplementaryDocuments().getFiles().remove(complementaryDocumentsFile);
+						return Response.noContent().build();
+					} else {
+						return Response.ok(complementaryDocumentsFile).build();
+					}
+				case nomination:
+					PositionNominationFile nominationFile = null;
+					for (PositionNominationFile file : position.getPhase().getNomination().getFiles()) {
+						if (file.getId().equals(fileId)) {
+							nominationFile = file;
+							break;
+						}
+					}
+					if (nominationFile == null) {
+						throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+					}
+					File nPhysicalFile = deleteFileBody(nominationFile);
+					nPhysicalFile.delete();
+					if (nominationFile.getCurrentBody() == null) {
+						// Remove from Position
+						position.getPhase().getComplementaryDocuments().getFiles().remove(nominationFile);
+						return Response.noContent().build();
+					} else {
+						return Response.ok(nominationFile).build();
+					}
+				default:
+					throw new RestException(Status.BAD_REQUEST, "wrong.file.discriminator");
 
+			}
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();

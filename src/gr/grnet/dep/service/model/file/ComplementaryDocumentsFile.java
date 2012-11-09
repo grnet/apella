@@ -1,7 +1,6 @@
 package gr.grnet.dep.service.model.file;
 
-import gr.grnet.dep.service.model.Position;
-import gr.grnet.dep.service.model.PositionPhase;
+import gr.grnet.dep.service.model.ComplementaryDocuments;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,7 +16,7 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Entity
 @DiscriminatorValue("PositionFile")
 @XmlRootElement
-public class PositionFile extends FileHeader {
+public class ComplementaryDocumentsFile extends FileHeader {
 
 	private static final long serialVersionUID = -3407870200478760438L;
 
@@ -33,26 +32,15 @@ public class PositionFile extends FileHeader {
 	});
 
 	@ManyToOne
-	private Position position;
-
-	@ManyToOne
-	private PositionPhase phase;
+	private ComplementaryDocuments complementaryDocuments;
 
 	@JsonView({DetailedFileHeaderView.class})
-	public Position getPosition() {
-		return position;
+	public ComplementaryDocuments getComplementaryDocuments() {
+		return complementaryDocuments;
 	}
 
-	public void setPosition(Position position) {
-		this.position = position;
-	}
-
-	public PositionPhase getPhase() {
-		return phase;
-	}
-
-	public void setPhase(PositionPhase phase) {
-		this.phase = phase;
+	public void setComplementaryDocuments(ComplementaryDocuments complementaryDocuments) {
+		this.complementaryDocuments = complementaryDocuments;
 	}
 
 }
