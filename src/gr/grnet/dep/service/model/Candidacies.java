@@ -125,4 +125,15 @@ public class Candidacies {
 		this.closingDate = closingDate;
 	}
 
+	//////////////////////////////////////////////
+
+	public void copyFrom(Candidacies other) {
+		this.setClosingDate(other.getOpeningDate());
+		this.setOpeningDate(other.getOpeningDate());
+		this.setUpdatedAt(new Date());
+	}
+
+	public void initializeCollections() {
+		this.candidacies.size();
+	}
 }

@@ -1,4 +1,6 @@
-<h3><%= $.i18n.prop('Position') %></h3>
+<h3><%= $.i18n.prop('Position') %> <small><%= $.i18n.prop('PositionStatus_' + phase.status) %></small>
+	
+</h3>
 <form class="form-horizontal" onsubmit="return false">
 	<ul class="nav nav-tabs" id="positionTabs">
 	  <li class="active"><a data-target="#position"><%= $.i18n.prop('PositionMain') %></a></li>
@@ -8,6 +10,18 @@
 	  <li><a data-target="#candidacies"><%= $.i18n.prop('PositionCandidacies') %></a></li>
 	  <li><a data-target="#nomination"><%= $.i18n.prop('PositionNomination') %></a></li>
 	  <li><a data-target="#rest"><%= $.i18n.prop('PositionLoipaDioikitikaEggrafa') %></a></li>
+	  <li class="dropdown">
+		<a class="dropdown-toggle" data-toggle="dropdown">
+			<%= $.i18n.prop('AddPhase') %>
+			<span class="caret"></span>
+		</a>
+		<ul class="dropdown-menu">
+			<li><a id="addPhase" data-phase-status ="ANOIXTI"><i class="icon-next icon-white"></i> <%= $.i18n.prop('PositionStatus_ANOIXTI') %></a></li>
+			<li><a id="addPhase" data-phase-status ="EPILOGI"><i class="icon-next icon-white"></i> <%= $.i18n.prop('PositionStatus_EPILOGI') %></a></li>
+			<li><a id="addPhase" data-phase-status ="ANAPOMPI"><i class="icon-next icon-white"></i> <%= $.i18n.prop('PositionStatus_ANAPOMPI') %></a></li>
+			<li><a id="addPhase" data-phase-status ="STELEXOMENI"><i class="icon-next icon-white"></i> <%= $.i18n.prop('PositionStatus_STELEXOMENI') %></a></li>
+		</ul>
+	  </li>
 	</ul>
 	<div class="tab-content">
 		<div class="tab-pane active" id="position">
@@ -53,19 +67,19 @@
 				<div class="control-group">
 					<label class="control-label" for="status"><%= $.i18n.prop('PositionStatus') %>:</label>
 					<div class="controls">
-						<span class="input-xlarge uneditable-input"><%= $.i18n.prop('PositionStatus_' + status) %></span>
+						<span class="input-xlarge uneditable-input"><%= $.i18n.prop('PositionStatus_' + phase.status) %></span>
 					</div>
 				</div>
 				<div class="control-group">
 					<label class="control-label" for="openingDate"><%= $.i18n.prop('PositionOpeningDate') %>:</label>
 					<div class="controls">
-						<input class="input-xlarge" name="openingDate" type="text" data-input-type="date"  value="<%= openingDate %>" />
+						<input class="input-xlarge" name="openingDate" type="text" data-input-type="date"  value="<%= phase.candidacies.openingDate %>" />
 					</div>
 				</div>
 				<div class="control-group">
 					<label class="control-label" for=closingDate><%= $.i18n.prop('PositionClosingDate') %>:</label>
 					<div class="controls">
-						<input class="input-xlarge" name="closingDate" type="text" data-input-type="date"  value="<%= closingDate %>" />
+						<input class="input-xlarge" name="closingDate" type="text" data-input-type="date"  value="<%= phase.candidacies.closingDate %>" />
 					</div>
 				</div>
 			</fieldset>
@@ -85,7 +99,7 @@
 				<div class="control-group">
 					<label class="control-label" for="committeeMeetingDate"><%= $.i18n.prop('CommitteeMeetingDate') %>:</label>
 					<div class="controls">
-						<input class="input-xlarge" name="committeeMeetingDate" type="text" data-input-type="date"  value="<%= committeeMeetingDate %>" />
+						<input class="input-xlarge" name="committeeMeetingDate" type="text" data-input-type="date"  value="<%= phase.committee ? phase.committee.committeeMeetingDate : undefined %>" />
 					</div>
 				</div>
 				<div class="control-group">
@@ -153,7 +167,7 @@
 				<div class="control-group">
 					<label class="control-label" for=nominationCommitteeConvergenceDate><%= $.i18n.prop('NominationCommitteeConvergenceDate') %>:</label>
 					<div class="controls">
-						<input class="input-xlarge" name="nominationCommitteeConvergenceDate" type="text" data-input-type="date"  value="<%= nominationCommitteeConvergenceDate %>" />
+						<input class="input-xlarge" name="nominationCommitteeConvergenceDate" type="text" data-input-type="date"  value="<%= phase.nomination ? phase.nomination.nominationCommitteeConvergenceDate : undefined %>" />
 					</div>
 				</div>
 				<div class="control-group">
@@ -178,13 +192,13 @@
 				<div class="control-group">
 					<label class="control-label" for=nominationToETDate><%= $.i18n.prop('NominationToETDate') %>:</label>
 					<div class="controls">
-						<input class="input-xlarge" name="nominationToETDate" type="text" data-input-type="date" value="<%= nominationToETDate %>" />
+						<input class="input-xlarge" name="nominationToETDate" type="text" data-input-type="date" value="<%= phase.nomination ? phase.nomination.nominationToETDate : undefined %>" />
 					</div>
 				</div>
 				<div class="control-group">
 					<label class="control-label" for="nominationFEK"><%= $.i18n.prop('NominationFEK') %>:</label>
 					<div class="controls">
-						<input class="input-xlarge" name="nominationFEK" type="text" value="<%= nominationFEK %>" />
+						<input class="input-xlarge" name="nominationFEK" type="text" value="<%= phase.nomination ? phase.nomination.nominationFEK : undefined %>" />
 					</div>
 				</div>
 				<div class="control-group">

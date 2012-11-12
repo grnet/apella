@@ -1,6 +1,7 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.file.PositionNominationFile;
+import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 
 import java.util.Date;
@@ -18,6 +19,7 @@ import javax.persistence.TemporalType;
 import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 @Entity
@@ -66,6 +68,7 @@ public class Nomination {
 		return nominationCommitteeConvergenceDate;
 	}
 
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setNominationCommitteeConvergenceDate(Date nominationCommitteeConvergenceDate) {
 		this.nominationCommitteeConvergenceDate = nominationCommitteeConvergenceDate;
 	}
@@ -75,6 +78,7 @@ public class Nomination {
 		return nominationToETDate;
 	}
 
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setNominationToETDate(Date nominationToETDate) {
 		this.nominationToETDate = nominationToETDate;
 	}
@@ -131,12 +135,22 @@ public class Nomination {
 		this.files = files;
 	}
 
+	//////////////////////////////////////////////
+
 	public void addFile(PositionNominationFile file) {
 		file.setNomination(this);
 		this.files.add(file);
 	}
 
+	public void copyFrom(Nomination nomination) {
+		this.setNominationCommitteeConvergenceDate(nomination.getNominationCommitteeConvergenceDate());
+		this.setNominationFEK(nomination.getNominationFEK());
+		this.setNominationToETDate(nomination.getNominationToETDate());
+		this.setUpdatedAt(new Date());
+	}
+
 	public void initializeCollections() {
 		this.files.size();
 	}
+
 }

@@ -14,8 +14,13 @@ import javax.persistence.OrderColumn;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.codehaus.jackson.map.annotate.JsonView;
+
 @Entity
 public class PositionPhase {
+
+	public static interface DetailedPositionPhaseView {
+	};
 
 	@Id
 	@GeneratedValue
@@ -56,6 +61,7 @@ public class PositionPhase {
 		this.id = id;
 	}
 
+	@JsonView({DetailedPositionPhaseView.class})
 	public Position getPosition() {
 		return position;
 	}

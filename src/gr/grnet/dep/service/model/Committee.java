@@ -1,6 +1,7 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.file.PositionCommitteeFile;
+import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ import javax.persistence.TemporalType;
 import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 @Entity
@@ -84,6 +86,7 @@ public class Committee {
 		return committeeMeetingDate;
 	}
 
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setCommitteeMeetingDate(Date committeeMeetingDate) {
 		this.committeeMeetingDate = committeeMeetingDate;
 	}
@@ -129,6 +132,15 @@ public class Committee {
 		this.updatedAt = updatedAt;
 	}
 
+	//////////////////////////////////////////////
+
+	public void copyFrom(Committee other) {
+		this.setCommitteeMeetingDate(other.getCommitteeMeetingDate());
+		this.setUpdatedAt(new Date());
+	}
+
 	public void initializeCollections() {
+		this.files.size();
+		this.members.size();
 	}
 }

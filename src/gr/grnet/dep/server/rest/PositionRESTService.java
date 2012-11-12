@@ -203,9 +203,18 @@ public class PositionRESTService extends RESTService {
 			if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(department)) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
+			Date now = new Date();
 			position.setPermanent(false);
 			position.getPhase().setOrder(0);
 			position.getPhase().setStatus(PositionStatus.ENTAGMENI);
+			position.getPhase().setCreatedAt(now);
+			position.getPhase().setUpdatedAt(now);
+			position.getPhase().getCandidacies().setCreatedAt(now);
+			position.getPhase().getCandidacies().setUpdatedAt(now);
+			position.getPhase().setCommittee(null);
+			position.getPhase().setComplementaryDocuments(null);
+			position.getPhase().setNomination(null);
+
 			position = em.merge(position);
 			em.flush();
 
@@ -255,12 +264,13 @@ public class PositionRESTService extends RESTService {
 		}
 	}
 
-	@POST
+	@PUT
 	@Path("/{id:[0-9][0-9]*}/phase")
 	@JsonView({DetailedPositionView.class})
-	public Position addPhase(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long positionId, PositionStatus newStatus) {
+	public Position addPhase(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long positionId, Position position) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
+			PositionStatus newStatus = position.getPhase().getStatus();
 			Position existingPosition = getAndCheckPosition(loggedOn, positionId);
 			PositionPhase existingPhase = existingPosition.getPhase();
 			PositionPhase newPhase = null;
@@ -372,7 +382,7 @@ public class PositionRESTService extends RESTService {
 	 * File Functions *****
 	 ***********************/
 
-	private enum FileDiscriminator {
+	public enum FileDiscriminator {
 		committee,
 		complementaryDocuments,
 		nomination
@@ -398,13 +408,19 @@ public class PositionRESTService extends RESTService {
 		List<FileHeader> files = new ArrayList<FileHeader>();
 		switch (discriminator) {
 			case committee:
-				files.addAll(position.getPhase().getCommittee().getFiles());
+				if (position.getPhase().getCommittee() != null) {
+					files.addAll(position.getPhase().getCommittee().getFiles());
+				}
 				break;
 			case complementaryDocuments:
-				files.addAll(position.getPhase().getComplementaryDocuments().getFiles());
+				if (position.getPhase().getComplementaryDocuments() != null) {
+					files.addAll(position.getPhase().getComplementaryDocuments().getFiles());
+				}
 				break;
 			case nomination:
-				files.addAll(position.getPhase().getNomination().getFiles());
+				if (position.getPhase().getNomination() != null) {
+					files.addAll(position.getPhase().getNomination().getFiles());
+				}
 				break;
 		}
 		return files;
@@ -430,13 +446,19 @@ public class PositionRESTService extends RESTService {
 		List<FileHeader> files = new ArrayList<FileHeader>();
 		switch (discriminator) {
 			case committee:
-				files.addAll(position.getPhase().getCommittee().getFiles());
+				if (position.getPhase().getCommittee() != null) {
+					files.addAll(position.getPhase().getCommittee().getFiles());
+				}
 				break;
 			case complementaryDocuments:
-				files.addAll(position.getPhase().getComplementaryDocuments().getFiles());
+				if (position.getPhase().getComplementaryDocuments() != null) {
+					files.addAll(position.getPhase().getComplementaryDocuments().getFiles());
+				}
 				break;
 			case nomination:
-				files.addAll(position.getPhase().getNomination().getFiles());
+				if (position.getPhase().getNomination() != null) {
+					files.addAll(position.getPhase().getNomination().getFiles());
+				}
 				break;
 		}
 		for (FileHeader file : files) {
@@ -467,13 +489,19 @@ public class PositionRESTService extends RESTService {
 		List<FileHeader> files = new ArrayList<FileHeader>();
 		switch (discriminator) {
 			case committee:
-				files.addAll(position.getPhase().getCommittee().getFiles());
+				if (position.getPhase().getCommittee() != null) {
+					files.addAll(position.getPhase().getCommittee().getFiles());
+				}
 				break;
 			case complementaryDocuments:
-				files.addAll(position.getPhase().getComplementaryDocuments().getFiles());
+				if (position.getPhase().getComplementaryDocuments() != null) {
+					files.addAll(position.getPhase().getComplementaryDocuments().getFiles());
+				}
 				break;
 			case nomination:
-				files.addAll(position.getPhase().getNomination().getFiles());
+				if (position.getPhase().getNomination() != null) {
+					files.addAll(position.getPhase().getNomination().getFiles());
+				}
 				break;
 		}
 		for (FileHeader file : files) {
@@ -814,10 +842,14 @@ public class PositionRESTService extends RESTService {
 			!loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		for (CommitteeMember member : position.getPhase().getCommittee().getMembers()) {
-			member.getProfessor().initializeCollections();
+		if (position.getPhase().getCommittee() == null) {
+			return new ArrayList<CommitteeMember>();
+		} else {
+			for (CommitteeMember member : position.getPhase().getCommittee().getMembers()) {
+				member.getProfessor().initializeCollections();
+			}
+			return position.getPhase().getCommittee().getMembers();
 		}
-		return position.getPhase().getCommittee().getMembers();
 	}
 
 	@GET
@@ -862,7 +894,6 @@ public class PositionRESTService extends RESTService {
 			if (existingProfessor == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
 			}
-
 			// Check if already exists:
 			for (CommitteeMember existingMember : existingPosition.getPhase().getCommittee().getMembers()) {
 				if (existingMember.getProfessor().getId().equals(existingProfessor.getId())) {

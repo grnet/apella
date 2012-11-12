@@ -23,11 +23,11 @@
 		<h4><%= $.i18n.prop('PositionDates') %></h4>
 		<dl class="dl-glossary">
 			<dt><%= $.i18n.prop('PositionStatus') %></dt>
-			<dd><%= $.i18n.prop('PositionStatus_' + status) %></dd>
+			<dd><%= $.i18n.prop('PositionStatus_' + phase.status) %></dd>
 			<dt><%= $.i18n.prop('PositionOpeningDate') %></dt>
-			<dd><%= openingDate %></dd>
+			<dd><%= phase.candidacies.openingDate %></dd>
 			<dt><%= $.i18n.prop('PositionClosingDate') %></dt>
-			<dd><%= closingDate %></dd>
+			<dd><%= phase.candidacies.closingDate %></dd>
 		</dl>
 	</div>
 </div>
@@ -45,7 +45,7 @@
 		<span id="positionCommittee"></span>
 		<dl class="dl-glossary">
 			<dt><%= $.i18n.prop('CommitteeMeetingDate') %></dt>
-			<dd><%= committeeMeetingDate %></dd>
+			<dd><%= phase.committee ? phase.committee.committeeMeetingDate : undefined %></dd>
 			<dt><%= $.i18n.prop('PraktikoSynedriasisEpitropisGiaAksiologitesFile') %></dt>
 			<dd>
 				<span id="praktikoSynedriasisEpitropisGiaAksiologitesFile"></span>
@@ -100,7 +100,7 @@
 				<span id="prosklisiKosmitoraFile"></span>
 			</dd>
 			<dt><%= $.i18n.prop('NominationCommitteeConvergenceDate') %></dt>
-			<dd><%= nominationCommitteeConvergenceDate %></dd>
+			<dd><%= phase.nomination ? phase.nomination.nominationCommitteeConvergenceDate : undefined %></dd>
 			<dt><%= $.i18n.prop('PraktikoEpilogisFile') %></dt>
 			<dd>
 				<span id="praktikoEpilogisFile"></span>
@@ -114,9 +114,9 @@
 				<span id="praksiDiorismouFile"></span>
 			</dd>
 			<dt><%= $.i18n.prop('NominationToETDate') %></dt>
-			<dd><%= nominationToETDate %></dd>
+			<dd><%= phase.nomination ? phase.nomination.nominationToETDate : undefined %></dd>
 			<dt><%= $.i18n.prop('NominationFEK') %></dt>
-			<dd><%= nominationFEK %></dd>
+			<dd><%= phase.nomination ? phase.nomination.nominationFEK : undefined %></dd>
 			<dt><%= $.i18n.prop('ApofasiAnapompisFile') %></dt>
 			<dd>
 				<span id="apofasiAnapompisFile"></span>

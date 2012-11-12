@@ -3279,6 +3279,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		id : "positionview",
 
+		fileDiscriminators : [ "committee", "complementaryDocuments", "nomination" ],
+
 		initialize : function() {
 			_.bindAll(this, "render", "addCommitteeView", "addCandidacyListView", "addFile", "addFileList", "close");
 			this.template = _.template(tpl_position);
@@ -3296,64 +3298,93 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.innerViews = [];
 			self.$el.html(self.template(self.model.toJSON()));
 			// Dependencies (Files, Committee):
-			var files = new Models.Files();
-			files.url = self.model.url() + "/file";
-			files.fetch({
-				cache : false,
-				success : function(collection, response) {
-					self.addFile(collection, "APOFASI_SYSTASIS_EPITROPIS", self.$("#apofasiSystasisEpitropisFileList"), {
-						withMetadata : true,
-						editable : false
-					});
-					self.addFile(collection, "PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES", self.$("#praktikoSynedriasisEpitropisGiaAksiologitesFile"), {
-						withMetadata : true,
-						editable : false
-					});
-					self.addFile(collection, "TEKMIRIOSI_EPITROPIS_GIA_AKSIOLOGITES", self.$("#tekmiriosiEpitropisGiaAksiologitesFile"), {
-						withMetadata : true,
-						editable : false
-					});
-					self.addFile(collection, "AITIMA_EPITROPIS_PROS_AKSIOLOGITES", self.$("#aitimaEpitropisProsAksiologitesFile"), {
-						withMetadata : true,
-						editable : false
-					});
-					self.addFileList(collection, "AKSIOLOGISI_PROTOU_AKSIOLOGITI", self.$("#aksiologisiProtouAksiologitiFileList"), {
-						withMetadata : true,
-						editable : false
-					});
-					self.addFileList(collection, "AKSIOLOGISI_DEUTEROU_AKSIOLOGITI", self.$("#aksiologisiDeuterouAksiologitiFileList"), {
-						withMetadata : true,
-						editable : false
-					});
-					self.addFile(collection, "PROSKLISI_KOSMITORA", self.$("#prosklisiKosmitoraFile"), {
-						withMetadata : true,
-						editable : false
-					});
-					self.addFileList(collection, "EISIGISI_DEP_YPOPSIFIOU", self.$("#eisigisiDEPYpopsifiouFileList"), {
-						withMetadata : true,
-						editable : false
-					});
-					self.addFileList(collection, "PRAKTIKO_EPILOGIS", self.$("#praktikoEpilogisFile"), {
-						withMetadata : true,
-						editable : false
-					});
-					self.addFile(collection, "DIAVIVASTIKO_PRAKTIKOU", self.$("#diavivastikoPraktikouFile"), {
-						withMetadata : true,
-						editable : false
-					});
-					self.addFile(collection, "PRAKSI_DIORISMOU", self.$("#praksiDiorismouFile"), {
-						withMetadata : true,
-						editable : false
-					});
-					self.addFileList(collection, "DIOIKITIKO_EGGRAFO", self.$("#dioikitikoEggrafoFileList"), {
-						withMetadata : true,
-						editable : false
-					});
-					self.addFile(collection, "APOFASI_ANAPOMPIS", self.$("#apofasiAnapompisFile"), {
-						withMetadata : true,
-						editable : false
-					});
+			var files = {};
+			_.each(self.fileDiscriminators, function(fileDiscriminator) {
+				switch (fileDiscriminator) {
+				case "committee":
+					if (!self.model.get("phase").committee) {
+						return;
+					}
+					break;
+				case "complementaryDocuments":
+					if (!self.model.get("phase").complementaryDocuments) {
+						return;
+					}
+					break;
+				case "nomination":
+					if (!self.model.get("phase").nomination) {
+						return;
+					}
+					break;
 				}
+				files[fileDiscriminator] = new Models.Files();
+				files[fileDiscriminator].url = self.model.url() + "/" + fileDiscriminator + "/file";
+				files[fileDiscriminator].fetch({
+					cache : false,
+					success : function(collection, response) {
+						switch (fileDiscriminator) {
+						case "committee":
+							self.addFile(collection, "APOFASI_SYSTASIS_EPITROPIS", self.$("#apofasiSystasisEpitropisFileList"), {
+								withMetadata : true,
+								editable : false
+							});
+							self.addFile(collection, "PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES", self.$("#praktikoSynedriasisEpitropisGiaAksiologitesFile"), {
+								withMetadata : true,
+								editable : false
+							});
+							self.addFile(collection, "TEKMIRIOSI_EPITROPIS_GIA_AKSIOLOGITES", self.$("#tekmiriosiEpitropisGiaAksiologitesFile"), {
+								withMetadata : true,
+								editable : false
+							});
+							self.addFile(collection, "AITIMA_EPITROPIS_PROS_AKSIOLOGITES", self.$("#aitimaEpitropisProsAksiologitesFile"), {
+								withMetadata : true,
+								editable : false
+							});
+							break;
+						case "complementaryDocuments":
+							self.addFileList(collection, "AKSIOLOGISI_PROTOU_AKSIOLOGITI", self.$("#aksiologisiProtouAksiologitiFileList"), {
+								withMetadata : true,
+								editable : false
+							});
+							self.addFileList(collection, "AKSIOLOGISI_DEUTEROU_AKSIOLOGITI", self.$("#aksiologisiDeuterouAksiologitiFileList"), {
+								withMetadata : true,
+								editable : false
+							});
+							self.addFileList(collection, "EISIGISI_DEP_YPOPSIFIOU", self.$("#eisigisiDEPYpopsifiouFileList"), {
+								withMetadata : true,
+								editable : false
+							});
+							self.addFileList(collection, "DIOIKITIKO_EGGRAFO", self.$("#dioikitikoEggrafoFileList"), {
+								withMetadata : true,
+								editable : false
+							});
+							break;
+						case "nomination":
+							self.addFile(collection, "PROSKLISI_KOSMITORA", self.$("#prosklisiKosmitoraFile"), {
+								withMetadata : true,
+								editable : false
+							});
+							self.addFileList(collection, "PRAKTIKO_EPILOGIS", self.$("#praktikoEpilogisFile"), {
+								withMetadata : true,
+								editable : false
+							});
+							self.addFile(collection, "DIAVIVASTIKO_PRAKTIKOU", self.$("#diavivastikoPraktikouFile"), {
+								withMetadata : true,
+								editable : false
+							});
+							self.addFile(collection, "PRAKSI_DIORISMOU", self.$("#praksiDiorismouFile"), {
+								withMetadata : true,
+								editable : false
+							});
+
+							self.addFile(collection, "APOFASI_ANAPOMPIS", self.$("#apofasiAnapompisFile"), {
+								withMetadata : true,
+								editable : false
+							});
+							break;
+						}
+					}
+				});
 			});
 			self.addCommitteeView(self.$("#positionCommittee"));
 			self.addCandidacyListView(self.$("#positionCandidacyList"));
@@ -3414,8 +3445,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		validator : undefined,
 
+		fileDiscriminators : [ "committee", "complementaryDocuments", "nomination" ],
+
+		phases : {
+			"ENTAGMENI" : [ "ANOIXTI" ],
+			"ANOIXTI" : [ "EPILOGI" ],
+			"EPILOGI" : [ "ANAPOMPI", "STELEXOMENI" ],
+			"ANAPOMPI" : [ "EPILOGI" ],
+			"STELEXOMENI" : []
+		},
+
 		initialize : function() {
-			_.bindAll(this, "render", "addCandidacyListView", "addCommitteeView", "isEditable", "submit", "cancel", "addFile", "addFileList", "close");
+			_.bindAll(this, "render", "addCandidacyListView", "addCommitteeView", "isEditable", "submit", "cancel", "addPhase", "addFile", "addFileList", "close");
 			this.template = _.template(tpl_position_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
@@ -3428,69 +3469,70 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var self = this;
 				self.$("form").submit();
 			},
+			"click a#addPhase" : "addPhase",
 			"submit form" : "submit"
 		},
 
 		isEditable : function(field) {
 			var self = this;
-			if (_.isEqual(self.model.get("status"), "OLOKLIROMENI") || _.isEqual(self.model.get("status"), "STELEXOMENI")) {
+			if (_.isEqual(self.model.get("phase").status, "ANAPOMPI") || _.isEqual(self.model.get("phase").status, "STELEXOMENI")) {
 				return false;
 			}
 			switch (field) {
 			// Fields
 			case "name":
-				return self.model.isNew() || _.isEqual(self.model.get("status"), "ENTAGMENI") || _.isEqual(self.model.get("status"), "ANOIXTI");
+				return self.model.isNew() || _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
 			case "department":
-				return self.model.isNew() || _.isEqual(self.model.get("status"), "ENTAGMENI") || _.isEqual(self.model.get("status"), "ANOIXTI");
+				return self.model.isNew() || _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
 			case "description":
-				return self.model.isNew() || _.isEqual(self.model.get("status"), "ENTAGMENI") || _.isEqual(self.model.get("status"), "ANOIXTI");
+				return self.model.isNew() || _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
 			case "subject":
-				return self.model.isNew() || _.isEqual(self.model.get("status"), "ENTAGMENI") || _.isEqual(self.model.get("status"), "ANOIXTI");
+				return self.model.isNew() || _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
 			case "fek":
-				return self.model.isNew() || _.isEqual(self.model.get("status"), "ENTAGMENI") || _.isEqual(self.model.get("status"), "ANOIXTI");
+				return self.model.isNew() || _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
 			case "fekSentDate":
-				return self.model.isNew() || _.isEqual(self.model.get("status"), "ENTAGMENI") || _.isEqual(self.model.get("status"), "ANOIXTI");
+				return self.model.isNew() || _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
 			case "openingDate":
-				return self.model.isNew() || _.isEqual(self.model.get("status"), "ENTAGMENI") || _.isEqual(self.model.get("status"), "ANOIXTI");
+				return self.model.isNew() || _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
 			case "closingDate":
-				return self.model.isNew() || _.isEqual(self.model.get("status"), "ENTAGMENI") || _.isEqual(self.model.get("status"), "ANOIXTI");
+				return self.model.isNew() || _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
 			case "committeeMeetingDate":
-				return _.isEqual(self.model.get("status"), "KLEISTI");
+				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "nominationCommitteeConvergenceDate":
-				return _.isEqual(self.model.get("status"), "KLEISTI");
+				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "nominationToETDate":
-				return _.isEqual(self.model.get("status"), "KLEISTI");
+				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "nominationFEK":
-				return _.isEqual(self.model.get("status"), "KLEISTI");
+				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 				// Files
 			case "apofasiSystasisEpitropisFileList":
-				return _.isEqual(self.model.get("status"), "KLEISTI");
+				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "prosklisiKosmitoraFile":
-				return _.isEqual(self.model.get("status"), "KLEISTI");
+				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "eisigisiDEPYpopsifiouFileList":
-				return _.isEqual(self.model.get("status"), "KLEISTI");
+				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "praktikoEpilogisFile":
-				return _.isEqual(self.model.get("status"), "KLEISTI");
+				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "diavivastikoPraktikouFile":
-				return _.isEqual(self.model.get("status"), "KLEISTI");
+				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "praksiDiorismouFile":
-				return _.isEqual(self.model.get("status"), "KLEISTI");
+				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "dioikitikoEggrafoFileList":
-				return _.isEqual(self.model.get("status"), "KLEISTI");
+				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "apofasiAnapompisFile":
-				return _.isEqual(self.model.get("status"), "KLEISTI");
+				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "praktikoSynedriasisEpitropisGiaAksiologitesFile":
-				return _.isEqual(self.model.get("status"), "KLEISTI");
+				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "tekmiriosiEpitropisGiaAksiologitesFile":
-				return _.isEqual(self.model.get("status"), "KLEISTI");
+				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "aitimaEpitropisProsAksiologitesFile":
-				return _.isEqual(self.model.get("status"), "KLEISTI");
+				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "aksiologisiProtouAksiologitiFileList":
-				return _.isEqual(self.model.get("status"), "KLEISTI");
+				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "aksiologisiDeuterouAksiologitiFileList":
-				return _.isEqual(self.model.get("status"), "KLEISTI");
+				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "positionCommittee":
-				return _.isEqual(self.model.get("status"), "KLEISTI");
+				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			}
 			return false;
 		},
@@ -3533,66 +3575,98 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			// Dependencies (Files, Committee, Candidacies):
 			if (self.model.has("id")) {
-				var files = new Models.Files();
-				files.url = self.model.url() + "/file";
-				files.fetch({
-					cache : false,
-					success : function(collection, response) {
-						self.addFile(collection, "APOFASI_SYSTASIS_EPITROPIS", self.$("#apofasiSystasisEpitropisFileList"), {
-							withMetadata : true,
-							editable : self.isEditable("apofasiSystasisEpitropisFileList")
-						});
-						self.addFile(collection, "PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES", self.$("#praktikoSynedriasisEpitropisGiaAksiologitesFile"), {
-							withMetadata : true,
-							editable : self.isEditable("praktikoSynedriasisEpitropisGiaAksiologitesFile")
-						});
-						self.addFile(collection, "TEKMIRIOSI_EPITROPIS_GIA_AKSIOLOGITES", self.$("#tekmiriosiEpitropisGiaAksiologitesFile"), {
-							withMetadata : true,
-							editable : self.isEditable("tekmiriosiEpitropisGiaAksiologitesFile")
-						});
-						self.addFile(collection, "AITIMA_EPITROPIS_PROS_AKSIOLOGITES", self.$("#aitimaEpitropisProsAksiologitesFile"), {
-							withMetadata : true,
-							editable : self.isEditable("aitimaEpitropisProsAksiologitesFile")
-						});
-						self.addFileList(collection, "AKSIOLOGISI_PROTOU_AKSIOLOGITI", self.$("#aksiologisiProtouAksiologitiFileList"), {
-							withMetadata : true,
-							editable : self.isEditable("aksiologisiProtouAksiologitiFileList")
-						});
-						self.addFileList(collection, "AKSIOLOGISI_DEUTEROU_AKSIOLOGITI", self.$("#aksiologisiDeuterouAksiologitiFileList"), {
-							withMetadata : true,
-							editable : self.isEditable("aksiologisiDeuterouAksiologitiFileList")
-						});
-						self.addFile(collection, "PROSKLISI_KOSMITORA", self.$("#prosklisiKosmitoraFile"), {
-							withMetadata : true,
-							editable : self.isEditable("prosklisiKosmitoraFile")
-						});
-						self.addFileList(collection, "EISIGISI_DEP_YPOPSIFIOU", self.$("#eisigisiDEPYpopsifiouFileList"), {
-							withMetadata : true,
-							editable : self.isEditable("eisigisiDEPYpopsifiouFileList")
-						});
-						self.addFileList(collection, "PRAKTIKO_EPILOGIS", self.$("#praktikoEpilogisFile"), {
-							withMetadata : true,
-							editable : self.isEditable("praktikoEpilogisFile")
-						});
-						self.addFile(collection, "DIAVIVASTIKO_PRAKTIKOU", self.$("#diavivastikoPraktikouFile"), {
-							withMetadata : true,
-							editable : self.isEditable("diavivastikoPraktikouFile")
-						});
-						self.addFile(collection, "PRAKSI_DIORISMOU", self.$("#praksiDiorismouFile"), {
-							withMetadata : true,
-							editable : self.isEditable("praksiDiorismouFile")
-						});
-						self.addFileList(collection, "DIOIKITIKO_EGGRAFO", self.$("#dioikitikoEggrafoFileList"), {
-							withMetadata : true,
-							editable : self.isEditable("dioikitikoEggrafoFileList")
-						});
-						self.addFile(collection, "APOFASI_ANAPOMPIS", self.$("#apofasiAnapompisFile"), {
-							withMetadata : true,
-							editable : self.isEditable("apofasiAnapompisFile")
-						});
+				var files = {};
+				_.each(self.fileDiscriminators, function(fileDiscriminator) {
+					switch (fileDiscriminator) {
+					case "committee":
+						if (!self.model.get("phase").committee) {
+							return;
+						}
+						break;
+					case "complementaryDocuments":
+						if (!self.model.get("phase").complementaryDocuments) {
+							return;
+						}
+						break;
+					case "nomination":
+						if (!self.model.get("phase").nomination) {
+							return;
+						}
+						break;
 					}
+					files[fileDiscriminator] = new Models.Files();
+					files[fileDiscriminator].url = self.model.url() + "/" + fileDiscriminator + "/file";
+					files[fileDiscriminator].fetch({
+						cache : false,
+						success : function(collection, response) {
+							switch (fileDiscriminator) {
+							case "committee":
+								self.addFile(collection, "APOFASI_SYSTASIS_EPITROPIS", self.$("#apofasiSystasisEpitropisFileList"), {
+									withMetadata : true,
+									editable : self.isEditable("apofasiSystasisEpitropisFileList")
+								});
+								self.addFile(collection, "PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES", self.$("#praktikoSynedriasisEpitropisGiaAksiologitesFile"), {
+									withMetadata : true,
+									editable : self.isEditable("praktikoSynedriasisEpitropisGiaAksiologitesFile")
+								});
+								self.addFile(collection, "TEKMIRIOSI_EPITROPIS_GIA_AKSIOLOGITES", self.$("#tekmiriosiEpitropisGiaAksiologitesFile"), {
+									withMetadata : true,
+									editable : self.isEditable("tekmiriosiEpitropisGiaAksiologitesFile")
+								});
+								self.addFile(collection, "AITIMA_EPITROPIS_PROS_AKSIOLOGITES", self.$("#aitimaEpitropisProsAksiologitesFile"), {
+									withMetadata : true,
+									editable : self.isEditable("aitimaEpitropisProsAksiologitesFile")
+								});
+								break;
+							case "complementaryDocuments":
+								self.addFileList(collection, "AKSIOLOGISI_PROTOU_AKSIOLOGITI", self.$("#aksiologisiProtouAksiologitiFileList"), {
+									withMetadata : true,
+									editable : self.isEditable("aksiologisiProtouAksiologitiFileList")
+								});
+								self.addFileList(collection, "AKSIOLOGISI_DEUTEROU_AKSIOLOGITI", self.$("#aksiologisiDeuterouAksiologitiFileList"), {
+									withMetadata : true,
+									editable : self.isEditable("aksiologisiDeuterouAksiologitiFileList")
+								});
+								self.addFileList(collection, "EISIGISI_DEP_YPOPSIFIOU", self.$("#eisigisiDEPYpopsifiouFileList"), {
+									withMetadata : true,
+									editable : self.isEditable("eisigisiDEPYpopsifiouFileList")
+								});
+								self.addFileList(collection, "DIOIKITIKO_EGGRAFO", self.$("#dioikitikoEggrafoFileList"), {
+									withMetadata : true,
+									editable : self.isEditable("dioikitikoEggrafoFileList")
+								});
+								break;
+							case "nomination":
+								self.addFile(collection, "PROSKLISI_KOSMITORA", self.$("#prosklisiKosmitoraFile"), {
+									withMetadata : true,
+									editable : self.isEditable("prosklisiKosmitoraFile")
+								});
+
+								self.addFileList(collection, "PRAKTIKO_EPILOGIS", self.$("#praktikoEpilogisFile"), {
+									withMetadata : true,
+									editable : self.isEditable("praktikoEpilogisFile")
+								});
+								self.addFile(collection, "DIAVIVASTIKO_PRAKTIKOU", self.$("#diavivastikoPraktikouFile"), {
+									withMetadata : true,
+									editable : self.isEditable("diavivastikoPraktikouFile")
+								});
+								self.addFile(collection, "PRAKSI_DIORISMOU", self.$("#praksiDiorismouFile"), {
+									withMetadata : true,
+									editable : self.isEditable("praksiDiorismouFile")
+								});
+
+								self.addFile(collection, "APOFASI_ANAPOMPIS", self.$("#apofasiAnapompisFile"), {
+									withMetadata : true,
+									editable : self.isEditable("apofasiAnapompisFile")
+								});
+								break;
+							}
+						}
+					});
 				});
-				self.addCommitteeView(self.$("#positionCommittee"));
+				if (self.model.get("phase").committee) {
+					self.addCommitteeView(self.$("#positionCommittee"));
+				}
 				self.addCandidacyListView(self.$("#positionCandidacyList"));
 			} else {
 				self.$("#apofasiSystasisEpitropisFileList").html($.i18n.prop("PressSave"));
@@ -3625,24 +3699,42 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					$(this).attr("disabled", true);
 				}
 			});
-			if (_.isEqual(self.model.get("status"), "OLOKLIROMENI")) {
-				self.$("a#save,a#remove").hide();
+			// Set Buttons:
+			if (_.isEqual(self.model.get("phase").status, "ANAPOMPI") || _.isEqual(self.model.get("phase").status, "OLOKLIROMENI")) {
+				self.$("a#save").hide();
 			}
-			if (_.isEqual(self.model.get("status"), "ENTAGMENI") || _.isEqual(self.model.get("status"), "ANOIXTI")) {
+			if (!_.isEqual(self.model.get("phase").status, "ENTAGMENI")) {
+				self.$("a#remove").hide();
+			}
+			self.$("a#addPhase").each(function() {
+				var status = $(this).data("phaseStatus");
+				if (_.any(self.phases[self.model.get("phase").status], function(nextStatus) {
+					return _.isEqual(status, nextStatus);
+				})) {
+					$(this).show();
+				} else {
+					$(this).hide();
+				}
+			});
+
+			// Tabs:
+			if (_.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI")) {
 				self.$("#positionTabs a[data-target=#committee]").parent("li").addClass("disabled");
 				self.$("#positionTabs a[data-target=#evaluations]").parent("li").addClass("disabled");
 				self.$("#positionTabs a[data-target=#proposals]").parent("li").addClass("disabled");
 				self.$("#positionTabs a[data-target=#nomination]").parent("li").addClass("disabled");
 				self.$("#positionTabs a[data-target=#rest]").parent("li").addClass("disabled");
 			}
-			// Widgets
 			self.$("#positionTabs a").click(function(e) {
 				e.preventDefault();
 				if (!$(this).parent("li").hasClass("disabled")) {
 					$(this).tab('show');
 				}
 			});
+
+			// DatePicker
 			self.$("input[data-input-type=date]").datepicker();
+			// Validation
 			self.validator = $("form", this.el).validate({
 				errorElement : "span",
 				errorClass : "help-inline",
@@ -3680,7 +3772,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		submit : function(event) {
 			var self = this;
-			var values = {};
+			var values = {
+				phase : {
+					candidacies : {},
+					committee : {},
+					nomination : {}
+				}
+			};
 			// Read Input
 			values.name = self.$('form input[name=name]').val();
 			values.description = self.$('form textarea[name=description]').val();
@@ -3693,12 +3791,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			};
 			values.fek = self.$('form input[name=fek]').val();
 			values.fekSentDate = self.$('form input[name=fekSentDate]').val();
-			values.openingDate = self.$('form input[name=openingDate]').val();
-			values.closingDate = self.$('form input[name=closingDate]').val();
-			values.committeeMeetingDate = self.$('form input[name=committeeMeetingDate]').val();
-			values.nominationCommitteeConvergenceDate = self.$('form input[name=nominationCommitteeConvergenceDate]').val();
-			values.nominationToETDate = self.$('form input[name=nominationToETDate]').val();
-			values.nominationFEK = self.$('form input[name=nominationFEK]').val();
+			values.phase.candidacies.openingDate = self.$('form input[name=openingDate]').val();
+			values.phase.candidacies.closingDate = self.$('form input[name=closingDate]').val();
+			values.phase.committee.committeeMeetingDate = self.$('form input[name=committeeMeetingDate]').val();
+			values.phase.nomination.nominationCommitteeConvergenceDate = self.$('form input[name=nominationCommitteeConvergenceDate]').val();
+			values.phase.nomination.nominationToETDate = self.$('form input[name=nominationToETDate]').val();
+			values.phase.nomination.nominationFEK = self.$('form input[name=nominationFEK]').val();
 
 			// Save to model
 			self.model.save(values, {
@@ -3763,6 +3861,32 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			});
 			confirm.show();
 			return false;
+		},
+
+		addPhase : function(event) {
+			var self = this;
+			var newStatus = $(event.currentTarget).data('phaseStatus');
+			self.model.phase({
+				"phase" : {
+					"status" : newStatus
+				}
+			}, {
+				wait : true,
+				success : function(model, resp) {
+					var popup = new Views.PopupView({
+						type : "success",
+						message : $.i18n.prop("Success")
+					});
+					popup.show();
+				},
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
 		},
 
 		addCommitteeView : function($el) {
@@ -3948,7 +4072,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		allowedToEdit : function() {
 			var self = this;
-			return self.options.position.get("status") === "KLEISTI";
+			return self.options.position.get("phase").status === "EPILOGI";
 		},
 
 		render : function(eventName) {
