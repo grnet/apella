@@ -87,20 +87,22 @@ public class Candidacies {
 		this.candidacies = candidacies;
 	}
 
-	@JsonDeserialize(using = SimpleDateDeserializer.class)
+	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getCreatedAt() {
 		return createdAt;
 	}
 
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setCreatedAt(Date createdAt) {
 		this.createdAt = createdAt;
 	}
 
-	@JsonDeserialize(using = SimpleDateDeserializer.class)
+	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getUpdatedAt() {
 		return updatedAt;
 	}
 
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setUpdatedAt(Date updatedAt) {
 		this.updatedAt = updatedAt;
 	}

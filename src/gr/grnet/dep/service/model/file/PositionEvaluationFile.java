@@ -1,6 +1,6 @@
 package gr.grnet.dep.service.model.file;
 
-import gr.grnet.dep.service.model.ComplementaryDocuments;
+import gr.grnet.dep.service.model.Evaluation;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,7 +16,7 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Entity
 @DiscriminatorValue("PositionFile")
 @XmlRootElement
-public class ComplementaryDocumentsFile extends FileHeader {
+public class PositionEvaluationFile extends FileHeader {
 
 	private static final long serialVersionUID = -3407870200478760438L;
 
@@ -24,21 +24,21 @@ public class ComplementaryDocumentsFile extends FileHeader {
 	public static final Map<FileType, Integer> fileTypes = Collections.unmodifiableMap(new HashMap<FileType, Integer>() {
 
 		{
-			put(FileType.EISIGISI_DEP_YPOPSIFIOU, Integer.MAX_VALUE);
-			put(FileType.DIOIKITIKO_EGGRAFO, Integer.MAX_VALUE);
+			put(FileType.AKSIOLOGISI_PROTOU_AKSIOLOGITI, Integer.MAX_VALUE);
+			put(FileType.AKSIOLOGISI_DEUTEROU_AKSIOLOGITI, Integer.MAX_VALUE);
 		}
 	});
 
 	@ManyToOne
-	private ComplementaryDocuments complementaryDocuments;
+	private Evaluation evaluation;
 
 	@JsonView({DetailedFileHeaderView.class})
-	public ComplementaryDocuments getComplementaryDocuments() {
-		return complementaryDocuments;
+	public Evaluation getEvaluation() {
+		return evaluation;
 	}
 
-	public void setComplementaryDocuments(ComplementaryDocuments complementaryDocuments) {
-		this.complementaryDocuments = complementaryDocuments;
+	public void setEvaluation(Evaluation evaluation) {
+		this.evaluation = evaluation;
 	}
 
 }

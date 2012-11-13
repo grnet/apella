@@ -1,14 +1,11 @@
 package gr.grnet.dep.service.model;
 
-import gr.grnet.dep.service.model.CommitteeMember.DetailedPositionCommitteeMemberView;
-import gr.grnet.dep.service.model.file.PositionCommitteeFile;
+import gr.grnet.dep.service.model.file.PositionEvaluationFile;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -24,13 +21,9 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
-public class Committee {
-
-	public static interface DetailedCommitteeView {
-	};
+public class Evaluation {
 
 	@Id
 	@GeneratedValue
@@ -42,17 +35,11 @@ public class Committee {
 	@ManyToOne
 	private Position position;
 
-	@OneToMany(mappedBy = "committee", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "evaluation", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<PositionPhase> phases = new HashSet<PositionPhase>();
 
-	@Temporal(TemporalType.DATE)
-	private Date committeeMeetingDate; // Ημερομηνία Συνεδρίασης επιτροπής
-
-	@OneToMany(mappedBy = "committee", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<PositionCommitteeFile> files = new HashSet<PositionCommitteeFile>();
-
-	@OneToMany(mappedBy = "committee")
-	private List<CommitteeMember> members = new ArrayList<CommitteeMember>();
+	@OneToMany(mappedBy = "evaluation", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<PositionEvaluationFile> files = new HashSet<PositionEvaluationFile>();
 
 	@Temporal(TemporalType.DATE)
 	private Date createdAt;
@@ -68,7 +55,7 @@ public class Committee {
 		this.id = id;
 	}
 
-	@JsonView({DetailedCommitteeView.class, DetailedPositionCommitteeMemberView.class})
+	@XmlTransient
 	public Position getPosition() {
 		return position;
 	}
@@ -84,39 +71,6 @@ public class Committee {
 
 	public void setPhases(Set<PositionPhase> phases) {
 		this.phases = phases;
-	}
-
-	@JsonSerialize(using = SimpleDateSerializer.class)
-	public Date getCommitteeMeetingDate() {
-		return committeeMeetingDate;
-	}
-
-	@JsonDeserialize(using = SimpleDateDeserializer.class)
-	public void setCommitteeMeetingDate(Date committeeMeetingDate) {
-		this.committeeMeetingDate = committeeMeetingDate;
-	}
-
-	@XmlTransient
-	public Set<PositionCommitteeFile> getFiles() {
-		return files;
-	}
-
-	public void setFiles(Set<PositionCommitteeFile> files) {
-		this.files = files;
-	}
-
-	public void addFile(PositionCommitteeFile file) {
-		file.setCommittee(this);
-		this.files.add(file);
-	}
-
-	@XmlTransient
-	public List<CommitteeMember> getMembers() {
-		return members;
-	}
-
-	public void setMembers(List<CommitteeMember> members) {
-		this.members = members;
 	}
 
 	@JsonSerialize(using = SimpleDateSerializer.class)
@@ -139,15 +93,27 @@ public class Committee {
 		this.updatedAt = updatedAt;
 	}
 
+	@XmlTransient
+	public Set<PositionEvaluationFile> getFiles() {
+		return files;
+	}
+
+	public void setFiles(Set<PositionEvaluationFile> files) {
+		this.files = files;
+	}
+
+	public void addFile(PositionEvaluationFile file) {
+		file.setEvaluation(this);
+		this.files.add(file);
+	}
+
 	//////////////////////////////////////////////
 
-	public void copyFrom(Committee other) {
-		this.setCommitteeMeetingDate(other.getCommitteeMeetingDate());
+	public void copyFrom(Evaluation other) {
 		this.setUpdatedAt(new Date());
 	}
 
 	public void initializeCollections() {
 		this.files.size();
-		this.members.size();
 	}
 }

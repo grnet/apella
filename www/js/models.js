@@ -805,6 +805,9 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 					id : undefined,
 					committeeMeetingDate : undefined,
 				},
+				evaluation : {
+					id : undefined
+				},
 				nomination : {
 					id : undefined,
 					nominationCommitteeConvergenceDate : undefined,
@@ -944,11 +947,11 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 	Models.PositionCommitteeMember = Backbone.Model.extend({
 		position : undefined,
 		urlRoot : function() {
-			return "/dep/rest/position/" + this.attributes.position.id + "/committee";
+			return "/dep/rest/position/" + this.attributes.committee.position.id + "/committee";
 		},
 		defaults : {
 			id : undefined,
-			position : undefined,
+			committee : undefined,
 			professor : undefined,
 			confirmedMembership : undefined
 		}

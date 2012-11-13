@@ -1,6 +1,7 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.model.Candidacies;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
 import gr.grnet.dep.service.model.Committee;
@@ -8,6 +9,7 @@ import gr.grnet.dep.service.model.CommitteeMember;
 import gr.grnet.dep.service.model.CommitteeMember.DetailedPositionCommitteeMemberView;
 import gr.grnet.dep.service.model.ComplementaryDocuments;
 import gr.grnet.dep.service.model.Department;
+import gr.grnet.dep.service.model.Evaluation;
 import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.Nomination;
 import gr.grnet.dep.service.model.Position;
@@ -25,6 +27,7 @@ import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.file.PositionCommitteeFile;
+import gr.grnet.dep.service.model.file.PositionEvaluationFile;
 import gr.grnet.dep.service.model.file.PositionNominationFile;
 
 import java.io.File;
@@ -205,10 +208,15 @@ public class PositionRESTService extends RESTService {
 			}
 			Date now = new Date();
 			position.setPermanent(false);
+
+			position.setPhase(new PositionPhase());
+			position.getPhase().setPosition(position);
 			position.getPhase().setOrder(0);
 			position.getPhase().setStatus(PositionStatus.ENTAGMENI);
 			position.getPhase().setCreatedAt(now);
 			position.getPhase().setUpdatedAt(now);
+			position.getPhase().setCandidacies(new Candidacies());
+			position.getPhase().getCandidacies().setPosition(position);
 			position.getPhase().getCandidacies().setCreatedAt(now);
 			position.getPhase().getCandidacies().setUpdatedAt(now);
 			position.getPhase().setCommittee(null);
@@ -305,8 +313,13 @@ public class PositionRESTService extends RESTService {
 							newPhase.setStatus(PositionStatus.EPILOGI);
 							newPhase.setCandidacies(existingPhase.getCandidacies());
 							newPhase.setCommittee(new Committee());
+							newPhase.getCommittee().setPosition(existingPosition);
+							newPhase.setEvaluation(new Evaluation());
+							newPhase.getEvaluation().setPosition(existingPosition);
 							newPhase.setNomination(new Nomination());
+							newPhase.getNomination().setPosition(existingPosition);
 							newPhase.setComplementaryDocuments(new ComplementaryDocuments());
+							newPhase.getComplementaryDocuments().setPosition(existingPosition);
 							// Add to Position
 							existingPosition.addPhase(newPhase);
 							break;
@@ -327,6 +340,7 @@ public class PositionRESTService extends RESTService {
 							newPhase.setStatus(PositionStatus.ANAPOMPI);
 							newPhase.setCandidacies(existingPhase.getCandidacies());
 							newPhase.setCommittee(existingPhase.getCommittee());
+							newPhase.setEvaluation(existingPhase.getEvaluation());
 							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
 							newPhase.setNomination(existingPhase.getNomination());
 							// Add to Position
@@ -337,6 +351,7 @@ public class PositionRESTService extends RESTService {
 							newPhase.setStatus(PositionStatus.STELEXOMENI);
 							newPhase.setCandidacies(existingPhase.getCandidacies());
 							newPhase.setCommittee(existingPhase.getCommittee());
+							newPhase.setEvaluation(existingPhase.getEvaluation());
 							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
 							newPhase.setNomination(existingPhase.getNomination());
 							// Add to Position
@@ -355,7 +370,16 @@ public class PositionRESTService extends RESTService {
 							newPhase = new PositionPhase();
 							newPhase.setStatus(PositionStatus.EPILOGI);
 							newPhase.setCandidacies(existingPhase.getCandidacies());
-							newPhase.setCommittee(existingPhase.getCommittee()); // Must be changed if an update occurs
+							// TODO: Use the same Committe until a request to create a new one occurs.
+							// newPhase.setCommittee(existingPhase.getCommittee());
+							newPhase.setCommittee(new Committee());
+							newPhase.getCommittee().setPosition(existingPosition);
+							newPhase.setEvaluation(new Evaluation());
+							newPhase.getEvaluation().setPosition(existingPosition);
+							newPhase.setNomination(new Nomination());
+							newPhase.getNomination().setPosition(existingPosition);
+							newPhase.setComplementaryDocuments(new ComplementaryDocuments());
+							newPhase.getComplementaryDocuments().setPosition(existingPosition);
 							// Add to Position
 							existingPosition.addPhase(newPhase);
 							break;
@@ -384,6 +408,7 @@ public class PositionRESTService extends RESTService {
 
 	public enum FileDiscriminator {
 		committee,
+		evaluation,
 		complementaryDocuments,
 		nomination
 	}
@@ -410,6 +435,11 @@ public class PositionRESTService extends RESTService {
 			case committee:
 				if (position.getPhase().getCommittee() != null) {
 					files.addAll(position.getPhase().getCommittee().getFiles());
+				}
+				break;
+			case evaluation:
+				if (position.getPhase().getEvaluation() != null) {
+					files.addAll(position.getPhase().getEvaluation().getFiles());
 				}
 				break;
 			case complementaryDocuments:
@@ -448,6 +478,11 @@ public class PositionRESTService extends RESTService {
 			case committee:
 				if (position.getPhase().getCommittee() != null) {
 					files.addAll(position.getPhase().getCommittee().getFiles());
+				}
+				break;
+			case evaluation:
+				if (position.getPhase().getEvaluation() != null) {
+					files.addAll(position.getPhase().getEvaluation().getFiles());
 				}
 				break;
 			case complementaryDocuments:
@@ -491,6 +526,11 @@ public class PositionRESTService extends RESTService {
 			case committee:
 				if (position.getPhase().getCommittee() != null) {
 					files.addAll(position.getPhase().getCommittee().getFiles());
+				}
+				break;
+			case evaluation:
+				if (position.getPhase().getEvaluation() != null) {
+					files.addAll(position.getPhase().getEvaluation().getFiles());
 				}
 				break;
 			case complementaryDocuments:
@@ -564,6 +604,20 @@ public class PositionRESTService extends RESTService {
 					em.flush();
 
 					return toJSON(pcFile, SimpleFileHeaderView.class);
+				case evaluation:
+					Set<PositionEvaluationFile> eFiles = FileHeader.filter(position.getPhase().getEvaluation().getFiles(), type);
+					if (!PositionEvaluationFile.fileTypes.containsKey(type) || eFiles.size() >= PositionEvaluationFile.fileTypes.get(type)) {
+						throw new RestException(Status.CONFLICT, "wrong.file.type");
+					}
+					// Create
+					PositionEvaluationFile eFile = new PositionEvaluationFile();
+					eFile.setEvaluation(position.getPhase().getEvaluation());
+					eFile.setOwner(loggedOn);
+					saveFile(loggedOn, fileItems, eFile);
+					position.getPhase().getEvaluation().addFile(eFile);
+					em.flush();
+
+					return toJSON(eFile, SimpleFileHeaderView.class);
 				case complementaryDocuments:
 					Set<ComplementaryDocumentsFile> cdFiles = FileHeader.filter(position.getPhase().getComplementaryDocuments().getFiles(), type);
 					if (!ComplementaryDocumentsFile.fileTypes.containsKey(type) || cdFiles.size() >= ComplementaryDocumentsFile.fileTypes.get(type)) {
@@ -577,7 +631,7 @@ public class PositionRESTService extends RESTService {
 					position.getPhase().getComplementaryDocuments().addFile(cdFile);
 					em.flush();
 
-					return toJSON(cdFiles, SimpleFileHeaderView.class);
+					return toJSON(cdFile, SimpleFileHeaderView.class);
 				case nomination:
 					Set<PositionNominationFile> nominationFiles = FileHeader.filter(position.getPhase().getNomination().getFiles(), type);
 					if (!PositionNominationFile.fileTypes.containsKey(type) || nominationFiles.size() >= PositionNominationFile.fileTypes.get(type)) {
@@ -653,6 +707,25 @@ public class PositionRESTService extends RESTService {
 					em.flush();
 					committeeFile.getBodies().size();
 					return toJSON(committeeFile, SimpleFileHeaderView.class);
+				case evaluation:
+					if (!PositionEvaluationFile.fileTypes.containsKey(type)) {
+						throw new RestException(Status.CONFLICT, "wrong.file.type");
+					}
+					PositionEvaluationFile evaluationFile = null;
+					for (PositionEvaluationFile file : position.getPhase().getEvaluation().getFiles()) {
+						if (file.getId().equals(fileId)) {
+							evaluationFile = file;
+							break;
+						}
+					}
+					if (evaluationFile == null) {
+						throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+					}
+					// Update
+					saveFile(loggedOn, fileItems, evaluationFile);
+					em.flush();
+					evaluationFile.getBodies().size();
+					return toJSON(evaluationFile, SimpleFileHeaderView.class);
 				case complementaryDocuments:
 					if (!ComplementaryDocumentsFile.fileTypes.containsKey(type)) {
 						throw new RestException(Status.CONFLICT, "wrong.file.type");
@@ -742,10 +815,30 @@ public class PositionRESTService extends RESTService {
 					cPhysicalFile.delete();
 					if (committeeFile.getCurrentBody() == null) {
 						// Remove from Position
-						position.getPhase().getComplementaryDocuments().getFiles().remove(committeeFile);
+						position.getPhase().getCommittee().getFiles().remove(committeeFile);
 						return Response.noContent().build();
 					} else {
 						return Response.ok(committeeFile).build();
+					}
+				case evaluation:
+					PositionEvaluationFile evaluationFile = null;
+					for (PositionEvaluationFile file : position.getPhase().getEvaluation().getFiles()) {
+						if (file.getId().equals(fileId)) {
+							evaluationFile = file;
+							break;
+						}
+					}
+					if (evaluationFile == null) {
+						throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+					}
+					File ePhysicalFile = deleteFileBody(evaluationFile);
+					ePhysicalFile.delete();
+					if (evaluationFile.getCurrentBody() == null) {
+						// Remove from Position
+						position.getPhase().getComplementaryDocuments().getFiles().remove(evaluationFile);
+						return Response.noContent().build();
+					} else {
+						return Response.ok(evaluationFile).build();
 					}
 				case complementaryDocuments:
 					ComplementaryDocumentsFile complementaryDocumentsFile = null;
@@ -951,6 +1044,7 @@ public class PositionRESTService extends RESTService {
 			em.flush();
 
 			// Return result
+			existingMember.getProfessor().initializeCollections();
 			return existingMember;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();

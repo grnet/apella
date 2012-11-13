@@ -91,6 +91,7 @@ public class Nomination {
 		this.nominationFEK = nominationFEK;
 	}
 
+	@XmlTransient
 	public Position getPosition() {
 		return position;
 	}
@@ -113,6 +114,7 @@ public class Nomination {
 		return createdAt;
 	}
 
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setCreatedAt(Date createdAt) {
 		this.createdAt = createdAt;
 	}
@@ -122,6 +124,7 @@ public class Nomination {
 		return updatedAt;
 	}
 
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setUpdatedAt(Date updatedAt) {
 		this.updatedAt = updatedAt;
 	}

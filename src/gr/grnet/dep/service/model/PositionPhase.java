@@ -1,12 +1,17 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.Position.DetailedPositionView;
 import gr.grnet.dep.service.model.Position.PositionStatus;
+import gr.grnet.dep.service.util.SimpleDateDeserializer;
+import gr.grnet.dep.service.util.SimpleDateSerializer;
 
 import java.util.Date;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
@@ -14,6 +19,8 @@ import javax.persistence.OrderColumn;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
@@ -29,6 +36,7 @@ public class PositionPhase {
 	@ManyToOne
 	private Position position;
 
+	@Enumerated(EnumType.STRING)
 	private PositionStatus status;
 
 	@OrderColumn
@@ -40,6 +48,9 @@ public class PositionPhase {
 
 	@ManyToOne(cascade = CascadeType.ALL)
 	private Committee committee;
+
+	@ManyToOne(cascade = CascadeType.ALL)
+	private Evaluation evaluation;
 
 	@ManyToOne(cascade = CascadeType.ALL)
 	private Nomination nomination;
@@ -94,6 +105,7 @@ public class PositionPhase {
 		this.candidacies = candidacies;
 	}
 
+	@JsonView({DetailedPositionView.class})
 	public Committee getCommittee() {
 		return committee;
 	}
@@ -102,6 +114,16 @@ public class PositionPhase {
 		this.committee = committee;
 	}
 
+	@JsonView({DetailedPositionView.class})
+	public Evaluation getEvaluation() {
+		return evaluation;
+	}
+
+	public void setEvaluation(Evaluation evaluation) {
+		this.evaluation = evaluation;
+	}
+
+	@JsonView({DetailedPositionView.class})
 	public Nomination getNomination() {
 		return nomination;
 	}
@@ -110,6 +132,7 @@ public class PositionPhase {
 		this.nomination = nomination;
 	}
 
+	@JsonView({DetailedPositionView.class})
 	public ComplementaryDocuments getComplementaryDocuments() {
 		return complementaryDocuments;
 	}
@@ -118,18 +141,22 @@ public class PositionPhase {
 		this.complementaryDocuments = complementaryDocuments;
 	}
 
+	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getCreatedAt() {
 		return createdAt;
 	}
 
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setCreatedAt(Date createdAt) {
 		this.createdAt = createdAt;
 	}
 
+	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getUpdatedAt() {
 		return updatedAt;
 	}
 
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setUpdatedAt(Date updatedAt) {
 		this.updatedAt = updatedAt;
 	}

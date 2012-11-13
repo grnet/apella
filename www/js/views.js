@@ -3279,7 +3279,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		id : "positionview",
 
-		fileDiscriminators : [ "committee", "complementaryDocuments", "nomination" ],
+		fileDiscriminators : [ "committee", "evaluation", "complementaryDocuments", "nomination" ],
 
 		initialize : function() {
 			_.bindAll(this, "render", "addCommitteeView", "addCandidacyListView", "addFile", "addFileList", "close");
@@ -3303,6 +3303,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				switch (fileDiscriminator) {
 				case "committee":
 					if (!self.model.get("phase").committee) {
+						return;
+					}
+					break;
+				case "evaluation":
+					if (!self.model.get("phase").evaluation) {
 						return;
 					}
 					break;
@@ -3341,7 +3346,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								editable : false
 							});
 							break;
-						case "complementaryDocuments":
+						case "evaluation":
 							self.addFileList(collection, "AKSIOLOGISI_PROTOU_AKSIOLOGITI", self.$("#aksiologisiProtouAksiologitiFileList"), {
 								withMetadata : true,
 								editable : false
@@ -3350,6 +3355,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								withMetadata : true,
 								editable : false
 							});
+							break;
+						case "complementaryDocuments":
 							self.addFileList(collection, "EISIGISI_DEP_YPOPSIFIOU", self.$("#eisigisiDEPYpopsifiouFileList"), {
 								withMetadata : true,
 								editable : false
@@ -3445,7 +3452,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		validator : undefined,
 
-		fileDiscriminators : [ "committee", "complementaryDocuments", "nomination" ],
+		fileDiscriminators : [ "committee", "evaluation", "complementaryDocuments", "nomination" ],
 
 		phases : {
 			"ENTAGMENI" : [ "ANOIXTI" ],
@@ -3583,6 +3590,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							return;
 						}
 						break;
+					case "evaluation":
+						if (!self.model.get("phase").evaluation) {
+							return;
+						}
+						break;
 					case "complementaryDocuments":
 						if (!self.model.get("phase").complementaryDocuments) {
 							return;
@@ -3618,7 +3630,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 									editable : self.isEditable("aitimaEpitropisProsAksiologitesFile")
 								});
 								break;
-							case "complementaryDocuments":
+							case "evaluation":
 								self.addFileList(collection, "AKSIOLOGISI_PROTOU_AKSIOLOGITI", self.$("#aksiologisiProtouAksiologitiFileList"), {
 									withMetadata : true,
 									editable : self.isEditable("aksiologisiProtouAksiologitiFileList")
@@ -3627,6 +3639,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 									withMetadata : true,
 									editable : self.isEditable("aksiologisiDeuterouAksiologitiFileList")
 								});
+								break;
+							case "complementaryDocuments":
 								self.addFileList(collection, "EISIGISI_DEP_YPOPSIFIOU", self.$("#eisigisiDEPYpopsifiouFileList"), {
 									withMetadata : true,
 									editable : self.isEditable("eisigisiDEPYpopsifiouFileList")
@@ -4162,8 +4176,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var self = this;
 			var positionCommitteeMember = new Models.PositionCommitteeMember();
 			positionCommitteeMember.save({
-				"position" : {
-					id : self.options.position.get("id")
+				"committee" : {
+					"position" : {
+						id : self.options.position.get("id")
+					}
 				},
 				"professor" : professor.toJSON(),
 				"type" : type
@@ -4216,6 +4232,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						});
 					}
 				});
+				confirm.show();
 			}
 		},
 
