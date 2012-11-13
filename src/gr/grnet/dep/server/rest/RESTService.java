@@ -187,7 +187,7 @@ public class RESTService {
 		@SuppressWarnings("unchecked")
 		List<Candidacy> openCandidacies = em.createQuery(
 			"from Candidacy c where c.candidate = :candidate " +
-				"and c.position.closingDate >= :now")
+				"and c.candidacies.closingDate >= :now")
 			.setParameter("candidate", candidate)
 			.setParameter("now", new Date())
 			.getResultList();

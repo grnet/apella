@@ -46,7 +46,7 @@ public class CandidateRESTService extends RESTService {
 
 		String queryString = "from Candidacy c where c.candidate = :candidate";
 		if (open != null) {
-			queryString += " and c.position.closingDate >= :now";
+			queryString += " and c.candidacies.closingDate >= :now";
 		}
 		Query query = em.createQuery(queryString)
 			.setParameter("candidate", candidate);

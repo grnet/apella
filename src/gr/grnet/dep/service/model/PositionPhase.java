@@ -1,7 +1,11 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.CommitteeMember.ProfessorCommitteesView;
+import gr.grnet.dep.service.model.Position.CandidatePositionView;
+import gr.grnet.dep.service.model.Position.CommitteeMemberPositionView;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
 import gr.grnet.dep.service.model.Position.PositionStatus;
+import gr.grnet.dep.service.model.Position.PublicPositionView;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 
@@ -97,6 +101,7 @@ public class PositionPhase {
 		this.order = order;
 	}
 
+	@JsonView({PublicPositionView.class, ProfessorCommitteesView.class, DetailedPositionView.class, CommitteeMemberPositionView.class, CandidatePositionView.class})
 	public Candidacies getCandidacies() {
 		return candidacies;
 	}
@@ -105,7 +110,7 @@ public class PositionPhase {
 		this.candidacies = candidacies;
 	}
 
-	@JsonView({DetailedPositionView.class})
+	@JsonView({DetailedPositionView.class, CommitteeMemberPositionView.class, CandidatePositionView.class})
 	public Committee getCommittee() {
 		return committee;
 	}
@@ -114,7 +119,7 @@ public class PositionPhase {
 		this.committee = committee;
 	}
 
-	@JsonView({DetailedPositionView.class})
+	@JsonView({DetailedPositionView.class, CommitteeMemberPositionView.class})
 	public Evaluation getEvaluation() {
 		return evaluation;
 	}
@@ -123,7 +128,7 @@ public class PositionPhase {
 		this.evaluation = evaluation;
 	}
 
-	@JsonView({DetailedPositionView.class})
+	@JsonView({DetailedPositionView.class, CommitteeMemberPositionView.class, CandidatePositionView.class})
 	public Nomination getNomination() {
 		return nomination;
 	}
@@ -132,7 +137,7 @@ public class PositionPhase {
 		this.nomination = nomination;
 	}
 
-	@JsonView({DetailedPositionView.class})
+	@JsonView({DetailedPositionView.class, CommitteeMemberPositionView.class})
 	public ComplementaryDocuments getComplementaryDocuments() {
 		return complementaryDocuments;
 	}

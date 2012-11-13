@@ -985,18 +985,22 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			id : undefined,
 			permanent : undefined,
 			date : undefined,
-			position : {
+			candidacies : {
 				id : undefined,
-				permanent : undefined,
-				name : undefined,
-				description : undefined,
-				department : undefined,
-				subject : undefined,
-				status : undefined,
-				fek : undefined,
-				fekSentDate : undefined,
 				openingDate : undefined,
-				closingDate : undefined
+				closingDate : undefined,
+				position : {
+					id : undefined,
+					permanent : undefined,
+					name : undefined,
+					description : undefined,
+					department : undefined,
+					subject : undefined,
+					status : undefined,
+					fek : undefined,
+					fekSentDate : undefined,
+
+				}
 			},
 			candidate : {
 				"id" : undefined

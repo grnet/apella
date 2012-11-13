@@ -1,6 +1,7 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.CommitteeMember.DetailedPositionCommitteeMemberView;
+import gr.grnet.dep.service.model.CommitteeMember.ProfessorCommitteesView;
 import gr.grnet.dep.service.model.file.PositionCommitteeFile;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
@@ -68,7 +69,7 @@ public class Committee {
 		this.id = id;
 	}
 
-	@JsonView({DetailedCommitteeView.class, DetailedPositionCommitteeMemberView.class})
+	@JsonView({DetailedCommitteeView.class, DetailedPositionCommitteeMemberView.class, ProfessorCommitteesView.class})
 	public Position getPosition() {
 		return position;
 	}
@@ -149,5 +150,14 @@ public class Committee {
 	public void initializeCollections() {
 		this.files.size();
 		this.members.size();
+	}
+
+	public boolean containsMember(User user) {
+		for (CommitteeMember member : this.members) {
+			if (member.getProfessor().getUser().getId().equals(user.getId())) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

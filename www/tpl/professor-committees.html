@@ -16,16 +16,16 @@
 	<% _.each(committees, function(committeeMember) { %>
 		<tr>
 			<td>
-				<a id="select" data-position-id="<%= committeeMember.position.id %>" ><%= committeeMember.position.name %> </a>
+				<a id="select" data-position-id="<%= committeeMember.committee.position.id %>" href="#position/<%= committeeMember.committee.position.id %>"><%= committeeMember.committee.position.name %> </a>
 			</td>
-			<td><%= committeeMember.position.department.institution.name %></td>
-			<td><%= committeeMember.position.department.department %></td>
-			<td><%= committeeMember.position.description %></td>
-			<td><%= committeeMember.position.subject.name %></td>
-			<td><%= committeeMember.position.fek %>, <%= committeeMember.position.fekSentDate %></td>
-			<td><%= committeeMember.position.openingDate %></td>
-			<td><%= committeeMember.position.closingDate %></td>
-			<td><%= $.i18n.prop('PositionStatus_' + committeeMember.position.status) %></td>
+			<td><%= committeeMember.committee.position.department.institution.name %></td>
+			<td><%= committeeMember.committee.position.department.department %></td>
+			<td><%= committeeMember.committee.position.description %></td>
+			<td><%= committeeMember.committee.position.subject.name %></td>
+			<td><%= committeeMember.committee.position.fek %>, <%= committeeMember.committee.position.fekSentDate %></td>
+			<td><%= committeeMember.committee.position.phase.candidacies.openingDate %></td>
+			<td><%= committeeMember.committee.position.phase.candidacies.closingDate %></td>
+			<td><%= $.i18n.prop('PositionStatus_' + committeeMember.committee.position.phase.status) %></td>
 		</tr>
 	<% }); %>
 	</tbody>

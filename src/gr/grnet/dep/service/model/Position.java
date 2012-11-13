@@ -28,6 +28,12 @@ public class Position {
 	public static interface PublicPositionView {
 	};
 
+	public static interface CommitteeMemberPositionView extends PublicPositionView {
+	};
+
+	public static interface CandidatePositionView extends PublicPositionView {
+	};
+
 	public static interface DetailedPositionView extends PublicPositionView {
 	};
 

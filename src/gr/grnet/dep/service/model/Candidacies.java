@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 
@@ -20,9 +21,13 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 public class Candidacies {
+
+	public static interface DetailedCandidaciesView {
+	};
 
 	@Id
 	@GeneratedValue
@@ -60,7 +65,7 @@ public class Candidacies {
 		this.id = id;
 	}
 
-	@XmlTransient
+	@JsonView({DetailedCandidaciesView.class, DetailedCandidacyView.class})
 	public Position getPosition() {
 		return position;
 	}
@@ -130,12 +135,21 @@ public class Candidacies {
 	//////////////////////////////////////////////
 
 	public void copyFrom(Candidacies other) {
-		this.setClosingDate(other.getOpeningDate());
+		this.setClosingDate(other.getClosingDate());
 		this.setOpeningDate(other.getOpeningDate());
 		this.setUpdatedAt(new Date());
 	}
 
 	public void initializeCollections() {
 		this.candidacies.size();
+	}
+
+	public boolean containsCandidate(User user) {
+		for (Candidacy candidacy : this.candidacies) {
+			if (candidacy.getCandidate().getUser().getId().equals(user.getId())) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

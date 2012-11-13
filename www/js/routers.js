@@ -303,7 +303,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			var self = this;
 
 			_.extend(self, Backbone.Events);
-			_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showInstitutionAssistantsView", "showMinistryAssistantsView", "showPositionView", "showRegisterView", "showProfessorCommitteesView", "showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "start");
+			_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showInstitutionAssistantsView", "showMinistryAssistantsView", "showPositionView", "showPositionsView", "showRegistersView", "showProfessorCommitteesView", "showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "start");
 			$(document).ajaxStart(App.blockUI);
 			$(document).ajaxStop(App.unblockUI);
 
@@ -334,14 +334,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			"iassistants/:userId" : "showInstitutionAssistantsView",
 			"massistants" : "showMinistryAssistantsView",
 			"massistants/:userId" : "showMinistryAssistantsView",
-			"position" : "showPositionView",
+			"positions" : "showPositionsView",
+			"positions/:positionId" : "showPositionsView",
 			"position/:positionId" : "showPositionView",
-			"register" : "showRegisterView",
-			"register/:registerId" : "showRegisterView",
+			"registers" : "showRegistersView",
+			"registers/:registerId" : "showRegistersView",
 			"requests" : "showRequestsView",
 			"professorCommittees" : "showProfessorCommitteesView",
-			"regulatoryframework" : "showInstitutionRegulatoryFrameworkView",
-			"regulatoryframework/:institutionId" : "showInstitutionRegulatoryFrameworkView",
+			"regulatoryframeworks" : "showInstitutionRegulatoryFrameworkView",
+			"regulatoryframeworks/:institutionId" : "showInstitutionRegulatoryFrameworkView",
 			"sposition" : "showPositionSearchView",
 			"sposition/:query" : "showPositionSearchView",
 			"candidateCandidacies" : "showCandidateCandidacyView",
@@ -624,7 +625,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			self.currentView = assistantsView;
 		},
 
-		showPositionView : function(positionId) {
+		showPositionsView : function(positionId) {
 			var self = this;
 			var positions = new Models.Positions();
 			var positionView = undefined;
@@ -691,7 +692,29 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			this.currentView = positionListView;
 		},
 
-		showRegisterView : function(registerId) {
+		showPositionView : function(positionId) {
+			var self = this;
+			var position = new Models.Position({
+				id : positionId
+			});
+			var positionView = new Views.PositionView({
+				model : position
+			});
+			// Add to UI
+			$("#content").unbind();
+			$("#content").empty();
+			$("#content").html(positionView.el);
+			// Fetch
+			position.fetch({
+				cache : false,
+				success : function() {
+					self.refreshBreadcrumb([ $.i18n.prop('menu_position'), position.get("name") ]);
+				}
+			});
+			this.currentView = positionView;
+		},
+
+		showRegistersView : function(registerId) {
 			var self = this;
 			var registries = new Models.Registries();
 			var registerView = undefined;
@@ -833,7 +856,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					var newCandidacy = new Models.Candidacy();
 					newCandidacy.save({
 						candidate : App.loggedOnUser.getRole("CANDIDATE"),
-						position : position.toJSON()
+						candidacies : {
+							position : position.toJSON()
+						}
 					}, {
 						wait : true,
 						success : function(model, resp) {

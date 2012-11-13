@@ -88,22 +88,22 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			if (self.model.hasRoleWithStatus("INSTITUTION_MANAGER", "ACTIVE")) {
 				menuItems.push("iassistants");
 				menuItems.push("regulatoryframework");
-				menuItems.push("register");
-				menuItems.push("position");
+				menuItems.push("registers");
+				menuItems.push("positions");
 			}
 			if (self.model.hasRoleWithStatus("INSTITUTION_ASSISTANT", "ACTIVE")) {
 				menuItems.push("regulatoryframework");
-				menuItems.push("register");
-				menuItems.push("position");
+				menuItems.push("registers");
+				menuItems.push("positions");
 			}
 			if (self.model.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE")) {
 				menuItems.push("massistants");
-				menuItems.push("register");
-				menuItems.push("position");
+				menuItems.push("registers");
+				menuItems.push("positions");
 			}
 			if (self.model.hasRoleWithStatus("MINISTRY_ASSISTANT", "ACTIVE")) {
-				menuItems.push("register");
-				menuItems.push("position");
+				menuItems.push("registers");
+				menuItems.push("positions");
 			}
 			this.$el.append("<ul class=\"nav\">");
 			_.each(_.uniq(menuItems), function(menuItem) {
@@ -4964,7 +4964,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		select : function(event, positionCommitteeMember) {
 			var self = this;
 			var selectedModel = positionCommitteeMember ? positionCommitteeMember : self.collection.get($(event.currentTarget).data('committeeMemberId'));
-			// TODO: Send to position/id
+			if (selectedModel) {
+				self.collection.trigger("positionCommitteeMember:selected", selectedModel);
+			}
 		},
 
 		close : function(eventName) {
@@ -5208,15 +5210,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var self = this;
 			switch (field) {
 			case "evaluator_fullname_0":
-				return _.isEqual(self.model.get("position").status, "ANOIXTI");
+				return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
 			case "evaluator_fullname_1":
-				return _.isEqual(self.model.get("position").status, "ANOIXTI");
+				return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
 			case "evaluator_email_0":
-				return _.isEqual(self.model.get("position").status, "ANOIXTI");
+				return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
 			case "evaluator_email_1":
-				return _.isEqual(self.model.get("position").status, "ANOIXTI");
+				return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
 			case "ekthesiAutoaksiologisisFile":
-				return _.isEqual(self.model.get("position").status, "ANOIXTI");
+				return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
 			}
 			return false;
 		},

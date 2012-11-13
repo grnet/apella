@@ -1,18 +1,25 @@
 <h4><%= $.i18n.prop('UserSearch') %></h4>
 <form class="form-search">
-	<input name="username" type="text" class="input-medium" placeholder="<%= $.i18n.prop("Username") %>" />
-	<input name="firstname" type="text" class="input-medium" placeholder="<%= $.i18n.prop("Name") %>" />
-	<input name="lastname" type="text" class="input-medium" placeholder="<%= $.i18n.prop("Surname") %>" />
+	<div class="input-prepend">
+		<span class="add-on"><%= $.i18n.prop("Username") %></span>
+		<input name="username" type="text" class="input-medium" placeholder="<%= $.i18n.prop("Username") %>" />
+	</div>
+	<div class="input-prepend">
+		<span class="add-on"><%= $.i18n.prop("Name") %></span>
+		<input name="firstname" type="text" class="input-medium" placeholder="<%= $.i18n.prop("Name") %>" />
+	</div>
+	<div class="input-prepend">
+		<span class="add-on"><%= $.i18n.prop("Surname") %></span>
+		<input name="lastname" type="text" class="input-medium" placeholder="<%= $.i18n.prop("Surname") %>" />
+	</div>
 	<br /><br />
 	<div class="input-prepend">
 		<span class="add-on"><%= $.i18n.prop("UserStatus") %></span>
 		<select name="status" class="input-medium" >
 			<option value="">--</option>
-			<option value="CREATED"><%= $.i18n.prop('statusCREATED') %></option>
 			<option value="UNVERIFIED"><%= $.i18n.prop('statusUNVERIFIED') %></option>
 			<option value="ACTIVE"><%= $.i18n.prop('statusACTIVE') %></option>
 			<option value="BLOCKED"><%= $.i18n.prop('statusBLOCKED') %></option>
-			<option value="DELETED"><%= $.i18n.prop('statusDELETED') %></option>
 		</select>
 	</div>
 	<div class="input-prepend">
@@ -23,7 +30,7 @@
 			<option value="PROFESSOR_DOMESTIC"><%= $.i18n.prop('PROFESSOR_DOMESTIC') %></option>
 			<option value="PROFESSOR_FOREIGN"><%= $.i18n.prop('PROFESSOR_FOREIGN') %></option>
 			<option value="INSTITUTION_MANAGER"><%= $.i18n.prop('INSTITUTION_MANAGER') %></option>
-			<option value="DEPARTMENT_ASSISTANT"><%= $.i18n.prop('DEPARTMENT_ASSISTANT') %></option>
+			<option value="INSTITUTION_ASSISTANT"><%= $.i18n.prop('INSTITUTION_ASSISTANT') %></option>
 			<option value="MINISTRY_MANAGER"><%= $.i18n.prop('MINISTRY_MANAGER') %></option>
 			<option value="MINISTRY_ASSISTANT"><%= $.i18n.prop('MINISTRY_ASSISTANT') %></option>
 		</select>
@@ -32,11 +39,9 @@
 		<span class="add-on"><%= $.i18n.prop("RoleStatus") %></span>
 		<select name="roleStatus" class="input-medium" >
 			<option value="">--</option>
-			<option value="CREATED"><%= $.i18n.prop('statusCREATED') %></option>
 			<option value="UNAPPROVED"><%= $.i18n.prop('statusUNAPPROVED') %></option>
 			<option value="ACTIVE"><%= $.i18n.prop('statusACTIVE') %></option>
 			<option value="BLOCKED"><%= $.i18n.prop('statusBLOCKED') %></option>
-			<option value="DELETED"><%= $.i18n.prop('statusDELETED') %></option>
 		</select>
 	</div>
 	<br /><br />
