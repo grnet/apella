@@ -267,28 +267,31 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			// Create Views, Add them to page
 			self.clear();
 
+			$("#content").html("<div class=\"row-fluid\"><div id=\"user\" class=\"span5\"></div><div id=\"roles\" class=\"span7\"></div></div>");
 			// Refresh Data
 			user.fetch({
 				cache : false,
 				success : function(model, resp) {
 					userView = new Views.AdminAccountView({
+						className : "row-fluid",
 						model : user
 					});
-					self.refreshBreadcrumb([ $.i18n.prop('adminmenu_users'), $.i18n.prop('menu_user'), user.get("username") ]);
+					self.currentView = [ userView ];
 					roles.fetch({
 						cache : false,
 						success : function(collection, response) {
-							// We assume collection has ONE primary role,
-							// after role redesign
-							roleView = new Views.AdminRoleEditView({
-								model : collection.at(0)
+							$("#content div#user").append(userView.render().el);
+							collection.each(function(role) {
+								roleView = new Views.AdminRoleEditView({
+									className : "row-fluid",
+									model : role
+								});
+								$("#content div#roles").append(roleView.render().el);
+								self.currentView.push(roleView);
 							});
-
-							$("#featured").append(userView.render().el);
-							$("#content").append(roleView.render().el);
-							self.currentView = [ userView, roleView ];
 						}
 					});
+					self.refreshBreadcrumb([ $.i18n.prop('adminmenu_users'), $.i18n.prop('menu_user'), user.get("username") ]);
 				}
 			});
 		}
@@ -303,7 +306,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			var self = this;
 
 			_.extend(self, Backbone.Events);
-			_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showInstitutionAssistantsView", "showMinistryAssistantsView", "showPositionView", "showPositionsView", "showRegistersView", "showProfessorCommitteesView", "showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "start");
+			_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showUserView", "showInstitutionAssistantsView", "showMinistryAssistantsView", "showPositionView", "showPositionsView", "showRegistersView", "showProfessorCommitteesView", "showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "start");
 			$(document).ajaxStart(App.blockUI);
 			$(document).ajaxStop(App.unblockUI);
 
@@ -330,6 +333,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			"account" : "showAccountView",
 			"profile" : "showProfileView",
 			"profile/:roleId" : "showProfileView",
+			"user/:userId" : "showUserView",
 			"iassistants" : "showInstitutionAssistantsView",
 			"iassistants/:userId" : "showInstitutionAssistantsView",
 			"massistants" : "showMinistryAssistantsView",
@@ -497,6 +501,50 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			self.currentView = rolesView;
 		},
 
+		showUserView : function(id) {
+			var self = this;
+			var user, userView;
+			var roles, roleViews = [];
+
+			// Create Models
+			user = new Models.User({
+				"id" : id
+			});
+			roles = new Models.Roles();
+			roles.user = id;
+
+			// Create Views, Add them to page
+			self.clear();
+
+			$("#content").html("<div class=\"row-fluid\"><div id=\"user\" class=\"span5\"></div><div id=\"roles\" class=\"span7\"></div></div>");
+			// Refresh Data
+			user.fetch({
+				cache : false,
+				success : function(model, resp) {
+					userView = new Views.UserView({
+						className : "row-fluid",
+						model : user
+					});
+					self.currentView = [ userView ];
+					roles.fetch({
+						cache : false,
+						success : function(collection, response) {
+							$("#content div#user").append(userView.render().el);
+							collection.each(function(role) {
+								roleView = new Views.RoleView({
+									className : "row-fluid",
+									model : role
+								});
+								$("#content div#roles").append(roleView.render().el);
+								self.currentView.push(roleView);
+							});
+						}
+					});
+					self.refreshBreadcrumb([ $.i18n.prop('adminmenu_users'), $.i18n.prop('menu_user'), user.get("username") ]);
+				}
+			});
+		},
+
 		showInstitutionAssistantsView : function(userId) {
 			var self = this;
 			var accountView = undefined;
@@ -649,11 +697,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					});
 				}
 				// Update history
-				App.router.navigate("position/" + position.id, {
+				App.router.navigate("positions/" + position.id, {
 					trigger : false
 				});
 				// Add to UI
-				self.refreshBreadcrumb([ $.i18n.prop('menu_position'), position.get("name") ]);
+				self.refreshBreadcrumb([ $.i18n.prop('menu_positions'), position.get("name") ]);
 				$("#content").unbind();
 				$("#content").empty();
 				$("#content").html(positionView.el);
@@ -668,7 +716,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			});
 
 			self.clear();
-			self.refreshBreadcrumb([ $.i18n.prop('menu_position') ]);
+			self.refreshBreadcrumb([ $.i18n.prop('menu_positions') ]);
 			$("#featured").html(positionListView.el);
 
 			// Refresh positions from server
@@ -737,16 +785,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				}
 				// Update history
 				if (register.id) {
-					App.router.navigate("register/" + register.id, {
+					App.router.navigate("registers/" + register.id, {
 						trigger : false
 					});
 				} else {
-					App.router.navigate("register", {
+					App.router.navigate("registers", {
 						trigger : false
 					});
 				}
 
-				self.refreshBreadcrumb([ $.i18n.prop('menu_register'), register.get("id") ]);
 				$("#content").unbind();
 				$("#content").empty();
 				$("#content").html(registerView.el);
@@ -754,13 +801,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				register.fetch({
 					cache : false,
 					success : function() {
+						self.refreshBreadcrumb([ $.i18n.prop('menu_registers'), register.get("title") ]);
 						registerView.render();
 					}
 				});
 			});
 
 			self.clear();
-			self.refreshBreadcrumb([ $.i18n.prop('menu_register') ]);
+			self.refreshBreadcrumb([ $.i18n.prop('menu_registers') ]);
 			$("#featured").html(registerListView.el);
 			// Refresh registries from server
 			registries.fetch({

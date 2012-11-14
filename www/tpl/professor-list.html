@@ -15,7 +15,7 @@
 		<tr>
 			</td>
 			<td>
-				<a id="view" data-model-cid="<%= professor.cid %>"><%= professor.user.username %></a>
+				<a id="view" data-model-cid="<%= professor.cid %>" href="#user/<%= professor.user.id %>"><%= professor.user.username %></a>
 			</td>
 			<td><%= professor.user.basicInfo.firstname %></td>
 			<td><%= professor.user.basicInfo.lastname%></td>

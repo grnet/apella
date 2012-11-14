@@ -56,11 +56,11 @@ public class RegisterRESTService extends RESTService {
 	public Collection<Register> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
 		getLoggedOn(authToken);
 		@SuppressWarnings("unchecked")
-		Collection<Register> registries = (Collection<Register>) em.createQuery(
+		Collection<Register> registers = (Collection<Register>) em.createQuery(
 			"select r from Register r " +
 				"left join fetch r.files f ")
 			.getResultList();
-		return registries;
+		return registers;
 	}
 
 	@GET
@@ -180,12 +180,6 @@ public class RegisterRESTService extends RESTService {
 		if (register == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isInstitutionUser(register.getInstitution())) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
 		// Return Result
 		register.getFiles().size();
 		return register.getFiles();
@@ -200,12 +194,6 @@ public class RegisterRESTService extends RESTService {
 		// Validate:
 		if (register == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
-		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isInstitutionUser(register.getInstitution())) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
 		for (RegisterFile file : register.getFiles()) {
@@ -225,12 +213,6 @@ public class RegisterRESTService extends RESTService {
 		// Validate:
 		if (register == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
-		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isInstitutionUser(register.getInstitution())) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
 		for (RegisterFile file : register.getFiles()) {

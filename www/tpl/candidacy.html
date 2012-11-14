@@ -18,9 +18,9 @@
 			<dt><%= $.i18n.prop('PositionStatus') %></dt>
 			<dd><%= $.i18n.prop('PositionStatus_' + candidacies.position.phase.status) %></dd>
 			<dt><%= $.i18n.prop('PositionOpeningDate') %></dt>
-			<dd><%= candidacies.position.openingDate %></dd>
+			<dd><%= candidacies.openingDate %></dd>
 			<dt><%= $.i18n.prop('PositionClosingDate') %></dt>
-			<dd><%= candidacies.position.closingDate %></dd>
+			<dd><%= candidacies.closingDate %></dd>
 		</dl>
 	</div>
 	<div class="span6" id="candidacy_snapshot">
@@ -58,15 +58,15 @@
 			<% } %>
 			<dt><%= $.i18n.prop('BiografikoFile') %></dt>
 			<dd>
-				<span id="snapshotBiografikoFile"></span>
+				<span id="biografikoFile"></span>
 			</dd>
 			<dt><%= $.i18n.prop('PtyxioFileList') %></dt>
 			<dd>
-				<span id="snapshotPtyxioFileList"></span>
+				<span id="ptyxioFileList"></span>
 			</dd>
 			<dt><%= $.i18n.prop('DimosieusiFileList') %></dt>
 			<dd>
-				<span id="snapshotDimosieusiFileList"></span>
+				<span id="dimosieusiFileList"></span>
 			</dd>
 		</dl>
 	</div>
@@ -76,9 +76,9 @@
 		<h4><%= $.i18n.prop('ProposedEvaluators') %></h4>
 		<dl class="dl-glossary">
 			<dt><%= $.i18n.prop('ProposedEvaluator') %> 1</dt>
-			<dd><%= proposedEvaluators[0]? proposedEvaluators[0].name : '' %>, <%= proposedEvaluators[0]? proposedEvaluators[0].email : ''%></dd>
+			<dd><%= proposedEvaluators[0]? (proposedEvaluators[0].fullname + " " + proposedEvaluators[0].email) : '-'%></dd>
 			<dt><%= $.i18n.prop('ProposedEvaluator') %> 2</dt>
-			<dd><%= proposedEvaluators[0]? proposedEvaluators[0].name : '' %>, <%= proposedEvaluators[1]? proposedEvaluators[1].email : ''%></dd>
+			<dd><%= proposedEvaluators[1]? (proposedEvaluators[1].fullname + " " + proposedEvaluators[1].email) : '-'%></dd>
 			<dt><%= $.i18n.prop('EkthesiAutoaksiologisisFile') %></dt>
 			<dd>
 				<span id="ekthesiAutoaksiologisisFile"></span>

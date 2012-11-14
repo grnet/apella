@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
 import gr.grnet.dep.service.model.CommitteeMember.DetailedPositionCommitteeMemberView;
 
 import java.io.Serializable;
@@ -87,7 +88,7 @@ public abstract class Role implements Serializable {
 	private RoleStatus status = RoleStatus.UNAPPROVED;
 
 	private Date statusDate;
-	
+
 	private Date statusEndDate;
 
 	@ManyToOne
@@ -124,7 +125,7 @@ public abstract class Role implements Serializable {
 	public void setStatusDate(Date statusDate) {
 		this.statusDate = statusDate;
 	}
-	
+
 	public Date getStatusEndDate() {
 		return statusEndDate;
 	}
@@ -133,7 +134,7 @@ public abstract class Role implements Serializable {
 		this.statusEndDate = statusEndDate;
 	}
 
-	@JsonView({DetailedRoleView.class, DetailedPositionCommitteeMemberView.class})
+	@JsonView({DetailedRoleView.class, DetailedPositionCommitteeMemberView.class, DetailedCandidacyView.class})
 	public User getUser() {
 		return user;
 	}
@@ -157,6 +158,5 @@ public abstract class Role implements Serializable {
 			(b == null ? true : false) :
 			(b == null ? false : a.equals(b));
 	}
-
 
 }

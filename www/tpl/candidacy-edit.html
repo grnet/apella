@@ -22,6 +22,8 @@
 				<dd><%= candidacies.openingDate %></dd>
 				<dt><%= $.i18n.prop('PositionClosingDate') %></dt>
 				<dd><%= candidacies.closingDate %></dd>
+				<dt><%= $.i18n.prop('More') %></dt>
+				<dd><a id="viewPosition" href="#position/<%= candidacies.position.id %>"><%= candidacies.position.name %></a></dd>
 			</dl>
 		</div>
 		<div class="span6" id="candidacy_snapshot">

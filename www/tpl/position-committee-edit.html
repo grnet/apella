@@ -31,7 +31,7 @@
 					</td>
 					<td><%= committeeMember.professor.id %></td>
 					<td>
-						<a id="viewMember" data-committee-member-id="<%= committeeMember.id %>" ><%= committeeMember.professor.user.username %> </a>
+						<a id="viewMember" data-committee-member-id="<%= committeeMember.id %>" href="#user/<%= committeeMember.professor.user.id %>"><%= committeeMember.professor.user.username %> </a>
 					</td>
 					<td><%= committeeMember.professor.user.basicInfo.firstname %></td>
 					<td><%= committeeMember.professor.user.basicInfo.lastname%></td>

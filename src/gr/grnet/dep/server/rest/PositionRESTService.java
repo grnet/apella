@@ -3,6 +3,7 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacies;
 import gr.grnet.dep.service.model.Candidacy;
+import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
 import gr.grnet.dep.service.model.Committee;
 import gr.grnet.dep.service.model.CommitteeMember;
 import gr.grnet.dep.service.model.CommitteeMember.DetailedPositionCommitteeMemberView;
@@ -184,7 +185,7 @@ public class PositionRESTService extends RESTService {
 		} else if (loggedOn.hasActiveRole(RoleDiscriminator.PROFESSOR_DOMESTIC) ||
 			loggedOn.hasActiveRole(RoleDiscriminator.PROFESSOR_FOREIGN)) {
 			PositionPhase phase = order == null ? p.getPhase() : p.getPhases().get(order);
-			if (phase.getCommittee().containsMember(loggedOn)) {
+			if (phase.getCommittee() != null && phase.getCommittee().containsMember(loggedOn)) {
 				result = toJSON(order == null ? p : p.as(order), CommitteeMemberPositionView.class);
 			} else {
 				result = toJSON(order == null ? p : p.as(order), PublicPositionView.class);
@@ -435,7 +436,7 @@ public class PositionRESTService extends RESTService {
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(position.getDepartment()) &&
-			!position.getPhase().getCommittee().containsMember(loggedOn) &&
+			!(position.getPhase().getCommittee() != null && position.getPhase().getCommittee().containsMember(loggedOn)) &&
 			!position.getPhase().getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -480,7 +481,7 @@ public class PositionRESTService extends RESTService {
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(position.getDepartment()) &&
-			!position.getPhase().getCommittee().containsMember(loggedOn) &&
+			!(position.getPhase().getCommittee() != null && position.getPhase().getCommittee().containsMember(loggedOn)) &&
 			!position.getPhase().getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -530,7 +531,7 @@ public class PositionRESTService extends RESTService {
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(position.getDepartment()) &&
-			!position.getPhase().getCommittee().containsMember(loggedOn) &&
+			!(position.getPhase().getCommittee() != null && position.getPhase().getCommittee().containsMember(loggedOn)) &&
 			!position.getPhase().getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -932,6 +933,8 @@ public class PositionRESTService extends RESTService {
 
 		// Execute
 		for (Role r : professors) {
+			Professor p = (Professor) r;
+			p.setCommitteesCount(p.getCommittees().size());
 			r.initializeCollections();
 		}
 		return professors;
@@ -943,6 +946,9 @@ public class PositionRESTService extends RESTService {
 	public List<CommitteeMember> getPositionCommittee(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
 		User loggedOn = getLoggedOn(authToken);
 		Position position = getAndCheckPosition(loggedOn, positionId);
+		if (position.getPhase().getCommittee() == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
+		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
@@ -951,14 +957,10 @@ public class PositionRESTService extends RESTService {
 			!position.getPhase().getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (position.getPhase().getCommittee() == null) {
-			return new ArrayList<CommitteeMember>();
-		} else {
-			for (CommitteeMember member : position.getPhase().getCommittee().getMembers()) {
-				member.getProfessor().initializeCollections();
-			}
-			return position.getPhase().getCommittee().getMembers();
+		for (CommitteeMember member : position.getPhase().getCommittee().getMembers()) {
+			member.getProfessor().initializeCollections();
 		}
+		return position.getPhase().getCommittee().getMembers();
 	}
 
 	@GET
@@ -967,6 +969,9 @@ public class PositionRESTService extends RESTService {
 	public CommitteeMember getPositionCommitteeMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cmId") Long cmId) {
 		User loggedOn = getLoggedOn(authToken);
 		Position position = getAndCheckPosition(loggedOn, positionId);
+		if (position.getPhase().getCommittee() == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
+		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
@@ -993,6 +998,9 @@ public class PositionRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Position existingPosition = getAndCheckPosition(loggedOn, positionId);
+			if (existingPosition.getPhase().getCommittee() == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.position.id");
+			}
 			if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
@@ -1042,6 +1050,9 @@ public class PositionRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Position existingPosition = getAndCheckPosition(loggedOn, positionId);
+			if (existingPosition.getPhase().getCommittee() == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.position.id");
+			}
 			if (!existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
@@ -1074,6 +1085,9 @@ public class PositionRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Position position = getAndCheckPosition(loggedOn, positionId);
+			if (position.getPhase().getCommittee() == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.position.id");
+			}
 			if (!position.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
@@ -1099,14 +1113,18 @@ public class PositionRESTService extends RESTService {
 
 	@GET
 	@Path("/{id:[0-9][0-9]*}/candidacies")
+	@JsonView({DetailedCandidacyView.class})
 	public Set<Candidacy> getPositionCandidacies(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
 		User loggedOn = getLoggedOn(authToken);
 		Position position = getAndCheckPosition(loggedOn, positionId);
+		if (position.getPhase().getCandidacies() == null) {
+			throw new RestException(Status.FORBIDDEN, "wrong.position.id");
+		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(position.getDepartment()) &&
-			!position.getPhase().getCommittee().containsMember(loggedOn) &&
+			!(position.getPhase().getCommittee() != null && position.getPhase().getCommittee().containsMember(loggedOn)) &&
 			!position.getPhase().getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -1115,138 +1133,4 @@ public class PositionRESTService extends RESTService {
 		}
 		return position.getPhase().getCandidacies().getCandidacies();
 	}
-
-	/**********************
-	 * Utility Functions **
-	 ***********************/
-	/*
-	private Position clonePosition(Position oldPosition) {
-		try {
-			Position newPosition = new Position();
-			// Copy Fields:
-			newPosition.setClosingDate(oldPosition.getClosingDate());
-			newPosition.setCommitteeMeetingDate(oldPosition.getCommitteeMeetingDate());
-			newPosition.setDepartment(oldPosition.getDepartment());
-			newPosition.setDescription(oldPosition.getDescription());
-			newPosition.setFek(oldPosition.getFek());
-			newPosition.setLastUpdate(new Date());
-			newPosition.setName(oldPosition.getName());
-			newPosition.setNominationCommitteeConvergenceDate(oldPosition.getNominationCommitteeConvergenceDate());
-			newPosition.setNominationFEK(oldPosition.getNominationFEK());
-			newPosition.setNominationToETDate(oldPosition.getNominationToETDate());
-			newPosition.setOpeningDate(oldPosition.getOpeningDate());
-			newPosition.setPermanent(oldPosition.isPermanent());
-			Subject newSubject = new Subject();
-			newSubject.setName(oldPosition.getSubject().getName());
-			newPosition.setSubject(newSubject);
-
-			// Get an ID
-			newPosition = em.merge(newPosition);
-
-			// Copy Committee Members:
-			for (CommitteeMember oldMember : oldPosition.getCommitee()) {
-				CommitteeMember newMember = new CommitteeMember();
-				newMember.setType(oldMember.getType());
-				newMember.setProfessor(oldMember.getProfessor());
-				newMember.setPosition(newPosition);
-
-				newMember = em.merge(newMember);
-				newPosition.getCommitee().add(newMember);
-			}
-
-			// Copy Candidacies
-			for (Candidacy oldCandidacy : oldPosition.getCandidacies()) {
-				Candidacy newCandidacy = new Candidacy();
-				newCandidacy.setCandidate(oldCandidacy.getCandidate());
-				newCandidacy.setPosition(newPosition);
-
-				newCandidacy.setDate(oldCandidacy.getDate());
-				newCandidacy.setPermanent(oldCandidacy.isPermanent());
-				newCandidacy.setSnapshot(oldCandidacy.getSnapshot());
-				for (FileBody body : oldCandidacy.getSnapshot().getFiles()) {
-					newCandidacy.getSnapshot().addFile(body);
-				}
-				for (CandidacyEvaluator oldEvaluator : oldCandidacy.getProposedEvaluators()) {
-					CandidacyEvaluator newEvaluator = new CandidacyEvaluator();
-					newEvaluator.setFullname(oldEvaluator.getFullname());
-					newEvaluator.setEmail(oldEvaluator.getEmail());
-					newCandidacy.addProposedEvaluator(newEvaluator);
-				}
-				newCandidacy = em.merge(newCandidacy);
-
-				// Copy Candidacy Files:
-				for (CandidacyFile oldFile : oldCandidacy.getFiles()) {
-					CandidacyFile newFile = new CandidacyFile();
-					newFile.setCandidacy(newCandidacy);
-					newFile.setDeleted(oldFile.isDeleted());
-					newFile.setType(oldFile.getType());
-					newFile.setName(oldFile.getName());
-					newFile.setDescription(oldFile.getDescription());
-					newFile.setOwner(oldFile.getOwner());
-
-					newFile = em.merge(newFile);
-
-					FileBody newBody = new FileBody();
-					newFile.addBody(newBody);
-					em.persist(newBody); // Get ID
-
-					newBody.setFileSize(oldFile.getCurrentBody().getFileSize());
-					newBody.setMimeType(oldFile.getCurrentBody().getMimeType());
-					newBody.setOriginalFilename(oldFile.getCurrentBody().getOriginalFilename());
-					newBody.setDate(oldFile.getCurrentBody().getDate());
-
-					String newFilename = suggestFilename(newBody.getId(), "upl", oldFile.getCurrentBody().getOriginalFilename());
-					copyFile(oldFile.getCurrentBody().getStoredFilePath(), newFilename);
-					newBody.setStoredFilePath(newFilename);
-
-					newCandidacy.addFile(newFile);
-				}
-
-			}
-			// Copy Position Files: 
-			for (PositionFile oldFile : oldPosition.getFiles()) {
-				PositionFile newFile = new PositionFile();
-				newFile.setPosition(newPosition);
-				newFile.setDeleted(oldFile.isDeleted());
-				newFile.setType(oldFile.getType());
-				newFile.setName(oldFile.getName());
-				newFile.setDescription(oldFile.getDescription());
-				newFile.setOwner(oldFile.getOwner());
-
-				newFile = em.merge(newFile);
-
-				FileBody newBody = new FileBody();
-				newFile.addBody(newBody);
-				em.persist(newBody); // Get ID
-
-				newBody.setFileSize(oldFile.getCurrentBody().getFileSize());
-				newBody.setMimeType(oldFile.getCurrentBody().getMimeType());
-				newBody.setOriginalFilename(oldFile.getCurrentBody().getOriginalFilename());
-				newBody.setDate(oldFile.getCurrentBody().getDate());
-
-				String newFilename = suggestFilename(newBody.getId(), "upl", oldFile.getCurrentBody().getOriginalFilename());
-				copyFile(oldFile.getCurrentBody().getStoredFilePath(), newFilename);
-				newBody.setStoredFilePath(newFilename);
-
-				newPosition.addFile(newFile);
-			}
-
-			em.flush();
-			return newPosition;
-		} catch (IOException e) {
-			logger.log(Level.SEVERE, "", e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
-		} catch (PersistenceException e) {
-			logger.log(Level.SEVERE, "", e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
-		} catch (RuntimeException e) {
-			logger.log(Level.SEVERE, "", e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
-		}
-		
-	}
-	*/
 }

@@ -76,12 +76,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			menuItems.push("profile");
 			if (self.model.hasRoleWithStatus("PROFESSOR_DOMESTIC", "ACTIVE")) {
+				menuItems.push("registers");
 				menuItems.push("professorCommittees");
 			}
 			if (self.model.hasRoleWithStatus("PROFESSOR_FOREIGN", "ACTIVE")) {
+				menuItems.push("registers");
 				menuItems.push("professorCommittees");
 			}
 			if (self.model.hasRoleWithStatus("CANDIDATE", "ACTIVE")) {
+				menuItems.push("registers");
 				menuItems.push("sposition");
 				menuItems.push("candidateCandidacies");
 			}
@@ -3417,8 +3420,32 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		addCandidacyListView : function($el) {
 			var self = this;
+			var candidacyView = undefined;
 			var positionCandidacies = new Models.PositionCandidacies({}, {
 				position : self.model.get("id")
+			});
+			positionCandidacies.on("candidacy:selected", function(candidacy) {
+				if (candidacyView) {
+					candidacyView.model.trigger("candidacy:deselected", candidacyView.model);
+					candidacyView.close();
+				}
+				candidacy.fetch({
+					cache : false,
+					success : function() {
+						candidacyView = new Views.CandidacyView({
+							model : candidacy
+						});
+						self.$("div[data-candidacy-id=" + candidacy.get("id") + "]").html(candidacyView.render().el);
+						self.$("td[data-candidacy-id=" + candidacy.get("id") + "]").show();
+					}
+				});
+			});
+			positionCandidacies.on("candidacy:deselected", function(candidacy) {
+				if (candidacyView) {
+					candidacyView.close();
+				}
+				self.$("td[data-candidacy-id=" + candidacy.get("id") + "]").hide();
+				self.$("div[data-candidacy-id=" + candidacy.get("id") + "]").html();
 			});
 			var positionCandidacyListView = new Views.PositionCandidacyListView({
 				position : self.model,
@@ -3816,7 +3843,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.model.save(values, {
 				wait : true,
 				success : function(model, resp) {
-					App.router.navigate("position/" + self.model.id, {
+					App.router.navigate("positions/" + self.model.id, {
 						trigger : false
 					});
 					var popup = new Views.PopupView({
@@ -3854,7 +3881,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.model.destroy({
 						wait : true,
 						success : function(model, resp) {
-							App.router.navigate("position", {
+							App.router.navigate("positions", {
 								trigger : false
 							});
 							var popup = new Views.PopupView({
@@ -3930,13 +3957,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					candidacyView.model.trigger("candidacy:deselected", candidacyView.model);
 					candidacyView.close();
 				}
-				candidacyView = new Views.CandidacyView({
-					model : candidacy
-				});
-				self.$("div[data-candidacy-id=" + candidacy.get("id") + "]").html(candidacyView.el);
 				candidacy.fetch({
+					cache : false,
 					success : function() {
-						candidacy.trigger("change");
+						candidacyView = new Views.CandidacyView({
+							model : candidacy
+						});
+						self.$("div[data-candidacy-id=" + candidacy.get("id") + "]").html(candidacyView.render().el);
 						self.$("td[data-candidacy-id=" + candidacy.get("id") + "]").show();
 					}
 				});
@@ -3983,9 +4010,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.collection.bind('reset', this.render, this);
 		},
 
-		events : {
-			"click a#viewMember" : "viewMember"
-		},
+		events : {},
 
 		render : function(eventName) {
 			var self = this;
@@ -3997,50 +4022,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		viewMember : function(event, positionCommitteeMember) {
 			var self = this;
-			var selectedModel = positionCommitteeMember ? positionCommitteeMember : this.collection.get($(event.currentTarget).data('committeeMemberId'));
+			var selectedModel = positionCommitteeMember ? positionCommitteeMember : self.collection.get($(event.currentTarget).data('committeeMemberId'));
 			if (selectedModel) {
-				var user;
-				var userView = undefined;
-				var roles;
-				var roleView = undefined;
-
-				// Fill Details View:
-				user = new Models.User({
-					"id" : selectedModel.get("professor").user.id
-				});
-				user.fetch({
-					cache : false,
-					success : function(model, resp) {
-						userView = new Views.UserView({
-							model : user
-						});
-						self.$("div#commiteeMemberDetails div.modal-body").append(userView.render().el);
-					}
-				});
-
-				roles = new Models.Roles();
-				roles.user = selectedModel.get("professor").user.id;
-				roles.fetch({
-					cache : false,
-					success : function(collection, resp) {
-						roleView = new Views.RoleView({
-							model : collection.at(0)
-						});
-						self.$("div#commiteeMemberDetails div.modal-body").append(roleView.render().el);
-					}
-				});
-
-				self.$("div#commiteeMemberDetails").on("hidden", function() {
-					if (userView) {
-						userView.close();
-					}
-					if (roleView) {
-						roleView.close();
-					}
-					self.$("div#commiteeMemberDetails div.modal-body").empty();
-				});
-
-				self.$("div#commiteeMemberDetails").modal('show');
+				self.collection.trigger("positionCommitteeMember:selected", selectedModel);
 			}
 		},
 
@@ -4119,50 +4103,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		viewMember : function(event, positionCommitteeMember) {
 			var self = this;
-			var selectedModel = positionCommitteeMember ? positionCommitteeMember : this.collection.get($(event.currentTarget).data('committeeMemberId'));
+			var selectedModel = positionCommitteeMember ? positionCommitteeMember : self.collection.get($(event.currentTarget).data('committeeMemberId'));
 			if (selectedModel) {
-				var user;
-				var userView = undefined;
-				var roles;
-				var roleView = undefined;
-
-				// Fill Details View:
-				user = new Models.User({
-					"id" : selectedModel.get("professor").user.id
-				});
-				user.fetch({
-					cache : false,
-					success : function(model, resp) {
-						userView = new Views.UserView({
-							model : user
-						});
-						self.$("div#commiteeMemberDetails div.modal-body").append(userView.render().el);
-					}
-				});
-
-				roles = new Models.Roles();
-				roles.user = selectedModel.get("professor").user.id;
-				roles.fetch({
-					cache : false,
-					success : function(collection, resp) {
-						roleView = new Views.RoleView({
-							model : collection.at(0)
-						});
-						self.$("div#commiteeMemberDetails div.modal-body").append(roleView.render().el);
-					}
-				});
-
-				self.$("div#commiteeMemberDetails").on("hidden", function() {
-					if (userView) {
-						userView.close();
-					}
-					if (roleView) {
-						roleView.close();
-					}
-					self.$("div#commiteeMemberDetails div.modal-body").empty();
-				});
-
-				self.$("div#commiteeMemberDetails").modal('show');
+				self.collection.trigger("positionCommitteeMember:selected", selectedModel);
 			}
 		},
 
@@ -4726,7 +4669,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.model.save(values, {
 						wait : true,
 						success : function(model, resp) {
-							App.router.navigate("register/" + self.model.id, {
+							App.router.navigate("registers/" + self.model.id, {
 								trigger : false
 							});
 							var popup = new Views.PopupView({
@@ -4767,7 +4710,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.model.destroy({
 						wait : true,
 						success : function(model, resp) {
-							App.router.navigate("register", {
+							App.router.navigate("registers", {
 								trigger : false
 							});
 							var popup = new Views.PopupView({
@@ -4811,7 +4754,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		events : {
-			"click a#view" : "showDetails",
 			"click a#select" : "select"
 		},
 
@@ -4855,51 +4797,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		showDetails : function(event, professor) {
 			var self = this;
-			var selectedModel = professor ? professor : this.collection.getByCid($(event.currentTarget).data('modelCid'));
+			var selectedModel = professor ? professor : self.collection.getByCid($(event.currentTarget).data('modelCid'));
 			if (selectedModel) {
-				var user;
-				var userView = undefined;
-				var roles;
-				var roleView = undefined;
-
-				// Fill Details View:
-				user = new Models.User({
-					"id" : selectedModel.get("user").id
-				});
-				user.fetch({
-					cache : false,
-					success : function(model, resp) {
-						userView = new Views.UserView({
-							model : user
-						});
-						self.$("div#professorDetails div.modal-body").prepend(userView.render().el);
-					}
-				});
-
-				roles = new Models.Roles();
-				roles.user = selectedModel.get("user").id;
-
-				roles.fetch({
-					cache : false,
-					success : function(collection, resp) {
-						roleView = new Views.RoleView({
-							model : collection.at(0)
-						});
-						self.$("div#professorDetails div.modal-body").append(roleView.render().el);
-					}
-				});
-
-				self.$("div#professorDetails").on("hidden", function() {
-					if (userView) {
-						userView.close();
-					}
-					if (roleView) {
-						roleView.close();
-					}
-					self.$("div#professorDetails div.modal-body").empty();
-				});
-
-				self.$("div#professorDetails").modal('show');
+				self.collection.trigger("professor:selected", professor);
 			}
 		},
 
