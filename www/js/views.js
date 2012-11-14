@@ -1054,6 +1054,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("input[name=firstnamelatin]").removeAttr("disabled");
 				self.$("input[name=lastnamelatin]").removeAttr("disabled");
 				self.$("input[name=fathernamelatin]").removeAttr("disabled");
+				self.$("input[name=identification]").removeAttr("disabled");
 			} else if (_.isEqual(self.model.get("status"), "UNAPPROVED")) {
 				self.$("input[name=username]").attr("disabled", true);
 				self.$("input[name=firstname]").removeAttr("disabled");
@@ -1062,6 +1063,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("input[name=firstnamelatin]").removeAttr("disabled");
 				self.$("input[name=lastnamelatin]").removeAttr("disabled");
 				self.$("input[name=fathernamelatin]").removeAttr("disabled");
+				self.$("input[name=identification]").removeAttr("disabled");
 			} else {
 				self.$("input[name=username]").attr("disabled", true);
 				self.$("input[name=firstname]").attr("disabled", true);
@@ -1070,6 +1072,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("input[name=firstnamelatin]").attr("disabled", true);
 				self.$("input[name=lastnamelatin]").attr("disabled", true);
 				self.$("input[name=fathernamelatin]").attr("disabled", true);
+				self.$("input[name=identification]").attr("disabled", true);
 			}
 		},
 
@@ -1106,6 +1109,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						required : true,
 						onlyLatin : true
 					},
+					identification : "required",
 					password : {
 						required : self.model.isNew(),
 						pwd : true,
@@ -1198,6 +1202,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var firstnamelatin = self.$('form input[name=firstnamelatin]').val();
 			var lastnamelatin = self.$('form input[name=lastnamelatin]').val();
 			var fathernamelatin = self.$('form input[name=fathernamelatin]').val();
+			var identification = self.$('form input[name=identification]').val();
 			var password = self.$('form input[name=password]').val();
 			var email = self.$('form input[name=email]').val();
 			var mobile = self.$('form input[name=mobile]').val();
@@ -1212,6 +1217,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			// Save to model
 			self.model.save({
 				"username" : username,
+				"identification" : identification,
 				"basicInfo" : {
 					"firstname" : firstname,
 					"lastname" : lastname,
@@ -1331,6 +1337,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.$("input[name=lastnamelatin]").removeAttr("disabled");
 			self.$("input[name=fathernamelatin]").removeAttr("disabled");
 			self.$("input[name=email]").removeAttr("disabled");
+			self.$("input[name=identification]").removeAttr("disabled");
 
 			self.$("a#status").removeClass("disabled");
 			self.$("a#save").show();
@@ -1721,8 +1728,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			switch (self.model.get("discriminator")) {
 			case "CANDIDATE":
 				switch (field) {
-				case "identification":
-					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "tautotitaFile":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "bebaiwsiStratiwtikisThitiasFile":
@@ -1739,8 +1744,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				break;
 			case "PROFESSOR_DOMESTIC":
 				switch (field) {
-				case "identification":
-					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "institution":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "department":
@@ -1763,8 +1766,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				break;
 			case "PROFESSOR_FOREIGN":
 				switch (field) {
-				case "identification":
-					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "institution":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "profileURL":
@@ -1954,22 +1955,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.$("#ptyxioFileList").html($.i18n.prop("PressSave"));
 					self.$("#dimosieusiFileList").html($.i18n.prop("PressSave"));
 				}
-				self.validator = $("form", this.el).validate({
-					errorElement : "span",
-					errorClass : "help-inline",
-					highlight : function(element, errorClass, validClass) {
-						$(element).parent(".controls").parent(".control-group").addClass("error");
-					},
-					unhighlight : function(element, errorClass, validClass) {
-						$(element).parent(".controls").parent(".control-group").removeClass("error");
-					},
-					rules : {
-						identification : "required"
-					},
-					messages : {
-						identification : $.i18n.prop('validation_identification')
-					}
-				});
 				break;
 			case "PROFESSOR_DOMESTIC":
 				// Bind change on institution selector to update
@@ -2083,7 +2068,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						$(element).parent(".controls").parent(".control-group").removeClass("error");
 					},
 					rules : {
-						identification : "required",
 						institution : "required",
 						profileURL : {
 							required : true,
@@ -2095,7 +2079,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						fekSubject : "required"
 					},
 					messages : {
-						identification : $.i18n.prop('validation_identification'),
 						institution : $.i18n.prop('validation_institution'),
 						profileURL : $.i18n.prop('validation_profileURL'),
 						rank : $.i18n.prop('validation_rank'),
@@ -2155,7 +2138,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						$(element).parent(".controls").parent(".control-group").removeClass("error");
 					},
 					rules : {
-						identification : "required",
 						institution : "required",
 						profileURL : {
 							required : true,
@@ -2165,7 +2147,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						subject : "required"
 					},
 					messages : {
-						identification : $.i18n.prop('validation_identification'),
 						institution : $.i18n.prop('validation_institution'),
 						profileURL : $.i18n.prop('validation_profileURL'),
 						rank : $.i18n.prop('validation_rank'),
@@ -2333,10 +2314,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			// Read Input
 			switch (self.model.get("discriminator")) {
 			case "CANDIDATE":
-				values.identification = self.$('form input[name=identification]').val();
 				break;
 			case "PROFESSOR_DOMESTIC":
-				values.identification = self.$('form input[name=identification]').val();
 				values.institution = {
 					"id" : self.$('form select[name=institution]').val()
 				};
@@ -2358,7 +2337,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				};
 				break;
 			case "PROFESSOR_FOREIGN":
-				values.identification = self.$('form input[name=identification]').val();
 				values.institution = self.$('form input[name=institution]').val();
 				values.profileURL = self.$('form input[name=profileURL]').val();
 				values.rank = {
@@ -3142,6 +3120,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("input[name=firstnamelatin]").removeAttr("disabled");
 				self.$("input[name=lastnamelatin]").removeAttr("disabled");
 				self.$("input[name=fathernamelatin]").removeAttr("disabled");
+				self.$("input[name=identification]").removeAttr("disabled");
 			}
 			self.$("a#save").show();
 			self.$("a#remove").hide();

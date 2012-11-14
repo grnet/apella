@@ -175,6 +175,15 @@ public class UserRESTService extends RESTService {
 			if (user.getRoles().isEmpty() || user.getRoles().size() > 1) {
 				throw new RestException(Status.CONFLICT, "one.role.required");
 			}
+			// Identification availability
+			try {
+				em.createQuery("select identification from User u where u.identification = :identification")
+					.setParameter("identification", user.getIdentification())
+					.setMaxResults(1)
+					.getSingleResult();
+				throw new RestException(Status.CONFLICT, "existing.identification.number");
+			} catch (NoResultException e) {
+			}
 			// Username availability
 			try {
 				em.createQuery("select u from User u where u.username = :username")
@@ -314,9 +323,22 @@ public class UserRESTService extends RESTService {
 		if (!canUpdate) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+		// Identification availability
+		try {
+			em.createQuery("select identification from User u " +
+				"where u.id != :id " +
+				"and u.identification = :identification")
+				.setParameter("id", user.getId())
+				.setParameter("identification", user.getIdentification())
+				.setMaxResults(1)
+				.getSingleResult();
+			throw new RestException(Status.CONFLICT, "existing.identification.number");
+		} catch (NoResultException e) {
+		}
 		try {
 
 			// Copy User Fields
+			existingUser.setIdentification(user.getIdentification());
 			if (user.getPassword() != null && !user.getPassword().isEmpty()) {
 				existingUser.setPasswordSalt(User.generatePasswordSalt());
 				existingUser.setPassword(User.encodePassword(user.getPassword(), existingUser.getPasswordSalt()));

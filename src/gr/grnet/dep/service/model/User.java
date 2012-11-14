@@ -72,6 +72,8 @@ public class User implements Serializable {
 	@Column(unique = true)
 	private String username;
 
+	private String identification;
+
 	@Enumerated(EnumType.STRING)
 	private UserRegistrationType registrationType;
 
@@ -129,6 +131,14 @@ public class User implements Serializable {
 
 	public void setUsername(String username) {
 		this.username = username;
+	}
+
+	public String getIdentification() {
+		return identification;
+	}
+
+	public void setIdentification(String identification) {
+		this.identification = identification;
 	}
 
 	public String getShibPersonalUniqueCode() {

@@ -8,6 +8,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		defaults : {
 			"id" : undefined,
 			"username" : undefined,
+			"identification" : undefined,
 			"basicInfo" : {
 				"firstname" : undefined,
 				"lastname" : undefined,
@@ -563,7 +564,6 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			"statusDate" : undefined,
 			"user" : undefined,
 			// Specific Fields
-			"identification" : undefined,
 			"verificationAuthority" : undefined,
 			"verificationAuthorityName" : undefined,
 			"phone" : undefined,

@@ -17,8 +17,6 @@ public abstract class Professor extends Role {
 	/** Default value included to remove warning. Remove or modify at will. **/
 	private static final long serialVersionUID = 1L;
 
-	private String identification;
-
 	private String profileURL;
 
 	@OneToMany(mappedBy = "professor", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -29,14 +27,6 @@ public abstract class Professor extends Role {
 
 	@Transient
 	private Integer committeesCount;
-
-	public String getIdentification() {
-		return identification;
-	}
-
-	public void setIdentification(String identification) {
-		this.identification = identification;
-	}
 
 	public String getProfileURL() {
 		return profileURL;
@@ -88,28 +78,21 @@ public abstract class Professor extends Role {
 	@Override
 	public Role copyFrom(Role otherRole) {
 		Professor p = (Professor) otherRole;
-		setIdentification(p.getIdentification());
 		setProfileURL(p.getProfileURL());
 		return this;
 	}
 
 	@Override
 	public boolean compareCriticalFields(Role role) {
-		if (!(role instanceof ProfessorDomestic)) {
+		if (!(role instanceof Professor)) {
 			return false;
 		}
 		Professor other = (Professor) role;
-		if (!compare(this.identification, other.getIdentification())) {
-			return false;
-		}
 		return true;
 	}
 
 	@Override
 	public boolean isMissingRequiredFields() {
-		if (this.identification == null) {
-			return true;
-		}
 		return false;
 	}
 }
