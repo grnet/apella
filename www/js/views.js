@@ -1330,6 +1330,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.$("input[name=firstnamelatin]").removeAttr("disabled");
 			self.$("input[name=lastnamelatin]").removeAttr("disabled");
 			self.$("input[name=fathernamelatin]").removeAttr("disabled");
+			self.$("input[name=email]").removeAttr("disabled");
 
 			self.$("a#status").removeClass("disabled");
 			self.$("a#save").show();
@@ -1751,6 +1752,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				case "rank":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "subject":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "fek":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "fekSubject":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
@@ -4329,8 +4332,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		addMember : function(event) {
 			var self = this;
-			var selectedModel = self.collection.getByCid($(event.currentTarget).data('modelCid'));
-			var type = self.$("select[name=type]").val();
+			var cid = $(event.currentTarget).data('modelCid')
+			var selectedModel = self.collection.getByCid(cid);
+			var type = self.$("select[name=type][data-model-cid=" + cid + "]").val();
 			self.collection.trigger("member:add", selectedModel, type);
 		},
 
@@ -4988,6 +4992,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.$el.html(self.template({
 				positions : self.collection.toJSON()
 			}));
+			self.$("a#selectPosition").each(function() {
+				var position = self.collection.get($(this).data("positionId"));
+				if (position.get("phase").status === "ANOIXTI") {
+					$(this).show();
+				} else {
+					$(this).hide();
+				}
+			});
 			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 				self.$("table").dataTable({
 					"sDom" : "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
@@ -5174,25 +5186,17 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				},
 				rules : {
 					"evaluator_fullname_0" : {
-						required : function(element) {
-							return self.$("input[name=evaluator_email_0]").val() !== "";
-						}
+						required : true
 					},
 					"evaluator_email_0" : {
-						required : function(element) {
-							return self.$("input[name=evaluator_fullname_0]").val() !== "";
-						},
+						required : true,
 						email : true
 					},
 					"evaluator_fullname_1" : {
-						required : function(element) {
-							return self.$("input[name=evaluator_email_1]").val() !== "";
-						}
+						required : true
 					},
 					"evaluator_email_1" : {
-						required : function(element) {
-							return self.$("input[name=evaluator_fullname_1]").val() !== "";
-						},
+						required : true,
 						email : true
 					}
 				},

@@ -7,6 +7,7 @@
 			<th><%= $.i18n.prop("Description") %></th>
 			<th><%= $.i18n.prop("Subject") %></th>
 			<th><%= $.i18n.prop("FEK") %></th>
+			<th><%= $.i18n.prop("PositionStatus") %></th>
 			<th><%= $.i18n.prop("PositionOpeningDate") %></th>
 			<th><%= $.i18n.prop("PositionClosingDate") %></th>
 			<th width="96px"></th>
@@ -21,6 +22,7 @@
 			<td><%= position.description %></td>
 			<td><%= position.subject.name %></td>
 			<td><%= position.fek %>, <%= position.fekSentDate %></td>
+			<td><%= $.i18n.prop('PositionStatus_' +position.phase.status) %></td>
 			<td><%= position.phase.candidacies.openingDate %></td>
 			<td><%= position.phase.candidacies.closingDate %></td>
 			<td width="96px">

@@ -7,6 +7,7 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlTransient;
 
 @Entity
 @DiscriminatorValue("INSTITUTION_ASSISTANT")
@@ -40,6 +41,7 @@ public class InstitutionAssistant extends Role {
 		this.institution = institution;
 	}
 
+	@XmlTransient
 	public InstitutionManager getManager() {
 		return manager;
 	}

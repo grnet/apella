@@ -22,6 +22,7 @@ import gr.grnet.dep.service.model.PositionPhase;
 import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.ComplementaryDocumentsFile;
 import gr.grnet.dep.service.model.file.FileBody;
@@ -270,7 +271,7 @@ public class PositionRESTService extends RESTService {
 		try {
 			Position position = getAndCheckPosition(loggedOn, id);
 			if (!position.getPhase().getStatus().equals(PositionStatus.ENTAGMENI)) {
-				throw new RestException(Status.CONFLICT, "wrong.position.status");
+				throw new RestException(Status.CONFLICT, "wrong.position.status.cannot.delete");
 			}
 			em.remove(position);
 			em.flush();
@@ -927,8 +928,10 @@ public class PositionRESTService extends RESTService {
 		List<Role> professors = em.createQuery(
 			"select r from Role r " +
 				"where r.id is not null " +
-				"and r.discriminator in (:discriminators) ")
+				"and r.discriminator in (:discriminators) " +
+				"ans r.status = :status")
 			.setParameter("discriminators", discriminatorList)
+			.setParameter("status", RoleStatus.ACTIVE)
 			.getResultList();
 
 		// Execute
@@ -1011,6 +1014,9 @@ public class PositionRESTService extends RESTService {
 			if (existingProfessor == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
 			}
+			if (!existingProfessor.getStatus().equals(RoleStatus.ACTIVE)) {
+				throw new RestException(Status.NOT_FOUND, "wrong.professor.status");
+			}
 			// Check if already exists:
 			for (CommitteeMember existingMember : existingPosition.getPhase().getCommittee().getMembers()) {
 				if (existingMember.getProfessor().getId().equals(existingProfessor.getId())) {
@@ -1019,7 +1025,8 @@ public class PositionRESTService extends RESTService {
 			}
 			int count = 0;
 			for (CommitteeMember existingMember : existingPosition.getPhase().getCommittee().getMembers()) {
-				if (existingMember.getType() == newMembership.getType()) {
+				if (existingMember.getType().equals(newMembership.getType())) {
+					// Count only same type
 					count++;
 				}
 			}

@@ -37,7 +37,7 @@
 			<td><%= professor.committeesCount %></td>
 			<td>
 				<div class="input-append">
-					<select class="input-small" name="type">
+					<select class="input-small" name="type" data-model-cid="<%= professor.cid %>">
 						<option value="REGULAR"><%= $.i18n.prop("PositionCommitteeMemberTypeREGULAR") %></option>
 						<option value="SUBSTITUTE"><%= $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") %></option>
 					</select>

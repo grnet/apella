@@ -99,6 +99,13 @@ public class CandidacyRESTService extends RESTService {
 			if (position == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 			}
+			Date now = new Date();
+			if (position.getPhase().getCandidacies().getOpeningDate().compareTo(now) > 0) {
+				throw new RestException(Status.FORBIDDEN, "wrong.position.candidacies.openingDate");
+			}
+			if (position.getPhase().getCandidacies().getClosingDate().compareTo(now) <= 0) {
+				throw new RestException(Status.FORBIDDEN, "wrong.position.candidacies.closingDate");
+			}
 			if (!position.getPhase().getStatus().equals(PositionStatus.ANOIXTI)) {
 				throw new RestException(Status.NOT_FOUND, "wrong.position.status");
 			}

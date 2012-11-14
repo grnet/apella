@@ -295,13 +295,24 @@ public class UserRESTService extends RESTService {
 	@JsonView({DetailedUserView.class})
 	public User update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, User user) {
 		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.getId().equals(id)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-
 		User existingUser = em.find(User.class, id);
 		if (existingUser == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.user.id");
+		}
+		boolean canUpdate = loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR);
+		if (!canUpdate) {
+			canUpdate = loggedOn.getId().equals(id);
+		}
+		if (!canUpdate && existingUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+			InstitutionAssistant ia = (InstitutionAssistant) existingUser.getActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT);
+			canUpdate = ia.getManager().getUser().getId().equals(loggedOn.getId());
+		}
+		if (!canUpdate && existingUser.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT)) {
+			MinistryAssistant ma = (MinistryAssistant) existingUser.getActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT);
+			canUpdate = ma.getManager().getUser().getId().equals(loggedOn.getId());
+		}
+		if (!canUpdate) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
 
@@ -561,7 +572,20 @@ public class UserRESTService extends RESTService {
 	@JsonView({DetailedUserView.class})
 	public User updateStatus(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, User requestUser) {
 		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+		User existingUser = em.find(User.class, id);
+		if (existingUser == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.user.id");
+		}
+		boolean canUpdate = loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR);
+		if (!canUpdate && existingUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+			InstitutionAssistant ia = (InstitutionAssistant) existingUser.getActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT);
+			canUpdate = ia.getManager().getUser().getId().equals(loggedOn.getId());
+		}
+		if (!canUpdate && existingUser.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT)) {
+			MinistryAssistant ma = (MinistryAssistant) existingUser.getActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT);
+			canUpdate = ma.getManager().getUser().getId().equals(loggedOn.getId());
+		}
+		if (!canUpdate) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {

@@ -3,6 +3,7 @@ package gr.grnet.dep.service.model;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
+import javax.xml.bind.annotation.XmlTransient;
 
 @Entity
 @DiscriminatorValue("MINISTRY_ASSISTANT")
@@ -18,6 +19,7 @@ public class MinistryAssistant extends Role {
 		setDiscriminator(RoleDiscriminator.MINISTRY_ASSISTANT);
 	}
 
+	@XmlTransient
 	public MinistryManager getManager() {
 		return manager;
 	}
