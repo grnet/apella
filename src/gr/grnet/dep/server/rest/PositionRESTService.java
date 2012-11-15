@@ -40,6 +40,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -156,7 +157,8 @@ public class PositionRESTService extends RESTService {
 			@SuppressWarnings("unchecked")
 			List<Position> positions = (List<Position>) em.createQuery(
 				"from Position p " +
-					"where p.phase.candidacies.closingDate >= :today ")
+					"where p.phase.candidacies.closingDate >= :today " +
+					"and p.permanent = true ")
 				.setParameter("today", today)
 				.getResultList();
 
@@ -929,7 +931,7 @@ public class PositionRESTService extends RESTService {
 			"select r from Role r " +
 				"where r.id is not null " +
 				"and r.discriminator in (:discriminators) " +
-				"ans r.status = :status")
+				"and r.status = :status")
 			.setParameter("discriminators", discriminatorList)
 			.setParameter("status", RoleStatus.ACTIVE)
 			.getResultList();
@@ -1135,9 +1137,14 @@ public class PositionRESTService extends RESTService {
 			!position.getPhase().getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+
+		Set<Candidacy> result = new HashSet<Candidacy>();
 		for (Candidacy candidacy : position.getPhase().getCandidacies().getCandidacies()) {
-			candidacy.initializeCollections();
+			if (candidacy.isPermanent()) {
+				candidacy.initializeCollections();
+				result.add(candidacy);
+			}
 		}
-		return position.getPhase().getCandidacies().getCandidacies();
+		return result;
 	}
 }

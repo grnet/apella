@@ -868,20 +868,55 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 		showInstitutionRegulatoryFrameworkView : function(institutionId) {
 			var self = this;
-			var institution = new Models.Institution({
-				id : institutionId ? institutionId : App.loggedOnUser.getAssociatedInstitutions()[0].id
+			var institutions = new Models.Institutions();
+			var institutionRegulatoryFrameworkView = undefined;
+			var institutionRegulatoryFrameworkListView = new Views.InstitutionRegulatoryFrameworkListView({
+				collection : institutions
 			});
-			var irfView = App.loggedOnUser.isAssociatedWithInstitution(institution) ? new Views.InstitutionRegulatoryFrameworkEditView({
-				model : institution
-			}) : new Views.InstitutionRegulatoryFrameworkView({
-				model : institution
+			institutions.on("institution:selected", function(institution) {
+				if (institutionRegulatoryFrameworkView) {
+					institutionRegulatoryFrameworkView.close();
+				}
+				// Select Edit or Simple View based on loggedOnUser
+				institutionRegulatoryFrameworkView = App.loggedOnUser.isAssociatedWithInstitution(institution) ? new Views.InstitutionRegulatoryFrameworkEditView({
+					model : institution
+				}) : new Views.InstitutionRegulatoryFrameworkView({
+					model : institution
+				});
+				self.refreshBreadcrumb([ $.i18n.prop('menu_regulatoryframeworks') ]);
+				$("#content").html(institutionRegulatoryFrameworkView.el);
+				// Update history
+				App.router.navigate("regulatoryframeworks/" + institution.id, {
+					trigger : false
+				});
+				institution.fetch({
+					cache : true,
+					success : function(model, resp, options) {
+						institution.trigger("change");
+
+					},
+					error : function(model, resp, options) {
+						var popup = new Views.PopupView({
+							type : "error",
+							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						});
+						popup.show();
+					}
+				});
 			});
 			self.clear();
-			self.refreshBreadcrumb([ $.i18n.prop('menu_regulatoryframework') ]);
-			$("#content").html(irfView.el);
+			self.refreshBreadcrumb([ $.i18n.prop('menu_regulatoryframeworks') ]);
+			$("#featured").html(institutionRegulatoryFrameworkListView.el);
 
-			institution.fetch({
+			// Refresh institutions from server
+			institutions.fetch({
 				cache : true,
+				success : function() {
+					if (_.isUndefined(institutionId)) {
+					} else {
+						institutions.trigger("institution:selected", institutions.get(institutionId));
+					}
+				},
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
@@ -890,7 +925,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					popup.show();
 				}
 			});
-			self.currentView = irfView;
+			self.currentView = institutionRegulatoryFrameworkListView;
 		},
 
 		showPositionSearchView : function(query) {

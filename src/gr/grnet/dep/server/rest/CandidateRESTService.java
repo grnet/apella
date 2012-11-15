@@ -44,7 +44,9 @@ public class CandidateRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 
-		String queryString = "from Candidacy c where c.candidate = :candidate";
+		String queryString = "from Candidacy c " +
+			"where c.candidate = :candidate " +
+			"and c.permanent = true ";
 		if (open != null) {
 			queryString += " and c.candidacies.closingDate >= :now";
 		}
