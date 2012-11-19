@@ -1,6 +1,6 @@
 package gr.grnet.dep.service.model;
 
-import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
+import gr.grnet.dep.service.model.file.ComplementaryDocumentsFile;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 
@@ -21,13 +21,9 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
-public class Candidacies {
-
-	public static interface DetailedCandidaciesView {
-	};
+public class PositionComplementaryDocuments {
 
 	@Id
 	@GeneratedValue
@@ -39,17 +35,11 @@ public class Candidacies {
 	@ManyToOne
 	private Position position;
 
-	@OneToMany(mappedBy = "candidacies", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "complementaryDocuments", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<PositionPhase> phases = new HashSet<PositionPhase>();
 
-	@Temporal(TemporalType.DATE)
-	private Date openingDate; // Έναρξη υποβολών
-
-	@Temporal(TemporalType.DATE)
-	private Date closingDate; // Λήξη υποβολών
-
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "candidacies")
-	private Set<Candidacy> candidacies = new HashSet<Candidacy>();
+	@OneToMany(mappedBy = "complementaryDocuments", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<ComplementaryDocumentsFile> files = new HashSet<ComplementaryDocumentsFile>();
 
 	@Temporal(TemporalType.DATE)
 	private Date createdAt;
@@ -65,7 +55,7 @@ public class Candidacies {
 		this.id = id;
 	}
 
-	@JsonView({DetailedCandidaciesView.class, DetailedCandidacyView.class})
+	@XmlTransient
 	public Position getPosition() {
 		return position;
 	}
@@ -81,15 +71,6 @@ public class Candidacies {
 
 	public void setPhases(Set<PositionPhase> phases) {
 		this.phases = phases;
-	}
-
-	@XmlTransient
-	public Set<Candidacy> getCandidacies() {
-		return candidacies;
-	}
-
-	public void setCandidacies(Set<Candidacy> candidacies) {
-		this.candidacies = candidacies;
 	}
 
 	@JsonSerialize(using = SimpleDateSerializer.class)
@@ -112,44 +93,23 @@ public class Candidacies {
 		this.updatedAt = updatedAt;
 	}
 
-	@JsonSerialize(using = SimpleDateSerializer.class)
-	public Date getOpeningDate() {
-		return openingDate;
+	@XmlTransient
+	public Set<ComplementaryDocumentsFile> getFiles() {
+		return files;
 	}
 
-	@JsonDeserialize(using = SimpleDateDeserializer.class)
-	public void setOpeningDate(Date openingDate) {
-		this.openingDate = openingDate;
+	public void setFiles(Set<ComplementaryDocumentsFile> files) {
+		this.files = files;
 	}
 
-	@JsonSerialize(using = SimpleDateSerializer.class)
-	public Date getClosingDate() {
-		return closingDate;
-	}
+	//////////////////////////////////////////////////////
 
-	@JsonDeserialize(using = SimpleDateDeserializer.class)
-	public void setClosingDate(Date closingDate) {
-		this.closingDate = closingDate;
-	}
-
-	//////////////////////////////////////////////
-
-	public void copyFrom(Candidacies other) {
-		this.setClosingDate(other.getClosingDate());
-		this.setOpeningDate(other.getOpeningDate());
-		this.setUpdatedAt(new Date());
+	public void addFile(ComplementaryDocumentsFile file) {
+		file.setComplementaryDocuments(this);
+		this.files.add(file);
 	}
 
 	public void initializeCollections() {
-		this.candidacies.size();
-	}
-
-	public boolean containsCandidate(User user) {
-		for (Candidacy candidacy : this.candidacies) {
-			if (candidacy.getCandidate().getUser().getId().equals(user.getId())) {
-				return true;
-			}
-		}
-		return false;
+		this.files.size();
 	}
 }

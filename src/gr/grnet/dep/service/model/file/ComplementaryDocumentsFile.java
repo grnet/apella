@@ -1,6 +1,6 @@
 package gr.grnet.dep.service.model.file;
 
-import gr.grnet.dep.service.model.ComplementaryDocuments;
+import gr.grnet.dep.service.model.PositionComplementaryDocuments;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,14 +30,14 @@ public class ComplementaryDocumentsFile extends FileHeader {
 	});
 
 	@ManyToOne
-	private ComplementaryDocuments complementaryDocuments;
+	private PositionComplementaryDocuments complementaryDocuments;
 
 	@JsonView({DetailedFileHeaderView.class})
-	public ComplementaryDocuments getComplementaryDocuments() {
+	public PositionComplementaryDocuments getComplementaryDocuments() {
 		return complementaryDocuments;
 	}
 
-	public void setComplementaryDocuments(ComplementaryDocuments complementaryDocuments) {
+	public void setComplementaryDocuments(PositionComplementaryDocuments complementaryDocuments) {
 		this.complementaryDocuments = complementaryDocuments;
 	}
 

@@ -1,6 +1,6 @@
 package gr.grnet.dep.service.model.file;
 
-import gr.grnet.dep.service.model.Committee;
+import gr.grnet.dep.service.model.PositionCommittee;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,14 +32,14 @@ public class PositionCommitteeFile extends FileHeader {
 	});
 
 	@ManyToOne
-	private Committee committee;
+	private PositionCommittee committee;
 
 	@JsonView({DetailedFileHeaderView.class})
-	public Committee getCommittee() {
+	public PositionCommittee getCommittee() {
 		return committee;
 	}
 
-	public void setCommittee(Committee committee) {
+	public void setCommittee(PositionCommittee committee) {
 		this.committee = committee;
 	}
 

@@ -1,6 +1,6 @@
 package gr.grnet.dep.service.model;
 
-import gr.grnet.dep.service.model.file.ComplementaryDocumentsFile;
+import gr.grnet.dep.service.model.file.PositionEvaluationFile;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 
@@ -23,7 +23,7 @@ import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 @Entity
-public class ComplementaryDocuments {
+public class PositionEvaluation {
 
 	@Id
 	@GeneratedValue
@@ -35,11 +35,14 @@ public class ComplementaryDocuments {
 	@ManyToOne
 	private Position position;
 
-	@OneToMany(mappedBy = "complementaryDocuments", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "evaluation", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<PositionPhase> phases = new HashSet<PositionPhase>();
 
-	@OneToMany(mappedBy = "complementaryDocuments", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<ComplementaryDocumentsFile> files = new HashSet<ComplementaryDocumentsFile>();
+	@OneToMany(mappedBy = "evaluation", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<PositionEvaluator> evaluators = new HashSet<PositionEvaluator>();
+
+	@OneToMany(mappedBy = "evaluation", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<PositionEvaluationFile> files = new HashSet<PositionEvaluationFile>();
 
 	@Temporal(TemporalType.DATE)
 	private Date createdAt;
@@ -64,6 +67,14 @@ public class ComplementaryDocuments {
 		this.position = position;
 	}
 
+	public Set<PositionEvaluator> getEvaluators() {
+		return evaluators;
+	}
+
+	public void setEvaluators(Set<PositionEvaluator> evaluators) {
+		this.evaluators = evaluators;
+	}
+
 	@XmlTransient
 	public Set<PositionPhase> getPhases() {
 		return phases;
@@ -71,6 +82,15 @@ public class ComplementaryDocuments {
 
 	public void setPhases(Set<PositionPhase> phases) {
 		this.phases = phases;
+	}
+
+	@XmlTransient
+	public Set<PositionEvaluationFile> getFiles() {
+		return files;
+	}
+
+	public void setFiles(Set<PositionEvaluationFile> files) {
+		this.files = files;
 	}
 
 	@JsonSerialize(using = SimpleDateSerializer.class)
@@ -93,20 +113,20 @@ public class ComplementaryDocuments {
 		this.updatedAt = updatedAt;
 	}
 
-	@XmlTransient
-	public Set<ComplementaryDocumentsFile> getFiles() {
-		return files;
+	//////////////////////////////////////////////
+
+	public void addEvaluator(PositionEvaluator evaluator) {
+		evaluator.setEvaluation(this);
+		this.evaluators.add(evaluator);
 	}
 
-	public void setFiles(Set<ComplementaryDocumentsFile> files) {
-		this.files = files;
-	}
-
-	//////////////////////////////////////////////////////
-
-	public void addFile(ComplementaryDocumentsFile file) {
-		file.setComplementaryDocuments(this);
+	public void addFile(PositionEvaluationFile file) {
+		file.setEvaluation(this);
 		this.files.add(file);
+	}
+
+	public void copyFrom(PositionEvaluation other) {
+		this.setUpdatedAt(new Date());
 	}
 
 	public void initializeCollections() {

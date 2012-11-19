@@ -5,6 +5,8 @@ import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.InstitutionManager;
 import gr.grnet.dep.service.model.Professor;
+import gr.grnet.dep.service.model.ProfessorDomestic;
+import gr.grnet.dep.service.model.ProfessorForeign;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
@@ -339,6 +341,19 @@ public class RoleRESTService extends RESTService {
 		try {
 			// Update
 			existingRole = existingRole.copyFrom(role);
+			switch (existingRole.getDiscriminator()) {
+				case PROFESSOR_DOMESTIC:
+					ProfessorDomestic professorDomestic = (ProfessorDomestic) existingRole;
+					professorDomestic.setSubject(supplementSubject(((ProfessorDomestic) role).getSubject()));
+					professorDomestic.setFekSubject(supplementSubject(((ProfessorDomestic) role).getFekSubject()));
+					break;
+				case PROFESSOR_FOREIGN:
+					ProfessorForeign professorForeign = (ProfessorForeign) existingRole;
+					professorForeign.setSubject(supplementSubject(((ProfessorForeign) role).getSubject()));
+					break;
+				default:
+					break;
+			}
 			// Check open candidacies
 			if (updateCandidacies && existingRole.getUser().hasActiveRole(RoleDiscriminator.CANDIDATE)) {
 				try {

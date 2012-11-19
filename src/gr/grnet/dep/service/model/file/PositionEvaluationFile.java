@@ -1,6 +1,7 @@
 package gr.grnet.dep.service.model.file;
 
-import gr.grnet.dep.service.model.Evaluation;
+import gr.grnet.dep.service.model.CandidacyEvaluator;
+import gr.grnet.dep.service.model.PositionEvaluation;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,20 +25,22 @@ public class PositionEvaluationFile extends FileHeader {
 	public static final Map<FileType, Integer> fileTypes = Collections.unmodifiableMap(new HashMap<FileType, Integer>() {
 
 		{
-			put(FileType.AKSIOLOGISI_PROTOU_AKSIOLOGITI, Integer.MAX_VALUE);
-			put(FileType.AKSIOLOGISI_DEUTEROU_AKSIOLOGITI, Integer.MAX_VALUE);
+			put(FileType.AKSIOLOGISI, 1);
 		}
 	});
 
 	@ManyToOne
-	private Evaluation evaluation;
+	private PositionEvaluation evaluation;
+
+	@ManyToOne
+	private CandidacyEvaluator candidacyEvaluator;
 
 	@JsonView({DetailedFileHeaderView.class})
-	public Evaluation getEvaluation() {
+	public PositionEvaluation getEvaluation() {
 		return evaluation;
 	}
 
-	public void setEvaluation(Evaluation evaluation) {
+	public void setEvaluation(PositionEvaluation evaluation) {
 		this.evaluation = evaluation;
 	}
 

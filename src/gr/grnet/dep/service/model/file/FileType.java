@@ -17,8 +17,7 @@ public enum FileType {
 	PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES, // Πρακτικό της συνεδρίασης της επιτροπής για την ανάδειξη των αξιολογητών,
 	TEKMIRIOSI_EPITROPIS_GIA_AKSIOLOGITES, // Τεκμηρίωση σε περίπτωση που οι αξιολογητές δεν ανήκουν στο εξωτερικό μητρώο,
 	AITIMA_EPITROPIS_PROS_AKSIOLOGITES, // Αίτημα της επιτροπής προς τους αξιολογητές (στο παραπάνω πεδίο;)
-	AKSIOLOGISI_PROTOU_AKSIOLOGITI,
-	AKSIOLOGISI_DEUTEROU_AKSIOLOGITI,
+	AKSIOLOGISI,
 	PROSKLISI_KOSMITORA, // Πρόσκληση του κοσμήτορα για τη σύγκληση της επιτροπής για την επιλογή
 	EISIGISI_DEP_YPOPSIFIOU, // Εισηγήσεις καθηγητών/ερευνητών που έχουν προτείνει οι υποψήφιοι (πολλαπλά pdf).
 	PRAKTIKO_EPILOGIS, // Πρακτικό επιλογής
@@ -26,8 +25,6 @@ public enum FileType {
 	PRAKSI_DIORISMOU, // Πράξη διορισμού
 	DIOIKITIKO_EGGRAFO, // Διοικητικά έγγραφα
 	APOFASI_ANAPOMPIS, // Απόφαση αναπομπής του φακέλου επιλογής.
-	ORGANISMOS, // Οργανισμό 
-	ESWTERIKOS_KANONISMOS, //Εσωτερικό Κανονισμό του Ιδρύματος.
 	// Candidacy
 	EKTHESI_AUTOAKSIOLOGISIS // Έκθεση Αυτοαξιολόγησης
 }

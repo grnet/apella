@@ -70,10 +70,6 @@ public class ProfessorForeign extends Professor {
 		ProfessorForeign pf = (ProfessorForeign) otherRole;
 		setInstitution(pf.getInstitution());
 		setRank(pf.getRank());
-		if (getSubject() == null) {
-			setSubject(new Subject());
-		}
-		getSubject().setName(pf.getSubject().getName());
 		return this;
 	}
 

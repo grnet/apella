@@ -1,6 +1,6 @@
 package gr.grnet.dep.service.model.file;
 
-import gr.grnet.dep.service.model.Nomination;
+import gr.grnet.dep.service.model.PositionNomination;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,14 +33,14 @@ public class PositionNominationFile extends FileHeader {
 	});
 
 	@ManyToOne
-	private Nomination nomination;
+	private PositionNomination nomination;
 
 	@JsonView({DetailedFileHeaderView.class})
-	public Nomination getNomination() {
+	public PositionNomination getNomination() {
 		return nomination;
 	}
 
-	public void setNomination(Nomination nomination) {
+	public void setNomination(PositionNomination nomination) {
 		this.nomination = nomination;
 	}
 

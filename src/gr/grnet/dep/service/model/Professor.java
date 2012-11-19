@@ -23,7 +23,7 @@ public abstract class Professor extends Role {
 	private Set<ProfessorFile> files = new HashSet<ProfessorFile>();
 
 	@OneToMany(mappedBy = "professor", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<CommitteeMember> committees = new HashSet<CommitteeMember>();
+	private Set<PositionCommitteeMember> committees = new HashSet<PositionCommitteeMember>();
 
 	@Transient
 	private Integer committeesCount;
@@ -46,11 +46,11 @@ public abstract class Professor extends Role {
 	}
 
 	@XmlTransient
-	public Set<CommitteeMember> getCommittees() {
+	public Set<PositionCommitteeMember> getCommittees() {
 		return committees;
 	}
 
-	public void setCommittees(Set<CommitteeMember> committees) {
+	public void setCommittees(Set<PositionCommitteeMember> committees) {
 		this.committees = committees;
 	}
 

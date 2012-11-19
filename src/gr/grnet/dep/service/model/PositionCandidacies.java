@@ -1,6 +1,6 @@
 package gr.grnet.dep.service.model;
 
-import gr.grnet.dep.service.model.file.PositionEvaluationFile;
+import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 
@@ -21,9 +21,13 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
-public class Evaluation {
+public class PositionCandidacies {
+
+	public static interface DetailedCandidaciesView {
+	};
 
 	@Id
 	@GeneratedValue
@@ -35,11 +39,17 @@ public class Evaluation {
 	@ManyToOne
 	private Position position;
 
-	@OneToMany(mappedBy = "evaluation", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "candidacies", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<PositionPhase> phases = new HashSet<PositionPhase>();
 
-	@OneToMany(mappedBy = "evaluation", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<PositionEvaluationFile> files = new HashSet<PositionEvaluationFile>();
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "candidacies")
+	private Set<Candidacy> candidacies = new HashSet<Candidacy>();
+
+	@Temporal(TemporalType.DATE)
+	private Date openingDate; // Έναρξη υποβολών
+
+	@Temporal(TemporalType.DATE)
+	private Date closingDate; // Λήξη υποβολών
 
 	@Temporal(TemporalType.DATE)
 	private Date createdAt;
@@ -55,7 +65,7 @@ public class Evaluation {
 		this.id = id;
 	}
 
-	@XmlTransient
+	@JsonView({DetailedCandidaciesView.class, DetailedCandidacyView.class})
 	public Position getPosition() {
 		return position;
 	}
@@ -71,6 +81,15 @@ public class Evaluation {
 
 	public void setPhases(Set<PositionPhase> phases) {
 		this.phases = phases;
+	}
+
+	@XmlTransient
+	public Set<Candidacy> getCandidacies() {
+		return candidacies;
+	}
+
+	public void setCandidacies(Set<Candidacy> candidacies) {
+		this.candidacies = candidacies;
 	}
 
 	@JsonSerialize(using = SimpleDateSerializer.class)
@@ -93,27 +112,44 @@ public class Evaluation {
 		this.updatedAt = updatedAt;
 	}
 
-	@XmlTransient
-	public Set<PositionEvaluationFile> getFiles() {
-		return files;
+	@JsonSerialize(using = SimpleDateSerializer.class)
+	public Date getOpeningDate() {
+		return openingDate;
 	}
 
-	public void setFiles(Set<PositionEvaluationFile> files) {
-		this.files = files;
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
+	public void setOpeningDate(Date openingDate) {
+		this.openingDate = openingDate;
 	}
 
-	public void addFile(PositionEvaluationFile file) {
-		file.setEvaluation(this);
-		this.files.add(file);
+	@JsonSerialize(using = SimpleDateSerializer.class)
+	public Date getClosingDate() {
+		return closingDate;
+	}
+
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
+	public void setClosingDate(Date closingDate) {
+		this.closingDate = closingDate;
 	}
 
 	//////////////////////////////////////////////
 
-	public void copyFrom(Evaluation other) {
+	public void copyFrom(PositionCandidacies other) {
+		this.setClosingDate(other.getClosingDate());
+		this.setOpeningDate(other.getOpeningDate());
 		this.setUpdatedAt(new Date());
 	}
 
 	public void initializeCollections() {
-		this.files.size();
+		this.candidacies.size();
+	}
+
+	public boolean containsCandidate(User user) {
+		for (Candidacy candidacy : this.candidacies) {
+			if (candidacy.getCandidate().getUser().getId().equals(user.getId())) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

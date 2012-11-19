@@ -7,6 +7,7 @@ import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.ProfessorForeign;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
+import gr.grnet.dep.service.model.Subject;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.file.FileBody;
@@ -422,5 +423,22 @@ public class RESTService {
 			logger.log(Level.SEVERE, "", e);
 		}
 		return null;
+	}
+
+	/******************************
+	 * Subject Function ***********
+	 ******************************/
+
+	public Subject supplementSubject(Subject subject) {
+		try {
+			Subject existingSubject = (Subject) em.createQuery(
+				"select s from Subject s " +
+					"where s.name = :name ")
+				.setParameter("name", subject.getName())
+				.getSingleResult();
+			return existingSubject;
+		} catch (NoResultException e) {
+			return subject;
+		}
 	}
 }

@@ -16,7 +16,7 @@ public class Subject {
 	@Version
 	private int version;
 
-	@Column(nullable = false)
+	@Column(unique = true, nullable = false)
 	private String name;
 
 	public Long getId() {

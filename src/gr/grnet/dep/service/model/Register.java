@@ -12,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @Entity
@@ -27,6 +28,9 @@ public class Register implements Serializable {
 	@GeneratedValue
 	private Long id;
 
+	@Version
+	private int version;
+
 	private boolean permanent;
 
 	private String title;
@@ -36,6 +40,9 @@ public class Register implements Serializable {
 
 	@OneToMany(mappedBy = "register", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<RegisterFile> files = new HashSet<RegisterFile>();
+
+	@OneToMany(mappedBy = "register", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<RegisterMember> members = new HashSet<RegisterMember>();
 
 	public Long getId() {
 		return id;
@@ -80,6 +87,19 @@ public class Register implements Serializable {
 	public void addFile(RegisterFile file) {
 		this.files.add(file);
 		file.setRegister(this);
+	}
+
+	public Set<RegisterMember> getMembers() {
+		return members;
+	}
+
+	public void setMembers(Set<RegisterMember> members) {
+		this.members = members;
+	}
+
+	public void addMember(RegisterMember member) {
+		member.setRegister(this);
+		this.members.add(member);
 	}
 
 	public Register copyFrom(Register register) {

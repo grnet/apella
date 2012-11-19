@@ -23,7 +23,7 @@ import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 @Entity
-public class Nomination {
+public class PositionNomination {
 
 	@Id
 	@GeneratedValue
@@ -42,6 +42,9 @@ public class Nomination {
 	private Date nominationToETDate; // Ημερομηνία αποστολής διορισμού στο Εθνικό Τυπογραφείο
 
 	private String nominationFEK; //ΦΕΚ Διορισμού
+
+	@ManyToOne
+	private Candidacy nominatedCandidacy;
 
 	@OneToMany(mappedBy = "nomination", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<PositionPhase> phases = new HashSet<PositionPhase>();
@@ -100,6 +103,14 @@ public class Nomination {
 		this.position = position;
 	}
 
+	public Candidacy getNominatedCandidacy() {
+		return nominatedCandidacy;
+	}
+
+	public void setNominatedCandidate(Candidacy nominatedCandidacy) {
+		this.nominatedCandidacy = nominatedCandidacy;
+	}
+
 	@XmlTransient
 	public Set<PositionPhase> getPhases() {
 		return phases;
@@ -107,6 +118,15 @@ public class Nomination {
 
 	public void setPhases(Set<PositionPhase> phases) {
 		this.phases = phases;
+	}
+
+	@XmlTransient
+	public Set<PositionNominationFile> getFiles() {
+		return files;
+	}
+
+	public void setFiles(Set<PositionNominationFile> files) {
+		this.files = files;
 	}
 
 	@JsonSerialize(using = SimpleDateSerializer.class)
@@ -129,15 +149,6 @@ public class Nomination {
 		this.updatedAt = updatedAt;
 	}
 
-	@XmlTransient
-	public Set<PositionNominationFile> getFiles() {
-		return files;
-	}
-
-	public void setFiles(Set<PositionNominationFile> files) {
-		this.files = files;
-	}
-
 	//////////////////////////////////////////////
 
 	public void addFile(PositionNominationFile file) {
@@ -145,7 +156,7 @@ public class Nomination {
 		this.files.add(file);
 	}
 
-	public void copyFrom(Nomination nomination) {
+	public void copyFrom(PositionNomination nomination) {
 		this.setNominationCommitteeConvergenceDate(nomination.getNominationCommitteeConvergenceDate());
 		this.setNominationFEK(nomination.getNominationFEK());
 		this.setNominationToETDate(nomination.getNominationToETDate());

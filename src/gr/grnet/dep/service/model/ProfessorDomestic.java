@@ -106,10 +106,6 @@ public class ProfessorDomestic extends Professor {
 		setInstitution(pd.getInstitution());
 		setDepartment(pd.getDepartment());
 		setRank(pd.getRank());
-		if (getSubject() == null) {
-			setSubject(new Subject());
-		}
-		getSubject().setName(pd.getSubject().getName());
 		setFek(pd.getFek());
 		if (getFekSubject() == null) {
 			setFekSubject(new Subject());

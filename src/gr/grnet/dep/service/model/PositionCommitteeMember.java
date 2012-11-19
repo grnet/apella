@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.persistence.Version;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 
@@ -17,7 +18,7 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Table(uniqueConstraints = {
 	@UniqueConstraint(columnNames = {"committee_id", "professor_id"})
 })
-public class CommitteeMember implements Serializable {
+public class PositionCommitteeMember implements Serializable {
 
 	private static final long serialVersionUID = -1339853623265264893L;
 
@@ -37,11 +38,14 @@ public class CommitteeMember implements Serializable {
 	@GeneratedValue
 	private Long id;
 
+	@Version
+	private int version;
+
 	@Enumerated(EnumType.STRING)
 	private MemberType type;
 
 	@ManyToOne
-	private Committee committee;
+	private PositionCommittee committee;
 
 	@ManyToOne
 	private Professor professor;
@@ -55,11 +59,11 @@ public class CommitteeMember implements Serializable {
 	}
 
 	@JsonView({ProfessorCommitteesView.class, DetailedPositionCommitteeMemberView.class})
-	public Committee getCommittee() {
+	public PositionCommittee getCommittee() {
 		return committee;
 	}
 
-	public void setCommittee(Committee committee) {
+	public void setCommittee(PositionCommittee committee) {
 		this.committee = committee;
 	}
 

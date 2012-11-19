@@ -1,7 +1,7 @@
 package gr.grnet.dep.service.model;
 
-import gr.grnet.dep.service.model.CommitteeMember.DetailedPositionCommitteeMemberView;
-import gr.grnet.dep.service.model.CommitteeMember.ProfessorCommitteesView;
+import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
+import gr.grnet.dep.service.model.PositionCommitteeMember.ProfessorCommitteesView;
 import gr.grnet.dep.service.model.file.PositionCommitteeFile;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
@@ -28,7 +28,7 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
-public class Committee {
+public class PositionCommittee {
 
 	public static interface DetailedCommitteeView {
 	};
@@ -53,7 +53,7 @@ public class Committee {
 	private Set<PositionCommitteeFile> files = new HashSet<PositionCommitteeFile>();
 
 	@OneToMany(mappedBy = "committee")
-	private List<CommitteeMember> members = new ArrayList<CommitteeMember>();
+	private List<PositionCommitteeMember> members = new ArrayList<PositionCommitteeMember>();
 
 	@Temporal(TemporalType.DATE)
 	private Date createdAt;
@@ -112,11 +112,11 @@ public class Committee {
 	}
 
 	@XmlTransient
-	public List<CommitteeMember> getMembers() {
+	public List<PositionCommitteeMember> getMembers() {
 		return members;
 	}
 
-	public void setMembers(List<CommitteeMember> members) {
+	public void setMembers(List<PositionCommitteeMember> members) {
 		this.members = members;
 	}
 
@@ -142,7 +142,7 @@ public class Committee {
 
 	//////////////////////////////////////////////
 
-	public void copyFrom(Committee other) {
+	public void copyFrom(PositionCommittee other) {
 		this.setCommitteeMeetingDate(other.getCommitteeMeetingDate());
 		this.setUpdatedAt(new Date());
 	}
@@ -153,7 +153,7 @@ public class Committee {
 	}
 
 	public boolean containsMember(User user) {
-		for (CommitteeMember member : this.members) {
+		for (PositionCommitteeMember member : this.members) {
 			if (member.getProfessor().getUser().getId().equals(user.getId())) {
 				return true;
 			}

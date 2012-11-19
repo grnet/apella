@@ -1,6 +1,6 @@
 package gr.grnet.dep.service.model;
 
-import gr.grnet.dep.service.model.CommitteeMember.ProfessorCommitteesView;
+import gr.grnet.dep.service.model.PositionCommitteeMember.ProfessorCommitteesView;
 import gr.grnet.dep.service.model.Position.CandidatePositionView;
 import gr.grnet.dep.service.model.Position.CommitteeMemberPositionView;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
@@ -22,6 +22,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OrderColumn;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Version;
 
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
@@ -37,6 +38,9 @@ public class PositionPhase {
 	@GeneratedValue
 	private Long id;
 
+	@Version
+	private int version;
+
 	@ManyToOne
 	private Position position;
 
@@ -48,19 +52,19 @@ public class PositionPhase {
 	private Integer order;
 
 	@ManyToOne(cascade = CascadeType.ALL)
-	private Candidacies candidacies;
+	private PositionCandidacies candidacies;
 
 	@ManyToOne(cascade = CascadeType.ALL)
-	private Committee committee;
+	private PositionCommittee committee;
 
 	@ManyToOne(cascade = CascadeType.ALL)
-	private Evaluation evaluation;
+	private PositionEvaluation evaluation;
 
 	@ManyToOne(cascade = CascadeType.ALL)
-	private Nomination nomination;
+	private PositionNomination nomination;
 
 	@ManyToOne(cascade = CascadeType.ALL)
-	private ComplementaryDocuments complementaryDocuments;
+	private PositionComplementaryDocuments complementaryDocuments;
 
 	@Temporal(TemporalType.DATE)
 	private Date createdAt;
@@ -102,47 +106,47 @@ public class PositionPhase {
 	}
 
 	@JsonView({PublicPositionView.class, ProfessorCommitteesView.class, DetailedPositionView.class, CommitteeMemberPositionView.class, CandidatePositionView.class})
-	public Candidacies getCandidacies() {
+	public PositionCandidacies getCandidacies() {
 		return candidacies;
 	}
 
-	public void setCandidacies(Candidacies candidacies) {
+	public void setCandidacies(PositionCandidacies candidacies) {
 		this.candidacies = candidacies;
 	}
 
 	@JsonView({DetailedPositionView.class, CommitteeMemberPositionView.class, CandidatePositionView.class})
-	public Committee getCommittee() {
+	public PositionCommittee getCommittee() {
 		return committee;
 	}
 
-	public void setCommittee(Committee committee) {
+	public void setCommittee(PositionCommittee committee) {
 		this.committee = committee;
 	}
 
 	@JsonView({DetailedPositionView.class, CommitteeMemberPositionView.class})
-	public Evaluation getEvaluation() {
+	public PositionEvaluation getEvaluation() {
 		return evaluation;
 	}
 
-	public void setEvaluation(Evaluation evaluation) {
+	public void setEvaluation(PositionEvaluation evaluation) {
 		this.evaluation = evaluation;
 	}
 
 	@JsonView({DetailedPositionView.class, CommitteeMemberPositionView.class, CandidatePositionView.class})
-	public Nomination getNomination() {
+	public PositionNomination getNomination() {
 		return nomination;
 	}
 
-	public void setNomination(Nomination nomination) {
+	public void setNomination(PositionNomination nomination) {
 		this.nomination = nomination;
 	}
 
 	@JsonView({DetailedPositionView.class, CommitteeMemberPositionView.class})
-	public ComplementaryDocuments getComplementaryDocuments() {
+	public PositionComplementaryDocuments getComplementaryDocuments() {
 		return complementaryDocuments;
 	}
 
-	public void setComplementaryDocuments(ComplementaryDocuments complementaryDocuments) {
+	public void setComplementaryDocuments(PositionComplementaryDocuments complementaryDocuments) {
 		this.complementaryDocuments = complementaryDocuments;
 	}
 

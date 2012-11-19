@@ -1,7 +1,7 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
-import gr.grnet.dep.service.model.CommitteeMember.DetailedPositionCommitteeMemberView;
+import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
 
 import java.io.Serializable;
 import java.util.Date;

@@ -188,11 +188,6 @@ public class Position {
 	public void copyFrom(Position position) {
 		this.name = position.getName();
 		this.description = position.getDescription();
-		if (this.subject == null) {
-			this.subject = position.getSubject();
-		} else {
-			this.subject.setName(position.getSubject().getName());
-		}
 		this.fek = position.getFek();
 		this.fekSentDate = position.getFekSentDate();
 

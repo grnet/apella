@@ -52,7 +52,7 @@ public class Candidacy {
 	private Candidate candidate;
 
 	@ManyToOne
-	private Candidacies candidacies;
+	private PositionCandidacies candidacies;
 
 	@OneToMany(mappedBy = "candidacy", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<CandidacyFile> files = new HashSet<CandidacyFile>();
@@ -239,11 +239,11 @@ public class Candidacy {
 		this.candidate = candidate;
 	}
 
-	public Candidacies getCandidacies() {
+	public PositionCandidacies getCandidacies() {
 		return candidacies;
 	}
 
-	public void setCandidacies(Candidacies candidacies) {
+	public void setCandidacies(PositionCandidacies candidacies) {
 		this.candidacies = candidacies;
 	}
 
