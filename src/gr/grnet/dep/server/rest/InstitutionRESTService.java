@@ -83,9 +83,6 @@ public class InstitutionRESTService extends RESTService {
 		if (institution == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.institution.id");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(institution)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
 		// Return Result
 		institution.getFiles().size();
 		return institution.getFiles();
@@ -100,9 +97,6 @@ public class InstitutionRESTService extends RESTService {
 		// Validate:
 		if (institution == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.institution.id");
-		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(institution)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
 		for (InstitutionFile file : institution.getFiles()) {
@@ -122,9 +116,6 @@ public class InstitutionRESTService extends RESTService {
 		// Validate:
 		if (institution == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.institution.id");
-		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(institution)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
 		for (InstitutionFile file : institution.getFiles()) {

@@ -22,6 +22,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,9 +77,10 @@ public class UserRESTService extends RESTService {
 
 		getLoggedOn(authToken);
 
+		// Prepare Query
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct u from User u " +
-			"left join fetch u.roles r " +
+			"left join u.roles r " +
 			"where u.username like :username " +
 			"and u.basicInfo.firstname like :firstname " +
 			"and u.basicInfo.lastname like :lastname ");
@@ -118,7 +120,23 @@ public class UserRESTService extends RESTService {
 		if (mmId != null) {
 			query = query.setParameter("mmId", mmId);
 		}
+
+		// Get Result
 		List<User> result = query.getResultList();
+
+		// Filter results where role requested is not primary
+		if (role != null && !role.isEmpty()) {
+			Iterator<User> it = result.iterator();
+			while (it.hasNext()) {
+				User u = it.next();
+				u.initializeCollections();
+				if (!u.getPrimaryRole().equals(RoleDiscriminator.valueOf(role))) {
+					it.remove();
+				}
+			}
+		}
+
+		// Return result
 		for (User u : result) {
 			u.initializeCollections();
 		}

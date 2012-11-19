@@ -8,6 +8,16 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 		$.validator.addMethod("pwd", function(value, element) {
 			return this.optional(element) || /^[a-zA-Z0-9!@#$%^&*()]*$/.test(value);
 		}, "Please type only latin characters");
+		$.validator.addMethod("dateAfter", function(value, element, params) {
+			var days = params[1] * 86400000; // millisecond in a day
+			var beforeDate = params[0].datepicker("getDate");
+			var afterDate = $(element).datepicker("getDate");
+			if (_.isNull(beforeDate) || _.isNull(afterDate)) {
+				return false;
+			}
+			return (afterDate.getTime() - beforeDate.getTime() >= days);
+		}, "Date must be {1} days later than {0}");
+
 		$.datepicker.setDefaults({
 			dateFormat : "dd/mm/yy"
 		});

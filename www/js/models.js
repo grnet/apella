@@ -803,7 +803,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 				},
 				committee : {
 					id : undefined,
-					committeeMeetingDate : undefined,
+					committeeMeetingDate : undefined
 				},
 				evaluation : {
 					id : undefined
@@ -998,8 +998,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 					subject : undefined,
 					status : undefined,
 					fek : undefined,
-					fekSentDate : undefined,
-
+					fekSentDate : undefined
 				}
 			},
 			candidate : {

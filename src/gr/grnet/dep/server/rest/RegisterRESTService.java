@@ -58,7 +58,8 @@ public class RegisterRESTService extends RESTService {
 		@SuppressWarnings("unchecked")
 		Collection<Register> registers = (Collection<Register>) em.createQuery(
 			"select r from Register r " +
-				"left join fetch r.files f ")
+				"left join fetch r.files f " +
+				"where r.permanent = true")
 			.getResultList();
 		return registers;
 	}

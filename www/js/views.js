@@ -1,5 +1,5 @@
 define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/position-committee-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html", "text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html", "text!tpl/file-multiple-edit.html", "text!tpl/professor-committees.html", "text!tpl/position-committee-edit-professor-list.html", "text!tpl/position.html", "text!tpl/position-committee.html", "text!tpl/register.html", "text!tpl/institution-regulatory-framework.html", "text!tpl/institution-regulatory-framework-edit.html",
-	"text!tpl/position-search.html", "text!tpl/candidacy-edit.html", "text!tpl/candidate-candidacy-list.html", "text!tpl/position-candidacy-list.html", "text!tpl/candidacy.html", "text!tpl/candidacy-update-confirm.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_position_committee_edit, tpl_position_edit, tpl_position_list, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_file_multiple_edit, tpl_professor_committees, tpl_position_committee_edit_professor_list, tpl_position, tpl_position_committee, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_position_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm) {
+	"text!tpl/position-search.html", "text!tpl/candidacy-edit.html", "text!tpl/candidate-candidacy-list.html", "text!tpl/position-candidacy-list.html", "text!tpl/candidacy.html", "text!tpl/candidacy-update-confirm.html", "text!tpl/institution-regulatory-framework-list.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_position_committee_edit, tpl_position_edit, tpl_position_list, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_file_multiple_edit, tpl_professor_committees, tpl_position_committee_edit_professor_list, tpl_position, tpl_position_committee, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_position_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list) {
 
 	/** **************************************************************** */
 
@@ -90,21 +90,23 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}
 			if (self.model.hasRoleWithStatus("INSTITUTION_MANAGER", "ACTIVE")) {
 				menuItems.push("iassistants");
-				menuItems.push("regulatoryframework");
+				menuItems.push("regulatoryframeworks");
 				menuItems.push("registers");
 				menuItems.push("positions");
 			}
 			if (self.model.hasRoleWithStatus("INSTITUTION_ASSISTANT", "ACTIVE")) {
-				menuItems.push("regulatoryframework");
+				menuItems.push("regulatoryframeworks");
 				menuItems.push("registers");
 				menuItems.push("positions");
 			}
 			if (self.model.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE")) {
 				menuItems.push("massistants");
+				menuItems.push("regulatoryframeworks");
 				menuItems.push("registers");
 				menuItems.push("positions");
 			}
 			if (self.model.hasRoleWithStatus("MINISTRY_ASSISTANT", "ACTIVE")) {
+				menuItems.push("regulatoryframeworks");
 				menuItems.push("registers");
 				menuItems.push("positions");
 			}
@@ -2157,7 +2159,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			case "INSTITUTION_MANAGER":
 				self.$("select[name='verificationAuthority']").val(self.model.get("verificationAuthority"));
 				self.$("select[name='verificationAuthority']").change(function(event) {
-					self.$("label[for='verificationAuthorityName']").html($.i18n.prop('VerificationAuthorityName') + " " + $.i18n.prop('VerificationAuthority' + self.$("select[name='verificationAuthority']").val()));
+					var authority = self.$("select[name='verificationAuthority']").val();
+					self.$("label[for='verificationAuthorityName']").html($.i18n.prop('VerificationAuthorityName') + " " + $.i18n.prop('VerificationAuthority' + authority));
+					self.$("a[id^=forma_]*").hide();
+					self.$("a#forma_" + authority).show();
 				});
 
 				self.$("select[name='institution']").change(function(event) {
@@ -2532,7 +2537,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		isEditable : function(field) {
-			// Cannot change any fields
+			var self = this;
+			switch (self.model.get("discriminator")) {
+			case "CANDIDATE":
+				switch (field) {
+				case "tautotitaFile":
+					return true;
+				}
+				break;
+			}
 			return false;
 		},
 
@@ -2597,6 +2610,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				replaceFileInput : false,
 				forceIframeTransport : true,
 				multipart : true,
+				maxFileSize : 30000000,
 				add : function(e, data) {
 					self.$("a#upload").bind("click", function(e) {
 						data.formData = {
@@ -2771,6 +2785,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				url : self.collection.url + "?X-Auth-Token=" + encodeURIComponent(App.authToken),
 				replaceFileInput : false,
 				forceIframeTransport : true,
+				maxFileSize : 30000000,
 				add : function(e, data) {
 					self.$("a#upload").bind("click", function(e) {
 						data.formData = {
@@ -3561,34 +3576,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.innerViews = [];
 			self.$el.html(self.template(self.model.toJSON()));
 
-			// Departments
-			self.$("select[name='department']").change(function(event) {
-				self.$("select[name='department']").next(".help-block").html(self.$("select[name='department'] option:selected").text());
-			});
-			App.departments = App.departments ? App.departments : new Models.Departments();
-			App.departments.fetch({
-				cache : true,
-				success : function(collection, resp) {
-					_.each(collection.filter(function(department) {
-						return App.loggedOnUser.isAssociatedWithDepartment(department);
-					}), function(department) {
-						if (_.isObject(self.model.get("department")) && _.isEqual(department.id, self.model.get("department").id)) {
-							$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "' selected>" + department.get("institution").name + ": " + department.get("department") + "</option>");
-						} else {
-							$("select[name='department']", self.$el).append("<option value='" + department.get("id") + "'>" + department.get("institution").name + ": " + department.get("department") + "</option>");
-						}
-					});
-					self.$("select[name='department']").change();
-				},
-				error : function(model, resp, options) {
-					var popup = new Views.PopupView({
-						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-					});
-					popup.show();
-				}
-			});
-
 			// Dependencies (Files, Committee, Candidacies):
 			if (self.model.has("id")) {
 				var files = {};
@@ -3756,7 +3743,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			});
 
 			// DatePicker
-			self.$("input[data-input-type=date]").datepicker();
+			self.$("input[data-input-type=date]").datepicker({
+				onClose : function(dateText, inst) {
+					$(this).parents("form").validate().element(this);
+				}
+			});
 			// Validation
 			self.validator = $("form", this.el).validate({
 				errorElement : "span",
@@ -3775,8 +3766,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					status : "required",
 					fek : "required",
 					fekSentDate : "required",
-					openingDate : "required",
-					closingDate : "required"
+					openingDate : {
+						"required" : true,
+						"dateAfter" : [ self.$("input[name=fekSentDate]"), 1 ]
+					},
+					closingDate : {
+						"required" : true,
+						"dateAfter" : [ self.$("input[name=openingDate]"), 15 ]
+					}
 				},
 				messages : {
 					name : $.i18n.prop('validation_positionName'),
@@ -3786,8 +3783,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					status : $.i18n.prop('validation_positionStatus'),
 					fek : $.i18n.prop('validation_fek'),
 					fekSentDate : $.i18n.prop('validation_fekSentDate'),
-					openingDate : $.i18n.prop('validation_openingDate'),
-					closingDate : $.i18n.prop('validation_closingDate')
+					openingDate : {
+						required : $.i18n.prop('validation_openingDate'),
+						dateAfter : $.i18n.prop('validation_openingDate_dateAfter')
+					},
+					closingDate : {
+						required : $.i18n.prop('validation_closingDate'),
+						dateAfter : $.i18n.prop('validation_closingDate_dateAfter')
+					}
 				}
 			});
 			return self;
@@ -4854,6 +4857,67 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		close : function(eventName) {
 			this.collection.unbind('reset', this.render, this);
+			this.$el.unbind();
+			this.$el.remove();
+		}
+	});
+
+	/***************************************************************************
+	 * InstitutionRegulatoryFrameworkEditView **********************************
+	 **************************************************************************/
+	Views.InstitutionRegulatoryFrameworkListView = Views.BaseView.extend({
+		tagName : "div",
+
+		initialize : function() {
+			var self = this;
+			_.bindAll(self, "render", "select", "close");
+			self.template = _.template(tpl_institution_regulatory_framework_list);
+			self.collection.bind('reset', self.render, self);
+		},
+
+		events : {
+			"click a#select" : "select"
+		},
+
+		render : function(eventName) {
+			var self = this;
+			self.$el.html(self.template({
+				institutions : self.collection.toJSON()
+			}));
+
+			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
+				self.$("table").dataTable({
+					"sDom" : "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+					"sPaginationType" : "bootstrap",
+					"oLanguage" : {
+						"sSearch" : $.i18n.prop("dataTable_sSearch"),
+						"sLengthMenu" : $.i18n.prop("dataTable_sLengthMenu"),
+						"sZeroRecords" : $.i18n.prop("dataTable_sZeroRecords"),
+						"sInfo" : $.i18n.prop("dataTable_sInfo"),
+						"sInfoEmpty" : $.i18n.prop("dataTable_sInfoEmpty"),
+						"sInfoFiltered" : $.i18n.prop("dataTable_sInfoFiltered"),
+						"oPaginate" : {
+							sFirst : $.i18n.prop("dataTable_sFirst"),
+							sPrevious : $.i18n.prop("dataTable_sPrevious"),
+							sNext : $.i18n.prop("dataTable_sNext"),
+							sLast : $.i18n.prop("dataTable_sLast")
+						}
+					}
+				});
+			}
+			return self;
+		},
+
+		select : function(event, institution) {
+			var self = this;
+			var selectedModel = institution ? institution : self.collection.get($(event.currentTarget).data('institutionId'));
+			if (selectedModel) {
+				self.collection.trigger("institution:selected", selectedModel);
+			}
+		},
+
+		close : function(eventName) {
+			this.collection.unbind("reset");
 			this.$el.unbind();
 			this.$el.remove();
 		}
