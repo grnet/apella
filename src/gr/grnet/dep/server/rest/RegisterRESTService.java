@@ -2,11 +2,13 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Institution;
+import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
 import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Register;
 import gr.grnet.dep.service.model.Register.DetailedRegisterView;
 import gr.grnet.dep.service.model.RegisterMember;
+import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.Subject;
@@ -19,6 +21,7 @@ import gr.grnet.dep.service.model.file.RegisterFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -547,7 +550,7 @@ public class RegisterRESTService extends RESTService {
 
 	@DELETE
 	@Path("/{id:[0-9]+}/members/{memberId:[0-9][0-9]*}")
-	public void removePositionEvaluator(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId, @PathParam("evalId") Long memberId) {
+	public void removeRegisterMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId, @PathParam("evalId") Long memberId) {
 		User loggedOn = getLoggedOn(authToken);
 		Register existingRegister = em.find(Register.class, registerId);
 		// Validate:
@@ -577,6 +580,41 @@ public class RegisterRESTService extends RESTService {
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
+	}
+
+	@GET
+	@Path("/{id:[0-9]+}/professor")
+	@JsonView({DetailedPositionCommitteeMemberView.class})
+	public List<Role> getRegisterProfessors(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId) {
+		User loggedOn = getLoggedOn(authToken);
+		Register existingRegister = em.find(Register.class, registerId);
+		// Validate:
+		if (existingRegister == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
+		}
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(existingRegister.getInstitution())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Prepare Query
+		List<RoleDiscriminator> discriminatorList = new ArrayList<Role.RoleDiscriminator>();
+		discriminatorList.add(RoleDiscriminator.PROFESSOR_DOMESTIC);
+		discriminatorList.add(RoleDiscriminator.PROFESSOR_FOREIGN);
+
+		List<Role> professors = em.createQuery(
+			"select r from Role r " +
+				"where r.id is not null " +
+				"and r.discriminator in (:discriminators) " +
+				"and r.status = :status")
+			.setParameter("discriminators", discriminatorList)
+			.setParameter("status", RoleStatus.ACTIVE)
+			.getResultList();
+
+		// Execute
+		for (Role r : professors) {
+			Professor p = (Professor) r;
+			r.initializeCollections();
+		}
+		return professors;
 	}
 
 }

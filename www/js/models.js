@@ -959,6 +959,30 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		model : Models.Register
 	});
 
+	Models.RegisterMember = Backbone.Model.extend({
+		register : undefined,
+		urlRoot : function() {
+			return "/dep/rest/register/" + this.attributes.register.id + "/members";
+		},
+		defaults : {
+			id : undefined,
+			professor : undefined,
+			internal : undefined,
+			subjects : []
+		}
+	});
+
+	Models.RegisterMembers = Backbone.Collection.extend({
+		register : undefined,
+		model : Models.RegisterMember,
+		initialize : function(models, options) {
+			this.register = options.register;
+		},
+		url : function() {
+			return "/dep/rest/register/" + this.register + "/members";
+		}
+	});
+
 	Models.PositionCommitteeMember = Backbone.Model.extend({
 		position : undefined,
 		urlRoot : function() {
