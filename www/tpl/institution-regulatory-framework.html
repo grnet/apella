@@ -8,14 +8,14 @@
 		<h4><%= name %></h4>
 		<dl class="dl-glossary">
 			<dt><%= $.i18n.prop('Institution') %></dt>
-			<dd><%= name %></dd>
+			<dd><%= institution.name %></dd>
 			<dt><%= $.i18n.prop('OrganismosFile') %></dt>
 			<dd>
-				<span id="organismosFile"></span>
+				<a href="<%= organismosURL %>" target="organismos"><%= organismosURL %></a>
 			</dd>
 			<dt><%= $.i18n.prop('EswterikosKanonismosFile') %></dt>
 			<dd>
-				<span id="eswterikosKanonismosFile"></span>
+				<a href="<%= eswterikosKanonismosURL %>" target="kanonismos"><%= eswterikosKanonismosURL %></a>
 			</dd>
 		</dl>
 	</div>

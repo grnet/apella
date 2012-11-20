@@ -2,9 +2,14 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Institution;
+import gr.grnet.dep.service.model.Professor;
+import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Register;
 import gr.grnet.dep.service.model.Register.DetailedRegisterView;
+import gr.grnet.dep.service.model.RegisterMember;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.Role.RoleStatus;
+import gr.grnet.dep.service.model.Subject;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
@@ -15,6 +20,7 @@ import gr.grnet.dep.service.model.file.RegisterFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -379,4 +385,198 @@ public class RegisterRESTService extends RESTService {
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
+
+	/***********************
+	 * Members Functions ***
+	 ***********************/
+
+	@GET
+	@Path("/{id:[0-9]+}/members")
+	public Collection<RegisterMember> getRegisterMembers(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId) {
+		User loggedOn = getLoggedOn(authToken);
+		Register register = em.find(Register.class, registerId);
+		// Validate:
+		if (register == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
+		}
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+
+		for (RegisterMember member : register.getMembers()) {
+			member.getProfessor().initializeCollections();
+		}
+		return register.getMembers();
+	}
+
+	@GET
+	@Path("/{id:[0-9]+}/members/{memberId:[0-9]+}")
+	public RegisterMember getRegisterMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId, @PathParam("memberId") Long memberId) {
+		User loggedOn = getLoggedOn(authToken);
+		Register register = em.find(Register.class, registerId);
+		// Validate:
+		if (register == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
+		}
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+
+		for (RegisterMember member : register.getMembers()) {
+			if (member.getId().equals(memberId)) {
+				member.getProfessor().initializeCollections();
+				return member;
+			}
+		}
+		throw new RestException(Status.NOT_FOUND, "wrong.register.member.id");
+	}
+
+	@POST
+	@Path("/{id:[0-9]+}/members")
+	public RegisterMember createRegisterMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId, RegisterMember newMember) {
+		User loggedOn = getLoggedOn(authToken);
+		Register existingRegister = em.find(Register.class, registerId);
+		// Validate:
+		if (existingRegister == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
+		}
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(existingRegister.getInstitution())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		Professor existingProfessor = em.find(Professor.class, newMember.getProfessor().getId());
+		if (existingProfessor == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
+		}
+		if (!existingProfessor.getStatus().equals(RoleStatus.ACTIVE)) {
+			throw new RestException(Status.NOT_FOUND, "wrong.professor.status");
+		}
+		// Check if already exists:
+		for (RegisterMember member : existingRegister.getMembers()) {
+			if (member.getProfessor().getId().equals(existingProfessor.getId())) {
+				throw new RestException(Status.CONFLICT, "register.member.already.exists");
+			}
+		}
+		// Update
+		try {
+			newMember.setRegister(existingRegister);
+			newMember.setProfessor(existingProfessor);
+			Set<Subject> subjects = new HashSet<Subject>();
+			for (Subject s : newMember.getSubjects()) {
+				subjects.add(supplementSubject(s));
+			}
+			newMember.setSubjects(subjects);
+			switch (existingProfessor.getDiscriminator()) {
+				case PROFESSOR_DOMESTIC:
+					newMember.setExternal(existingRegister.getInstitution().getId() != ((ProfessorDomestic) existingProfessor).getInstitution().getId());
+					break;
+				case PROFESSOR_FOREIGN:
+					newMember.setExternal(true);
+					break;
+				default:
+					break;
+			}
+			existingRegister.addMember(newMember);
+			newMember = em.merge(newMember);
+			em.flush();
+			// Return result
+			newMember.getProfessor().initializeCollections();
+			return newMember;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+		}
+	}
+
+	@PUT
+	@Path("/{id:[0-9]+}/members/{memberId:[0-9]+}")
+	public RegisterMember updateRegisterMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId, @PathParam("memberId") Long memberId, RegisterMember member) {
+		User loggedOn = getLoggedOn(authToken);
+		Register existingRegister = em.find(Register.class, registerId);
+		// Validate:
+		if (existingRegister == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
+		}
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(existingRegister.getInstitution())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		Professor existingProfessor = em.find(Professor.class, member.getProfessor().getId());
+		if (existingProfessor == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
+		}
+		if (!existingProfessor.getStatus().equals(RoleStatus.ACTIVE)) {
+			throw new RestException(Status.NOT_FOUND, "wrong.professor.status");
+		}
+		// Check if it exists:
+		RegisterMember existingMember = null;
+		for (RegisterMember rm : existingRegister.getMembers()) {
+			if (rm.getId().equals(memberId)) {
+				existingMember = rm;
+				break;
+			}
+		}
+		if (existingMember == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.register.member.id");
+		}
+		// Update
+		try {
+			Set<Subject> subjects = new HashSet<Subject>();
+			for (Subject s : member.getSubjects()) {
+				subjects.add(supplementSubject(s));
+			}
+			existingMember.setSubjects(subjects);
+			switch (existingProfessor.getDiscriminator()) {
+				case PROFESSOR_DOMESTIC:
+					existingMember.setExternal(existingRegister.getInstitution().getId() != ((ProfessorDomestic) existingProfessor).getInstitution().getId());
+					break;
+				case PROFESSOR_FOREIGN:
+					existingMember.setExternal(true);
+					break;
+				default:
+					break;
+			}
+			existingMember = em.merge(existingMember);
+			em.flush();
+			// Return result
+			existingMember.getProfessor().initializeCollections();
+			return existingMember;
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+		}
+	}
+
+	@DELETE
+	@Path("/{id:[0-9]+}/members/{memberId:[0-9][0-9]*}")
+	public void removePositionEvaluator(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId, @PathParam("evalId") Long memberId) {
+		User loggedOn = getLoggedOn(authToken);
+		Register existingRegister = em.find(Register.class, registerId);
+		// Validate:
+		if (existingRegister == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
+		}
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(existingRegister.getInstitution())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Check if it exists:
+		RegisterMember existingMember = null;
+		for (RegisterMember member : existingRegister.getMembers()) {
+			if (member.getId().equals(memberId)) {
+				existingMember = member;
+				break;
+			}
+		}
+		if (existingMember == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.register.member.id");
+		}
+		// Remove
+		try {
+			existingRegister.getMembers().remove(existingMember);
+			em.remove(existingMember);
+			em.flush();
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+		}
+	}
+
 }

@@ -4555,7 +4555,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		validator : undefined,
 
 		initialize : function() {
-			_.bindAll(this, "render", "submit", "cancel", "addFile", "close");
+			_.bindAll(this, "render", "submit", "remove", "cancel", "addFile", "close");
 			this.template = _.template(tpl_register_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
@@ -4863,28 +4863,43 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 
 	/***************************************************************************
-	 * InstitutionRegulatoryFrameworkEditView **********************************
+	 * InstitutionRegulatoryFrameworkListView **********************************
 	 **************************************************************************/
 	Views.InstitutionRegulatoryFrameworkListView = Views.BaseView.extend({
 		tagName : "div",
 
 		initialize : function() {
 			var self = this;
-			_.bindAll(self, "render", "select", "close");
+			_.bindAll(self, "render", "renderActions", "select", "create", "close");
 			self.template = _.template(tpl_institution_regulatory_framework_list);
 			self.collection.bind('reset', self.render, self);
+			self.collection.bind('add', self.render, self);
+			self.collection.bind('remove', self.render, self);
 		},
 
 		events : {
-			"click a#select" : "select"
+			"click a#selectInstitutionRF" : "select",
+			"click a#createInstitutionRF" : "create"
 		},
 
 		render : function(eventName) {
 			var self = this;
-			self.$el.html(self.template({
-				institutions : self.collection.toJSON()
-			}));
+			var tpl_data = {
+				institutionRFs : (function() {
+					var result = [];
+					self.collection.each(function(model) {
+						if (model.has("id")) {
+							var item = model.toJSON();
+							item.cid = model.cid;
+							result.push(item);
+						}
+					});
+					return result;
+				})()
+			};
+			self.$el.html(self.template(tpl_data));
 
+			// Widgets
 			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 				self.$("table").dataTable({
 					"sDom" : "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
@@ -4905,19 +4920,73 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				});
 			}
+
+			// Add Actions
+			self.renderActions();
 			return self;
 		},
 
-		select : function(event, institution) {
-			var self = this;
-			var selectedModel = institution ? institution : self.collection.get($(event.currentTarget).data('institutionId'));
-			if (selectedModel) {
-				self.collection.trigger("institution:selected", selectedModel);
+		renderActions : function() {
+			if (!App.loggedOnUser.hasRole("INSTITUTION_MANAGER") && !App.loggedOnUser.hasRole("INSTITUTION_ASSISTANT")) {
+				return;
 			}
+			self.$("#actions").append("<div class=\"btn-group\"><select class=\"input-xlarge\" name=\"institution\"></select><a id=\"createInstitutionRF\" class=\"btn\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_institutionrf') + " </a></div>");
+			// Add institutions in selector:
+			App.institutions = App.institutions || new Models.Institutions();
+			App.institutions.fetch({
+				cache : true,
+				success : function(collection, resp) {
+					_.each(collection.filter(function(institution) {
+						return App.loggedOnUser.isAssociatedWithInstitution(institution);
+					}), function(institution) {
+						self.$("select[name='institution']").append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
+					});
+				},
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+		},
+
+		select : function(event, institutionRF) {
+			var self = this;
+			var selectedModel = institutionRF ? institutionRF : self.collection.getByCid($(event.currentTarget).data('institutionrfCid'));
+			if (selectedModel) {
+				self.collection.trigger("institutionRF:selected", selectedModel);
+			}
+		},
+
+		create : function(event) {
+			var self = this;
+			var newIRF = new Models.InstitutionRegulatoryFramework();
+			newIRF.save({
+				institution : {
+					id : self.$("select[name='institution']").val()
+				}
+			}, {
+				wait : true,
+				success : function(model, resp) {
+					self.collection.add(newIRF);
+					self.select(undefined, newIRF);
+				},
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
 		},
 
 		close : function(eventName) {
 			this.collection.unbind("reset");
+			this.collection.unbind("add");
+			this.collection.unbind("remove");
 			this.$el.unbind();
 			this.$el.remove();
 		}
@@ -4931,34 +5000,121 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			var self = this;
-			_.bindAll(self, "render", "addFile", "close");
+			_.bindAll(this, "render", "submit", "cancel", "remove", "close");
 			self.template = _.template(tpl_institution_regulatory_framework_edit);
 			self.model.bind('change', self.render, self);
+			self.model.bind("destroy", self.close, self);
 		},
 
-		events : {},
+		events : {
+			"click a#cancel" : "cancel",
+			"click a#remove" : "remove",
+			"click a#save" : function() {
+				$("form", this.el).submit();
+			},
+			"submit form" : "submit"
+		},
 
 		render : function(eventName) {
 			var self = this;
 			self.$el.html(self.template(self.model.toJSON()));
+			self.validator = $("form", this.el).validate({
+				errorElement : "span",
+				errorClass : "help-inline",
+				highlight : function(element, errorClass, validClass) {
+					$(element).parent(".controls").parent(".control-group").addClass("error");
+				},
+				unhighlight : function(element, errorClass, validClass) {
+					$(element).parent(".controls").parent(".control-group").removeClass("error");
+				},
+				rules : {
+					"organismosURL" : {
+						"required" : true,
+						"url" : true
+					},
+					"eswterikosKanonismosURL" : {
+						"required" : true,
+						"url" : true
+					}
+				},
+				messages : {
+					"organismosURL" : $.i18n.prop('validation_organismosURL'),
+					"eswterikosKanonismosURL" : $.i18n.prop('validation_eswterikosKanonismosURL')
+				}
+			});
 
-			// Add Files:
-			var files = new Models.Files();
-			files.url = self.model.url() + "/file";
-			files.fetch({
-				cache : false,
-				success : function(collection, response) {
-					self.addFile(collection, "ORGANISMOS", self.$("#organismosFile"), {
-						withMetadata : false,
-						editable : true
+			return self;
+		},
+
+		submit : function(event) {
+			var self = this;
+			var values = {};
+			// Read Input
+			values.organismosURL = self.$('form input[name=organismosURL]').val();
+			values.eswterikosKanonismosURL = self.$('form input[name=eswterikosKanonismosURL]').val();
+			// Save to model
+			self.model.save(values, {
+				wait : true,
+				success : function(model, resp) {
+					App.router.navigate("regulatoryframeworks/" + self.model.id, {
+						trigger : false
 					});
-					self.addFile(collection, "ESWTERIKOS_KANONISMOS", self.$("#eswterikosKanonismosFile"), {
-						withMetadata : false,
-						editable : true
+					var popup = new Views.PopupView({
+						type : "success",
+						message : $.i18n.prop("Success")
+					});
+					popup.show();
+				},
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+			event.preventDefault();
+			return false;
+		},
+
+		cancel : function(event) {
+			var self = this;
+			if (self.validator) {
+				self.validator.resetForm();
+			}
+			self.render();
+		},
+
+		remove : function() {
+			var self = this;
+			var confirm = new Views.ConfirmView({
+				title : $.i18n.prop('Confirm'),
+				message : $.i18n.prop('AreYouSure'),
+				yes : function() {
+					self.model.destroy({
+						wait : true,
+						success : function(model, resp) {
+							App.router.navigate("regulatoryframeworks", {
+								trigger : false
+							});
+							var popup = new Views.PopupView({
+								type : "success",
+								message : $.i18n.prop("Success")
+							});
+							popup.show();
+						},
+						error : function(model, resp, options) {
+							var popup = new Views.PopupView({
+								type : "error",
+								message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+							});
+							popup.show();
+						}
 					});
 				}
 			});
-			return self;
+			confirm.show();
+			return false;
 		},
 
 		close : function(eventName) {
@@ -4976,7 +5132,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			var self = this;
-			_.bindAll(self, "render", "addFile", "close");
+			_.bindAll(self, "render", "close");
 			self.template = _.template(tpl_institution_regulatory_framework);
 			self.model.bind('change', self.render, self);
 		},
@@ -4986,23 +5142,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(eventName) {
 			var self = this;
 			self.$el.html(self.template(self.model.toJSON()));
-
-			// Add Files:
-			var files = new Models.Files();
-			files.url = self.model.url() + "/file";
-			files.fetch({
-				cache : false,
-				success : function(collection, response) {
-					self.addFile(collection, "ORGANISMOS", self.$("#organismosFile"), {
-						withMetadata : false,
-						editable : false
-					});
-					self.addFile(collection, "ESWTERIKOS_KANONISMOS", self.$("#eswterikosKanonismosFile"), {
-						withMetadata : false,
-						editable : false
-					});
-				}
-			});
 			return self;
 		},
 

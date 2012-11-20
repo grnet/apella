@@ -723,9 +723,30 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			positions.fetch({
 				cache : false,
 				success : function() {
-					if (_.isUndefined(positionId)) {
-					} else {
-						positions.trigger("position:selected", positions.get(positionId));
+					if (!_.isUndefined(positionId)) {
+						var selectedPosition = positions.get(positionId);
+						if (!selectedPosition) {
+							selectedPosition = new Models.Position({
+								id : positionId
+							});
+							selectedPosition.fetch({
+								cache : false,
+								wait : true,
+								success : function() {
+									positions.add(selectedPosition);
+									positions.trigger("position:selected", selectedPosition);
+								},
+								error : function(model, resp, options) {
+									var popup = new Views.PopupView({
+										type : "error",
+										message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+									});
+									popup.show();
+								}
+							});
+						} else {
+							positions.trigger("position:selected", selectedPosition);
+						}
 					}
 				},
 				error : function(model, resp, options) {
@@ -822,9 +843,30 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					})()
 				},
 				success : function() {
-					if (_.isUndefined(registerId)) {
-					} else {
-						registries.trigger("register:selected", registries.get(registerId));
+					if (!_.isUndefined(registerId)) {
+						var selectedRegister = registries.get(registerId);
+						if (!selectedRegister) {
+							selectedRegister = new Models.Register({
+								id : registerId
+							});
+							selectedRegister.fetch({
+								cache : false,
+								wait : true,
+								success : function() {
+									registries.add(selectedRegister);
+									registries.trigger("register:selected", selectedRegister);
+								},
+								error : function(model, resp, options) {
+									var popup = new Views.PopupView({
+										type : "error",
+										message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+									});
+									popup.show();
+								}
+							});
+						} else {
+							registries.trigger("register:selected", selectedRegister);
+						}
 					}
 				},
 				error : function(model, resp, options) {
@@ -866,33 +908,33 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			self.currentView = professorCommitteesView;
 		},
 
-		showInstitutionRegulatoryFrameworkView : function(institutionId) {
+		showInstitutionRegulatoryFrameworkView : function(institutionRFId) {
 			var self = this;
-			var institutions = new Models.Institutions();
+			var institutionRFs = new Models.InstitutionRegulatoryFrameworks();
 			var institutionRegulatoryFrameworkView = undefined;
 			var institutionRegulatoryFrameworkListView = new Views.InstitutionRegulatoryFrameworkListView({
-				collection : institutions
+				collection : institutionRFs
 			});
-			institutions.on("institution:selected", function(institution) {
+			institutionRFs.on("institutionRF:selected", function(institutionRF) {
 				if (institutionRegulatoryFrameworkView) {
 					institutionRegulatoryFrameworkView.close();
 				}
 				// Select Edit or Simple View based on loggedOnUser
-				institutionRegulatoryFrameworkView = App.loggedOnUser.isAssociatedWithInstitution(institution) ? new Views.InstitutionRegulatoryFrameworkEditView({
-					model : institution
+				institutionRegulatoryFrameworkView = App.loggedOnUser.isAssociatedWithInstitution(institutionRF.get("institution")) ? new Views.InstitutionRegulatoryFrameworkEditView({
+					model : institutionRF
 				}) : new Views.InstitutionRegulatoryFrameworkView({
-					model : institution
+					model : institutionRF
 				});
 				self.refreshBreadcrumb([ $.i18n.prop('menu_regulatoryframeworks') ]);
 				$("#content").html(institutionRegulatoryFrameworkView.el);
 				// Update history
-				App.router.navigate("regulatoryframeworks/" + institution.id, {
+				App.router.navigate("regulatoryframeworks/" + institutionRF.id, {
 					trigger : false
 				});
-				institution.fetch({
-					cache : true,
+				institutionRF.fetch({
+					cache : false,
 					success : function(model, resp, options) {
-						institution.trigger("change");
+						institutionRF.trigger("change");
 
 					},
 					error : function(model, resp, options) {
@@ -908,13 +950,34 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			self.refreshBreadcrumb([ $.i18n.prop('menu_regulatoryframeworks') ]);
 			$("#featured").html(institutionRegulatoryFrameworkListView.el);
 
-			// Refresh institutions from server
-			institutions.fetch({
-				cache : true,
+			// Refresh institutionRFs from server
+			institutionRFs.fetch({
+				cache : false,
 				success : function() {
-					if (_.isUndefined(institutionId)) {
-					} else {
-						institutions.trigger("institution:selected", institutions.get(institutionId));
+					if (!_.isUndefined(institutionRFId)) {
+						var selectedInstitutionRF = institutionRFs.get(institutionRFId);
+						if (!selectedInstitutionRF) {
+							selectedInstitutionRF = new Models.InstitutionRegulatoryFramework({
+								id : institutionRFId
+							});
+							selectedInstitutionRF.fetch({
+								cache : false,
+								wait : true,
+								success : function() {
+									institutionRFs.add(selectedInstitutionRF);
+									institutionRFs.trigger("institutionRF:selected", selectedInstitutionRF);
+								},
+								error : function(model, resp, options) {
+									var popup = new Views.PopupView({
+										type : "error",
+										message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+									});
+									popup.show();
+								}
+							});
+						} else {
+							institutionRFs.trigger("institutionRF:selected", selectedInstitutionRF);
+						}
 					}
 				},
 				error : function(model, resp, options) {
@@ -1034,7 +1097,29 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				},
 				success : function() {
 					if (!_.isUndefined(candidacyId)) {
-						candidateCandidacies.trigger("candidacy:selected", candidateCandidacies.get(candidacyId));
+						var selectedCandidacy = candidateCandidacies.get(candidacyId);
+						if (!selectedCandidacy) {
+							selectedCandidacy = new Models.Candidacy({
+								id : candidacyId
+							});
+							selectedCandidacy.fetch({
+								cache : false,
+								wait : true,
+								success : function() {
+									candidateCandidacies.add(selectedCandidacy);
+									candidateCandidacies.trigger("candidacy:selected", selectedCandidacy);
+								},
+								error : function(model, resp, options) {
+									var popup = new Views.PopupView({
+										type : "error",
+										message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+									});
+									popup.show();
+								}
+							});
+						} else {
+							candidateCandidacies.trigger("candidacy:selected", selectedcandidacy);
+						}
 					}
 				}
 			});

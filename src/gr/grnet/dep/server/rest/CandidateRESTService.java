@@ -45,7 +45,8 @@ public class CandidateRESTService extends RESTService {
 		}
 
 		String queryString = "from Candidacy c " +
-			"where c.candidate = :candidate ";
+			"where c.candidate = :candidate " +
+			"and c.permanent = true ";
 		if (open != null) {
 			queryString += " and c.candidacies.closingDate >= :now";
 		}

@@ -1,5 +1,8 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.util.SimpleDateDeserializer;
+import gr.grnet.dep.service.util.SimpleDateSerializer;
+
 import java.util.Date;
 
 import javax.persistence.Entity;
@@ -9,6 +12,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
+
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 @Entity
 public class InstitutionRegulatoryFramework {
@@ -75,18 +81,22 @@ public class InstitutionRegulatoryFramework {
 		this.eswterikosKanonismosURL = eswterikosKanonismosURL;
 	}
 
+	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getCreatedAt() {
 		return createdAt;
 	}
 
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setCreatedAt(Date createdAt) {
 		this.createdAt = createdAt;
 	}
 
+	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getUpdatedAt() {
 		return updatedAt;
 	}
 
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setUpdatedAt(Date updatedAt) {
 		this.updatedAt = updatedAt;
 	}

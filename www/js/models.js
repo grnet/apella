@@ -744,6 +744,21 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		}
 	});
 
+	Models.InstitutionRegulatoryFramework = Backbone.Model.extend({
+		urlRoot : "/dep/rest/institutionrf",
+		defaults : {
+			"id" : undefined,
+			"institution" : undefined,
+			"organismosURL" : undefined,
+			"eswterikosKanonismosURL" : undefined
+		}
+	});
+
+	Models.InstitutionRegulatoryFrameworks = Backbone.Collection.extend({
+		url : "/dep/rest/institutionrf",
+		model : Models.InstitutionRegulatoryFramework
+	});
+
 	Models.Department = Backbone.Model.extend({
 		urlRoot : "/dep/rest/department",
 		defaults : {

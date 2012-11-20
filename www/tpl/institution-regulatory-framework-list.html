@@ -6,17 +6,23 @@
 		</tr>
 	</thead>
 	<tbody>
-<% _.each(institutions, function(institution) { %>
+<% _.each(institutionRFs, function(institutionRF) { %>
 		<tr>
-			<td><%= institution.name %></td>
+			<td><%= institutionRF.institution.name %></td>
 			<td width="96px">
 				<p align="center">
-					<a id="select" data-institution-id="<%= institution.id %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>
+					<a id="selectInstitutionRF" data-institutionrf-cid="<%= institutionRF.cid %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>
 				</p>
 			</td>
 		</tr>
 <% }); %>
 	</tbody>
 	<tfoot>
+		<tr>
+			<td colspan="2">
+				<div class="btn-toolbar" id="actions">
+				</div>
+			</td>
+		</tr>
 	</tfoot>
 </table>
