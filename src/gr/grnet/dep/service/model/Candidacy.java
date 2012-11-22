@@ -239,6 +239,7 @@ public class Candidacy {
 		this.candidate = candidate;
 	}
 
+	@JsonView({DetailedCandidacyView.class})
 	public PositionCandidacies getCandidacies() {
 		return candidacies;
 	}

@@ -827,7 +827,8 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 					id : undefined,
 					nominationCommitteeConvergenceDate : undefined,
 					nominationToETDate : undefined,
-					nominationFEK : undefined
+					nominationFEK : undefined,
+					nominatedCandidcay : undefined
 				},
 				complementaryDocuments : {
 					id : undefined

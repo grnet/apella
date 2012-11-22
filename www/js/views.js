@@ -3448,7 +3448,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				collection : evaluators
 			});
 
-			$el.html(committeeView.el);
+			$el.html(evaluatorsView.el);
 			evaluators.fetch({
 				cache : false
 			});
@@ -3585,6 +3585,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			case "committeeMeetingDate":
 				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "nominationCommitteeConvergenceDate":
+				return _.isEqual(self.model.get("phase").status, "EPILOGI");
+			case "nominatedCandidacy":
 				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "nominationToETDate":
 				return _.isEqual(self.model.get("phase").status, "EPILOGI");
@@ -3729,13 +3731,39 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						}
 					});
 				});
+				// Evaluation:
 				if (self.model.get("phase").evaluation) {
 					self.addEvaluatorsView(self.$("#positionEvaluators"));
 				}
+				// Committee
 				if (self.model.get("phase").committee) {
 					self.addCommitteeView(self.$("#positionCommittee"));
 				}
-				self.addCandidacyListView(self.$("#positionCandidacyList"));
+				// Candidacies
+				var positionCandidacies = new Models.PositionCandidacies({}, {
+					position : self.model.get("id")
+				});
+				self.addCandidacyListView(self.$("#positionCandidacyList"), positionCandidacies);
+				self.$("select[name='nominatedCandidacy']").change(function(event) {
+					self.$("select[name='nominatedCandidacy']").next(".help-block").html(self.$("select[name='nominatedCandidacy'] option:selected").text());
+				});
+				positionCandidacies.fetch({
+					cache : false,
+					wait : true,
+					success : function(collection, resp) {
+						// Add Candidacies in selector:
+						var nominatedCandidacyId = (_.isObject(self.model.get("phase").nomination) && !_.isUndefined(self.model.get("phase").nomination.nominatedCandidacy)) ? self.model.get("phase").nomination.nominatedCandidacy.id : undefined;
+						self.$("select[name='nominatedCandidacy']").append("<option value=''>--</option>");
+						collection.each(function(candidacy) {
+							if (_.isEqual(candidacy.id, nominatedCandidacyId)) {
+								self.$("select[name='nominatedCandidacy']").append("<option value='" + candidacy.get("id") + "' selected>" + candidacy.get("snapshot").username + "</option>");
+							} else {
+								self.$("select[name='nominatedCandidacy']").append("<option value='" + candidacy.get("id") + "'>" + candidacy.get("snapshot").username + "</option>");
+							}
+						});
+						self.$("select[name='nominatedCandidacy']").change();
+					}
+				});
 			} else {
 				self.$("#apofasiSystasisEpitropisFileList").html($.i18n.prop("PressSave"));
 				self.$("#prosklisiKosmitoraFile").html($.i18n.prop("PressSave"));
@@ -3882,6 +3910,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			values.phase.nomination.nominationCommitteeConvergenceDate = self.$('form input[name=nominationCommitteeConvergenceDate]').val();
 			values.phase.nomination.nominationToETDate = self.$('form input[name=nominationToETDate]').val();
 			values.phase.nomination.nominationFEK = self.$('form input[name=nominationFEK]').val();
+			values.phase.nomination.nominatedCandidacy = {
+				id : self.$('form select[name=nominatedCandidacy]').val()
+			};
 
 			// Save to model
 			self.model.save(values, {
@@ -4006,12 +4037,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			});
 		},
 
-		addCandidacyListView : function($el) {
+		addCandidacyListView : function($el, positionCandidacies) {
 			var self = this;
 			var candidacyView = undefined;
-			var positionCandidacies = new Models.PositionCandidacies({}, {
-				position : self.model.get("id")
-			});
 			positionCandidacies.on("candidacy:selected", function(candidacy) {
 				if (candidacyView) {
 					candidacyView.model.trigger("candidacy:deselected", candidacyView.model);
@@ -4040,12 +4068,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				collection : positionCandidacies
 			});
 			$el.html(positionCandidacyListView.el);
-			positionCandidacies.fetch({
-				cache : false,
-				success : function() {
-					positionCandidacies.trigger("reset");
-				}
-			});
 		},
 
 		close : function() {
@@ -4066,7 +4088,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		initialize : function() {
 			var self = this;
 			self.template = _.template(tpl_position_committee);
-			_.bindAll(self, "render", "viewMember", "close");
+			_.bindAll(self, "render", "close");
 			self.collection.bind('reset', this.render, this);
 		},
 

@@ -708,10 +708,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 				// Fetch
 				position.fetch({
-					cache : false,
-					success : function() {
-						positionView.render();
-					}
+					cache : false
 				});
 			});
 
@@ -1118,7 +1115,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 								}
 							});
 						} else {
-							candidateCandidacies.trigger("candidacy:selected", selectedcandidacy);
+							candidateCandidacies.trigger("candidacy:selected", selectedCandidacy);
 						}
 					}
 				}

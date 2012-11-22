@@ -25,7 +25,8 @@ public class PositionEvaluationFile extends FileHeader {
 	public static final Map<FileType, Integer> fileTypes = Collections.unmodifiableMap(new HashMap<FileType, Integer>() {
 
 		{
-			put(FileType.AKSIOLOGISI, 1);
+			put(FileType.AKSIOLOGISI_PROTOU_AKSIOLOGITI, 1);
+			put(FileType.AKSIOLOGISI_DEUTEROU_AKSIOLOGITI, 1);
 		}
 	});
 

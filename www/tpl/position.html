@@ -120,6 +120,10 @@
 			<dd><%= phase.nomination ? phase.nomination.nominationToETDate : undefined %></dd>
 			<dt><%= $.i18n.prop('NominationFEK') %></dt>
 			<dd><%= phase.nomination ? phase.nomination.nominationFEK : undefined %></dd>
+			
+			<dt><%= $.i18n.prop('NominatedCandidacy') %></dt>
+			<dd><%= phase.nomination && phase.nomination.nominatedCandidacy ? phase.nomination.nominatedCandidacy.snapshot.username : undefined %></dd>
+			
 			<dt><%= $.i18n.prop('ApofasiAnapompisFile') %></dt>
 			<dd>
 				<span id="apofasiAnapompisFile"></span>

@@ -250,7 +250,7 @@ public class PositionRESTService extends RESTService {
 	}
 
 	@PUT
-	@Path("/{id:[0-9][0-9]*}")
+	@Path("/{id:[0-9]+}")
 	@JsonView({DetailedPositionView.class})
 	public Position update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Position position) {
 		User loggedOn = getLoggedOn(authToken);
@@ -258,6 +258,19 @@ public class PositionRESTService extends RESTService {
 			Position existingPosition = getAndCheckPosition(loggedOn, id);
 			existingPosition.copyFrom(position);
 			existingPosition.setSubject(supplementSubject(position.getSubject()));
+			if (existingPosition.getPhase().getNomination() != null) {
+				// Add Nominated
+				if (position.getPhase().getNomination().getNominatedCandidacy() != null && position.getPhase().getNomination().getNominatedCandidacy().getId() != null) {
+					for (Candidacy candidacy : existingPosition.getPhase().getCandidacies().getCandidacies()) {
+						if (candidacy.getId().equals(position.getPhase().getNomination().getNominatedCandidacy().getId())) {
+							existingPosition.getPhase().getNomination().setNominatedCandidate(candidacy);
+							break;
+						}
+					}
+				} else {
+					existingPosition.getPhase().getNomination().setNominatedCandidate(null);
+				}
+			}
 			existingPosition.setPermanent(true);
 			em.flush();
 			existingPosition.initializeCollections();
