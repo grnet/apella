@@ -7,7 +7,6 @@
 			<th><%= $.i18n.prop("Profile") %></th>
 			<th><%= $.i18n.prop("Institution") %></th>
 			<th><%= $.i18n.prop("Department") %></th>
-			<th><%= $.i18n.prop("Committees") %></th>
 			<th></th>
 		</tr>
 	</thead>
@@ -15,7 +14,7 @@
 		<% _.each(professors, function(professor) { %>
 		<tr>
 			<td>
-				<a id="view" data-model-cid="<%= professor.cid %>" href="#user/<%= professor.user.id %>"><%= professor.user.id %></a>
+				<a id="view" href="#user/<%= professor.user.id %>"><%= professor.user.id %></a>
 			</td>
 			<td><%= professor.user.basicInfo.firstname %></td>
 			<td><%= professor.user.basicInfo.lastname%></td>
@@ -32,25 +31,12 @@
 					<%= professor.department.department %> 
 				<% } %>
 			</td>
-			<td><%= professor.committeesCount %></td>
 			<td>
-				<div class="btn-group">
-					<a class="btn btn-success dropdown-toggle" data-toggle="dropdown"><%= $.i18n.prop('btn_add') %><span class="caret"></span></a>
- 					<ul class="dropdown-menu">
-   						<li><a id="addMember" data-model-cid="<%= professor.cid %>" data-type="REGULAR"><i class="icon-plus icon-white"></i> <%= $.i18n.prop("PositionCommitteeMemberTypeREGULAR") %></a></li>
-   						<li><a id="addMember" data-model-cid="<%= professor.cid %>" data-type="SUBSTITUTE"><i class="icon-plus icon-white"></i> <%= $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") %></a></li>
- 					</ul>
-				</div>
+				<a id="addEvaluator" class="btn btn-success" data-model-id="<%= professor.id %>"><i class="icon-plus icon-white"></i> <%= $.i18n.prop("btn_add") %></a>
 			</td>
 		</tr>
 		<% }); %>
 	</tbody>
 	<tfoot>
-		<tr>
-			<td colspan="8">
-				<div class="btn-toolbar" id="details">
-				</div>
-			</td>
-		</tr>
 	</tfoot>
 </table>

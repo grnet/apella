@@ -18,6 +18,7 @@ import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommit
 import gr.grnet.dep.service.model.PositionComplementaryDocuments;
 import gr.grnet.dep.service.model.PositionEvaluation;
 import gr.grnet.dep.service.model.PositionEvaluator;
+import gr.grnet.dep.service.model.PositionEvaluator.DetailedPositionEvaluatorView;
 import gr.grnet.dep.service.model.PositionNomination;
 import gr.grnet.dep.service.model.PositionPhase;
 import gr.grnet.dep.service.model.Professor;
@@ -916,9 +917,9 @@ public class PositionRESTService extends RESTService {
 	 ************************/
 
 	@GET
-	@Path("/{id:[0-9][0-9]*}/professor")
+	@Path("/{id:[0-9][0-9]*}/committee/professor")
 	@JsonView({DetailedPositionCommitteeMemberView.class})
-	public List<Role> getPositionProfessors(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
+	public List<Role> getPositionCommiteeProfessors(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
 		User loggedOn = getLoggedOn(authToken);
 		Position position = getAndCheckPosition(loggedOn, positionId);
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
@@ -1160,8 +1161,39 @@ public class PositionRESTService extends RESTService {
 	 *************************/
 
 	@GET
-	@Path("/{id:[0-9][0-9]*}/evaluators")
+	@Path("/{id:[0-9][0-9]*}/evaluators/professor")
 	@JsonView({DetailedPositionCommitteeMemberView.class})
+	public List<Role> getPositionEvaluatorsProfessors(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
+		User loggedOn = getLoggedOn(authToken);
+		Position position = getAndCheckPosition(loggedOn, positionId);
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Prepare Query
+		List<RoleDiscriminator> discriminatorList = new ArrayList<Role.RoleDiscriminator>();
+		discriminatorList.add(RoleDiscriminator.PROFESSOR_DOMESTIC);
+		discriminatorList.add(RoleDiscriminator.PROFESSOR_FOREIGN);
+
+		List<Role> professors = em.createQuery(
+			"select r from Role r " +
+				"where r.id is not null " +
+				"and r.discriminator in (:discriminators) " +
+				"and r.status = :status")
+			.setParameter("discriminators", discriminatorList)
+			.setParameter("status", RoleStatus.ACTIVE)
+			.getResultList();
+
+		// Execute
+		for (Role r : professors) {
+			Professor p = (Professor) r;
+			r.initializeCollections();
+		}
+		return professors;
+	}
+
+	@GET
+	@Path("/{id:[0-9][0-9]*}/evaluators")
+	@JsonView({DetailedPositionEvaluatorView.class})
 	public Collection<PositionEvaluator> getPositionEvaluators(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
 		User loggedOn = getLoggedOn(authToken);
 		Position position = getAndCheckPosition(loggedOn, positionId);
@@ -1184,7 +1216,7 @@ public class PositionRESTService extends RESTService {
 
 	@GET
 	@Path("/{id:[0-9][0-9]*}/evaluators/{evalId:[0-9][0-9]*}")
-	@JsonView({DetailedPositionCommitteeMemberView.class})
+	@JsonView({DetailedPositionEvaluatorView.class})
 	public PositionEvaluator getPositionEvaluator(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evalId") Long evalId) {
 		User loggedOn = getLoggedOn(authToken);
 		Position position = getAndCheckPosition(loggedOn, positionId);
@@ -1212,7 +1244,7 @@ public class PositionRESTService extends RESTService {
 
 	@POST
 	@Path("/{id:[0-9][0-9]*}/evaluators")
-	@JsonView({DetailedPositionCommitteeMemberView.class})
+	@JsonView({DetailedPositionEvaluatorView.class})
 	public PositionEvaluator createPositionEvaluator(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, PositionEvaluator newEvaluator) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
@@ -1242,10 +1274,10 @@ public class PositionRESTService extends RESTService {
 			// Update
 			newEvaluator.setEvaluation(existingPosition.getPhase().getEvaluation());
 			newEvaluator.setProfessor(existingProfessor);
-			existingPosition.getPhase().getEvaluation().getEvaluators().add(newEvaluator);
 			newEvaluator = em.merge(newEvaluator);
-			em.flush();
 
+			existingPosition.getPhase().getEvaluation().getEvaluators().add(newEvaluator);
+			em.flush();
 			// Return result
 			newEvaluator.getProfessor().initializeCollections();
 			return newEvaluator;

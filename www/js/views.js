@@ -1,6 +1,6 @@
 define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/position-committee-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html", "text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html", "text!tpl/file-multiple-edit.html", "text!tpl/professor-committees.html", "text!tpl/position-committee-edit-professor-list.html", "text!tpl/position.html", "text!tpl/position-committee.html", "text!tpl/register.html", "text!tpl/institution-regulatory-framework.html", "text!tpl/institution-regulatory-framework-edit.html",
-	"text!tpl/position-search.html", "text!tpl/candidacy-edit.html", "text!tpl/candidate-candidacy-list.html", "text!tpl/position-candidacy-list.html", "text!tpl/candidacy.html", "text!tpl/candidacy-update-confirm.html", "text!tpl/institution-regulatory-framework-list.html", "text!tpl/register-members.html", "text!tpl/register-members-edit.html", "text!tpl/register-members-edit-professor-list.html", "text!tpl/register-member-edit.html", "text!tpl/overlay.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_position_committee_edit, tpl_position_edit, tpl_position_list, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_file_multiple_edit, tpl_professor_committees, tpl_position_committee_edit_professor_list, tpl_position, tpl_position_committee, tpl_register, tpl_institution_regulatory_framework,
-	tpl_institution_regulatory_framework_edit, tpl_position_search, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_position_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_members, tpl_register_members_edit, tpl_register_members_edit_professor_list, tpl_register_member_edit, tpl_overlay) {
+	"text!tpl/position-search.html", "text!tpl/candidacy-edit.html", "text!tpl/candidate-candidacy-list.html", "text!tpl/position-candidacy-list.html", "text!tpl/candidacy.html", "text!tpl/candidacy-update-confirm.html", "text!tpl/institution-regulatory-framework-list.html", "text!tpl/register-members.html", "text!tpl/register-members-edit.html", "text!tpl/register-members-edit-professor-list.html", "text!tpl/register-member-edit.html", "text!tpl/overlay.html", "text!tpl/position-evaluators.html", "text!tpl/position-evaluators-edit.html", "text!tpl/position-evaluators-edit-professor-list.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_position_committee_edit, tpl_position_edit, tpl_position_list, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_file_multiple_edit, tpl_professor_committees,
+	tpl_position_committee_edit_professor_list, tpl_position, tpl_position_committee, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_position_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_members, tpl_register_members_edit, tpl_register_members_edit_professor_list, tpl_register_member_edit, tpl_overlay, tpl_position_evaluators, tpl_position_evaluators_edit, tpl_position_evaluators_edit_professor_list) {
 
 	/** **************************************************************** */
 
@@ -3431,10 +3431,27 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				});
 			});
+			self.addEvaluatorsView(self.$("#positionEvaluators"));
 			self.addCommitteeView(self.$("#positionCommittee"));
 			self.addCandidacyListView(self.$("#positionCandidacyList"));
 			// End of associations
 			return self;
+		},
+
+		addEvaluatorsView : function($el) {
+			var self = this;
+			var evaluators = new Models.PositionEvaluators({}, {
+				position : self.model.get("id")
+			});
+			var evaluatorsView = new Views.PositionEvaluatorsView({
+				position : self.model,
+				collection : evaluators
+			});
+
+			$el.html(committeeView.el);
+			evaluators.fetch({
+				cache : false
+			});
 		},
 
 		addCommitteeView : function($el) {
@@ -3712,6 +3729,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						}
 					});
 				});
+				if (self.model.get("phase").evaluation) {
+					self.addEvaluatorsView(self.$("#positionEvaluators"));
+				}
 				if (self.model.get("phase").committee) {
 					self.addCommitteeView(self.$("#positionCommittee"));
 				}
@@ -3733,6 +3753,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("#aksiologisiProtouAksiologitiFileList").html($.i18n.prop("PressSave"));
 				self.$("#aksiologisiDeuterouAksiologitiFileList").html($.i18n.prop("PressSave"));
 
+				self.$("#positionEvaluators").html($.i18n.prop("PressSave"));
 				self.$("#positionCommittee").html($.i18n.prop("PressSave"));
 				self.$("#positionCandidacyList").html("-");
 			}
@@ -3953,6 +3974,22 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			});
 		},
 
+		addEvaluatorsView : function($el) {
+			var self = this;
+			var evaluators = new Models.PositionEvaluators({}, {
+				position : self.model.get("id")
+			});
+			var evaluatorsView = new Views.PositionEvaluatorsEditView({
+				position : self.model,
+				collection : evaluators
+			});
+
+			$el.html(evaluatorsView.el);
+			evaluators.fetch({
+				cache : false
+			});
+		},
+
 		addCommitteeView : function($el) {
 			var self = this;
 			var committee = new Models.PositionCommittee({}, {
@@ -4043,14 +4080,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			return self;
 		},
 
-		viewMember : function(event, positionCommitteeMember) {
-			var self = this;
-			var selectedModel = positionCommitteeMember ? positionCommitteeMember : self.collection.get($(event.currentTarget).data('committeeMemberId'));
-			if (selectedModel) {
-				self.collection.trigger("positionCommitteeMember:selected", selectedModel);
-			}
-		},
-
 		close : function(eventName) {
 			this.collection.unbind('reset', this.render, this);
 			this.$el.unbind();
@@ -4070,7 +4099,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var self = this;
 
 			self.template = _.template(tpl_position_committee_edit);
-			_.bindAll(self, "render", "allowedToEdit", "viewMember", "addMember", "updateMember", "removeMember", "toggleAddMember", "close");
+			_.bindAll(self, "render", "allowedToEdit", "addMember", "updateMember", "removeMember", "toggleAddMember", "close");
 			self.collection.bind('reset', this.render, this);
 			self.collection.bind('remove', this.render, this);
 			self.collection.bind('add', this.render, this);
@@ -4078,7 +4107,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			// Initialize Professor, no request is performed until
 			// render
 			self.professors = new Models.Professors();
-			self.professors.url = self.options.position.url() + "/professor";
+			self.professors.url = self.options.position.url() + "/committee/professor";
 			self.professors.on("member:add", function(role, type) {
 				self.addMember(role, type);
 			});
@@ -4087,7 +4116,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		events : {
 			"click a#removeMember" : "removeMember",
 			"click a#toggleAddMember" : "toggleAddMember",
-			"click a#viewMember" : "viewMember",
 			"change select[name=type]" : "updateMember"
 		},
 
@@ -4122,14 +4150,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("a.btn").hide();
 			}
 			return self;
-		},
-
-		viewMember : function(event, positionCommitteeMember) {
-			var self = this;
-			var selectedModel = positionCommitteeMember ? positionCommitteeMember : self.collection.get($(event.currentTarget).data('committeeMemberId'));
-			if (selectedModel) {
-				self.collection.trigger("positionCommitteeMember:selected", selectedModel);
-			}
 		},
 
 		toggleAddMember : function(event) {
@@ -4251,14 +4271,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		tagName : "div",
 
 		initialize : function() {
-			_.bindAll(this, "render", "showDetails", "addMember", "close");
+			_.bindAll(this, "render", "addMember", "close");
 			this.template = _.template(tpl_position_committee_edit_professor_list);
 			this.collection.bind("change", this.render, this);
 			this.collection.bind("reset", this.render, this);
 		},
 
 		events : {
-			"click a#view" : "showDetails",
 			"click a#addMember" : "addMember"
 		},
 
@@ -4300,62 +4319,240 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			return self;
 		},
 
-		showDetails : function(event, professor) {
-			var self = this;
-			var selectedModel = professor ? professor : this.collection.getByCid($(event.currentTarget).data('modelCid'));
-			if (selectedModel) {
-				var user;
-				var userView = undefined;
-				var roles;
-				var roleView = undefined;
-
-				// Fill Details View:
-				user = new Models.User({
-					"id" : selectedModel.get("user").id
-				});
-				user.fetch({
-					cache : false,
-					success : function(model, resp) {
-						userView = new Views.UserView({
-							model : user
-						});
-						self.$("div#professorDetails div.modal-body").prepend(userView.render().el);
-					}
-				});
-
-				roles = new Models.Roles();
-				roles.user = selectedModel.get("user").id;
-
-				roles.fetch({
-					cache : false,
-					success : function(collection, resp) {
-						roleView = new Views.RoleView({
-							model : collection.at(0)
-						});
-						self.$("div#professorDetails div.modal-body").append(roleView.render().el);
-					}
-				});
-
-				self.$("div#professorDetails").on("hidden", function() {
-					if (userView) {
-						userView.close();
-					}
-					if (roleView) {
-						roleView.close();
-					}
-					self.$("div#professorDetails div.modal-body").empty();
-				});
-
-				self.$("div#professorDetails").modal('show');
-			}
-		},
-
 		addMember : function(event) {
 			var self = this;
 			var cid = $(event.currentTarget).data('modelCid')
 			var selectedModel = self.collection.getByCid(cid);
 			var type = $(event.currentTarget).data('type');
 			self.collection.trigger("member:add", selectedModel, type);
+		},
+
+		close : function() {
+			$(this.el).unbind();
+			$(this.el).remove();
+		}
+	});
+
+	/***************************************************************************
+	 * PositionEvaluatorsView **************************************************
+	 **************************************************************************/
+	Views.PositionEvaluatorsView = Views.BaseView.extend({
+		tagName : "div",
+
+		initialize : function() {
+			var self = this;
+			self.template = _.template(tpl_position_evaluators);
+			_.bindAll(self, "render", "close");
+			self.collection.bind('reset', this.render, this);
+		},
+
+		render : function(eventName) {
+			var self = this;
+			self.$el.html(self.template({
+				evaluators : self.collection.toJSON()
+			}));
+			return self;
+		},
+
+		close : function(eventName) {
+			this.collection.unbind('reset', this.render, this);
+			this.$el.unbind();
+			this.$el.remove();
+		}
+	});
+
+	/***************************************************************************
+	 * PositionEvaluatorsEditView **********************************************
+	 **************************************************************************/
+	Views.PositionEvaluatorsEditView = Views.BaseView.extend({
+		tagName : "div",
+
+		uploader : undefined,
+
+		initialize : function() {
+			var self = this;
+
+			self.template = _.template(tpl_position_evaluators_edit);
+			_.bindAll(self, "render", "allowedToEdit", "addEvaluator", "removeEvaluator", "toggleAddEvaluator", "close");
+			self.collection.bind('reset', this.render, this);
+			self.collection.bind('remove', this.render, this);
+			self.collection.bind('add', this.render, this);
+
+			// Initialize Professor, no request is performed until
+			// render
+			self.professors = new Models.Professors();
+			self.professors.url = self.options.position.url() + "/evaluators/professor";
+			self.professors.on("role:add", function(role) {
+				self.addEvaluator(role);
+			});
+		},
+
+		events : {
+			"click a#removeEvaluator" : "removeEvaluator",
+			"click a#toggleAddEvaluator" : "toggleAddEvaluator",
+		},
+
+		allowedToEdit : function() {
+			var self = this;
+			return self.options.position.get("phase").status === "EPILOGI";
+		},
+
+		render : function(eventName) {
+			var self = this;
+			self.$el.html(self.template({
+				evaluators : self.collection.toJSON()
+			}));
+
+			if (self.allowedToEdit()) {
+				// Inner View
+				if (self.professorListView) {
+					self.professorListView.close();
+				}
+				self.professorListView = new Views.PositionEvaluatorsEditProfessorListView({
+					collection : self.professors
+				});
+				self.$("div#evaluators-professor-list").hide();
+				self.$("div#evaluators-professor-list").html(self.professorListView.el);
+				self.$("a.btn").show();
+
+				self.professors.fetch();
+			} else {
+				self.$("div#committee-professor-list").hide();
+				self.$("a.btn").hide();
+			}
+			return self;
+		},
+
+		toggleAddEvaluator : function(event) {
+			var self = this;
+			self.$("div#evaluators-professor-list").toggle();
+			self.$("a#toggleAddEvaluator").toggleClass('active');
+		},
+
+		addEvaluator : function(professor, type) {
+			var self = this;
+			var positionEvaluator = new Models.PositionEvaluator();
+			positionEvaluator.save({
+				"evaluation" : {
+					"position" : {
+						id : self.options.position.get("id")
+					}
+				},
+				"professor" : professor.toJSON()
+			}, {
+				wait : true,
+				success : function(model, resp) {
+					self.collection.add(model);
+					var popup = new Views.PopupView({
+						type : "success",
+						message : $.i18n.prop("Success")
+					});
+					popup.show();
+				},
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+		},
+
+		removeEvaluator : function(event) {
+			var self = this;
+			var selectedModel = self.collection.get($(event.currentTarget).data('evaluatorId'));
+			var confirm = new Views.ConfirmView({
+				title : $.i18n.prop('Confirm'),
+				message : $.i18n.prop('AreYouSure'),
+				yes : function() {
+					selectedModel.destroy({
+						wait : true,
+						success : function(model, resp) {
+							var popup = new Views.PopupView({
+								type : "success",
+								message : $.i18n.prop("Success")
+							});
+							popup.show();
+						},
+						error : function(model, resp, options) {
+							var popup = new Views.PopupView({
+								type : "error",
+								message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+							});
+							popup.show();
+						}
+					});
+				}
+			});
+			confirm.show();
+		},
+
+		close : function(eventName) {
+			this.professors.off("role:add", self.addEvaluator);
+			this.professorListView.close();
+			this.collection.unbind('reset', this.render, this);
+			this.collection.unbind('remove', this.render, this);
+			this.collection.unbind('add', this.render, this);
+			this.$el.unbind();
+			this.$el.remove();
+
+		}
+	});
+
+	/***************************************************************************
+	 * PositionEvaluatorsEditProfessorListView *********************************
+	 **************************************************************************/
+
+	Views.PositionEvaluatorsEditProfessorListView = Views.BaseView.extend({
+		tagName : "div",
+
+		initialize : function() {
+			_.bindAll(this, "render", "addEvaluator", "close");
+			this.template = _.template(tpl_position_evaluators_edit_professor_list);
+			this.collection.bind("change", this.render, this);
+			this.collection.bind("reset", this.render, this);
+		},
+
+		events : {
+			"click a#addEvaluator" : "addEvaluator"
+		},
+
+		render : function(eventName) {
+			var self = this;
+			var tpl_data = {
+				professors : self.collection.toJSON()
+			};
+			self.$el.html(self.template(tpl_data));
+
+			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
+				self.$("table").dataTable({
+					"sDom" : "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+					"sPaginationType" : "bootstrap",
+					"oLanguage" : {
+						"sSearch" : $.i18n.prop("dataTable_sSearch"),
+						"sLengthMenu" : $.i18n.prop("dataTable_sLengthMenu"),
+						"sZeroRecords" : $.i18n.prop("dataTable_sZeroRecords"),
+						"sInfo" : $.i18n.prop("dataTable_sInfo"),
+						"sInfoEmpty" : $.i18n.prop("dataTable_sInfoEmpty"),
+						"sInfoFiltered" : $.i18n.prop("dataTable_sInfoFiltered"),
+						"oPaginate" : {
+							sFirst : $.i18n.prop("dataTable_sFirst"),
+							sPrevious : $.i18n.prop("dataTable_sPrevious"),
+							sNext : $.i18n.prop("dataTable_sNext"),
+							sLast : $.i18n.prop("dataTable_sLast")
+						}
+					}
+				});
+			}
+			return self;
+		},
+
+		addEvaluator : function(event) {
+			var self = this;
+			var id = $(event.currentTarget).data('modelId')
+			var selectedModel = self.collection.get(id);
+			self.collection.trigger("role:add", selectedModel);
 		},
 
 		close : function() {

@@ -8,10 +8,18 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Version;
 
+import org.codehaus.jackson.map.annotate.JsonView;
+
 @Entity
 public class PositionEvaluator implements Serializable {
 
 	private static final long serialVersionUID = 8362685537946833737L;
+
+	public static interface PositionEvaluatorView {
+	};
+
+	public static interface DetailedPositionEvaluatorView extends PositionEvaluatorView {
+	};
 
 	@Id
 	@GeneratedValue
@@ -34,6 +42,7 @@ public class PositionEvaluator implements Serializable {
 		this.id = id;
 	}
 
+	@JsonView({PositionEvaluatorView.class})
 	public PositionEvaluation getEvaluation() {
 		return evaluation;
 	}
@@ -42,6 +51,7 @@ public class PositionEvaluator implements Serializable {
 		this.evaluation = evaluation;
 	}
 
+	@JsonView({PositionEvaluatorView.class, DetailedPositionEvaluatorView.class})
 	public Professor getProfessor() {
 		return professor;
 	}

@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.PositionEvaluator.DetailedPositionEvaluatorView;
 import gr.grnet.dep.service.model.file.PositionEvaluationFile;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
@@ -21,6 +22,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 public class PositionEvaluation {
@@ -58,7 +60,7 @@ public class PositionEvaluation {
 		this.id = id;
 	}
 
-	@XmlTransient
+	@JsonView({DetailedPositionEvaluatorView.class})
 	public Position getPosition() {
 		return position;
 	}
@@ -67,6 +69,7 @@ public class PositionEvaluation {
 		this.position = position;
 	}
 
+	@XmlTransient
 	public Set<PositionEvaluator> getEvaluators() {
 		return evaluators;
 	}
