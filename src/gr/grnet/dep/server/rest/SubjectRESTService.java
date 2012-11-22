@@ -15,7 +15,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response.Status;
 
-@Path("/institution")
+@Path("/subject")
 @Stateless
 public class SubjectRESTService extends RESTService {
 

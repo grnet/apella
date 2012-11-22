@@ -1,0 +1,19 @@
+<form class="form-horizontal" onsubmit="return false">
+	<fieldset>
+		<legend><%= professor.user.basicInfo.firstname + " " + professor.user.basicInfo.lastname %></legend>
+		<div class="control-group" id="subjects">
+			<label class="control-label" for="title"><%= $.i18n.prop('Subject') %>:</label>
+		</div>
+		<div class="control-group">
+			<div class="controls" id="suggestSubject">
+				<div class="input-append">
+					<input type="text" class="input-xlarge" name="suggestSubject" value ="" />
+					<a id="addSubject" class="btn btn-success"><i class="icon-plus"></i></a>
+				</div>
+			</div>
+		</div>
+		<div class="form-actions">
+			<a id="saveRegisterMember" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
+		</div>
+	</fieldset>
+</form>

@@ -14,6 +14,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 @Entity
 @XmlRootElement
@@ -76,6 +77,7 @@ public class Register implements Serializable {
 		this.institution = institution;
 	}
 
+	@XmlTransient
 	public Set<RegisterFile> getFiles() {
 		return files;
 	}
@@ -84,17 +86,20 @@ public class Register implements Serializable {
 		this.files = files;
 	}
 
-	public void addFile(RegisterFile file) {
-		this.files.add(file);
-		file.setRegister(this);
-	}
-
+	@XmlTransient
 	public Set<RegisterMember> getMembers() {
 		return members;
 	}
 
 	public void setMembers(Set<RegisterMember> members) {
 		this.members = members;
+	}
+
+	////////////////////////////////////////////////////
+
+	public void addFile(RegisterFile file) {
+		this.files.add(file);
+		file.setRegister(this);
 	}
 
 	public void addMember(RegisterMember member) {

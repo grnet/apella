@@ -2,12 +2,12 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Institution;
-import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
 import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Register;
 import gr.grnet.dep.service.model.Register.DetailedRegisterView;
 import gr.grnet.dep.service.model.RegisterMember;
+import gr.grnet.dep.service.model.RegisterMember.DetailedRegisterMemberView;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
@@ -167,6 +167,10 @@ public class RegisterRESTService extends RESTService {
 		}
 		try {
 			// Delete:
+			for (RegisterFile rFile : register.getFiles()) {
+				File f = deleteFileBody(rFile);
+				f.delete();
+			}
 			em.remove(register);
 			em.flush();
 		} catch (PersistenceException e) {
@@ -395,39 +399,35 @@ public class RegisterRESTService extends RESTService {
 
 	@GET
 	@Path("/{id:[0-9]+}/members")
+	@JsonView({DetailedRegisterMemberView.class})
 	public Collection<RegisterMember> getRegisterMembers(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId) {
-		User loggedOn = getLoggedOn(authToken);
+		getLoggedOn(authToken);
 		Register register = em.find(Register.class, registerId);
 		// Validate:
 		if (register == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-
 		for (RegisterMember member : register.getMembers()) {
 			member.getProfessor().initializeCollections();
+			member.getSubjects().size();
 		}
 		return register.getMembers();
 	}
 
 	@GET
 	@Path("/{id:[0-9]+}/members/{memberId:[0-9]+}")
+	@JsonView({DetailedRegisterMemberView.class})
 	public RegisterMember getRegisterMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId, @PathParam("memberId") Long memberId) {
-		User loggedOn = getLoggedOn(authToken);
+		getLoggedOn(authToken);
 		Register register = em.find(Register.class, registerId);
 		// Validate:
 		if (register == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-
 		for (RegisterMember member : register.getMembers()) {
 			if (member.getId().equals(memberId)) {
 				member.getProfessor().initializeCollections();
+				member.getSubjects().size();
 				return member;
 			}
 		}
@@ -436,6 +436,7 @@ public class RegisterRESTService extends RESTService {
 
 	@POST
 	@Path("/{id:[0-9]+}/members")
+	@JsonView({DetailedRegisterMemberView.class})
 	public RegisterMember createRegisterMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId, RegisterMember newMember) {
 		User loggedOn = getLoggedOn(authToken);
 		Register existingRegister = em.find(Register.class, registerId);
@@ -465,7 +466,11 @@ public class RegisterRESTService extends RESTService {
 			newMember.setProfessor(existingProfessor);
 			Set<Subject> subjects = new HashSet<Subject>();
 			for (Subject s : newMember.getSubjects()) {
-				subjects.add(supplementSubject(s));
+				s = supplementSubject(s);
+				if (s.getId() == null) {
+					em.persist(s);
+				}
+				subjects.add(s);
 			}
 			newMember.setSubjects(subjects);
 			switch (existingProfessor.getDiscriminator()) {
@@ -478,11 +483,12 @@ public class RegisterRESTService extends RESTService {
 				default:
 					break;
 			}
-			existingRegister.addMember(newMember);
 			newMember = em.merge(newMember);
+			existingRegister.addMember(newMember);
 			em.flush();
 			// Return result
 			newMember.getProfessor().initializeCollections();
+			newMember.getSubjects().size();
 			return newMember;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
@@ -492,6 +498,7 @@ public class RegisterRESTService extends RESTService {
 
 	@PUT
 	@Path("/{id:[0-9]+}/members/{memberId:[0-9]+}")
+	@JsonView({DetailedRegisterMemberView.class})
 	public RegisterMember updateRegisterMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId, @PathParam("memberId") Long memberId, RegisterMember member) {
 		User loggedOn = getLoggedOn(authToken);
 		Register existingRegister = em.find(Register.class, registerId);
@@ -524,7 +531,11 @@ public class RegisterRESTService extends RESTService {
 		try {
 			Set<Subject> subjects = new HashSet<Subject>();
 			for (Subject s : member.getSubjects()) {
-				subjects.add(supplementSubject(s));
+				s = supplementSubject(s);
+				if (s.getId() == null) {
+					em.persist(s);
+				}
+				subjects.add(s);
 			}
 			existingMember.setSubjects(subjects);
 			switch (existingProfessor.getDiscriminator()) {
@@ -541,6 +552,7 @@ public class RegisterRESTService extends RESTService {
 			em.flush();
 			// Return result
 			existingMember.getProfessor().initializeCollections();
+			existingMember.getSubjects().size();
 			return existingMember;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
@@ -550,7 +562,7 @@ public class RegisterRESTService extends RESTService {
 
 	@DELETE
 	@Path("/{id:[0-9]+}/members/{memberId:[0-9][0-9]*}")
-	public void removeRegisterMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId, @PathParam("evalId") Long memberId) {
+	public void removeRegisterMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId, @PathParam("memberId") Long memberId) {
 		User loggedOn = getLoggedOn(authToken);
 		Register existingRegister = em.find(Register.class, registerId);
 		// Validate:
@@ -584,7 +596,7 @@ public class RegisterRESTService extends RESTService {
 
 	@GET
 	@Path("/{id:[0-9]+}/professor")
-	@JsonView({DetailedPositionCommitteeMemberView.class})
+	@JsonView({DetailedRegisterMemberView.class})
 	public List<Role> getRegisterProfessors(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId) {
 		User loggedOn = getLoggedOn(authToken);
 		Register existingRegister = em.find(Register.class, registerId);

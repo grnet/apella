@@ -3,9 +3,8 @@
 		<table class="table table-striped table-bordered">
 			<thead>
 				<tr>
-					<th><%= $.i18n.prop("RegisterMemberInternal") %></th>
+					<th><%= $.i18n.prop("RegisterMemberExternal") %></th>
 					<th><%= $.i18n.prop("ID") %></th>
-					<th><%= $.i18n.prop("Username") %></th>
 					<th><%= $.i18n.prop("Name") %></th>
 					<th><%= $.i18n.prop("Surname") %></th>
 					<th><%= $.i18n.prop("Profile") %></th>
@@ -17,10 +16,9 @@
 			<tbody>
 			<% _.each(members, function(member) { %>
 				<tr>
-					<td><%= $.i18n.prop(member.internal ? "Yes" : "No") %></td>
-					<td><%= member.professor.id %></td>
+					<td><%= $.i18n.prop(member.external ? "Yes" : "No") %></td>
 					<td>
-						<a id="viewMember" data-committee-member-id="<%= member.id %>" href="#user/<%= member.professor.user.id %>"><%= member.professor.user.username %> </a>
+						<a id="viewMember" data-committee-member-id="<%= member.id %>" href="#user/<%= member.professor.user.id %>"><%= member.professor.user.id %> </a>
 					</td>
 					<td><%= member.professor.user.basicInfo.firstname %></td>
 					<td><%= member.professor.user.basicInfo.lastname%></td>
@@ -37,9 +35,12 @@
 							<%= member.professor.department.department %> 
 						<% } %>
 					</td>
-					<td><% _.each(member.subjects, function(subject) { %>
-						<span><%= subject.name %>, </span> 
-					<% }); %>
+					<td>
+						<ul>
+						<% _.each(member.subjects, function(subject) { %>
+							<li><%= subject.name %></li> 
+						<% }); %>
+						</ul>
 					</td>
 				</tr>
 			<% }); %>

@@ -5,7 +5,6 @@
 				<tr>
 					<th><%= $.i18n.prop("PositionCommitteeMemberType") %></th>
 					<th><%= $.i18n.prop("ID") %></th>
-					<th><%= $.i18n.prop("Username") %></th>
 					<th><%= $.i18n.prop("Name") %></th>
 					<th><%= $.i18n.prop("Surname") %></th>
 					<th><%= $.i18n.prop("Profile") %></th>
@@ -17,9 +16,8 @@
 		<% _.each(committee, function(committeeMember) { %>
 				<tr>
 					<td><%= $.i18n.prop("PositionCommitteeMemberType" + committeeMember.type) %></td>
-					<td><%= committeeMember.professor.id %></td>
 					<td>
-						<a id="viewMember" data-committee-member-id="<%= committeeMember.id %>" href="#user/<%= committeeMember.professor.user.id %>"><%= committeeMember.professor.user.username %> </a>
+						<a id="viewMember" data-committee-member-id="<%= committeeMember.id %>" href="#user/<%= committeeMember.professor.user.id %>"><%= committeeMember.professor.user.id %> </a>
 					</td>
 					<td><%= committeeMember.professor.user.basicInfo.firstname %></td>
 					<td><%= committeeMember.professor.user.basicInfo.lastname%></td>
@@ -40,10 +38,6 @@
 		<% }); %>
 			</tbody>
 			<tfoot>
-				<tr>
-					<td colspan="9">
-					</td>
-				</tr>
 			</tfoot>
 		</table>
 	</div>

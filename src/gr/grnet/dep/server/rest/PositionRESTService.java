@@ -930,11 +930,12 @@ public class PositionRESTService extends RESTService {
 		discriminatorList.add(RoleDiscriminator.PROFESSOR_FOREIGN);
 
 		List<Role> professors = em.createQuery(
-			"select r from Role r " +
-				"where r.id is not null " +
-				"and r.discriminator in (:discriminators) " +
-				"and r.status = :status")
-			.setParameter("discriminators", discriminatorList)
+			"select distinct m.professor from Register r " +
+				"join r.members m " +
+				"where r.permanent = true " +
+				"and r.institution.id = :institutionId " +
+				"and m.professor.status = :status")
+			.setParameter("institutionId", position.getDepartment().getInstitution().getId())
 			.setParameter("status", RoleStatus.ACTIVE)
 			.getResultList();
 

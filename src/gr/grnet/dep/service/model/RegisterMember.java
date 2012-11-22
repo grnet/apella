@@ -6,16 +6,24 @@ import java.util.Set;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlRootElement;
+
+import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 @XmlRootElement
 public class RegisterMember implements Serializable {
 
 	private static final long serialVersionUID = -2335307229946834215L;
+
+	public static interface RegisterMemberView {
+	};
+
+	public static interface DetailedRegisterMemberView extends RegisterMemberView {
+	};
 
 	@Id
 	@GeneratedValue
@@ -32,7 +40,7 @@ public class RegisterMember implements Serializable {
 
 	private boolean external;
 
-	@OneToMany
+	@ManyToMany
 	private Set<Subject> subjects;
 
 	public Long getId() {
@@ -43,6 +51,7 @@ public class RegisterMember implements Serializable {
 		this.id = id;
 	}
 
+	@JsonView({RegisterMemberView.class})
 	public Register getRegister() {
 		return register;
 	}
@@ -51,6 +60,7 @@ public class RegisterMember implements Serializable {
 		this.register = register;
 	}
 
+	@JsonView({RegisterMemberView.class, DetailedRegisterMemberView.class})
 	public Professor getProfessor() {
 		return professor;
 	}

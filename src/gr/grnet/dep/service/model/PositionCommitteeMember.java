@@ -27,7 +27,7 @@ public class PositionCommitteeMember implements Serializable {
 	public static interface ProfessorCommitteesView {
 	};
 
-	public static interface DetailedPositionCommitteeMemberView {
+	public static interface DetailedPositionCommitteeMemberView extends ProfessorCommitteesView {
 	};
 
 	public enum MemberType {

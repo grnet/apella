@@ -2,7 +2,6 @@
 	<thead>
 		<tr>
 			<th><%= $.i18n.prop("ID") %></th>
-			<th><%= $.i18n.prop("Username") %></th>
 			<th><%= $.i18n.prop("Name") %></th>
 			<th><%= $.i18n.prop("Surname") %></th>
 			<th><%= $.i18n.prop("Profile") %></th>
@@ -15,9 +14,8 @@
 	<tbody>
 		<% _.each(professors, function(professor) { %>
 		<tr>
-			<td><%= professor.id %></td>
 			<td>
-				<a id="view" data-model-cid="<%= professor.cid %>" href="#user/<%= professor.user.id %>"><%= professor.user.username %></a>
+				<a id="view" data-model-cid="<%= professor.cid %>" href="#user/<%= professor.user.id %>"><%= professor.user.id %></a>
 			</td>
 			<td><%= professor.user.basicInfo.firstname %></td>
 			<td><%= professor.user.basicInfo.lastname%></td>
@@ -36,12 +34,12 @@
 			</td>
 			<td><%= professor.committeesCount %></td>
 			<td>
-				<div class="input-append">
-					<select class="input-small" name="type" data-model-cid="<%= professor.cid %>">
-						<option value="REGULAR"><%= $.i18n.prop("PositionCommitteeMemberTypeREGULAR") %></option>
-						<option value="SUBSTITUTE"><%= $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") %></option>
-					</select>
-					<a id="addMember" data-model-cid="<%= professor.cid %>" class="btn btn-success"><i class="icon-plus icon-white"></i> <%= $.i18n.prop('btn_add') %></a>
+				<div class="btn-group">
+					<a class="btn btn-success dropdown-toggle" data-toggle="dropdown"><%= $.i18n.prop('btn_add') %><span class="caret"></span></a>
+ 					<ul class="dropdown-menu">
+   						<li><a id="addMember" data-model-cid="<%= professor.cid %>" data-type="REGULAR"><i class="icon-plus icon-white"></i> <%= $.i18n.prop("PositionCommitteeMemberTypeREGULAR") %></a></li>
+   						<li><a id="addMember" data-model-cid="<%= professor.cid %>" data-type="SUBSTITUTE"><i class="icon-plus icon-white"></i> <%= $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") %></a></li>
+ 					</ul>
 				</div>
 			</td>
 		</tr>
@@ -49,7 +47,7 @@
 	</tbody>
 	<tfoot>
 		<tr>
-			<td colspan="9">
+			<td colspan="8">
 				<div class="btn-toolbar" id="details">
 				</div>
 			</td>
