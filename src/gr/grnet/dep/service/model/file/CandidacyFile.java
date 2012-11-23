@@ -25,6 +25,7 @@ public class CandidacyFile extends FileHeader {
 
 		{
 			put(FileType.EKTHESI_AUTOAKSIOLOGISIS, 1);
+			put(FileType.SYMPLIROMATIKA_EGGRAFA, Integer.MAX_VALUE);
 		}
 	});
 

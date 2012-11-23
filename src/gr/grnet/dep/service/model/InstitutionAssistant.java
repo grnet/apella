@@ -69,7 +69,6 @@ public class InstitutionAssistant extends Role {
 	public Role copyFrom(Role otherRole) {
 		InstitutionAssistant ia = (InstitutionAssistant) otherRole;
 		this.setInstitution(ia.getInstitution());
-		this.setManager(ia.getManager());
 		this.setPhone(ia.getPhone());
 		return this;
 	}
@@ -83,9 +82,6 @@ public class InstitutionAssistant extends Role {
 		if (!compare(this.institution.getId(), other.getInstitution().getId())) {
 			return false;
 		}
-		if (!compare(this.manager.getId(), other.getManager().getId())) {
-			return false;
-		}
 		return true;
 	}
 
@@ -95,6 +91,9 @@ public class InstitutionAssistant extends Role {
 			return true;
 		}
 		if (this.manager == null) {
+			return true;
+		}
+		if (this.phone == null) {
 			return true;
 		}
 		return false;

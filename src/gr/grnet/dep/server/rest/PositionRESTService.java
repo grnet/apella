@@ -318,6 +318,10 @@ public class PositionRESTService extends RESTService {
 						case ENTAGMENI:
 							break;
 						case ANOIXTI:
+							// Validate: 
+							if (existingPhase.getCandidacies().getClosingDate().compareTo(new Date()) < 0) {
+								throw new RestException(Status.CONFLICT, "position.phase.anoixti.wrong.closing.date");
+							}
 							newPhase = new PositionPhase();
 							newPhase.setStatus(PositionStatus.ANOIXTI);
 							newPhase.setCandidacies(existingPhase.getCandidacies());
@@ -337,6 +341,11 @@ public class PositionRESTService extends RESTService {
 						case ANOIXTI:
 							break;
 						case EPILOGI:
+							// Validate
+							if (existingPhase.getCandidacies().getClosingDate().compareTo(new Date()) >= 0) {
+								throw new RestException(Status.CONFLICT, "position.phase.epilogi.wrong.closing.date");
+							}
+							// Update
 							newPhase = new PositionPhase();
 							newPhase.setStatus(PositionStatus.EPILOGI);
 							newPhase.setCandidacies(existingPhase.getCandidacies());
@@ -364,6 +373,10 @@ public class PositionRESTService extends RESTService {
 						case EPILOGI:
 							break;
 						case ANAPOMPI:
+							// Validate
+							if (FileHeader.filter(existingPhase.getNomination().getFiles(), FileType.APOFASI_ANAPOMPIS).size() == 0) {
+								throw new RestException(Status.CONFLICT, "position.phase.anapompi.missing.apofasi");
+							}
 							newPhase = new PositionPhase();
 							newPhase.setStatus(PositionStatus.ANAPOMPI);
 							newPhase.setCandidacies(existingPhase.getCandidacies());
@@ -375,6 +388,14 @@ public class PositionRESTService extends RESTService {
 							existingPosition.addPhase(newPhase);
 							break;
 						case STELEXOMENI:
+							// Validate
+							if (existingPhase.getNomination().getNominatedCandidacy() == null) {
+								throw new RestException(Status.CONFLICT, "position.phase.stelexomeni.missing.nominated.candidacy");
+							}
+							if (FileHeader.filter(existingPhase.getNomination().getFiles(), FileType.PRAKTIKO_EPILOGIS).size() == 0) {
+								throw new RestException(Status.CONFLICT, "position.phase.stelexomeni.missing.praktiko.epilogis");
+							}
+							// Update
 							newPhase = new PositionPhase();
 							newPhase.setStatus(PositionStatus.STELEXOMENI);
 							newPhase.setCandidacies(existingPhase.getCandidacies());

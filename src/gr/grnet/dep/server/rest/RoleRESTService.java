@@ -843,6 +843,9 @@ public class RoleRESTService extends RESTService {
 			throw new RestException(Status.CONFLICT, "not.primary.role");
 		}
 		//Validate Change
+		if (requestRole.getStatus().equals(RoleStatus.ACTIVE) && primaryRole.isMissingRequiredFields()) {
+			throw new RestException(Status.CONFLICT, "role.missing.required.fields");
+		}
 		if (primaryRole instanceof InstitutionManager) {
 			if (requestRole.getStatus().equals(RoleStatus.ACTIVE)) {
 				try {
