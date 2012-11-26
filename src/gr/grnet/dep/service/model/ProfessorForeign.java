@@ -78,6 +78,9 @@ public class ProfessorForeign extends Professor {
 		if (super.isMissingRequiredFields()) {
 			return true;
 		}
+		if (this.getProfileURL() == null) {
+			return true;
+		}
 		if (this.institution == null) {
 			return true;
 		}

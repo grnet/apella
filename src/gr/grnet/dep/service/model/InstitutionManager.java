@@ -114,6 +114,9 @@ public class InstitutionManager extends Role {
 		if (this.verificationAuthorityName == null) {
 			return true;
 		}
+		if (this.phone == null) {
+			return true;
+		}
 		return false;
 	}
 

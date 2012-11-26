@@ -881,7 +881,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 		showProfessorCommitteesView : function() {
 			var self = this;
 			var professorCommittees = new Models.ProfessorCommittees({}, {
-				professor : App.loggedOnUser.hasRole("PROFESSOR_DOMESTIC") ? App.loggedOnUser.getRole("PROFESSOR_DOMESTIC").id : App.loggedOnUser.getRole("PROFESSOR_FOREGIN").id
+				professor : App.loggedOnUser.hasRole("PROFESSOR_DOMESTIC") ? App.loggedOnUser.getRole("PROFESSOR_DOMESTIC").id : App.loggedOnUser.getRole("PROFESSOR_FOREIGN").id
 			});
 			var professorCommitteesView = new Views.ProfessorCommitteesView({
 				collection : professorCommittees

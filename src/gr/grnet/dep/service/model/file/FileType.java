@@ -27,5 +27,6 @@ public enum FileType {
 	DIOIKITIKO_EGGRAFO, // Διοικητικά έγγραφα
 	APOFASI_ANAPOMPIS, // Απόφαση αναπομπής του φακέλου επιλογής.
 	// Candidacy
-	EKTHESI_AUTOAKSIOLOGISIS // Έκθεση Αυτοαξιολόγησης
+	EKTHESI_AUTOAKSIOLOGISIS, // Έκθεση Αυτοαξιολόγησης
+	SYMPLIROMATIKA_EGGRAFA
 }

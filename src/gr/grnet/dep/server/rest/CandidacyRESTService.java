@@ -100,10 +100,10 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 			}
 			Date now = new Date();
-			if (position.getPhase().getCandidacies().getOpeningDate().compareTo(now) > 0) {
+			if (compareDates(position.getPhase().getCandidacies().getOpeningDate(), now) > 0) {
 				throw new RestException(Status.FORBIDDEN, "wrong.position.candidacies.openingDate");
 			}
-			if (position.getPhase().getCandidacies().getClosingDate().compareTo(now) <= 0) {
+			if (compareDates(position.getPhase().getCandidacies().getClosingDate(), now) < 0) {
 				throw new RestException(Status.FORBIDDEN, "wrong.position.candidacies.closingDate");
 			}
 			if (!position.getPhase().getStatus().equals(PositionStatus.ANOIXTI)) {
@@ -199,10 +199,15 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			Position position = existingCandidacy.getCandidacies().getPosition();
-			if (!position.getPhase().getStatus().equals(PositionStatus.ANOIXTI)) {
+			if (!position.getPhase().getStatus().equals(PositionStatus.ANOIXTI)
+				&& (!position.getPhase().getStatus().equals(PositionStatus.EPILOGI))) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
-
+			if (position.getPhase().getStatus().equals(PositionStatus.EPILOGI) &&
+				position.getPhase().getNomination().getNominationCommitteeConvergenceDate() != null
+				&& compareDates(position.getPhase().getNomination().getNominationCommitteeConvergenceDate(), new Date()) <= 0) {
+				throw new RestException(Status.CONFLICT, "wrong.position.status.committee.converged");
+			}
 			// Update
 			em.remove(existingCandidacy);
 		} catch (PersistenceException e) {

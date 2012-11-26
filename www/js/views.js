@@ -839,15 +839,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					lastname : "required",
 					fathername : "required",
 					firstnamelatin : {
-						required : true,
+						required : !_.isEqual(role.discriminator, "PROFESSOR_FOREIGN"),
 						onlyLatin : true
 					},
 					lastnamelatin : {
-						required : true,
+						required : !_.isEqual(role.discriminator, "PROFESSOR_FOREIGN"),
 						onlyLatin : true
 					},
 					fathernamelatin : {
-						required : true,
+						required : !_.isEqual(role.discriminator, "PROFESSOR_FOREIGN"),
 						onlyLatin : true
 					},
 					password : {
@@ -1149,7 +1149,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						required : true,
 						onlyLatin : true
 					},
-					identification : "required",
+					identification : {
+						required : true,
+						onlyLatin : true
+					},
 					password : {
 						required : self.model.isNew(),
 						pwd : true,
@@ -1191,6 +1194,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					},
 					fathernamelatin : {
 						required : $.i18n.prop('validation_fathernamelatin'),
+						onlyLatin : $.i18n.prop('validation_latin')
+					},
+					identification : {
+						required : $.i18n.prop('validation_identification'),
 						onlyLatin : $.i18n.prop('validation_latin')
 					},
 					password : {
@@ -1830,7 +1837,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					return true;
 				}
 				break;
-			case "INSTITUTION_ASSISTAN":
+			case "INSTITUTION_ASSISTANT":
 				switch (field) {
 				case "institution":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
@@ -5955,6 +5962,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
 			case "ekthesiAutoaksiologisisFile":
 				return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
+			case "sympliromatikaEggrafaFileList":
+				return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI") || _.isEqual(self.model.get("candidacies").position.phase.status, "EPILOGI");
 			}
 			return false;
 		},
@@ -5994,6 +6003,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							withMetadata : true,
 							editable : self.isEditable("ekthesiAutoaksiologisisFile")
 						});
+						self.addFileList(collection, "SYMPLIROMATIKA_EGGRAFA", self.$("#sympliromatikaEggrafaFileList"), {
+							withMetadata : true,
+							editable : self.isEditable("sympliromatikaEggrafaFileList")
+						});
+
 					}
 				});
 			} else {
@@ -6175,6 +6189,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				cache : false,
 				success : function(collection, response) {
 					self.addFile(collection, "EKTHESI_AUTOAKSIOLOGISIS", self.$("#ekthesiAutoaksiologisisFile"), {
+						withMetadata : true,
+						editable : false
+					});
+					self.addFileList(collection, "SYMPLIROMATIKA_EGGRAFA", self.$("#sympliromatikaEggrafaFileList"), {
 						withMetadata : true,
 						editable : false
 					});
