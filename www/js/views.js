@@ -4418,7 +4418,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		events : {
 			"click a#removeEvaluator" : "removeEvaluator",
-			"click a#toggleAddEvaluator" : "toggleAddEvaluator",
+			"click a#toggleAddEvaluator" : "toggleAddEvaluator"
 		},
 
 		allowedToEdit : function() {
