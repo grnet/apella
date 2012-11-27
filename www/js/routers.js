@@ -704,7 +704,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				self.refreshBreadcrumb([ $.i18n.prop('menu_positions'), position.get("name") ]);
 				$("#content").unbind();
 				$("#content").empty();
-				$("#content").html(positionView.el);
+				$("#content").html(positionView.render().el);
 
 				// Fetch
 				position.fetch({
@@ -814,13 +814,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 				$("#content").unbind();
 				$("#content").empty();
-				$("#content").html(registerView.el);
+				$("#content").html(registerView.render().el);
 
 				register.fetch({
 					cache : false,
 					success : function() {
 						self.refreshBreadcrumb([ $.i18n.prop('menu_registers'), register.get("title") ]);
-						registerView.render();
 					}
 				});
 			});
@@ -923,17 +922,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					model : institutionRF
 				});
 				self.refreshBreadcrumb([ $.i18n.prop('menu_regulatoryframeworks') ]);
-				$("#content").html(institutionRegulatoryFrameworkView.el);
+				$("#content").html(institutionRegulatoryFrameworkView.render().el);
 				// Update history
 				App.router.navigate("regulatoryframeworks/" + institutionRF.id, {
 					trigger : false
 				});
 				institutionRF.fetch({
 					cache : false,
-					success : function(model, resp, options) {
-						institutionRF.trigger("change");
-
-					},
 					error : function(model, resp, options) {
 						var popup = new Views.PopupView({
 							type : "error",
@@ -1068,13 +1063,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				self.refreshBreadcrumb([ $.i18n.prop('menu_candidateCandidacies'), candidacy.id ]);
 				$("#content").unbind();
 				$("#content").empty();
-				$("#content").html(candidacyEditView.el);
+				$("#content").html(candidacyEditView.render().el);
 
 				candidacy.fetch({
-					cache : false,
-					success : function() {
-						candidacy.trigger("change");
-					}
+					cache : false
 				});
 			});
 
