@@ -181,8 +181,8 @@
 			<div class="control-group">
 				<label class="control-label" for="institutionManagerForm"><%= $.i18n.prop('InstitututionManagerForm') %>:</label>
 				<div class="controls">
-					<a id="forma_DEAN" href="documents/Forma_allagis_Diax.Idrymatos_prytanis.pdf" target="documents"><%= $.i18n.prop('InstitututionManagerFormDEAN') %></a>
-					<a id="forma_PRESIDENT" href="documents/Forma_allagis_Diax.Idrymatos_proedros.pdf" target="documents"><%= $.i18n.prop('InstitututionManagerFormPRESIDENT') %></a>
+					<a id="forma_DEAN" href="/dep/rest/role/<%= id %>/documents/Forma_allagis_Diax_Idrymatos" target="documents"><%= $.i18n.prop('InstitututionManagerFormDEAN') %></a>
+					<a id="forma_PRESIDENT" href="/dep/rest/role/<%= id %>/documents/Forma_allagis_Diax_Idrymatos" target="documents"><%= $.i18n.prop('InstitututionManagerFormPRESIDENT') %></a>
 				</div>
 			</div>
 			<div class="control-group">
@@ -318,7 +318,7 @@
 				</div>
 			</div>
 			<div class="control-group">
-				<label class="control-label" for="formaSymmetoxisFile"><%= $.i18n.prop('FormaSymmetoxisFile') %> <a href="documents/Forma_Ypopsifiou.pdf" target="documents"><%= $.i18n.prop('DownloadHere') %></a>:</label>
+				<label class="control-label" for="formaSymmetoxisFile"><%= $.i18n.prop('FormaSymmetoxisFile') %> <a href="/dep/rest/role/<%= id %>/documents/Forma_Ypopsifiou" target="documents"><%= $.i18n.prop('DownloadHere') %></a>:</label>
 				<div class="controls">
 				<span id="formaSymmetoxisFile"></span>
 				</div>
