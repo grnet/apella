@@ -15,6 +15,7 @@ import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
+import gr.grnet.dep.service.util.DateUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -100,10 +101,10 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 			}
 			Date now = new Date();
-			if (compareDates(position.getPhase().getCandidacies().getOpeningDate(), now) > 0) {
+			if (DateUtil.compareDates(position.getPhase().getCandidacies().getOpeningDate(), now) > 0) {
 				throw new RestException(Status.FORBIDDEN, "wrong.position.candidacies.openingDate");
 			}
-			if (compareDates(position.getPhase().getCandidacies().getClosingDate(), now) < 0) {
+			if (DateUtil.compareDates(position.getPhase().getCandidacies().getClosingDate(), now) < 0) {
 				throw new RestException(Status.FORBIDDEN, "wrong.position.candidacies.closingDate");
 			}
 			if (!position.getPhase().getStatus().equals(PositionStatus.ANOIXTI)) {
@@ -205,7 +206,7 @@ public class CandidacyRESTService extends RESTService {
 			}
 			if (position.getPhase().getStatus().equals(PositionStatus.EPILOGI) &&
 				position.getPhase().getNomination().getNominationCommitteeConvergenceDate() != null
-				&& compareDates(position.getPhase().getNomination().getNominationCommitteeConvergenceDate(), new Date()) <= 0) {
+				&& DateUtil.compareDates(position.getPhase().getNomination().getNominationCommitteeConvergenceDate(), new Date()) <= 0) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status.committee.converged");
 			}
 			// Update

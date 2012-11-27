@@ -22,7 +22,7 @@
 			<td><%= position.description %></td>
 			<td><%= position.subject.name %></td>
 			<td><%= position.fek %>, <%= position.fekSentDate %></td>
-			<td><%= $.i18n.prop('PositionStatus_' +position.phase.status) %></td>
+			<td><%= $.i18n.prop('PositionStatus_' + position.phase.clientStatus) %></td>
 			<td><%= position.phase.candidacies.openingDate %></td>
 			<td><%= position.phase.candidacies.closingDate %></td>
 			<td width="96px">

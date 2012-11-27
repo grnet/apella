@@ -1,4 +1,4 @@
-<h3><%= $.i18n.prop('Position') %> <small><%= $.i18n.prop('PositionStatus_' + phase.status) %></small>
+<h3><%= $.i18n.prop('Position') %> <small><%= $.i18n.prop('PositionStatus_' + phase.clientStatus) %></small>
 	
 </h3>
 <form class="form-horizontal" onsubmit="return false">
@@ -65,7 +65,7 @@
 				<div class="control-group">
 					<label class="control-label" for="status"><%= $.i18n.prop('PositionStatus') %>:</label>
 					<div class="controls">
-						<span class="input-xlarge uneditable-input"><%= $.i18n.prop('PositionStatus_' + phase.status) %></span>
+						<span class="input-xlarge uneditable-input"><%= $.i18n.prop('PositionStatus_' + phase.clientStatus) %></span>
 					</div>
 				</div>
 				<div class="control-group">

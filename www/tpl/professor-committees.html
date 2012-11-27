@@ -25,7 +25,7 @@
 			<td><%= committeeMember.committee.position.fek %>, <%= committeeMember.committee.position.fekSentDate %></td>
 			<td><%= committeeMember.committee.position.phase.candidacies.openingDate %></td>
 			<td><%= committeeMember.committee.position.phase.candidacies.closingDate %></td>
-			<td><%= $.i18n.prop('PositionStatus_' + committeeMember.committee.position.phase.status) %></td>
+			<td><%= $.i18n.prop('PositionStatus_' + committeeMember.committee.position.phase.clientStatus) %></td>
 		</tr>
 	<% }); %>
 	</tbody>

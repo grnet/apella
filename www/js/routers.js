@@ -306,7 +306,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			var self = this;
 
 			_.extend(self, Backbone.Events);
-			_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showUserView", "showInstitutionAssistantsView", "showMinistryAssistantsView", "showPositionView", "showPositionsView", "showRegistersView", "showProfessorCommitteesView", "showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "start");
+			_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showUserView", "showInstitutionAssistantsView", "showMinistryAssistantsView", "showPositionView", "showPositionsView", "showRegistersView", "showProfessorCommitteesView", "showProfessorEvaluationsView", "showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "start");
 			$(document).ajaxStart(App.blockUI);
 			$(document).ajaxStop(App.unblockUI);
 
@@ -345,6 +345,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			"registers/:registerId" : "showRegistersView",
 			"requests" : "showRequestsView",
 			"professorCommittees" : "showProfessorCommitteesView",
+			"professorEvaluations" : "showProfessorEvaluationsView",
 			"regulatoryframeworks" : "showInstitutionRegulatoryFrameworkView",
 			"regulatoryframeworks/:institutionId" : "showInstitutionRegulatoryFrameworkView",
 			"sposition" : "showPositionSearchView",
@@ -902,6 +903,33 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			});
 
 			self.currentView = professorCommitteesView;
+		},
+
+		showProfessorEvaluationsView : function() {
+			var self = this;
+			var professorEvaluations = new Models.ProfessorEvaluations({}, {
+				professor : App.loggedOnUser.hasRole("PROFESSOR_DOMESTIC") ? App.loggedOnUser.getRole("PROFESSOR_DOMESTIC").id : App.loggedOnUser.getRole("PROFESSOR_FOREIGN").id
+			});
+			var professorEvaluationsView = new Views.ProfessorEvaluationsView({
+				collection : professorEvaluations
+			});
+			self.clear();
+			self.refreshBreadcrumb([ $.i18n.prop('menu_professorEvaluations') ]);
+			$("#content").html(professorEvaluationsView.el);
+
+			// Refresh professorCommittees from server
+			professorEvaluations.fetch({
+				cache : false,
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+
+			self.currentView = professorEvaluationsView;
 		},
 
 		showInstitutionRegulatoryFrameworkView : function(institutionRFId) {

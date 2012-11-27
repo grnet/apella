@@ -1,11 +1,13 @@
 package gr.grnet.dep.service.model;
 
-import gr.grnet.dep.service.model.PositionCommitteeMember.ProfessorCommitteesView;
 import gr.grnet.dep.service.model.Position.CandidatePositionView;
 import gr.grnet.dep.service.model.Position.CommitteeMemberPositionView;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.Position.PublicPositionView;
+import gr.grnet.dep.service.model.PositionCommitteeMember.ProfessorCommitteesView;
+import gr.grnet.dep.service.model.PositionEvaluator.PositionEvaluatorView;
+import gr.grnet.dep.service.util.DateUtil;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 
@@ -97,6 +99,17 @@ public class PositionPhase {
 		this.status = status;
 	}
 
+	public String getClientStatus() {
+		String clientStatus = null;
+		if (status.equals(PositionStatus.ANOIXTI)
+			&& DateUtil.compareDates(new Date(), this.candidacies.getClosingDate()) > 0) {
+			clientStatus = "KLEISTI";
+		} else {
+			clientStatus = status.toString();
+		}
+		return clientStatus;
+	}
+
 	public Integer getOrder() {
 		return order;
 	}
@@ -105,7 +118,7 @@ public class PositionPhase {
 		this.order = order;
 	}
 
-	@JsonView({PublicPositionView.class, ProfessorCommitteesView.class, DetailedPositionView.class, CommitteeMemberPositionView.class, CandidatePositionView.class})
+	@JsonView({PublicPositionView.class, ProfessorCommitteesView.class, DetailedPositionView.class, CommitteeMemberPositionView.class, CandidatePositionView.class, PositionEvaluatorView.class})
 	public PositionCandidacies getCandidacies() {
 		return candidacies;
 	}

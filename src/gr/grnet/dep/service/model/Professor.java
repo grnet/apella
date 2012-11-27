@@ -25,8 +25,14 @@ public abstract class Professor extends Role {
 	@OneToMany(mappedBy = "professor", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<PositionCommitteeMember> committees = new HashSet<PositionCommitteeMember>();
 
+	@OneToMany(mappedBy = "professor", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<PositionEvaluator> evaluations = new HashSet<PositionEvaluator>();
+
 	@Transient
 	private Integer committeesCount;
+
+	@Transient
+	private Integer evaluationsCount;
 
 	public String getProfileURL() {
 		return profileURL;
@@ -54,12 +60,29 @@ public abstract class Professor extends Role {
 		this.committees = committees;
 	}
 
+	@XmlTransient
+	public Set<PositionEvaluator> getEvaluations() {
+		return evaluations;
+	}
+
+	public void setEvaluations(Set<PositionEvaluator> evaluations) {
+		this.evaluations = evaluations;
+	}
+
 	public Integer getCommitteesCount() {
 		return committeesCount;
 	}
 
-	public void setCommitteesCount(Integer committeesCount) {
-		this.committeesCount = committeesCount;
+	public void setCommitteesCount(Integer evaluationsCount) {
+		this.evaluationsCount = evaluationsCount;
+	}
+
+	public Integer getEvaluationsCount() {
+		return evaluationsCount;
+	}
+
+	public void setEvaluationsCount(Integer evaluationsCount) {
+		this.evaluationsCount = evaluationsCount;
 	}
 
 	/////////////////////////////////////////////////////

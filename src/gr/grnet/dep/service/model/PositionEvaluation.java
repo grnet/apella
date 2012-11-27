@@ -1,6 +1,6 @@
 package gr.grnet.dep.service.model;
 
-import gr.grnet.dep.service.model.PositionEvaluator.DetailedPositionEvaluatorView;
+import gr.grnet.dep.service.model.PositionEvaluator.PositionEvaluatorView;
 import gr.grnet.dep.service.model.file.PositionEvaluationFile;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
@@ -60,7 +60,7 @@ public class PositionEvaluation {
 		this.id = id;
 	}
 
-	@JsonView({DetailedPositionEvaluatorView.class})
+	@JsonView({PositionEvaluatorView.class})
 	public Position getPosition() {
 		return position;
 	}

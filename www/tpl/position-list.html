@@ -12,7 +12,7 @@
 		<tr>
 			<td><%= position.name %></td>
 			<td><% if (!_.isUndefined(position.department)) { %><%= position.department.department %><% } %></td>
-			<td><%= $.i18n.prop('PositionStatus_' + position.phase.status) %></td>
+			<td><%= $.i18n.prop('PositionStatus_' + position.phase.clientStatus) %></td>
 			<td width="96px">
 				<p align="center">
 					<a id="selectPosition" data-position-cid="<%= position.cid %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>

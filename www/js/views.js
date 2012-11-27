@@ -1,6 +1,6 @@
 define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/position-committee-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html", "text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html", "text!tpl/file-multiple-edit.html", "text!tpl/professor-committees.html", "text!tpl/position-committee-edit-professor-list.html", "text!tpl/position.html", "text!tpl/position-committee.html", "text!tpl/register.html", "text!tpl/institution-regulatory-framework.html", "text!tpl/institution-regulatory-framework-edit.html",
-	"text!tpl/position-search.html", "text!tpl/candidacy-edit.html", "text!tpl/candidate-candidacy-list.html", "text!tpl/position-candidacy-list.html", "text!tpl/candidacy.html", "text!tpl/candidacy-update-confirm.html", "text!tpl/institution-regulatory-framework-list.html", "text!tpl/register-members.html", "text!tpl/register-members-edit.html", "text!tpl/register-members-edit-professor-list.html", "text!tpl/register-member-edit.html", "text!tpl/overlay.html", "text!tpl/position-evaluators.html", "text!tpl/position-evaluators-edit.html", "text!tpl/position-evaluators-edit-professor-list.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_position_committee_edit, tpl_position_edit, tpl_position_list, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_file_multiple_edit, tpl_professor_committees,
-	tpl_position_committee_edit_professor_list, tpl_position, tpl_position_committee, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_position_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_members, tpl_register_members_edit, tpl_register_members_edit_professor_list, tpl_register_member_edit, tpl_overlay, tpl_position_evaluators, tpl_position_evaluators_edit, tpl_position_evaluators_edit_professor_list) {
+	"text!tpl/position-search.html", "text!tpl/candidacy-edit.html", "text!tpl/candidate-candidacy-list.html", "text!tpl/position-candidacy-list.html", "text!tpl/candidacy.html", "text!tpl/candidacy-update-confirm.html", "text!tpl/institution-regulatory-framework-list.html", "text!tpl/register-members.html", "text!tpl/register-members-edit.html", "text!tpl/register-members-edit-professor-list.html", "text!tpl/register-member-edit.html", "text!tpl/overlay.html", "text!tpl/position-evaluators.html", "text!tpl/position-evaluators-edit.html", "text!tpl/position-evaluators-edit-professor-list.html", "text!tpl/professor-evaluations.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_position_committee_edit, tpl_position_edit, tpl_position_list, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_file_multiple_edit, tpl_professor_committees,
+	tpl_position_committee_edit_professor_list, tpl_position, tpl_position_committee, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_position_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_members, tpl_register_members_edit, tpl_register_members_edit_professor_list, tpl_register_member_edit, tpl_overlay, tpl_position_evaluators, tpl_position_evaluators_edit, tpl_position_evaluators_edit_professor_list, tpl_professor_evaluations) {
 
 	/** **************************************************************** */
 
@@ -79,10 +79,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			if (self.model.hasRoleWithStatus("PROFESSOR_DOMESTIC", "ACTIVE")) {
 				menuItems.push("registers");
 				menuItems.push("professorCommittees");
+				menuItems.push("professorEvaluations");
 			}
 			if (self.model.hasRoleWithStatus("PROFESSOR_FOREIGN", "ACTIVE")) {
 				menuItems.push("registers");
 				menuItems.push("professorCommittees");
+				menuItems.push("professorEvaluations");
 			}
 			if (self.model.hasRoleWithStatus("CANDIDATE", "ACTIVE")) {
 				menuItems.push("registers");
@@ -5501,6 +5503,66 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var selectedModel = positionCommitteeMember ? positionCommitteeMember : self.collection.get($(event.currentTarget).data('committeeMemberId'));
 			if (selectedModel) {
 				self.collection.trigger("positionCommitteeMember:selected", selectedModel);
+			}
+		},
+
+		close : function(eventName) {
+			this.collection.unbind('reset', this.render, this);
+			this.$el.unbind();
+			this.$el.remove();
+		}
+	});
+
+	/***************************************************************************
+	 * ProfessorEvaluationsView ************************************************
+	 **************************************************************************/
+	Views.ProfessorEvaluationsView = Views.BaseView.extend({
+		tagName : "div",
+
+		initialize : function() {
+			var self = this;
+			_.bindAll(self, "render", "select", "close");
+			self.template = _.template(tpl_professor_evaluations);
+			self.collection.bind('reset', self.render, self);
+		},
+
+		events : {
+			"click a#select" : "select"
+		},
+
+		render : function(eventName) {
+			var self = this;
+			self.$el.html(self.template({
+				evaluations : self.collection.toJSON()
+			}));
+			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
+				self.$("table").dataTable({
+					"sDom" : "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+					"sPaginationType" : "bootstrap",
+					"oLanguage" : {
+						"sSearch" : $.i18n.prop("dataTable_sSearch"),
+						"sLengthMenu" : $.i18n.prop("dataTable_sLengthMenu"),
+						"sZeroRecords" : $.i18n.prop("dataTable_sZeroRecords"),
+						"sInfo" : $.i18n.prop("dataTable_sInfo"),
+						"sInfoEmpty" : $.i18n.prop("dataTable_sInfoEmpty"),
+						"sInfoFiltered" : $.i18n.prop("dataTable_sInfoFiltered"),
+						"oPaginate" : {
+							sFirst : $.i18n.prop("dataTable_sFirst"),
+							sPrevious : $.i18n.prop("dataTable_sPrevious"),
+							sNext : $.i18n.prop("dataTable_sNext"),
+							sLast : $.i18n.prop("dataTable_sLast")
+						}
+					}
+				});
+			}
+			return self;
+		},
+
+		select : function(event, positionEvaluator) {
+			var self = this;
+			var selectedModel = positionEvaluator ? positionEvaluator : self.collection.get($(event.currentTarget).data('evaluatorId'));
+			if (selectedModel) {
+				self.collection.trigger("positionEvaluator:selected", selectedModel);
 			}
 		},
 

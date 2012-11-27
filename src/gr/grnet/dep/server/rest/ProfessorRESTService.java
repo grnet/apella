@@ -3,6 +3,8 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.PositionCommitteeMember;
 import gr.grnet.dep.service.model.PositionCommitteeMember.ProfessorCommitteesView;
+import gr.grnet.dep.service.model.PositionEvaluator;
+import gr.grnet.dep.service.model.PositionEvaluator.PositionEvaluatorView;
 import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
@@ -44,6 +46,25 @@ public class ProfessorRESTService extends RESTService {
 			member.getCommittee().getPosition().initializeCollections();
 		}
 		return professor.getCommittees();
+	}
+
+	@GET
+	@Path("/{id:[0-9]+}/evaluations")
+	@JsonView({PositionEvaluatorView.class})
+	public Collection<PositionEvaluator> getEvaluations(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long professorId) {
+		User loggedOn = getLoggedOn(authToken);
+		Professor professor = em.find(Professor.class, professorId);
+		if (professor == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
+		}
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !professor.getUser().getId().equals(loggedOn.getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		professor.initializeCollections();
+		for (PositionEvaluator evaluator : professor.getEvaluations()) {
+			evaluator.getEvaluation().getPosition().initializeCollections();
+		}
+		return professor.getEvaluations();
 	}
 
 }

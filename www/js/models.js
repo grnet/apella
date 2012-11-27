@@ -810,6 +810,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			phase : {
 				id : undefined,
 				status : undefined,
+				clientStatus : undefined,
 				order : undefined,
 				candidacies : {
 					id : undefined,
@@ -1039,6 +1040,17 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		},
 		url : function() {
 			return "/dep/rest/professor/" + this.professor + "/committees";
+		}
+	});
+
+	Models.ProfessorEvaluations = Backbone.Collection.extend({
+		professor : undefined,
+		model : Models.PositionEvaluator,
+		initialize : function(models, options) {
+			this.professor = options.professor;
+		},
+		url : function() {
+			return "/dep/rest/professor/" + this.professor + "/evaluations";
 		}
 	});
 
