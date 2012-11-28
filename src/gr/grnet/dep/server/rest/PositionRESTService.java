@@ -125,31 +125,6 @@ public class PositionRESTService extends RESTService {
 	}
 
 	@GET
-	@Path("/search")
-	@JsonView({PublicPositionView.class})
-	public List<Position> search(@HeaderParam(TOKEN_HEADER) String authToken) {
-		// TODO: Search based on QueryParameter (or a Search object)
-		try {
-			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-			Date today = sdf.parse(sdf.format(new Date()));
-			@SuppressWarnings("unchecked")
-			List<Position> positions = (List<Position>) em.createQuery(
-				"from Position p " +
-					"where p.permanent = true " +
-					"and p.phase.candidacies.closingDate >= :today ")
-				.setParameter("today", today)
-				.getResultList();
-
-			for (Position position : positions) {
-				position.initializeCollections();
-			}
-			return positions;
-		} catch (ParseException e) {
-			throw new RestException(Status.INTERNAL_SERVER_ERROR, "parse.exception");
-		}
-	}
-
-	@GET
 	@Path("/public")
 	@JsonView({PublicPositionView.class})
 	public List<Position> getPublic() {

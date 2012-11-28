@@ -349,7 +349,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			"regulatoryframeworks" : "showInstitutionRegulatoryFrameworkView",
 			"regulatoryframeworks/:institutionId" : "showInstitutionRegulatoryFrameworkView",
 			"sposition" : "showPositionSearchView",
-			"sposition/:query" : "showPositionSearchView",
 			"candidateCandidacies" : "showCandidateCandidacyView",
 			"candidateCandidacies/:candidacyId" : "showCandidateCandidacyView"
 		},
@@ -1011,12 +1010,23 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			self.currentView = institutionRegulatoryFrameworkListView;
 		},
 
-		showPositionSearchView : function(query) {
+		showPositionSearchView : function() {
 			var self = this;
 			self.clear();
-
+			// Models
+			var criteria = new Models.PositionSearchCriteria();
 			var positions = new Models.Positions();
-			positions.url = positions.url + "/search";
+			positions.url = positions.url + "/criteria/search";
+
+			// Event Handlers
+			criteria.on("criteria:search", function(criteria) {
+				positions.fetch({
+					data : {
+						"criteria" : criteria
+					},
+					processData : true
+				});
+			});
 			positions.on("position:selected", function(position) {
 				if (position) {
 					var newCandidacy = new Models.Candidacy();
@@ -1047,23 +1057,26 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					});
 				}
 			}, this);
-			var positionSearchView = new Views.PositionSearchView({
-				"query" : query ? JSON.parse(decodeURI(query)) : undefined,
+
+			// Views
+			var positionSearchCriteriaView = new Views.PositionSearchCriteriaView({
+				model : criteria
+			});
+			var positionSearchResultView = new Views.PositionSearchResultView({
 				collection : positions
 			});
+
 			self.refreshBreadcrumb([ $.i18n.prop('menu_sposition') ]);
-			$("#content").append(positionSearchView.el);
-			if (query) {
-				positions.fetch({
-					cache : false,
-					data : JSON.parse(decodeURI(query))
-				});
-			} else {
-				positions.fetch({
-					cache : false
-				});
-			}
-			self.currentView = positionSearchView;
+
+			$("#featured").append(positionSearchCriteriaView.render().el);
+			$("#content").append(positionSearchResultView.el);
+
+			// Refresh Data - triggers change to render view
+			criteria.fetch({
+				cache : false
+			});
+
+			self.currentView = [ positionSearchCriteriaView, positionSearchResultView ];
 		},
 
 		showCandidateCandidacyView : function(candidacyId) {

@@ -946,6 +946,13 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		model : Models.Position
 	});
 
+	Models.PositionSearchCriteria = Backbone.Model.extend({
+		urlRoot : "/dep/rest/position/criteria",
+		defaults : {
+			id : undefined
+		}
+	});
+
 	Models.Register = Backbone.Model.extend({
 		urlRoot : "/dep/rest/register",
 		defaults : {
