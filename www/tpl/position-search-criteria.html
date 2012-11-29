@@ -8,14 +8,16 @@
 				<div class="control-group">
 					<label class="control-label" for="institution"><%= $.i18n.prop('Department') %>:</label>
 					<div class="controls">
-						<select class="input-xlarge" name="department" multiple="multiple"></select>
+						<select class="input-xxlarge" name="department" multiple="multiple"></select>
 					</div>
 				</div>
 				<div class="control-group">
 					<label class="control-label" for="subject"><%= $.i18n.prop('Subject') %>:</label>
 					<div class="controls">
-						<input type="text" class="input-xlarge" name="suggestSubject" value ="" />
-						<a id="addSubject" class="btn btn-success"><i class="icon-plus"></i></a>
+						<div class="input-append">
+							<input type="text" class="input-xlarge" name="suggestSubject" value ="" />
+							<a id="addSubject" class="btn btn-success"><i class="icon-plus"></i></a>
+						</div>
 					</div>
 				</div>
 			</fieldset>

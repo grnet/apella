@@ -2,6 +2,7 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidate;
+import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PublicPositionView;
 import gr.grnet.dep.service.model.PositionSearchCriteria;
@@ -11,6 +12,7 @@ import gr.grnet.dep.service.model.User;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -74,6 +76,7 @@ public class PositionSearchRESTService extends RESTService {
 					"where c.candidate.id = :candidateId ")
 				.setParameter("candidateId", candidate.getId())
 				.getSingleResult();
+			criteria.initializeCollections();
 			return criteria;
 		} catch (NoResultException e) {
 			PositionSearchCriteria criteria = new PositionSearchCriteria();
@@ -115,7 +118,12 @@ public class PositionSearchRESTService extends RESTService {
 				.getSingleResult();
 			throw new RestException(Status.CONFLICT, "already.exists");
 		} catch (NoResultException e) {
+			Collection<Department> departments = supplementDepartments(newCriteria.getDepartments());
+
 			newCriteria.setCandidate(candidate);
+			newCriteria.getDepartments().clear();
+			newCriteria.getDepartments().addAll(departments);
+
 			newCriteria = em.merge(newCriteria);
 			em.flush();
 			return newCriteria;
@@ -135,7 +143,11 @@ public class PositionSearchRESTService extends RESTService {
 		if (!criteria.getCandidate().getUser().getId().equals(loggedOnUser.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		criteria.copyFrom(newCriteria);
+		Collection<Department> departments = supplementDepartments(newCriteria.getDepartments());
+
+		criteria.getDepartments().clear();
+		criteria.getDepartments().addAll(departments);
+
 		em.flush();
 
 		return criteria;

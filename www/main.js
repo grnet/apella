@@ -19,9 +19,10 @@ require.config({
 		"jquery.blockUI" : "lib/jquery.blockUI/jquery.blockUI",
 		"jquery.iframe-transport" : "lib/jquery.file.upload/jquery.iframe-transport",
 		"jquery.file.upload" : "lib/jquery.file.upload/jquery.fileupload",
-		
+		"chosen" : "lib/chosen/chosen.jquery",
+
 		"backbone.cache" : "lib/backbone/backbone.cache",
-		
+
 		// Apella Application
 		"application" : "js/application",
 		"models" : "js/models",
@@ -45,7 +46,8 @@ require.config({
 		"jquery.blockUI" : [ "jquery" ],
 		"jquery.iframe-transport" : [ "jquery" ],
 		"jquery.file.upload" : [ "jquery", "jquery.ui", "jquery.iframe-transport" ],
-		
+		"chosen" : [ "jquery" ],
+
 		"backbone.cache" : [ "backbone" ]
 	}
 

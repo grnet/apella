@@ -5887,6 +5887,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(event) {
 			var self = this;
 			self.$el.html(self.template(self.model.toJSON()));
+			setTimeout(function() {
+				self.$("select[name=department]").chosen();
+			}, 0);
 			// Add Departments to selector:
 			App.departments = App.departments ? App.departments : new Models.Departments();
 			App.departments.fetch({
@@ -5899,8 +5902,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						});
 						var institution = department.get("institution").name;
 						self.$("select[name=department]:not(:has(optgroup[label='" + institution + "']))").append("<optgroup label='" + institution + "'>");
-						self.$("select[name=department] optgroup[label='" + institution + "']").append("<option value='" + department.get("id") + "' " + (selected ? "selected>" : "") + ">" + department.get("department") + "</option>");
+						self.$("select[name=department] optgroup[label='" + institution + "']").append("<option value='" + department.get("id") + "' " + (selected ? "selected " : "") + "label='" + institution + "' " + "><span>" + department.get("department") + "</span></option>");
 					});
+					self.$("select[name=department]").trigger("liszt:updated");
 				},
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
@@ -5922,7 +5926,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		submit : function(event) {
 			var self = this;
-			var values = {};
+			var values = {
+				departments : _.map(self.$("select[name=department]").val(), function(departmentId) {
+					return {
+						id : departmentId
+					}
+				}),
+				subjects : _.map(self.$("input[name=subject]", function(subject) {
+					return {
+						name : subject.val()
+					}
+				}))
+			};
 			// Read Input
 			// Save to model
 			self.model.save(values, {

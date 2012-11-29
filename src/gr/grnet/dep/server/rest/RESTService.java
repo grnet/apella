@@ -3,6 +3,7 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidate;
+import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.ProfessorForeign;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
@@ -24,6 +25,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -426,7 +429,7 @@ public class RESTService {
 	}
 
 	/******************************
-	 * Subject Function ***********
+	 * Utilitiy Functions *********
 	 ******************************/
 
 	public Subject supplementSubject(Subject subject) {
@@ -440,5 +443,21 @@ public class RESTService {
 		} catch (NoResultException e) {
 			return subject;
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public Collection<Department> supplementDepartments(Collection<Department> departments) {
+		if (departments.isEmpty()) {
+			return departments;
+		}
+		Collection<Long> departmentIds = new ArrayList<Long>();
+		for (Department department : departments) {
+			departmentIds.add(department.getId());
+		}
+		return em.createQuery(
+			"from Department d " +
+				"where d.id in (:departmentIds)")
+			.setParameter("departmentIds", departmentIds)
+			.getResultList();
 	}
 }

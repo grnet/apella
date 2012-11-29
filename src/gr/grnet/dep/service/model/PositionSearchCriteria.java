@@ -1,8 +1,12 @@
 package gr.grnet.dep.service.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Version;
 
@@ -27,6 +31,12 @@ public class PositionSearchCriteria {
 	@ManyToOne
 	private Candidate candidate;
 
+	@ManyToMany
+	private Set<Department> departments = new HashSet<Department>();
+
+	@ManyToMany
+	private Set<Subject> subjects = new HashSet<Subject>();
+
 	public Long getId() {
 		return id;
 	}
@@ -44,13 +54,31 @@ public class PositionSearchCriteria {
 		this.candidate = candidate;
 	}
 
-	public void copyFrom(PositionSearchCriteria newCriteria) {
-		// TODO Auto-generated method stub
-
+	public Set<Department> getDepartments() {
+		return departments;
 	}
+
+	public void setDepartments(Set<Department> departments) {
+		this.departments = departments;
+	}
+
+	public Set<Subject> getSubjects() {
+		return subjects;
+	}
+
+	public void setSubjects(Set<Subject> subjects) {
+		this.subjects = subjects;
+	}
+
+	////////////////////////////////////////
 
 	public static PositionSearchCriteria valueOf(String s) {
 		return new PositionSearchCriteria();
+	}
+
+	public void initializeCollections() {
+		this.departments.size();
+		this.subjects.size();
 	}
 
 }

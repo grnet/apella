@@ -390,10 +390,6 @@ public class CandidacyRESTService extends RESTService {
 		if (!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.ANOIXTI)) {
-			throw new RestException(Status.CONFLICT, "wrong.position.status");
-		}
-
 		// Parse Request
 		List<FileItem> fileItems = readMultipartFormData(request);
 		// Find required type:
@@ -406,6 +402,11 @@ public class CandidacyRESTService extends RESTService {
 		}
 		if (type == null) {
 			throw new RestException(Status.BAD_REQUEST, "missing.file.type");
+		}
+		if (type.equals(FileType.SYMPLIROMATIKA_EGGRAFA) && !(candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.ANOIXTI) || candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.EPILOGI))) {
+			throw new RestException(Status.CONFLICT, "wrong.position.status");
+		} else if (!candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.ANOIXTI)) {
+			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		// Check number of file types
 		Set<CandidacyFile> existingFiles = FileHeader.filter(candidacy.getFiles(), type);
@@ -443,10 +444,6 @@ public class CandidacyRESTService extends RESTService {
 		if (!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.ANOIXTI)) {
-			throw new RestException(Status.CONFLICT, "wrong.position.status");
-		}
-
 		// Parse Request
 		List<FileItem> fileItems = readMultipartFormData(request);
 		// Find required type:
@@ -459,6 +456,11 @@ public class CandidacyRESTService extends RESTService {
 		}
 		if (type == null) {
 			throw new RestException(Status.BAD_REQUEST, "missing.file.type");
+		}
+		if (type.equals(FileType.SYMPLIROMATIKA_EGGRAFA) && !(candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.ANOIXTI) || candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.EPILOGI))) {
+			throw new RestException(Status.CONFLICT, "wrong.position.status");
+		} else if (!candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.ANOIXTI)) {
+			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		if (!CandidacyFile.fileTypes.containsKey(type)) {
 			throw new RestException(Status.CONFLICT, "wrong.file.type");
