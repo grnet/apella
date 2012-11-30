@@ -1021,10 +1021,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			// Event Handlers
 			criteria.on("criteria:search", function(criteria) {
 				positions.fetch({
+					cache : false,
 					data : {
-						"criteria" : criteria
-					},
-					processData : true
+						"criteria" : JSON.stringify(criteria)
+					}
 				});
 			});
 			positions.on("position:selected", function(position) {

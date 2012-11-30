@@ -8,10 +8,12 @@ import gr.grnet.dep.service.model.Position.PublicPositionView;
 import gr.grnet.dep.service.model.PositionSearchCriteria;
 import gr.grnet.dep.service.model.PositionSearchCriteria.PositionSearchCriteriaView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.Subject;
 import gr.grnet.dep.service.model.User;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -20,6 +22,7 @@ import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
+import javax.persistence.Query;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -41,18 +44,49 @@ public class PositionSearchRESTService extends RESTService {
 	@GET
 	@Path("/search")
 	@JsonView({PublicPositionView.class})
-	public List<Position> search(@HeaderParam(TOKEN_HEADER) String authToken, @QueryParam("criteria") PositionSearchCriteria criteria) {
+	public List<Position> search(@HeaderParam(TOKEN_HEADER) String authToken, @QueryParam("criteria") String criteriaString) {
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 			Date today = sdf.parse(sdf.format(new Date()));
-			@SuppressWarnings("unchecked")
-			List<Position> positions = (List<Position>) em.createQuery(
-				"from Position p " +
-					"where p.permanent = true " +
-					"and p.phase.candidacies.closingDate >= :today ")
-				.setParameter("today", today)
-				.getResultList();
+			PositionSearchCriteria criteria = fromJSON(PositionSearchCriteria.class, criteriaString);
+			if (criteria == null) {
+				throw new RestException(Status.BAD_REQUEST, "bad.criteria.format");
+			}
 
+			// Prepare Query
+			String queryString = "from Position p " +
+				"where p.permanent = true " +
+				"and p.phase.candidacies.closingDate >= :today ";
+			if (!criteria.getDepartments().isEmpty()) {
+				queryString += "and p.department.id in (:departmentIds) ";
+			}
+			if (!criteria.getSubjects().isEmpty()) {
+				queryString += "and p.subject.name in (:subjects) ";
+			}
+
+			Query query = em.createQuery(queryString)
+				.setParameter("today", today);
+
+			if (!criteria.getDepartments().isEmpty()) {
+				Collection<Long> departmentIds = new ArrayList<Long>();
+				for (Department department : criteria.getDepartments()) {
+					departmentIds.add(department.getId());
+				}
+				query = query.setParameter("departmentIds", departmentIds);
+			}
+			if (!criteria.getSubjects().isEmpty()) {
+				Collection<String> subjects = new ArrayList<String>();
+				for (Subject subject : criteria.getSubjects()) {
+					subjects.add(subject.getName());
+				}
+				query = query.setParameter("subjects", subjects);
+			}
+
+			// Execute Query
+			@SuppressWarnings("unchecked")
+			List<Position> positions = (List<Position>) query.getResultList();
+
+			// Return Result
 			for (Position position : positions) {
 				position.initializeCollections();
 			}
@@ -119,10 +153,13 @@ public class PositionSearchRESTService extends RESTService {
 			throw new RestException(Status.CONFLICT, "already.exists");
 		} catch (NoResultException e) {
 			Collection<Department> departments = supplementDepartments(newCriteria.getDepartments());
+			Collection<Subject> subjects = supplementSubjects(newCriteria.getSubjects());
 
 			newCriteria.setCandidate(candidate);
 			newCriteria.getDepartments().clear();
 			newCriteria.getDepartments().addAll(departments);
+			newCriteria.getSubjects().clear();
+			newCriteria.getSubjects().addAll(subjects);
 
 			newCriteria = em.merge(newCriteria);
 			em.flush();
@@ -144,9 +181,12 @@ public class PositionSearchRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		Collection<Department> departments = supplementDepartments(newCriteria.getDepartments());
+		Collection<Subject> subjects = supplementSubjects(newCriteria.getSubjects());
 
 		criteria.getDepartments().clear();
 		criteria.getDepartments().addAll(departments);
+		criteria.getSubjects().clear();
+		criteria.getSubjects().addAll(subjects);
 
 		em.flush();
 

@@ -428,6 +428,24 @@ public class RESTService {
 		return null;
 	}
 
+	public <T> T fromJSON(Class<T> clazz, String json) {
+		try {
+			ContextResolver<ObjectMapper> resolver = providers.getContextResolver(ObjectMapper.class, MediaType.APPLICATION_JSON_TYPE);
+			ObjectMapper mapper = resolver.getContext(clazz);
+			T result = mapper.readValue(json, clazz);
+			return result;
+		} catch (JsonGenerationException e) {
+			logger.log(Level.SEVERE, "", e);
+		} catch (JsonMappingException e) {
+			logger.log(Level.SEVERE, "", e);
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, "", e);
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "", e);
+		}
+		return null;
+	}
+
 	/******************************
 	 * Utilitiy Functions *********
 	 ******************************/
@@ -443,6 +461,17 @@ public class RESTService {
 		} catch (NoResultException e) {
 			return subject;
 		}
+	}
+
+	public Collection<Subject> supplementSubjects(Collection<Subject> subjects) {
+		if (subjects.isEmpty()) {
+			return subjects;
+		}
+		Collection<Subject> supplemented = new ArrayList<Subject>();
+		for (Subject subject : subjects) {
+			supplemented.add(supplementSubject(subject));
+		}
+		return supplemented;
 	}
 
 	@SuppressWarnings("unchecked")

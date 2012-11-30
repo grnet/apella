@@ -5871,12 +5871,16 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			var self = this;
-			_.bindAll(self, "render", "search", "submit", "close");
+			_.bindAll(self, "render", "addSubject", "removeSubject", "addDepartment", "removeDepartment", "search", "submit", "close");
 			self.template = _.template(tpl_position_search_criteria);
 			self.model.bind('change', self.render, self);
 		},
 
 		events : {
+			"click a#addDepartment" : "addDepartment",
+			"click a#removeDepartment" : "removeDepartment",
+			"click a#addSubject" : "addSubject",
+			"click a#removeSubject" : "removeSubject",
 			"click a#save" : function() {
 				$("form", this.el).submit();
 			},
@@ -5887,9 +5891,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(event) {
 			var self = this;
 			self.$el.html(self.template(self.model.toJSON()));
-			setTimeout(function() {
-				self.$("select[name=department]").chosen();
-			}, 0);
 			// Add Departments to selector:
 			App.departments = App.departments ? App.departments : new Models.Departments();
 			App.departments.fetch({
@@ -5901,10 +5902,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							return _.isEqual(selectedDepartment.id, department.get("id"));
 						});
 						var institution = department.get("institution").name;
-						self.$("select[name=department]:not(:has(optgroup[label='" + institution + "']))").append("<optgroup label='" + institution + "'>");
-						self.$("select[name=department] optgroup[label='" + institution + "']").append("<option value='" + department.get("id") + "' " + (selected ? "selected " : "") + "label='" + institution + "' " + "><span>" + department.get("department") + "</span></option>");
+						self.$("select[name=suggestDepartment]:not(:has(optgroup[label='" + institution + "']))").append("<optgroup label='" + institution + "'>");
+						self.$("select[name=suggestDepartment] optgroup[label='" + institution + "']").append("<option value='" + department.get("id") + "' " + (selected ? "selected " : "") + "><span>" + department.get("department") + "</span></option>");
 					});
-					self.$("select[name=department]").trigger("liszt:updated");
 				},
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
@@ -5914,29 +5914,71 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					popup.show();
 				}
 			});
+			// Add Departments:
+			_.each(self.model.get("departments"), function(department) {
+				self.addDepartment(undefined, department);
+			});
+
+			// Add Subjects:
+			_.each(self.model.get("subjects"), function(subject) {
+				self.addSubject(undefined, subject.name);
+			});
 
 			return self;
 		},
 
+		addSubject : function(event, subject) {
+			var self = this;
+			subject = subject || self.$("input[name=suggestSubject]").val();
+			self.$("#subjects").prepend("<div id=\"subject\" class=\"input-append\"><input type=\"text\" class=\"input-xlarge\" name=\"subject\" value=\"" + subject + "\" disabled /><a id=\"removeSubject\" data-subject=\"" + subject + "\" class=\"btn btn-danger\"><i class=\"icon-minus\"></i></a></div>");
+			self.$("input[name=suggestSubject]").val("");
+		},
+
+		removeSubject : function(event) {
+			$(event.currentTarget).parents("div#subject").remove();
+		},
+
+		addDepartment : function(event, department) {
+			var self = this;
+			department = department || App.departments.get(self.$("select[name=suggestDepartment]").val()).toJSON();
+			self.$("#departments").append("<div class=\"controls\"><div id=\"department\" class=\"input-append\"><input type=\"hidden\" class=\"input-xlarge\" name=\"department\" value=\"" + department.id + "\" /><span class=\"uneditable-input input-xlarge\" title=\"" + department.institution.name + "\">" + department.department + "</span><a id=\"removeDepartment\" class=\"btn btn-danger\"><i class=\"icon-minus\"></i></a></div>");
+			self.$("select[name=suggestDepartment]").val("");
+		},
+
+		removeDepartment : function(event) {
+			$(event.currentTarget).parents("div#department").remove();
+		},
+
 		search : function(event) {
 			var self = this;
-			var values = {};
+			var values = {
+				departments : _.map(self.$("input[name=department]"), function(department) {
+					return {
+						id : $(department).val()
+					};
+				}),
+				subjects : _.map(self.$("input[name=subject]"), function(subject) {
+					return {
+						name : $(subject).val()
+					};
+				})
+			};
 			self.model.trigger("criteria:search", values);
 		},
 
 		submit : function(event) {
 			var self = this;
 			var values = {
-				departments : _.map(self.$("select[name=department]").val(), function(departmentId) {
+				departments : _.map(self.$("input[name=department]"), function(department) {
 					return {
-						id : departmentId
-					}
+						id : $(department).val()
+					};
 				}),
-				subjects : _.map(self.$("input[name=subject]", function(subject) {
+				subjects : _.map(self.$("input[name=subject]"), function(subject) {
 					return {
-						name : subject.val()
-					}
-				}))
+						name : $(subject).val()
+					};
+				})
 			};
 			// Read Input
 			// Save to model
