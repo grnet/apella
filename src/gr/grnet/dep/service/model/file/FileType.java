@@ -10,8 +10,6 @@ public enum FileType {
 	PTYXIO,
 	FEK,
 	PROFILE,
-	// Mitroo
-	MITROO,
 	// Position Files
 	APOFASI_SYSTASIS_EPITROPIS, // Απόφαση Σύστασης Επιτροπής
 	PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES, // Πρακτικό της συνεδρίασης της επιτροπής για την ανάδειξη των αξιολογητών,

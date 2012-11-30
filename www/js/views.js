@@ -396,7 +396,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -422,7 +422,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -448,7 +448,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -542,7 +542,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -759,7 +759,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					error : function(model, resp, options) {
 						var popup = new Views.PopupView({
 							type : "error",
-							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+							message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 						});
 						popup.show();
 					}
@@ -800,7 +800,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					error : function(model, resp, options) {
 						var popup = new Views.PopupView({
 							type : "error",
-							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+							message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 						});
 						popup.show();
 					}
@@ -987,7 +987,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -1301,7 +1301,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -1327,7 +1327,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						error : function(model, resp, options) {
 							var popup = new Views.PopupView({
 								type : "error",
-								message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+								message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 							});
 							popup.show();
 						}
@@ -1354,7 +1354,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -2035,7 +2035,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						error : function(model, resp, options) {
 							var popup = new Views.PopupView({
 								type : "error",
-								message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+								message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 							});
 							popup.show();
 						}
@@ -2057,7 +2057,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					error : function(model, resp, options) {
 						var popup = new Views.PopupView({
 							type : "error",
-							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+							message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 						});
 						popup.show();
 					}
@@ -2080,7 +2080,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					error : function(model, resp, options) {
 						var popup = new Views.PopupView({
 							type : "error",
-							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+							message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 						});
 						popup.show();
 					}
@@ -2156,7 +2156,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					error : function(model, resp, options) {
 						var popup = new Views.PopupView({
 							type : "error",
-							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+							message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 						});
 						popup.show();
 					}
@@ -2231,7 +2231,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					error : function(model, resp, options) {
 						var popup = new Views.PopupView({
 							type : "error",
-							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+							message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 						});
 						popup.show();
 					}
@@ -2289,7 +2289,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					error : function(model, resp, options) {
 						var popup = new Views.PopupView({
 							type : "error",
-							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+							message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 						});
 						popup.show();
 					}
@@ -2453,7 +2453,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 										error : function(model, resp, options) {
 											var popup = new Views.PopupView({
 												type : "error",
-												message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+												message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 											});
 											popup.show();
 										}
@@ -2475,7 +2475,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								error : function(model, resp, options) {
 									var popup = new Views.PopupView({
 										type : "error",
-										message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+										message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 									});
 									popup.show();
 								}
@@ -2496,7 +2496,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					error : function(model, resp, options) {
 						var popup = new Views.PopupView({
 							type : "error",
-							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+							message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 						});
 						popup.show();
 					}
@@ -2532,7 +2532,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						error : function(model, resp, options) {
 							var popup = new Views.PopupView({
 								type : "error",
-								message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+								message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 							});
 							popup.show();
 						}
@@ -2559,7 +2559,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -2695,7 +2695,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					var resp = data.jqXHR;
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 					self.$('#progress.bar').hide('slow', function() {
@@ -2746,7 +2746,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					error : function(model, resp, options) {
 						var popup = new Views.PopupView({
 							type : "error",
-							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+							message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 						});
 						popup.show();
 					}
@@ -2869,7 +2869,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					var resp = data.jqXHR;
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 					self.$('#progress.bar').hide('slow', function() {
@@ -2910,7 +2910,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					error : function(model, resp, options) {
 						var popup = new Views.PopupView({
 							type : "error",
-							message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+							message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 						});
 						popup.show();
 					}
@@ -3274,7 +3274,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -3305,7 +3305,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -3939,7 +3939,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -3977,7 +3977,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						error : function(model, resp, options) {
 							var popup = new Views.PopupView({
 								type : "error",
-								message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+								message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 							});
 							popup.show();
 						}
@@ -4007,7 +4007,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -4213,7 +4213,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -4242,7 +4242,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							error : function(model, resp, options) {
 								var popup = new Views.PopupView({
 									type : "error",
-									message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+									message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 								});
 								popup.show();
 							}
@@ -4272,7 +4272,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						error : function(model, resp, options) {
 							var popup = new Views.PopupView({
 								type : "error",
-								message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+								message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 							});
 							popup.show();
 						}
@@ -4483,7 +4483,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -4509,7 +4509,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						error : function(model, resp, options) {
 							var popup = new Views.PopupView({
 								type : "error",
-								message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+								message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 							});
 							popup.show();
 						}
@@ -4704,25 +4704,30 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		renderActions : function() {
+			var self = this;
 			if (!App.loggedOnUser.hasRole("INSTITUTION_MANAGER") && !App.loggedOnUser.hasRole("INSTITUTION_ASSISTANT")) {
 				return;
 			}
-			self.$("#actions").append("<div class=\"btn-group\"><select class=\"input-xlarge\" name=\"institution\"></select><a id=\"createRegister\" class=\"btn\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_register') + " </a></div>");
+			if (self.collection.any(function(register) {
+				return App.loggedOnUser.isAssociatedWithInstitution(register.get("institution"));
+			})) {
+				return;
+			}
+			self.$("#actions").append("<div class=\"btn-group\"><input type=\"hidden\" name=\"institution\" /><a id=\"createRegister\" class=\"btn\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_register') + " </a></div>");
 			// Add institutions in selector:
 			App.institutions = App.institutions ? App.institutions : new Models.Institutions();
 			App.institutions.fetch({
 				cache : true,
 				success : function(collection, resp) {
-					_.each(collection.filter(function(institution) {
+					var institution = collection.find(function(institution) {
 						return App.loggedOnUser.isAssociatedWithInstitution(institution);
-					}), function(institution) {
-						self.$("select[name='institution']").append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
 					});
+					self.$("#actions input[name=institution]").val(institution.get("id"));
 				},
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -4741,7 +4746,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var newRegister = new Models.Register();
 			newRegister.save({
 				institution : {
-					id : self.$("select[name='institution']").val()
+					id : self.$("input[name='institution']").val()
 				}
 			}, {
 				wait : true,
@@ -4752,7 +4757,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -4787,19 +4792,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(eventName) {
 			var self = this;
 			self.$el.html(self.template(self.model.toJSON()));
-
-			// Add Files
-			var files = new Models.Files();
-			files.url = self.model.url() + "/file";
-			files.fetch({
-				cache : false,
-				success : function(collection, response) {
-					self.addFileList(collection, "MITROO", self.$("#mitrooFileList"), {
-						withMetadata : true,
-						editable : false
-					});
-				}
-			});
 			// Add Members
 			self.addMembersView(self.$("#members"));
 			return self;
@@ -4836,7 +4828,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		tagName : "div",
 
 		initialize : function() {
-			// TODO:
 			var self = this;
 			self.template = _.template(tpl_register_members);
 			_.bindAll(self, "render", "viewMember", "close");
@@ -4897,53 +4888,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(eventName) {
 			var self = this;
 			self.$el.html(self.template(self.model.toJSON()));
-
-			// Add institutions in selector:
-			self.$("select[name='institution']").change(function(event) {
-				self.$("select[name='institution']").next(".help-block").html(self.$("select[name='institution'] option:selected").text());
-			});
-			App.institutions = App.institutions ? App.institutions : new Models.Institutions();
-			App.institutions.fetch({
-				cache : true,
-				success : function(collection, resp) {
-					_.each(collection.filter(function(institution) {
-						return App.loggedOnUser.isAssociatedWithInstitution(institution);
-					}), function(institution) {
-						if (_.isObject(self.model.get("institution")) && _.isEqual(institution.id, self.model.get("institution").id)) {
-							self.$("select[name='institution']").append("<option value='" + institution.get("id") + "' selected>" + institution.get("name") + "</option>");
-						} else {
-							self.$("select[name='institution']").append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
-						}
-					});
-					self.$("select[name='institution']").change();
-				},
-				error : function(model, resp, options) {
-					var popup = new Views.PopupView({
-						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-					});
-					popup.show();
-				}
-			});
-
+			// Add Members
 			if (self.model.has("id")) {
-				var files = new Models.Files();
-				files.url = self.model.url() + "/file";
-				files.fetch({
-					cache : false,
-					success : function(collection, response) {
-						self.addFileList(collection, "MITROO", self.$("#mitrooFileList"), {
-							withMetadata : true,
-							editable : true
-						});
-					}
-				});
 				self.addMembersView(self.$("#registerMembers"));
 			} else {
-				self.$("#mitrooFileList").html($.i18n.prop("PressSave"));
 				self.$("#registerMembers").html($.i18n.prop("PressSave"));
 			}
 
+			// Widgets
 			self.validator = $("form", this.el).validate({
 				errorElement : "span",
 				errorClass : "help-inline",
@@ -4987,7 +4939,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			// Read Input
 			values.title = self.$('form input[name=title]').val();
 			values.institution = {
-				"id" : self.$('form select[name=institution]').val()
+				"id" : self.$('form input[name=institution]').val()
 			};
 			// Save to model
 			self.model.save(values, {
@@ -5005,7 +4957,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -5043,7 +4995,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						error : function(model, resp, options) {
 							var popup = new Views.PopupView({
 								type : "error",
-								message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+								message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 							});
 							popup.show();
 						}
@@ -5201,7 +5153,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						error : function(model, resp, options) {
 							var popup = new Views.PopupView({
 								type : "error",
-								message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+								message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 							});
 							popup.show();
 						}
@@ -5291,7 +5243,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -5656,7 +5608,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -5687,7 +5639,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -5779,7 +5731,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -5817,7 +5769,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						error : function(model, resp, options) {
 							var popup = new Views.PopupView({
 								type : "error",
-								message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+								message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 							});
 							popup.show();
 						}
@@ -5909,7 +5861,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -5987,7 +5939,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -6288,7 +6240,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
-						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				}
@@ -6326,7 +6278,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						error : function(model, resp, options) {
 							var popup = new Views.PopupView({
 								type : "error",
-								message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+								message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 							});
 							popup.show();
 						}

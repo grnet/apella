@@ -1,7 +1,5 @@
 package gr.grnet.dep.service.model;
 
-import gr.grnet.dep.service.model.file.RegisterFile;
-
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -40,9 +38,6 @@ public class Register implements Serializable {
 	private Institution institution;
 
 	@OneToMany(mappedBy = "register", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<RegisterFile> files = new HashSet<RegisterFile>();
-
-	@OneToMany(mappedBy = "register", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<RegisterMember> members = new HashSet<RegisterMember>();
 
 	public Long getId() {
@@ -78,15 +73,6 @@ public class Register implements Serializable {
 	}
 
 	@XmlTransient
-	public Set<RegisterFile> getFiles() {
-		return files;
-	}
-
-	public void setFiles(Set<RegisterFile> files) {
-		this.files = files;
-	}
-
-	@XmlTransient
 	public Set<RegisterMember> getMembers() {
 		return members;
 	}
@@ -96,11 +82,6 @@ public class Register implements Serializable {
 	}
 
 	////////////////////////////////////////////////////
-
-	public void addFile(RegisterFile file) {
-		this.files.add(file);
-		file.setRegister(this);
-	}
 
 	public void addMember(RegisterMember member) {
 		member.setRegister(this);
@@ -113,6 +94,6 @@ public class Register implements Serializable {
 	}
 
 	public void initializeCollections() {
-		this.files.size();
+		this.members.size();
 	}
 }

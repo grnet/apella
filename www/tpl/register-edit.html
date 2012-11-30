@@ -4,21 +4,14 @@
 		<div class="control-group">
 			<label class="control-label" for="title"><%= $.i18n.prop('Title') %>:</label>
 			<div class="controls">
-				<input class="input-xlarge" name="title" value ="<%= title %>">
+				<input type="text" class="input-xlarge" name="title" value ="<%= title %>" />
 			</div>
 		</div>
 		<div class="control-group">
 			<label class="control-label" for="institution"><%= $.i18n.prop('Institution') %>:</label>
 			<div class="controls">
-				<select class="input-xlarge" name="institution">
-				</select>
-				<span class="help-block"></span>
-			</div>
-		</div>
-		<div class="control-group">
-			<label class="control-label" for="mitrooFileList"><%= $.i18n.prop('MitrooFileList') %>:</label>
-			<div class="controls">
-				<span id="mitrooFileList"></span>
+				<input type="hidden" name="institution" value ="<%= institution.id %>" />
+				<span class="help-inline"><%= institution.name %></span>
 			</div>
 		</div>
 		<div class="control-group">
