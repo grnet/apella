@@ -852,6 +852,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						required : !_.isEqual(role.discriminator, "PROFESSOR_FOREIGN"),
 						onlyLatin : true
 					},
+					identification : "required",
 					password : {
 						required : true,
 						pwd : true,
@@ -879,6 +880,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					address_country : "required"
 				},
 				messages : {
+					username : {
+						required : $.i18n.prop('validation_username'),
+						email : $.i18n.prop('validation_username'),
+						minlength : $.i18n.prop('validation_minlength', 2)
+					},
 					firstname : $.i18n.prop('validation_firstname'),
 					lastname : $.i18n.prop('validation_lastname'),
 					fathername : $.i18n.prop('validation_fathername'),
@@ -894,10 +900,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						required : $.i18n.prop('validation_fathernamelatin'),
 						onlyLatin : $.i18n.prop('validation_latin')
 					},
-					username : {
-						required : $.i18n.prop('validation_username'),
-						email : $.i18n.prop('validation_username'),
-						minlength : $.i18n.prop('validation_minlength', 2)
+					identification : {
+						required : $.i18n.prop('validation_required')
 					},
 					password : {
 						required : $.i18n.prop('validation_required'),
@@ -1152,8 +1156,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						onlyLatin : true
 					},
 					identification : {
-						required : true,
-						onlyLatin : true
+						required : true
 					},
 					password : {
 						required : self.model.isNew(),
@@ -1199,8 +1202,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						onlyLatin : $.i18n.prop('validation_latin')
 					},
 					identification : {
-						required : $.i18n.prop('validation_identification'),
-						onlyLatin : $.i18n.prop('validation_latin')
+						required : $.i18n.prop('validation_identification')
 					},
 					password : {
 						required : $.i18n.prop('validation_required'),
@@ -3760,14 +3762,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					cache : false,
 					wait : true,
 					success : function(collection, resp) {
+						self.$("select[name='nominatedCandidacy']").empty();
 						// Add Candidacies in selector:
 						var nominatedCandidacyId = (_.isObject(self.model.get("phase").nomination) && !_.isUndefined(self.model.get("phase").nomination.nominatedCandidacy)) ? self.model.get("phase").nomination.nominatedCandidacy.id : undefined;
 						self.$("select[name='nominatedCandidacy']").append("<option value=''>--</option>");
 						collection.each(function(candidacy) {
 							if (_.isEqual(candidacy.id, nominatedCandidacyId)) {
-								self.$("select[name='nominatedCandidacy']").append("<option value='" + candidacy.get("id") + "' selected>" + candidacy.get("snapshot").username + "</option>");
+								self.$("select[name='nominatedCandidacy']").append("<option value='" + candidacy.get("id") + "' selected>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + " (" + candidacy.get("snapshot").username + ")" + "</option>");
 							} else {
-								self.$("select[name='nominatedCandidacy']").append("<option value='" + candidacy.get("id") + "'>" + candidacy.get("snapshot").username + "</option>");
+								self.$("select[name='nominatedCandidacy']").append("<option value='" + candidacy.get("id") + "'>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + " (" + candidacy.get("snapshot").username + ")" + "</option>");
 							}
 						});
 						self.$("select[name='nominatedCandidacy']").change();
@@ -3860,7 +3863,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					department : "required",
 					subject : "required",
 					status : "required",
-					fek : "required",
+					fek : {
+						required : true,
+						url : true
+					},
 					fekSentDate : "required",
 					openingDate : {
 						"required" : true,
@@ -5590,20 +5596,25 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		renderActions : function() {
+			var self = this;
 			if (!App.loggedOnUser.hasRole("INSTITUTION_MANAGER") && !App.loggedOnUser.hasRole("INSTITUTION_ASSISTANT")) {
 				return;
 			}
-			self.$("#actions").append("<div class=\"btn-group\"><select class=\"input-xlarge\" name=\"institution\"></select><a id=\"createInstitutionRF\" class=\"btn\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_institutionrf') + " </a></div>");
+			if (self.collection.any(function(register) {
+				return App.loggedOnUser.isAssociatedWithInstitution(register.get("institution"));
+			})) {
+				return;
+			}
+			self.$("#actions").append("<div class=\"btn-group\"><input type=\"hidden\" name=\"institution\" /><a id=\"createInstitutionRF\" class=\"btn\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_institutionrf') + " </a></div>");
 			// Add institutions in selector:
-			App.institutions = App.institutions || new Models.Institutions();
+			App.institutions = App.institutions ? App.institutions : new Models.Institutions();
 			App.institutions.fetch({
 				cache : true,
 				success : function(collection, resp) {
-					_.each(collection.filter(function(institution) {
+					var institution = collection.find(function(institution) {
 						return App.loggedOnUser.isAssociatedWithInstitution(institution);
-					}), function(institution) {
-						self.$("select[name='institution']").append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
 					});
+					self.$("#actions input[name=institution]").val(institution.get("id"));
 				},
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
@@ -5628,7 +5639,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var newIRF = new Models.InstitutionRegulatoryFramework();
 			newIRF.save({
 				institution : {
-					id : self.$("select[name='institution']").val()
+					id : self.$("input[name='institution']").val()
 				}
 			}, {
 				wait : true,

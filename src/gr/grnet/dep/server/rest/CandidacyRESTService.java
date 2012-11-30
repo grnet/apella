@@ -405,7 +405,7 @@ public class CandidacyRESTService extends RESTService {
 		}
 		if (type.equals(FileType.SYMPLIROMATIKA_EGGRAFA) && !(candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.ANOIXTI) || candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.EPILOGI))) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
-		} else if (!candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.ANOIXTI)) {
+		} else if (!type.equals(FileType.SYMPLIROMATIKA_EGGRAFA) && !candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.ANOIXTI)) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		// Check number of file types
@@ -459,7 +459,7 @@ public class CandidacyRESTService extends RESTService {
 		}
 		if (type.equals(FileType.SYMPLIROMATIKA_EGGRAFA) && !(candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.ANOIXTI) || candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.EPILOGI))) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
-		} else if (!candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.ANOIXTI)) {
+		} else if (!type.equals(FileType.SYMPLIROMATIKA_EGGRAFA) && !candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.ANOIXTI)) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		if (!CandidacyFile.fileTypes.containsKey(type)) {
@@ -509,9 +509,6 @@ public class CandidacyRESTService extends RESTService {
 		if (!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.ANOIXTI)) {
-			throw new RestException(Status.CONFLICT, "wrong.position.status");
-		}
 
 		try {
 			CandidacyFile candidacyFile = null;
@@ -524,6 +521,13 @@ public class CandidacyRESTService extends RESTService {
 			if (candidacyFile == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 			}
+			FileType type = candidacyFile.getType();
+			if (type.equals(FileType.SYMPLIROMATIKA_EGGRAFA) && !(candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.ANOIXTI) || candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.EPILOGI))) {
+				throw new RestException(Status.CONFLICT, "wrong.position.status");
+			} else if (!type.equals(FileType.SYMPLIROMATIKA_EGGRAFA) && !candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.ANOIXTI)) {
+				throw new RestException(Status.CONFLICT, "wrong.position.status");
+			}
+
 			File file = deleteFileBody(candidacyFile);
 			file.delete();
 			if (candidacyFile.getCurrentBody() == null) {

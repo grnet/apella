@@ -281,14 +281,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 						cache : false,
 						success : function(collection, response) {
 							$("#content div#user").append(userView.render().el);
-							collection.each(function(role) {
-								roleView = new Views.AdminRoleEditView({
-									className : "row-fluid",
-									model : role
-								});
-								$("#content div#roles").append(roleView.render().el);
-								self.currentView.push(roleView);
+							roleView = new Views.AdminRoleEditView({
+								className : "row-fluid",
+								model : collection.find(function(role) {
+									return role.isPrimary();
+								})
 							});
+							$("#content div#roles").append(roleView.render().el);
+							self.currentView.push(roleView);
 						}
 					});
 					self.refreshBreadcrumb([ $.i18n.prop('adminmenu_users'), $.i18n.prop('menu_user'), user.get("username") ]);
@@ -1041,11 +1041,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 							App.router.navigate("candidateCandidacies/" + model.id, {
 								trigger : true
 							});
-							var popup = new Views.PopupView({
-								type : "success",
-								message : $.i18n.prop("Success")
-							});
-							popup.show();
 						},
 						error : function(model, resp, options) {
 							var popup = new Views.PopupView({

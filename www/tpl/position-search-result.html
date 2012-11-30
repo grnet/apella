@@ -21,7 +21,7 @@
 			<td><%= position.department.department %></td>
 			<td><%= position.description %></td>
 			<td><%= position.subject.name %></td>
-			<td><%= position.fek %>, <%= position.fekSentDate %></td>
+			<td><a href="<%= fek %>" target="external"><%= $.i18n.prop("FEK") %></a>, <%= position.fekSentDate %></td>
 			<td><%= $.i18n.prop('PositionStatus_' + position.phase.clientStatus) %></td>
 			<td><%= position.phase.candidacies.openingDate %></td>
 			<td><%= position.phase.candidacies.closingDate %></td>

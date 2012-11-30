@@ -203,6 +203,5 @@ public class Position {
 	}
 
 	public void initializeCollections() {
-		// TODO:
 	}
 }

@@ -24,70 +24,76 @@
 			<div class="control-group">
 				<label class="control-label" for="username"><%= $.i18n.prop('Username') %>:</label>
 				<div class="controls">
-					<input type="text" name="username" />
+					<input type="text" class="input-xlarge" name="username" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="firstname"><%= $.i18n.prop('Name') %>:</label>
 				<div class="controls">
-					<input type="text" name="firstname" />
+					<input type="text" class="input-xlarge" name="firstname" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="lastname"><%= $.i18n.prop('Surname') %>:</label>
 				<div class="controls">
-					<input type="text" name="lastname" />
+					<input type="text" class="input-xlarge" name="lastname" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="fathername"><%= $.i18n.prop('FatherName') %>:</label>
 				<div class="controls">
-					<input type="text" name="fathername" />
+					<input type="text" class="input-xlarge" name="fathername" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="firstnamelatin"><%= $.i18n.prop('NameLatin') %>:</label>
 				<div class="controls">
-					<input type="text" name="firstnamelatin" />
+					<input type="text" class="input-xlarge" name="firstnamelatin" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="lastname"><%= $.i18n.prop('SurnameLatin') %>:</label>
 				<div class="controls">
-					<input type="text" name="lastnamelatin" />
+					<input type="text" class="input-xlarge" name="lastnamelatin" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="fathernamelatin"><%= $.i18n.prop('FatherNameLatin') %>:</label>
 				<div class="controls">
-					<input type="text" name="fathernamelatin" />
+					<input type="text" class="input-xlarge" name="fathernamelatin" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="identification"><%= $.i18n.prop('Identification') %>:</label>
+				<div class="controls">
+					<input type="text" class="input-xlarge" name="identification" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="password"><%= $.i18n.prop('Password') %>:</label>
 				<div class="controls">
-					<input type="password" name="password" />
+					<input type="password" class="input-xlarge" name="password" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="confirm_password"><%= $.i18n.prop('ConfirmPassword') %>:</label>
 				<div class="controls">
-					<input type="password" name="confirm_password" />
+					<input type="password" class="input-xlarge" name="confirm_password" />
 				</div>
 			</div>
 		</fieldset>
 		<fieldset>
 			<legend><%= $.i18n.prop('ContactInformation') %></legend>
 			<div class="control-group">
-				<label class="control-label" for="mobile"><%= $.i18n.prop('Email') %>:</label>
+				<label class="control-label" for="mobile"><%= _.isEqual(discriminator, "PROFESSOR_FOREIGN") ? $.i18n.prop('InstitutionEmail') : $.i18n.prop('Email') %>:</label>
 				<div class="controls">
-					<input type="text" name="email" />
+					<input type="text" class="input-xlarge" name="email" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="mobile"><%= $.i18n.prop('Mobile') %>:</label>
 				<div class="controls">
-					<input type="text" name="mobile" />
+					<input type="text" class="input-xlarge" name="mobile" />
 				</div>
 			</div>
 		</fieldset>
@@ -96,31 +102,31 @@
 			<div class="control-group">
 				<label class="control-label" for="address_street"><%= $.i18n.prop('Street') %>:</label>
 				<div class="controls">
-					<input type="text" name="address_street" />
+					<input type="text" class="input-xlarge" name="address_street" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="address_number"><%= $.i18n.prop('StreetNumber') %>:</label>
 				<div class="controls">
-					<input type="text" name="address_number" />
+					<input type="text" class="input-xlarge" name="address_number" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="address_zip"><%= $.i18n.prop('Zip') %>:</label>
 				<div class="controls">
-					<input type="text" name="address_zip" />
+					<input type="text" class="input-xlarge" name="address_zip" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="address_city"><%= $.i18n.prop('City') %>:</label>
 				<div class="controls">
-					<input type="text" name="address_city" />
+					<input type="text" class="input-xlarge" name="address_city" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="address_country"><%= $.i18n.prop('Country') %>:</label>
 				<div class="controls">
-					<input type="text" name="address_country" />
+					<input type="text" class="input-xlarge" name="address_country" />
 				</div>
 			</div>
 			<div class="form-actions">

@@ -68,10 +68,11 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 		// Validate
 		try {
 			em.createQuery("select irf from InstitutionRegulatoryFramework irf " +
-				"where irf.institution.id = :institutionId")
+				"where irf.institution.id = :institutionId " +
+				"and irf.permanent = true ")
 				.setParameter("institutionId", institution.getId())
 				.getSingleResult();
-			throw new RestException(Status.CONFLICT, "wrong.institution.id");
+			throw new RestException(Status.CONFLICT, "institutionrf.already.exists");
 		} catch (NoResultException ne) {
 		}
 		// Create

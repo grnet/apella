@@ -14,7 +14,9 @@
 			<dt><%= $.i18n.prop('Subject') %></dt>
 			<dd><% if (!_.isUndefined(subject)) { %><%= subject.name %><% } %></dd>
 			<dt><%= $.i18n.prop('FEK') %></dt>
-			<dd><%= fek %></dd>
+			<dd>
+				<a href="<%= fek %>" target="external"><%= fek %></a>
+			</dd>
 			<dt><%= $.i18n.prop('FEKSentDate') %></dt>
 			<dd><%= fekSentDate %></dd>
 		</dl>

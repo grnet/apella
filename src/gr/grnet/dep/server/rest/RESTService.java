@@ -161,6 +161,10 @@ public class RESTService {
 		if (FileHeader.filter(candidate.getFiles(), FileType.BIOGRAFIKO).size() == 0) {
 			throw new RestException(Status.CONFLICT, "validation.candidacy.no.cv");
 		}
+		if (candidate.getUser().getPrimaryRole().equals(RoleDiscriminator.CANDIDATE) &&
+			FileHeader.filter(candidate.getFiles(), FileType.PTYXIO).size() == 0) {
+			throw new RestException(Status.CONFLICT, "validation.candidacy.no.ptyxio");
+		}
 	}
 
 	/**

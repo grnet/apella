@@ -1,6 +1,6 @@
 package gr.grnet.dep.service.model;
 
-import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
+import gr.grnet.dep.service.model.Candidacy.CandidacyView;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 
@@ -65,7 +65,7 @@ public class PositionCandidacies {
 		this.id = id;
 	}
 
-	@JsonView({DetailedCandidaciesView.class, DetailedCandidacyView.class})
+	@JsonView({DetailedCandidaciesView.class, CandidacyView.class})
 	public Position getPosition() {
 		return position;
 	}

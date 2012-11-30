@@ -32,7 +32,10 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Entity
 public class Candidacy {
 
-	public static interface DetailedCandidacyView {
+	public static interface CandidacyView {
+	};
+
+	public static interface DetailedCandidacyView extends CandidacyView {
 	};
 
 	@Id
@@ -231,6 +234,7 @@ public class Candidacy {
 		this.date = date;
 	}
 
+	@JsonView({DetailedCandidacyView.class})
 	public Candidate getCandidate() {
 		return candidate;
 	}
@@ -239,7 +243,6 @@ public class Candidacy {
 		this.candidate = candidate;
 	}
 
-	@JsonView({DetailedCandidacyView.class})
 	public PositionCandidacies getCandidacies() {
 		return candidacies;
 	}

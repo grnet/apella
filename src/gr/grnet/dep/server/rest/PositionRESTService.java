@@ -2,7 +2,7 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
-import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
+import gr.grnet.dep.service.model.Candidacy.CandidacyView;
 import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.Position;
@@ -1046,7 +1046,7 @@ public class PositionRESTService extends RESTService {
 				}
 			}
 			if (count >= PositionCommitteeMember.MAX_MEMBERS) {
-				throw new RestException(Status.CONFLICT, "max.members.exceeded");
+				throw new RestException(Status.CONFLICT, "max.members.exceeded." + newMembership.getType());
 			}
 
 			// Update
@@ -1139,7 +1139,7 @@ public class PositionRESTService extends RESTService {
 
 	@GET
 	@Path("/{id:[0-9][0-9]*}/candidacies")
-	@JsonView({DetailedCandidacyView.class})
+	@JsonView({CandidacyView.class})
 	public Set<Candidacy> getPositionCandidacies(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
 		User loggedOn = getLoggedOn(authToken);
 		Position position = getAndCheckPosition(loggedOn, positionId);
