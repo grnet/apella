@@ -335,19 +335,6 @@ public class RegisterRESTService extends RESTService {
 		// Update
 		return _updateFile(loggedOn, fileItems, registerFile);
 	}
-	
-	private String _updateFile(User loggedOn, List<FileItem> fileItems, RegisterFile registerFile) throws IOException {
-		try {
-			saveFile(loggedOn, fileItems, registerFile);
-			em.flush();
-			registerFile.getBodies().size();
-			return toJSON(registerFile, SimpleFileHeaderView.class);
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
-		}
-	}	
 
 	/**
 	 * Deletes the last body of given file, if possible.

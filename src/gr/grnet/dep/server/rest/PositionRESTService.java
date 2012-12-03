@@ -829,19 +829,6 @@ public class PositionRESTService extends RESTService {
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
-	
-	private <T extends FileHeader> String _updateFile(User loggedOn, List<FileItem> fileItems, T file) throws IOException {
-		try {
-			saveFile(loggedOn, fileItems, file);
-			em.flush();
-			file.getBodies().size();
-			return toJSON(file, SimpleFileHeaderView.class);
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
-		}
-	}
 
 	/**
 	 * Deletes the last body of given file, if possible.

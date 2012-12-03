@@ -481,19 +481,6 @@ public class CandidacyRESTService extends RESTService {
 		return _updateFile(loggedOn, fileItems, candidacyFile);
 	}
 	
-	private String _updateFile(User loggedOn, List<FileItem> fileItems, CandidacyFile candidacyFile) throws IOException {
-		try {
-			saveFile(loggedOn, fileItems, candidacyFile);
-			em.flush();
-			candidacyFile.getBodies().size();
-			return toJSON(candidacyFile, SimpleFileHeaderView.class);
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
-		}
-	}
-
 	/**
 	 * Deletes the last body of given file, if possible.
 	 * 

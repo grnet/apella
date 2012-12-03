@@ -14,6 +14,7 @@ import gr.grnet.dep.service.model.file.CandidacyFile;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileType;
+import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 
 import java.io.File;
@@ -41,6 +42,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
@@ -135,6 +137,18 @@ public class RESTService {
 		return null;
 	}
 
+	<T extends FileHeader> String _updateFile(User loggedOn, List<FileItem> fileItems, T file) throws IOException {
+		try {
+			saveFile(loggedOn, fileItems, file);
+			em.flush();
+			file.getBodies().size();
+			return toJSON(file, SimpleFileHeaderView.class);
+		} catch (PersistenceException e) {
+			logger.log(Level.WARNING, e.getMessage(), e);
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+		}
+	}
 	
 	/******************************
 	 * Login Functions ************
