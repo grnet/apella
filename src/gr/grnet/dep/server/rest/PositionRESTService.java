@@ -648,7 +648,7 @@ public class PositionRESTService extends RESTService {
 			switch (discriminator) {
 				case committee:
 					// Check number of file types
-					Set<PositionCommitteeFile> pcFiles = FileHeader.filter(position.getPhase().getCommittee().getFiles(), type);
+					Set<PositionCommitteeFile> pcFiles = FileHeader.filterIncludingDeleted(position.getPhase().getCommittee().getFiles(), type);
 					PositionCommitteeFile existingFile = checkNumberOfFileTypes(PositionCommitteeFile.fileTypes, type, pcFiles);
 					if (existingFile != null) {
 						return _updateFile(loggedOn, fileItems, existingFile);
@@ -665,7 +665,7 @@ public class PositionRESTService extends RESTService {
 					return toJSON(pcFile, SimpleFileHeaderView.class);
 				case evaluation:
 					// Check number of file types
-					Set<PositionEvaluationFile> eFiles = FileHeader.filter(position.getPhase().getEvaluation().getFiles(), type);
+					Set<PositionEvaluationFile> eFiles = FileHeader.filterIncludingDeleted(position.getPhase().getEvaluation().getFiles(), type);
 					PositionEvaluationFile existingFile2 = checkNumberOfFileTypes(PositionEvaluationFile.fileTypes, type, eFiles);
 					if (existingFile2 != null) {
 						return _updateFile(loggedOn, fileItems, existingFile2);
@@ -682,7 +682,7 @@ public class PositionRESTService extends RESTService {
 					return toJSON(eFile, SimpleFileHeaderView.class);
 				case complementaryDocuments:
 					// Check number of file types
-					Set<ComplementaryDocumentsFile> cdFiles = FileHeader.filter(position.getPhase().getComplementaryDocuments().getFiles(), type);
+					Set<ComplementaryDocumentsFile> cdFiles = FileHeader.filterIncludingDeleted(position.getPhase().getComplementaryDocuments().getFiles(), type);
 					ComplementaryDocumentsFile existingFile3 = checkNumberOfFileTypes(ComplementaryDocumentsFile.fileTypes, type, cdFiles);
 					if (existingFile3 != null) {
 						return _updateFile(loggedOn, fileItems, existingFile3);
@@ -698,7 +698,7 @@ public class PositionRESTService extends RESTService {
 
 					return toJSON(cdFile, SimpleFileHeaderView.class);
 				case nomination:
-					Set<PositionNominationFile> nominationFiles = FileHeader.filter(position.getPhase().getNomination().getFiles(), type);
+					Set<PositionNominationFile> nominationFiles = FileHeader.filterIncludingDeleted(position.getPhase().getNomination().getFiles(), type);
 					PositionNominationFile existingFile4 = checkNumberOfFileTypes(PositionNominationFile.fileTypes, type, nominationFiles);
 					if (existingFile4 != null) {
 						return _updateFile(loggedOn, fileItems, existingFile4);
