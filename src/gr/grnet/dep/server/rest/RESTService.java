@@ -10,6 +10,7 @@ import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.Subject;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.UserStatus;
+import gr.grnet.dep.service.model.file.CandidacyFile;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileType;
@@ -28,6 +29,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -96,6 +99,43 @@ public class RESTService {
 		}
 	}
 
+	/**
+	 * Check FileType to upload agrees with max number and direct caller.
+	 * 
+	 * @param fileTypes Map<FileType, Integer>
+	 * @param type type to check
+	 * @param files existing files
+	 * @return null to continue and create file; existing file to switch to update
+	 * @throws RestException if wrong file type
+	 */
+	protected <T extends FileHeader> T checkNumberOfFileTypes(Map<FileType, Integer> fileTypes, FileType type, Set<T> files) throws RestException {
+		if (!fileTypes.containsKey(type)) {
+			throw new RestException(Status.CONFLICT, "wrong.file.type");
+		}
+		Set<T> existingFiles = null;
+		if (fileTypes.get(type)==1) {
+			existingFiles = FileHeader.filterIncludingDeleted(files, type);
+			if (existingFiles.size() >= 1) {
+				T existingFile = existingFiles.iterator().next();
+				if (existingFile.isDeleted()) {
+					// Reuse!
+					existingFile.undelete();
+					return existingFile;
+				}
+				else {
+					throw new RestException(Status.CONFLICT, "wrong.file.type");
+				}
+			}
+		}
+		else {
+			existingFiles = FileHeader.filter(files, type);
+			if (existingFiles.size() >= CandidacyFile.fileTypes.get(type))
+				throw new RestException(Status.CONFLICT, "wrong.file.type");
+		}
+		return null;
+	}
+
+	
 	/******************************
 	 * Login Functions ************
 	 ******************************/
@@ -293,6 +333,14 @@ public class RESTService {
 		}
 		//Return physical file, should be deleted by caller of function
 		return file;
+	}
+	
+	protected void completelyDelete(FileHeader fh) {
+		List<FileBody> fileBodies = fh.getBodies();
+		for (int i = fileBodies.size() - 1; i>=0; i--) {
+			File file = deleteFileBody(fh);
+			file.delete();
+		}
 	}
 
 	protected Response sendFileBody(FileBody fb) {

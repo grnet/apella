@@ -12,6 +12,7 @@ import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.model.file.CandidacyFile;
 import gr.grnet.dep.service.model.file.CandidateFile;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
@@ -403,12 +404,12 @@ public class RoleRESTService extends RESTService {
 		if (role instanceof Candidate) {
 			Candidate candidate = (Candidate) role;
 			candidate.initializeCollections();
-			GenericEntity<Set<CandidateFile>> entity = new GenericEntity<Set<CandidateFile>>(candidate.getFiles()) {};
+			GenericEntity<Set<CandidateFile>> entity = new GenericEntity<Set<CandidateFile>>(FileHeader.filterDeleted(candidate.getFiles())) {};
 			return Response.ok(entity).build();
 		} else if (role instanceof Professor) {
 			Professor professor = (Professor) role;
 			professor.initializeCollections();
-			GenericEntity<Set<ProfessorFile>> entity = new GenericEntity<Set<ProfessorFile>>(professor.getFiles()) {};
+			GenericEntity<Set<ProfessorFile>> entity = new GenericEntity<Set<ProfessorFile>>(FileHeader.filterDeleted(professor.getFiles())) {};
 			return Response.ok(entity).build();
 		}
 		// Default Action
@@ -437,14 +438,14 @@ public class RoleRESTService extends RESTService {
 		if (role instanceof Candidate) {
 			Candidate candidate = (Candidate) role;
 			for (CandidateFile cf : candidate.getFiles()) {
-				if (cf.getId().equals(fileId)) {
+				if (cf.getId().equals(fileId) && !cf.isDeleted()) {
 					return cf;
 				}
 			}
 		} else if (role instanceof Professor) {
 			Professor professor = (Professor) role;
 			for (ProfessorFile pf : professor.getFiles()) {
-				if (pf.getId().equals(fileId)) {
+				if (pf.getId().equals(fileId) && !pf.isDeleted()) {
 					return pf;
 				}
 			}
@@ -475,7 +476,7 @@ public class RoleRESTService extends RESTService {
 		if (role instanceof Candidate) {
 			Candidate candidate = (Candidate) role;
 			for (CandidateFile cf : candidate.getFiles()) {
-				if (cf.getId().equals(fileId)) {
+				if (cf.getId().equals(fileId) && !cf.isDeleted()) {
 					for (FileBody fb : cf.getBodies()) {
 						if (fb.getId().equals(bodyId)) {
 							return sendFileBody(fb);
@@ -486,7 +487,7 @@ public class RoleRESTService extends RESTService {
 		} else if (role instanceof Professor) {
 			Professor professor = (Professor) role;
 			for (ProfessorFile pf : professor.getFiles()) {
-				if (pf.getId().equals(fileId)) {
+				if (pf.getId().equals(fileId) && !pf.isDeleted()) {
 					for (FileBody fb : pf.getBodies()) {
 						if (fb.getId().equals(bodyId)) {
 							return sendFileBody(fb);
@@ -543,10 +544,11 @@ public class RoleRESTService extends RESTService {
 					}
 				}
 				// Check number of file types
-				Set<CandidateFile> existingFiles = FileHeader.filter(candidate.getFiles(), type);
-				if (!CandidateFile.fileTypes.containsKey(type) || existingFiles.size() >= CandidateFile.fileTypes.get(type)) {
-					throw new RestException(Status.CONFLICT, "wrong.file.type");
+				CandidateFile existingFile = checkNumberOfFileTypes(CandidateFile.fileTypes, type, candidate.getFiles());
+				if (existingFile != null) {
+					return _updateCandidateFile(loggedOn, fileItems, existingFile, updateCandidacies, candidate);
 				}
+				
 				//Create File
 				CandidateFile candidateFile = new CandidateFile();
 				candidateFile.setCandidate(candidate);
@@ -571,10 +573,11 @@ public class RoleRESTService extends RESTService {
 			} else if (role instanceof Professor) {
 				Professor professor = (Professor) role;
 				// Check number of file types
-				Set<ProfessorFile> existingFiles = FileHeader.filter(professor.getFiles(), type);
-				if (!ProfessorFile.fileTypes.containsKey(type) || existingFiles.size() >= ProfessorFile.fileTypes.get(type)) {
-					throw new RestException(Status.CONFLICT, "wrong.file.type");
+				ProfessorFile existingFile = checkNumberOfFileTypes(ProfessorFile.fileTypes, type, professor.getFiles());
+				if (existingFile != null) {
+					return _updateProfessorFile(loggedOn, fileItems, existingFile, updateCandidacies, professor);
 				}
+				
 				// Create File
 				ProfessorFile professorFile = new ProfessorFile();
 				professorFile.setProfessor(professor);
@@ -642,7 +645,7 @@ public class RoleRESTService extends RESTService {
 				// Check if it exists
 				CandidateFile candidateFile = null;
 				for (CandidateFile file : candidate.getFiles()) {
-					if (file.getId().equals(fileId)) {
+					if (file.getId().equals(fileId) && !file.isDeleted()) {
 						candidateFile = file;
 						break;
 					}
@@ -660,27 +663,12 @@ public class RoleRESTService extends RESTService {
 						default:
 					}
 				}
-				// Update File
-				File file = saveFile(loggedOn, fileItems, candidateFile);
-				// Check open candidacies
-				if (updateCandidacies) {
-					try {
-						updateOpenCandidacies(candidate);
-					} catch (RestException e) {
-						log.log(Level.WARNING, e.getMessage(), e);
-						file.delete();
-						sc.setRollbackOnly();
-						throw e;
-					}
-				}
-				em.flush();
-				candidateFile.getBodies().size();
-				return toJSON(candidateFile, SimpleFileHeaderView.class);
+				return _updateCandidateFile(loggedOn, fileItems, candidateFile, updateCandidacies, candidate);
 			} else if (role instanceof Professor) {
 				Professor professor = (Professor) role;
 				ProfessorFile professorFile = null;
 				for (ProfessorFile file : professor.getFiles()) {
-					if (file.getId().equals(fileId)) {
+					if (file.getId().equals(fileId) && !file.isDeleted()) {
 						professorFile = file;
 						break;
 					}
@@ -688,22 +676,7 @@ public class RoleRESTService extends RESTService {
 				if (professorFile == null) {
 					throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 				}
-				File file = saveFile(loggedOn, fileItems, professorFile);
-				// Check open candidacies
-				if (updateCandidacies && professor.getUser().hasActiveRole(RoleDiscriminator.CANDIDATE)) {
-					try {
-						Candidate candidate = (Candidate) professor.getUser().getActiveRole(RoleDiscriminator.CANDIDATE);
-						updateOpenCandidacies(candidate);
-					} catch (RestException e) {
-						log.log(Level.WARNING, e.getMessage(), e);
-						file.delete();
-						sc.setRollbackOnly();
-						throw e;
-					}
-				}
-				em.flush();
-				professorFile.getBodies().size();
-				return toJSON(professorFile, SimpleFileHeaderView.class);
+				return _updateProfessorFile(loggedOn, fileItems, professorFile, updateCandidacies, professor);
 			} else {
 				throw new RestException(Status.CONFLICT, "wrong.file.type");
 			}
@@ -712,6 +685,44 @@ public class RoleRESTService extends RESTService {
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
+	}
+	
+	private String _updateCandidateFile(User loggedOn, List<FileItem> fileItems, CandidateFile candidateFile, boolean updateCandidacies, Candidate candidate) throws IOException {
+		// Update File
+		File file = saveFile(loggedOn, fileItems, candidateFile);
+		// Check open candidacies
+		if (updateCandidacies) {
+			try {
+				updateOpenCandidacies(candidate);
+			} catch (RestException e) {
+				log.log(Level.WARNING, e.getMessage(), e);
+				file.delete();
+				sc.setRollbackOnly();
+				throw e;
+			}
+		}
+		em.flush();
+		candidateFile.getBodies().size();
+		return toJSON(candidateFile, SimpleFileHeaderView.class);
+	}
+	
+	private String _updateProfessorFile(User loggedOn, List<FileItem> fileItems, ProfessorFile professorFile, boolean updateCandidacies, Professor professor) throws IOException {
+		File file = saveFile(loggedOn, fileItems, professorFile);
+		// Check open candidacies
+		if (updateCandidacies && professor.getUser().hasActiveRole(RoleDiscriminator.CANDIDATE)) {
+			try {
+				Candidate candidate = (Candidate) professor.getUser().getActiveRole(RoleDiscriminator.CANDIDATE);
+				updateOpenCandidacies(candidate);
+			} catch (RestException e) {
+				log.log(Level.WARNING, e.getMessage(), e);
+				file.delete();
+				sc.setRollbackOnly();
+				throw e;
+			}
+		}
+		em.flush();
+		professorFile.getBodies().size();
+		return toJSON(professorFile, SimpleFileHeaderView.class);
 	}
 
 	/**
@@ -743,7 +754,8 @@ public class RoleRESTService extends RESTService {
 					CandidateFile candidateFile = (CandidateFile) em.createQuery(
 						"select cf from CandidateFile cf " +
 							"where cf.candidate.id = :candidateId " +
-							"and cf.id = :fileId")
+							"and cf.id = :fileId " +
+							"and cf.deleted = false")
 						.setParameter("candidateId", id)
 						.setParameter("fileId", fileId)
 						.getSingleResult();
@@ -758,7 +770,7 @@ public class RoleRESTService extends RESTService {
 						}
 					}
 					// Do delete
-					File file = deleteFileBody(candidateFile);
+					candidateFile.delete();
 					// Check open candidacies
 					if (updateCandidacies) {
 						try {
@@ -769,13 +781,7 @@ public class RoleRESTService extends RESTService {
 							throw e;
 						}
 					}
-					file.delete();
-					if (candidateFile.getCurrentBody() == null) {
-						candidate.getFiles().remove(candidateFile);
-						return Response.noContent().build();
-					} else {
-						return Response.ok(candidateFile).build();
-					}
+					return Response.noContent().build();
 				} catch (NoResultException e) {
 					throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 				}
@@ -785,12 +791,12 @@ public class RoleRESTService extends RESTService {
 					ProfessorFile professorFile = (ProfessorFile) em.createQuery(
 						"select cf from ProfessorFile cf " +
 							"where cf.professor.id = :professorId " +
-							"and cf.id = :fileId")
+							"and cf.id = :fileId " +
+							"and cf.deleted = false")
 						.setParameter("professorId", id)
 						.setParameter("fileId", fileId)
 						.getSingleResult();
-
-					File file = deleteFileBody(professorFile);
+					professorFile.delete();
 					// Check open candidacies
 					if (updateCandidacies && professor.getUser().hasActiveRole(RoleDiscriminator.CANDIDATE)) {
 						try {
@@ -802,13 +808,7 @@ public class RoleRESTService extends RESTService {
 							throw e;
 						}
 					}
-					file.delete();
-					if (professorFile.getCurrentBody() == null) {
-						professor.getFiles().remove(professorFile);
-						return Response.noContent().build();
-					} else {
-						return Response.ok(professorFile).build();
-					}
+					return Response.noContent().build();
 				} catch (NoResultException e) {
 					throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 				}

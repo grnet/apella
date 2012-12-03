@@ -49,6 +49,7 @@ public class FileHeader implements Serializable {
 	/**
 	 * Version field for optimistic locking.
 	 */
+	@SuppressWarnings("unused")
 	@Version
 	private int version;
 
@@ -196,6 +197,34 @@ public class FileHeader implements Serializable {
 			}
 		}
 		return result;
+	}
+	
+	public static <T extends FileHeader> Set<T> filterIncludingDeleted(Set<T> files, FileType type) {
+		Set<T> result = new HashSet<T>();
+		for (T file : files) {
+			if (file.getType().equals(type)) {
+				result.add(file);
+			}
+		}
+		return result;
+	}
+	
+	public static <T extends FileHeader> Set<T> filterDeleted(Set<T> files) {
+		Set<T> result = new HashSet<T>();
+		for (T file : files) {
+			if (!file.isDeleted()) {
+				result.add(file);
+			}
+		}
+		return result;
+	}
+	
+	public void delete() {
+		setDeleted(true);
+	}
+	
+	public void undelete() {
+		setDeleted(false);
 	}
 
 }

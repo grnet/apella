@@ -13,6 +13,7 @@ import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.Subject;
 import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.model.file.CandidacyFile;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
@@ -168,8 +169,7 @@ public class RegisterRESTService extends RESTService {
 		try {
 			// Delete:
 			for (RegisterFile rFile : register.getFiles()) {
-				File f = deleteFileBody(rFile);
-				f.delete();
+				completelyDelete(rFile);
 			}
 			em.remove(register);
 			em.flush();
@@ -195,8 +195,7 @@ public class RegisterRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
 		// Return Result
-		register.getFiles().size();
-		return register.getFiles();
+		return FileHeader.filterDeleted(register.getFiles());
 	}
 
 	@GET
@@ -211,7 +210,7 @@ public class RegisterRESTService extends RESTService {
 		}
 		// Return Result
 		for (RegisterFile file : register.getFiles()) {
-			if (file.getId().equals(fileId)) {
+			if (file.getId().equals(fileId) && !file.isDeleted()) {
 				return file;
 			}
 		}
@@ -231,7 +230,7 @@ public class RegisterRESTService extends RESTService {
 		// Return Result
 		for (RegisterFile file : register.getFiles()) {
 			if (file.getId().equals(fileId)) {
-				if (file.getId().equals(fileId)) {
+				if (file.getId().equals(fileId) && !file.isDeleted()) {
 					for (FileBody fb : file.getBodies()) {
 						if (fb.getId().equals(bodyId)) {
 							return sendFileBody(fb);
@@ -271,9 +270,9 @@ public class RegisterRESTService extends RESTService {
 			throw new RestException(Status.BAD_REQUEST, "missing.file.type");
 		}
 		// Check number of file types
-		Set<RegisterFile> existingFiles = FileHeader.filter(register.getFiles(), type);
-		if (!RegisterFile.fileTypes.containsKey(type) || existingFiles.size() >= RegisterFile.fileTypes.get(type)) {
-			throw new RestException(Status.CONFLICT, "wrong.file.type");
+		RegisterFile existingFile = checkNumberOfFileTypes(CandidacyFile.fileTypes, type, register.getFiles());
+		if (existingFile != null) {
+			return _updateFile(loggedOn, fileItems, existingFile);
 		}
 		// Create
 		try {
@@ -334,6 +333,10 @@ public class RegisterRESTService extends RESTService {
 		}
 
 		// Update
+		return _updateFile(loggedOn, fileItems, registerFile);
+	}
+	
+	private String _updateFile(User loggedOn, List<FileItem> fileItems, RegisterFile registerFile) throws IOException {
 		try {
 			saveFile(loggedOn, fileItems, registerFile);
 			em.flush();
@@ -344,7 +347,7 @@ public class RegisterRESTService extends RESTService {
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
-	}
+	}	
 
 	/**
 	 * Deletes the last body of given file, if possible.
@@ -369,7 +372,7 @@ public class RegisterRESTService extends RESTService {
 		try {
 			RegisterFile registerFile = null;
 			for (RegisterFile file : register.getFiles()) {
-				if (file.getId().equals(fileId)) {
+				if (file.getId().equals(fileId) && !file.isDeleted()) {
 					registerFile = file;
 					break;
 				}
@@ -377,15 +380,8 @@ public class RegisterRESTService extends RESTService {
 			if (registerFile == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 			}
-			File file = deleteFileBody(registerFile);
-			file.delete();
-			if (registerFile.getCurrentBody() == null) {
-				// Remove from Register
-				register.getFiles().remove(registerFile);
-				return Response.noContent().build();
-			} else {
-				return Response.ok(registerFile).build();
-			}
+			registerFile.delete();
+			return Response.noContent().build();
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
