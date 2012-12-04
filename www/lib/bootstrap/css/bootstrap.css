@@ -3215,14 +3215,14 @@ input[type="button"].btn-block {
   color: #ffffff;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
   background-color: #006dcc;
-  *background-color: #0044cc;
-  background-image: -moz-linear-gradient(top, #0088cc, #0044cc);
-  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#0088cc), to(#0044cc));
-  background-image: -webkit-linear-gradient(top, #0088cc, #0044cc);
-  background-image: -o-linear-gradient(top, #0088cc, #0044cc);
-  background-image: linear-gradient(to bottom, #0088cc, #0044cc);
+  *background-color: #0A3542;
+  background-image: -moz-linear-gradient(top, #0088cc, #0A3542);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#0088cc), to(#0A3542));
+  background-image: -webkit-linear-gradient(top, #0088cc, #0A3542);
+  background-image: -o-linear-gradient(top, #0088cc, #0A3542);
+  background-image: linear-gradient(to bottom, #0088cc, #0A3542);
   background-repeat: repeat-x;
-  border-color: #0044cc #0044cc #002a80;
+  border-color: #0A3542 #0A3542 #002a80;
   border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0088cc', endColorstr='#ff0044cc', GradientType=0);
   filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
@@ -3234,7 +3234,7 @@ input[type="button"].btn-block {
 .btn-primary.disabled,
 .btn-primary[disabled] {
   color: #ffffff;
-  background-color: #0044cc;
+  background-color: #0A3542;
   *background-color: #003bb3;
 }
 
@@ -3615,7 +3615,7 @@ input[type="submit"].btn.btn-mini {
 }
 
 .btn-group.open .btn-primary.dropdown-toggle {
-  background-color: #0044cc;
+  background-color: #0A3542;
 }
 
 .btn-group.open .btn-warning.dropdown-toggle {
@@ -4587,15 +4587,15 @@ input[type="submit"].btn.btn-mini {
 }
 
 .navbar-inverse .navbar-inner {
-  background-color: #1b1b1b;
-  background-image: -moz-linear-gradient(top, #222222, #111111);
-  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#222222), to(#111111));
-  background-image: -webkit-linear-gradient(top, #222222, #111111);
-  background-image: -o-linear-gradient(top, #222222, #111111);
-  background-image: linear-gradient(to bottom, #222222, #111111);
+  background-color: #0A3542;
+  background-image: -moz-linear-gradient(top, #222222, #0A3542);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#222222), to(#0A3542));
+  background-image: -webkit-linear-gradient(top, #222222, #0A3542);
+  background-image: -o-linear-gradient(top, #222222, #0A3542);
+  background-image: linear-gradient(to bottom, #222222, #0A3542);
   background-repeat: repeat-x;
   border-color: #252525;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff222222', endColorstr='#ff111111', GradientType=0);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff222222', endColorstr='#ff0A3542', GradientType=0);
 }
 
 .navbar-inverse .brand,
@@ -4619,7 +4619,7 @@ input[type="submit"].btn.btn-mini {
 .navbar-inverse .nav .active > a:hover,
 .navbar-inverse .nav .active > a:focus {
   color: #ffffff;
-  background-color: #111111;
+  background-color: #0A3542;
 }
 
 .navbar-inverse .navbar-link {
@@ -4632,14 +4632,14 @@ input[type="submit"].btn.btn-mini {
 
 .navbar-inverse .divider-vertical {
   border-right-color: #222222;
-  border-left-color: #111111;
+  border-left-color: #0A3542;
 }
 
 .navbar-inverse .nav li.dropdown.open > .dropdown-toggle,
 .navbar-inverse .nav li.dropdown.active > .dropdown-toggle,
 .navbar-inverse .nav li.dropdown.open.active > .dropdown-toggle {
   color: #ffffff;
-  background-color: #111111;
+  background-color: #0A3542;
 }
 
 .navbar-inverse .nav li.dropdown > .dropdown-toggle .caret {
@@ -4657,7 +4657,7 @@ input[type="submit"].btn.btn-mini {
 .navbar-inverse .navbar-search .search-query {
   color: #ffffff;
   background-color: #515151;
-  border-color: #111111;
+  border-color: #0A3542;
   -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.15);
      -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.15);
           box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.15);

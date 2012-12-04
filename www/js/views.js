@@ -57,11 +57,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	 * MenuView ********************************************************
 	 **************************************************************************/
 	Views.MenuView = Views.BaseView.extend({
-		el : "div#menu",
-
-		tagName : "ul",
-
-		className : "nav",
+		el : "ul#menu",
 
 		initialize : function() {
 			_.bindAll(this, "render", "close");
@@ -113,9 +109,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				menuItems.push("registers");
 				menuItems.push("positions");
 			}
-			this.$el.append("<ul class=\"nav\">");
 			_.each(_.uniq(menuItems), function(menuItem) {
-				self.$("ul").append("<li><a href=\"\#" + menuItem + "\">" + $.i18n.prop("menu_" + menuItem) + "</a></li>");
+				self.$el.append("<li><a href=\"\#" + menuItem + "\">" + $.i18n.prop("menu_" + menuItem) + "</a></li>");
 			});
 
 			return this;
@@ -204,9 +199,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	 * UserMenuView ************************************************************
 	 **************************************************************************/
 	Views.UserMenuView = Views.BaseView.extend({
-		el : "div#user-menu",
-
-		className : "nav",
+		el : "li#user-menu",
 
 		initialize : function() {
 			_.bindAll(this, "render", "logout", "close");
@@ -219,7 +212,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			this.$el.empty();
-			this.$el.append("<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\"> <i class=\"icon-user\"></i> " + this.model.get("username") + "<span class=\"caret\"></span></a>");
+			this.$el.append("<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\"> <i class=\"icon-user\"></i> " + this.model.get("username") + "<span class=\"caret\"></span></a>");
 			this.$el.append("<ul class=\"dropdown-menu\">");
 			this.$el.find("ul").append("<li><a href=\"\#account\">" + $.i18n.prop('menu_account') + "</a>");
 			// Add Logout
@@ -1044,6 +1037,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	Views.HomeView = Views.BaseView.extend({
 		tagName : "div",
 
+		className : "span12 hero-unit",
+
 		initialize : function() {
 			_.bindAll(this, "render", "close");
 			this.template = _.template(tpl_home);
@@ -1053,8 +1048,119 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		events : {},
 
 		render : function(eventName) {
-			$(this.el).html(this.template(this.model.toJSON()));
-			return this;
+			var self = this;
+			var tiles = [];
+			tiles.push({
+				link : "account"
+			});
+			tiles.push({
+				link : "profile"
+			});
+			if (self.model.hasRoleWithStatus("PROFESSOR_DOMESTIC", "ACTIVE")) {
+				tiles.push({
+					link : "registers"
+				});
+				tiles.push({
+					link : "professorCommittees"
+				});
+				tiles.push({
+					link : "professorEvaluations"
+				});
+			}
+			if (self.model.hasRoleWithStatus("PROFESSOR_FOREIGN", "ACTIVE")) {
+				tiles.push({
+					link : "registers"
+				});
+				tiles.push({
+					link : "professorCommittees"
+				});
+				tiles.push({
+					link : "professorEvaluations"
+				});
+			}
+			if (self.model.hasRoleWithStatus("CANDIDATE", "ACTIVE")) {
+				tiles.push({
+					link : "registers"
+				});
+				tiles.push({
+					link : "sposition"
+				});
+				tiles.push({
+					link : "candidateCandidacies"
+				});
+			}
+			if (self.model.hasRoleWithStatus("INSTITUTION_MANAGER", "ACTIVE")) {
+				tiles.push({
+					link : "iassistants"
+				});
+				tiles.push({
+					link : "regulatoryframeworks"
+				});
+				tiles.push({
+					link : "registers"
+				});
+				tiles.push({
+					link : "positions"
+				});
+			}
+			if (self.model.hasRoleWithStatus("INSTITUTION_ASSISTANT", "ACTIVE")) {
+				tiles.push({
+					link : "regulatoryframeworks"
+				});
+				tiles.push({
+					link : "registers"
+				});
+				tiles.push({
+					link : "positions"
+				});
+			}
+			if (self.model.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE")) {
+				tiles.push({
+					link : "massistants"
+				});
+				tiles.push({
+					link : "regulatoryframeworks"
+				});
+				tiles.push({
+					link : "registers"
+				});
+				tiles.push({
+					link : "positions"
+				});
+			}
+			if (self.model.hasRoleWithStatus("MINISTRY_ASSISTANT", "ACTIVE")) {
+				tiles.push({
+					link : "regulatoryframeworks"
+				});
+				tiles.push({
+					link : "registers"
+				});
+				tiles.push({
+					link : "positions"
+				});
+			}
+			tiles = _.uniq(tiles, false, function(tile) {
+				return tile.link;
+			});
+			self.$el.html(this.template(_.extend(this.model.toJSON(), {
+				"tiles" : (function() {
+					var result = [];
+					var row = 0;
+					var col = 0;
+					while (tiles.length) {
+						if (!result[row]) {
+							result[row] = [];
+						}
+						result[row].push(tiles.shift());
+						col = (col + 1) % 3;
+						if (col == 0) {
+							row = row + 1;
+						}
+					}
+					return result;
+				})()
+			})));
+			return self;
 		},
 
 		close : function() {
@@ -2944,8 +3050,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	 **************************************************************************/
 	Views.AnnouncementListView = Views.BaseView.extend({
 		tagName : "div",
-
-		className : "span12 well",
 
 		initialize : function() {
 			this.template = _.template(tpl_announcement_list);

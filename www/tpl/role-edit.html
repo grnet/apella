@@ -5,15 +5,17 @@
 			<legend><%= $.i18n.prop('PROFESSOR_DOMESTIC') %></legend>
 			<div class="control-group">
 				<label class="control-label" for="status"><%= $.i18n.prop('RoleStatus') %>:</label>
-				<div class="controls btn-group">
-					<a id="status" class="btn btn-small"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
-					<a id="status" class="btn btn-small dropdown-toggle" data-toggle="dropdown" ><span class="caret"></span></a>
-					<ul class="dropdown-menu">
-						<li><a data-action="status" status="UNAPPROVED" > <%= $.i18n.prop('statusUNAPPROVED') %></a></li>
-						<li><a data-action="status" status="ACTIVE" > <%= $.i18n.prop('statusACTIVE') %></a></li>
-					</ul>
+				<div class="controls">
+					<div class="btn-group">
+						<a id="status" class="btn btn-small"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
+						<a id="status" class="btn btn-small dropdown-toggle" data-toggle="dropdown" ><span class="caret"></span></a>
+						<ul class="dropdown-menu">
+							<li><a data-action="status" status="UNAPPROVED" > <%= $.i18n.prop('statusUNAPPROVED') %></a></li>
+							<li><a data-action="status" status="ACTIVE" > <%= $.i18n.prop('statusACTIVE') %></a></li>
+						</ul>
+					</div>
+					<span class="help-inline"><%= $.i18n.prop('status' + status + 'Help') %></span>
 				</div>
-				<span class="help-inline"><%= $.i18n.prop('status' + status + 'Help') %></span>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="institution"><%= $.i18n.prop('Institution') %>:</label>
@@ -89,15 +91,17 @@
 			<legend><%= $.i18n.prop('PROFESSOR_FOREIGN') %></legend>
 			<div class="control-group">
 				<label class="control-label" for="status"><%= $.i18n.prop('RoleStatus') %>:</label>
-				<div class="controls btn-group">
-					<a id="status" class="btn btn-small"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
-					<a id="status" class="btn btn-small dropdown-toggle" data-toggle="dropdown" ><span class="caret"></span></a>
-					<ul class="dropdown-menu">
-						<li><a data-action="status" status="UNAPPROVED" > <%= $.i18n.prop('statusUNAPPROVED') %></a></li>
-						<li><a data-action="status" status="ACTIVE" > <%= $.i18n.prop('statusACTIVE') %></a></li>
-					</ul>
+				<div class="controls">
+					<div class="btn-group">
+						<a id="status" class="btn btn-small"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
+						<a id="status" class="btn btn-small dropdown-toggle" data-toggle="dropdown" ><span class="caret"></span></a>
+						<ul class="dropdown-menu">
+							<li><a data-action="status" status="UNAPPROVED" > <%= $.i18n.prop('statusUNAPPROVED') %></a></li>
+							<li><a data-action="status" status="ACTIVE" > <%= $.i18n.prop('statusACTIVE') %></a></li>
+						</ul>
+					</div>
+					<span class="help-inline"><%= $.i18n.prop('status' + status + 'Help') %></span>
 				</div>
-				<span class="help-inline"><%= $.i18n.prop('status' + status + 'Help') %></span>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="institution"><%= $.i18n.prop('Institution') %>:</label>
@@ -145,13 +149,15 @@
 			<legend><%= $.i18n.prop('INSTITUTION_MANAGER') %></legend>
 			<div class="control-group">
 				<label class="control-label" for="status"><%= $.i18n.prop('RoleStatus') %>:</label>
-				<div class="controls btn-group">
-					<a id="status" class="btn btn-small"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
-					<a id="status" class="btn btn-small dropdown-toggle" data-toggle="dropdown" ><span class="caret"></span></a>
-					<ul class="dropdown-menu">
-						<li><a data-action="status" status="UNAPPROVED" > <%= $.i18n.prop('statusUNAPPROVED') %></a></li>
-						<li><a data-action="status" status="ACTIVE" > <%= $.i18n.prop('statusACTIVE') %></a></li>
-					</ul>
+				<div class="controls">
+					<div class="btn-group">
+						<a id="status" class="btn btn-small"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
+						<a id="status" class="btn btn-small dropdown-toggle" data-toggle="dropdown" ><span class="caret"></span></a>
+						<ul class="dropdown-menu">
+							<li><a data-action="status" status="UNAPPROVED" > <%= $.i18n.prop('statusUNAPPROVED') %></a></li>
+							<li><a data-action="status" status="ACTIVE" > <%= $.i18n.prop('statusACTIVE') %></a></li>
+						</ul>
+					</div>
 					<span class="help-inline"><%= $.i18n.prop('status' + status + 'Help') %></span>
 				</div>
 			</div>
@@ -205,15 +211,17 @@
 			<legend><%= $.i18n.prop('INSTITUTION_ASSISTANT') %></legend>
 			<div class="control-group">
 				<label class="control-label" for="status"><%= $.i18n.prop('RoleStatus') %>:</label>
-				<div class="controls btn-group">
-					<a id="status" class="btn btn-small"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
-					<a id="status" class="btn btn-small dropdown-toggle" data-toggle="dropdown" ><span class="caret"></span></a>
-					<ul class="dropdown-menu">
-						<li><a data-action="status" status="UNAPPROVED" > <%= $.i18n.prop('statusUNAPPROVED') %></a></li>
-						<li><a data-action="status" status="ACTIVE" > <%= $.i18n.prop('statusACTIVE') %></a></li>
-					</ul>
+				<div class="controls">
+					<div class="btn-group">
+						<a id="status" class="btn btn-small"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
+						<a id="status" class="btn btn-small dropdown-toggle" data-toggle="dropdown" ><span class="caret"></span></a>
+						<ul class="dropdown-menu">
+							<li><a data-action="status" status="UNAPPROVED" > <%= $.i18n.prop('statusUNAPPROVED') %></a></li>
+							<li><a data-action="status" status="ACTIVE" > <%= $.i18n.prop('statusACTIVE') %></a></li>
+						</ul>
+					</div>
+					<span class="help-inline"><%= $.i18n.prop('status' + status + 'Help') %></span>
 				</div>
-				<span class="help-inline"><%= $.i18n.prop('status' + status + 'Help') %></span>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="institution"><%= $.i18n.prop('Institution') %>:</label>
@@ -243,15 +251,17 @@
 			<legend><%= $.i18n.prop('MINISTRY_MANAGER') %></legend>
 			<div class="control-group">
 				<label class="control-label" for="status"><%= $.i18n.prop('RoleStatus') %>:</label>
-				<div class="controls btn-group">
-					<a id="status" class="btn btn-small"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
-					<a id="status" class="btn btn-small dropdown-toggle" data-toggle="dropdown" ><span class="caret"></span></a>
-					<ul class="dropdown-menu">
-						<li><a data-action="status" status="UNAPPROVED" > <%= $.i18n.prop('statusUNAPPROVED') %></a></li>
-						<li><a data-action="status" status="ACTIVE" > <%= $.i18n.prop('statusACTIVE') %></a></li>
-					</ul>
+				<div class="controls">
+					<div class="btn-group">
+						<a id="status" class="btn btn-small"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
+						<a id="status" class="btn btn-small dropdown-toggle" data-toggle="dropdown" ><span class="caret"></span></a>
+						<ul class="dropdown-menu">
+							<li><a data-action="status" status="UNAPPROVED" > <%= $.i18n.prop('statusUNAPPROVED') %></a></li>
+							<li><a data-action="status" status="ACTIVE" > <%= $.i18n.prop('statusACTIVE') %></a></li>
+						</ul>
+					</div>
+					<span class="help-inline"><%= $.i18n.prop('status' + status + 'Help') %></span>
 				</div>
-				<span class="help-inline"><%= $.i18n.prop('status' + status + 'Help') %></span>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="ministry"><%= $.i18n.prop('Ministry') %>:</label>
@@ -273,15 +283,17 @@
 			<legend><%= $.i18n.prop('MINISTRY_ASSISTANT') %></legend>
 			<div class="control-group">
 				<label class="control-label" for="status"><%= $.i18n.prop('RoleStatus') %>:</label>
-				<div class="controls btn-group">
-					<a id="status" class="btn btn-small"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
-					<a id="status" class="btn btn-small dropdown-toggle" data-toggle="dropdown" ><span class="caret"></span></a>
-					<ul class="dropdown-menu">
-						<li><a data-action="status" status="UNAPPROVED" > <%= $.i18n.prop('statusUNAPPROVED') %></a></li>
-						<li><a data-action="status" status="ACTIVE" > <%= $.i18n.prop('statusACTIVE') %></a></li>
-					</ul>
+				<div class="controls">
+					<div class="btn-group">
+						<a id="status" class="btn btn-small"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
+						<a id="status" class="btn btn-small dropdown-toggle" data-toggle="dropdown" ><span class="caret"></span></a>
+						<ul class="dropdown-menu">
+							<li><a data-action="status" status="UNAPPROVED" > <%= $.i18n.prop('statusUNAPPROVED') %></a></li>
+							<li><a data-action="status" status="ACTIVE" > <%= $.i18n.prop('statusACTIVE') %></a></li>
+						</ul>
+					</div>
+					<span class="help-inline"><%= $.i18n.prop('status' + status + 'Help') %></span>
 				</div>
-				<span class="help-inline"><%= $.i18n.prop('status' + status + 'Help') %></span>
 			</div>
 		</fieldset>
 	</form>
@@ -294,15 +306,17 @@
 			<legend><%= $.i18n.prop('CANDIDATE') %></legend>
 			<div class="control-group">
 				<label class="control-label" for="status"><%= $.i18n.prop('RoleStatus') %>:</label>
-				<div class="controls btn-group">
-					<a id="status" class="btn btn-small"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
-					<a id="status" class="btn btn-small dropdown-toggle" data-toggle="dropdown" ><span class="caret"></span></a>
-					<ul class="dropdown-menu">
-						<li><a data-action="status" status="UNAPPROVED" > <%= $.i18n.prop('statusUNAPPROVED') %></a></li>
-						<li><a data-action="status" status="ACTIVE" > <%= $.i18n.prop('statusACTIVE') %></a></li>
-					</ul>
+				<div class="controls">
+					<div class="btn-group">
+						<a id="status" class="btn btn-small"><i class="icon-asterisk"></i> <%= $.i18n.prop('status' + status) %></a>
+						<a id="status" class="btn btn-small dropdown-toggle" data-toggle="dropdown" ><span class="caret"></span></a>
+						<ul class="dropdown-menu">
+							<li><a data-action="status" status="UNAPPROVED" > <%= $.i18n.prop('statusUNAPPROVED') %></a></li>
+							<li><a data-action="status" status="ACTIVE" > <%= $.i18n.prop('statusACTIVE') %></a></li>
+						</ul>
+					</div>
+					<span class="help-inline"><%= $.i18n.prop('status' + status + 'Help') %></span>
 				</div>
-				<span class="help-inline"><%= $.i18n.prop('status' + status + 'Help') %></span>
 			</div>
 			<% if (primary) { %>
 			<div class="control-group">
