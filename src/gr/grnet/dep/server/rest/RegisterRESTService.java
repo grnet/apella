@@ -169,7 +169,7 @@ public class RegisterRESTService extends RESTService {
 		try {
 			// Delete:
 			for (RegisterFile rFile : register.getFiles()) {
-				completelyDelete(rFile);
+				deleteCompletely(rFile);
 			}
 			em.remove(register);
 			em.flush();
@@ -367,7 +367,10 @@ public class RegisterRESTService extends RESTService {
 			if (registerFile == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 			}
-			registerFile.delete();
+			RegisterFile rf = deleteAsMuchAsPossible(registerFile);
+			if (rf==null) {
+				register.getFiles().remove(registerFile);
+			}
 			return Response.noContent().build();
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);

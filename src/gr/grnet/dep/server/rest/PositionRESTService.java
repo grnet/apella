@@ -866,7 +866,10 @@ public class PositionRESTService extends RESTService {
 					if (committeeFile == null) {
 						throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 					}
-					committeeFile.delete();
+					PositionCommitteeFile cf = deleteAsMuchAsPossible(committeeFile);
+					if (cf==null) {
+						position.getPhase().getCommittee().getFiles().remove(committeeFile);
+					}
 					return Response.noContent().build();
 				case evaluation:
 					PositionEvaluationFile evaluationFile = null;
@@ -879,7 +882,10 @@ public class PositionRESTService extends RESTService {
 					if (evaluationFile == null) {
 						throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 					}
-					evaluationFile.delete();
+					PositionEvaluationFile ef = deleteAsMuchAsPossible(evaluationFile);
+					if (ef==null) {
+						position.getPhase().getEvaluation().getFiles().remove(evaluationFile);
+					}
 					return Response.noContent().build();
 				case complementaryDocuments:
 					ComplementaryDocumentsFile complementaryDocumentsFile = null;
@@ -892,7 +898,10 @@ public class PositionRESTService extends RESTService {
 					if (complementaryDocumentsFile == null) {
 						throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 					}
-					complementaryDocumentsFile.delete();
+					ComplementaryDocumentsFile cdf = deleteAsMuchAsPossible(complementaryDocumentsFile);
+					if (cdf==null) {
+						position.getPhase().getComplementaryDocuments().getFiles().remove(complementaryDocumentsFile);
+					}
 					return Response.noContent().build();
 				case nomination:
 					PositionNominationFile nominationFile = null;
@@ -905,7 +914,10 @@ public class PositionRESTService extends RESTService {
 					if (nominationFile == null) {
 						throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 					}
-					nominationFile.delete();
+					PositionNominationFile pnf = deleteAsMuchAsPossible(nominationFile);
+					if (pnf==null) {
+						position.getPhase().getNomination().getFiles().remove(nominationFile);
+					}
 					return Response.noContent().build();
 				default:
 					throw new RestException(Status.BAD_REQUEST, "wrong.file.discriminator");

@@ -770,7 +770,10 @@ public class RoleRESTService extends RESTService {
 						}
 					}
 					// Do delete
-					candidateFile.delete();
+					CandidateFile cf = deleteAsMuchAsPossible(candidateFile);
+					if (cf==null) {
+						candidate.getFiles().remove(candidateFile);
+					}
 					// Check open candidacies
 					if (updateCandidacies) {
 						try {
@@ -796,7 +799,10 @@ public class RoleRESTService extends RESTService {
 						.setParameter("professorId", id)
 						.setParameter("fileId", fileId)
 						.getSingleResult();
-					professorFile.delete();
+					ProfessorFile pf = deleteAsMuchAsPossible(professorFile);
+					if (pf==null) {
+						professor.getFiles().remove(professorFile);
+					}
 					// Check open candidacies
 					if (updateCandidacies && professor.getUser().hasActiveRole(RoleDiscriminator.CANDIDATE)) {
 						try {

@@ -516,7 +516,10 @@ public class CandidacyRESTService extends RESTService {
 			if (candidacyFile == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 			}
-			candidacyFile.delete();
+			CandidacyFile cf = deleteAsMuchAsPossible(candidacyFile);
+			if (cf==null) {
+				candidacy.getFiles().remove(candidacyFile);
+			}
 			/*File file = deleteFileBody(candidacyFile);
 			file.delete();
 			if (candidacyFile.getCurrentBody() == null) {

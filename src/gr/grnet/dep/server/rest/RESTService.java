@@ -131,7 +131,7 @@ public class RESTService {
 		}
 		else {
 			existingFiles = FileHeader.filter(files, type);
-			if (existingFiles.size() >= CandidacyFile.fileTypes.get(type))
+			if (existingFiles.size() >= fileTypes.get(type))
 				throw new RestException(Status.CONFLICT, "wrong.file.type");
 		}
 		return null;
@@ -312,11 +312,13 @@ public class RESTService {
 
 	/**
 	 * Deletes the last body of given file, if possible.
+	 * If no bodies are left, deletes header too.
 	 * 
 	 * @param fh
 	 * @return
+	 * @throws RestException (Status.CONFLICT) if body cannot be deleted because it is in use
 	 */
-	protected File deleteFileBody(FileHeader fh) {
+	protected <T extends FileHeader> File deleteFileBody(T fh) throws RestException {
 		int size = fh.getBodies().size();
 		// Delete the file itself, if possible.
 		FileBody fb = fh.getCurrentBody();
@@ -349,12 +351,43 @@ public class RESTService {
 		return file;
 	}
 	
-	protected void completelyDelete(FileHeader fh) {
+	/**
+	 * Delete given FileHeader and all bodies and physical files.
+	 * 
+	 * @param fh FileHeader
+	 * @throws RestException (Status.CONFLICT) if FileHeader cannot be deleted because some body is in use
+	 */
+	protected void deleteCompletely(FileHeader fh) throws RestException {
 		List<FileBody> fileBodies = fh.getBodies();
 		for (int i = fileBodies.size() - 1; i>=0; i--) {
 			File file = deleteFileBody(fh);
 			file.delete();
 		}
+	}
+	
+	/**
+	 * Delete as many bodies and physical files of given FileHeader as possible.
+	 * If no bodies are left, deletes header too.
+	 * If a body that is in use is found, deletions stop there:
+	 * The body and previous ones are left untouched, and
+	 * FileHeader is just marked as deleted.
+	 * No Exception is thrown.
+	 * 
+	 * @param fh FileHeader
+	 */
+	protected <T extends FileHeader> T deleteAsMuchAsPossible(T fh) {
+		List<FileBody> fileBodies = fh.getBodies();
+		for (int i = fileBodies.size() - 1; i>=0; i--) {
+			try {
+				File file = deleteFileBody(fh);
+				file.delete();
+			}
+			catch (RestException e) {
+				fh.delete();
+				return fh;
+			}
+		}
+		return null;
 	}
 
 	protected Response sendFileBody(FileBody fb) {
