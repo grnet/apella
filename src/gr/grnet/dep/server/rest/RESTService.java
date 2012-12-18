@@ -13,6 +13,7 @@ import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
+import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 
@@ -30,6 +31,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,6 +43,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
@@ -95,6 +99,56 @@ public class RESTService {
 			new File(savePath).mkdirs();
 		} catch (ConfigurationException e) {
 			staticLogger.log(Level.SEVERE, "RESTService init: ", e);
+		}
+	}
+
+	/**
+	 * Check FileType to upload agrees with max number and direct caller.
+	 * 
+	 * @param fileTypes Map<FileType, Integer>
+	 * @param type type to check
+	 * @param files existing files
+	 * @return null to continue and create file; existing file to switch to
+	 *         update
+	 * @throws RestException if wrong file type
+	 */
+	protected <T extends FileHeader> T checkNumberOfFileTypes(Map<FileType, Integer> fileTypes, FileType type, Set<T> files) throws RestException {
+		if (!fileTypes.containsKey(type)) {
+			throw new RestException(Status.CONFLICT, "wrong.file.type");
+		}
+		Set<T> existingFiles = null;
+		if (fileTypes.get(type) == 1) {
+			existingFiles = FileHeader.filterIncludingDeleted(files, type);
+			if (existingFiles.size() >= 1) {
+				T existingFile = existingFiles.iterator().next();
+				if (existingFile.isDeleted()) {
+					// Reuse!
+					existingFile.undelete();
+					return existingFile;
+				}
+				else {
+					throw new RestException(Status.CONFLICT, "wrong.file.type");
+				}
+			}
+		}
+		else {
+			existingFiles = FileHeader.filter(files, type);
+			if (existingFiles.size() >= fileTypes.get(type))
+				throw new RestException(Status.CONFLICT, "wrong.file.type");
+		}
+		return null;
+	}
+
+	<T extends FileHeader> String _updateFile(User loggedOn, List<FileItem> fileItems, T file) throws IOException {
+		try {
+			saveFile(loggedOn, fileItems, file);
+			em.flush();
+			file.getBodies().size();
+			return toJSON(file, SimpleFileHeaderView.class);
+		} catch (PersistenceException e) {
+			logger.log(Level.WARNING, e.getMessage(), e);
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
 
@@ -264,11 +318,14 @@ public class RESTService {
 
 	/**
 	 * Deletes the last body of given file, if possible.
+	 * If no bodies are left, deletes header too.
 	 * 
 	 * @param fh
 	 * @return
+	 * @throws RestException (Status.CONFLICT) if body cannot be deleted because
+	 *             it is in use
 	 */
-	protected File deleteFileBody(FileHeader fh) {
+	protected <T extends FileHeader> File deleteFileBody(T fh) throws RestException {
 		int size = fh.getBodies().size();
 		// Delete the file itself, if possible.
 		FileBody fb = fh.getCurrentBody();
@@ -299,6 +356,45 @@ public class RESTService {
 		}
 		//Return physical file, should be deleted by caller of function
 		return file;
+	}
+
+	/**
+	 * Delete given FileHeader and all bodies and physical files.
+	 * 
+	 * @param fh FileHeader
+	 * @throws RestException (Status.CONFLICT) if FileHeader cannot be deleted
+	 *             because some body is in use
+	 */
+	protected void deleteCompletely(FileHeader fh) throws RestException {
+		List<FileBody> fileBodies = fh.getBodies();
+		for (int i = fileBodies.size() - 1; i >= 0; i--) {
+			File file = deleteFileBody(fh);
+			file.delete();
+		}
+	}
+
+	/**
+	 * Delete as many bodies and physical files of given FileHeader as possible.
+	 * If no bodies are left, deletes header too.
+	 * If a body that is in use is found, deletions stop there:
+	 * The body and previous ones are left untouched, and
+	 * FileHeader is just marked as deleted.
+	 * No Exception is thrown.
+	 * 
+	 * @param fh FileHeader
+	 */
+	protected <T extends FileHeader> T deleteAsMuchAsPossible(T fh) {
+		List<FileBody> fileBodies = fh.getBodies();
+		for (int i = fileBodies.size() - 1; i >= 0; i--) {
+			try {
+				File file = deleteFileBody(fh);
+				file.delete();
+			} catch (RestException e) {
+				fh.delete();
+				return fh;
+			}
+		}
+		return null;
 	}
 
 	protected Response sendFileBody(FileBody fb) {

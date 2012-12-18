@@ -17,12 +17,10 @@ import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.util.DateUtil;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -139,6 +137,7 @@ public class CandidacyRESTService extends RESTService {
 			candidacy.initializeCollections();
 			return candidacy;
 		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
@@ -181,6 +180,7 @@ public class CandidacyRESTService extends RESTService {
 			existingCandidacy.initializeCollections();
 			return existingCandidacy;
 		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
@@ -212,6 +212,7 @@ public class CandidacyRESTService extends RESTService {
 			// Update
 			em.remove(existingCandidacy);
 		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
@@ -314,8 +315,7 @@ public class CandidacyRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
-		candidacy.getFiles().size();
-		return candidacy.getFiles();
+		return FileHeader.filterDeleted(candidacy.getFiles());
 	}
 
 	@GET
@@ -337,7 +337,7 @@ public class CandidacyRESTService extends RESTService {
 		}
 		// Return Result
 		for (CandidacyFile file : candidacy.getFiles()) {
-			if (file.getId().equals(fileId)) {
+			if (file.getId().equals(fileId) && !file.isDeleted()) {
 				return file;
 			}
 		}
@@ -363,12 +363,10 @@ public class CandidacyRESTService extends RESTService {
 		}
 		// Return Result
 		for (CandidacyFile file : candidacy.getFiles()) {
-			if (file.getId().equals(fileId)) {
-				if (file.getId().equals(fileId)) {
-					for (FileBody fb : file.getBodies()) {
-						if (fb.getId().equals(bodyId)) {
-							return sendFileBody(fb);
-						}
+			if (file.getId().equals(fileId) && !file.isDeleted()) {
+				for (FileBody fb : file.getBodies()) {
+					if (fb.getId().equals(bodyId)) {
+						return sendFileBody(fb);
 					}
 				}
 			}
@@ -409,9 +407,9 @@ public class CandidacyRESTService extends RESTService {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		// Check number of file types
-		Set<CandidacyFile> existingFiles = FileHeader.filter(candidacy.getFiles(), type);
-		if (!CandidacyFile.fileTypes.containsKey(type) || existingFiles.size() >= CandidacyFile.fileTypes.get(type)) {
-			throw new RestException(Status.CONFLICT, "wrong.file.type");
+		CandidacyFile existingFile = checkNumberOfFileTypes(CandidacyFile.fileTypes, type, candidacy.getFiles());
+		if (existingFile != null) {
+			return _updateFile(loggedOn, fileItems, existingFile);
 		}
 		// Create
 		try {
@@ -477,16 +475,7 @@ public class CandidacyRESTService extends RESTService {
 		}
 
 		// Update
-		try {
-			saveFile(loggedOn, fileItems, candidacyFile);
-			em.flush();
-			candidacyFile.getBodies().size();
-			return toJSON(candidacyFile, SimpleFileHeaderView.class);
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
-		}
+		return _updateFile(loggedOn, fileItems, candidacyFile);
 	}
 
 	/**
@@ -513,7 +502,7 @@ public class CandidacyRESTService extends RESTService {
 		try {
 			CandidacyFile candidacyFile = null;
 			for (CandidacyFile file : candidacy.getFiles()) {
-				if (file.getId().equals(fileId)) {
+				if (file.getId().equals(fileId) && !file.isDeleted()) {
 					candidacyFile = file;
 					break;
 				}
@@ -528,15 +517,11 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
 
-			File file = deleteFileBody(candidacyFile);
-			file.delete();
-			if (candidacyFile.getCurrentBody() == null) {
-				// Remove from Position
+			CandidacyFile cf = deleteAsMuchAsPossible(candidacyFile);
+			if (cf == null) {
 				candidacy.getFiles().remove(candidacyFile);
-				return Response.noContent().build();
-			} else {
-				return Response.ok(candidacyFile).build();
 			}
+			return Response.noContent().build();
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
