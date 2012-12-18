@@ -2251,9 +2251,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				App.ranks.fetch({
 					cache : true,
 					success : function(collection, resp) {
-						_.each(collection.filter(function(rank) {
-							return _.isEqual(rank.get("category"), "PROFESSOR");
-						}), function(rank) {
+						collection.each(function(rank) {
 							if (_.isObject(self.model.get("rank")) && _.isEqual(rank.id, self.model.get("rank").id)) {
 								$("select[name='rank']", self.$el).append("<option value='" + rank.get("id") + "' selected>" + rank.get("name") + "</option>");
 							} else {
@@ -3490,10 +3488,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								withMetadata : true,
 								editable : false
 							});
-							self.addFile(collection, "TEKMIRIOSI_EPITROPIS_GIA_AKSIOLOGITES", self.$("#tekmiriosiEpitropisGiaAksiologitesFile"), {
-								withMetadata : true,
-								editable : false
-							});
 							self.addFile(collection, "AITIMA_EPITROPIS_PROS_AKSIOLOGITES", self.$("#aitimaEpitropisProsAksiologitesFile"), {
 								withMetadata : true,
 								editable : false
@@ -3703,8 +3697,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "nominatedCandidacy":
 				return _.isEqual(self.model.get("phase").status, "EPILOGI");
-			case "nominationToETDate":
-				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "nominationFEK":
 				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 				// Files
@@ -3725,8 +3717,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			case "apofasiAnapompisFile":
 				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "praktikoSynedriasisEpitropisGiaAksiologitesFile":
-				return _.isEqual(self.model.get("phase").status, "EPILOGI");
-			case "tekmiriosiEpitropisGiaAksiologitesFile":
 				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "aitimaEpitropisProsAksiologitesFile":
 				return _.isEqual(self.model.get("phase").status, "EPILOGI");
@@ -3788,10 +3778,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								self.addFile(collection, "PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES", self.$("#praktikoSynedriasisEpitropisGiaAksiologitesFile"), {
 									withMetadata : true,
 									editable : self.isEditable("praktikoSynedriasisEpitropisGiaAksiologitesFile")
-								});
-								self.addFile(collection, "TEKMIRIOSI_EPITROPIS_GIA_AKSIOLOGITES", self.$("#tekmiriosiEpitropisGiaAksiologitesFile"), {
-									withMetadata : true,
-									editable : self.isEditable("tekmiriosiEpitropisGiaAksiologitesFile")
 								});
 								self.addFile(collection, "AITIMA_EPITROPIS_PROS_AKSIOLOGITES", self.$("#aitimaEpitropisProsAksiologitesFile"), {
 									withMetadata : true,
@@ -3892,7 +3878,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("#organismosFile").html($.i18n.prop("PressSave"));
 				self.$("#eswterikosKanonismosFile").html($.i18n.prop("PressSave"));
 				self.$("#praktikoSynedriasisEpitropisGiaAksiologitesFile").html($.i18n.prop("PressSave"));
-				self.$("#tekmiriosiEpitropisGiaAksiologitesFile").html($.i18n.prop("PressSave"));
 				self.$("#aitimaEpitropisProsAksiologitesFile").html($.i18n.prop("PressSave"));
 				self.$("#aksiologisiProtouAksiologitiFileList").html($.i18n.prop("PressSave"));
 				self.$("#aksiologisiDeuterouAksiologitiFileList").html($.i18n.prop("PressSave"));
@@ -3978,7 +3963,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					},
 					closingDate : {
 						"required" : true,
-						"dateAfter" : [ self.$("input[name=openingDate]"), 15 ]
+						"dateAfter" : [ self.$("input[name=openingDate]"), 30 ]
 					}
 				},
 				messages : {
@@ -4027,7 +4012,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			values.phase.candidacies.closingDate = self.$('form input[name=closingDate]').val();
 			values.phase.committee.committeeMeetingDate = self.$('form input[name=committeeMeetingDate]').val();
 			values.phase.nomination.nominationCommitteeConvergenceDate = self.$('form input[name=nominationCommitteeConvergenceDate]').val();
-			values.phase.nomination.nominationToETDate = self.$('form input[name=nominationToETDate]').val();
 			values.phase.nomination.nominationFEK = self.$('form input[name=nominationFEK]').val();
 			values.phase.nomination.nominatedCandidacy = {
 				id : self.$('form select[name=nominatedCandidacy]').val()
@@ -5134,7 +5118,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var self = this;
 
 			self.template = _.template(tpl_register_members_edit);
-			_.bindAll(self, "render", "allowedToEdit", "viewMember", "addMember", "updateMember", "removeMember", "toggleAddMember", "close");
+			_.bindAll(self, "render", "allowedToEdit", "viewMember", "addMember", "removeMember", "toggleAddMember", "close");
 			self.collection.bind('reset', this.render, this);
 			self.collection.bind("change", this.render, this);
 			self.collection.bind('remove', this.render, this);
@@ -5152,8 +5136,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		events : {
 			"click a#removeMember" : "removeMember",
 			"click a#toggleAddMember" : "toggleAddMember",
-			"click a#viewMember" : "viewMember",
-			"click a#updateMember" : "updateMember"
+			"click a#viewMember" : "viewMember"
 		},
 
 		allowedToEdit : function() {
@@ -5210,38 +5193,25 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				},
 				"professor" : professor.toJSON()
 			});
-			var registerMemberEditView = new Views.OverlayView({
-				innerView : new Views.RegisterMemberEditView({
-					model : registerMember
-				})
+			// Save
+			registerMember.save({}, {
+				wait : true,
+				success : function(model, resp) {
+					var popup = new Views.PopupView({
+						type : "success",
+						message : $.i18n.prop("Success")
+					});
+					popup.show();
+					self.collection.add(registerMember);
+				},
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
 			});
-			registerMember.on("change", function(model) {
-				registerMemberEditView.close();
-				registerMember.off("change", this);
-			});
-			registerMember.on("sync", function(model) {
-				self.collection.add(registerMember);
-				registerMember.off("sync", this);
-			});
-
-			registerMemberEditView.render();
-		},
-
-		updateMember : function(event, member) {
-			var self = this;
-			var selectedModel = member ? member : self.collection.get($(event.currentTarget).data('memberId'));
-			if (selectedModel) {
-				var registerMemberEditView = new Views.OverlayView({
-					innerView : new Views.RegisterMemberEditView({
-						model : selectedModel
-					})
-				});
-				selectedModel.on("change", function(model) {
-					registerMemberEditView.close();
-					selectedModel.off("change", this);
-				});
-				registerMemberEditView.render();
-			}
 		},
 
 		removeMember : function(event) {
@@ -5286,7 +5256,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 
 	/***************************************************************************
-	 * RegisterMemberEditView **************************************************
+	 * RegisterMemberEditView (Not Used) ***************************************
 	 **************************************************************************/
 	Views.RegisterMemberEditView = Views.BaseView.extend({
 		tagName : "div",
@@ -6200,8 +6170,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	Views.CandidacyEditView = Views.BaseView.extend({
 		tagName : "div",
 
-		validator : undefined,
-
 		initialize : function() {
 			_.bindAll(this, "render", "isEditable", "submit", "cancel", "addFile", "close");
 			this.template = _.template(tpl_candidacy_edit);
@@ -6282,39 +6250,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			} else {
 				self.$("#mitrooFileList").html($.i18n.prop("PressSave"));
 			}
-			self.validator = self.$("form").validate({
-				errorElement : "span",
-				errorClass : "help-inline",
-				highlight : function(element, errorClass, validClass) {
-					$(element).parent(".controls").parent(".control-group").addClass("error");
-				},
-				unhighlight : function(element, errorClass, validClass) {
-					$(element).parent(".controls").parent(".control-group").removeClass("error");
-				},
-				rules : {
-					"evaluator_fullname_0" : {
-						required : true
-					},
-					"evaluator_email_0" : {
-						required : true,
-						email : true
-					},
-					"evaluator_fullname_1" : {
-						required : true
-					},
-					"evaluator_email_1" : {
-						required : true,
-						email : true
-					}
-				},
-				messages : {
-					"evaluator_fullname_0" : $.i18n.prop("validation_evaluator_fullname"),
-					"evaluator_email_0" : $.i18n.prop("validation_evaluator_email"),
-					"evaluator_fullname_1" : $.i18n.prop("validation_evaluator_fullname"),
-					"evaluator_email_1" : $.i18n.prop("validation_evaluator_email")
-				}
-			});
-
 			// Set isEditable to fields
 			self.$("select, input, textarea").each(function(index) {
 				var field = $(this).attr("name");
@@ -6366,9 +6301,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		cancel : function(event) {
 			var self = this;
-			if (self.validator) {
-				self.validator.resetForm();
-			}
 			self.render();
 		},
 

@@ -13,7 +13,6 @@ public enum FileType {
 	// Position Files
 	APOFASI_SYSTASIS_EPITROPIS, // Απόφαση Σύστασης Επιτροπής
 	PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES, // Πρακτικό της συνεδρίασης της επιτροπής για την ανάδειξη των αξιολογητών,
-	TEKMIRIOSI_EPITROPIS_GIA_AKSIOLOGITES, // Τεκμηρίωση σε περίπτωση που οι αξιολογητές δεν ανήκουν στο εξωτερικό μητρώο,
 	AITIMA_EPITROPIS_PROS_AKSIOLOGITES, // Αίτημα της επιτροπής προς τους αξιολογητές (στο παραπάνω πεδίο;)
 	AKSIOLOGISI_PROTOU_AKSIOLOGITI,
 	AKSIOLOGISI_DEUTEROU_AKSIOLOGITI,

@@ -39,14 +39,16 @@
 					</td>
 					<td>
 						<ul>
-						<% _.each(member.subjects, function(subject) { %>
-							<li><%= subject.name %></li> 
-						<% }); %>
+							<% if (_.isObject(member.professor.subject)) { %>
+							<li><%= member.professor.subject.name %></li>
+							 <% } %>
+							 <% if (_.isObject(member.professor.fekSubject)) { %>
+							<li><%= member.professor.fekSubject.name %></li>
+							 <% } %>
 						</ul>
 					</td>
 					<td width="140px">
-						<div class="btn-group btn-group-vertical">
-							<a id="updateMember" data-member-id="<%= member.id %>" class="btn btn-mini btn-primary"><i class="icon-edit icon-white"></i> <%= $.i18n.prop('btn_update_member') %></a>
+						<div class="btn-group">
 							<a id="removeMember" data-member-id="<%= member.id %>" class="btn btn-mini btn-danger"><i class="icon-minus icon-white"></i> <%= $.i18n.prop('btn_remove_member') %></a>
 						</div>
 					</td>

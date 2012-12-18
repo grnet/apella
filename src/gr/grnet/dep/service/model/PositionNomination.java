@@ -38,9 +38,6 @@ public class PositionNomination {
 	@Temporal(TemporalType.DATE)
 	private Date nominationCommitteeConvergenceDate; // Ημερομηνία σύγκλισης επιτροπής για επιλογή
 
-	@Temporal(TemporalType.DATE)
-	private Date nominationToETDate; // Ημερομηνία αποστολής διορισμού στο Εθνικό Τυπογραφείο
-
 	private String nominationFEK; //ΦΕΚ Διορισμού
 
 	@ManyToOne
@@ -74,16 +71,6 @@ public class PositionNomination {
 	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setNominationCommitteeConvergenceDate(Date nominationCommitteeConvergenceDate) {
 		this.nominationCommitteeConvergenceDate = nominationCommitteeConvergenceDate;
-	}
-
-	@JsonSerialize(using = SimpleDateSerializer.class)
-	public Date getNominationToETDate() {
-		return nominationToETDate;
-	}
-
-	@JsonDeserialize(using = SimpleDateDeserializer.class)
-	public void setNominationToETDate(Date nominationToETDate) {
-		this.nominationToETDate = nominationToETDate;
 	}
 
 	public String getNominationFEK() {
@@ -159,7 +146,6 @@ public class PositionNomination {
 	public void copyFrom(PositionNomination nomination) {
 		this.setNominationCommitteeConvergenceDate(nomination.getNominationCommitteeConvergenceDate());
 		this.setNominationFEK(nomination.getNominationFEK());
-		this.setNominationToETDate(nomination.getNominationToETDate());
 		this.setUpdatedAt(new Date());
 	}
 

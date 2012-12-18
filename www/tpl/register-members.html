@@ -37,9 +37,12 @@
 					</td>
 					<td>
 						<ul>
-						<% _.each(member.subjects, function(subject) { %>
-							<li><%= subject.name %></li> 
-						<% }); %>
+							<% if (_.isObject(member.professor.subject)) { %>
+							<li><%= member.professor.subject.name %></li>
+							 <% } %>
+							 <% if (_.isObject(member.professor.fekSubject)) { %>
+							<li><%= member.professor.fekSubject.name %></li>
+							 <% } %>
 						</ul>
 					</td>
 				</tr>

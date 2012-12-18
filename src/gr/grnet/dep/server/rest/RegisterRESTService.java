@@ -11,14 +11,11 @@ import gr.grnet.dep.service.model.RegisterMember.DetailedRegisterMemberView;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
-import gr.grnet.dep.service.model.Subject;
 import gr.grnet.dep.service.model.User;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -183,7 +180,6 @@ public class RegisterRESTService extends RESTService {
 		}
 		for (RegisterMember member : register.getMembers()) {
 			member.getProfessor().initializeCollections();
-			member.getSubjects().size();
 		}
 		return register.getMembers();
 	}
@@ -201,7 +197,6 @@ public class RegisterRESTService extends RESTService {
 		for (RegisterMember member : register.getMembers()) {
 			if (member.getId().equals(memberId)) {
 				member.getProfessor().initializeCollections();
-				member.getSubjects().size();
 				return member;
 			}
 		}
@@ -238,15 +233,6 @@ public class RegisterRESTService extends RESTService {
 		try {
 			newMember.setRegister(existingRegister);
 			newMember.setProfessor(existingProfessor);
-			Set<Subject> subjects = new HashSet<Subject>();
-			for (Subject s : newMember.getSubjects()) {
-				s = supplementSubject(s);
-				if (s.getId() == null) {
-					em.persist(s);
-				}
-				subjects.add(s);
-			}
-			newMember.setSubjects(subjects);
 			switch (existingProfessor.getDiscriminator()) {
 				case PROFESSOR_DOMESTIC:
 					newMember.setExternal(existingRegister.getInstitution().getId() != ((ProfessorDomestic) existingProfessor).getInstitution().getId());
@@ -262,72 +248,7 @@ public class RegisterRESTService extends RESTService {
 			em.flush();
 			// Return result
 			newMember.getProfessor().initializeCollections();
-			newMember.getSubjects().size();
 			return newMember;
-		} catch (PersistenceException e) {
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
-		}
-	}
-
-	@PUT
-	@Path("/{id:[0-9]+}/members/{memberId:[0-9]+}")
-	@JsonView({DetailedRegisterMemberView.class})
-	public RegisterMember updateRegisterMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId, @PathParam("memberId") Long memberId, RegisterMember member) {
-		User loggedOn = getLoggedOn(authToken);
-		Register existingRegister = em.find(Register.class, registerId);
-		// Validate:
-		if (existingRegister == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
-		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(existingRegister.getInstitution())) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		Professor existingProfessor = em.find(Professor.class, member.getProfessor().getId());
-		if (existingProfessor == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
-		}
-		if (!existingProfessor.getStatus().equals(RoleStatus.ACTIVE)) {
-			throw new RestException(Status.NOT_FOUND, "wrong.professor.status");
-		}
-		// Check if it exists:
-		RegisterMember existingMember = null;
-		for (RegisterMember rm : existingRegister.getMembers()) {
-			if (rm.getId().equals(memberId)) {
-				existingMember = rm;
-				break;
-			}
-		}
-		if (existingMember == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.register.member.id");
-		}
-		// Update
-		try {
-			Set<Subject> subjects = new HashSet<Subject>();
-			for (Subject s : member.getSubjects()) {
-				s = supplementSubject(s);
-				if (s.getId() == null) {
-					em.persist(s);
-				}
-				subjects.add(s);
-			}
-			existingMember.setSubjects(subjects);
-			switch (existingProfessor.getDiscriminator()) {
-				case PROFESSOR_DOMESTIC:
-					existingMember.setExternal(existingRegister.getInstitution().getId() != ((ProfessorDomestic) existingProfessor).getInstitution().getId());
-					break;
-				case PROFESSOR_FOREIGN:
-					existingMember.setExternal(true);
-					break;
-				default:
-					break;
-			}
-			existingMember = em.merge(existingMember);
-			em.flush();
-			// Return result
-			existingMember.getProfessor().initializeCollections();
-			existingMember.getSubjects().size();
-			return existingMember;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");

@@ -1,12 +1,10 @@
 package gr.grnet.dep.service.model;
 
 import java.io.Serializable;
-import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -40,9 +38,6 @@ public class RegisterMember implements Serializable {
 
 	private boolean external;
 
-	@ManyToMany
-	private Set<Subject> subjects;
-
 	public Long getId() {
 		return id;
 	}
@@ -67,14 +62,6 @@ public class RegisterMember implements Serializable {
 
 	public void setProfessor(Professor professor) {
 		this.professor = professor;
-	}
-
-	public Set<Subject> getSubjects() {
-		return subjects;
-	}
-
-	public void setSubjects(Set<Subject> subjects) {
-		this.subjects = subjects;
 	}
 
 	public boolean isExternal() {

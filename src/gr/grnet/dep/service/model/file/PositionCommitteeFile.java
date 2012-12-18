@@ -26,7 +26,6 @@ public class PositionCommitteeFile extends FileHeader {
 		{
 			put(FileType.APOFASI_SYSTASIS_EPITROPIS, 1);
 			put(FileType.PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES, 1);
-			put(FileType.TEKMIRIOSI_EPITROPIS_GIA_AKSIOLOGITES, 1);
 			put(FileType.AITIMA_EPITROPIS_PROS_AKSIOLOGITES, 1);
 		}
 	});

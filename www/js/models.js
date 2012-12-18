@@ -827,7 +827,6 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 				nomination : {
 					id : undefined,
 					nominationCommitteeConvergenceDate : undefined,
-					nominationToETDate : undefined,
 					nominationFEK : undefined,
 					nominatedCandidcay : undefined
 				},
@@ -976,8 +975,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		defaults : {
 			id : undefined,
 			professor : undefined,
-			internal : undefined,
-			subjects : []
+			internal : undefined
 		}
 	});
 
