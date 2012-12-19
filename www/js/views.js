@@ -1943,6 +1943,32 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "phone":
 					return true;
+				case "alternatefirstname":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "alternatelastname":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "alternatefathername":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "alternatefirstnamelatin":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "alternatelastnamelatin":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "alternatefathernamelatin":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "alternateemail":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "alternatemobile":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "alternateaddress_street":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "alternateaddress_number":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "alternateaddress_zip":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "alternateaddress_city":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "alternateaddress_country":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				}
 				break;
 			case "INSTITUTION_ASSISTANT":
@@ -2373,7 +2399,37 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							required : true,
 							number : true,
 							minlength : 10
-						}
+						},
+						alternatefirstname : "required",
+						alternatelastname : "required",
+						alternatefathername : "required",
+						alternatefirstnamelatin : {
+							required : true,
+							onlyLatin : true
+						},
+						alternatelastnamelatin : {
+							required : true,
+							onlyLatin : true
+						},
+						alternatefathernamelatin : {
+							required : true,
+							onlyLatin : true
+						},
+						alternateemail : {
+							required : true,
+							email : true,
+							minlength : 2
+						},
+						alternatemobile : {
+							required : true,
+							number : true,
+							minlength : 10
+						},
+						alternateaddress_street : "required",
+						alternateaddress_number : "required",
+						alternateaddress_zip : "required",
+						alternateaddress_city : "required",
+						alternateaddress_country : "required"
 					},
 					messages : {
 						institution : $.i18n.prop('validation_institution'),
@@ -2383,7 +2439,37 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							required : $.i18n.prop('validation_phone'),
 							number : $.i18n.prop('validation_number'),
 							minlength : $.i18n.prop('validation_minlength', 10)
-						}
+						},
+						alternatefirstname : $.i18n.prop('validation_firstname'),
+						alternatelastname : $.i18n.prop('validation_lastname'),
+						alternatefathername : $.i18n.prop('validation_fathername'),
+						alternatefirstnamelatin : {
+							required : $.i18n.prop('validation_firstnamelatin'),
+							onlyLatin : $.i18n.prop('validation_latin')
+						},
+						alternatelastnamelatin : {
+							required : $.i18n.prop('validation_lastnamelatin'),
+							onlyLatin : $.i18n.prop('validation_latin')
+						},
+						alternatefathernamelatin : {
+							required : $.i18n.prop('validation_fathernamelatin'),
+							onlyLatin : $.i18n.prop('validation_latin')
+						},
+						alternatemobile : {
+							required : $.i18n.prop('validation_phone'),
+							number : $.i18n.prop('validation_number'),
+							minlength : $.i18n.prop('validation_minlength', 10)
+						},
+						alternateemail : {
+							required : $.i18n.prop('validation_email'),
+							email : $.i18n.prop('validation_email'),
+							minlength : $.i18n.prop('validation_minlength', 2)
+						},
+						alternateaddress_street : $.i18n.prop('validation_street'),
+						alternateaddress_number : $.i18n.prop('validation_address'),
+						alternateaddress_zip : $.i18n.prop('validation_zip'),
+						alternateaddress_city : $.i18n.prop('validation_city'),
+						alternateaddress_country : $.i18n.prop('validation_country')
 					}
 				});
 				self.$("select[name='verificationAuthority']").change();
@@ -2530,8 +2616,28 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				values.verificationAuthority = self.$('form select[name=verificationAuthority]').val();
 				values.verificationAuthorityName = self.$('form input[name=verificationAuthorityName]').val();
 				values.phone = self.$('form input[name=phone]').val();
+				values.alternateBasicInfo = {
+					"firstname" : self.$('form input[name=alternatefirstname]').val(),
+					"lastname" : self.$('form input[name=alternatelastname]').val(),
+					"fathername" : self.$('form input[name=alternatefathername]').val(),
+				};
+				values.alternateBasicInfoLatin = {
+					"firstname" : self.$('form input[name=alternatefirstnamelatin]').val(),
+					"lastname" : self.$('form input[name=alternatelastnamelatin]').val(),
+					"fathername" : self.$('form input[name=alternatefathernamelatin]').val(),
+				};
+				values.alternateContactInfo = {
+					"address" : {
+						"street" : self.$('form input[name=alternateaddress_street]').val(),
+						"number" : self.$('form input[name=alternateaddress_number]').val(),
+						"zip" : self.$('form input[name=alternateaddress_zip]').val(),
+						"city" : self.$('form input[name=alternateaddress_city]').val(),
+						"country" : self.$('form input[name=alternateaddress_country]').val(),
+					},
+					"email" : self.$('form input[name=alternateemail]').val(),
+					"mobile" : self.$('form input[name=alternatemobile]').val()
+				};
 				break;
-
 			case "INSTITUTION_ASSISTANT":
 				values.institution = {
 					"id" : self.$('form select[name=institution]').val()
@@ -3715,6 +3821,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "nominatedCandidacy":
 				return _.isEqual(self.model.get("phase").status, "EPILOGI");
+			case "secondNominatedCandidacy":
+				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 			case "nominationFEK":
 				return _.isEqual(self.model.get("phase").status, "EPILOGI");
 				// Files
@@ -3866,22 +3974,34 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("select[name='nominatedCandidacy']").change(function(event) {
 					self.$("select[name='nominatedCandidacy']").next(".help-block").html(self.$("select[name='nominatedCandidacy'] option:selected").text());
 				});
+				self.$("select[name='secondNominatedCandidacy']").change(function(event) {
+					self.$("select[name='secondNominatedCandidacy']").next(".help-block").html(self.$("select[name='secondNominatedCandidacy'] option:selected").text());
+				});
 				positionCandidacies.fetch({
 					cache : false,
 					wait : true,
 					success : function(collection, resp) {
 						self.$("select[name='nominatedCandidacy']").empty();
+						self.$("select[name='secondNominatedCandidacy']").empty();
 						// Add Candidacies in selector:
 						var nominatedCandidacyId = (_.isObject(self.model.get("phase").nomination) && !_.isUndefined(self.model.get("phase").nomination.nominatedCandidacy)) ? self.model.get("phase").nomination.nominatedCandidacy.id : undefined;
+						var secondNominatedCandidacyId = (_.isObject(self.model.get("phase").nomination) && !_.isUndefined(self.model.get("phase").nomination.secondNominatedCandidacy)) ? self.model.get("phase").nomination.secondNominatedCandidacy.id : undefined;
 						self.$("select[name='nominatedCandidacy']").append("<option value=''>--</option>");
+						self.$("select[name='secondNominatedCandidacy']").append("<option value=''>--</option>");
 						collection.each(function(candidacy) {
 							if (_.isEqual(candidacy.id, nominatedCandidacyId)) {
 								self.$("select[name='nominatedCandidacy']").append("<option value='" + candidacy.get("id") + "' selected>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + " (" + candidacy.get("snapshot").username + ")" + "</option>");
 							} else {
 								self.$("select[name='nominatedCandidacy']").append("<option value='" + candidacy.get("id") + "'>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + " (" + candidacy.get("snapshot").username + ")" + "</option>");
 							}
+							if (_.isEqual(candidacy.id, secondNominatedCandidacyId)) {
+								self.$("select[name='secondNominatedCandidacy']").append("<option value='" + candidacy.get("id") + "' selected>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + " (" + candidacy.get("snapshot").username + ")" + "</option>");
+							} else {
+								self.$("select[name='secondNominatedCandidacy']").append("<option value='" + candidacy.get("id") + "'>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + " (" + candidacy.get("snapshot").username + ")" + "</option>");
+							}
 						});
 						self.$("select[name='nominatedCandidacy']").change();
+						self.$("select[name='secondNominatedCandidacy']").change();
 					}
 				});
 			} else {
@@ -4033,6 +4153,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			values.phase.nomination.nominationFEK = self.$('form input[name=nominationFEK]').val();
 			values.phase.nomination.nominatedCandidacy = {
 				id : self.$('form select[name=nominatedCandidacy]').val()
+			};
+			values.phase.nomination.secondNominatedCandidacy = {
+				id : self.$('form select[name=secondNominatedCandidacy]').val()
 			};
 
 			// Save to model

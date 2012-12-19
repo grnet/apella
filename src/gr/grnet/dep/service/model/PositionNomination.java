@@ -43,6 +43,9 @@ public class PositionNomination {
 	@ManyToOne
 	private Candidacy nominatedCandidacy;
 
+	@ManyToOne
+	private Candidacy secondNominatedCandidacy;
+
 	@OneToMany(mappedBy = "nomination", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<PositionPhase> phases = new HashSet<PositionPhase>();
 
@@ -94,8 +97,16 @@ public class PositionNomination {
 		return nominatedCandidacy;
 	}
 
-	public void setNominatedCandidate(Candidacy nominatedCandidacy) {
+	public void setNominatedCandidacy(Candidacy nominatedCandidacy) {
 		this.nominatedCandidacy = nominatedCandidacy;
+	}
+
+	public Candidacy getSecondNominatedCandidacy() {
+		return secondNominatedCandidacy;
+	}
+
+	public void setSecondNominatedCandidacy(Candidacy secondNominatedCandidacy) {
+		this.secondNominatedCandidacy = secondNominatedCandidacy;
 	}
 
 	@XmlTransient

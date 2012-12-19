@@ -237,12 +237,23 @@ public class PositionRESTService extends RESTService {
 				if (position.getPhase().getNomination().getNominatedCandidacy() != null && position.getPhase().getNomination().getNominatedCandidacy().getId() != null) {
 					for (Candidacy candidacy : existingPosition.getPhase().getCandidacies().getCandidacies()) {
 						if (candidacy.getId().equals(position.getPhase().getNomination().getNominatedCandidacy().getId())) {
-							existingPosition.getPhase().getNomination().setNominatedCandidate(candidacy);
+							existingPosition.getPhase().getNomination().setNominatedCandidacy(candidacy);
 							break;
 						}
 					}
 				} else {
-					existingPosition.getPhase().getNomination().setNominatedCandidate(null);
+					existingPosition.getPhase().getNomination().setNominatedCandidacy(null);
+				}
+				// Add Second Nominated
+				if (position.getPhase().getNomination().getSecondNominatedCandidacy() != null && position.getPhase().getNomination().getSecondNominatedCandidacy().getId() != null) {
+					for (Candidacy candidacy : existingPosition.getPhase().getCandidacies().getCandidacies()) {
+						if (candidacy.getId().equals(position.getPhase().getNomination().getSecondNominatedCandidacy().getId())) {
+							existingPosition.getPhase().getNomination().setSecondNominatedCandidacy(candidacy);
+							break;
+						}
+					}
+				} else {
+					existingPosition.getPhase().getNomination().setSecondNominatedCandidacy(null);
 				}
 			}
 			existingPosition.setPermanent(true);

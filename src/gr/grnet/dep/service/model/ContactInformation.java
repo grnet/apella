@@ -52,4 +52,40 @@ public class ContactInformation {
 		this.mobile = mobile;
 	}
 
+	public boolean isMissingRequiredFields() {
+		if (this.address == null) {
+			return true;
+		}
+		if (this.email == null) {
+			return true;
+		}
+		if (this.mobile == null) {
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
+		if (obj == this) {
+			return true;
+		}
+		if (obj.getClass() != getClass()) {
+			return false;
+		}
+		ContactInformation that = (ContactInformation) obj;
+		if (!this.getAddress().equals(that.getAddress())) {
+			return false;
+		}
+		if (!this.getEmail().equals(that.getEmail())) {
+			return false;
+		}
+		if (!this.getMobile().equals(that.getMobile())) {
+			return false;
+		}
+		return true;
+	}
 }

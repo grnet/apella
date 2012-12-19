@@ -204,6 +204,87 @@
 				<input class="input-xlarge" name="phone" type="text" value="<%= phone %>" />
 				</div>
 			</div>
+		</fieldset>
+		<fieldset>
+			<legend><%= $.i18n.prop('AlternateInstitutionManager') %></legend>
+			<div class="control-group">
+				<label class="control-label" for="alternatefirstname"><%= $.i18n.prop('Name') %>:</label>
+				<div class="controls">
+					<input class="input-xlarge" type="text" name="alternatefirstname" value="<%= alternateBasicInfo.firstname %>" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="alternatelastname"><%= $.i18n.prop('Surname') %>:</label>
+				<div class="controls">
+					<input class="input-xlarge" type="text" name="alternatelastname" value="<%= alternateBasicInfo.lastname %>" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="alternatefathername"><%= $.i18n.prop('FatherName') %>:</label>
+				<div class="controls">
+					<input class="input-xlarge" type="text" name="alternatefathername" value="<%= alternateBasicInfo.fathername %>" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="alternatefirstnamelatin"><%= $.i18n.prop('NameLatin') %>:</label>
+				<div class="controls">
+					<input class="input-xlarge" type="text" name="alternatefirstnamelatin" value="<%= alternateBasicInfoLatin.firstname %>" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="alternatelastname"><%= $.i18n.prop('SurnameLatin') %>:</label>
+				<div class="controls">
+					<input class="input-xlarge" type="text" name="alternatelastnamelatin" value="<%= alternateBasicInfoLatin.lastname %>" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="alternatefathernamelatin"><%= $.i18n.prop('FatherNameLatin') %>:</label>
+				<div class="controls">
+					<input class="input-xlarge" type="text" name="alternatefathernamelatin" value="<%= alternateBasicInfoLatin.fathername %>" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="alternateemail"><%= $.i18n.prop('Email') %>:</label>
+				<div class="controls">
+					<input class="input-xlarge" type="text" name="alternateemail" value="<%= alternateContactInfo.email %>" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="alternatemobile"><%= $.i18n.prop('Mobile') %>:</label>
+				<div class="controls">
+					<input class="input-xlarge" type="text" name="alternatemobile" value="<%= alternateContactInfo.mobile %>" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="alternateaddress_street"><%= $.i18n.prop('Street') %>:</label>
+				<div class="controls">
+					<input class="input-xlarge" type="text" name="alternateaddress_street" value="<%= alternateContactInfo.address.street %>" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" class="control-label" for="alternateaddress_number"><%= $.i18n.prop('StreetNumber') %>:</label>
+				<div class="controls">
+					<input class="input-xlarge" type="text" name="alternateaddress_number" value="<%= alternateContactInfo.address.number %>" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="alternateaddress_zip"><%= $.i18n.prop('Zip') %>:</label>
+				<div class="controls">
+					<input class="input-xlarge" type="text" name="alternateaddress_zip" value="<%= alternateContactInfo.address.zip %>" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="alternateaddress_city"><%= $.i18n.prop('City') %>:</label>
+				<div class="controls">
+					<input class="input-xlarge" type="text" name="alternateaddress_city" value="<%= alternateContactInfo.address.city %>" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="alternateaddress_country"><%= $.i18n.prop('Country') %>:</label>
+				<div class="controls">
+					<input class="input-xlarge" type="text" name="alternateaddress_country" value="<%= alternateContactInfo.address.country %>" />
+				</div>
+			</div>
 			<div class="form-actions">
 				<a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
 			</div>

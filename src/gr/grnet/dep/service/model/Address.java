@@ -62,4 +62,34 @@ public class Address {
 		this.country = country;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
+		if (obj == this) {
+			return true;
+		}
+		if (obj.getClass() != getClass()) {
+			return false;
+		}
+		Address that = (Address) obj;
+		if (!this.getCity().equals(that.getCity())) {
+			return false;
+		}
+		if (!this.getCountry().equals(that.getCountry())) {
+			return false;
+		}
+		if (!this.getNumber().equals(that.getNumber())) {
+			return false;
+		}
+		if (!this.getStreet().equals(that.getStreet())) {
+			return false;
+		}
+		if (!this.getZip().equals(that.getZip())) {
+			return false;
+		}
+		return true;
+	}
+
 }

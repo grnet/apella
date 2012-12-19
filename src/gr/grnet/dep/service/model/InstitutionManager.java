@@ -4,9 +4,14 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.persistence.DiscriminatorValue;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @DiscriminatorValue("INSTITUTION_MANAGER")
@@ -26,11 +31,27 @@ public class InstitutionManager extends Role {
 	@ManyToOne
 	private Institution institution;
 
+	@Enumerated(EnumType.STRING)
 	private VerificationAuthority verificationAuthority;
 
 	private String verificationAuthorityName;
 
 	private String phone;
+
+	@Valid
+	@Embedded
+	@NotNull
+	private BasicInformation alternateBasicInfo = new BasicInformation();
+
+	@Valid
+	@Embedded
+	@NotNull
+	private BasicInformation alternateBasicInfoLatin = new BasicInformation();
+
+	@Valid
+	@Embedded
+	@NotNull
+	private ContactInformation alternateContactInfo = new ContactInformation();
 
 	public InstitutionManager() {
 		super();
@@ -69,6 +90,30 @@ public class InstitutionManager extends Role {
 		this.phone = phone;
 	}
 
+	public BasicInformation getAlternateBasicInfo() {
+		return alternateBasicInfo;
+	}
+
+	public void setAlternateBasicInfo(BasicInformation alternateBasicInfo) {
+		this.alternateBasicInfo = alternateBasicInfo;
+	}
+
+	public BasicInformation getAlternateBasicInfoLatin() {
+		return alternateBasicInfoLatin;
+	}
+
+	public void setAlternateBasicInfoLatin(BasicInformation alternateBasicInfoLatin) {
+		this.alternateBasicInfoLatin = alternateBasicInfoLatin;
+	}
+
+	public ContactInformation getAlternateContactInfo() {
+		return alternateContactInfo;
+	}
+
+	public void setAlternateContactInfo(ContactInformation alternateContactInfo) {
+		this.alternateContactInfo = alternateContactInfo;
+	}
+
 	////////////////////////////////////////////////////////////////////////////
 
 	@Override
@@ -82,6 +127,9 @@ public class InstitutionManager extends Role {
 		this.setVerificationAuthority(im.getVerificationAuthority());
 		this.setVerificationAuthorityName(im.getVerificationAuthorityName());
 		this.setPhone(im.getPhone());
+		this.setAlternateBasicInfo(im.getAlternateBasicInfo());
+		this.setAlternateBasicInfoLatin(im.getAlternateBasicInfoLatin());
+		this.setAlternateContactInfo(im.getAlternateContactInfo());
 		return this;
 	}
 
@@ -100,6 +148,15 @@ public class InstitutionManager extends Role {
 		if (!compare(this.verificationAuthorityName, other.getVerificationAuthorityName())) {
 			return false;
 		}
+		if (!compare(this.getAlternateBasicInfo(), other.getAlternateBasicInfo())) {
+			return false;
+		}
+		if (!compare(this.getAlternateBasicInfoLatin(), other.getAlternateBasicInfoLatin())) {
+			return false;
+		}
+		if (!compare(this.getAlternateContactInfo(), other.getAlternateContactInfo())) {
+			return false;
+		}
 		return true;
 	}
 
@@ -115,6 +172,15 @@ public class InstitutionManager extends Role {
 			return true;
 		}
 		if (this.phone == null) {
+			return true;
+		}
+		if (this.alternateBasicInfo.isMissingRequiredFields()) {
+			return true;
+		}
+		if (this.alternateBasicInfoLatin.isMissingRequiredFields()) {
+			return true;
+		}
+		if (this.alternateContactInfo.isMissingRequiredFields()) {
 			return true;
 		}
 		return false;
