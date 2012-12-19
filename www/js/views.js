@@ -168,11 +168,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	 * AdminMenuView ***********************************************************
 	 **************************************************************************/
 	Views.AdminMenuView = Views.BaseView.extend({
-		el : "div#menu",
-
-		tagName : "ul",
-
-		className : "nav",
+		el : "ul#menu",
 
 		initialize : function() {
 			_.bindAll(this, "render", "close");
@@ -1911,13 +1907,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "rank":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
-				case "subject":
-					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "fek":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "fekFile":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "fekCheckbox":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "fekSubject":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
-				case "fekFile":
+				case "subject":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				}
 				break;
@@ -2231,9 +2229,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							url : true
 						},
 						rank : "required",
-						subject : "required",
 						fek : "required",
-						fekSubject : "required"
+						fekSubject : {
+							"required" : "input[name=fekCheckbox]:not(:checked)"
+						},
+						subject : {
+							"required" : "input[name=fekCheckbox]:checked"
+						}
 					},
 					messages : {
 						institution : $.i18n.prop('validation_institution'),
@@ -2244,7 +2246,19 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						fekSubject : $.i18n.prop('validation_fekSubject')
 					}
 				});
-
+				self.$("input[name=fekCheckbox]").change(function(event) {
+					if ($(this).is(":checked")) {
+						self.$("textarea[name=fekSubject]").attr("disabled", true);
+						self.$("textarea[name=fekSubject]").val("");
+						self.$("textarea[name=subject]").removeAttr("disabled");
+					} else {
+						self.$("textarea[name=fekSubject]").removeAttr("disabled");
+						self.$("textarea[name=subject]").attr("disabled", true);
+						self.$("textarea[name=subject]").val("");
+					}
+				});
+				self.$("input[name=fekCheckbox]").attr("checked", _.isObject(self.model.get("subject")));
+				self.$("input[name=fekCheckbox]").change();
 				break;
 			case "PROFESSOR_FOREIGN":
 				App.ranks = App.ranks ? App.ranks : new Models.Ranks();
@@ -2484,15 +2498,19 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					"id" : self.$('form select[name=rank]').val()
 				};
 				values.profileURL = self.$('form input[name=profileURL]').val();
-				values.subject = {
-					"id" : self.model.has("subject") ? self.model.get("subject").id : undefined,
-					"name" : self.$('form textarea[name=subject]').val()
-				};
 				values.fek = self.$('form input[name=fek]').val();
-				values.fekSubject = {
-					"id" : self.model.has("fekSubject") ? self.model.get("fekSubject").id : undefined,
-					"name" : self.$('form textarea[name=fekSubject]').val()
-				};
+				if (self.$('form textarea[name=fekSubject]').val() !== '') {
+					values.fekSubject = {
+						"id" : self.model.has("fekSubject") ? self.model.get("fekSubject").id : undefined,
+						"name" : self.$('form textarea[name=fekSubject]').val()
+					};
+				}
+				if (self.$('form textarea[name=subject]').val() !== '') {
+					values.subject = {
+						"id" : self.model.has("subject") ? self.model.get("subject").id : undefined,
+						"name" : self.$('form textarea[name=subject]').val()
+					};
+				}
 				break;
 			case "PROFESSOR_FOREIGN":
 				values.institution = self.$('form input[name=institution]').val();

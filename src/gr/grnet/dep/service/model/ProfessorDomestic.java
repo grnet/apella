@@ -107,10 +107,6 @@ public class ProfessorDomestic extends Professor {
 		setDepartment(pd.getDepartment());
 		setRank(pd.getRank());
 		setFek(pd.getFek());
-		if (getFekSubject() == null) {
-			setFekSubject(new Subject());
-		}
-		getFekSubject().setName(pd.getFekSubject().getName());
 		return this;
 	}
 
@@ -135,6 +131,9 @@ public class ProfessorDomestic extends Professor {
 		if (!compare(this.fekSubject, other.getFekSubject())) {
 			return false;
 		}
+		if (!compare(this.subject, other.getSubject())) {
+			return false;
+		}
 		return true;
 	}
 
@@ -152,13 +151,10 @@ public class ProfessorDomestic extends Professor {
 		if (this.fek == null) {
 			return true;
 		}
-		if (this.fekSubject == null) {
-			return true;
-		}
 		if (this.rank == null) {
 			return true;
 		}
-		if (this.subject == null) {
+		if (this.fekSubject == null && this.subject == null) {
 			return true;
 		}
 		boolean hasFEKFile = false;

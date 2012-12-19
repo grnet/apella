@@ -39,6 +39,8 @@ import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.ejb.EJBException;
 import javax.ejb.SessionContext;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -550,19 +552,30 @@ public class RESTService {
 	 * Utilitiy Functions *********
 	 ******************************/
 
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public Subject supplementSubject(Subject subject) {
-		try {
-			Subject existingSubject = (Subject) em.createQuery(
-				"select s from Subject s " +
-					"where s.name = :name ")
-				.setParameter("name", subject.getName())
-				.getSingleResult();
-			return existingSubject;
-		} catch (NoResultException e) {
-			return subject;
+		if (subject == null || subject.getName() == null || subject.getName().trim().isEmpty()) {
+			return null;
+		} else {
+			try {
+				Subject existingSubject = (Subject) em.createQuery(
+					"select s from Subject s " +
+						"where s.name = :name ")
+					.setParameter("name", subject.getName())
+					.getSingleResult();
+				logger.log(Level.INFO, "Found  " + existingSubject.getId() + " " + existingSubject.getName());
+				return existingSubject;
+			} catch (NoResultException e) {
+				Subject newSubject = new Subject();
+				newSubject.setName(subject.getName());
+				em.persist(newSubject);
+				logger.log(Level.INFO, "Created " + newSubject.getId() + " " + newSubject.getName());
+				return newSubject;
+			}
 		}
 	}
 
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public Collection<Subject> supplementSubjects(Collection<Subject> subjects) {
 		if (subjects.isEmpty()) {
 			return subjects;
@@ -575,6 +588,7 @@ public class RESTService {
 	}
 
 	@SuppressWarnings("unchecked")
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public Collection<Department> supplementDepartments(Collection<Department> departments) {
 		if (departments.isEmpty()) {
 			return departments;
