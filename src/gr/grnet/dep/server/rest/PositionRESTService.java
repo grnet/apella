@@ -316,6 +316,7 @@ public class PositionRESTService extends RESTService {
 						case EPILOGI:
 						case ANAPOMPI:
 						case STELEXOMENI:
+						case CANCELLED:
 							throw new RestException(Status.CONFLICT, "wrong.position.status");
 					}
 					break;
@@ -347,6 +348,7 @@ public class PositionRESTService extends RESTService {
 							break;
 						case ANAPOMPI:
 						case STELEXOMENI:
+						case CANCELLED:
 							throw new RestException(Status.CONFLICT, "wrong.position.status");
 					}
 					break;
@@ -391,6 +393,18 @@ public class PositionRESTService extends RESTService {
 							// Add to Position
 							existingPosition.addPhase(newPhase);
 							break;
+						case CANCELLED:
+							// Validate
+							newPhase = new PositionPhase();
+							newPhase.setStatus(PositionStatus.CANCELLED);
+							newPhase.setCandidacies(existingPhase.getCandidacies());
+							newPhase.setCommittee(existingPhase.getCommittee());
+							newPhase.setEvaluation(existingPhase.getEvaluation());
+							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
+							newPhase.setNomination(existingPhase.getNomination());
+							// Add to Position
+							existingPosition.addPhase(newPhase);
+							break;
 					}
 					break;
 				case STELEXOMENI:
@@ -421,9 +435,43 @@ public class PositionRESTService extends RESTService {
 							throw new RestException(Status.CONFLICT, "wrong.position.status");
 						case STELEXOMENI:
 							throw new RestException(Status.CONFLICT, "wrong.position.status");
+						case CANCELLED:
+							throw new RestException(Status.CONFLICT, "wrong.position.status");
 
 					}
 					break;
+				case CANCELLED:
+					switch (newStatus) {
+						case ENTAGMENI:
+						case ANOIXTI:
+							throw new RestException(Status.CONFLICT, "wrong.position.status");
+						case EPILOGI:
+							newPhase = new PositionPhase();
+							newPhase.setStatus(PositionStatus.EPILOGI);
+							newPhase.setCandidacies(existingPhase.getCandidacies());
+							// TODO: Use the same Committe until a request to create a new one occurs.
+							// newPhase.setCommittee(existingPhase.getCommittee());
+							newPhase.setCommittee(new PositionCommittee());
+							newPhase.getCommittee().setPosition(existingPosition);
+							newPhase.setEvaluation(new PositionEvaluation());
+							newPhase.getEvaluation().setPosition(existingPosition);
+							newPhase.setNomination(new PositionNomination());
+							newPhase.getNomination().setPosition(existingPosition);
+							newPhase.setComplementaryDocuments(new PositionComplementaryDocuments());
+							newPhase.getComplementaryDocuments().setPosition(existingPosition);
+							// Add to Position
+							existingPosition.addPhase(newPhase);
+							break;
+						case ANAPOMPI:
+							throw new RestException(Status.CONFLICT, "wrong.position.status");
+						case STELEXOMENI:
+							throw new RestException(Status.CONFLICT, "wrong.position.status");
+						case CANCELLED:
+							throw new RestException(Status.CONFLICT, "wrong.position.status");
+
+					}
+					break;
+
 			}
 
 			em.flush();

@@ -42,7 +42,8 @@ public class Position {
 		ANOIXTI,
 		EPILOGI,
 		STELEXOMENI,
-		ANAPOMPI
+		ANAPOMPI,
+		CANCELLED
 	}
 
 	@Id

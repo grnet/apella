@@ -3769,9 +3769,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		phases : {
 			"ENTAGMENI" : [ "ANOIXTI" ],
 			"ANOIXTI" : [ "EPILOGI" ],
-			"EPILOGI" : [ "ANAPOMPI", "STELEXOMENI" ],
+			"EPILOGI" : [ "ANAPOMPI", "STELEXOMENI", "CANCELLED" ],
 			"ANAPOMPI" : [ "EPILOGI" ],
-			"STELEXOMENI" : []
+			"STELEXOMENI" : [],
+			"CANCELLED" : [ "EPILOGI" ],
 		},
 
 		initialize : function() {
