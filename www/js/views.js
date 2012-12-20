@@ -2619,12 +2619,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				values.alternateBasicInfo = {
 					"firstname" : self.$('form input[name=alternatefirstname]').val(),
 					"lastname" : self.$('form input[name=alternatelastname]').val(),
-					"fathername" : self.$('form input[name=alternatefathername]').val(),
+					"fathername" : self.$('form input[name=alternatefathername]').val()
 				};
 				values.alternateBasicInfoLatin = {
 					"firstname" : self.$('form input[name=alternatefirstnamelatin]').val(),
 					"lastname" : self.$('form input[name=alternatelastnamelatin]').val(),
-					"fathername" : self.$('form input[name=alternatefathernamelatin]').val(),
+					"fathername" : self.$('form input[name=alternatefathernamelatin]').val()
 				};
 				values.alternateContactInfo = {
 					"address" : {
@@ -2632,7 +2632,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						"number" : self.$('form input[name=alternateaddress_number]').val(),
 						"zip" : self.$('form input[name=alternateaddress_zip]').val(),
 						"city" : self.$('form input[name=alternateaddress_city]').val(),
-						"country" : self.$('form input[name=alternateaddress_country]').val(),
+						"country" : self.$('form input[name=alternateaddress_country]').val()
 					},
 					"email" : self.$('form input[name=alternateemail]').val(),
 					"mobile" : self.$('form input[name=alternatemobile]').val()
@@ -3772,7 +3772,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			"EPILOGI" : [ "ANAPOMPI", "STELEXOMENI", "CANCELLED" ],
 			"ANAPOMPI" : [ "EPILOGI" ],
 			"STELEXOMENI" : [],
-			"CANCELLED" : [ "EPILOGI" ],
+			"CANCELLED" : [ "EPILOGI" ]
 		},
 
 		initialize : function() {

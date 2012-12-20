@@ -1,8 +1,10 @@
 <table class="file-table">
 <tbody>
+<% var row = 1; %>
 <% _.each(files, function(file) { %>
 <% if (!_.isUndefined(file.id)) { %>
 	<tr id="info">
+		<td><%= row++ %></td>
 		<td><a href='<%= file.currentBody.url %>' target="viewfile"> <%= file.currentBody.originalFilename %></a>, <%= App.utils.formatFileSize(file.currentBody.fileSize) %>, <%= file.currentBody.date %></td>
 <% if (withMetadata) { %>		
 		<td><%= file.name %></td>
@@ -17,6 +19,7 @@
 </tbody>
 <tfoot>
 	<tr id="uploader">
+		<td></td>
 		<td>
 			<input type="hidden" name="file_type" value="<%= type %>" />
 			<input type="file" name="file" />

@@ -78,6 +78,12 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 			},
 
 			utils : {
+				dateFromString : function(str) {
+					// "dd/mm/yy HH:MM:SS"
+					var m = str.match(/(\d+)\/(\d+)\/(\d+)\s+(\d+):(\d+):(\d+)/);
+					return new Date(+m[3], +m[2] - 1, +m[1], +m[4], +m[5], +m[6], 0);
+				},
+
 				formatFileSize : function(bytes) {
 					var precision = 2;
 					var sizes = [ 'Bytes', 'KB', 'MB', 'GB', 'TB' ];

@@ -37,7 +37,7 @@ public class JacksonContextResolver implements ContextResolver<ObjectMapper> {
 			.configure(SerializationConfig.Feature.WRITE_DATE_KEYS_AS_TIMESTAMPS, false)
 			.setAnnotationIntrospector(pair)
 			.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
-		this.objectMapper.setDateFormat(new SimpleDateFormat("dd/MM/yyyy hh:mm:ss"));
+		this.objectMapper.setDateFormat(new SimpleDateFormat("dd/MM/yyyy HH:mm:ss"));
 		this.objectMapper.registerModule(new HibernateModule());
 	}
 

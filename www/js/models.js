@@ -725,7 +725,15 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 
 	Models.Files = Backbone.Collection.extend({
 		model : Models.File,
-		type : undefined
+		type : undefined,
+		comparator : function(file) {
+			if (!file.has("currentBody") || !file.get("currentBody").date) {
+				// Should not happen, but better to be safe
+				return file.get("id");
+			} else {
+				return App.utils.dateFromString(file.get("currentBody").date).getTime();
+			}
+		}
 	});
 
 	Models.Institution = Backbone.Model.extend({
