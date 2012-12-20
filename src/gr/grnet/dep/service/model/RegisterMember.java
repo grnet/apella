@@ -38,6 +38,8 @@ public class RegisterMember implements Serializable {
 
 	private boolean external;
 
+	private boolean deleted = false;
+
 	public Long getId() {
 		return id;
 	}

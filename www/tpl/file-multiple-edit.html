@@ -4,7 +4,7 @@
 <% _.each(files, function(file) { %>
 <% if (!_.isUndefined(file.id)) { %>
 	<tr id="info">
-		<td><%= row++ %></td>
+		<td><span class="badge"><%= row++ %></span></td>
 		<td><a href='<%= file.currentBody.url %>' target="viewfile"> <%= file.currentBody.originalFilename %></a>, <%= App.utils.formatFileSize(file.currentBody.fileSize) %>, <%= file.currentBody.date %></td>
 <% if (withMetadata) { %>		
 		<td><%= file.name %></td>
