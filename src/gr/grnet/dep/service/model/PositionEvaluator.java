@@ -21,6 +21,8 @@ public class PositionEvaluator implements Serializable {
 	public static interface DetailedPositionEvaluatorView extends PositionEvaluatorView {
 	};
 
+	public static final int MAX_MEMBERS = 2;
+
 	@Id
 	@GeneratedValue
 	private Long id;
@@ -32,7 +34,7 @@ public class PositionEvaluator implements Serializable {
 	private PositionEvaluation evaluation;
 
 	@ManyToOne
-	private Professor professor;
+	private RegisterMember registerMember;
 
 	public Long getId() {
 		return id;
@@ -52,12 +54,12 @@ public class PositionEvaluator implements Serializable {
 	}
 
 	@JsonView({PositionEvaluatorView.class})
-	public Professor getProfessor() {
-		return professor;
+	public RegisterMember getRegisterMember() {
+		return registerMember;
 	}
 
-	public void setProfessor(Professor professor) {
-		this.professor = professor;
+	public void setRegisterMember(RegisterMember registerMember) {
+		this.registerMember = registerMember;
 	}
 
 }

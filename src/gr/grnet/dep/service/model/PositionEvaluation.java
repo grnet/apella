@@ -27,6 +27,9 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Entity
 public class PositionEvaluation {
 
+	public static interface DetailedEvaluationView {
+	};
+
 	@Id
 	@GeneratedValue
 	private Long id;
@@ -60,7 +63,7 @@ public class PositionEvaluation {
 		this.id = id;
 	}
 
-	@JsonView({PositionEvaluatorView.class})
+	@JsonView({DetailedEvaluationView.class, PositionEvaluatorView.class})
 	public Position getPosition() {
 		return position;
 	}
@@ -69,7 +72,7 @@ public class PositionEvaluation {
 		this.position = position;
 	}
 
-	@XmlTransient
+	@JsonView({DetailedEvaluationView.class})
 	public Set<PositionEvaluator> getEvaluators() {
 		return evaluators;
 	}

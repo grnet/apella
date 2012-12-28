@@ -1,5 +1,8 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
+import gr.grnet.dep.service.model.PositionEvaluator.PositionEvaluatorView;
+
 import java.io.Serializable;
 
 import javax.persistence.Entity;
@@ -57,13 +60,21 @@ public class RegisterMember implements Serializable {
 		this.register = register;
 	}
 
-	@JsonView({RegisterMemberView.class, DetailedRegisterMemberView.class})
+	@JsonView({RegisterMemberView.class, DetailedRegisterMemberView.class, DetailedPositionCommitteeMemberView.class, PositionEvaluatorView.class})
 	public Professor getProfessor() {
 		return professor;
 	}
 
 	public void setProfessor(Professor professor) {
 		this.professor = professor;
+	}
+
+	public boolean isDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
 	}
 
 	public boolean isExternal() {

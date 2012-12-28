@@ -24,6 +24,10 @@ public class PositionCommitteeMember implements Serializable {
 
 	public static final int MAX_MEMBERS = 7;
 
+	public static final int MIN_EXTERNAL = 3;
+
+	public static final int MIN_INTERNAL = 1;
+
 	public static interface ProfessorCommitteesView {
 	};
 
@@ -48,7 +52,7 @@ public class PositionCommitteeMember implements Serializable {
 	private PositionCommittee committee;
 
 	@ManyToOne
-	private Professor professor;
+	private RegisterMember registerMember;
 
 	public Long getId() {
 		return id;
@@ -68,12 +72,12 @@ public class PositionCommitteeMember implements Serializable {
 	}
 
 	@JsonView({DetailedPositionCommitteeMemberView.class})
-	public Professor getProfessor() {
-		return professor;
+	public RegisterMember getRegisterMember() {
+		return registerMember;
 	}
 
-	public void setProfessor(Professor professor) {
-		this.professor = professor;
+	public void setRegisterMember(RegisterMember registerMember) {
+		this.registerMember = registerMember;
 	}
 
 	public MemberType getType() {

@@ -191,15 +191,8 @@ public class Position {
 		this.description = position.getDescription();
 		this.fek = position.getFek();
 		this.fekSentDate = position.getFekSentDate();
-
 		if (this.phase.getCandidacies() != null) {
 			this.phase.getCandidacies().copyFrom(position.getPhase().getCandidacies());
-		}
-		if (this.phase.getCommittee() != null) {
-			this.phase.getCommittee().copyFrom(position.getPhase().getCommittee());
-		}
-		if (this.phase.getNomination() != null) {
-			this.phase.getNomination().copyFrom(position.getPhase().getNomination());
 		}
 	}
 

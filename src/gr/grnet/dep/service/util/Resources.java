@@ -18,6 +18,7 @@ import javax.persistence.PersistenceContext;
  * 
  * 
  * 
+ * 
  * &#064;Inject
  * private EntityManager em;
  * </pre>

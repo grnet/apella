@@ -111,7 +111,7 @@ public class PositionCommittee {
 		this.files.add(file);
 	}
 
-	@XmlTransient
+	@JsonView({DetailedCommitteeView.class})
 	public List<PositionCommitteeMember> getMembers() {
 		return members;
 	}
@@ -154,7 +154,7 @@ public class PositionCommittee {
 
 	public boolean containsMember(User user) {
 		for (PositionCommitteeMember member : this.members) {
-			if (member.getProfessor().getUser().getId().equals(user.getId())) {
+			if (member.getRegisterMember().getProfessor().getUser().getId().equals(user.getId())) {
 				return true;
 			}
 		}
