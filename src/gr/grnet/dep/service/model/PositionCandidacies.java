@@ -26,7 +26,10 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Entity
 public class PositionCandidacies {
 
-	public static interface DetailedCandidaciesView {
+	public static interface PositionCandidaciesView {
+	};
+
+	public static interface DetailedPositionCandidaciesView extends PositionCandidaciesView {
 	};
 
 	@Id
@@ -65,7 +68,7 @@ public class PositionCandidacies {
 		this.id = id;
 	}
 
-	@JsonView({DetailedCandidaciesView.class, CandidacyView.class})
+	@JsonView({DetailedPositionCandidaciesView.class, CandidacyView.class})
 	public Position getPosition() {
 		return position;
 	}
@@ -83,7 +86,7 @@ public class PositionCandidacies {
 		this.phases = phases;
 	}
 
-	@XmlTransient
+	@JsonView({DetailedPositionCandidaciesView.class})
 	public Set<Candidacy> getCandidacies() {
 		return candidacies;
 	}

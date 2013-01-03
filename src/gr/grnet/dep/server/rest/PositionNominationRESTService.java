@@ -3,9 +3,9 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Position;
-import gr.grnet.dep.service.model.Position.DetailedPositionView;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.PositionNomination;
+import gr.grnet.dep.service.model.PositionNomination.DetailedPositionNominationView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.FileBody;
@@ -53,7 +53,7 @@ public class PositionNominationRESTService extends RESTService {
 
 	@GET
 	@Path("/{nominationId:[0-9][0-9]*}")
-	@Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
+	@JsonView({DetailedPositionNominationView.class})
 	public PositionNomination get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("id") Long nominationId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionNomination existingNomination = em.find(PositionNomination.class, nominationId);
@@ -78,7 +78,7 @@ public class PositionNominationRESTService extends RESTService {
 
 	@PUT
 	@Path("/{nominationId:[0-9][0-9]*}")
-	@JsonView({DetailedPositionView.class})
+	@JsonView({DetailedPositionNominationView.class})
 	public PositionNomination update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long positionId, @PathParam("nominationId") long nominationId, PositionNomination newNomination) {
 		User loggedOn = getLoggedOn(authToken);
 		try {

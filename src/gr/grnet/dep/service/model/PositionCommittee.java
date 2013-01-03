@@ -30,7 +30,10 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Entity
 public class PositionCommittee {
 
-	public static interface DetailedCommitteeView {
+	public static interface PositionCommitteeView {
+	};
+
+	public static interface DetailedPositionCommitteeView extends PositionCommitteeView {
 	};
 
 	@Id
@@ -69,7 +72,7 @@ public class PositionCommittee {
 		this.id = id;
 	}
 
-	@JsonView({DetailedCommitteeView.class, DetailedPositionCommitteeMemberView.class, ProfessorCommitteesView.class})
+	@JsonView({DetailedPositionCommitteeView.class, DetailedPositionCommitteeMemberView.class, ProfessorCommitteesView.class})
 	public Position getPosition() {
 		return position;
 	}
@@ -111,7 +114,7 @@ public class PositionCommittee {
 		this.files.add(file);
 	}
 
-	@JsonView({DetailedCommitteeView.class})
+	@JsonView({DetailedPositionCommitteeView.class})
 	public List<PositionCommitteeMember> getMembers() {
 		return members;
 	}

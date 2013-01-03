@@ -5,7 +5,7 @@ import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.PositionCommitteeMember;
 import gr.grnet.dep.service.model.PositionEvaluation;
-import gr.grnet.dep.service.model.PositionEvaluation.DetailedEvaluationView;
+import gr.grnet.dep.service.model.PositionEvaluation.DetailedPositionEvaluationView;
 import gr.grnet.dep.service.model.PositionEvaluator;
 import gr.grnet.dep.service.model.PositionEvaluator.DetailedPositionEvaluatorView;
 import gr.grnet.dep.service.model.Professor;
@@ -60,7 +60,7 @@ public class PositionEvaluationRESTService extends RESTService {
 
 	@GET
 	@Path("/{evaluationId:[0-9]+}")
-	@JsonView({DetailedPositionEvaluatorView.class})
+	@JsonView({DetailedPositionEvaluationView.class})
 	public PositionEvaluation getPositionEvaluation(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionEvaluation existingEvaluation = em.find(PositionEvaluation.class, evaluationId);
@@ -124,7 +124,7 @@ public class PositionEvaluationRESTService extends RESTService {
 
 	@PUT
 	@Path("/{id:[0-9]+}/evaluation/{evaluationId:[0-9]+}")
-	@JsonView({DetailedEvaluationView.class})
+	@JsonView({DetailedPositionEvaluationView.class})
 	public PositionEvaluation updatePositionEvaluation(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, PositionEvaluation newEvaluation) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionEvaluation existingEvaluation = em.find(PositionEvaluation.class, evaluationId);

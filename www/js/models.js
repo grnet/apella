@@ -954,6 +954,55 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		model : Models.Position
 	});
 
+	Models.PositionCommittee = Backbone.Model.extend({
+		urlRoot : function() {
+			return "/dep/rest/position/" + this.attributes.position.id + "/committee";
+		},
+		defaults : {
+			id : undefined,
+			position : {
+				id : undefined,
+			},
+			committeeMeetingDate : undefined,
+			members : []
+		}
+	});
+
+	Models.PositionComplementaryDocuments = Backbone.Model.extend({
+		urlRoot : function() {
+			return "/dep/rest/position/" + this.attributes.position.id + "/complementaryDocuments";
+		},
+		defaults : {
+			id : undefined
+		}
+	});
+
+	Models.PositionEvaluation = Backbone.Model.extend({
+		urlRoot : function() {
+			return "/dep/rest/position/" + this.attributes.position.id + "/evaluation";
+		},
+		defaults : {
+			id : undefined,
+			position : {
+				id : undefined,
+			},
+			evaluators : []
+		}
+	});
+
+	Models.PositionNomination = Backbone.Model.extend({
+		urlRoot : function() {
+			return "/dep/rest/position/" + this.attributes.position.id + "/nomination";
+		},
+		defaults : {
+			id : undefined,
+			nominationCommitteeConvergenceDate : undefined,
+			nominationFEK : undefined,
+			nominatedCandidcay : undefined,
+			secondNominatedCandidacy : undefined
+		}
+	});
+
 	Models.PositionSearchCriteria = Backbone.Model.extend({
 		urlRoot : "/dep/rest/position/criteria",
 		defaults : {

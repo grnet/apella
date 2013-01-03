@@ -4,7 +4,7 @@ import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.PositionCommittee;
-import gr.grnet.dep.service.model.PositionCommittee.DetailedCommitteeView;
+import gr.grnet.dep.service.model.PositionCommittee.DetailedPositionCommitteeView;
 import gr.grnet.dep.service.model.PositionCommitteeMember;
 import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
 import gr.grnet.dep.service.model.PositionCommitteeMember.MemberType;
@@ -103,7 +103,7 @@ public class PositionCommitteeRESTService extends RESTService {
 
 	@GET
 	@Path("/{committeId:[0-9]+}")
-	@Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
+	@JsonView({DetailedPositionCommitteeView.class})
 	public PositionCommittee get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @QueryParam("committeId") Long committeeId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCommittee existingCommittee = em.find(PositionCommittee.class, committeeId);
@@ -154,7 +154,7 @@ public class PositionCommitteeRESTService extends RESTService {
 
 	@PUT
 	@Path("/{committeId:[0-9]+}")
-	@JsonView({DetailedCommitteeView.class})
+	@JsonView({DetailedPositionCommitteeView.class})
 	public PositionCommittee update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId, PositionCommittee newCommittee) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCommittee existingCommittee = em.find(PositionCommittee.class, committeeId);

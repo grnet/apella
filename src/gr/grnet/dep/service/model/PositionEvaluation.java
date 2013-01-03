@@ -27,7 +27,10 @@ import org.codehaus.jackson.map.annotate.JsonView;
 @Entity
 public class PositionEvaluation {
 
-	public static interface DetailedEvaluationView {
+	public static interface PositionEvaluationView {
+	};
+
+	public static interface DetailedPositionEvaluationView extends PositionEvaluationView {
 	};
 
 	@Id
@@ -63,7 +66,7 @@ public class PositionEvaluation {
 		this.id = id;
 	}
 
-	@JsonView({DetailedEvaluationView.class, PositionEvaluatorView.class})
+	@JsonView({DetailedPositionEvaluationView.class, PositionEvaluatorView.class})
 	public Position getPosition() {
 		return position;
 	}
@@ -72,7 +75,7 @@ public class PositionEvaluation {
 		this.position = position;
 	}
 
-	@JsonView({DetailedEvaluationView.class})
+	@JsonView({DetailedPositionEvaluationView.class})
 	public Set<PositionEvaluator> getEvaluators() {
 		return evaluators;
 	}

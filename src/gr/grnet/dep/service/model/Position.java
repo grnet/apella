@@ -28,13 +28,16 @@ public class Position {
 	public static interface PublicPositionView {
 	};
 
-	public static interface CommitteeMemberPositionView extends PublicPositionView {
+	public static interface PositionView extends PublicPositionView {
 	};
 
-	public static interface CandidatePositionView extends PublicPositionView {
+	public static interface CommitteeMemberPositionView extends PositionView {
 	};
 
-	public static interface DetailedPositionView extends PublicPositionView {
+	public static interface CandidatePositionView extends PositionView {
+	};
+
+	public static interface DetailedPositionView extends PositionView {
 	};
 
 	public enum PositionStatus {

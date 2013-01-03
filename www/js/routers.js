@@ -340,6 +340,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			"massistants/:userId" : "showMinistryAssistantsView",
 			"positions" : "showPositionsView",
 			"positions/:positionId" : "showPositionsView",
+			"positions/:positionId/:tab" : "showPositionsView",
 			"position/:positionId" : "showPositionView",
 			"registers" : "showRegistersView",
 			"registers/:registerId" : "showRegistersView",
@@ -673,7 +674,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			self.currentView = assistantsView;
 		},
 
-		showPositionsView : function(positionId) {
+		showPositionsView : function(positionId, tab) {
 			var self = this;
 			var positions = new Models.Positions();
 			var positionView = undefined;

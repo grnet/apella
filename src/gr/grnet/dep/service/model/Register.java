@@ -20,7 +20,10 @@ public class Register implements Serializable {
 
 	private static final long serialVersionUID = 6147648073392341863L;
 
-	public static interface DetailedRegisterView {
+	public static interface RegisterView {
+	};
+
+	public static interface DetailedRegisterView extends RegisterView {
 	};
 
 	@Id

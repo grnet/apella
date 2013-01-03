@@ -1,5 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.PositionCommittee.DetailedPositionCommitteeView;
+
 import java.io.Serializable;
 
 import javax.persistence.Entity;
@@ -22,17 +24,20 @@ public class PositionCommitteeMember implements Serializable {
 
 	private static final long serialVersionUID = -1339853623265264893L;
 
+	public static interface PositionCommitteeMemberView {
+	};
+
+	public static interface DetailedPositionCommitteeMemberView extends PositionCommitteeMemberView {
+	};
+
+	public static interface ProfessorCommitteesView extends PositionCommitteeMemberView {
+	};
+
 	public static final int MAX_MEMBERS = 7;
 
 	public static final int MIN_EXTERNAL = 3;
 
 	public static final int MIN_INTERNAL = 1;
-
-	public static interface ProfessorCommitteesView {
-	};
-
-	public static interface DetailedPositionCommitteeMemberView extends ProfessorCommitteesView {
-	};
 
 	public enum MemberType {
 		REGULAR, SUBSTITUTE
@@ -71,7 +76,7 @@ public class PositionCommitteeMember implements Serializable {
 		this.committee = committee;
 	}
 
-	@JsonView({DetailedPositionCommitteeMemberView.class})
+	@JsonView({DetailedPositionCommitteeView.class, DetailedPositionCommitteeMemberView.class})
 	public RegisterMember getRegisterMember() {
 		return registerMember;
 	}

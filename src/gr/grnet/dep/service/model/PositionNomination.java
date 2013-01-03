@@ -21,9 +21,16 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 public class PositionNomination {
+
+	public static interface PositionNominationView {
+	};
+
+	public static interface DetailedPositionNominationView extends PositionNominationView {
+	};
 
 	@Id
 	@GeneratedValue
@@ -84,7 +91,7 @@ public class PositionNomination {
 		this.nominationFEK = nominationFEK;
 	}
 
-	@XmlTransient
+	@JsonView({DetailedPositionNominationView.class})
 	public Position getPosition() {
 		return position;
 	}

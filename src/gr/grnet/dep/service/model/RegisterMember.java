@@ -1,6 +1,7 @@
 package gr.grnet.dep.service.model;
 
-import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
+import gr.grnet.dep.service.model.PositionCommittee.PositionCommitteeView;
+import gr.grnet.dep.service.model.PositionCommitteeMember.PositionCommitteeMemberView;
 import gr.grnet.dep.service.model.PositionEvaluator.PositionEvaluatorView;
 
 import java.io.Serializable;
@@ -51,7 +52,7 @@ public class RegisterMember implements Serializable {
 		this.id = id;
 	}
 
-	@JsonView({RegisterMemberView.class})
+	@JsonView({RegisterMemberView.class, PositionCommitteeView.class, PositionCommitteeMemberView.class, PositionEvaluatorView.class})
 	public Register getRegister() {
 		return register;
 	}
@@ -60,7 +61,7 @@ public class RegisterMember implements Serializable {
 		this.register = register;
 	}
 
-	@JsonView({RegisterMemberView.class, DetailedRegisterMemberView.class, DetailedPositionCommitteeMemberView.class, PositionEvaluatorView.class})
+	@JsonView({RegisterMemberView.class, PositionCommitteeView.class, PositionCommitteeMemberView.class, PositionEvaluatorView.class})
 	public Professor getProfessor() {
 		return professor;
 	}

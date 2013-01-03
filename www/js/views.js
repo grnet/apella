@@ -3760,11 +3760,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	Views.PositionEditView = Views.BaseView.extend({
 		tagName : "div",
 
-		id : "positionview",
+		id : "positionEditView",
 
 		validator : undefined,
-
-		fileDiscriminators : [ "committee", "evaluation", "complementaryDocuments", "nomination" ],
 
 		phases : {
 			"ENTAGMENI" : [ "ANOIXTI" ],
@@ -3776,8 +3774,244 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		initialize : function() {
-			_.bindAll(this, "render", "addCandidacyListView", "addCommitteeView", "isEditable", "submit", "cancel", "addPhase", "addFile", "addFileList", "close");
+			_.bindAll(this, "render", "addPhase", "close");
 			this.template = _.template(tpl_position_edit);
+			this.model.bind('change', this.render, this);
+			this.model.bind("destroy", this.close, this);
+		},
+
+		events : {
+			"click a#selectTab" : "showTab",
+			"click a#addPhase" : "addPhase",
+		},
+
+		render : function(eventName) {
+			var self = this;
+			_.each(self.innerViews, function(innerView) {
+				innerView.close();
+			});
+			self.innerViews = [];
+			self.$el.html(self.template(self.model.toJSON()));
+
+			// Phase:
+			self.$("a#addPhase").each(function() {
+				var status = $(this).data("phaseStatus");
+				if (_.any(self.phases[self.model.get("phase").status], function(nextStatus) {
+					return _.isEqual(status, nextStatus);
+				})) {
+					$(this).show();
+				} else {
+					$(this).hide();
+				}
+			});
+
+			// Tabs:
+			if (_.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI")) {
+				self.$("#positionTabs a[data-target=#committee]").parent("li").addClass("disabled");
+				self.$("#positionTabs a[data-target=#evaluations]").parent("li").addClass("disabled");
+				self.$("#positionTabs a[data-target=#proposals]").parent("li").addClass("disabled");
+				self.$("#positionTabs a[data-target=#nomination]").parent("li").addClass("disabled");
+				self.$("#positionTabs a[data-target=#rest]").parent("li").addClass("disabled");
+			}
+			self.$("#positionTabs a").click(function(e) {
+				e.preventDefault();
+				if (!$(this).parent("li").hasClass("disabled")) {
+					$(this).tab('show');
+				}
+			});
+			return self;
+		},
+
+		showTab : function(event, target) {
+			switch (event ? $(event.currentTarget).data('target') : target) {
+			case main:
+				showMainTab($("#positionTabContent"));
+				break;
+			case candidacies:
+				showCandidaciesTab($("#positionTabContent"));
+				break;
+			case committee:
+				showCommitteeTab($("#positionTabContent"));
+				break;
+			case evaluation:
+				showEvaluationTab($("#positionTabContent"));
+				break;
+			case nomination:
+				showNominationTab($("#positionTabContent"));
+				break;
+			case complementaryDocuments:
+				showComplementaryDocumentsTab($("#positionTabContent"));
+				break;
+			default:
+				showMainTab($("#positionTabContent"));
+				break;
+			}
+		},
+
+		showMainTab : function($el) {
+			var self = this;
+			var positionMainEditView = new Views.PositionMainEditView({
+				model : self.model
+			});
+			$el.html(positionMainEditView.el);
+			positionMainEditView.render();
+		},
+
+		showCandidaciesTab : function($el) {
+			var self = this;
+			var candidacyView = undefined;
+			positionCandidacies.on("candidacy:selected", function(candidacy) {
+				if (candidacyView) {
+					candidacyView.model.trigger("candidacy:deselected", candidacyView.model);
+					candidacyView.close();
+				}
+				candidacy.fetch({
+					cache : false,
+					success : function() {
+						candidacyView = new Views.CandidacyView({
+							model : candidacy
+						});
+						self.$("div[data-candidacy-id=" + candidacy.get("id") + "]").html(candidacyView.render().el);
+						self.$("td[data-candidacy-id=" + candidacy.get("id") + "]").show();
+					}
+				});
+			});
+			positionCandidacies.on("candidacy:deselected", function(candidacy) {
+				if (candidacyView) {
+					candidacyView.close();
+				}
+				self.$("td[data-candidacy-id=" + candidacy.get("id") + "]").hide();
+				self.$("div[data-candidacy-id=" + candidacy.get("id") + "]").html();
+			});
+			var positionCandidacyListView = new Views.PositionCandidacyListView({
+				position : self.model,
+				collection : positionCandidacies
+			});
+		},
+
+		showCommitteeTab : function($el) {
+			var self = this;
+			var positionCommittee = new Models.PositionCommittee({
+				id : self.model.get("phase").committee.id,
+				position : {
+					id : self.model.get("id")
+				}
+			});
+			var positionCommitteeEditView = new Views.PositionCommitteeEditView({
+				model : positionEvaluation
+			});
+			$el.html(positionCommitteeEditView.el);
+			positionCommittee.fetch({
+				cache : false
+			});
+		},
+
+		showEvaluationTab : function($el) {
+			var self = this;
+			var positionEvaluation = new Models.PositionEvaluation({
+				id : self.model.get("phase").evaluation.id,
+				position : {
+					id : self.model.get("id")
+				}
+			});
+			var positionEvaluationEditView = new Views.PositionEvaluationEditView({
+				model : positionEvaluation
+			});
+
+			$el.html(positionEvaluationEditView.el);
+			positionEvaluation.fetch({
+				cache : false
+			});
+		},
+
+		showNominationTab : function() {
+			var self = this;
+			var positionNomination = new Models.PositionNomination({
+				id : self.model.get("phase").nomination.id,
+				position : {
+					id : self.model.get("id")
+				}
+			});
+			var positionNominationEditView = new Views.PositionNominationEditView({
+				model : positionEvaluation
+			});
+			$el.html(positionNominationEditView.el);
+			positionNomination.fetch({
+				cache : false
+			});
+		},
+
+		showComplementaryDocumentsTab : function() {
+			var self = this;
+			var positionComplementaryDocuments = new Models.PositionComplementaryDocuments({
+				id : self.model.get("phase").complementaryDocuments.id,
+				position : {
+					id : self.model.get("id")
+				}
+			});
+			var positionComplementaryDocumentsEditView = new Views.PositionComplementaryDocumentsEditView({
+				model : positionComplementaryDocuments
+			});
+			$el.html(positionComplementaryDocumentsEditView.el);
+			positionComplementaryDocuments.fetch({
+				cache : false
+			});
+		},
+
+		addPhase : function(event) {
+			var self = this;
+			var newStatus = $(event.currentTarget).data('phaseStatus');
+			self.model.phase({
+				"phase" : {
+					"status" : newStatus
+				}
+			}, {
+				wait : true,
+				success : function(model, resp) {
+					var popup = new Views.PopupView({
+						type : "success",
+						message : $.i18n.prop("Success")
+					});
+					popup.show();
+				},
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+		},
+
+		close : function() {
+			_.each(self.innerViews, function(innerView) {
+				innerView.close();
+			});
+			$(this.el).unbind();
+			$(this.el).remove();
+		}
+	});
+
+	Views.PositionMainEditView = Views.BaseView.extend({
+		tagName : "div",
+
+		id : "positionmainview",
+
+		validator : undefined,
+
+		phases : {
+			"ENTAGMENI" : [ "ANOIXTI" ],
+			"ANOIXTI" : [ "EPILOGI" ],
+			"EPILOGI" : [ "ANAPOMPI", "STELEXOMENI", "CANCELLED" ],
+			"ANAPOMPI" : [ "EPILOGI" ],
+			"STELEXOMENI" : [],
+			"CANCELLED" : [ "EPILOGI" ]
+		},
+
+		initialize : function() {
+			_.bindAll(this, "render", "isEditable", "submit", "cancel", "addPhase", "close");
+			this.template = _.template(tpl_position_main_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
 		},
