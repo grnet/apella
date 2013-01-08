@@ -10,6 +10,7 @@ import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
@@ -38,14 +39,17 @@ public class ProfessorRESTService extends RESTService {
 		if (professor == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !professor.getUser().getId().equals(loggedOn.getId())) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!professor.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		professor.initializeCollections();
-		for (PositionCommitteeMember member : professor.getCommittees()) {
-			member.getCommittee().getPosition().initializeCollections();
-		}
-		return professor.getCommittees();
+		List<PositionCommitteeMember> committees = em.createQuery(
+			"select pcm from PositionCommitteeMember pcm " +
+				"where pcm.registerMember.professor.id = :professorId " +
+				"and pcm.registerMember.deleted = false")
+			.setParameter("professorId", professorId)
+			.getResultList();
+		return committees;
 	}
 
 	@GET
@@ -57,14 +61,16 @@ public class ProfessorRESTService extends RESTService {
 		if (professor == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !professor.getUser().getId().equals(loggedOn.getId())) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!professor.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		professor.initializeCollections();
-		for (PositionEvaluator evaluator : professor.getEvaluations()) {
-			evaluator.getEvaluation().getPosition().initializeCollections();
-		}
-		return professor.getEvaluations();
+		List<PositionEvaluator> evaluations = em.createQuery(
+			"select pe from PositionEvaluator pe " +
+				"where pe.registerMember.professor.id = :professorId ")
+			.setParameter("professorId", professorId)
+			.getResultList();
+		return evaluations;
 	}
 
 }

@@ -23,10 +23,7 @@ public abstract class Professor extends Role {
 	private Set<ProfessorFile> files = new HashSet<ProfessorFile>();
 
 	@OneToMany(mappedBy = "professor", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<PositionCommitteeMember> committees = new HashSet<PositionCommitteeMember>();
-
-	@OneToMany(mappedBy = "professor", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<PositionEvaluator> evaluations = new HashSet<PositionEvaluator>();
+	private Set<RegisterMember> registerMemberships = new HashSet<RegisterMember>();
 
 	@Transient
 	private Integer committeesCount;
@@ -51,22 +48,12 @@ public abstract class Professor extends Role {
 		this.files = files;
 	}
 
-	@XmlTransient
-	public Set<PositionCommitteeMember> getCommittees() {
-		return committees;
+	public Set<RegisterMember> getRegisterMemberships() {
+		return registerMemberships;
 	}
 
-	public void setCommittees(Set<PositionCommitteeMember> committees) {
-		this.committees = committees;
-	}
-
-	@XmlTransient
-	public Set<PositionEvaluator> getEvaluations() {
-		return evaluations;
-	}
-
-	public void setEvaluations(Set<PositionEvaluator> evaluations) {
-		this.evaluations = evaluations;
+	public void setRegisterMemberships(Set<RegisterMember> registerMemberships) {
+		this.registerMemberships = registerMemberships;
 	}
 
 	public Integer getCommitteesCount() {
@@ -94,7 +81,6 @@ public abstract class Professor extends Role {
 
 	@Override
 	public void initializeCollections() {
-		this.getCommittees().size();
 		this.getFiles().size();
 	}
 
@@ -117,5 +103,21 @@ public abstract class Professor extends Role {
 	@Override
 	public boolean isMissingRequiredFields() {
 		return false;
+	}
+
+	public static int countCommittees(Professor p) {
+		int count = 0;
+		for (RegisterMember professorMembership : p.getRegisterMemberships()) {
+			count += professorMembership.getCommittees().size();
+		}
+		return count;
+	}
+
+	public static int countEvaluations(Professor p) {
+		int count = 0;
+		for (RegisterMember professorMembership : p.getRegisterMemberships()) {
+			count += professorMembership.getEvaluations().size();
+		}
+		return count;
 	}
 }

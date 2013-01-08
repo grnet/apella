@@ -690,17 +690,22 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				// Select Edit or Simple View based on loggedOnUser
 				if (App.loggedOnUser.isAssociatedWithDepartment(position.get("department"))) {
 					positionView = new Views.PositionEditView({
+						tab : tab || "main",
 						model : position
+					});
+					// Update history
+					App.router.navigate("positions/" + position.id + "/" + (tab || "main"), {
+						trigger : false
 					});
 				} else {
 					positionView = new Views.PositionView({
 						model : position
 					});
+					// Update history
+					App.router.navigate("positions/" + position.id, {
+						trigger : false
+					});
 				}
-				// Update history
-				App.router.navigate("positions/" + position.id, {
-					trigger : false
-				});
 				// Add to UI
 				self.refreshBreadcrumb([ $.i18n.prop('menu_positions'), position.get("name") ]);
 				$("#content").unbind();

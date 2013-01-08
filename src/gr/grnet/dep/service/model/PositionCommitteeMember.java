@@ -18,7 +18,7 @@ import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 @Table(uniqueConstraints = {
-	@UniqueConstraint(columnNames = {"committee_id", "professor_id"})
+	@UniqueConstraint(columnNames = {"committee_id", "registerMember_id"})
 })
 public class PositionCommitteeMember implements Serializable {
 
