@@ -64,16 +64,20 @@ public class PositionCommitteeRESTService extends RESTService {
 	 *********************/
 
 	@GET
-	@Path("/register")
+	@Path("/{committeeId:[0-9]+}/register")
 	@JsonView({DetailedPositionCommitteeMemberView.class})
-	public List<RegisterMember> getPositionCommiteeRegisterMembers(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
+	public List<RegisterMember> getPositionCommiteeRegisterMembers(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId) {
 		User loggedOn = getLoggedOn(authToken);
-		Position position = em.find(Position.class, positionId);
-		if (position == null) {
+		PositionCommittee existingCommittee = em.find(PositionCommittee.class, committeeId);
+		if (existingCommittee == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.committee.id");
+		}
+		Position existingPosition = existingCommittee.getPosition();
+		if (!existingPosition.getId().equals(positionId)) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)
-			&& !loggedOn.isDepartmentUser(position.getDepartment())) {
+			&& !loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Prepare Query
@@ -84,7 +88,7 @@ public class PositionCommitteeRESTService extends RESTService {
 				"and r.institution.id = :institutionId " +
 				"and m.professor.status = :status " +
 				"and m.deleted = false")
-			.setParameter("institutionId", position.getDepartment().getInstitution().getId())
+			.setParameter("institutionId", existingPosition.getDepartment().getInstitution().getId())
 			.setParameter("status", RoleStatus.ACTIVE)
 			.getResultList();
 
@@ -102,9 +106,9 @@ public class PositionCommitteeRESTService extends RESTService {
 	 *********************/
 
 	@GET
-	@Path("/{committeId:[0-9]+}")
+	@Path("/{committeeId:[0-9]+}")
 	@JsonView({DetailedPositionCommitteeView.class})
-	public PositionCommittee get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @QueryParam("committeId") Long committeeId) {
+	public PositionCommittee get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCommittee existingCommittee = em.find(PositionCommittee.class, committeeId);
 		if (existingCommittee == null) {
@@ -153,7 +157,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	}
 
 	@PUT
-	@Path("/{committeId:[0-9]+}")
+	@Path("/{committeeId:[0-9]+}")
 	@JsonView({DetailedPositionCommitteeView.class})
 	public PositionCommittee update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId, PositionCommittee newCommittee) {
 		User loggedOn = getLoggedOn(authToken);
@@ -186,7 +190,7 @@ public class PositionCommitteeRESTService extends RESTService {
 				"and r.institution.id = :institutionId " +
 				"and m.professor.status = :status " +
 				"and m.deleted = false " +
-				"and m.registerMember.id in (:registerIds)")
+				"and m.id in (:registerIds)")
 			.setParameter("institutionId", existingPosition.getDepartment().getInstitution().getId())
 			.setParameter("status", RoleStatus.ACTIVE)
 			.setParameter("registerIds", newCommitteeMemberAsMap.keySet())
@@ -262,7 +266,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	 **********************/
 
 	@GET
-	@Path("/{commiteeId:[0-9]+}/file")
+	@Path("/{committeeId:[0-9]+}/file")
 	@JsonView({SimpleFileHeaderView.class})
 	public Collection<PositionCommitteeFile> getFiles(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId) {
 		User loggedOn = getLoggedOn(authToken);

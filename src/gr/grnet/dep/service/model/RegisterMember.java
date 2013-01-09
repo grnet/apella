@@ -81,6 +81,7 @@ public class RegisterMember implements Serializable {
 		this.professor = professor;
 	}
 
+	@XmlTransient
 	public boolean isDeleted() {
 		return deleted;
 	}

@@ -683,38 +683,39 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				user : App.loggedOnUser.get("id")
 			});
 
-			positions.on("position:selected", function(position) {
+			positions.on("position:selected", function(position, tab) {
 				if (positionView) {
 					positionView.close();
 				}
-				// Select Edit or Simple View based on loggedOnUser
-				if (App.loggedOnUser.isAssociatedWithDepartment(position.get("department"))) {
-					positionView = new Views.PositionEditView({
-						tab : tab || "main",
-						model : position
-					});
-					// Update history
-					App.router.navigate("positions/" + position.id + "/" + (tab || "main"), {
-						trigger : false
-					});
-				} else {
-					positionView = new Views.PositionView({
-						model : position
-					});
-					// Update history
-					App.router.navigate("positions/" + position.id, {
-						trigger : false
-					});
-				}
-				// Add to UI
-				self.refreshBreadcrumb([ $.i18n.prop('menu_positions'), position.get("name") ]);
-				$("#content").unbind();
-				$("#content").empty();
-				$("#content").html(positionView.render().el);
-
 				// Fetch
 				position.fetch({
-					cache : false
+					cache : false,
+					success : function() {
+						// Select Edit or Simple View based on loggedOnUser
+						if (App.loggedOnUser.isAssociatedWithDepartment(position.get("department"))) {
+							positionView = new Views.PositionEditView({
+								tab : tab || "main",
+								model : position
+							});
+							// Update history
+							App.router.navigate("positions/" + position.id + "/" + (tab || "main"), {
+								trigger : false
+							});
+						} else {
+							positionView = new Views.PositionView({
+								model : position
+							});
+							// Update history
+							App.router.navigate("positions/" + position.id, {
+								trigger : false
+							});
+						}
+						// Add to UI
+						self.refreshBreadcrumb([ $.i18n.prop('menu_positions'), position.get("name") ]);
+						$("#content").unbind();
+						$("#content").empty();
+						$("#content").html(positionView.render().el);
+					}
 				});
 			});
 
@@ -737,7 +738,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 								wait : true,
 								success : function() {
 									positions.add(selectedPosition);
-									positions.trigger("position:selected", selectedPosition);
+									positions.trigger("position:selected", selectedPosition, tab);
 								},
 								error : function(model, resp, options) {
 									var popup = new Views.PopupView({
@@ -748,7 +749,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 								}
 							});
 						} else {
-							positions.trigger("position:selected", selectedPosition);
+							positions.trigger("position:selected", selectedPosition, tab);
 						}
 					}
 				},

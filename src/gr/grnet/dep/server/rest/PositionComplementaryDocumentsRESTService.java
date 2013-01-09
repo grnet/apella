@@ -55,7 +55,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 	@GET
 	@Path("/{cdId:[0-9]+}/file")
 	@JsonView({SimpleFileHeaderView.class})
-	public Collection<ComplementaryDocumentsFile> getFiles(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("id") Long cdId) {
+	public Collection<ComplementaryDocumentsFile> getFiles(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cdId") Long cdId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionComplementaryDocuments existingComDocs = em.find(PositionComplementaryDocuments.class, cdId);
 		if (existingComDocs == null) {

@@ -48,6 +48,7 @@ public abstract class Professor extends Role {
 		this.files = files;
 	}
 
+	@XmlTransient
 	public Set<RegisterMember> getRegisterMemberships() {
 		return registerMemberships;
 	}
@@ -60,8 +61,8 @@ public abstract class Professor extends Role {
 		return committeesCount;
 	}
 
-	public void setCommitteesCount(Integer evaluationsCount) {
-		this.evaluationsCount = evaluationsCount;
+	public void setCommitteesCount(Integer committeesCount) {
+		this.committeesCount = committeesCount;
 	}
 
 	public Integer getEvaluationsCount() {

@@ -54,7 +54,7 @@ public class PositionNominationRESTService extends RESTService {
 	@GET
 	@Path("/{nominationId:[0-9][0-9]*}")
 	@JsonView({DetailedPositionNominationView.class})
-	public PositionNomination get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("id") Long nominationId) {
+	public PositionNomination get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("nominationId") Long nominationId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionNomination existingNomination = em.find(PositionNomination.class, nominationId);
 		if (existingNomination == null) {
