@@ -99,9 +99,9 @@ public class PositionNominationRESTService extends RESTService {
 			//Update
 			existingNomination.copyFrom(newNomination);
 			// Add Nominated
-			if (existingNomination.getNominatedCandidacy() != null && existingNomination.getNominatedCandidacy().getId() != null) {
+			if (newNomination.getNominatedCandidacy() != null && newNomination.getNominatedCandidacy().getId() != null) {
 				for (Candidacy candidacy : existingPosition.getPhase().getCandidacies().getCandidacies()) {
-					if (candidacy.getId().equals(existingNomination.getNominatedCandidacy().getId())) {
+					if (candidacy.getId().equals(newNomination.getNominatedCandidacy().getId())) {
 						existingPosition.getPhase().getNomination().setNominatedCandidacy(candidacy);
 						break;
 					}
@@ -110,9 +110,9 @@ public class PositionNominationRESTService extends RESTService {
 				existingNomination.setNominatedCandidacy(null);
 			}
 			// Add Second Nominated
-			if (existingNomination.getSecondNominatedCandidacy() != null && existingNomination.getSecondNominatedCandidacy().getId() != null) {
+			if (newNomination.getSecondNominatedCandidacy() != null && newNomination.getSecondNominatedCandidacy().getId() != null) {
 				for (Candidacy candidacy : existingPosition.getPhase().getCandidacies().getCandidacies()) {
-					if (candidacy.getId().equals(existingNomination.getSecondNominatedCandidacy().getId())) {
+					if (candidacy.getId().equals(newNomination.getSecondNominatedCandidacy().getId())) {
 						existingPosition.getPhase().getNomination().setSecondNominatedCandidacy(candidacy);
 						break;
 					}

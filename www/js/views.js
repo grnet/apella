@@ -1,6 +1,6 @@
-define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/position-committee-edit.html", "text!tpl/position-committee-member-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html", "text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html", "text!tpl/file-multiple-edit.html", "text!tpl/professor-committees.html", "text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-committee.html", "text!tpl/register.html", "text!tpl/institution-regulatory-framework.html",
-	"text!tpl/institution-regulatory-framework-edit.html", "text!tpl/position-search-criteria.html", "text!tpl/position-search-result.html", "text!tpl/candidacy-edit.html", "text!tpl/candidate-candidacy-list.html", "text!tpl/candidacy.html", "text!tpl/candidacy-update-confirm.html", "text!tpl/institution-regulatory-framework-list.html", "text!tpl/register-members.html", "text!tpl/register-members-edit.html", "text!tpl/register-members-edit-professor-list.html", "text!tpl/register-member-edit.html", "text!tpl/overlay.html", "text!tpl/position-evaluators.html", "text!tpl/professor-evaluations.html", "text!tpl/position-main-edit.html", "text!tpl/position-candidacies-edit.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_edit, tpl_position_list, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search,
-	tpl_user_verification, tpl_user, tpl_language, tpl_file_multiple_edit, tpl_professor_committees, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_committee, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_members, tpl_register_members_edit, tpl_register_members_edit_professor_list, tpl_register_member_edit, tpl_overlay, tpl_position_evaluators, tpl_professor_evaluations, tpl_position_main_edit, tpl_position_candidacies_edit) {
+define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file-edit.html", "text!tpl/file-multiple-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html", "text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html", "text!tpl/professor-committees.html", "text!tpl/professor-evaluations.html", "text!tpl/register.html", "text!tpl/institution-regulatory-framework.html", "text!tpl/institution-regulatory-framework-edit.html", "text!tpl/position-search-criteria.html", "text!tpl/position-search-result.html", "text!tpl/candidacy-edit.html", "text!tpl/candidate-candidacy-list.html", "text!tpl/candidacy.html",
+	"text!tpl/candidacy-update-confirm.html", "text!tpl/institution-regulatory-framework-list.html", "text!tpl/register-members.html", "text!tpl/register-members-edit.html", "text!tpl/register-members-edit-professor-list.html", "text!tpl/register-member-edit.html", "text!tpl/overlay.html", "text!tpl/position-evaluators.html", "text!tpl/position-main-edit.html", "text!tpl/position-candidacies-edit.html", "text!tpl/position-committee-edit.html", "text!tpl/position-committee-member-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-committee.html", "text!tpl/position-nomination-edit.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file_edit, tpl_file_multiple_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language,
+	tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_members, tpl_register_members_edit, tpl_register_members_edit_professor_list, tpl_register_member_edit, tpl_overlay, tpl_position_evaluators, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_committee, tpl_position_nomination_edit) {
 
 	/** ****************************************************************** */
 
@@ -3935,15 +3935,21 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		showNominationTab : function($el) {
 			var self = this;
-			$el.html("Nomination");
-			/*
-			 * var positionNomination = new Models.PositionNomination({ id :
-			 * self.model.get("phase").nomination.id, position : { id :
-			 * self.model.get("id") } }); var positionNominationEditView = new
-			 * Views.PositionNominationEditView({ model : positionEvaluation });
-			 * $el.html(positionNominationEditView.el);
-			 * positionNomination.fetch({ cache : false });
-			 */
+			var positionNomination = new Models.PositionNomination({
+				id : self.model.get("phase").nomination.id,
+				position : {
+					id : self.model.get("id")
+				}
+			});
+			var positionNominationEditView = new Views.PositionNominationEditView({
+				model : positionNomination
+			});
+			positionNomination.fetch({
+				cache : false,
+				success : function(model, resp) {
+					$el.html(positionNominationEditView.render().el);
+				}
+			});
 		},
 
 		showComplementaryDocumentsTab : function($el) {
@@ -4764,6 +4770,162 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			this.collection.unbind('reset', this.render, this);
 			this.$el.unbind();
 			this.$el.remove();
+		}
+	});
+
+	/***************************************************************************
+	 * PositionNominationEditView **********************************************
+	 **************************************************************************/
+	Views.PositionNominationEditView = Views.BaseView.extend({
+		tagName : "div",
+
+		uploader : undefined,
+
+		initialize : function() {
+			var self = this;
+			self.template = _.template(tpl_position_nomination_edit);
+			_.bindAll(self, "render", "isEditable", "submit", "cancel", "close");
+			self.model.bind('change', self.render, self);
+			self.model.bind("destroy", self.close, self);
+
+			self.positionCandidacies = new Models.PositionCandidacies({}, {
+				position : self.model.get("position").id
+			});
+		},
+
+		events : {
+			"click a#saveNomination" : function() {
+				var self = this;
+				self.$("form").submit();
+			},
+			"submit form" : "submit"
+		},
+
+		isEditable : function(element) {
+			var self = this;
+			return self.model.get("position").phase.status === "EPILOGI";
+		},
+
+		render : function(event) {
+			var self = this;
+			self.$el.html(self.template(self.model.toJSON()));
+
+			// Add Nominated and Second Nominated:
+			self.$("select[name='nominatedCandidacy']").change(function(event) {
+				self.$("select[name='nominatedCandidacy']").next(".help-block").html(self.$("select[name='nominatedCandidacy'] option:selected").text());
+			});
+			self.$("select[name='secondNominatedCandidacy']").change(function(event) {
+				self.$("select[name='secondNominatedCandidacy']").next(".help-block").html(self.$("select[name='secondNominatedCandidacy'] option:selected").text());
+			});
+			self.positionCandidacies.fetch({
+				cache : false,
+				wait : true,
+				success : function(collection, resp) {
+					self.$("select[name='nominatedCandidacy']").empty();
+					self.$("select[name='secondNominatedCandidacy']").empty();
+					// Add Candidacies in selector:
+					var nominatedCandidacyId = self.model.has("nominatedCandidacy") ? self.model.get("nominatedCandidacy").id : undefined;
+					var secondNominatedCandidacyId = self.model.has("secondNominatedCandidacy") ? self.model.get("secondNominatedCandidacy").id : undefined;
+					self.$("select[name='nominatedCandidacy']").append("<option value=''>--</option>");
+					self.$("select[name='secondNominatedCandidacy']").append("<option value=''>--</option>");
+					collection.each(function(candidacy) {
+						if (_.isEqual(candidacy.id, nominatedCandidacyId)) {
+							self.$("select[name='nominatedCandidacy']").append("<option value='" + candidacy.get("id") + "' selected>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + " (" + candidacy.get("snapshot").username + ")" + "</option>");
+						} else {
+							self.$("select[name='nominatedCandidacy']").append("<option value='" + candidacy.get("id") + "'>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + " (" + candidacy.get("snapshot").username + ")" + "</option>");
+						}
+						if (_.isEqual(candidacy.id, secondNominatedCandidacyId)) {
+							self.$("select[name='secondNominatedCandidacy']").append("<option value='" + candidacy.get("id") + "' selected>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + " (" + candidacy.get("snapshot").username + ")" + "</option>");
+						} else {
+							self.$("select[name='secondNominatedCandidacy']").append("<option value='" + candidacy.get("id") + "'>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + " (" + candidacy.get("snapshot").username + ")" + "</option>");
+						}
+					});
+					self.$("select[name='nominatedCandidacy']").change();
+					self.$("select[name='secondNominatedCandidacy']").change();
+				}
+			});
+			// Add Files
+			var files = new Models.Files();
+			files.url = self.model.url() + "/file";
+			files.fetch({
+				cache : false,
+				success : function(collection, response) {
+					self.addFile(collection, "PROSKLISI_KOSMITORA", self.$("#prosklisiKosmitoraFile"), {
+						withMetadata : true,
+						editable : self.isEditable("prosklisiKosmitoraFile")
+					});
+
+					self.addFileList(collection, "PRAKTIKO_EPILOGIS", self.$("#praktikoEpilogisFile"), {
+						withMetadata : true,
+						editable : self.isEditable("praktikoEpilogisFile")
+					});
+					self.addFile(collection, "DIAVIVASTIKO_PRAKTIKOU", self.$("#diavivastikoPraktikouFile"), {
+						withMetadata : true,
+						editable : self.isEditable("diavivastikoPraktikouFile")
+					});
+					self.addFile(collection, "PRAKSI_DIORISMOU", self.$("#praksiDiorismouFile"), {
+						withMetadata : true,
+						editable : self.isEditable("praksiDiorismouFile")
+					});
+
+					self.addFile(collection, "APOFASI_ANAPOMPIS", self.$("#apofasiAnapompisFile"), {
+						withMetadata : true,
+						editable : self.isEditable("apofasiAnapompisFile")
+					});
+				}
+			});
+			// DatePicker
+			self.$("input[data-input-type=date]").datepicker({
+				onClose : function(dateText, inst) {
+					$(this).parents("form").validate().element(this);
+				}
+			});
+			return self;
+		},
+		submit : function(event) {
+			var self = this;
+			var values = {
+				nominationCommitteeConvergenceDate : self.$('form input[name=nominationCommitteeConvergenceDate]').val(),
+				nominationToETDate : self.$('form input[name=nominationToETDate]').val(),
+				nominationFEK : self.$('form input[name=nominationFEK]').val(),
+				nominatedCandidacy : {
+					id : self.$('form select[name=nominatedCandidacy]').val()
+				},
+				secondNominatedCandidacy : {
+					id : self.$('form select[name=secondNominatedCandidacy]').val()
+				}
+			};
+			self.model.save(values, {
+				wait : true,
+				success : function(model, resp) {
+					var popup = new Views.PopupView({
+						type : "success",
+						message : $.i18n.prop("Success")
+					});
+					popup.show();
+				},
+				error : function(model, resp, options) {
+					var popup = new Views.PopupView({
+						type : "error",
+						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+		},
+
+		cancel : function(event) {
+			self.model.fetch({
+				cache : false
+			});
+		},
+
+		close : function(eventName) {
+			this.model.unbind('change', self.render, self);
+			this.model.unbind("destroy", self.close, self);
+			this.$el.unbind();
+			this.$el.remove();
+
 		}
 	});
 
