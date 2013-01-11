@@ -999,6 +999,18 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		}
 	});
 
+	Models.PositionEvaluator = Backbone.Model.extend({
+		position : undefined,
+		urlRoot : function() {
+			return "/dep/rest/position/" + this.attributes.evaluation.position.id + "/evaluators";
+		},
+		defaults : {
+			id : undefined,
+			evaluation : undefined,
+			professor : undefined
+		}
+	});
+
 	Models.PositionNomination = Backbone.Model.extend({
 		urlRoot : function() {
 			return "/dep/rest/position/" + this.attributes.position.id + "/nomination";
@@ -1062,27 +1074,9 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		url : undefined
 	});
 
-	Models.PositionEvaluator = Backbone.Model.extend({
-		position : undefined,
-		urlRoot : function() {
-			return "/dep/rest/position/" + this.attributes.evaluation.position.id + "/evaluators";
-		},
-		defaults : {
-			id : undefined,
-			evaluation : undefined,
-			professor : undefined
-		}
-	});
-
-	Models.PositionEvaluators = Backbone.Collection.extend({
-		position : undefined,
-		model : Models.PositionEvaluator,
-		initialize : function(models, options) {
-			this.position = options.position;
-		},
-		url : function() {
-			return "/dep/rest/position/" + this.position + "/evaluators";
-		}
+	Models.PositionEvaluationRegisterMembers = Backbone.Collection.extend({
+		model : Models.RegisterMember,
+		url : undefined
 	});
 
 	Models.ProfessorCommittees = Backbone.Collection.extend({

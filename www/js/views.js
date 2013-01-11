@@ -1,6 +1,6 @@
 define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file-edit.html", "text!tpl/file-multiple-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html", "text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html", "text!tpl/professor-committees.html", "text!tpl/professor-evaluations.html", "text!tpl/register.html", "text!tpl/institution-regulatory-framework.html", "text!tpl/institution-regulatory-framework-edit.html", "text!tpl/position-search-criteria.html", "text!tpl/position-search-result.html", "text!tpl/candidacy-edit.html", "text!tpl/candidate-candidacy-list.html", "text!tpl/candidacy.html",
-	"text!tpl/candidacy-update-confirm.html", "text!tpl/institution-regulatory-framework-list.html", "text!tpl/register-members.html", "text!tpl/register-members-edit.html", "text!tpl/register-members-edit-professor-list.html", "text!tpl/register-member-edit.html", "text!tpl/overlay.html", "text!tpl/position-evaluators.html", "text!tpl/position-main-edit.html", "text!tpl/position-candidacies-edit.html", "text!tpl/position-committee-edit.html", "text!tpl/position-committee-member-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-committee.html", "text!tpl/position-nomination-edit.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file_edit, tpl_file_multiple_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language,
-	tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_members, tpl_register_members_edit, tpl_register_members_edit_professor_list, tpl_register_member_edit, tpl_overlay, tpl_position_evaluators, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_committee, tpl_position_nomination_edit) {
+	"text!tpl/candidacy-update-confirm.html", "text!tpl/institution-regulatory-framework-list.html", "text!tpl/register-members.html", "text!tpl/register-members-edit.html", "text!tpl/register-members-edit-professor-list.html", "text!tpl/register-member-edit.html", "text!tpl/overlay.html", "text!tpl/position-main-edit.html", "text!tpl/position-candidacies-edit.html", "text!tpl/position-committee-edit.html", "text!tpl/position-committee-member-edit.html", "text!tpl/position-evaluation-edit.html", "text!tpl/position-evaluation-edit-register-member-list.html", "text!tpl/position-evaluation-evaluator-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-committee.html", "text!tpl/position-nomination-edit.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file_edit, tpl_file_multiple_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select,
+	tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_members, tpl_register_members_edit, tpl_register_members_edit_professor_list, tpl_register_member_edit, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_committee, tpl_position_nomination_edit) {
 
 	/** ****************************************************************** */
 
@@ -3921,16 +3921,21 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		showEvaluationTab : function($el) {
 			var self = this;
-			$el.html("Evaluation");
-			/*
-			 * var positionEvaluation = new Models.PositionEvaluation({ id :
-			 * self.model.get("phase").evaluation.id, position : { id :
-			 * self.model.get("id") } }); var positionEvaluationEditView = new
-			 * Views.PositionEvaluationEditView({ model : positionEvaluation });
-			 * 
-			 * $el.html(positionEvaluationEditView.el);
-			 * positionEvaluation.fetch({ cache : false });
-			 */
+			var positionEvaluation = new Models.PositionEvaluation({
+				id : self.model.get("phase").evaluation.id,
+				position : {
+					id : self.model.get("id")
+				}
+			});
+			var positionEvaluationEditView = new Views.PositionEvaluationEditView({
+				model : positionEvaluation
+			});
+			positionEvaluation.fetch({
+				cache : false,
+				success : function(model, resp) {
+					$el.html(positionEvaluationEditView.render().el);
+				}
+			});
 		},
 
 		showNominationTab : function($el) {
@@ -4415,11 +4420,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
-			this.professors.off("role:selected");
-			this.professorListView.close();
-			this.collection.unbind('reset', this.render, this);
-			this.collection.unbind('remove', this.render, this);
-			this.collection.unbind('add', this.render, this);
+			this.registerMembers.off("member:selected");
+			this.registerMembersView.close();
+			this.model.unbind('change', this.render, this);
+			this.model.unbind('destory', this.close, this);
 			this.$el.unbind();
 			this.$el.remove();
 
@@ -4525,87 +4529,140 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 
 	/***************************************************************************
-	 * PositionEvaluatorsEditView **********************************************
+	 * PositionEvaluationEditView **********************************************
 	 **************************************************************************/
-	Views.PositionEvaluatorsEditView = Views.BaseView.extend({
+	Views.PositionEvaluationEditView = Views.BaseView.extend({
 		tagName : "div",
 
 		uploader : undefined,
 
 		initialize : function() {
 			var self = this;
+			self.template = _.template(tpl_position_evaluation_edit);
+			self.templateRow = _.template(tpl_position_evaluation_evaluator_edit);
 
-			self.template = _.template(tpl_position_evaluators_edit);
-			_.bindAll(self, "render", "allowedToEdit", "addEvaluator", "removeEvaluator", "toggleAddEvaluator", "close");
-			self.collection.bind('reset', this.render, this);
-			self.collection.bind('remove', this.render, this);
-			self.collection.bind('add', this.render, this);
+			_.bindAll(self, "render", "isEditable", "toggleRegisterMembers", "addMember", "removeMember", "submit", "cancel", "close");
+			self.model.bind('change', self.render, self);
+			self.model.bind("destroy", self.close, self);
 
-			// Initialize Professor, no request is performed until
-			// render
-			self.professors = new Models.Professors();
-			self.professors.url = self.options.position.url() + "/evaluators/professor";
-			self.professors.on("role:add", function(role) {
-				self.addEvaluator(role);
+			// Initialize Registers, no request is performed until render
+			self.registerMembers = new Models.PositionEvaluationRegisterMembers();
+			self.registerMembers.url = self.model.url() + "/register";
+			self.registerMembers.on("member:add", function(registerMember, type) {
+				var evaluator = {
+					registerMember : registerMember.toJSON()
+				};
+				self.addMember(evaluator);
 			});
 		},
 
 		events : {
-			"click a#removeEvaluator" : "removeEvaluator",
-			"click a#toggleAddEvaluator" : "toggleAddEvaluator"
+			"click a#toggleRegisterMembers" : "toggleRegisterMembers",
+			"click a#removeMember" : "removeMember",
+			"click a#saveEvaluation" : function() {
+				var self = this;
+				self.$("form").submit();
+			},
+			"submit form" : "submit"
 		},
 
-		allowedToEdit : function() {
+		isEditable : function(element) {
 			var self = this;
-			return self.options.position.get("phase").status === "EPILOGI";
+			return self.model.get("position").phase.status === "EPILOGI";
 		},
 
-		render : function(eventName) {
+		render : function(event) {
 			var self = this;
-			self.$el.html(self.template({
-				evaluators : self.collection.toJSON()
-			}));
+			self.$el.html(self.template(self.model.toJSON()));
 
-			if (self.allowedToEdit()) {
-				// Inner View
-				if (self.professorListView) {
-					self.professorListView.close();
-				}
-				self.professorListView = new Views.PositionEvaluatorsEditProfessorListView({
-					collection : self.professors
+			// Add Existing Evaluators:
+			_.each(self.model.get("members"), function(evaluator) {
+				addMember(evaluator);
+			});
+
+			// Add Files
+			if (self.model.has("id")) {
+				var files = new Models.Files();
+				files.url = self.model.url() + "/file";
+				files.fetch({
+					cache : false,
+					success : function(collection, response) {
+						self.addFile(collection, "APOFASI_SYSTASIS_EPITROPIS", self.$("#apofasiSystasisEpitropisFileList"), {
+							withMetadata : true,
+							editable : self.isEditable("apofasiSystasisEpitropisFileList")
+						});
+						self.addFile(collection, "PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES", self.$("#praktikoSynedriasisEpitropisGiaAksiologitesFile"), {
+							withMetadata : true,
+							editable : self.isEditable("praktikoSynedriasisEpitropisGiaAksiologitesFile")
+						});
+						self.addFile(collection, "AITIMA_EPITROPIS_PROS_AKSIOLOGITES", self.$("#aitimaEpitropisProsAksiologitesFile"), {
+							withMetadata : true,
+							editable : self.isEditable("aitimaEpitropisProsAksiologitesFile")
+						});
+					}
 				});
-				self.$("div#evaluators-professor-list").hide();
-				self.$("div#evaluators-professor-list").html(self.professorListView.el);
+			}
+			// Add RegisterMembers (for adding/removing)
+			if (self.isEditable("positionEvaluation")) {
+				// Inner View
+				if (self.registerMembersView) {
+					self.registerMembersView.close();
+				}
+				self.registerMembersView = new Views.PositionEvaluationEditRegisterMembersView({
+					collection : self.registerMembers
+				});
+				self.$("div#evaluation-register-members").hide();
+				self.$("div#evaluation-register-members").html(self.registerMembersView.el);
 				self.$("a.btn").show();
 
-				self.professors.fetch();
+				self.registerMembers.fetch();
 			} else {
-				self.$("div#committee-professor-list").hide();
+				self.$("div#evaluation-register-members").hide();
+				self.$("select").attr("disabled", true);
 				self.$("a.btn").hide();
 			}
+			// DatePicker
+			self.$("input[data-input-type=date]").datepicker({
+				onClose : function(dateText, inst) {
+					$(this).parents("form").validate().element(this);
+				}
+			});
 			return self;
 		},
 
-		toggleAddEvaluator : function(event) {
+		toggleRegisterMembers : function(event) {
 			var self = this;
-			self.$("div#evaluators-professor-list").toggle();
-			self.$("a#toggleAddEvaluator").toggleClass('active');
+			self.$("div#evaluation-register-members").toggle();
+			self.$("a#toggleRegisterMembers").toggleClass('active');
 		},
 
-		addEvaluator : function(professor, type) {
+		addMember : function(evaluator) {
 			var self = this;
-			var positionEvaluator = new Models.PositionEvaluator();
-			positionEvaluator.save({
-				"evaluation" : {
-					"position" : {
-						id : self.options.position.get("id")
+			self.$("div#positionEvaluation table tbody").append(self.templateRow(evaluator));
+		},
+
+		removeMember : function(event) {
+			var self = this;
+			$(event.currentTarget).parents("tr").remove();
+		},
+
+		submit : function(event) {
+			var self = this;
+			var values = {
+				evaluators : []
+			};
+			self.$("tr#positionEvaluator").each(function() {
+				var evaluator = {
+					registerMember : {
+						id : $(this).find("input[name=registerMemberId]").val()
 					}
-				},
-				"professor" : professor.toJSON()
-			}, {
+				};
+				values.evaluators.push(evaluator);
+			});
+
+			self.model.save(values, {
 				wait : true,
 				success : function(model, resp) {
-					self.collection.add(model);
 					var popup = new Views.PopupView({
 						type : "success",
 						message : $.i18n.prop("Success")
@@ -4622,41 +4679,17 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			});
 		},
 
-		removeEvaluator : function(event) {
-			var self = this;
-			var selectedModel = self.collection.get($(event.currentTarget).data('evaluatorId'));
-			var confirm = new Views.ConfirmView({
-				title : $.i18n.prop('Confirm'),
-				message : $.i18n.prop('AreYouSure'),
-				yes : function() {
-					selectedModel.destroy({
-						wait : true,
-						success : function(model, resp) {
-							var popup = new Views.PopupView({
-								type : "success",
-								message : $.i18n.prop("Success")
-							});
-							popup.show();
-						},
-						error : function(model, resp, options) {
-							var popup = new Views.PopupView({
-								type : "error",
-								message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-							});
-							popup.show();
-						}
-					});
-				}
+		cancel : function(event) {
+			self.model.fetch({
+				cache : false
 			});
-			confirm.show();
 		},
 
 		close : function(eventName) {
-			this.professors.off("role:add", self.addEvaluator);
-			this.professorListView.close();
-			this.collection.unbind('reset', this.render, this);
-			this.collection.unbind('remove', this.render, this);
-			this.collection.unbind('add', this.render, this);
+			this.registerMembers.off("member:selected");
+			this.registerMembersView.close();
+			this.model.unbind('change', this.render, this);
+			this.model.unbind('destory', this.close, this);
 			this.$el.unbind();
 			this.$el.remove();
 
@@ -4664,27 +4697,35 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 
 	/***************************************************************************
-	 * PositionEvaluatorsEditProfessorListView *********************************
+	 * PositionEvaluationEditRegisterMembersView *******************************
 	 **************************************************************************/
 
-	Views.PositionEvaluatorsEditProfessorListView = Views.BaseView.extend({
+	Views.PositionEvaluationEditRegisterMembersView = Views.BaseView.extend({
 		tagName : "div",
 
 		initialize : function() {
-			_.bindAll(this, "render", "addEvaluator", "close");
-			this.template = _.template(tpl_position_evaluators_edit_professor_list);
+			_.bindAll(this, "render", "addMember", "close");
+			this.template = _.template(tpl_position_evaluation_edit_register_member_list);
 			this.collection.bind("change", this.render, this);
 			this.collection.bind("reset", this.render, this);
 		},
 
 		events : {
-			"click a#addEvaluator" : "addEvaluator"
+			"click a#addMember" : "addMember"
 		},
 
 		render : function(eventName) {
 			var self = this;
 			var tpl_data = {
-				professors : self.collection.toJSON()
+				members : (function() {
+					var result = [];
+					self.collection.each(function(model) {
+						var item = model.toJSON();
+						item.cid = model.cid;
+						result.push(item);
+					});
+					return result;
+				})()
 			};
 			self.$el.html(self.template(tpl_data));
 
@@ -4711,11 +4752,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			return self;
 		},
 
-		addEvaluator : function(event) {
+		addMember : function(event) {
 			var self = this;
-			var id = $(event.currentTarget).data('modelId')
-			var selectedModel = self.collection.get(id);
-			self.collection.trigger("role:add", selectedModel);
+			var cid = $(event.currentTarget).data('modelCid')
+			var selectedModel = self.collection.getByCid(cid);
+			var type = $(event.currentTarget).data('type');
+			self.collection.trigger("member:add", selectedModel, type);
 		},
 
 		close : function() {

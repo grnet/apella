@@ -123,7 +123,7 @@ public class PositionEvaluationRESTService extends RESTService {
 	}
 
 	@PUT
-	@Path("/{id:[0-9]+}/evaluation/{evaluationId:[0-9]+}")
+	@Path("/{evaluationId:[0-9]+}")
 	@JsonView({DetailedPositionEvaluationView.class})
 	public PositionEvaluation updatePositionEvaluation(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, PositionEvaluation newEvaluation) {
 		User loggedOn = getLoggedOn(authToken);
@@ -155,14 +155,14 @@ public class PositionEvaluationRESTService extends RESTService {
 			newEvaluatorsRegisterIds.add(newEvaluator.getRegisterMember().getId());
 		}
 		List<RegisterMember> newRegisterMembers = em.createQuery(
-			"select distinct m from Register r " +
-				"join r.members m " +
+			"select distinct rm from Register r " +
+				"join r.members rm " +
 				"where r.permanent = true " +
 				"and r.institution.id = :institutionId " +
-				"and m.deleted = false " +
-				"and m.external = true " +
-				"and m.professor.status = :status " +
-				"and m.registerMember.id in (:registerIds)")
+				"and rm.deleted = false " +
+				"and rm.external = true " +
+				"and rm.professor.status = :status " +
+				"and rm.id in (:registerIds)")
 			.setParameter("institutionId", existingPosition.getDepartment().getInstitution().getId())
 			.setParameter("status", RoleStatus.ACTIVE)
 			.setParameter("registerIds", newEvaluatorsRegisterIds)
@@ -468,16 +468,20 @@ public class PositionEvaluationRESTService extends RESTService {
 	 * RegisterMember Functions *
 	 ****************************/
 	@GET
-	@Path("/register")
+	@Path("/{evaluationId:[0-9]+}/register")
 	@JsonView({DetailedRegisterMemberView.class})
-	public List<RegisterMember> getPositionEvaluationRegisterMembers(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
+	public List<RegisterMember> getPositionEvaluationRegisterMembers(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId) {
 		User loggedOn = getLoggedOn(authToken);
-		Position position = em.find(Position.class, positionId);
-		if (position == null) {
+		PositionEvaluation existingEvaluation = em.find(PositionEvaluation.class, evaluationId);
+		if (existingEvaluation == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.evaluation.id");
+		}
+		Position existingPosition = existingEvaluation.getPosition();
+		if (!existingPosition.getId().equals(positionId)) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.isDepartmentUser(position.getDepartment())) {
+			!loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Prepare Query
@@ -489,7 +493,7 @@ public class PositionEvaluationRESTService extends RESTService {
 				"and m.professor.status = :status " +
 				"and m.external = true " +
 				"and m.deleted = false")
-			.setParameter("institutionId", position.getDepartment().getInstitution().getId())
+			.setParameter("institutionId", existingPosition.getDepartment().getInstitution().getId())
 			.setParameter("status", RoleStatus.ACTIVE)
 			.getResultList();
 
