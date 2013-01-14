@@ -1,7 +1,6 @@
 package gr.grnet.dep.service.model.file;
 
-import gr.grnet.dep.service.model.CandidacyEvaluator;
-import gr.grnet.dep.service.model.PositionEvaluation;
+import gr.grnet.dep.service.model.PositionEvaluator;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,9 +14,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
-@DiscriminatorValue("PositionFile")
+@DiscriminatorValue("PositionEvaluatorFile")
 @XmlRootElement
-public class PositionEvaluationFile extends FileHeader {
+public class PositionEvaluatorFile extends FileHeader {
 
 	private static final long serialVersionUID = -3407870200478760438L;
 
@@ -25,24 +24,20 @@ public class PositionEvaluationFile extends FileHeader {
 	public static final Map<FileType, Integer> fileTypes = Collections.unmodifiableMap(new HashMap<FileType, Integer>() {
 
 		{
-			put(FileType.AKSIOLOGISI_PROTOU_AKSIOLOGITI, Integer.MAX_VALUE);
-			put(FileType.AKSIOLOGISI_DEUTEROU_AKSIOLOGITI, Integer.MAX_VALUE);
+			put(FileType.AKSIOLOGISI, Integer.MAX_VALUE);
 		}
 	});
 
 	@ManyToOne
-	private PositionEvaluation evaluation;
-
-	@ManyToOne
-	private CandidacyEvaluator candidacyEvaluator;
+	private PositionEvaluator evaluator;
 
 	@JsonView({DetailedFileHeaderView.class})
-	public PositionEvaluation getEvaluation() {
-		return evaluation;
+	public PositionEvaluator getEvaluator() {
+		return evaluator;
 	}
 
-	public void setEvaluation(PositionEvaluation evaluation) {
-		this.evaluation = evaluation;
+	public void setEvaluator(PositionEvaluator evaluator) {
+		this.evaluator = evaluator;
 	}
 
 }

@@ -4544,15 +4544,16 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.template = _.template(tpl_position_evaluation_edit);
 			self.templateRow = _.template(tpl_position_evaluation_evaluator_edit);
 
-			_.bindAll(self, "render", "isEditable", "toggleRegisterMembers", "addMember", "removeMember", "submit", "cancel", "close");
+			_.bindAll(self, "render", "renderEvaluator", "isEditable", "toggleRegisterMembers", "addMember", "removeMember", "submit", "cancel", "close");
 			self.model.bind('change', self.render, self);
 			self.model.bind("destroy", self.close, self);
 
 			// Initialize Registers, no request is performed until render
 			self.registerMembers = new Models.PositionEvaluationRegisterMembers();
 			self.registerMembers.url = self.model.url() + "/register";
-			self.registerMembers.on("member:add", function(registerMember, type) {
+			self.registerMembers.on("member:add", function(registerMember, position) {
 				var evaluator = {
+					position : position,
 					registerMember : registerMember.toJSON()
 				};
 				self.addMember(evaluator);
@@ -4582,29 +4583,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			_.each(self.model.get("evaluators"), function(evaluator) {
 				self.addMember(evaluator);
 			});
-
-			// Add Files
-			if (self.model.has("id")) {
-				var files = new Models.Files();
-				files.url = self.model.url() + "/file";
-				files.fetch({
-					cache : false,
-					success : function(collection, response) {
-						self.addFile(collection, "APOFASI_SYSTASIS_EPITROPIS", self.$("#apofasiSystasisEpitropisFileList"), {
-							withMetadata : true,
-							editable : self.isEditable("apofasiSystasisEpitropisFileList")
-						});
-						self.addFile(collection, "PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES", self.$("#praktikoSynedriasisEpitropisGiaAksiologitesFile"), {
-							withMetadata : true,
-							editable : self.isEditable("praktikoSynedriasisEpitropisGiaAksiologitesFile")
-						});
-						self.addFile(collection, "AITIMA_EPITROPIS_PROS_AKSIOLOGITES", self.$("#aitimaEpitropisProsAksiologitesFile"), {
-							withMetadata : true,
-							editable : self.isEditable("aitimaEpitropisProsAksiologitesFile")
-						});
-					}
-				});
-			}
 			// Add RegisterMembers (for adding/removing)
 			if (self.isEditable("positionEvaluation")) {
 				// Inner View
@@ -4633,6 +4611,27 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			return self;
 		},
 
+		renderEvaluator : function($el, evaluator) {
+			var self = this;
+			$el.html(self.templateRow(evaluator.toJSON()));
+			// Add files
+			if (evaluator.has("id")) {
+				var files = new Models.Files();
+				files.url = evaluator.url() + "/file";
+				files.fetch({
+					cache : false,
+					success : function(collection, response) {
+						self.addFile(collection, "AKSIOLOGISI", $el.find("#aksiologisiFileList"), {
+							withMetadata : true,
+							editable : self.isEditable("aksiologisiFileList")
+						});
+					}
+				});
+			} else {
+				$el.find("#aksiologisiFileList").html($.i18n.prop("PressSave"));
+			}
+		},
+
 		toggleRegisterMembers : function(event) {
 			var self = this;
 			self.$("div#evaluation-register-members").toggle();
@@ -4641,12 +4640,16 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		addMember : function(evaluator) {
 			var self = this;
-			self.$("div#positionEvaluation table tbody").append(self.templateRow(evaluator));
+			var positionEvaluator = new Models.PositionEvaluator(_.extend(evaluator, {
+				evaluation : self.model.toJSON()
+			}));
+			// Select element to replace, raise some alerts for files ...
+			self.renderEvaluator(self.$("#positionEvaluator_" + positionEvaluator.get("position")), positionEvaluator);
 		},
 
 		removeMember : function(event) {
 			var self = this;
-			$(event.currentTarget).parents("tr").remove();
+			$(event.currentTarget).parents("table").remove();
 		},
 
 		submit : function(event) {
@@ -4654,13 +4657,16 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var values = {
 				evaluators : []
 			};
-			self.$("tr#positionEvaluator").each(function() {
+			self.$("[id^=positionEvaluator]").each(function() {
 				var evaluator = {
 					registerMember : {
 						id : $(this).find("input[name=registerMemberId]").val()
-					}
+					},
+					position : $(this).find("input[name=position]").val()
 				};
-				values.evaluators.push(evaluator);
+				if (evaluator.registerMember.id) {
+					values.evaluators.push(evaluator);
+				}
 			});
 
 			self.model.save(values, {
@@ -4759,8 +4765,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var self = this;
 			var cid = $(event.currentTarget).data('modelCid')
 			var selectedModel = self.collection.getByCid(cid);
-			var type = $(event.currentTarget).data('type');
-			self.collection.trigger("member:add", selectedModel, type);
+			var position = $(event.currentTarget).data('position');
+			self.collection.trigger("member:add", selectedModel, position);
 		},
 
 		close : function() {

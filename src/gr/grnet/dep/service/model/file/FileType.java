@@ -14,8 +14,7 @@ public enum FileType {
 	APOFASI_SYSTASIS_EPITROPIS, // Απόφαση Σύστασης Επιτροπής
 	PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES, // Πρακτικό της συνεδρίασης της επιτροπής για την ανάδειξη των αξιολογητών,
 	AITIMA_EPITROPIS_PROS_AKSIOLOGITES, // Αίτημα της επιτροπής προς τους αξιολογητές (στο παραπάνω πεδίο;)
-	AKSIOLOGISI_PROTOU_AKSIOLOGITI,
-	AKSIOLOGISI_DEUTEROU_AKSIOLOGITI,
+	AKSIOLOGISI,
 	PROSKLISI_KOSMITORA, // Πρόσκληση του κοσμήτορα για τη σύγκληση της επιτροπής για την επιλογή
 	EISIGISI_DEP_YPOPSIFIOU, // Εισηγήσεις καθηγητών/ερευνητών που έχουν προτείνει οι υποψήφιοι (πολλαπλά pdf).
 	PRAKTIKO_EPILOGIS, // Πρακτικό επιλογής

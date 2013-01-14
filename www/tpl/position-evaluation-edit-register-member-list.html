@@ -32,7 +32,13 @@
 				<% } %>
 			</td>
 			<td>
-				<a id="addMember" class="btn btn-success" data-model-cid="<%= member.cid %>"><i class="icon-plus icon-white"></i> <%= $.i18n.prop("btn_add") %></a>
+				<div class="btn-group">
+					<a class="btn btn-success dropdown-toggle" data-toggle="dropdown"><%= $.i18n.prop('btn_add') %><span class="caret"></span></a>
+ 					<ul class="dropdown-menu">
+   						<li><a id="addMember" data-model-cid="<%= member.cid %>" data-position="0"><i class="icon-plus icon-white"></i> <%= $.i18n.prop("PositionEvaluatorFirst") %></a></li>
+   						<li><a id="addMember" data-model-cid="<%= member.cid %>" data-position="1"><i class="icon-plus icon-white"></i> <%= $.i18n.prop("PositionEvaluatorSecond") %></a></li>
+ 					</ul>
+				</div>
 			</td>
 		</tr>
 		<% }); %>

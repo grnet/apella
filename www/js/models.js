@@ -1000,14 +1000,21 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 	});
 
 	Models.PositionEvaluator = Backbone.Model.extend({
-		position : undefined,
 		urlRoot : function() {
-			return "/dep/rest/position/" + this.attributes.evaluation.position.id + "/evaluators";
+			return "/dep/rest/position/" + this.attributes.evaluation.position.id + "/evaluation/" + this.attributes.evaluation.id + "/evaluator";
 		},
 		defaults : {
 			id : undefined,
-			evaluation : undefined,
-			professor : undefined
+			position : undefined,
+			evaluation : {
+				id : undefined,
+				position : {
+					id : undefined
+				}
+			},
+			registerMember : {
+				id : undefined
+			}
 		}
 	});
 

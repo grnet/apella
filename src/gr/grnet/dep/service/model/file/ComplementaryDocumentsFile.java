@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
-@DiscriminatorValue("PositionFile")
+@DiscriminatorValue("ComplementaryDocumentsFile")
 @XmlRootElement
 public class ComplementaryDocumentsFile extends FileHeader {
 

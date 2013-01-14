@@ -1,7 +1,6 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.PositionEvaluator.PositionEvaluatorView;
-import gr.grnet.dep.service.model.file.PositionEvaluationFile;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 
@@ -49,9 +48,6 @@ public class PositionEvaluation {
 	@OneToMany(mappedBy = "evaluation", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<PositionEvaluator> evaluators = new HashSet<PositionEvaluator>();
 
-	@OneToMany(mappedBy = "evaluation", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<PositionEvaluationFile> files = new HashSet<PositionEvaluationFile>();
-
 	@Temporal(TemporalType.DATE)
 	private Date createdAt;
 
@@ -93,15 +89,6 @@ public class PositionEvaluation {
 		this.phases = phases;
 	}
 
-	@XmlTransient
-	public Set<PositionEvaluationFile> getFiles() {
-		return files;
-	}
-
-	public void setFiles(Set<PositionEvaluationFile> files) {
-		this.files = files;
-	}
-
 	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getCreatedAt() {
 		return createdAt;
@@ -129,17 +116,11 @@ public class PositionEvaluation {
 		this.evaluators.add(evaluator);
 	}
 
-	public void addFile(PositionEvaluationFile file) {
-		file.setEvaluation(this);
-		this.files.add(file);
-	}
-
 	public void copyFrom(PositionEvaluation other) {
 		this.setUpdatedAt(new Date());
 	}
 
 	public void initializeCollections() {
-		this.files.size();
 		for (PositionEvaluator evaluator : this.evaluators) {
 			evaluator.initializeCollections();
 		}

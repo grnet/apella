@@ -18,13 +18,14 @@ import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
-import gr.grnet.dep.service.model.file.PositionEvaluationFile;
+import gr.grnet.dep.service.model.file.PositionEvaluatorFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -153,12 +154,12 @@ public class PositionEvaluationRESTService extends RESTService {
 		}
 
 		// Retrieve new Members from Institution's Register
-		Set<Long> newEvaluatorsRegisterIds = new HashSet<Long>();
+		Map<Long, Long> newEvaluatorsRegisterMap = new HashMap<Long, Long>();
 		for (PositionEvaluator newEvaluator : newEvaluation.getEvaluators()) {
-			newEvaluatorsRegisterIds.add(newEvaluator.getRegisterMember().getId());
+			newEvaluatorsRegisterMap.put(newEvaluator.getRegisterMember().getId(), newEvaluator.getPosition());
 		}
 		List<RegisterMember> newRegisterMembers = new ArrayList<RegisterMember>();
-		if (!newEvaluatorsRegisterIds.isEmpty()) {
+		if (!newEvaluatorsRegisterMap.isEmpty()) {
 			Query query = em.createQuery(
 				"select distinct rm from Register r " +
 					"join r.members rm " +
@@ -170,16 +171,16 @@ public class PositionEvaluationRESTService extends RESTService {
 					"and rm.id in (:registerIds)")
 				.setParameter("institutionId", existingPosition.getDepartment().getInstitution().getId())
 				.setParameter("status", RoleStatus.ACTIVE)
-				.setParameter("registerIds", newEvaluatorsRegisterIds);
+				.setParameter("registerIds", newEvaluatorsRegisterMap.keySet());
 			newRegisterMembers.addAll(query.getResultList());
 		}
-		if (newEvaluatorsRegisterIds.size() != newRegisterMembers.size()) {
+		if (newEvaluatorsRegisterMap.keySet().size() != newRegisterMembers.size()) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.member.id");
 		}
 		// Extra Validation
 		// Check if a member is in Commitee
 		for (PositionCommitteeMember committeeMember : existingPosition.getPhase().getCommittee().getMembers()) {
-			if (newEvaluatorsRegisterIds.contains(committeeMember.getRegisterMember().getId())) {
+			if (newEvaluatorsRegisterMap.containsKey(committeeMember.getRegisterMember().getId())) {
 				throw new RestException(Status.CONFLICT, "member.in.committe");
 			}
 		}
@@ -190,6 +191,7 @@ public class PositionEvaluationRESTService extends RESTService {
 			for (RegisterMember newRegisterMember : newRegisterMembers) {
 				PositionEvaluator newEvaluator = new PositionEvaluator();
 				newEvaluator.setRegisterMember(newRegisterMember);
+				newEvaluator.setPosition(newEvaluatorsRegisterMap.get(newRegisterMember.getId()));
 				existingPosition.getPhase().getEvaluation().addEvaluator(newEvaluator);
 			}
 			em.flush();
@@ -207,12 +209,16 @@ public class PositionEvaluationRESTService extends RESTService {
 	 ***********************/
 
 	@GET
-	@Path("/{evaluationId:[0-9]+}/file")
+	@Path("/{evaluationId:[0-9]+}/evaluator/{evaluatorId:[0-9]+}/file")
 	@JsonView({SimpleFileHeaderView.class})
-	public Collection<PositionEvaluationFile> getFiles(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId) {
+	public Collection<PositionEvaluatorFile> getFiles(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("evaluatorId") Long evaluatorId) {
 		User loggedOn = getLoggedOn(authToken);
-		PositionEvaluation existingEvaluation = em.find(PositionEvaluation.class, evaluationId);
-		if (existingEvaluation == null) {
+		PositionEvaluator existingEvaluator = em.find(PositionEvaluator.class, evaluatorId);
+		if (existingEvaluator == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.evaluator.id");
+		}
+		PositionEvaluation existingEvaluation = existingEvaluator.getEvaluation();
+		if (!existingEvaluation.getId().equals(evaluationId)) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.evaluation.id");
 		}
 		Position existingPosition = existingEvaluation.getPosition();
@@ -228,17 +234,21 @@ public class PositionEvaluationRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
-		Set<PositionEvaluationFile> files = FileHeader.filterDeleted(existingEvaluation.getFiles());
+		Set<PositionEvaluatorFile> files = FileHeader.filterDeleted(existingEvaluator.getFiles());
 		return files;
 	}
 
 	@GET
-	@Path("/{evaluationId:[0-9]+}/file/{fileId:[0-9]+}")
+	@Path("/{evaluationId:[0-9]+}/evaluator/{evaluatorId:[0-9]+}/file/{fileId:[0-9]+}")
 	@JsonView({SimpleFileHeaderView.class})
-	public FileHeader getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("fileId") Long fileId) {
+	public FileHeader getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("evaluatorId") Long evaluatorId, @PathParam("fileId") Long fileId) {
 		User loggedOn = getLoggedOn(authToken);
-		PositionEvaluation existingEvaluation = em.find(PositionEvaluation.class, evaluationId);
-		if (existingEvaluation == null) {
+		PositionEvaluator existingEvaluator = em.find(PositionEvaluator.class, evaluatorId);
+		if (existingEvaluator == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.evaluator.id");
+		}
+		PositionEvaluation existingEvaluation = existingEvaluator.getEvaluation();
+		if (!existingEvaluation.getId().equals(evaluationId)) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.evaluation.id");
 		}
 		Position existingPosition = existingEvaluation.getPosition();
@@ -254,8 +264,8 @@ public class PositionEvaluationRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
-		Set<PositionEvaluationFile> files = FileHeader.filterDeleted(existingEvaluation.getFiles());
-		for (PositionEvaluationFile file : files) {
+		Set<PositionEvaluatorFile> files = FileHeader.filterDeleted(existingEvaluator.getFiles());
+		for (PositionEvaluatorFile file : files) {
 			if (file.getId().equals(fileId)) {
 				return file;
 			}
@@ -265,11 +275,15 @@ public class PositionEvaluationRESTService extends RESTService {
 
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	@Path("/{evaluationId:[0-9]+}/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
-	public Response getFileBody(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
+	@Path("/{evaluationId:[0-9]+}/evaluator/{evaluatorId:[0-9]+}/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
+	public Response getFileBody(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("evaluatorId") Long evaluatorId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
 		User loggedOn = getLoggedOn(authToken);
-		PositionEvaluation existingEvaluation = em.find(PositionEvaluation.class, evaluationId);
-		if (existingEvaluation == null) {
+		PositionEvaluator existingEvaluator = em.find(PositionEvaluator.class, evaluatorId);
+		if (existingEvaluator == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.evaluator.id");
+		}
+		PositionEvaluation existingEvaluation = existingEvaluator.getEvaluation();
+		if (!existingEvaluation.getId().equals(evaluationId)) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.evaluation.id");
 		}
 		Position existingPosition = existingEvaluation.getPosition();
@@ -285,8 +299,8 @@ public class PositionEvaluationRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
-		Set<PositionEvaluationFile> files = FileHeader.filterDeleted(existingEvaluation.getFiles());
-		for (PositionEvaluationFile file : files) {
+		Set<PositionEvaluatorFile> files = FileHeader.filterDeleted(existingEvaluator.getFiles());
+		for (PositionEvaluatorFile file : files) {
 			if (file.getId().equals(fileId)) {
 				if (file.getId().equals(fileId)) {
 					for (FileBody fb : file.getBodies()) {
@@ -301,13 +315,17 @@ public class PositionEvaluationRESTService extends RESTService {
 	}
 
 	@POST
-	@Path("/{evaluationId:[0-9]+}/file")
+	@Path("/{evaluationId:[0-9]+}/evaluator/{evaluatorId:[0-9]+}/file")
 	@Consumes("multipart/form-data")
 	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
-	public String createFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	public String createFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("evaluatorId") Long evaluatorId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
-		PositionEvaluation existingEvaluation = em.find(PositionEvaluation.class, evaluationId);
-		if (existingEvaluation == null) {
+		PositionEvaluator existingEvaluator = em.find(PositionEvaluator.class, evaluatorId);
+		if (existingEvaluator == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.evaluator.id");
+		}
+		PositionEvaluation existingEvaluation = existingEvaluator.getEvaluation();
+		if (!existingEvaluation.getId().equals(evaluationId)) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.evaluation.id");
 		}
 		Position existingPosition = existingEvaluation.getPosition();
@@ -338,18 +356,18 @@ public class PositionEvaluationRESTService extends RESTService {
 		}
 		try {
 			// Check number of file types
-			Set<PositionEvaluationFile> eFiles = FileHeader.filterIncludingDeleted(existingEvaluation.getFiles(), type);
-			PositionEvaluationFile existingFile2 = checkNumberOfFileTypes(PositionEvaluationFile.fileTypes, type, eFiles);
+			Set<PositionEvaluatorFile> eFiles = FileHeader.filterIncludingDeleted(existingEvaluator.getFiles(), type);
+			PositionEvaluatorFile existingFile2 = checkNumberOfFileTypes(PositionEvaluatorFile.fileTypes, type, eFiles);
 			if (existingFile2 != null) {
 				return _updateFile(loggedOn, fileItems, existingFile2);
 			}
 
 			// Create
-			PositionEvaluationFile eFile = new PositionEvaluationFile();
-			eFile.setEvaluation(existingEvaluation);
+			PositionEvaluatorFile eFile = new PositionEvaluatorFile();
+			eFile.setEvaluator(existingEvaluator);
 			eFile.setOwner(loggedOn);
 			saveFile(loggedOn, fileItems, eFile);
-			existingEvaluation.addFile(eFile);
+			existingEvaluator.addFile(eFile);
 			em.flush();
 
 			return toJSON(eFile, SimpleFileHeaderView.class);
@@ -361,13 +379,17 @@ public class PositionEvaluationRESTService extends RESTService {
 	}
 
 	@POST
-	@Path("/{evaluationId:[0-9]+}/file/{fileId:[0-9]+}")
+	@Path("/{evaluationId:[0-9]+}/evaluator/{evaluatorId:[0-9]+}/file/{fileId:[0-9]+}")
 	@Consumes("multipart/form-data")
 	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
-	public String updateFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	public String updateFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("evaluatorId") Long evaluatorId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
-		PositionEvaluation existingEvaluation = em.find(PositionEvaluation.class, evaluationId);
-		if (existingEvaluation == null) {
+		PositionEvaluator existingEvaluator = em.find(PositionEvaluator.class, evaluatorId);
+		if (existingEvaluator == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.evaluator.id");
+		}
+		PositionEvaluation existingEvaluation = existingEvaluator.getEvaluation();
+		if (!existingEvaluation.getId().equals(evaluationId)) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.evaluation.id");
 		}
 		Position existingPosition = existingEvaluation.getPosition();
@@ -397,11 +419,11 @@ public class PositionEvaluationRESTService extends RESTService {
 			throw new RestException(Status.BAD_REQUEST, "missing.file.type");
 		}
 		try {
-			if (!PositionEvaluationFile.fileTypes.containsKey(type)) {
+			if (!PositionEvaluatorFile.fileTypes.containsKey(type)) {
 				throw new RestException(Status.CONFLICT, "wrong.file.type");
 			}
-			PositionEvaluationFile evaluationFile = null;
-			for (PositionEvaluationFile file : existingEvaluation.getFiles()) {
+			PositionEvaluatorFile evaluationFile = null;
+			for (PositionEvaluatorFile file : existingEvaluator.getFiles()) {
 				if (file.getId().equals(fileId)) {
 					evaluationFile = file;
 					break;
@@ -427,12 +449,16 @@ public class PositionEvaluationRESTService extends RESTService {
 	 * @return
 	 */
 	@DELETE
-	@Path("/{evaluationId:[0-9]+}/file/{fileId:[0-9]+}")
+	@Path("/{evaluationId:[0-9]+}/evaluator/{evaluatorId:[0-9]+}/file/{fileId:[0-9]+}")
 	@JsonView({SimpleFileHeaderView.class})
-	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("fileId") Long fileId) throws FileUploadException, IOException {
+	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("evaluatorId") Long evaluatorId, @PathParam("fileId") Long fileId) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
-		PositionEvaluation existingEvaluation = em.find(PositionEvaluation.class, evaluationId);
-		if (existingEvaluation == null) {
+		PositionEvaluator existingEvaluator = em.find(PositionEvaluator.class, evaluatorId);
+		if (existingEvaluator == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.evaluator.id");
+		}
+		PositionEvaluation existingEvaluation = existingEvaluator.getEvaluation();
+		if (!existingEvaluation.getId().equals(evaluationId)) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.evaluation.id");
 		}
 		Position existingPosition = existingEvaluation.getPosition();
@@ -449,8 +475,8 @@ public class PositionEvaluationRESTService extends RESTService {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		try {
-			PositionEvaluationFile evaluationFile = null;
-			for (PositionEvaluationFile file : existingEvaluation.getFiles()) {
+			PositionEvaluatorFile evaluationFile = null;
+			for (PositionEvaluatorFile file : existingEvaluator.getFiles()) {
 				if (file.getId().equals(fileId)) {
 					evaluationFile = file;
 					break;
@@ -459,9 +485,9 @@ public class PositionEvaluationRESTService extends RESTService {
 			if (evaluationFile == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 			}
-			PositionEvaluationFile ef = deleteAsMuchAsPossible(evaluationFile);
+			PositionEvaluatorFile ef = deleteAsMuchAsPossible(evaluationFile);
 			if (ef == null) {
-				existingEvaluation.getFiles().remove(evaluationFile);
+				existingEvaluator.getFiles().remove(evaluationFile);
 			}
 			return Response.noContent().build();
 		} catch (PersistenceException e) {
