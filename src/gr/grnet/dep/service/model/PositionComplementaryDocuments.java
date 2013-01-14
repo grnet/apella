@@ -21,9 +21,16 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 public class PositionComplementaryDocuments {
+
+	public static interface PositionComplementaryDocumentsView {
+	};
+
+	public static interface DetailedPositionComplementaryDocumentsView extends PositionComplementaryDocumentsView {
+	};
 
 	@Id
 	@GeneratedValue
@@ -55,7 +62,7 @@ public class PositionComplementaryDocuments {
 		this.id = id;
 	}
 
-	@XmlTransient
+	@JsonView({DetailedPositionComplementaryDocumentsView.class})
 	public Position getPosition() {
 		return position;
 	}

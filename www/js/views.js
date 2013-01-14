@@ -1,6 +1,6 @@
 define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file-edit.html", "text!tpl/file-multiple-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html", "text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html", "text!tpl/professor-committees.html", "text!tpl/professor-evaluations.html", "text!tpl/register.html", "text!tpl/institution-regulatory-framework.html", "text!tpl/institution-regulatory-framework-edit.html", "text!tpl/position-search-criteria.html", "text!tpl/position-search-result.html", "text!tpl/candidacy-edit.html", "text!tpl/candidate-candidacy-list.html", "text!tpl/candidacy.html",
-	"text!tpl/candidacy-update-confirm.html", "text!tpl/institution-regulatory-framework-list.html", "text!tpl/register-members.html", "text!tpl/register-members-edit.html", "text!tpl/register-members-edit-professor-list.html", "text!tpl/register-member-edit.html", "text!tpl/overlay.html", "text!tpl/position-main-edit.html", "text!tpl/position-candidacies-edit.html", "text!tpl/position-committee-edit.html", "text!tpl/position-committee-member-edit.html", "text!tpl/position-evaluation-edit.html", "text!tpl/position-evaluation-edit-register-member-list.html", "text!tpl/position-evaluation-evaluator-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-committee.html", "text!tpl/position-nomination-edit.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file_edit, tpl_file_multiple_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select,
-	tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_members, tpl_register_members_edit, tpl_register_members_edit_professor_list, tpl_register_member_edit, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_committee, tpl_position_nomination_edit) {
+	"text!tpl/candidacy-update-confirm.html", "text!tpl/institution-regulatory-framework-list.html", "text!tpl/register-members.html", "text!tpl/register-members-edit.html", "text!tpl/register-members-edit-professor-list.html", "text!tpl/register-member-edit.html", "text!tpl/overlay.html", "text!tpl/position-main-edit.html", "text!tpl/position-candidacies-edit.html", "text!tpl/position-committee-edit.html", "text!tpl/position-committee-member-edit.html", "text!tpl/position-evaluation-edit.html", "text!tpl/position-evaluation-edit-register-member-list.html", "text!tpl/position-evaluation-evaluator-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-committee.html", "text!tpl/position-nomination-edit.html", "text!tpl/position-complementaryDocuments-edit.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file_edit, tpl_file_multiple_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list,
+	tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_members, tpl_register_members_edit, tpl_register_members_edit_professor_list, tpl_register_member_edit, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_committee, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit) {
 
 	/** ****************************************************************** */
 
@@ -3959,18 +3959,21 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		showComplementaryDocumentsTab : function($el) {
 			var self = this;
-			$el.html("ComplementaryDocuments");
-			/*
-			 * var positionComplementaryDocuments = new
-			 * Models.PositionComplementaryDocuments({ id :
-			 * self.model.get("phase").complementaryDocuments.id, position : {
-			 * id : self.model.get("id") } }); var
-			 * positionComplementaryDocumentsEditView = new
-			 * Views.PositionComplementaryDocumentsEditView({ model :
-			 * positionComplementaryDocuments });
-			 * $el.html(positionComplementaryDocumentsEditView.el);
-			 * positionComplementaryDocuments.fetch({ cache : false });
-			 */
+			var positionComplementaryDocuments = new Models.PositionComplementaryDocuments({
+				id : self.model.get("phase").complementaryDocuments.id,
+				position : {
+					id : self.model.get("id")
+				}
+			});
+			var positionComplementaryDocumentsEditView = new Views.PositionComplementaryDocumentsEditView({
+				model : positionComplementaryDocuments
+			});
+			positionComplementaryDocuments.fetch({
+				cache : false,
+				success : function(model, resp) {
+					$el.html(positionComplementaryDocumentsEditView.render().el);
+				}
+			});
 		},
 
 		addPhase : function(event) {
@@ -4576,8 +4579,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.$el.html(self.template(self.model.toJSON()));
 
 			// Add Existing Evaluators:
-			_.each(self.model.get("members"), function(evaluator) {
-				addMember(evaluator);
+			_.each(self.model.get("evaluators"), function(evaluator) {
+				self.addMember(evaluator);
 			});
 
 			// Add Files
@@ -4968,6 +4971,69 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			this.$el.unbind();
 			this.$el.remove();
 
+		}
+	});
+
+	/***************************************************************************
+	 * PositionComplementaryDocumentsEditView **********************************
+	 **************************************************************************/
+	Views.PositionComplementaryDocumentsEditView = Views.BaseView.extend({
+		tagName : "div",
+
+		uploader : undefined,
+
+		initialize : function() {
+			var self = this;
+			self.template = _.template(tpl_position_complementaryDocuments_edit);
+
+			_.bindAll(self, "render", "cancel", "close");
+			self.model.bind('change', self.render, self);
+			self.model.bind("destroy", self.close, self);
+		},
+
+		events : {},
+
+		isEditable : function(element) {
+			var self = this;
+			return self.model.get("position").phase.status === "EPILOGI";
+		},
+
+		render : function(event) {
+			var self = this;
+			self.$el.html(self.template(self.model.toJSON()));
+
+			// Add Files
+			if (self.model.has("id")) {
+				var files = new Models.Files();
+				files.url = self.model.url() + "/file";
+				files.fetch({
+					cache : false,
+					success : function(collection, response) {
+						self.addFileList(collection, "EISIGISI_DEP_YPOPSIFIOU", self.$("#eisigisiDEPYpopsifiouFileList"), {
+							withMetadata : true,
+							editable : self.isEditable("eisigisiDEPYpopsifiouFileList")
+						});
+						self.addFileList(collection, "DIOIKITIKO_EGGRAFO", self.$("#dioikitikoEggrafoFileList"), {
+							withMetadata : true,
+							editable : self.isEditable("dioikitikoEggrafoFileList")
+						});
+					}
+				});
+			}
+			return self;
+		},
+
+		cancel : function(event) {
+			self.model.fetch({
+				cache : false
+			});
+		},
+
+		close : function(eventName) {
+			this.model.unbind('change', this.render, this);
+			this.model.unbind('destory', this.close, this);
+			this.$el.unbind();
+			this.$el.remove();
 		}
 	});
 

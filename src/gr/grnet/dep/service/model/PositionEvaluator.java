@@ -1,5 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.PositionEvaluation.DetailedPositionEvaluationView;
+
 import java.io.Serializable;
 
 import javax.persistence.Entity;
@@ -53,13 +55,17 @@ public class PositionEvaluator implements Serializable {
 		this.evaluation = evaluation;
 	}
 
-	@JsonView({PositionEvaluatorView.class})
+	@JsonView({DetailedPositionEvaluationView.class, PositionEvaluatorView.class})
 	public RegisterMember getRegisterMember() {
 		return registerMember;
 	}
 
 	public void setRegisterMember(RegisterMember registerMember) {
 		this.registerMember = registerMember;
+	}
+
+	public void initializeCollections() {
+		this.registerMember.initializeCollections();
 	}
 
 }

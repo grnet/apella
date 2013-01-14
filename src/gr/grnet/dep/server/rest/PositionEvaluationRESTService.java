@@ -21,6 +21,7 @@ import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.file.PositionEvaluationFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +32,7 @@ import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.PersistenceException;
+import javax.persistence.Query;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -82,6 +84,7 @@ public class PositionEvaluationRESTService extends RESTService {
 		for (PositionEvaluator evaluator : existingEvaluation.getEvaluators()) {
 			evaluator.getRegisterMember().getProfessor().initializeCollections();
 		}
+		existingEvaluation.initializeCollections();
 		return existingEvaluation;
 	}
 
@@ -154,19 +157,22 @@ public class PositionEvaluationRESTService extends RESTService {
 		for (PositionEvaluator newEvaluator : newEvaluation.getEvaluators()) {
 			newEvaluatorsRegisterIds.add(newEvaluator.getRegisterMember().getId());
 		}
-		List<RegisterMember> newRegisterMembers = em.createQuery(
-			"select distinct rm from Register r " +
-				"join r.members rm " +
-				"where r.permanent = true " +
-				"and r.institution.id = :institutionId " +
-				"and rm.deleted = false " +
-				"and rm.external = true " +
-				"and rm.professor.status = :status " +
-				"and rm.id in (:registerIds)")
-			.setParameter("institutionId", existingPosition.getDepartment().getInstitution().getId())
-			.setParameter("status", RoleStatus.ACTIVE)
-			.setParameter("registerIds", newEvaluatorsRegisterIds)
-			.getResultList();
+		List<RegisterMember> newRegisterMembers = new ArrayList<RegisterMember>();
+		if (!newEvaluatorsRegisterIds.isEmpty()) {
+			Query query = em.createQuery(
+				"select distinct rm from Register r " +
+					"join r.members rm " +
+					"where r.permanent = true " +
+					"and r.institution.id = :institutionId " +
+					"and rm.deleted = false " +
+					"and rm.external = true " +
+					"and rm.professor.status = :status " +
+					"and rm.id in (:registerIds)")
+				.setParameter("institutionId", existingPosition.getDepartment().getInstitution().getId())
+				.setParameter("status", RoleStatus.ACTIVE)
+				.setParameter("registerIds", newEvaluatorsRegisterIds);
+			newRegisterMembers.addAll(query.getResultList());
+		}
 		if (newEvaluatorsRegisterIds.size() != newRegisterMembers.size()) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.member.id");
 		}
@@ -188,6 +194,7 @@ public class PositionEvaluationRESTService extends RESTService {
 			}
 			em.flush();
 			// Return result
+			existingEvaluation.initializeCollections();
 			return existingEvaluation;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();

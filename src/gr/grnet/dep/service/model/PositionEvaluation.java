@@ -140,5 +140,8 @@ public class PositionEvaluation {
 
 	public void initializeCollections() {
 		this.files.size();
+		for (PositionEvaluator evaluator : this.evaluators) {
+			evaluator.initializeCollections();
+		}
 	}
 }

@@ -21,6 +21,7 @@ import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.file.PositionCommitteeFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +33,7 @@ import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.PersistenceException;
+import javax.persistence.Query;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -126,6 +128,7 @@ public class PositionCommitteeRESTService extends RESTService {
 			!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+		existingCommittee.initializeCollections();
 		return existingCommittee;
 	}
 
@@ -183,18 +186,21 @@ public class PositionCommitteeRESTService extends RESTService {
 		for (PositionCommitteeMember newCommitteeMember : newCommittee.getMembers()) {
 			newCommitteeMemberAsMap.put(newCommitteeMember.getRegisterMember().getId(), newCommitteeMember.getType());
 		}
-		List<RegisterMember> newRegisterMembers = em.createQuery(
-			"select distinct m from Register r " +
-				"join r.members m " +
-				"where r.permanent = true " +
-				"and r.institution.id = :institutionId " +
-				"and m.professor.status = :status " +
-				"and m.deleted = false " +
-				"and m.id in (:registerIds)")
-			.setParameter("institutionId", existingPosition.getDepartment().getInstitution().getId())
-			.setParameter("status", RoleStatus.ACTIVE)
-			.setParameter("registerIds", newCommitteeMemberAsMap.keySet())
-			.getResultList();
+		List<RegisterMember> newRegisterMembers = new ArrayList<RegisterMember>();
+		if (!newCommitteeMemberAsMap.isEmpty()) {
+			Query query = em.createQuery(
+				"select distinct m from Register r " +
+					"join r.members m " +
+					"where r.permanent = true " +
+					"and r.institution.id = :institutionId " +
+					"and m.professor.status = :status " +
+					"and m.deleted = false " +
+					"and m.id in (:registerIds)")
+				.setParameter("institutionId", existingPosition.getDepartment().getInstitution().getId())
+				.setParameter("status", RoleStatus.ACTIVE)
+				.setParameter("registerIds", newCommitteeMemberAsMap.keySet());
+			newRegisterMembers.addAll(query.getResultList());
+		}
 		if (newCommittee.getMembers().size() != newRegisterMembers.size()) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.member.id");
 		}
@@ -254,6 +260,7 @@ public class PositionCommitteeRESTService extends RESTService {
 			}
 			em.flush();
 			// Return result
+			existingCommittee.initializeCollections();
 			return existingCommittee;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();

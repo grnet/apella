@@ -4,6 +4,7 @@ import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.PositionComplementaryDocuments;
+import gr.grnet.dep.service.model.PositionComplementaryDocuments.DetailedPositionComplementaryDocumentsView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.ComplementaryDocumentsFile;
@@ -47,6 +48,30 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 
 	@Inject
 	private Logger log;
+
+	@GET
+	@Path("/{cdId:[0-9]+}")
+	@JsonView({DetailedPositionComplementaryDocumentsView.class})
+	public PositionComplementaryDocuments get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cdId") Long cdId) {
+		User loggedOn = getLoggedOn(authToken);
+		PositionComplementaryDocuments existingComDocs = em.find(PositionComplementaryDocuments.class, cdId);
+		if (existingComDocs == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.complentaryDocuments.id");
+		}
+		Position existingPosition = existingComDocs.getPosition();
+		if (!existingPosition.getId().equals(positionId)) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
+		}
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
+			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
+			!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		return existingComDocs;
+	}
 
 	/**********************
 	 * File Functions *****

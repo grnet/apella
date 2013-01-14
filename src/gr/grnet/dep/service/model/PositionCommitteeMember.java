@@ -93,4 +93,10 @@ public class PositionCommitteeMember implements Serializable {
 		this.type = type;
 	}
 
+	////////////////////////////////////////
+
+	public void initializeCollections() {
+		this.registerMember.initializeCollections();
+	}
+
 }

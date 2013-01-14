@@ -152,7 +152,9 @@ public class PositionCommittee {
 
 	public void initializeCollections() {
 		this.files.size();
-		this.members.size();
+		for (PositionCommitteeMember member : members) {
+			member.initializeCollections();
+		}
 	}
 
 	public boolean containsMember(User user) {
