@@ -87,7 +87,7 @@ dl.dl-table {
 
 /* File Table */
 .file-table {
-	width: auto;
+	width: 100%;
 	margin-bottom: 10px;
 	border-left: 1px solid #dddddd;
 	border-right: 1px solid #dddddd;
@@ -100,11 +100,13 @@ dl.dl-table {
 }
 
 .file-table th,.file-table td {
-	padding: 8px;
 	line-height: 20px;
 	text-align: left;
-	vertical-align: top;
+	vertical-align: middle;
 	border-bottom: 1px solid #dddddd;
+	border-left: none;
+	border-right: none;
+	border-top: none;
 }
 
 .file-table th {

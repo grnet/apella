@@ -2845,12 +2845,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			this.template = _.template(tpl_file_edit);
-			_.bindAll(this, "render", "deleteFile", "close");
+			_.bindAll(this, "render", "deleteFile", "toggleUpload", "close");
 			this.model.bind('change', this.render, this);
 		},
 
 		events : {
-			"click a#delete" : "deleteFile"
+			"click a#delete" : "deleteFile",
+			"click a#toggleUpload" : "toggleUpload"
 		},
 
 		render : function(eventName) {
@@ -2863,25 +2864,35 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				tpl_data.file.currentBody.url = self.model.url() + "/body/" + tpl_data.file.currentBody.id + "?X-Auth-Token=" + encodeURIComponent(App.authToken);
 			}
 			self.$el.html(self.template(tpl_data));
+
 			// Options
 			if (self.options.editable) {
 				self.$('a#delete').show();
-				self.$("#uploader").show();
+				self.$("a#toggleUpload").show();
 			} else {
 				self.$('a#delete').hide();
-				self.$("#uploader").hide();
+				self.$("a#toggleUpload").hide();
 			}
 			if (self.options.withMetadata) {
-				self.$("input[name=file_name]").show();
-				self.$("textarea[name=file_description]").show();
+				self.$("#uploader input[name=file_name]").show();
+				self.$("#uploader textarea[name=file_description]").show();
 			} else {
-				self.$("input[name=file_name]").hide();
-				self.$("textarea[name=file_description]").hide();
+				self.$("#uploader input[name=file_name]").hide();
+				self.$("#uploader textarea[name=file_description]").hide();
 			}
-			self.$('div.progress').hide();
+			self.$('#uploader div.progress').hide();
 
+			// Initialize FileUpload Modal
+			self.$("#uploader").modal({
+				show : false
+			});
+			self.$("#uploader").on('hidden', function() {
+				if (self.model.changed) {
+					self.model.trigger("change");
+				}
+			});
 			// Initialize FileUpload widget
-			self.$('input[name=file]').fileupload({
+			self.$('#uploader input[name=file]').fileupload({
 				dataType : 'json',
 				url : self.model.url() + "?X-Auth-Token=" + encodeURIComponent(App.authToken),
 				replaceFileInput : false,
@@ -2891,18 +2902,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				add : function(e, data) {
 					self.$("a#upload").bind("click", function(e) {
 						data.formData = {
-							"type" : self.$("input[name=file_type]").val(),
-							"name" : self.$("input[name=file_name]").val(),
-							"description" : self.$("textarea[name=file_description]").val()
+							"type" : self.$("#uploader input[name=file_type]").val(),
+							"name" : self.$("#uploader input[name=file_name]").val(),
+							"description" : self.$("#uploader textarea[name=file_description]").val()
 						};
 						if (_.isFunction(self.options.beforeUpload)) {
 							self.options.beforeUpload(data, function(data) {
-								self.$('div.progress').show();
-								self.$("a#upload").unbind("click");
+								self.$('#uploader div.progress').show();
+								self.$("#uploader a#upload").unbind("click");
 								data.submit();
 							});
 						} else {
-							self.$('div.progress').show();
+							self.$('#uploader div.progress').show();
 							self.$("a#upload").unbind("click");
 							data.submit();
 						}
@@ -2910,17 +2921,21 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				},
 				progressall : function(e, data) {
 					var progress = parseInt(data.loaded / data.total * 100, 10);
-					self.$('div.progress .bar').css('width', progress + '%');
+					self.$('#uploader div.progress .bar').css('width', progress + '%');
 				},
 				done : function(e, data) {
+					self.model.set(data.result, {
+						silent : true
+					});
 					self.$('div.progress').fadeOut('slow', function() {
-						self.$('div.progress .bar').css('width', '0%');
-						self.model.set(data.result);
+						self.$('#uploader div.progress .bar').css('width', '0%');
+						self.$("#uploader").modal("hide");
 					});
 				},
 				fail : function(e, data) {
-					self.$('div.progress').fadeOut('slow', function() {
+					self.$('#uploader div.progress').fadeOut('slow', function() {
 						self.$('div.progress .bar').css('width', '0%');
+						self.$("#uploader").modal("hide");
 					});
 					var resp = data.jqXHR;
 					var popup = new Views.PopupView({
@@ -2928,14 +2943,16 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
-					self.$('#progress.bar').hide('slow', function() {
-						self.$('#progress .bar').css('width', '0%');
-					});
-
 				}
 			});
 			return self;
 		},
+
+		toggleUpload : function(event) {
+			var self = this;
+			self.$("#uploader").modal("toggle");
+		},
+
 		deleteFile : function(event) {
 			var self = this;
 			var doDelete = function(options) {
@@ -3013,14 +3030,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			this.template = _.template(tpl_file_multiple_edit);
-			_.bindAll(this, "render", "deleteFile", "close");
+			_.bindAll(this, "render", "toggleUpload", "deleteFile", "close");
 			this.collection.bind('reset', this.render, this);
 			this.collection.bind('remove', this.render, this);
 			this.collection.bind('add', this.render, this);
 		},
 
 		events : {
-			"click a#delete" : "deleteFile"
+			"click a#delete" : "deleteFile",
+			"click a#toggleUpload" : "toggleUpload"
 		},
 
 		render : function(eventName) {
@@ -3042,57 +3060,68 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			// Options
 			if (self.options.editable) {
 				self.$('a#delete').show();
-				self.$('#uploader').show();
+				self.$('a#toggleUpload').show();
 			} else {
 				self.$('a#delete').hide();
-				self.$('#uploader').hide();
+				self.$('a#toggleUpload').hide();
 			}
 
 			if (self.options.withMetadata) {
-				self.$("input[name=file_name]").show();
-				self.$("textarea[name=file_description]").show();
+				self.$("#uploader input[name=file_name]").show();
+				self.$("#uploader textarea[name=file_description]").show();
 			} else {
-				self.$("input[name=file_name]").hide();
-				self.$("textarea[name=file_description]").hide();
+				self.$("#uploader input[name=file_name]").hide();
+				self.$("#uploader textarea[name=file_description]").hide();
 			}
-			self.$('div.progress').hide();
+			self.$('#uploader div.progress').hide();
+
+			// Initialize FileUpload Modal
+			self.$("#uploader").modal({
+				show : false
+			});
+			self.$("#uploader").on('hidden', function() {
+				self.collection.trigger("reset");
+			});
 			// Initialize FileUpload widget
-			self.$('input[name=file]').fileupload({
+			self.$('#uploader input[name=file]').fileupload({
 				dataType : 'json',
 				url : self.collection.url + "?X-Auth-Token=" + encodeURIComponent(App.authToken),
 				replaceFileInput : false,
 				forceIframeTransport : true,
 				maxFileSize : 30000000,
 				add : function(e, data) {
-					self.$("a#upload").bind("click", function(e) {
+					self.$("#uploader a#upload").bind("click", function(e) {
 						data.formData = {
-							"type" : self.$("input[name=file_type]").val(),
-							"name" : self.$("input[name=file_name]").val(),
-							"description" : self.$("textarea[name=file_description]").val()
+							"type" : self.$("#uploader input[name=file_type]").val(),
+							"name" : self.$("#uploader input[name=file_name]").val(),
+							"description" : self.$("#uploader textarea[name=file_description]").val()
 						};
 						if (_.isFunction(self.options.beforeUpload)) {
 							self.options.beforeUpload(data, function() {
-								self.$('div.progress').show();
-								self.$("a#upload").unbind("click");
+								self.$('#uploader div.progress').show();
+								self.$("#uploader a#upload").unbind("click");
 								data.submit();
 							});
 						} else {
-							self.$('div.progress').show();
-							self.$("a#upload").unbind("click");
+							self.$('#uploader div.progress').show();
+							self.$("#uploader a#upload").unbind("click");
 							data.submit();
 						}
 					});
 				},
 				progressall : function(e, data) {
 					var progress = parseInt(data.loaded / data.total * 100, 10);
-					self.$('div.progress .bar').css('width', progress + '%');
+					self.$('#uploader div.progress .bar').css('width', progress + '%');
 				},
 				done : function(e, data) {
-					self.$('div.progress').fadeOut('slow', function() {
-						self.$('div.progress .bar').css('width', '0%');
+					self.$('#uploader div.progress').fadeOut('slow', function() {
+						self.$('#uploader div.progress .bar').css('width', '0%');
 						var newFile = new Models.File(data.result);
 						newFile.urlRoot = self.collection.url;
-						self.collection.add(newFile);
+						self.collection.add(newFile, {
+							silent : true
+						});
+						self.$("#uploader").modal("hide");
 					});
 				},
 				fail : function(e, data) {
@@ -3102,14 +3131,19 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
-					self.$('#progress.bar').hide('slow', function() {
-						self.$('#progress .bar').css('width', '0%');
+					self.$('#uploader #progress.bar').hide('slow', function() {
+						self.$('#uploader #progress .bar').css('width', '0%');
+						self.$("#uploader").modal("hide");
 					});
-
 				}
 			});
 
 			return self;
+		},
+
+		toggleUpload : function(event) {
+			var self = this;
+			self.$("#uploader").modal("toggle");
 		},
 
 		deleteFile : function(event) {
