@@ -15,15 +15,6 @@ a.help:hover {
 	cursor: help;
 }
 
-.file-table {
-	width: 0px;
-}
-
-.file-table td {
-	padding-left: 5px;
-	padding-right: 5px;
-}
-
 /* Footer
 -------------------------------------------------- */
 .footer {
@@ -103,6 +94,10 @@ dl.dl-table {
 	line-height: 20px;
 	text-align: left;
 	vertical-align: middle;
+	padding-left : 6px;
+	padding-right : 2px;
+	padding-top : 2px;
+	padding-bottom : 2px;
 	border-bottom: 1px solid #dddddd;
 	border-left: none;
 	border-right: none;
@@ -114,7 +109,10 @@ dl.dl-table {
 }
 
 .file-table thead th {
+	padding-top : 0px;
+	padding-bottom : 0px;
 	vertical-align: bottom;
+	font-size: 75%;
 }
 
 /* ALERT POPUP */

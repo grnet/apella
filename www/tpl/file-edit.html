@@ -1,27 +1,51 @@
 <table class="file-table">
+<thead>
+	<tr>
+		<th><%= $.i18n.prop('FileName') %></th>
+		<th><%= $.i18n.prop('FileSize') %></th>
+		<th><%= $.i18n.prop('FileDate') %></th>
+<% if (withMetadata) { %>
+		<th><%= $.i18n.prop('FileDescription') %></th>
+<% } %>
+		<th>
+		</th>
+	</tr>
+</thead>
 <tbody>
 	<tr>
 		<td>
 <% if (!_.isUndefined(file.id)) { %>
-			&#8226; <a href='<%= file.currentBody.url %>' target="viewfile"> <%= file.currentBody.originalFilename %></a>, <%= App.utils.formatFileSize(file.currentBody.fileSize) %>, <%= file.currentBody.date %></td>
+<% if (withMetadata && file.name) { %>
+			<%= file.name %>, (<a href='<%= file.currentBody.url %>' target="viewfile"><%= file.currentBody.originalFilename %></a>)
+<% } else { %>
+			<a href='<%= file.currentBody.url %>' target="viewfile"><%= file.currentBody.originalFilename %></a>
+<% } %>	
 <% } %>
 		</td>
 		<td>
+<% if (!_.isUndefined(file.id)) { %>
+			<%= App.utils.formatFileSize(file.currentBody.fileSize) %>
+<% } %>			
+		</td>
+		<td>
+<% if (!_.isUndefined(file.id)) { %>
+			<%= file.currentBody.date %>
+<% } %>
+		</td>
+<% if (withMetadata) { %>
+		<td><%= file.description %></td>
+<% } %>
+		<td>
 			<div class="btn-toolbar pull-right">
   				<div class="btn-group">
+  					<a id="toggleUpload" class="btn btn-small" rel="tooltip" title="<%= $.i18n.prop('btn_upload') %>"><i class="icon-upload"></i></a>
 <% if (!_.isUndefined(file.id)) { %>
-					<a id="delete" data-file-id="<%= file.id %>" class="btn btn-small btn-danger"><i class="icon-trash icon-white"></i> <%= $.i18n.prop('btn_delete') %></a>
+					<a id="delete" data-file-id="<%= file.id %>" class="btn btn-small btn-danger" rel="tooltip" title="<%= $.i18n.prop('btn_delete') %>"><i class="icon-trash icon-white"></i></a>
 <% } %>
-					<a id="toggleUpload" class="btn btn-small"><i class="icon-upload"></i> <%= $.i18n.prop('btn_upload') %></a>
 				</div>
 			</div>
 		</td>
 	</tr>
-<% if (withMetadata && (file.name || file.description)) { %>
-	<tr id="info">
-		<td colspan="2"><b><%= file.name %></b><% if (file.description && file.name) { %>, <% } %><%= file.description %></td>
-	</tr>
-<% } %>
 </tbody>
 </table>
 <div id="uploader" class="modal fade">

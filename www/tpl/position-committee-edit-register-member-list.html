@@ -1,6 +1,7 @@
 <table class="table table-striped table-bordered">
 	<thead>
 		<tr>
+			<th></th>
 			<th><%= $.i18n.prop("ID") %></th>
 			<th><%= $.i18n.prop("Name") %></th>
 			<th><%= $.i18n.prop("Surname") %></th>
@@ -8,12 +9,20 @@
 			<th><%= $.i18n.prop("Institution") %></th>
 			<th><%= $.i18n.prop("Department") %></th>
 			<th><%= $.i18n.prop("Committees") %></th>
-			<th></th>
 		</tr>
 	</thead>
 	<tbody>
 		<% _.each(members, function(member) { %>
 		<tr>
+			<td>
+				<div class="btn-group">
+					<a class="btn btn-small btn-success dropdown-toggle" data-toggle="dropdown"><%= $.i18n.prop('btn_add') %> <span class="caret"></span></a>
+ 					<ul class="dropdown-menu">
+   						<li><a id="addMember" data-model-cid="<%= member.cid %>" data-type="REGULAR"><i class="icon-plus"></i> <%= $.i18n.prop("PositionCommitteeMemberTypeREGULAR") %></a></li>
+   						<li><a id="addMember" data-model-cid="<%= member.cid %>" data-type="SUBSTITUTE"><i class="icon-plus"></i> <%= $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") %></a></li>
+ 					</ul>
+				</div>
+			</td>
 			<td>
 				<a id="view" data-model-cid="<%= member.cid %>" href="#user/<%= member.professor.user.id %>"><%= member.professor.user.id %></a>
 			</td>
@@ -33,15 +42,6 @@
 				<% } %>
 			</td>
 			<td><%= member.professor.committeesCount %></td>
-			<td>
-				<div class="btn-group">
-					<a class="btn btn-success dropdown-toggle" data-toggle="dropdown"><%= $.i18n.prop('btn_add') %><span class="caret"></span></a>
- 					<ul class="dropdown-menu">
-   						<li><a id="addMember" data-model-cid="<%= member.cid %>" data-type="REGULAR"><i class="icon-plus icon-white"></i> <%= $.i18n.prop("PositionCommitteeMemberTypeREGULAR") %></a></li>
-   						<li><a id="addMember" data-model-cid="<%= member.cid %>" data-type="SUBSTITUTE"><i class="icon-plus icon-white"></i> <%= $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") %></a></li>
- 					</ul>
-				</div>
-			</td>
 		</tr>
 		<% }); %>
 	</tbody>

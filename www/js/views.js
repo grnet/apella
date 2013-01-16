@@ -4571,8 +4571,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	Views.PositionEvaluationEditView = Views.BaseView.extend({
 		tagName : "div",
 
-		uploader : undefined,
-
 		initialize : function() {
 			var self = this;
 			self.template = _.template(tpl_position_evaluation_edit);
@@ -4591,11 +4589,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					registerMember : registerMember.toJSON()
 				};
 				self.addMember(evaluator);
+				self.$("legend span").popover("show");
 			});
 		},
 
 		events : {
 			"click a#toggleRegisterMembers" : "toggleRegisterMembers",
+			"click a#cancel" : "cancel",
 			"click a#removeMember" : "removeMember",
 			"click a#saveEvaluation" : function() {
 				var self = this;
@@ -4612,7 +4612,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(event) {
 			var self = this;
 			self.$el.html(self.template(self.model.toJSON()));
+			self.$("legend span").popover({
+				trigger : 'manual',
 
+			});
 			// Add Existing Evaluators:
 			_.each(self.model.get("evaluators"), function(evaluator) {
 				self.addMember(evaluator);
@@ -4655,7 +4658,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				files.fetch({
 					cache : false,
 					success : function(collection, response) {
-						self.addFile(collection, "AKSIOLOGISI", $el.find("#aksiologisiFileList"), {
+						self.addFileList(collection, "AKSIOLOGISI", $el.find("#aksiologisiFileList"), {
 							withMetadata : true,
 							editable : self.isEditable("aksiologisiFileList")
 						});
@@ -4683,7 +4686,17 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		removeMember : function(event) {
 			var self = this;
-			$(event.currentTarget).parents("table").remove();
+			var confirm = new Views.ConfirmView({
+				title : $.i18n.prop('Confirm'),
+				message : $.i18n.prop('AreYouSure'),
+				yes : function() {
+					$(event.currentTarget).parents("table").hide('slow', function() {
+						$(this).remove();
+					});
+					self.$("legend span").popover("show");
+				}
+			});
+			confirm.show()
 		},
 
 		submit : function(event) {
@@ -4723,6 +4736,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		cancel : function(event) {
+			var self = this;
 			self.model.fetch({
 				cache : false
 			});
