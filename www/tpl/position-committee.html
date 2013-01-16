@@ -1,78 +1,22 @@
-<form class="form-horizontal" onsubmit="return false">
-	<fieldset>
-		<div class="control-group">
-			<label class="control-label" for="apofasiSystasisEpitropisFileList"><%= $.i18n.prop('ApofasiSystasisEpitropisFileList') %>:</label>
-			<div class="controls">
-				<span id="apofasiSystasisEpitropisFileList"></span>
-			</div>
-		</div>
-		<div class="control-group">
-			<label class="control-label" for="positionCommittee"><%= $.i18n.prop('PositionCommittee') %>:</label>
-			<div class="row-fluid">
-				<div class="span12">
-					<table class="table table-striped table-bordered">
-						<thead>
-							<tr>
-								<th><%= $.i18n.prop("PositionCommitteeMemberType") %></th>
-								<th><%= $.i18n.prop("ID") %></th>
-								<th><%= $.i18n.prop("Name") %></th>
-								<th><%= $.i18n.prop("Surname") %></th>
-								<th><%= $.i18n.prop("Profile") %></th>
-								<th><%= $.i18n.prop("Institution") %></th>
-								<th><%= $.i18n.prop("Department") %></th>
-							</tr>
-						</thead>
-						<tbody>
-							<% _.each(committee, function(committeeMember) { %>
-							<tr>
-								<td><%= $.i18n.prop("PositionCommitteeMemberType" + committeeMember.type) %></td>
-								<td><a id="viewMember" data-committee-member-id="<%= committeeMember.id %>" href="#user/<%= committeeMember.professor.user.id %>"><%=committeeMember.professor.user.id %> </a></td>
-								<td><%= committeeMember.professor.user.basicInfo.firstname %></td>
-								<td><%= committeeMember.professor.user.basicInfo.lastname%></td>
-								<td><%= $.i18n.prop(committeeMember.professor.discriminator) %></td>
-								<td>
-									<% if (_.isObject(committeeMember.professor.institution)) { %>
-										<%= committeeMember.professor.institution.name %>
-									<% } else if (!_.isUndefined(committeeMember.professor.institution)) { %>
-										<%= committeeMember.professor.institution %>
-									<% } %>
-								</td>
-								<td>
-									<% if (_.isObject(committeeMember.professor.department)) { %>
-										<%= committeeMember.professor.department.department %>
-									<% } %>
-								</td>
-							</tr>
-							<% }); %>
-						</tbody>
-						<tfoot>
-						</tfoot>
-					</table>
-				</div>
-			</div>
-		</div>
-		<div class="control-group">
-			<label class="control-label" for="committeeMeetingDate"><%= $.i18n.prop('CommitteeMeetingDate') %>:</label>
-			<div class="controls">
-				<input class="input-xlarge" name="committeeMeetingDate" type="text" data-input-type="date" value="<%= phase.committee ? phase.committee.committeeMeetingDate : undefined %>" />
-			</div>
-		</div>
-		<div class="control-group">
-			<label class="control-label" for="praktikoSynedriasisEpitropisGiaAksiologitesFile"><%= $.i18n.prop('PraktikoSynedriasisEpitropisGiaAksiologitesFile') %>:</label>
-			<div class="controls">
-				<span id="praktikoSynedriasisEpitropisGiaAksiologitesFile"></span>
-			</div>
-		</div>
-		<div class="control-group">
-			<label class="control-label" for="aitimaEpitropisProsAksiologitesFile"><%= $.i18n.prop('AitimaEpitropisProsAksiologitesFile') %>:</label>
-			<div class="controls">
-				<span id="aitimaEpitropisProsAksiologitesFile"></span>
-			</div>
-		</div>
-	</fieldset>
-	<fieldset>
-		<div class="form-actions">
-			<a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
-		</div>
-	</fieldset>
-</form>
+<h4><%= $.i18n.prop('PositionCommittee') %></h4>
+<dl class="dl-glossary">
+	<dt><%= $.i18n.prop('ApofasiSystasisEpitropisFileList') %></dt>
+	<dd>
+		<span id="apofasiSystasisEpitropisFileList"></span>
+	</dd>
+	<dt><%= $.i18n.prop('PositionCommittee') %></dt>
+	<dd></dd>
+</dl>
+<span id="positionCommittee"></span>
+<dl class="dl-glossary">
+	<dt><%= $.i18n.prop('CommitteeMeetingDate') %></dt>
+	<dd><%= phase.committee ? phase.committee.committeeMeetingDate : undefined %></dd>
+	<dt><%= $.i18n.prop('PraktikoSynedriasisEpitropisGiaAksiologitesFile') %></dt>
+	<dd>
+		<span id="praktikoSynedriasisEpitropisGiaAksiologitesFile"></span>
+	</dd>
+	<dt><%= $.i18n.prop('AitimaEpitropisProsAksiologitesFile') %></dt>
+	<dd>
+		<span id="aitimaEpitropisProsAksiologitesFile"></span>
+	</dd>
+</dl>

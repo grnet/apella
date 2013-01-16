@@ -1,0 +1,59 @@
+<h4><%= $.i18n.prop('PositionEvaluations') %></h4>
+<dl class="dl-glossary">
+	<dt><%= $.i18n.prop('AksiologisiProtouAksiologitiFileList') %></dt>
+	<dd>
+		<span id="aksiologisiProtouAksiologitiFileList"></span>
+	</dd>
+	<dt><%= $.i18n.prop('AksiologisiDeuterouAksiologitiFileList') %></dt>
+	<dd>
+		<span id="AksiologisiDeuterouAksiologitiFileList"></span>
+	</dd>
+	<dt><%= $.i18n.prop('PositionEvaluators') %></dt>
+	<dd></dd>
+</dl>
+<table class="table table-bordered table-striped">
+	<tr>
+		<th><%= $.i18n.prop("ID") %></th>
+		<td>
+			<a id="viewEvaluator" href="#user/<%= registerMember.professor.user.id %>"><%= registerMember.professor.user.id %> </a>
+		</td>
+	</tr>
+	<tr>
+		<th><%= $.i18n.prop("Name") %></th>
+		<td><%= registerMember.professor.user.basicInfo.firstname %></td>
+	</tr>
+	<tr>
+		<th><%= $.i18n.prop("Surname") %></th>
+		<td><%= registerMember.professor.user.basicInfo.lastname%></td>
+	</tr>
+	<tr>
+		<th><%= $.i18n.prop("Profile") %></th>
+		<td><%= $.i18n.prop(registerMember.professor.discriminator) %></td>
+	</tr>
+	<tr>
+		<th><%= $.i18n.prop("Institution") %></th>
+		<td>
+		<% if (_.isObject(registerMember.professor.institution)) { %> 
+			<%= registerMember.professor.institution.name %> 
+		<% } else if (!_.isUndefined(registerMember.professor.institution)) { %>
+			<%= registerMember.professor.institution %> 
+		<% } %>
+		</td>
+	</tr>
+	<tr>
+		<th><%= $.i18n.prop("Department") %></th>
+		<td>
+			<% if (_.isObject(registerMember.professor.department)) { %> 
+			<%= registerMember.professor.department.department %> 
+			<% } %>
+		</td>
+	</tr>
+	<tr>
+		<th colspan="2"><%= $.i18n.prop("AksiologisiFileList") %></th>
+	</tr>
+	<tr>
+		<td colspan="2">
+			<span id="aksiologisiFileList"></span>
+		</td>
+	</tr>
+</table>

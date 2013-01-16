@@ -33,111 +33,13 @@
 		</dl>
 	</div>
 </div>
-<div class="row-fluid">
-	<div class="span12">
-		<h4><%= $.i18n.prop('PositionCommittee') %></h4>
-		<dl class="dl-glossary">
-			<dt><%= $.i18n.prop('ApofasiSystasisEpitropisFileList') %></dt>
-			<dd>
-				<span id="apofasiSystasisEpitropisFileList"></span>
-			</dd>
-			<dt><%= $.i18n.prop('PositionCommittee') %></dt>
-			<dd></dd>
-		</dl>
-		<span id="positionCommittee"></span>
-		<dl class="dl-glossary">
-			<dt><%= $.i18n.prop('CommitteeMeetingDate') %></dt>
-			<dd><%= phase.committee ? phase.committee.committeeMeetingDate : undefined %></dd>
-			<dt><%= $.i18n.prop('PraktikoSynedriasisEpitropisGiaAksiologitesFile') %></dt>
-			<dd>
-				<span id="praktikoSynedriasisEpitropisGiaAksiologitesFile"></span>
-			</dd>
-			<dt><%= $.i18n.prop('AitimaEpitropisProsAksiologitesFile') %></dt>
-			<dd>
-				<span id="aitimaEpitropisProsAksiologitesFile"></span>
-			</dd>
-		</dl>
-	</div>
+<div class="row-fluid" id="positionCommittee">
 </div>
-<div class="row-fluid">
-	<div class="span6">
-		<h4><%= $.i18n.prop('PositionEvaluations') %></h4>
-		<dl class="dl-glossary">
-			<dt><%= $.i18n.prop('AksiologisiProtouAksiologitiFileList') %></dt>
-			<dd>
-				<span id="aksiologisiProtouAksiologitiFileList"></span>
-			</dd>
-			<dt><%= $.i18n.prop('AksiologisiDeuterouAksiologitiFileList') %></dt>
-			<dd>
-				<span id="AksiologisiDeuterouAksiologitiFileList"></span>
-			</dd>
-			<dt><%= $.i18n.prop('PositionEvaluators') %></dt>
-			<dd></dd>
-		</dl>
-		<span id="positionEvaluators"></span>
-	</div>
-	<div class="span6">
-		<h4><%= $.i18n.prop('PositionProposals') %></h4>
-		<dl class="dl-glossary">
-			<dt><%= $.i18n.prop('EisigisiDEPYpopsifiouFileList') %></dt>
-			<dd>
-				<span id="eisigisiDEPYpopsifiouFileList"></span>
-			</dd>
-		</dl>
-	</div>
+<div class="row-fluid" id="positionEvaluation">
 </div>
-<div class="row-fluid">
-	<div class="span12">
-		<h4><%= $.i18n.prop('PositionCandidacyList') %></h4>
-		<span id="positionCandidacyList"></span>
-	</div>
+<div class="row-fluid" id="positionCandidacies">
 </div>
-<div class="row-fluid">
-	<div class="span12">
-		<h4><%= $.i18n.prop('PositionNomination') %></h4>
-		<dl class="dl-glossary">
-			<dt><%= $.i18n.prop('ProsklisiKosmitoraFile') %></dt>
-			<dd>
-				<span id="prosklisiKosmitoraFile"></span>
-			</dd>
-			<dt><%= $.i18n.prop('NominationCommitteeConvergenceDate') %></dt>
-			<dd><%= phase.nomination ? phase.nomination.nominationCommitteeConvergenceDate : undefined %></dd>
-			<dt><%= $.i18n.prop('PraktikoEpilogisFile') %></dt>
-			<dd>
-				<span id="praktikoEpilogisFile"></span>
-			</dd>
-			<dt><%= $.i18n.prop('DiavivastikoPraktikouFile') %></dt>
-			<dd>
-				<span id="diavivastikoPraktikouFile"></span>
-			</dd>
-			<dt><%= $.i18n.prop('PraksiDiorismouFile') %></dt>
-			<dd>
-				<span id="praksiDiorismouFile"></span>
-			</dd>
-			<dt><%= $.i18n.prop('NominationFEK') %></dt>
-			<dd><%= phase.nomination ? phase.nomination.nominationFEK : undefined %></dd>
-			
-			<dt><%= $.i18n.prop('NominatedCandidacy') %></dt>
-			<dd><%= phase.nomination && phase.nomination.nominatedCandidacy ? phase.nomination.nominatedCandidacy.snapshot.username : undefined %></dd>
-			
-			<dt><%= $.i18n.prop('SecondNominatedCandidacy') %></dt>
-			<dd><%= phase.nomination && phase.nomination.secondNominatedCandidacy ? phase.nomination.secondNominatedCandidacy.snapshot.username : undefined %></dd>
-			
-			<dt><%= $.i18n.prop('ApofasiAnapompisFile') %></dt>
-			<dd>
-				<span id="apofasiAnapompisFile"></span>
-			</dd>
-		</dl>				
-	</div>
+<div class="row-fluid" id="positionNomination">
 </div>
-<div class="row-fluid">
-	<div class="span12">
-		<h4><%= $.i18n.prop('PositionLoipaDioikitikaEggrafa') %></h4>
-		<dl class="dl-glossary">
-			<dt><%= $.i18n.prop('DioikitikoEggrafoFileList') %></dt>
-			<dd>
-				<span id="dioikitikoEggrafoFileList"></span>
-			</dd>
-		</dl>
-	</div>
+<div class="row-fluid" id="positionComplementaryDocuments">
 </div>

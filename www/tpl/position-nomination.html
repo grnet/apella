@@ -1,0 +1,34 @@
+<h4><%= $.i18n.prop('PositionNomination') %></h4>
+<dl class="dl-glossary">
+	<dt><%= $.i18n.prop('ProsklisiKosmitoraFile') %></dt>
+	<dd>
+		<span id="prosklisiKosmitoraFile"></span>
+	</dd>
+	<dt><%= $.i18n.prop('NominationCommitteeConvergenceDate') %></dt>
+	<dd><%= phase.nomination ? phase.nomination.nominationCommitteeConvergenceDate : undefined %></dd>
+	<dt><%= $.i18n.prop('PraktikoEpilogisFile') %></dt>
+	<dd>
+		<span id="praktikoEpilogisFile"></span>
+	</dd>
+	<dt><%= $.i18n.prop('DiavivastikoPraktikouFile') %></dt>
+	<dd>
+		<span id="diavivastikoPraktikouFile"></span>
+	</dd>
+	<dt><%= $.i18n.prop('PraksiDiorismouFile') %></dt>
+	<dd>
+		<span id="praksiDiorismouFile"></span>
+	</dd>
+	<dt><%= $.i18n.prop('NominationFEK') %></dt>
+	<dd><%= phase.nomination ? phase.nomination.nominationFEK : undefined %></dd>
+	
+	<dt><%= $.i18n.prop('NominatedCandidacy') %></dt>
+	<dd><%= phase.nomination && phase.nomination.nominatedCandidacy ? phase.nomination.nominatedCandidacy.snapshot.username : undefined %></dd>
+	
+	<dt><%= $.i18n.prop('SecondNominatedCandidacy') %></dt>
+	<dd><%= phase.nomination && phase.nomination.secondNominatedCandidacy ? phase.nomination.secondNominatedCandidacy.snapshot.username : undefined %></dd>
+	
+	<dt><%= $.i18n.prop('ApofasiAnapompisFile') %></dt>
+	<dd>
+		<span id="apofasiAnapompisFile"></span>
+	</dd>
+</dl>	
