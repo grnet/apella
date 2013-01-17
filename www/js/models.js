@@ -836,7 +836,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 					id : undefined,
 					nominationCommitteeConvergenceDate : undefined,
 					nominationFEK : undefined,
-					nominatedCandidcay : undefined,
+					nominatedCandidacy : undefined,
 					secondNominatedCandidacy : undefined
 				},
 				complementaryDocuments : {
@@ -1026,7 +1026,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			id : undefined,
 			nominationCommitteeConvergenceDate : undefined,
 			nominationFEK : undefined,
-			nominatedCandidcay : undefined,
+			nominatedCandidacy : undefined,
 			secondNominatedCandidacy : undefined
 		}
 	});

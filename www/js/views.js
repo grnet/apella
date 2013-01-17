@@ -2858,6 +2858,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(eventName) {
 			var self = this;
 			var tpl_data = {
+				editable : self.options.editable,
 				withMetadata : self.options.withMetadata,
 				file : self.model.toJSON()
 			};
@@ -3045,6 +3046,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(eventName) {
 			var self = this;
 			var tpl_data = {
+				editable : self.options.editable,
 				type : self.collection.type,
 				withMetadata : self.options.withMetadata,
 				files : []
@@ -3611,6 +3613,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.renderCandidacies(self.$("#positionCandidacies"));
 			self.renderCommittee(self.$("#positionCommittee"));
 			self.renderEvaluation(self.$("#positionEvaluation"));
+			self.renderNomination(self.$("#positionNomination"));
 			self.renderComplementaryDocuments(self.$("#positionComplementaryDocuments"));
 			// End of associations
 			return self;
@@ -3739,7 +3742,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					id : self.model.get("id")
 				}
 			});
-			var positionComplementaryDocumentsView = new Views.PositionComplementaryDocumentsiew({
+			var positionComplementaryDocumentsView = new Views.PositionComplementaryDocumentsView({
 				model : positionComplementaryDocuments
 			});
 			positionComplementaryDocuments.fetch({
@@ -4243,25 +4246,51 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	Views.PositionCommitteeView = Views.BaseView.extend({
 		tagName : "div",
 
+		uploader : undefined,
+
 		initialize : function() {
 			var self = this;
 			self.template = _.template(tpl_position_committee);
 			_.bindAll(self, "render", "close");
-			self.collection.bind('reset', this.render, this);
+			self.model.bind('change', self.render, self);
+			self.model.bind("destroy", self.close, self);
 		},
 
 		events : {},
 
-		render : function(eventName) {
+		render : function(event) {
 			var self = this;
-			self.$el.html(self.template({
-				committee : self.collection.toJSON()
-			}));
+			self.$el.html(self.template(self.model.toJSON()));
+
+			// Add Files
+			if (self.model.has("id")) {
+				var files = new Models.Files();
+				files.url = self.model.url() + "/file";
+				files.fetch({
+					cache : false,
+					success : function(collection, response) {
+						self.addFile(collection, "APOFASI_SYSTASIS_EPITROPIS", self.$("#apofasiSystasisEpitropisFileList"), {
+							withMetadata : true,
+							editable : false
+						});
+						self.addFile(collection, "PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES", self.$("#praktikoSynedriasisEpitropisGiaAksiologitesFile"), {
+							withMetadata : true,
+							editable : false
+						});
+						self.addFile(collection, "AITIMA_EPITROPIS_PROS_AKSIOLOGITES", self.$("#aitimaEpitropisProsAksiologitesFile"), {
+							withMetadata : true,
+							editable : false
+						});
+					}
+				});
+			}
+
 			return self;
 		},
 
 		close : function(eventName) {
-			this.collection.unbind('reset', this.render, this);
+			this.model.unbind('change', this.render, this);
+			this.model.unbind('destory', this.close, this);
 			this.$el.unbind();
 			this.$el.remove();
 		}
@@ -4510,28 +4539,50 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 
 	/***************************************************************************
-	 * PositionEvaluatorsView **************************************************
+	 * PositionEvaluationView **************************************************
 	 **************************************************************************/
-	Views.PositionEvaluatorsView = Views.BaseView.extend({
+	Views.PositionEvaluationView = Views.BaseView.extend({
 		tagName : "div",
+
+		uploader : undefined,
 
 		initialize : function() {
 			var self = this;
-			self.template = _.template(tpl_position_evaluators);
+			self.template = _.template(tpl_position_evaluation);
 			_.bindAll(self, "render", "close");
-			self.collection.bind('reset', this.render, this);
+			self.model.bind('change', self.render, self);
+			self.model.bind("destroy", self.close, self);
 		},
 
-		render : function(eventName) {
+		events : {},
+
+		render : function(event) {
 			var self = this;
-			self.$el.html(self.template({
-				evaluators : self.collection.toJSON()
-			}));
+			self.$el.html(self.template(self.model.toJSON()));
+
+			// Add Files
+			_.each(self.model.get("evaluators"), function(evaluator) {
+				var positionEvaluator = new Models.PositionEvaluator(_.extend(evaluator, {
+					evaluation : self.model.toJSON()
+				}));
+				var files = new Models.Files();
+				files.url = positionEvaluator.url() + "/file";
+				files.fetch({
+					cache : false,
+					success : function(collection, response) {
+						self.addFileList(collection, "AKSIOLOGISI", self.$("#positionEvaluatorFiles_" + positionEvaluator.get("position")).find("#aksiologisiFileList"), {
+							withMetadata : true,
+							editable : false
+						});
+					}
+				});
+			});
 			return self;
 		},
 
 		close : function(eventName) {
-			this.collection.unbind('reset', this.render, this);
+			this.model.unbind('change', this.render, this);
+			this.model.unbind('destory', this.close, this);
 			this.$el.unbind();
 			this.$el.remove();
 		}
@@ -4894,6 +4945,65 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	});
 
 	/***************************************************************************
+	 * PositionNominationView **************************************************
+	 **************************************************************************/
+	Views.PositionNominationView = Views.BaseView.extend({
+		tagName : "div",
+
+		initialize : function() {
+			var self = this;
+			self.template = _.template(tpl_position_nomination);
+			_.bindAll(self, "render", "close");
+			self.model.bind('change', self.render, self);
+			self.model.bind("destroy", self.close, self);
+		},
+
+		render : function(event) {
+			var self = this;
+			self.$el.html(self.template(self.model.toJSON()));
+			// Add Files
+			var files = new Models.Files();
+			files.url = self.model.url() + "/file";
+			files.fetch({
+				cache : false,
+				success : function(collection, response) {
+					self.addFile(collection, "PROSKLISI_KOSMITORA", self.$("#prosklisiKosmitoraFile"), {
+						withMetadata : true,
+						editable : false
+					});
+
+					self.addFileList(collection, "PRAKTIKO_EPILOGIS", self.$("#praktikoEpilogisFile"), {
+						withMetadata : true,
+						editable : false
+					});
+					self.addFile(collection, "DIAVIVASTIKO_PRAKTIKOU", self.$("#diavivastikoPraktikouFile"), {
+						withMetadata : true,
+						editable : false
+					});
+					self.addFile(collection, "PRAKSI_DIORISMOU", self.$("#praksiDiorismouFile"), {
+						withMetadata : true,
+						editable : false
+					});
+
+					self.addFile(collection, "APOFASI_ANAPOMPIS", self.$("#apofasiAnapompisFile"), {
+						withMetadata : true,
+						editable : false
+					});
+				}
+			});
+			return self;
+		},
+
+		close : function(eventName) {
+			this.model.unbind('change', self.render, self);
+			this.model.unbind("destroy", self.close, self);
+			this.$el.unbind();
+			this.$el.remove();
+
+		}
+	});
+
+	/***************************************************************************
 	 * PositionNominationEditView **********************************************
 	 **************************************************************************/
 	Views.PositionNominationEditView = Views.BaseView.extend({
@@ -5046,6 +5156,54 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			this.$el.unbind();
 			this.$el.remove();
 
+		}
+	});
+
+	/***************************************************************************
+	 * PositionComplementaryDocumentsView **************************************
+	 **************************************************************************/
+	Views.PositionComplementaryDocumentsView = Views.BaseView.extend({
+		tagName : "div",
+
+		initialize : function() {
+			var self = this;
+			self.template = _.template(tpl_position_complementaryDocuments);
+
+			_.bindAll(self, "render", "close");
+			self.model.bind('change', self.render, self);
+			self.model.bind("destroy", self.close, self);
+		},
+
+		render : function(event) {
+			var self = this;
+			self.$el.html(self.template(self.model.toJSON()));
+
+			// Add Files
+			if (self.model.has("id")) {
+				var files = new Models.Files();
+				files.url = self.model.url() + "/file";
+				files.fetch({
+					cache : false,
+					success : function(collection, response) {
+						self.addFileList(collection, "EISIGISI_DEP_YPOPSIFIOU", self.$("#eisigisiDEPYpopsifiouFileList"), {
+							withMetadata : true,
+							editable : false
+						});
+						self.addFileList(collection, "DIOIKITIKO_EGGRAFO", self.$("#dioikitikoEggrafoFileList"), {
+							withMetadata : true,
+							editable : false
+						});
+					}
+				});
+			}
+			return self;
+		},
+
+		close : function(eventName) {
+			this.model.unbind('change', this.render, this);
+			this.model.unbind('destory', this.close, this);
+			this.$el.unbind();
+			this.$el.remove();
 		}
 	});
 

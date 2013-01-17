@@ -5,7 +5,7 @@
 		<span id="prosklisiKosmitoraFile"></span>
 	</dd>
 	<dt><%= $.i18n.prop('NominationCommitteeConvergenceDate') %></dt>
-	<dd><%= phase.nomination ? phase.nomination.nominationCommitteeConvergenceDate : undefined %></dd>
+	<dd><%= nominationCommitteeConvergenceDate %></dd>
 	<dt><%= $.i18n.prop('PraktikoEpilogisFile') %></dt>
 	<dd>
 		<span id="praktikoEpilogisFile"></span>
@@ -19,13 +19,13 @@
 		<span id="praksiDiorismouFile"></span>
 	</dd>
 	<dt><%= $.i18n.prop('NominationFEK') %></dt>
-	<dd><%= phase.nomination ? phase.nomination.nominationFEK : undefined %></dd>
+	<dd><%= nominationFEK %></dd>
 	
 	<dt><%= $.i18n.prop('NominatedCandidacy') %></dt>
-	<dd><%= phase.nomination && phase.nomination.nominatedCandidacy ? phase.nomination.nominatedCandidacy.snapshot.username : undefined %></dd>
+	<dd><%= _.isUndefined(nominatedCandidacy) ? undefined : nominatedCandidacy.snapshot.username %></dd>
 	
 	<dt><%= $.i18n.prop('SecondNominatedCandidacy') %></dt>
-	<dd><%= phase.nomination && phase.nomination.secondNominatedCandidacy ? phase.nomination.secondNominatedCandidacy.snapshot.username : undefined %></dd>
+	<dd><%= !_.isObject(secondNominatedCandidacy) ? undefined : secondNominatedCandidacy.snapshot.username %></dd>
 	
 	<dt><%= $.i18n.prop('ApofasiAnapompisFile') %></dt>
 	<dd>

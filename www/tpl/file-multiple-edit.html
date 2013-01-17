@@ -1,4 +1,5 @@
 <table class="file-table">
+<% if (editable) { %>
 <thead>
 	<tr>
 		<th></th>
@@ -12,6 +13,7 @@
 		</th>
 	</tr>
 </thead>
+<% } %>
 <tbody>
 <% var row = 1; %>
 <% _.each(files, function(file) { %>

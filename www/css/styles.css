@@ -78,30 +78,27 @@ dl.dl-table {
 
 /* File Table */
 .file-table {
-	width: 100%;
+	width: auto;
 	margin-bottom: 10px;
-	border-left: 1px solid #dddddd;
-	border-right: 1px solid #dddddd;
-	border-top: 1px solid #dddddd;
-	border-bottom: 1px solid #dddddd;
-	border-collapse: collapse;
+	border: none; border-collapse : collapse;
 	-webkit-border-radius: 4px;
 	-moz-border-radius: 4px;
 	border-radius: 4px;
+	border-collapse: collapse;
+}
+
+.file-table tr:hover {
+	background-color: #f9f9f9;
 }
 
 .file-table th,.file-table td {
-	line-height: 20px;
 	text-align: left;
 	vertical-align: middle;
-	padding-left : 6px;
-	padding-right : 2px;
-	padding-top : 2px;
-	padding-bottom : 2px;
-	border-bottom: 1px solid #dddddd;
-	border-left: none;
-	border-right: none;
-	border-top: none;
+	padding-left: 6px;
+	padding-right: 2px;
+	padding-top: 2px;
+	padding-bottom: 2px;
+	border : none;
 }
 
 .file-table th {
@@ -109,8 +106,8 @@ dl.dl-table {
 }
 
 .file-table thead th {
-	padding-top : 0px;
-	padding-bottom : 0px;
+	padding-top: 0px;
+	padding-bottom: 0px;
 	vertical-align: bottom;
 	font-size: 75%;
 }
@@ -227,10 +224,10 @@ dl.dl-glossary dt {
 	-ms-box-shadow: 0px 0px 6px 3px #444;
 }
 
-@media (max-width: 767px) {
+@media ( max-width : 767px) {
 	.tile {
 		text-align: left;
-		margin-bottom : 0px;
+		margin-bottom: 0px;
 		height: auto;
 	}
 }
