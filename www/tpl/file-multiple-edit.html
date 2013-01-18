@@ -21,11 +21,11 @@
 <tr>
 		<td><span class="badge"><%= row++ %></span></td>
 		<td>
-<% if (withMetadata && file.name) { %>
-			<%= file.name %>, (<a href='<%= file.currentBody.url %>' target="viewfile"><%= file.currentBody.originalFilename %></a>)
-<% } else { %>
+	<% if (withMetadata && file.name) { %>
+			<a href='<%= file.currentBody.url %>' target="viewfile"><%= file.name %>, (<%= file.currentBody.originalFilename %>)</a>
+	<% } else { %>
 			<a href='<%= file.currentBody.url %>' target="viewfile"><%= file.currentBody.originalFilename %></a>
-<% } %>	
+	<% } %>	
 		</td>
 		<td>
 			<%= App.utils.formatFileSize(file.currentBody.fileSize) %>
@@ -33,9 +33,10 @@
 		<td>
 			<%= file.currentBody.date %>
 		</td>
-<% if (withMetadata) { %>
+	<% if (withMetadata) { %>
 		<td><%= file.description %></td>
-<% } %>
+	<% } %>
+	<% if (editable) { %>
 		<td>
 			<div class="btn-toolbar pull-right">
   				<div class="btn-group">
@@ -44,16 +45,19 @@
 			</div>
 		</td>
 	</tr>
+	<% } %>
 <% } %>
 <% }); %>
 </tbody>
 <tfoot>
+<% if (editable) { %>
 	<tr>
 		<td colspan="<%= withMetadata ? 5 : 4%>"></td>
 		<td>
 			<a id="toggleUpload" class="btn btn-small pull-right"  rel="tooltip" title="<%= $.i18n.prop('btn_add_file') %>" ><i class="icon-plus"></i></a>
 		</td>
 	</tr>
+<% } %>
 </tfoot>
 </table>
 <div id="uploader" class="modal fade">

@@ -2844,6 +2844,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		className : "",
 
+		uploader : undefined,
+
 		initialize : function() {
 			this.template = _.template(tpl_file_edit);
 			_.bindAll(this, "render", "deleteFile", "toggleUpload", "close");
@@ -2867,23 +2869,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}
 			self.$el.html(self.template(tpl_data));
 
-			// Options
-			if (self.options.editable) {
-				self.$('a#delete').show();
-				self.$("a#toggleUpload").show();
-			} else {
-				self.$('a#delete').hide();
-				self.$("a#toggleUpload").hide();
-			}
-			if (self.options.withMetadata) {
-				self.$("#uploader input[name=file_name]").show();
-				self.$("#uploader textarea[name=file_description]").show();
-			} else {
-				self.$("#uploader input[name=file_name]").hide();
-				self.$("#uploader textarea[name=file_description]").hide();
-			}
 			self.$('#uploader div.progress').hide();
-
 			// Initialize FileUpload Modal
 			self.$("#uploader").modal({
 				show : false
@@ -3016,7 +3002,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
-			this.$('input[name=file]').fileupload("destroy");
 			this.$el.unbind();
 			this.$el.remove();
 		}
@@ -3067,14 +3052,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			} else {
 				self.$('a#delete').hide();
 				self.$('a#toggleUpload').hide();
-			}
-
-			if (self.options.withMetadata) {
-				self.$("#uploader input[name=file_name]").show();
-				self.$("#uploader textarea[name=file_description]").show();
-			} else {
-				self.$("#uploader input[name=file_name]").hide();
-				self.$("#uploader textarea[name=file_description]").hide();
 			}
 			self.$('#uploader div.progress').hide();
 
@@ -3831,11 +3808,17 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				event.preventDefault();
 				return;
 			}
+			// Clear inner views
+			_.each(self.innerViews, function(innerView) {
+				innerView.close();
+			});
+			// Update tab display
 			self.$("#positionTabs a#selectTab").parent("li").removeClass("active");
 			self.$("#positionTabs a#selectTab[data-target=" + target + "]").parent("li").addClass("active");
 			App.router.navigate("positions/" + self.model.get("id") + "/" + target, {
 				trigger : false
 			});
+			// Add inner view
 			switch (target) {
 			case "main":
 				self.showMainTab($("#positionTabContent"));
@@ -3869,6 +3852,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			});
 			$el.html(positionMainEditView.el);
 			positionMainEditView.render();
+			self.innerViews.push(positionMainEditView);
 		},
 
 		showCandidaciesTab : function($el) {
@@ -3907,6 +3891,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			});
 			$el.html(positionCandidaciesEditView.el);
 			positionCandidacies.fetch();
+
+			self.innerViews.push(positionCandidaciesEditView);
 		},
 
 		showCommitteeTab : function($el) {
@@ -3926,6 +3912,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					$el.html(positionCommitteeEditView.render().el);
 				}
 			});
+
+			self.innerViews.push(positionCommitteeEditView);
 		},
 
 		showEvaluationTab : function($el) {
@@ -3945,6 +3933,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					$el.html(positionEvaluationEditView.render().el);
 				}
 			});
+
+			self.innerViews.push(positionEvaluationEditView);
 		},
 
 		showNominationTab : function($el) {
@@ -3964,6 +3954,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					$el.html(positionNominationEditView.render().el);
 				}
 			});
+
+			self.innerViews.push(positionNominationEditView);
 		},
 
 		showComplementaryDocumentsTab : function($el) {
@@ -3983,6 +3975,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					$el.html(positionComplementaryDocumentsEditView.render().el);
 				}
 			});
+
+			self.innerViews.push(positionComplementaryDocumentsEditView);
 		},
 
 		addPhase : function(event) {

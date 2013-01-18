@@ -18,7 +18,7 @@
 		<td>
 <% if (!_.isUndefined(file.id)) { %>
 <% if (withMetadata && file.name) { %>
-			<%= file.name %>, (<a href='<%= file.currentBody.url %>' target="viewfile"><%= file.currentBody.originalFilename %></a>)
+			<a href='<%= file.currentBody.url %>' target="viewfile"><%= file.name %>, (<%= file.currentBody.originalFilename %>)</a>
 <% } else { %>
 			<a href='<%= file.currentBody.url %>' target="viewfile"><%= file.currentBody.originalFilename %></a>
 <% } %>	
@@ -37,6 +37,7 @@
 <% if (withMetadata) { %>
 		<td><%= file.description %></td>
 <% } %>
+<% if (editable) { %>
 		<td>
 			<div class="btn-toolbar pull-right">
   				<div class="btn-group">
@@ -47,6 +48,7 @@
 				</div>
 			</div>
 		</td>
+<% } %>
 	</tr>
 </tbody>
 </table>
