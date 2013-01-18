@@ -15,6 +15,10 @@ a.help:hover {
 	cursor: help;
 }
 
+.strong {
+	font-weight: bold;
+}
+
 /* Footer
 -------------------------------------------------- */
 .footer {
@@ -80,25 +84,28 @@ dl.dl-table {
 .file-table {
 	width: auto;
 	margin-bottom: 10px;
-	border: none; border-collapse : collapse;
-	-webkit-border-radius: 4px;
-	-moz-border-radius: 4px;
-	border-radius: 4px;
-	border-collapse: collapse;
+	background-color: #f9f9f9;
+	border: 1px solid #dddddd;
+  	border-collapse: separate;
+  	*border-collapse: collapse;
+  	-webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
 }
 
-.file-table tr:hover {
-	background-color: #f9f9f9;
+.file-table tbody tr:hover td {
+	border-bottom: 1px solid #dddddd;
 }
 
 .file-table th,.file-table td {
 	text-align: left;
 	vertical-align: middle;
-	padding-left: 0px;
-	padding-right: 6px;
-	padding-top: 2px;
-	padding-bottom: 2px;
+	padding-left: 4px;
+	padding-right: 4px;
+	padding-top: 0px;
+	padding-bottom: 0px;
 	border : none;
+	border-bottom: 1px solid #f9f9f9;
 }
 
 .file-table th {
@@ -106,7 +113,7 @@ dl.dl-table {
 }
 
 .file-table thead th {
-	padding-top: 0px;
+	padding-top: 1px;
 	padding-bottom: 0px;
 	vertical-align: bottom;
 	font-size: 75%;

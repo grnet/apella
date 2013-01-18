@@ -9,8 +9,7 @@
 <% if (withMetadata) { %>
 		<th><%= $.i18n.prop('FileDescription') %></th>
 <% } %>
-		<th>
-		</th>
+		<th><input type="hidden" name="<%= name %>" value="<%= (files.length === 0) ? undefined : files.length %>" /></th>
 	</tr>
 </thead>
 <% } %>

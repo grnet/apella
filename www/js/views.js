@@ -22,6 +22,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				return _.isEqual(model.get("type"), type);
 			});
 			options = options ? options : {};
+			options.name = $el.attr("name");
 			if (_.isUndefined(file)) {
 				file = new Models.File({
 					"type" : type
@@ -477,7 +478,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			self.$el.html(this.template(this.model.toJSON()));
 
-			this.validator = $("form", this.el).validate({
+			self.validator = $("form", this.el).validate({
 				errorElement : "span",
 				errorClass : "help-inline",
 				highlight : function(element, errorClass, validClass) {
@@ -507,6 +508,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				}
 			});
+			// Highlight Required
+			if (self.validator) {
+				for ( var propName in self.validator.settings.rules) {
+					if (self.validator.settings.rules[propName].required !== undefined) {
+						self.$("label[for=" + propName + "]").addClass("strong");
+					}
+				}
+			}
 
 			return this;
 		},
@@ -920,6 +929,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					address_country : $.i18n.prop('validation_country')
 				}
 			});
+			// Highlight Required
+			if (self.validator) {
+				for ( var propName in self.validator.settings.rules) {
+					if (self.validator.settings.rules[propName].required !== undefined) {
+						self.$("label[for=" + propName + "]").addClass("strong");
+					}
+				}
+			}
 
 			return self;
 		},
@@ -1334,6 +1351,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					address_country : $.i18n.prop('validation_country')
 				}
 			});
+			// Highlight Required
+			if (self.validator) {
+				for ( var propName in self.validator.settings.rules) {
+					if (self.validator.settings.rules[propName].required !== undefined) {
+						self.$("label[for=" + propName + "]").addClass("strong");
+					}
+				}
+			}
 			// Return
 			return self;
 		},
@@ -2550,7 +2575,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			case "MINISTRY_ASSISTANT":
 				break;
 			}
-
+			// Highlight Required
+			if (self.validator) {
+				for ( var propName in self.validator.settings.rules) {
+					if (self.validator.settings.rules[propName].required !== undefined) {
+						self.$("label[for=" + propName + "]").addClass("strong");
+					}
+				}
+			}
 			// Set isEditable to fields
 			self.$("select, input, textarea").each(function(index) {
 				var field = $(this).attr("name");
@@ -4138,6 +4170,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				}
 			});
+			// Highlight Required
+			if (self.validator) {
+				for ( var propName in self.validator.settings.rules) {
+					if (self.validator.settings.rules[propName].required !== undefined) {
+						self.$("label[for=" + propName + "]").addClass("strong");
+					}
+				}
+			}
 			return self;
 		},
 
@@ -5537,6 +5577,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					"institution" : $.i18n.prop('validation_institution')
 				}
 			});
+			// Highlight Required
+			if (self.validator) {
+				for ( var propName in self.validator.settings.rules) {
+					if (self.validator.settings.rules[propName].required !== undefined) {
+						self.$("label[for=" + propName + "]").addClass("strong");
+					}
+				}
+			}
 			return self;
 		},
 
@@ -6319,6 +6367,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					"eswterikosKanonismosURL" : $.i18n.prop('validation_eswterikosKanonismosURL')
 				}
 			});
+			// Highlight Required
+			if (self.validator) {
+				for ( var propName in self.validator.settings.rules) {
+					if (self.validator.settings.rules[propName].required !== undefined) {
+						self.$("label[for=" + propName + "]").addClass("strong");
+					}
+				}
+			}
 
 			return self;
 		},
