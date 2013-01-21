@@ -3,6 +3,7 @@ package gr.grnet.dep.service.model;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
+import gr.grnet.dep.service.util.IdentificationDeserializer;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -34,6 +35,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.codec.binary.Base64;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
@@ -130,6 +132,7 @@ public class User implements Serializable {
 		return identification;
 	}
 
+	@JsonDeserialize(using = IdentificationDeserializer.class)
 	public void setIdentification(String identification) {
 		this.identification = identification;
 	}

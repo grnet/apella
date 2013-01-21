@@ -1,6 +1,9 @@
 define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i18n", "jquery.validate", "jquery.dataTables", "jquery.dataTables.bootstrap", "jquery.blockUI", "jquery.file.upload", "jquery.iframe-transport", "backbone.cache" ], function($, _, Backbone) {
 	if (!window.App) {
 		// Configuration
+		$.validator.setDefaults({
+			ignore : []
+		});
 		$.validator.addMethod("onlyLatin", function(value, element) {
 			return this.optional(element) || /^[a-zA-Z]*$/.test(value);
 		}, "Please type only latin characters");

@@ -2204,6 +2204,24 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.$("#ptyxioFileList").html($.i18n.prop("PressSave"));
 					self.$("#dimosieusiFileList").html($.i18n.prop("PressSave"));
 				}
+				self.validator = $("form", this.el).validate({
+					errorElement : "span",
+					errorClass : "help-inline",
+					highlight : function(element, errorClass, validClass) {
+						$(element).parent(".controls").parent(".control-group").addClass("error");
+					},
+					unhighlight : function(element, errorClass, validClass) {
+						$(element).parent(".controls").parent(".control-group").removeClass("error");
+					},
+					rules : {
+						tautotitaFile : "required",
+						formaSymmetoxisFile : "required"
+					},
+					messages : {
+						tautotitaFile : $.i18n.prop('validation_file'),
+						formaSymmetoxisFile : $.i18n.prop('validation_file'),
+					}
+				});
 				break;
 			case "PROFESSOR_DOMESTIC":
 				// Bind change on institution selector to update
@@ -2329,7 +2347,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						},
 						subject : {
 							"required" : "input[name=fekCheckbox]:checked"
-						}
+						},
+						fekFile : "required"
 					},
 					messages : {
 						institution : $.i18n.prop('validation_institution'),
@@ -2337,7 +2356,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						rank : $.i18n.prop('validation_rank'),
 						subject : $.i18n.prop('validation_subject'),
 						fek : $.i18n.prop('validation_fek'),
-						fekSubject : $.i18n.prop('validation_fekSubject')
+						fekSubject : $.i18n.prop('validation_fekSubject'),
+						fekFile : $.i18n.prop('validation_file')
 					}
 				});
 				self.$("input[name=fekCheckbox]").change(function(event) {
@@ -2962,8 +2982,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			this.model.bind('change', this.render, this);
 
 			this.$input = $(this.el);
-			this.$input.after("<div id=\"" + this.$input.attr("name") + "\"></div>");
-			this.setElement(this.$input.next("#" + this.$input.attr("name")));
+			this.$input.before("<div id=\"" + this.$input.attr("name") + "\"></div>");
+			this.setElement(this.$input.prev("#" + this.$input.attr("name")));
 		},
 
 		events : {
@@ -2982,6 +3002,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				tpl_data.file.currentBody.url = self.model.url() + "/body/" + tpl_data.file.currentBody.id + "?X-Auth-Token=" + encodeURIComponent(App.authToken);
 			}
 			self.$el.html(self.template(tpl_data));
+			self.$input.focus().val(self.model.get("id"));
 
 			self.$('#uploader div.progress').hide();
 			// Initialize FileUpload Modal
@@ -3177,8 +3198,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			this.collection.bind('add', this.render, this);
 
 			this.$input = $(this.el);
-			this.$input.after("<div id=\"" + this.$input.attr("name") + "\"></div>");
-			this.setElement(this.$input.next("#" + this.$input.attr("name")));
+			this.$input.before("<div id=\"" + this.$input.attr("name") + "\"></div>");
+			this.setElement(this.$input.prev("#" + this.$input.attr("name")));
 		},
 
 		events : {
@@ -3202,6 +3223,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				tpl_data.files.push(file);
 			});
 			self.$el.html(self.template(tpl_data));
+			self.$input.val(self.collection.length);
 
 			// Initialize FileUpload Modal
 			self.$("#uploader").modal({
