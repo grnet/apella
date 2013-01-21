@@ -1,0 +1,27 @@
+<table class="file-table">
+<tbody>
+<% var row = 1; %>
+<% _.each(files, function(file) { %>
+<% if (!_.isUndefined(file.id)) { %>
+<tr>
+		<td><span class="badge"><%= row++ %></span></td>
+		<td>
+	<% if (withMetadata && file.name) { %>
+			<a href='<%= file.currentBody.url %>' target="viewfile"><%= file.name %>, (<%= file.currentBody.originalFilename %>)</a>
+	<% } else { %>
+			<a href='<%= file.currentBody.url %>' target="viewfile"><%= file.currentBody.originalFilename %></a>
+	<% } %>	
+		</td>
+		<td>
+			<%= App.utils.formatFileSize(file.currentBody.fileSize) %>
+		</td>
+		<td>
+			<%= file.currentBody.date %>
+		</td>
+	<% if (withMetadata) { %>
+		<td><%= file.description %></td>
+	<% } %>
+<% } %>
+<% }); %>
+</tbody>
+</table>

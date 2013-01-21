@@ -5,7 +5,7 @@ import gr.grnet.dep.service.model.Position.CommitteeMemberPositionView;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.Position.PublicPositionView;
-import gr.grnet.dep.service.model.PositionCommitteeMember.ProfessorCommitteesView;
+import gr.grnet.dep.service.model.PositionCommitteeMember.PositionCommitteeMemberView;
 import gr.grnet.dep.service.model.PositionEvaluator.PositionEvaluatorView;
 import gr.grnet.dep.service.util.DateUtil;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
@@ -118,7 +118,7 @@ public class PositionPhase {
 		this.order = order;
 	}
 
-	@JsonView({PublicPositionView.class, ProfessorCommitteesView.class, DetailedPositionView.class, CommitteeMemberPositionView.class, CandidatePositionView.class, PositionEvaluatorView.class})
+	@JsonView({PublicPositionView.class, PositionCommitteeMemberView.class, DetailedPositionView.class, CommitteeMemberPositionView.class, CandidatePositionView.class, PositionEvaluatorView.class})
 	public PositionCandidacies getCandidacies() {
 		return candidacies;
 	}

@@ -1,7 +1,7 @@
-define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file-edit.html", "text!tpl/file-multiple-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html", "text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html", "text!tpl/professor-committees.html", "text!tpl/professor-evaluations.html", "text!tpl/register.html", "text!tpl/institution-regulatory-framework.html", "text!tpl/institution-regulatory-framework-edit.html", "text!tpl/position-search-criteria.html", "text!tpl/position-search-result.html", "text!tpl/candidacy-edit.html", "text!tpl/candidate-candidacy-list.html", "text!tpl/candidacy.html",
-	"text!tpl/candidacy-update-confirm.html", "text!tpl/institution-regulatory-framework-list.html", "text!tpl/register-members.html", "text!tpl/register-members-edit.html", "text!tpl/register-members-edit-professor-list.html", "text!tpl/register-member-edit.html", "text!tpl/overlay.html", "text!tpl/position-main-edit.html", "text!tpl/position-candidacies-edit.html", "text!tpl/position-committee-edit.html", "text!tpl/position-committee-member-edit.html", "text!tpl/position-evaluation-edit.html", "text!tpl/position-evaluation-edit-register-member-list.html", "text!tpl/position-evaluation-evaluator-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-candidacies.html", "text!tpl/position-committee.html", "text!tpl/position-evaluation.html", "text!tpl/position-nomination.html", "text!tpl/position-complementaryDocuments.html", "text!tpl/position-nomination-edit.html", "text!tpl/position-complementaryDocuments-edit.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file_edit, tpl_file_multiple_edit, tpl_home,
-	tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_members, tpl_register_members_edit, tpl_register_members_edit_professor_list, tpl_register_member_edit, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies,
-	tpl_position_committee, tpl_position_evaluation, tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit) {
+define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file.html", "text!tpl/file-edit.html", "text!tpl/file-list.html", "text!tpl/file-list-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html", "text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html", "text!tpl/professor-committees.html", "text!tpl/professor-evaluations.html", "text!tpl/register.html", "text!tpl/institution-regulatory-framework.html", "text!tpl/institution-regulatory-framework-edit.html", "text!tpl/position-search-criteria.html", "text!tpl/position-search-result.html", "text!tpl/candidacy-edit.html", "text!tpl/candidate-candidacy-list.html",
+	"text!tpl/candidacy.html", "text!tpl/candidacy-update-confirm.html", "text!tpl/institution-regulatory-framework-list.html", "text!tpl/register-members.html", "text!tpl/register-members-edit.html", "text!tpl/register-members-edit-professor-list.html", "text!tpl/register-member-edit.html", "text!tpl/overlay.html", "text!tpl/position-main-edit.html", "text!tpl/position-candidacies-edit.html", "text!tpl/position-committee-edit.html", "text!tpl/position-committee-member-edit.html", "text!tpl/position-evaluation-edit.html", "text!tpl/position-evaluation-edit-register-member-list.html", "text!tpl/position-evaluation-evaluator-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-candidacies.html", "text!tpl/position-committee.html", "text!tpl/position-evaluation.html", "text!tpl/position-nomination.html", "text!tpl/position-complementaryDocuments.html", "text!tpl/position-nomination-edit.html", "text!tpl/position-complementaryDocuments-edit.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit,
+	tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_members, tpl_register_members_edit, tpl_register_members_edit_professor_list, tpl_register_member_edit, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list,
+	tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation, tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit) {
 
 	/** ****************************************************************** */
 
@@ -22,7 +22,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				return _.isEqual(model.get("type"), type);
 			});
 			options = options ? options : {};
-			options.name = $el.attr("id");
 			if (_.isUndefined(file)) {
 				file = new Models.File({
 					"type" : type
@@ -30,14 +29,37 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}
 			file.urlRoot = collection.url;
 			fileView = new Views.FileView(_.extend({
-				model : file
+				model : file,
+				el : $el[0],
 			}, options));
-			$el.html(fileView.render().el);
+			fileView.render();
+			self.innerViews.push(fileView);
+		},
+
+		addFileEdit : function(collection, type, $el, options) {
+			var self = this;
+			var fileView;
+			var file = collection.find(function(model) {
+				return _.isEqual(model.get("type"), type);
+			});
+			options = options ? options : {};
+			if (_.isUndefined(file)) {
+				file = new Models.File({
+					"type" : type
+				});
+			}
+			file.urlRoot = collection.url;
+			fileView = new Views.FileEditView(_.extend({
+				model : file,
+				el : $el[0],
+			}, options));
+			fileView.render();
 			self.innerViews.push(fileView);
 		},
 
 		addFileList : function(collection, type, $el, options) {
 			var self = this;
+			var fileListView;
 			var files = new Models.Files();
 			options = options ? options : {};
 			options.name = $el.attr("id");
@@ -49,10 +71,33 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}), function(model) {
 				files.add(model);
 			});
-			var fileListView = new Views.FileListView(_.extend({
-				collection : files
+			fileListView = new Views.FileListView(_.extend({
+				collection : files,
+				el : $el[0]
 			}, options));
-			$el.html(fileListView.render().el);
+			fileListView.render();
+			self.innerViews.push(fileListView);
+		},
+
+		addFileListEdit : function(collection, type, $el, options) {
+			var self = this;
+			var fileListView;
+			var files = new Models.Files();
+			options = options ? options : {};
+
+			files.type = type;
+			files.url = collection.url;
+			_.each(collection.filter(function(model) {
+				return _.isEqual(model.get("type"), type);
+			}), function(model) {
+				files.add(model);
+			});
+			fileListView = new Views.FileListEditView(_.extend({
+				collection : files,
+				el : $el[0]
+			}, options));
+			fileListView.render();
+			self.innerViews.push(fileListView);
 		}
 	});
 
@@ -1801,28 +1846,22 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						cache : false,
 						success : function(collection, response) {
 							self.addFile(collection, "TAYTOTHTA", self.$("#tautotitaFile"), {
-								withMetadata : false,
-								editable : false
+								withMetadata : false
 							});
 							self.addFile(collection, "BEBAIWSH_STRATIOTIKIS_THITIAS", self.$("#bebaiwsiStratiwtikisThitiasFile"), {
-								withMetadata : false,
-								editable : false
+								withMetadata : false
 							});
 							self.addFile(collection, "FORMA_SYMMETOXIS", self.$("#formaSymmetoxisFile"), {
-								withMetadata : false,
-								editable : false
+								withMetadata : false
 							});
 							self.addFile(collection, "BIOGRAFIKO", self.$("#biografikoFile"), {
-								withMetadata : false,
-								editable : false
+								withMetadata : false
 							});
 							self.addFileList(collection, "PTYXIO", self.$("#ptyxioFileList"), {
-								withMetadata : true,
-								editable : false
+								withMetadata : true
 							});
 							self.addFileList(collection, "DIMOSIEYSI", self.$("#dimosieusiFileList"), {
-								withMetadata : true,
-								editable : false
+								withMetadata : true
 							});
 						}
 					});
@@ -1834,16 +1873,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						cache : false,
 						success : function(collection, response) {
 							self.addFile(collection, "PROFILE", self.$("#profileFile"), {
-								withMetadata : false,
-								editable : false
+								withMetadata : false
 							});
 							self.addFile(collection, "FEK", self.$("#fekFile"), {
-								withMetadata : false,
-								editable : false
+								withMetadata : false
 							});
 							self.addFileList(collection, "DIMOSIEYSI", self.$("#dimosieusiFileList"), {
-								withMetadata : true,
-								editable : false
+								withMetadata : true
 							});
 						}
 					});
@@ -1855,8 +1891,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						cache : false,
 						success : function(collection, response) {
 							self.addFile(collection, "PROFILE", self.$("#profileFile"), {
-								withMetadata : false,
-								editable : false
+								withMetadata : false
 							});
 						}
 					});
@@ -2129,31 +2164,31 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					files.fetch({
 						cache : false,
 						success : function(collection, response) {
-							self.addFile(collection, "TAYTOTHTA", self.$("#tautotitaFile"), {
+							self.addFileEdit(collection, "TAYTOTHTA", self.$("input[name=tautotitaFile]"), {
 								withMetadata : false,
 								editable : self.isEditable("tautotitaFile")
 							});
-							self.addFile(collection, "BEBAIWSH_STRATIOTIKIS_THITIAS", self.$("#bebaiwsiStratiwtikisThitiasFile"), {
+							self.addFileEdit(collection, "BEBAIWSH_STRATIOTIKIS_THITIAS", self.$("input[name=bebaiwsiStratiwtikisThitiasFile]"), {
 								withMetadata : false,
 								editable : self.isEditable("bebaiwsiStratiwtikisThitiasFile")
 							});
-							self.addFile(collection, "FORMA_SYMMETOXIS", self.$("#formaSymmetoxisFile"), {
+							self.addFileEdit(collection, "FORMA_SYMMETOXIS", self.$("input[name=formaSymmetoxisFile]"), {
 								withMetadata : false,
 								editable : self.isEditable("formaSymmetoxisFile")
 							});
-							self.addFile(collection, "BIOGRAFIKO", self.$("#biografikoFile"), {
+							self.addFileEdit(collection, "BIOGRAFIKO", self.$("input[name=biografikoFile]"), {
 								withMetadata : false,
 								editable : self.isEditable("biografikoFile"),
 								beforeUpload : self.beforeUpload,
 								beforeDelete : self.beforeDelete
 							});
-							self.addFileList(collection, "PTYXIO", self.$("#ptyxioFileList"), {
+							self.addFileListEdit(collection, "PTYXIO", self.$("input[name=ptyxioFileList]"), {
 								withMetadata : true,
 								editable : self.isEditable("ptyxioFileList"),
 								beforeUpload : self.beforeUpload,
 								beforeDelete : self.beforeDelete
 							});
-							self.addFileList(collection, "DIMOSIEYSI", self.$("#dimosieusiFileList"), {
+							self.addFileListEdit(collection, "DIMOSIEYSI", self.$("input[name=dimosieusiFileList]"), {
 								withMetadata : true,
 								editable : self.isEditable("dimosieusiFileList"),
 								beforeUpload : self.beforeUpload,
@@ -2257,11 +2292,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					files.fetch({
 						cache : false,
 						success : function(collection, response) {
-							self.addFile(collection, "PROFILE", self.$("#profileFile"), {
+							self.addFileEdit(collection, "PROFILE", self.$("input[name=profileFile]"), {
 								withMetadata : false,
 								editable : self.isEditable("profileFile")
 							});
-							self.addFile(collection, "FEK", self.$("#fekFile"), {
+							self.addFileEdit(collection, "FEK", self.$("input[name=fekFile]"), {
 								withMetadata : false,
 								editable : self.isEditable("fekFile")
 							});
@@ -2346,7 +2381,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					files.fetch({
 						cache : false,
 						success : function(collection, response) {
-							self.addFile(collection, "PROFILE", self.$("#profileFile"), {
+							self.addFileEdit(collection, "PROFILE", self.$("input[name=profileFile]"), {
 								withMetadata : false,
 								editable : self.isEditable("profileFile")
 							});
@@ -2887,12 +2922,48 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		className : "",
 
+		initialize : function() {
+			this.template = _.template(tpl_file);
+			_.bindAll(this, "render", "close");
+			this.model.bind('change', this.render, this);
+		},
+
+		events : {},
+
+		render : function(eventName) {
+			var self = this;
+			var tpl_data = {
+				withMetadata : self.options.withMetadata,
+				file : self.model.toJSON()
+			};
+			if (_.isObject(tpl_data.file.currentBody)) {
+				tpl_data.file.currentBody.url = self.model.url() + "/body/" + tpl_data.file.currentBody.id + "?X-Auth-Token=" + encodeURIComponent(App.authToken);
+			}
+			self.$el.html(self.template(tpl_data));
+			return self;
+		},
+
+		close : function(eventName) {
+			this.$el.unbind();
+			this.$el.remove();
+		}
+	});
+
+	/***************************************************************************
+	 * FileEditView ************************************************************
+	 **************************************************************************/
+	Views.FileEditView = Views.BaseView.extend({
+
 		uploader : undefined,
 
 		initialize : function() {
 			this.template = _.template(tpl_file_edit);
 			_.bindAll(this, "render", "deleteFile", "toggleUpload", "close");
 			this.model.bind('change', this.render, this);
+
+			this.$input = $(this.el);
+			this.$input.after("<div id=\"" + this.$input.attr("name") + "\"></div>");
+			this.setElement(this.$input.next("#" + this.$input.attr("name")));
 		},
 
 		events : {
@@ -2903,7 +2974,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(eventName) {
 			var self = this;
 			var tpl_data = {
-				name : self.options.name,
 				editable : self.options.editable,
 				withMetadata : self.options.withMetadata,
 				file : self.model.toJSON()
@@ -3060,11 +3130,55 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		className : "",
 
 		initialize : function() {
-			this.template = _.template(tpl_file_multiple_edit);
+			this.template = _.template(tpl_file_list);
+			_.bindAll(this, "render", "close");
+			this.collection.bind('reset', this.render, this);
+		},
+
+		events : {},
+
+		render : function(eventName) {
+			var self = this;
+			var tpl_data = {
+				type : self.collection.type,
+				withMetadata : self.options.withMetadata,
+				files : []
+			};
+			self.collection.each(function(model) {
+				var file = model.toJSON();
+				if (_.isObject(file.currentBody)) {
+					file.currentBody.url = model.url() + "/body/" + file.currentBody.id + "?X-Auth-Token=" + encodeURIComponent(App.authToken);
+				}
+				tpl_data.files.push(file);
+			});
+			self.$el.html(self.template(tpl_data));
+			return self;
+		},
+
+		close : function(eventName) {
+			this.$el.unbind();
+			this.$el.remove();
+		}
+	});
+
+	/***************************************************************************
+	 * FileListEditView ********************************************************
+	 **************************************************************************/
+	Views.FileListEditView = Views.BaseView.extend({
+		tagName : "div",
+
+		className : "",
+
+		initialize : function() {
+			this.template = _.template(tpl_file_list_edit);
 			_.bindAll(this, "render", "toggleUpload", "deleteFile", "close");
 			this.collection.bind('reset', this.render, this);
 			this.collection.bind('remove', this.render, this);
 			this.collection.bind('add', this.render, this);
+
+			this.$input = $(this.el);
+			this.$input.after("<div id=\"" + this.$input.attr("name") + "\"></div>");
+			this.setElement(this.$input.next("#" + this.$input.attr("name")));
 		},
 
 		events : {
@@ -3075,7 +3189,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(eventName) {
 			var self = this;
 			var tpl_data = {
-				name : self.options.name,
 				editable : self.options.editable,
 				type : self.collection.type,
 				withMetadata : self.options.withMetadata,
@@ -3090,20 +3203,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			});
 			self.$el.html(self.template(tpl_data));
 
-			// Options
-			if (self.options.editable) {
-				self.$('a#delete').show();
-				self.$('a#toggleUpload').show();
-			} else {
-				self.$('a#delete').hide();
-				self.$('a#toggleUpload').hide();
-			}
-			self.$('#uploader div.progress').hide();
-
 			// Initialize FileUpload Modal
 			self.$("#uploader").modal({
 				show : false
 			});
+			self.$('#uploader div.progress').hide();
 			self.$("#uploader").on('hidden', function() {
 				self.collection.trigger("reset");
 			});
@@ -3220,7 +3324,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
-			this.$el.dataTable("destroy");
 			this.$el.unbind();
 			this.$el.remove();
 		}
@@ -4317,16 +4420,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					cache : false,
 					success : function(collection, response) {
 						self.addFile(collection, "APOFASI_SYSTASIS_EPITROPIS", self.$("#apofasiSystasisEpitropisFileList"), {
-							withMetadata : true,
-							editable : false
+							withMetadata : true
 						});
 						self.addFile(collection, "PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES", self.$("#praktikoSynedriasisEpitropisGiaAksiologitesFile"), {
-							withMetadata : true,
-							editable : false
+							withMetadata : true
 						});
 						self.addFile(collection, "AITIMA_EPITROPIS_PROS_AKSIOLOGITES", self.$("#aitimaEpitropisProsAksiologitesFile"), {
-							withMetadata : true,
-							editable : false
+							withMetadata : true
 						});
 					}
 				});
@@ -4403,15 +4503,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				files.fetch({
 					cache : false,
 					success : function(collection, response) {
-						self.addFile(collection, "APOFASI_SYSTASIS_EPITROPIS", self.$("#apofasiSystasisEpitropisFileList"), {
+						self.addFileEdit(collection, "APOFASI_SYSTASIS_EPITROPIS", self.$("input[name=apofasiSystasisEpitropisFileList]"), {
 							withMetadata : true,
 							editable : self.isEditable("apofasiSystasisEpitropisFileList")
 						});
-						self.addFile(collection, "PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES", self.$("#praktikoSynedriasisEpitropisGiaAksiologitesFile"), {
+						self.addFileEdit(collection, "PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES", self.$("input[name=praktikoSynedriasisEpitropisGiaAksiologitesFile]"), {
 							withMetadata : true,
 							editable : self.isEditable("praktikoSynedriasisEpitropisGiaAksiologitesFile")
 						});
-						self.addFile(collection, "AITIMA_EPITROPIS_PROS_AKSIOLOGITES", self.$("#aitimaEpitropisProsAksiologitesFile"), {
+						self.addFileEdit(collection, "AITIMA_EPITROPIS_PROS_AKSIOLOGITES", self.$("input[name=aitimaEpitropisProsAksiologitesFile]"), {
 							withMetadata : true,
 							editable : self.isEditable("aitimaEpitropisProsAksiologitesFile")
 						});
@@ -4618,8 +4718,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					cache : false,
 					success : function(collection, response) {
 						self.addFileList(collection, "AKSIOLOGISI", self.$("#positionEvaluatorFiles_" + positionEvaluator.get("position")).find("#aksiologisiFileList"), {
-							withMetadata : true,
-							editable : false
+							withMetadata : true
 						});
 					}
 				});
@@ -4728,7 +4827,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				files.fetch({
 					cache : false,
 					success : function(collection, response) {
-						self.addFileList(collection, "AKSIOLOGISI", $el.find("#aksiologisiFileList"), {
+						self.addFileListEdit(collection, "AKSIOLOGISI", $el.find("input[name=aksiologisiFileList]"), {
 							withMetadata : true,
 							editable : self.isEditable("aksiologisiFileList")
 						});
@@ -5015,26 +5114,20 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				cache : false,
 				success : function(collection, response) {
 					self.addFile(collection, "PROSKLISI_KOSMITORA", self.$("#prosklisiKosmitoraFile"), {
-						withMetadata : true,
-						editable : false
+						withMetadata : true
 					});
-
 					self.addFileList(collection, "PRAKTIKO_EPILOGIS", self.$("#praktikoEpilogisFile"), {
-						withMetadata : true,
-						editable : false
+						withMetadata : true
 					});
 					self.addFile(collection, "DIAVIVASTIKO_PRAKTIKOU", self.$("#diavivastikoPraktikouFile"), {
-						withMetadata : true,
-						editable : false
+						withMetadata : true
 					});
 					self.addFile(collection, "PRAKSI_DIORISMOU", self.$("#praksiDiorismouFile"), {
-						withMetadata : true,
-						editable : false
+						withMetadata : true
 					});
 
 					self.addFile(collection, "APOFASI_ANAPOMPIS", self.$("#apofasiAnapompisFile"), {
-						withMetadata : true,
-						editable : false
+						withMetadata : true
 					});
 				}
 			});
@@ -5127,25 +5220,25 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			files.fetch({
 				cache : false,
 				success : function(collection, response) {
-					self.addFile(collection, "PROSKLISI_KOSMITORA", self.$("#prosklisiKosmitoraFile"), {
+					self.addFileEdit(collection, "PROSKLISI_KOSMITORA", self.$("input[name=prosklisiKosmitoraFile]"), {
 						withMetadata : true,
 						editable : self.isEditable("prosklisiKosmitoraFile")
 					});
 
-					self.addFileList(collection, "PRAKTIKO_EPILOGIS", self.$("#praktikoEpilogisFile"), {
+					self.addFileListEdit(collection, "PRAKTIKO_EPILOGIS", self.$("input[name=praktikoEpilogisFile]"), {
 						withMetadata : true,
 						editable : self.isEditable("praktikoEpilogisFile")
 					});
-					self.addFile(collection, "DIAVIVASTIKO_PRAKTIKOU", self.$("#diavivastikoPraktikouFile"), {
+					self.addFileEdit(collection, "DIAVIVASTIKO_PRAKTIKOU", self.$("input[name=diavivastikoPraktikouFile]"), {
 						withMetadata : true,
 						editable : self.isEditable("diavivastikoPraktikouFile")
 					});
-					self.addFile(collection, "PRAKSI_DIORISMOU", self.$("#praksiDiorismouFile"), {
+					self.addFileEdit(collection, "PRAKSI_DIORISMOU", self.$("input[name=praksiDiorismouFile]"), {
 						withMetadata : true,
 						editable : self.isEditable("praksiDiorismouFile")
 					});
 
-					self.addFile(collection, "APOFASI_ANAPOMPIS", self.$("#apofasiAnapompisFile"), {
+					self.addFileEdit(collection, "APOFASI_ANAPOMPIS", self.$("input[name=apofasiAnapompisFile]"), {
 						withMetadata : true,
 						editable : self.isEditable("apofasiAnapompisFile")
 					});
@@ -5233,12 +5326,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					cache : false,
 					success : function(collection, response) {
 						self.addFileList(collection, "EISIGISI_DEP_YPOPSIFIOU", self.$("#eisigisiDEPYpopsifiouFileList"), {
-							withMetadata : true,
-							editable : false
+							withMetadata : true
 						});
 						self.addFileList(collection, "DIOIKITIKO_EGGRAFO", self.$("#dioikitikoEggrafoFileList"), {
-							withMetadata : true,
-							editable : false
+							withMetadata : true
 						});
 					}
 				});
@@ -5289,11 +5380,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				files.fetch({
 					cache : false,
 					success : function(collection, response) {
-						self.addFileList(collection, "EISIGISI_DEP_YPOPSIFIOU", self.$("#eisigisiDEPYpopsifiouFileList"), {
+						self.addFileListEdit(collection, "EISIGISI_DEP_YPOPSIFIOU", self.$("input[name=eisigisiDEPYpopsifiouFileList]"), {
 							withMetadata : true,
 							editable : self.isEditable("eisigisiDEPYpopsifiouFileList")
 						});
-						self.addFileList(collection, "DIOIKITIKO_EGGRAFO", self.$("#dioikitikoEggrafoFileList"), {
+						self.addFileListEdit(collection, "DIOIKITIKO_EGGRAFO", self.$("input[name=dioikitikoEggrafoFileList]"), {
 							withMetadata : true,
 							editable : self.isEditable("dioikitikoEggrafoFileList")
 						});
@@ -6815,16 +6906,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					cache : false,
 					success : function(collection, response) {
 						self.addFile(collection, "BIOGRAFIKO", self.$("#biografikoFile"), {
-							withMetadata : false,
-							editable : false
+							withMetadata : false
 						});
 						self.addFileList(collection, "PTYXIO", self.$("#ptyxioFileList"), {
-							withMetadata : true,
-							editable : false
+							withMetadata : true
 						});
 						self.addFileList(collection, "DIMOSIEYSI", self.$("#dimosieusiFileList"), {
-							withMetadata : true,
-							editable : false
+							withMetadata : true
 						});
 					}
 				});
@@ -6834,11 +6922,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				files.fetch({
 					cache : false,
 					success : function(collection, response) {
-						self.addFile(collection, "EKTHESI_AUTOAKSIOLOGISIS", self.$("#ekthesiAutoaksiologisisFile"), {
+						self.addFileEdit(collection, "EKTHESI_AUTOAKSIOLOGISIS", self.$("input[name=ekthesiAutoaksiologisisFile]"), {
 							withMetadata : true,
 							editable : self.isEditable("ekthesiAutoaksiologisisFile")
 						});
-						self.addFileList(collection, "SYMPLIROMATIKA_EGGRAFA", self.$("#sympliromatikaEggrafaFileList"), {
+						self.addFileListEdit(collection, "SYMPLIROMATIKA_EGGRAFA", self.$("input[name=sympliromatikaEggrafaFileList]"), {
 							withMetadata : true,
 							editable : self.isEditable("sympliromatikaEggrafaFileList")
 						});
@@ -6968,16 +7056,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				cache : false,
 				success : function(collection, response) {
 					self.addFile(collection, "BIOGRAFIKO", self.$("#biografikoFile"), {
-						withMetadata : false,
-						editable : false
+						withMetadata : false
 					});
 					self.addFileList(collection, "PTYXIO", self.$("#ptyxioFileList"), {
-						withMetadata : true,
-						editable : false
+						withMetadata : true
 					});
 					self.addFileList(collection, "DIMOSIEYSI", self.$("#dimosieusiFileList"), {
-						withMetadata : true,
-						editable : false
+						withMetadata : true
 					});
 				}
 			});
@@ -6988,12 +7073,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				cache : false,
 				success : function(collection, response) {
 					self.addFile(collection, "EKTHESI_AUTOAKSIOLOGISIS", self.$("#ekthesiAutoaksiologisisFile"), {
-						withMetadata : true,
-						editable : false
+						withMetadata : true
 					});
 					self.addFileList(collection, "SYMPLIROMATIKA_EGGRAFA", self.$("#sympliromatikaEggrafaFileList"), {
-						withMetadata : true,
-						editable : false
+						withMetadata : true
 					});
 				}
 			});

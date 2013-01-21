@@ -65,7 +65,7 @@ public class PositionEvaluator implements Serializable {
 		this.position = position;
 	}
 
-	@JsonView({DetailedPositionEvaluatorView.class})
+	@JsonView({PositionEvaluatorView.class})
 	public PositionEvaluation getEvaluation() {
 		return evaluation;
 	}

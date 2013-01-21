@@ -2,7 +2,7 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.PositionCommitteeMember;
-import gr.grnet.dep.service.model.PositionCommitteeMember.ProfessorCommitteesView;
+import gr.grnet.dep.service.model.PositionCommitteeMember.PositionCommitteeMemberView;
 import gr.grnet.dep.service.model.PositionEvaluator;
 import gr.grnet.dep.service.model.PositionEvaluator.PositionEvaluatorView;
 import gr.grnet.dep.service.model.Professor;
@@ -32,7 +32,7 @@ public class ProfessorRESTService extends RESTService {
 
 	@GET
 	@Path("/{id:[0-9]+}/committees")
-	@JsonView({ProfessorCommitteesView.class})
+	@JsonView({PositionCommitteeMemberView.class})
 	public Collection<PositionCommitteeMember> getCommittees(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long professorId) {
 		User loggedOn = getLoggedOn(authToken);
 		Professor professor = em.find(Professor.class, professorId);
@@ -49,6 +49,9 @@ public class ProfessorRESTService extends RESTService {
 				"and pcm.registerMember.deleted = false")
 			.setParameter("professorId", professorId)
 			.getResultList();
+		for (PositionCommitteeMember committeeMember : committees) {
+			committeeMember.initializeCollections();
+		}
 		return committees;
 	}
 
@@ -70,6 +73,9 @@ public class ProfessorRESTService extends RESTService {
 				"where pe.registerMember.professor.id = :professorId ")
 			.setParameter("professorId", professorId)
 			.getResultList();
+		for (PositionEvaluator evaluator : evaluations) {
+			evaluator.initializeCollections();
+		}
 		return evaluations;
 	}
 

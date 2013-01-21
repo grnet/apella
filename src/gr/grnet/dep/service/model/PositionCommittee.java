@@ -1,7 +1,7 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
-import gr.grnet.dep.service.model.PositionCommitteeMember.ProfessorCommitteesView;
+import gr.grnet.dep.service.model.PositionCommitteeMember.PositionCommitteeMemberView;
 import gr.grnet.dep.service.model.file.PositionCommitteeFile;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
@@ -72,7 +72,7 @@ public class PositionCommittee {
 		this.id = id;
 	}
 
-	@JsonView({DetailedPositionCommitteeView.class, DetailedPositionCommitteeMemberView.class, ProfessorCommitteesView.class})
+	@JsonView({DetailedPositionCommitteeView.class, DetailedPositionCommitteeMemberView.class, PositionCommitteeMemberView.class})
 	public Position getPosition() {
 		return position;
 	}

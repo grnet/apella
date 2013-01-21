@@ -30,9 +30,6 @@ public class PositionCommitteeMember implements Serializable {
 	public static interface DetailedPositionCommitteeMemberView extends PositionCommitteeMemberView {
 	};
 
-	public static interface ProfessorCommitteesView extends PositionCommitteeMemberView {
-	};
-
 	public static final int MAX_MEMBERS = 7;
 
 	public static final int MIN_EXTERNAL = 3;
@@ -67,7 +64,7 @@ public class PositionCommitteeMember implements Serializable {
 		this.id = id;
 	}
 
-	@JsonView({ProfessorCommitteesView.class, DetailedPositionCommitteeMemberView.class})
+	@JsonView({PositionCommitteeMemberView.class})
 	public PositionCommittee getCommittee() {
 		return committee;
 	}
