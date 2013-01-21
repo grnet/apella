@@ -3,6 +3,7 @@
 		<tr>
 			<th></th>
 			<th><%= $.i18n.prop("ID") %></th>
+			<th><%= $.i18n.prop("RegisterMemberExternal") + "/" + $.i18n.prop("RegisterMemberInternal") %></th>
 			<th><%= $.i18n.prop("Name") %></th>
 			<th><%= $.i18n.prop("Surname") %></th>
 			<th><%= $.i18n.prop("Profile") %></th>
@@ -26,6 +27,7 @@
 			<td>
 				<a id="view" data-model-cid="<%= member.cid %>" href="#user/<%= member.professor.user.id %>"><%= member.professor.user.id %></a>
 			</td>
+			<td><%= member.external ? $.i18n.prop("RegisterMemberExternal") : $.i18n.prop("RegisterMemberInternal") %></td>
 			<td><%= member.professor.user.basicInfo.firstname %></td>
 			<td><%= member.professor.user.basicInfo.lastname%></td>
 			<td><%= $.i18n.prop(member.professor.discriminator) %></td>

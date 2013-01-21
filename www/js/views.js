@@ -22,7 +22,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				return _.isEqual(model.get("type"), type);
 			});
 			options = options ? options : {};
-			options.name = $el.attr("name");
+			options.name = $el.attr("id");
 			if (_.isUndefined(file)) {
 				file = new Models.File({
 					"type" : type
@@ -40,6 +40,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var self = this;
 			var files = new Models.Files();
 			options = options ? options : {};
+			options.name = $el.attr("id");
 
 			files.type = type;
 			files.url = collection.url;
@@ -1507,20 +1508,26 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		applyRules : function() {
 			var self = this;
-			self.$("input").attr("disabled", true);
-			self.$("input[name=username]").removeAttr("disabled");
-			self.$("input[name=firstname]").removeAttr("disabled");
-			self.$("input[name=lastname]").removeAttr("disabled");
-			self.$("input[name=fathername]").removeAttr("disabled");
-			self.$("input[name=firstnamelatin]").removeAttr("disabled");
-			self.$("input[name=lastnamelatin]").removeAttr("disabled");
-			self.$("input[name=fathernamelatin]").removeAttr("disabled");
-			self.$("input[name=email]").removeAttr("disabled");
-			self.$("input[name=identification]").removeAttr("disabled");
+			if (self.model.hasRole("INSTITUTION_ASSISTANT") || self.model.hasRole("MINISTRY_ASSISTANT")) {
+				self.$("input").attr("disabled", true);
+				self.$("a#save").hide();
+				self.$("a#remove").hide();
+			} else {
+				self.$("input").attr("disabled", true);
+				self.$("input[name=username]").removeAttr("disabled");
+				self.$("input[name=firstname]").removeAttr("disabled");
+				self.$("input[name=lastname]").removeAttr("disabled");
+				self.$("input[name=fathername]").removeAttr("disabled");
+				self.$("input[name=firstnamelatin]").removeAttr("disabled");
+				self.$("input[name=lastnamelatin]").removeAttr("disabled");
+				self.$("input[name=fathernamelatin]").removeAttr("disabled");
+				self.$("input[name=email]").removeAttr("disabled");
+				self.$("input[name=identification]").removeAttr("disabled");
 
-			self.$("a#status").removeClass("disabled");
-			self.$("a#save").show();
-			self.$("a#remove").hide();
+				self.$("a#status").removeClass("disabled");
+				self.$("a#save").show();
+				self.$("a#remove").hide();
+			}
 		},
 
 		render : function(eventName) {
@@ -2855,6 +2862,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					return true;
 				}
 				break;
+			case "INSTITUTION_ASSISTANT":
+				return false;
+			case "MINISTRY_ASSISTANT":
+				return false;
 			}
 			return false;
 		},
@@ -2892,6 +2903,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(eventName) {
 			var self = this;
 			var tpl_data = {
+				name : self.options.name,
 				editable : self.options.editable,
 				withMetadata : self.options.withMetadata,
 				file : self.model.toJSON()
@@ -3063,6 +3075,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(eventName) {
 			var self = this;
 			var tpl_data = {
+				name : self.options.name,
 				editable : self.options.editable,
 				type : self.collection.type,
 				withMetadata : self.options.withMetadata,
