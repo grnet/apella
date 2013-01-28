@@ -15,6 +15,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		innerViews : [],
 
+		fileViews : {},
+
 		addFile : function(collection, type, $el, options) {
 			var self = this;
 			var fileView;
@@ -28,12 +30,17 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				});
 			}
 			file.urlRoot = collection.url;
+			if ($el.data("fileView")) {
+				self.fileViews[$el.data("fileView")].close();
+			}
 			fileView = new Views.FileView(_.extend({
 				model : file,
 				el : $el[0],
 			}, options));
 			fileView.render();
-			self.innerViews.push(fileView);
+
+			$el.data("fileView", fileView.cid);
+			self.fileViews[fileView.cid] = fileView;
 		},
 
 		addFileEdit : function(collection, type, $el, options) {
@@ -49,12 +56,17 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				});
 			}
 			file.urlRoot = collection.url;
+			if ($el.data("fileView")) {
+				self.fileViews[$el.data("fileView")].close();
+			}
 			fileView = new Views.FileEditView(_.extend({
 				model : file,
 				el : $el[0],
 			}, options));
 			fileView.render();
-			self.innerViews.push(fileView);
+
+			$el.data("fileView", fileView.cid);
+			self.fileViews[fileView.cid] = fileView;
 		},
 
 		addFileList : function(collection, type, $el, options) {
@@ -71,12 +83,17 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}), function(model) {
 				files.add(model);
 			});
+			if ($el.data("fileView")) {
+				self.fileViews[$el.data("fileView")].close();
+			}
 			fileListView = new Views.FileListView(_.extend({
 				collection : files,
 				el : $el[0]
 			}, options));
 			fileListView.render();
-			self.innerViews.push(fileListView);
+
+			$el.data("fileView", fileListView.cid);
+			self.fileViews[fileListView.cid] = fileListView;
 		},
 
 		addFileListEdit : function(collection, type, $el, options) {
@@ -92,12 +109,29 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}), function(model) {
 				files.add(model);
 			});
+			if ($el.data("fileView")) {
+				self.fileViews[$el.data("fileView")].close();
+			}
 			fileListView = new Views.FileListEditView(_.extend({
 				collection : files,
 				el : $el[0]
 			}, options));
 			fileListView.render();
-			self.innerViews.push(fileListView);
+
+			$el.data("fileView", fileListView.cid);
+			self.fileViews[fileListView.cid] = fileListView;
+		},
+
+		closeInnerViews : function() {
+			var self = this;
+			_.each(self.innerViews, function(innerView) {
+				innerView.close();
+			});
+			for ( var fileView in self.fileViews) {
+				self.fileViews[fileView].close();
+			}
+			self.innerViews = [];
+			self.fileViews = {};
 		}
 	});
 
@@ -108,7 +142,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		el : "ul#menu",
 
 		initialize : function() {
-			_.bindAll(this, "render", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
 			this.model.bind('change', this.render);
 		},
 
@@ -117,6 +151,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(eventName) {
 			var self = this;
 			var menuItems = [];
+			self.closeInnerViews();
 			self.$el.empty();
 
 			menuItems.push("profile");
@@ -165,6 +200,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -178,7 +214,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		el : "div#language",
 
 		initialize : function() {
-			_.bindAll(this, "render", "selectLanguage", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "selectLanguage");
 			this.template = _.template(tpl_language);
 		},
 
@@ -189,6 +226,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(eventName) {
 			var self = this;
 			var language = App.utils.getCookie("apella-lang");
+			self.closeInnerViews();
 			self.$el.html(self.template());
 			if (!language) {
 				language = "el";
@@ -206,6 +244,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -219,7 +258,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		el : "ul#menu",
 
 		initialize : function() {
-			_.bindAll(this, "render", "close");
+			_.bindAll(this, "render", "close", "closeInnerViews", "addFile", "addFileList", "addFileEdit", "addFileListEdit");
 			this.model.bind('change', this.render);
 		},
 
@@ -233,6 +272,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -246,7 +286,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		el : "li#user-menu",
 
 		initialize : function() {
-			_.bindAll(this, "render", "logout", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "logout");
+
 			this.model.bind('change', this.render);
 		},
 
@@ -276,6 +318,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -292,7 +335,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		validatorResendVerificationEmail : undefined,
 
 		initialize : function() {
-			_.bindAll(this, "render", "showResetPassword", "showResendVerificationEmailForm", "resetPassword", "resendVerificationEmail", "login", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "showResetPassword", "showResendVerificationEmailForm", "resetPassword", "resendVerificationEmail", "login");
 			this.template = _.template(tpl_login_main);
 			this.model.bind('change', this.render);
 		},
@@ -493,6 +537,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -507,7 +552,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		validator : undefined,
 
 		initialize : function() {
-			_.bindAll(this, "render", "login", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "login");
 			this.template = _.template(tpl_login_admin);
 			this.model.bind('change', this.render);
 		},
@@ -595,6 +641,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -609,8 +656,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		className : "alert alert-block alert-popup fade in",
 
 		initialize : function() {
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "show");
 			this.template = _.template(tpl_popup);
-			_.bindAll(this, "render", "show", "close");
 		},
 
 		events : {},
@@ -645,6 +693,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -659,8 +708,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		className : "modal",
 
 		initialize : function() {
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "show");
 			this.template = _.template(tpl_confirm);
-			_.bindAll(this, "render", "show", "close");
 		},
 
 		events : {
@@ -673,17 +723,20 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		render : function(eventName) {
-			$(this.el).html(this.template({
-				title : this.options.title,
-				message : this.options.message
+			var self = this;
+			self.$el.html(self.template({
+				title : self.options.title,
+				message : self.options.message
 			}));
 		},
 		show : function() {
-			this.render();
-			this.$el.modal();
+			var self = this;
+			self.render();
+			self.$el.modal();
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -700,9 +753,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		innerView : undefined,
 
 		initialize : function() {
-			_.bindAll(this, "render", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
 			this.template = _.template(tpl_overlay);
-
 			this.innerView = this.options.innerView;
 		},
 
@@ -735,20 +787,22 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		validator : undefined,
 
 		initialize : function() {
-			_.bindAll(this, "render", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
 			this.template = _.template(tpl_user_registration_select);
 		},
 
 		events : {},
 
 		render : function(eventName) {
-			$(this.el).html(this.template({
+			var self = this;
+			self.$el.html(this.template({
 				roles : App.allowedRoles
 			}));
 			return this;
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -763,7 +817,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		validator : undefined,
 
 		initialize : function() {
-			_.bindAll(this, "render", "submit", "selectInstitution", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "submit", "selectInstitution");
 			this.template = _.template(tpl_user_registration);
 			this.model.bind('change', this.render);
 		},
@@ -779,6 +834,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(event) {
 			var self = this;
 			var role = self.model.get('roles')[0];
+			self.closeInnerViews();
 			self.$el.html(self.template(role));
 
 			if (role.discriminator === "PROFESSOR_DOMESTIC") {
@@ -1062,6 +1118,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -1074,17 +1131,19 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		tagName : "div",
 
 		initialize : function() {
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
 			this.template = _.template(tpl_user_verification);
 			this.model.bind('change', this.render);
-			_.bindAll(this, "render", "close");
 		},
 
 		render : function(eventName) {
-			$(this.el).html(this.template(this.model.toJSON()));
+			var self = this;
+			self.$el.html(this.template(this.model.toJSON()));
 			return this;
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -1100,7 +1159,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		className : "span12 hero-unit",
 
 		initialize : function() {
-			_.bindAll(this, "render", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
 			this.template = _.template(tpl_home);
 			this.model.bind('change', this.render);
 		},
@@ -1224,6 +1283,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -1236,7 +1296,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		validator : undefined,
 
 		initialize : function() {
-			_.bindAll(this, "render", "submit", "remove", "status", "cancel", "close", "applyRules");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "submit", "remove", "status", "cancel", "applyRules");
 			this.template = _.template(tpl_user_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
@@ -1290,6 +1351,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			self.closeInnerViews();
 			// 1. Render
 			self.$el.html(this.template(self.model.toJSON()));
 			// 2. Check State to enable/disable fields
@@ -1538,6 +1600,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -1591,8 +1654,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		initialize : function() {
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
 			this.template = _.template(tpl_user);
-			_.bindAll(this, "render", "close");
 			this.model.bind("change", this.render, this);
 		},
 
@@ -1603,6 +1666,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -1617,7 +1681,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		className : "span12 well",
 
 		initialize : function() {
-			_.bindAll(this, "render", "search", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "search");
 			this.template = _.template(tpl_user_search);
 		},
 
@@ -1627,6 +1692,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template({}));
 			if (self.options.query) {
 				$('form input[name=username]', this.el).val(self.options.query['username']);
@@ -1660,6 +1726,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -1672,7 +1739,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		tagName : "div",
 
 		initialize : function() {
-			_.bindAll(this, "render", "select", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
 			this.template = _.template(tpl_user_list);
 			this.roleInfoTemplate = _.template(tpl_user_role_info);
 			this.collection.bind("change", this.render, this);
@@ -1701,6 +1768,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					return result;
 				})()
 			};
+			self.closeInnerViews();
 			self.$el.html(self.template(tpl_data));
 			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 				self.$("table").dataTable({
@@ -1731,6 +1799,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -1743,7 +1812,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		tagName : "p",
 
 		initialize : function() {
-			_.bindAll(this, "render", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
 			this.template = _.template(tpl_user_role_info);
 			this.model.bind('change', this.render, this);
 		},
@@ -1753,11 +1822,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var tpl_data = {
 				roles : self.model.get("roles")
 			};
+			self.closeInnerViews();
 			self.$el.html(self.template(tpl_data));
 			return self;
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -1770,7 +1841,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		tagName : "div",
 
 		initialize : function() {
-			_.bindAll(this, "render", "select", "highlightSelected", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "select", "highlightSelected");
 			this.template = _.template(tpl_role_tabs);
 			this.collection.bind("change", this.render, this);
 			this.collection.bind("reset", this.render, this);
@@ -1796,6 +1868,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					return result;
 				})()
 			};
+			self.closeInnerViews();
 			self.$el.html(this.template(tpl_data));
 			return self;
 		},
@@ -1815,6 +1888,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -1828,12 +1902,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			this.template = _.template(tpl_role);
-			_.bindAll(this, "render", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
 			this.model.bind("change", this.render, this);
 		},
 
 		render : function(eventName) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.empty();
 			if (self.model.get("discriminator") !== "ADMINISTRATOR") {
 				self.$el.append($(self.template(self.model.toJSON())));
@@ -1911,6 +1986,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -1927,7 +2003,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		validator : undefined,
 
 		initialize : function() {
-			_.bindAll(this, "render", "isEditable", "beforeUpload", "beforeDelete", "submit", "cancel", "addFile", "addFileList", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "isEditable", "beforeUpload", "beforeDelete", "submit", "cancel");
 			this.template = _.template(tpl_role_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
@@ -2141,15 +2218,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(eventName) {
 			var self = this;
 			// Close inner views (fileviews)
-			_.each(self.innerViews, function(innerView) {
-				innerView.close();
-			});
-			self.innerViews = [];
-
+			self.closeInnerViews();
 			// Re-render
 			tpl_data = _.extend(self.model.toJSON(), {
 				"primary" : self.model.isPrimary()
-			});
+			})
+			self.closeInnerViews();
 			self.$el.html(self.template(tpl_data));
 
 			// Apply Global Rules
@@ -2892,9 +2966,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
-			_.each(this.innerViews, function(innerView) {
-				innerView.close();
-			});
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -2943,8 +3015,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		className : "",
 
 		initialize : function() {
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
 			this.template = _.template(tpl_file);
-			_.bindAll(this, "render", "close");
 			this.model.bind('change', this.render, this);
 		},
 
@@ -2959,11 +3031,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			if (_.isObject(tpl_data.file.currentBody)) {
 				tpl_data.file.currentBody.url = self.model.url() + "/body/" + tpl_data.file.currentBody.id + "?X-Auth-Token=" + encodeURIComponent(App.authToken);
 			}
+			self.closeInnerViews();
 			self.$el.html(self.template(tpl_data));
 			return self;
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.$el.unbind();
 			this.$el.remove();
 		}
@@ -2977,8 +3051,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		uploader : undefined,
 
 		initialize : function() {
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "deleteFile", "toggleUpload");
 			this.template = _.template(tpl_file_edit);
-			_.bindAll(this, "render", "deleteFile", "toggleUpload", "close");
 			this.model.bind('change', this.render, this);
 
 			this.$input = $(this.el);
@@ -3001,6 +3076,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			if (_.isObject(tpl_data.file.currentBody)) {
 				tpl_data.file.currentBody.url = self.model.url() + "/body/" + tpl_data.file.currentBody.id + "?X-Auth-Token=" + encodeURIComponent(App.authToken);
 			}
+			self.closeInnerViews();
 			self.$el.html(self.template(tpl_data));
 			self.$input.focus().val(self.model.get("id"));
 
@@ -3137,6 +3213,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.$el.unbind();
 			this.$el.remove();
 		}
@@ -3151,8 +3228,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		className : "",
 
 		initialize : function() {
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
 			this.template = _.template(tpl_file_list);
-			_.bindAll(this, "render", "close");
 			this.collection.bind('reset', this.render, this);
 		},
 
@@ -3172,11 +3249,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				}
 				tpl_data.files.push(file);
 			});
+			self.closeInnerViews();
 			self.$el.html(self.template(tpl_data));
 			return self;
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.$el.unbind();
 			this.$el.remove();
 		}
@@ -3191,8 +3270,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		className : "",
 
 		initialize : function() {
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "toggleUpload", "deleteFile");
 			this.template = _.template(tpl_file_list_edit);
-			_.bindAll(this, "render", "toggleUpload", "deleteFile", "close");
 			this.collection.bind('reset', this.render, this);
 			this.collection.bind('remove', this.render, this);
 			this.collection.bind('add', this.render, this);
@@ -3222,6 +3302,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				}
 				tpl_data.files.push(file);
 			});
+			self.closeInnerViews();
 			self.$el.html(self.template(tpl_data));
 			self.$input.val(self.collection.length);
 
@@ -3346,6 +3427,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.$el.unbind();
 			this.$el.remove();
 		}
@@ -3358,8 +3440,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		tagName : "div",
 
 		initialize : function() {
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
 			this.template = _.template(tpl_announcement_list);
-			_.bindAll(this, "render", "close");
 			this.collection.bind('reset', this.render);
 		},
 
@@ -3380,12 +3462,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				}
 			});
 			// 2. Show
+			self.closeInnerViews();
 			self.$el.html(self.template(data));
 
 			return self;
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -3399,7 +3483,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		tagName : "div",
 
 		initialize : function() {
-			_.bindAll(this, "render", "select", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
 			this.template = _.template(tpl_user_list);
 			this.roleInfoTemplate = _.template(tpl_user_role_info);
 			this.collection.bind("add", this.render, this);
@@ -3431,6 +3515,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					return result;
 				})()
 			};
+			self.closeInnerViews();
 			self.$el.html(self.template(tpl_data));
 			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 				self.$("table").dataTable({
@@ -3475,6 +3560,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			this.collection.unbind("change", this.render, this);
 			this.collection.unbind("reset", this.render, this);
 			$(this.el).unbind();
@@ -3489,7 +3575,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		tagName : "div",
 
 		initialize : function() {
-			_.bindAll(this, "render", "select", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
 			this.template = _.template(tpl_user_list);
 			this.roleInfoTemplate = _.template(tpl_user_role_info);
 			this.collection.bind("add", this.render, this);
@@ -3521,6 +3607,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					return result;
 				})()
 			};
+			self.closeInnerViews();
 			self.$el.html(self.template(tpl_data));
 			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 				self.$("table").dataTable({
@@ -3563,6 +3650,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			this.collection.unbind("change", this.render, this);
 			this.collection.unbind("reset", this.render, this);
 			$(this.el).unbind();
@@ -3612,7 +3700,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		tagName : "div",
 
 		initialize : function() {
-			_.bindAll(this, "render", "renderActions", "selectPosition", "createPosition", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "renderActions", "selectPosition", "createPosition");
 			this.template = _.template(tpl_position_list);
 			this.collection.bind("change", this.render, this);
 			this.collection.bind("reset", this.render, this);
@@ -3640,6 +3729,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					return result;
 				})()
 			};
+			self.closeInnerViews();
 			self.$el.html(this.template(tpl_data));
 			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 				self.$("table").dataTable({
@@ -3725,6 +3815,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -3739,7 +3830,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		id : "positionview",
 
 		initialize : function() {
-			_.bindAll(this, "render", "renderCandidacies", "renderCommittee", "renderEvaluation", "renderNomination", "renderComplementaryDocuments", "addFile", "addFileList", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "renderCandidacies", "renderCommittee", "renderEvaluation", "renderNomination", "renderComplementaryDocuments");
 			this.template = _.template(tpl_position);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
@@ -3750,10 +3842,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
-			_.each(self.innerViews, function(innerView) {
-				innerView.close();
-			});
-			self.innerViews = [];
+			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 
 			// Dependencies:
@@ -3902,9 +3991,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
-			_.each(self.innerViews, function(innerView) {
-				innerView.close();
-			});
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -3930,7 +4017,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		initialize : function() {
-			_.bindAll(this, "render", "addPhase", "showTab", "showMainTab", "showCandidaciesTab", "showCommitteeTab", "showEvaluationTab", "showNominationTab", "showComplementaryDocumentsTab", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "addPhase", "showTab", "showMainTab", "showCandidaciesTab", "showCommitteeTab", "showEvaluationTab", "showNominationTab", "showComplementaryDocumentsTab");
 			this.template = _.template(tpl_position_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
@@ -3943,6 +4031,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 			// Phase:
 			self.$("a#addPhase").each(function() {
@@ -3979,9 +4068,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				return;
 			}
 			// Clear inner views
-			_.each(self.innerViews, function(innerView) {
-				innerView.close();
-			});
+			self.closeInnerViews();
 			// Update tab display
 			self.$("#positionTabs a#selectTab").parent("li").removeClass("active");
 			self.$("#positionTabs a#selectTab[data-target=" + target + "]").parent("li").addClass("active");
@@ -4176,9 +4263,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
-			_.each(self.innerViews, function(innerView) {
-				innerView.close();
-			});
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -4192,7 +4277,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		validator : undefined,
 
 		initialize : function() {
-			_.bindAll(this, "render", "isEditable", "submit", "cancel", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "isEditable", "submit", "cancel");
 			this.template = _.template(tpl_position_main_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
@@ -4237,6 +4323,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 			// Set isEditable to fields
 			self.$("select, input, textarea").each(function(index) {
@@ -4407,6 +4494,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -4421,17 +4509,17 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		uploader : undefined,
 
 		initialize : function() {
-			var self = this;
-			self.template = _.template(tpl_position_committee);
-			_.bindAll(self, "render", "close");
-			self.model.bind('change', self.render, self);
-			self.model.bind("destroy", self.close, self);
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			this.template = _.template(tpl_position_committee);
+			this.model.bind('change', this.render, this);
+			this.model.bind("destroy", this.close, this);
 		},
 
 		events : {},
 
 		render : function(event) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 
 			// Add Files
@@ -4458,6 +4546,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.model.unbind('change', this.render, this);
 			this.model.unbind('destory', this.close, this);
 			this.$el.unbind();
@@ -4475,10 +4564,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			var self = this;
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "isEditable", "toggleRegisterMembers", "addMember", "removeMember", "submit", "cancel");
 			self.template = _.template(tpl_position_committee_edit);
 			self.templateRow = _.template(tpl_position_committee_member_edit);
 
-			_.bindAll(self, "render", "isEditable", "toggleRegisterMembers", "addMember", "removeMember", "submit", "cancel", "close");
 			self.model.bind('change', self.render, self);
 			self.model.bind("destroy", self.close, self);
 
@@ -4511,6 +4601,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(event) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 
 			// Add Existing Committee Members:
@@ -4627,13 +4718,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.registerMembers.off("member:selected");
 			this.registerMembersView.close();
 			this.model.unbind('change', this.render, this);
 			this.model.unbind('destory', this.close, this);
 			this.$el.unbind();
 			this.$el.remove();
-
 		}
 	});
 
@@ -4645,7 +4736,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		tagName : "div",
 
 		initialize : function() {
-			_.bindAll(this, "render", "addMember", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "addMember");
 			this.template = _.template(tpl_position_committee_edit_register_member_list);
 			this.collection.bind("change", this.render, this);
 			this.collection.bind("reset", this.render, this);
@@ -4668,6 +4760,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					return result;
 				})()
 			};
+			self.closeInnerViews();
 			self.$el.html(self.template(tpl_data));
 
 			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
@@ -4702,6 +4795,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -4717,8 +4811,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			var self = this;
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
 			self.template = _.template(tpl_position_evaluation);
-			_.bindAll(self, "render", "close");
 			self.model.bind('change', self.render, self);
 			self.model.bind("destroy", self.close, self);
 		},
@@ -4727,6 +4821,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(event) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 
 			// Add Files
@@ -4749,6 +4844,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.model.unbind('change', this.render, this);
 			this.model.unbind('destory', this.close, this);
 			this.$el.unbind();
@@ -4764,10 +4860,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			var self = this;
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "renderEvaluator", "isEditable", "toggleRegisterMembers", "addMember", "removeMember", "submit", "cancel");
 			self.template = _.template(tpl_position_evaluation_edit);
 			self.templateRow = _.template(tpl_position_evaluation_evaluator_edit);
 
-			_.bindAll(self, "render", "renderEvaluator", "isEditable", "toggleRegisterMembers", "addMember", "removeMember", "submit", "cancel", "close");
 			self.model.bind('change', self.render, self);
 			self.model.bind("destroy", self.close, self);
 
@@ -4802,6 +4899,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(event) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 			self.$("legend span").popover({
 				trigger : 'manual',
@@ -4934,6 +5032,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.registerMembers.off("member:selected");
 			this.registerMembersView.close();
 			this.model.unbind('change', this.render, this);
@@ -4952,7 +5051,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		tagName : "div",
 
 		initialize : function() {
-			_.bindAll(this, "render", "addMember", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "addMember");
 			this.template = _.template(tpl_position_evaluation_edit_register_member_list);
 			this.collection.bind("change", this.render, this);
 			this.collection.bind("reset", this.render, this);
@@ -4975,6 +5075,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					return result;
 				})()
 			};
+			self.closeInnerViews();
 			self.$el.html(self.template(tpl_data));
 
 			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
@@ -5009,6 +5110,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -5022,8 +5124,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			var self = this;
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "viewCandidacy", "closeCandidacy");
 			self.template = _.template(tpl_position_candidacies);
-			_.bindAll(self, "render", "viewCandidacy", "closeCandidacy", "close");
 			self.collection.bind('reset', this.render, this);
 		},
 
@@ -5034,6 +5137,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template({
 				candidacies : self.collection.toJSON()
 			}));
@@ -5057,6 +5161,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.collection.unbind('reset', this.render, this);
 			this.$el.unbind();
 			this.$el.remove();
@@ -5071,8 +5176,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			var self = this;
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "viewCandidacy", "closeCandidacy");
 			self.template = _.template(tpl_position_candidacies_edit);
-			_.bindAll(self, "render", "viewCandidacy", "closeCandidacy", "close");
 			self.collection.bind('reset', this.render, this);
 		},
 
@@ -5083,6 +5189,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template({
 				candidacies : self.collection.toJSON()
 			}));
@@ -5106,6 +5213,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.collection.unbind('reset', this.render, this);
 			this.$el.unbind();
 			this.$el.remove();
@@ -5120,14 +5228,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			var self = this;
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
 			self.template = _.template(tpl_position_nomination);
-			_.bindAll(self, "render", "close");
 			self.model.bind('change', self.render, self);
 			self.model.bind("destroy", self.close, self);
 		},
 
 		render : function(event) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 			// Add Files
 			var files = new Models.Files();
@@ -5157,6 +5266,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.model.unbind('change', self.render, self);
 			this.model.unbind("destroy", self.close, self);
 			this.$el.unbind();
@@ -5175,8 +5285,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			var self = this;
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "isEditable", "submit", "cancel");
 			self.template = _.template(tpl_position_nomination_edit);
-			_.bindAll(self, "render", "isEditable", "submit", "cancel", "close");
 			self.model.bind('change', self.render, self);
 			self.model.bind("destroy", self.close, self);
 
@@ -5200,6 +5311,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(event) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 
 			// Add Nominated and Second Nominated:
@@ -5313,6 +5425,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.model.unbind('change', self.render, self);
 			this.model.unbind("destroy", self.close, self);
 			this.$el.unbind();
@@ -5329,15 +5442,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			var self = this;
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
 			self.template = _.template(tpl_position_complementaryDocuments);
-
-			_.bindAll(self, "render", "close");
 			self.model.bind('change', self.render, self);
 			self.model.bind("destroy", self.close, self);
 		},
 
 		render : function(event) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 
 			// Add Files
@@ -5360,6 +5473,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.model.unbind('change', this.render, this);
 			this.model.unbind('destory', this.close, this);
 			this.$el.unbind();
@@ -5377,9 +5491,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			var self = this;
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(self, "cancel");
 			self.template = _.template(tpl_position_complementaryDocuments_edit);
-
-			_.bindAll(self, "render", "cancel", "close");
 			self.model.bind('change', self.render, self);
 			self.model.bind("destroy", self.close, self);
 		},
@@ -5393,6 +5507,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(event) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 
 			// Add Files
@@ -5423,6 +5538,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.model.unbind('change', this.render, this);
 			this.model.unbind('destory', this.close, this);
 			this.$el.unbind();
@@ -5437,7 +5553,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		tagName : "div",
 
 		initialize : function() {
-			_.bindAll(this, "render", "renderActions", "selectRegister", "createRegister", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "renderActions", "selectRegister", "createRegister");
 			this.template = _.template(tpl_register_list);
 			this.collection.bind("change", this.render, this);
 			this.collection.bind("reset", this.render, this);
@@ -5465,6 +5582,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					return result;
 				})()
 			};
+			self.closeInnerViews();
 			self.$el.html(this.template(tpl_data));
 
 			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
@@ -5554,6 +5672,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -5570,7 +5689,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		validator : undefined,
 
 		initialize : function() {
-			_.bindAll(this, "render", "addMembersView", "addFileList", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "addMembersView");
 			this.template = _.template(tpl_register);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
@@ -5580,6 +5700,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 			// Add Members
 			self.addMembersView(self.$("#members"));
@@ -5603,6 +5724,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			this.model.unbind("change");
 			this.model.unbind("destroy");
 			$(this.el).unbind();
@@ -5618,8 +5740,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			var self = this;
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(self, "viewMember");
 			self.template = _.template(tpl_register_members);
-			_.bindAll(self, "render", "viewMember", "close");
 			self.collection.bind('reset', this.render, this);
 		},
 
@@ -5627,6 +5750,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template({
 				members : self.collection.toJSON()
 			}));
@@ -5642,6 +5766,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.collection.unbind('reset', this.render, this);
 			this.$el.unbind();
 			this.$el.remove();
@@ -5659,7 +5784,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		validator : undefined,
 
 		initialize : function() {
-			_.bindAll(this, "render", "submit", "remove", "cancel", "addFile", "addMembersView", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "submit", "remove", "cancel", "addMembersView");
 			this.template = _.template(tpl_register_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
@@ -5676,6 +5802,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 			// Add Members
 			if (self.model.has("id")) {
@@ -5804,6 +5931,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -5819,9 +5947,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			var self = this;
-
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "allowedToEdit", "viewMember", "addMember", "removeMember", "toggleAddMember");
 			self.template = _.template(tpl_register_members_edit);
-			_.bindAll(self, "render", "allowedToEdit", "viewMember", "addMember", "removeMember", "toggleAddMember", "close");
 			self.collection.bind('reset', this.render, this);
 			self.collection.bind("change", this.render, this);
 			self.collection.bind('remove', this.render, this);
@@ -5848,6 +5976,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template({
 				members : self.collection.toJSON()
 			}));
@@ -5947,6 +6076,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.professors.off("role:selected");
 			this.professorListView.close();
 			this.collection.unbind('reset', this.render, this);
@@ -5965,7 +6095,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		tagName : "div",
 
 		initialize : function() {
-			_.bindAll(this, "render", "addSubject", "removeSubject", "submit", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "addSubject", "removeSubject", "submit");
 			this.template = _.template(tpl_register_member_edit);
 			this.model.bind('change', this.render, this);
 		},
@@ -5982,6 +6113,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(eventName) {
 			var self = this;
 			// 1. Render
+			self.closeInnerViews();
 			self.$el.html(this.template(self.model.toJSON()));
 			_.each(self.model.get("subjects"), function(subject) {
 				self.addSubject(undefined, subject.name);
@@ -6035,6 +6167,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			this.model.unbind('change', this.render, this);
 			this.$el.unbind();
 			this.$el.remove();
@@ -6049,7 +6182,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		tagName : "div",
 
 		initialize : function() {
-			_.bindAll(this, "render", "addMember", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "addMember");
 			this.template = _.template(tpl_register_members_edit_professor_list);
 			this.collection.bind("change", this.render, this);
 			this.collection.bind("reset", this.render, this);
@@ -6072,6 +6206,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					return result;
 				})()
 			};
+			self.closeInnerViews();
 			self.$el.html(self.template(tpl_data));
 
 			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
@@ -6106,6 +6241,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -6119,7 +6255,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		tagName : "div",
 
 		initialize : function() {
-			_.bindAll(this, "render", "showDetails", "select", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "showDetails", "select");
 			this.template = _.template(tpl_professor_list);
 			this.collection.bind("change", this.render, this);
 			this.collection.bind("reset", this.render, this);
@@ -6142,6 +6279,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					return result;
 				})()
 			};
+			self.closeInnerViews();
 			self.$el.html(self.template(tpl_data));
 
 			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
@@ -6183,6 +6321,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -6196,7 +6335,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			var self = this;
-			_.bindAll(self, "render", "select", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(self, "select");
 			self.template = _.template(tpl_professor_committees);
 			self.collection.bind('reset', self.render, self);
 		},
@@ -6207,6 +6347,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template({
 				committees : self.collection.toJSON()
 			}));
@@ -6242,6 +6383,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.collection.unbind('reset', this.render, this);
 			this.$el.unbind();
 			this.$el.remove();
@@ -6256,7 +6398,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			var self = this;
-			_.bindAll(self, "render", "select", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(self, "select");
 			self.template = _.template(tpl_professor_evaluations);
 			self.collection.bind('reset', self.render, self);
 		},
@@ -6267,6 +6410,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template({
 				evaluations : self.collection.toJSON()
 			}));
@@ -6302,6 +6446,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.collection.unbind('reset', this.render, this);
 			this.$el.unbind();
 			this.$el.remove();
@@ -6316,7 +6461,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			var self = this;
-			_.bindAll(self, "render", "renderActions", "select", "create", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(self, "renderActions", "select", "create");
 			self.template = _.template(tpl_institution_regulatory_framework_list);
 			self.collection.bind('reset', self.render, self);
 			self.collection.bind('add', self.render, self);
@@ -6343,6 +6489,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					return result;
 				})()
 			};
+			self.closeInnerViews();
 			self.$el.html(self.template(tpl_data));
 
 			// Widgets
@@ -6435,6 +6582,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.collection.unbind("reset");
 			this.collection.unbind("add");
 			this.collection.unbind("remove");
@@ -6451,7 +6599,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			var self = this;
-			_.bindAll(this, "render", "submit", "cancel", "remove", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "submit", "cancel", "remove");
 			self.template = _.template(tpl_institution_regulatory_framework_edit);
 			self.model.bind('change', self.render, self);
 			self.model.bind("destroy", self.close, self);
@@ -6468,6 +6617,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 			self.validator = $("form", this.el).validate({
 				errorElement : "span",
@@ -6577,6 +6727,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.model.unbind("change");
 			this.$el.unbind();
 			this.$el.remove();
@@ -6591,7 +6742,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			var self = this;
-			_.bindAll(self, "render", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
 			self.template = _.template(tpl_institution_regulatory_framework);
 			self.model.bind('change', self.render, self);
 		},
@@ -6600,11 +6751,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 			return self;
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.model.unbind("change");
 			this.$el.unbind();
 			this.$el.remove();
@@ -6619,7 +6772,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			var self = this;
-			_.bindAll(self, "render", "addSubject", "removeSubject", "addDepartment", "removeDepartment", "search", "submit", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(self, "addSubject", "removeSubject", "addDepartment", "removeDepartment", "search", "submit");
 			self.template = _.template(tpl_position_search_criteria);
 			self.model.bind('change', self.render, self);
 		},
@@ -6638,6 +6792,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(event) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 			// Add Departments to selector:
 			App.departments = App.departments ? App.departments : new Models.Departments();
@@ -6745,6 +6900,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.model.unbind('change', this.render, this);
 			this.$el.unbind();
 			this.$el.remove();
@@ -6759,7 +6915,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			var self = this;
-			_.bindAll(self, "render", "select", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
 			self.template = _.template(tpl_position_search_result);
 			self.collection.bind('reset', self.render, self);
 		},
@@ -6770,6 +6926,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template({
 				positions : self.collection.toJSON()
 			}));
@@ -6811,6 +6968,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.collection.unbind('reset', this.render, this);
 			this.$el.unbind();
 			this.$el.remove();
@@ -6825,7 +6983,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			var self = this;
-			_.bindAll(self, "render", "select", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(self, "select");
 			self.template = _.template(tpl_candidate_candidacy_list);
 			self.collection.bind('reset', self.render, self);
 		},
@@ -6836,6 +6995,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template({
 				candidacies : self.collection.toJSON()
 			}));
@@ -6869,6 +7029,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function(eventName) {
+			this.closeInnerViews();
 			this.collection.unbind('reset', this.render, this);
 			this.$el.unbind();
 			this.$el.remove();
@@ -6882,7 +7043,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		tagName : "div",
 
 		initialize : function() {
-			_.bindAll(this, "render", "isEditable", "submit", "cancel", "addFile", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "isEditable", "submit", "cancel");
 			this.template = _.template(tpl_candidacy_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
@@ -6918,6 +7080,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 
 			if (self.model.has("id")) {
@@ -7045,6 +7208,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -7059,7 +7223,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		validator : undefined,
 
 		initialize : function() {
-			_.bindAll(this, "render", "addFile", "close");
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
 			this.template = _.template(tpl_candidacy);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
@@ -7069,6 +7233,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 
 			// Snapshot Files
@@ -7106,6 +7271,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
@@ -7120,8 +7286,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		className : "modal",
 
 		initialize : function() {
+			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			_.bindAll(this, "show");
 			this.template = _.template(tpl_candidacy_update_confirm);
-			_.bindAll(this, "render", "show", "close");
 		},
 
 		events : {
@@ -7140,8 +7307,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		render : function(eventName) {
-			$(this.el).html(this.template({
-				candidacies : this.collection.toJSON()
+			var self = this;
+			self.closeInnerViews();
+			self.$el.html(self.template({
+				candidacies : self.collection.toJSON()
 			}));
 		},
 		show : function() {
@@ -7150,6 +7319,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		close : function() {
+			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
