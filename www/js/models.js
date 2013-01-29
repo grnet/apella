@@ -954,6 +954,19 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		model : Models.Position
 	});
 
+	Models.PositionCandidacies = Backbone.Model.extend({
+		urlRoot : function() {
+			return "/dep/rest/position/" + this.attributes.position.id + "/candidacies";
+		},
+		defaults : {
+			id : undefined,
+			position : {
+				id : undefined,
+			},
+			candidacies : []
+		}
+	});
+
 	Models.PositionCommittee = Backbone.Model.extend({
 		urlRoot : function() {
 			return "/dep/rest/position/" + this.attributes.position.id + "/committee";
@@ -1145,17 +1158,6 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		},
 		url : function() {
 			return "/dep/rest/candidate/" + this.candidate + "/candidacies";
-		}
-	});
-
-	Models.PositionCandidacies = Backbone.Collection.extend({
-		position : undefined,
-		model : Models.Candidacy,
-		initialize : function(models, options) {
-			this.position = options.position;
-		},
-		url : function() {
-			return "/dep/rest/position/" + this.position + "/candidacies";
 		}
 	});
 

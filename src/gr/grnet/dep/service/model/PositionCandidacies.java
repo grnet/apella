@@ -1,6 +1,7 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.Candidacy.CandidacyView;
+import gr.grnet.dep.service.model.file.PositionCandidaciesFile;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 
@@ -22,6 +23,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonView;
+import org.hibernate.annotations.Filter;
 
 @Entity
 public class PositionCandidacies {
@@ -46,7 +48,11 @@ public class PositionCandidacies {
 	private Set<PositionPhase> phases = new HashSet<PositionPhase>();
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "candidacies")
+	@Filter(name = "permanent", condition = ":permanent = true")
 	private Set<Candidacy> candidacies = new HashSet<Candidacy>();
+
+	@OneToMany(mappedBy = "candidacies", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<PositionCandidaciesFile> files = new HashSet<PositionCandidaciesFile>();
 
 	@Temporal(TemporalType.DATE)
 	private Date openingDate; // Έναρξη υποβολών
@@ -135,7 +141,20 @@ public class PositionCandidacies {
 		this.closingDate = closingDate;
 	}
 
+	public Set<PositionCandidaciesFile> getFiles() {
+		return files;
+	}
+
+	public void setFiles(Set<PositionCandidaciesFile> files) {
+		this.files = files;
+	}
+
 	//////////////////////////////////////////////
+
+	public void addFile(PositionCandidaciesFile file) {
+		file.setCandidacies(this);
+		this.files.add(file);
+	}
 
 	public void copyFrom(PositionCandidacies other) {
 		this.setClosingDate(other.getClosingDate());

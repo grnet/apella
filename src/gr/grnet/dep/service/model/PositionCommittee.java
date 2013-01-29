@@ -109,11 +109,6 @@ public class PositionCommittee {
 		this.files = files;
 	}
 
-	public void addFile(PositionCommitteeFile file) {
-		file.setCommittee(this);
-		this.files.add(file);
-	}
-
 	@JsonView({DetailedPositionCommitteeView.class})
 	public List<PositionCommitteeMember> getMembers() {
 		return members;
@@ -144,6 +139,11 @@ public class PositionCommittee {
 	}
 
 	//////////////////////////////////////////////
+
+	public void addFile(PositionCommitteeFile file) {
+		file.setCommittee(this);
+		this.files.add(file);
+	}
 
 	public void copyFrom(PositionCommittee other) {
 		this.setCommitteeMeetingDate(other.getCommitteeMeetingDate());

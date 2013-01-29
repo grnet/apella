@@ -3862,28 +3862,31 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var positionCandidacies = new Models.PositionCandidacies({}, {
 				position : self.model.get("id")
 			});
-			positionCandidacies.on("candidacy:selected", function(candidacy) {
+			positionCandidacies.on("candidacy:selected", function(candidacyId) {
 				if (candidacyView) {
 					candidacyView.model.trigger("candidacy:deselected", candidacyView.model);
 					candidacyView.close();
 				}
+				var candidacy = new Models.Candidacy({
+					id : candidacyId
+				});
 				candidacy.fetch({
 					cache : false,
 					success : function() {
 						candidacyView = new Views.CandidacyView({
 							model : candidacy
 						});
-						$el.find("div[data-candidacy-id=" + candidacy.get("id") + "]").html(candidacyView.render().el);
-						$el.find("td[data-candidacy-id=" + candidacy.get("id") + "]").show();
+						self.$("div[data-candidacy-id=" + candidacy.get("id") + "]").html(candidacyView.render().el);
+						self.$("td[data-candidacy-id=" + candidacy.get("id") + "]").show();
 					}
 				});
 			});
-			positionCandidacies.on("candidacy:deselected", function(candidacy) {
+			positionCandidacies.on("candidacy:deselected", function(candidacyId) {
 				if (candidacyView) {
 					candidacyView.close();
 				}
-				$el.find("td[data-candidacy-id=" + candidacy.get("id") + "]").hide();
-				$el.find("div[data-candidacy-id=" + candidacy.get("id") + "]").html();
+				self.$("td[data-candidacy-id=" + candidacyId + "]").hide();
+				self.$("div[data-candidacy-id=" + candidacyId + "]").html();
 			});
 			positionCandidaciesView = new Views.PositionCandidaciesView({
 				position : self.model,
@@ -4114,16 +4117,21 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		showCandidaciesTab : function($el) {
 			var self = this;
-			var positionCandidaciesEditView = undefined;
 			var candidacyView = undefined;
-			var positionCandidacies = new Models.PositionCandidacies({}, {
-				position : self.model.get("id")
+			var positionCandidacies = new Models.PositionCandidacies({
+				id : self.model.get("phase").candidacies.id,
+				position : {
+					id : self.model.get("id")
+				}
 			});
-			positionCandidacies.on("candidacy:selected", function(candidacy) {
+			positionCandidacies.on("candidacy:selected", function(candidacyId) {
 				if (candidacyView) {
 					candidacyView.model.trigger("candidacy:deselected", candidacyView.model);
 					candidacyView.close();
 				}
+				var candidacy = new Models.Candidacy({
+					id : candidacyId
+				});
 				candidacy.fetch({
 					cache : false,
 					success : function() {
@@ -4135,20 +4143,23 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				});
 			});
-			positionCandidacies.on("candidacy:deselected", function(candidacy) {
+			positionCandidacies.on("candidacy:deselected", function(candidacyId) {
 				if (candidacyView) {
 					candidacyView.close();
 				}
-				self.$("td[data-candidacy-id=" + candidacy.get("id") + "]").hide();
-				self.$("div[data-candidacy-id=" + candidacy.get("id") + "]").html();
+				self.$("td[data-candidacy-id=" + candidacyId + "]").hide();
+				self.$("div[data-candidacy-id=" + candidacyId + "]").html();
 			});
-			positionCandidaciesEditView = new Views.PositionCandidaciesEditView({
-				position : self.model,
-				collection : positionCandidacies
-			});
-			$el.html(positionCandidaciesEditView.el);
-			positionCandidacies.fetch();
 
+			var positionCandidaciesEditView = new Views.PositionCommitteeEditView({
+				model : positionCandidacies
+			});
+			positionCandidacies.fetch({
+				cache : false,
+				success : function(model, resp) {
+					$el.html(positionCandidaciesEditView.render().el);
+				}
+			});
 			self.innerViews.push(positionCandidaciesEditView);
 		},
 
@@ -5127,7 +5138,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
 			_.bindAll(this, "viewCandidacy", "closeCandidacy");
 			self.template = _.template(tpl_position_candidacies);
-			self.collection.bind('reset', this.render, this);
+			self.model.bind('change', self.render, self);
+			self.model.bind("destroy", self.close, self);
 		},
 
 		events : {
@@ -5138,25 +5150,25 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(eventName) {
 			var self = this;
 			self.closeInnerViews();
-			self.$el.html(self.template({
-				candidacies : self.collection.toJSON()
-			}));
+			self.$el.html(self.template(self.model.toJSON()));
+			// Add Files:
+
 			return self;
 		},
 
-		viewCandidacy : function(event, candidacy) {
+		viewCandidacy : function(event, candidacyId) {
 			var self = this;
-			var selectedModel = candidacy ? candidacy : self.collection.get($(event.currentTarget).data('candidacyId'));
+			var selectedModel = candidacyId || $(event.currentTarget).data('candidacyId');
 			if (selectedModel) {
-				self.collection.trigger("candidacy:selected", selectedModel);
+				self.model.trigger("candidacy:selected", selectedModel);
 			}
 		},
 
-		closeCandidacy : function(event, candidacy) {
+		closeCandidacy : function(event, candidacyId) {
 			var self = this;
-			var selectedModel = candidacy ? candidacy : self.collection.get($(event.currentTarget).data('candidacyId'));
+			var selectedModel = candidacyId || $(event.currentTarget).data('candidacyId');
 			if (selectedModel) {
-				self.collection.trigger("candidacy:deselected", selectedModel);
+				self.model.trigger("candidacy:deselected", selectedModel);
 			}
 		},
 
@@ -5179,7 +5191,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
 			_.bindAll(this, "viewCandidacy", "closeCandidacy");
 			self.template = _.template(tpl_position_candidacies_edit);
-			self.collection.bind('reset', this.render, this);
+			self.model.bind('change', self.render, self);
+			self.model.bind("destroy", self.close, self);
 		},
 
 		events : {
@@ -5196,19 +5209,19 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			return self;
 		},
 
-		viewCandidacy : function(event, candidacy) {
+		viewCandidacy : function(event, candidacyId) {
 			var self = this;
-			var selectedModel = candidacy ? candidacy : self.collection.get($(event.currentTarget).data('candidacyId'));
+			var selectedModel = candidacyId || $(event.currentTarget).data('candidacyId');
 			if (selectedModel) {
-				self.collection.trigger("candidacy:selected", selectedModel);
+				self.model.trigger("candidacy:selected", selectedModel);
 			}
 		},
 
-		closeCandidacy : function(event, candidacy) {
+		closeCandidacy : function(event, candidacyId) {
 			var self = this;
-			var selectedModel = candidacy ? candidacy : self.collection.get($(event.currentTarget).data('candidacyId'));
+			var selectedModel = candidacyId || $(event.currentTarget).data('candidacyId');
 			if (selectedModel) {
-				self.collection.trigger("candidacy:deselected", selectedModel);
+				self.model.trigger("candidacy:deselected", selectedModel);
 			}
 		},
 
