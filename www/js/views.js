@@ -3100,11 +3100,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				maxFileSize : 30000000,
 				add : function(e, data) {
 					self.$("a#upload").bind("click", function(e) {
-						data.formData = {
+						data.formData = _.extend({
 							"type" : self.$("#uploader input[name=file_type]").val(),
 							"name" : self.$("#uploader input[name=file_name]").val(),
 							"description" : self.$("#uploader textarea[name=file_description]").val()
-						};
+						}, self.$input.data());
+						self.$input.data
+
 						if (_.isFunction(self.options.beforeUpload)) {
 							self.options.beforeUpload(data, function(data) {
 								self.$('#uploader div.progress').show();
@@ -3323,11 +3325,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				maxFileSize : 30000000,
 				add : function(e, data) {
 					self.$("#uploader a#upload").bind("click", function(e) {
-						data.formData = {
+						data.formData = _.extend({
 							"type" : self.$("#uploader input[name=file_type]").val(),
 							"name" : self.$("#uploader input[name=file_name]").val(),
 							"description" : self.$("#uploader textarea[name=file_description]").val()
-						};
+						}, self.$input.data());
 						if (_.isFunction(self.options.beforeUpload)) {
 							self.options.beforeUpload(data, function() {
 								self.$('#uploader div.progress').show();
@@ -4151,7 +4153,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("div[data-candidacy-id=" + candidacyId + "]").html();
 			});
 
-			var positionCandidaciesEditView = new Views.PositionCommitteeEditView({
+			var positionCandidaciesEditView = new Views.PositionCandidaciesEditView({
 				model : positionCandidacies
 			});
 			positionCandidacies.fetch({
@@ -5151,7 +5153,28 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var self = this;
 			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
-			// Add Files:
+			// Add files
+			if (self.model.has("id")) {
+				var files = new Models.Files();
+				files.url = self.model.url() + "/file";
+				files.fetch({
+					cache : false,
+					success : function(collection, response) {
+						_.each(self.model.get("candidacies"), function(candidacy) {
+							_.each(candidacy.proposedEvaluators, function(proposedEvaluator) {
+								var filteredFiles = new Models.Files(collection.filter(function(file) {
+									return file.get("evaluator").id === proposedEvaluator.id;
+								}));
+								filteredFiles.url = collection.url;
+								self.addFileList(filteredFiles, "EISIGISI_DEP_YPOPSIFIOU", self.$("input[name=eisigisiDepYpopsifiouFileList][data-candidacy-evaluator-id=" + proposedEvaluator.id + "]"), {
+									withMetadata : true,
+									editable : self.isEditable("eisigisiDepYpopsifiouFileList")
+								});
+							});
+						});
+					}
+				});
+			}
 
 			return self;
 		},
@@ -5174,7 +5197,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		close : function(eventName) {
 			this.closeInnerViews();
-			this.collection.unbind('reset', this.render, this);
+			this.model.unbind('change', this.render, this);
+			this.model.unbind("destroy", this.close, this);
 			this.$el.unbind();
 			this.$el.remove();
 		}
@@ -5200,12 +5224,39 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			"click a#closeCandidacy" : "closeCandidacy"
 		},
 
+		isEditable : function(element) {
+			var self = this;
+			return self.model.get("position").phase.status === "EPILOGI";
+		},
+
 		render : function(eventName) {
 			var self = this;
 			self.closeInnerViews();
-			self.$el.html(self.template({
-				candidacies : self.collection.toJSON()
-			}));
+			self.$el.html(self.template(self.model.toJSON()));
+
+			// Add files
+			if (self.model.has("id")) {
+				var files = new Models.Files();
+				files.url = self.model.url() + "/file";
+				files.fetch({
+					cache : false,
+					success : function(collection, response) {
+						_.each(self.model.get("candidacies"), function(candidacy) {
+							_.each(candidacy.proposedEvaluators, function(proposedEvaluator) {
+								var filteredFiles = new Models.Files(collection.filter(function(file) {
+									return file.get("evaluator").id === proposedEvaluator.id;
+								}));
+								filteredFiles.url = collection.url;
+								self.addFileListEdit(filteredFiles, "EISIGISI_DEP_YPOPSIFIOU", self.$("input[name=eisigisiDepYpopsifiouFileList][data-candidacy-evaluator-id=" + proposedEvaluator.id + "]"), {
+									withMetadata : true,
+									editable : self.isEditable("eisigisiDepYpopsifiouFileList")
+								});
+							});
+						});
+					}
+				});
+			}
+
 			return self;
 		},
 
@@ -5227,7 +5278,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		close : function(eventName) {
 			this.closeInnerViews();
-			this.collection.unbind('reset', this.render, this);
+			this.model.unbind('change', this.render, this);
+			this.model.unbind("destroy", this.close, this);
 			this.$el.unbind();
 			this.$el.remove();
 		}
@@ -5304,7 +5356,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.model.bind('change', self.render, self);
 			self.model.bind("destroy", self.close, self);
 
-			self.positionCandidacies = new Models.PositionCandidacies({}, {
+			self.positionCandidacies = new Models.Candidacies({}, {
 				position : self.model.get("position").id
 			});
 		},
@@ -5473,9 +5525,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				files.fetch({
 					cache : false,
 					success : function(collection, response) {
-						self.addFileList(collection, "EISIGISI_DEP_YPOPSIFIOU", self.$("#eisigisiDEPYpopsifiouFileList"), {
-							withMetadata : true
-						});
 						self.addFileList(collection, "DIOIKITIKO_EGGRAFO", self.$("#dioikitikoEggrafoFileList"), {
 							withMetadata : true
 						});
@@ -5530,10 +5579,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				files.fetch({
 					cache : false,
 					success : function(collection, response) {
-						self.addFileListEdit(collection, "EISIGISI_DEP_YPOPSIFIOU", self.$("input[name=eisigisiDEPYpopsifiouFileList]"), {
-							withMetadata : true,
-							editable : self.isEditable("eisigisiDEPYpopsifiouFileList")
-						});
 						self.addFileListEdit(collection, "DIOIKITIKO_EGGRAFO", self.$("input[name=dioikitikoEggrafoFileList]"), {
 							withMetadata : true,
 							editable : self.isEditable("dioikitikoEggrafoFileList")

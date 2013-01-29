@@ -24,7 +24,6 @@ public class ComplementaryDocumentsFile extends FileHeader {
 	public static final Map<FileType, Integer> fileTypes = Collections.unmodifiableMap(new HashMap<FileType, Integer>() {
 
 		{
-			put(FileType.EISIGISI_DEP_YPOPSIFIOU, Integer.MAX_VALUE);
 			put(FileType.DIOIKITIKO_EGGRAFO, Integer.MAX_VALUE);
 		}
 	});

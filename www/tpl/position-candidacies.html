@@ -6,6 +6,7 @@
 			<th><%= $.i18n.prop("Name") %></th>
 			<th><%= $.i18n.prop("Surname") %></th>
 			<th><%= $.i18n.prop("FatherName") %></th>
+			<th><%= $.i18n.prop("ProposedEvaluators") %></th>
 			<th width="96px"></th>
 		</tr>
 	</thead>
@@ -16,6 +17,16 @@
 			<td><%= candidacy.snapshot.basicInfo.firstname %> (<%= candidacy.snapshot.basicInfoLatin.firstname %>)</td>
 			<td><%= candidacy.snapshot.basicInfo.lastname %> (<%= candidacy.snapshot.basicInfoLatin.lastname %>)</td>
 			<td><%= candidacy.snapshot.basicInfo.fathername %> (<%= candidacy.snapshot.basicInfoLatin.fathername %>)</td>
+			<td>
+				<ol>
+				<% _.each(candidacy.proposedEvaluators, function(proposedEvaluator) { %>
+					<li>
+						<%= proposedEvaluator.fullname + " " + proposedEvaluator.email %><br/>
+						<input type="hidden" name="eisigisiDepYpopsifiouFileList" data-candidacy-evaluator-id="<%= proposedEvaluator.id %>"/>
+					</li>
+				<% }); %>
+				</ol>
+			</td>
 			<td width="96px">
 				<p align="center">
 					<a id="viewCandidacy" data-candidacy-id="<%= candidacy.id %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>

@@ -44,7 +44,7 @@ public class PositionCandidaciesFile extends FileHeader {
 		this.candidacies = candidacies;
 	}
 
-	@JsonView({DetailedFileHeaderView.class})
+	@JsonView({SimpleFileHeaderView.class})
 	public CandidacyEvaluator getEvaluator() {
 		return evaluator;
 	}

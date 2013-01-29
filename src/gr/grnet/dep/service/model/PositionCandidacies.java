@@ -163,7 +163,10 @@ public class PositionCandidacies {
 	}
 
 	public void initializeCollections() {
-		this.candidacies.size();
+		for (Candidacy candidacy : candidacies) {
+			candidacy.initializeCollections();
+		}
+		this.files.size();
 	}
 
 	public boolean containsCandidate(User user) {

@@ -212,10 +212,8 @@ public class PositionCandidaciesRESTService extends RESTService {
 		for (FileItem fileItem : fileItems) {
 			if (fileItem.isFormField() && fileItem.getFieldName().equals("type")) {
 				type = FileType.valueOf(fileItem.getString("UTF-8"));
-				break;
-			} else if (fileItem.isFormField() && fileItem.getFieldName().equals("candidacyEvaluator")) {
+			} else if (fileItem.isFormField() && fileItem.getFieldName().equals("candidacyEvaluatorId")) {
 				candidacyEvaluatorId = Long.valueOf(fileItem.getString("UTF-8"));
-				break;
 			}
 		}
 		if (type == null) {
@@ -284,10 +282,8 @@ public class PositionCandidaciesRESTService extends RESTService {
 		for (FileItem fileItem : fileItems) {
 			if (fileItem.isFormField() && fileItem.getFieldName().equals("type")) {
 				type = FileType.valueOf(fileItem.getString("UTF-8"));
-				break;
-			} else if (fileItem.isFormField() && fileItem.getFieldName().equals("candidacyEvaluator")) {
+			} else if (fileItem.isFormField() && fileItem.getFieldName().equals("candidacyEvaluatorId")) {
 				candidacyEvaluatorId = Long.valueOf(fileItem.getString("UTF-8"));
-				break;
 			}
 		}
 		if (type == null) {

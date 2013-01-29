@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.PositionCandidacies.DetailedPositionCandidaciesView;
 import gr.grnet.dep.service.model.file.CandidacyFile;
 import gr.grnet.dep.service.model.file.CandidateFile;
 import gr.grnet.dep.service.model.file.FileBody;
@@ -252,7 +253,7 @@ public class Candidacy {
 		this.candidacies = candidacies;
 	}
 
-	@JsonView({DetailedCandidacyView.class})
+	@JsonView({DetailedCandidacyView.class, DetailedPositionCandidaciesView.class})
 	public Set<CandidacyEvaluator> getProposedEvaluators() {
 		return proposedEvaluators;
 	}

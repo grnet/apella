@@ -1150,6 +1150,17 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		}
 	});
 
+	Models.Candidacies = Backbone.Collection.extend({
+		position : undefined,
+		model : Models.Candidacy,
+		initialize : function(models, options) {
+			this.position = options.position;
+		},
+		url : function() {
+			return "/dep/rest/position/" + this.position + "/candidacies";
+		}
+	});
+
 	Models.CandidateCandidacies = Backbone.Collection.extend({
 		candidate : undefined,
 		model : Models.Candidacy,
