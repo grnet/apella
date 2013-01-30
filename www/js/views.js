@@ -35,7 +35,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}
 			fileView = new Views.FileView(_.extend({
 				model : file,
-				el : $el[0],
+				el : $el[0]
 			}, options));
 			fileView.render();
 
@@ -61,7 +61,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}
 			fileView = new Views.FileEditView(_.extend({
 				model : file,
-				el : $el[0],
+				el : $el[0]
 			}, options));
 			fileView.render();
 
@@ -1837,7 +1837,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 	/***************************************************************************
 	 * RoleTabsView ************************************************************
 	 **************************************************************************/
-	Views.RoleTabsView = Backbone.View.extend({
+	Views.RoleTabsView = Views.BaseView.extend({
 		tagName : "div",
 
 		initialize : function() {
@@ -2293,7 +2293,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					},
 					messages : {
 						tautotitaFile : $.i18n.prop('validation_file'),
-						formaSymmetoxisFile : $.i18n.prop('validation_file'),
+						formaSymmetoxisFile : $.i18n.prop('validation_file')
 					}
 				});
 				break;
@@ -3235,7 +3235,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			this.collection.bind('reset', this.render, this);
 		},
 
-		events : {},
+		events : {
+			"mouseover table tr" : function(event) {
+				$(event.currentTarget).find("span.badge").addClass("label-inverse");
+			},
+			"mouseout table tr" : function(event) {
+				$(event.currentTarget).find("span.badge").removeClass("label-inverse");
+			}
+		},
 
 		render : function(eventName) {
 			var self = this;
@@ -3286,7 +3293,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		events : {
 			"click a#delete" : "deleteFile",
-			"click a#toggleUpload" : "toggleUpload"
+			"click a#toggleUpload" : "toggleUpload",
+			"mouseover table tr" : function(event) {
+				$(event.currentTarget).find("span.badge").addClass("label-inverse");
+			},
+			"mouseout table tr" : function(event) {
+				$(event.currentTarget).find("span.badge").removeClass("label-inverse");
+			}
 		},
 
 		render : function(eventName) {
@@ -4031,7 +4044,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		events : {
 			"click a#selectTab" : "showTab",
-			"click a#addPhase" : "addPhase",
+			"click a#addPhase" : "addPhase"
 		},
 
 		render : function(eventName) {
@@ -4126,33 +4139,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					id : self.model.get("id")
 				}
 			});
-			positionCandidacies.on("candidacy:selected", function(candidacyId) {
-				if (candidacyView) {
-					candidacyView.model.trigger("candidacy:deselected", candidacyView.model);
-					candidacyView.close();
-				}
-				var candidacy = new Models.Candidacy({
-					id : candidacyId
-				});
-				candidacy.fetch({
-					cache : false,
-					success : function() {
-						candidacyView = new Views.CandidacyView({
-							model : candidacy
-						});
-						self.$("div[data-candidacy-id=" + candidacy.get("id") + "]").html(candidacyView.render().el);
-						self.$("td[data-candidacy-id=" + candidacy.get("id") + "]").show();
-					}
-				});
-			});
-			positionCandidacies.on("candidacy:deselected", function(candidacyId) {
-				if (candidacyView) {
-					candidacyView.close();
-				}
-				self.$("td[data-candidacy-id=" + candidacyId + "]").hide();
-				self.$("div[data-candidacy-id=" + candidacyId + "]").html();
-			});
-
 			var positionCandidaciesEditView = new Views.PositionCandidaciesEditView({
 				model : positionCandidacies
 			});
@@ -4733,7 +4719,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		close : function(eventName) {
 			this.closeInnerViews();
 			this.registerMembers.off("member:selected");
-			this.registerMembersView.close();
+			if (this.registerMembersView) {
+				this.registerMembersView.close();
+			}
 			this.model.unbind('change', this.render, this);
 			this.model.unbind('destory', this.close, this);
 			this.$el.unbind();
@@ -4915,7 +4903,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 			self.$("legend span").popover({
-				trigger : 'manual',
+				trigger : 'manual'
 
 			});
 			// Add Existing Evaluators:
@@ -5047,7 +5035,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		close : function(eventName) {
 			this.closeInnerViews();
 			this.registerMembers.off("member:selected");
-			this.registerMembersView.close();
+			if (this.registerMembersView) {
+				this.registerMembersView.close();
+			}
 			this.model.unbind('change', this.render, this);
 			this.model.unbind('destory', this.close, this);
 			this.$el.unbind();
@@ -5138,16 +5128,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		initialize : function() {
 			var self = this;
 			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
-			_.bindAll(this, "viewCandidacy", "closeCandidacy");
-			self.template = _.template(tpl_position_candidacies);
 			self.model.bind('change', self.render, self);
 			self.model.bind("destroy", self.close, self);
 		},
 
-		events : {
-			"click a#viewCandidacy" : "viewCandidacy",
-			"click a#closeCandidacy" : "closeCandidacy"
-		},
+		events : {},
 
 		render : function(eventName) {
 			var self = this;
@@ -5179,22 +5164,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			return self;
 		},
 
-		viewCandidacy : function(event, candidacyId) {
-			var self = this;
-			var selectedModel = candidacyId || $(event.currentTarget).data('candidacyId');
-			if (selectedModel) {
-				self.model.trigger("candidacy:selected", selectedModel);
-			}
-		},
-
-		closeCandidacy : function(event, candidacyId) {
-			var self = this;
-			var selectedModel = candidacyId || $(event.currentTarget).data('candidacyId');
-			if (selectedModel) {
-				self.model.trigger("candidacy:deselected", selectedModel);
-			}
-		},
-
 		close : function(eventName) {
 			this.closeInnerViews();
 			this.model.unbind('change', this.render, this);
@@ -5213,16 +5182,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		initialize : function() {
 			var self = this;
 			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
-			_.bindAll(this, "viewCandidacy", "closeCandidacy");
 			self.template = _.template(tpl_position_candidacies_edit);
 			self.model.bind('change', self.render, self);
 			self.model.bind("destroy", self.close, self);
 		},
 
-		events : {
-			"click a#viewCandidacy" : "viewCandidacy",
-			"click a#closeCandidacy" : "closeCandidacy"
-		},
+		events : {},
 
 		isEditable : function(element) {
 			var self = this;
@@ -5258,22 +5223,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}
 
 			return self;
-		},
-
-		viewCandidacy : function(event, candidacyId) {
-			var self = this;
-			var selectedModel = candidacyId || $(event.currentTarget).data('candidacyId');
-			if (selectedModel) {
-				self.model.trigger("candidacy:selected", selectedModel);
-			}
-		},
-
-		closeCandidacy : function(event, candidacyId) {
-			var self = this;
-			var selectedModel = candidacyId || $(event.currentTarget).data('candidacyId');
-			if (selectedModel) {
-				self.model.trigger("candidacy:deselected", selectedModel);
-			}
 		},
 
 		close : function(eventName) {

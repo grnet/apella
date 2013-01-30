@@ -306,7 +306,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			var self = this;
 
 			_.extend(self, Backbone.Events);
-			_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showUserView", "showInstitutionAssistantsView", "showMinistryAssistantsView", "showPositionView", "showPositionsView", "showRegistersView", "showProfessorCommitteesView", "showProfessorEvaluationsView", "showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "start");
+			_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showUserView", "showInstitutionAssistantsView", "showMinistryAssistantsView", "showPositionView", "showPositionsView", "showRegistersView", "showProfessorCommitteesView", "showProfessorEvaluationsView", "showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "showCandidacyView", "start");
 			$(document).ajaxStart(App.blockUI);
 			$(document).ajaxStop(App.unblockUI);
 
@@ -351,7 +351,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			"regulatoryframeworks/:institutionId" : "showInstitutionRegulatoryFrameworkView",
 			"sposition" : "showPositionSearchView",
 			"candidateCandidacies" : "showCandidateCandidacyView",
-			"candidateCandidacies/:candidacyId" : "showCandidateCandidacyView"
+			"candidateCandidacies/:candidacyId" : "showCandidateCandidacyView",
+			"candidacy/:candidacyId" : "showCandidacyView"
 		},
 
 		start : function(eventName, authToken) {
@@ -1156,6 +1157,27 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				}
 			});
 			self.currentView = candidateCandidacyListView;
+		},
+
+		showCandidacyView : function(candidacyId) {
+			var self = this;
+			var candidacy = new Models.Candidacy({
+				id : candidacyId
+			});
+			var candidacyView = new Views.CandidacyView({
+				model : candidacy
+			});
+			self.clear();
+			self.refreshBreadcrumb([ $.i18n.prop('menu_candidacy'), candidacy.id ]);
+			$("#content").html(candidacyView.el);
+			candidacy.fetch({
+				cache : false,
+				wait : true,
+				success : function(model, response, options) {
+					self.refreshBreadcrumb([ $.i18n.prop('menu_candidacy'), model.get("snapshot").username ]);
+				}
+			});
+			self.currentView = candidacyView;
 		}
 
 	});

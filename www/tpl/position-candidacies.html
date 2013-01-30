@@ -6,7 +6,6 @@
 			<th><%= $.i18n.prop("Name") %></th>
 			<th><%= $.i18n.prop("Surname") %></th>
 			<th><%= $.i18n.prop("FatherName") %></th>
-			<th><%= $.i18n.prop("ProposedEvaluators") %></th>
 			<th width="96px"></th>
 		</tr>
 	</thead>
@@ -17,16 +16,6 @@
 			<td><%= candidacy.snapshot.basicInfo.firstname %> (<%= candidacy.snapshot.basicInfoLatin.firstname %>)</td>
 			<td><%= candidacy.snapshot.basicInfo.lastname %> (<%= candidacy.snapshot.basicInfoLatin.lastname %>)</td>
 			<td><%= candidacy.snapshot.basicInfo.fathername %> (<%= candidacy.snapshot.basicInfoLatin.fathername %>)</td>
-			<td>
-				<ol>
-				<% _.each(candidacy.proposedEvaluators, function(proposedEvaluator) { %>
-					<li>
-						<%= proposedEvaluator.fullname + " " + proposedEvaluator.email %><br/>
-						<input type="hidden" name="eisigisiDepYpopsifiouFileList" data-candidacy-evaluator-id="<%= proposedEvaluator.id %>"/>
-					</li>
-				<% }); %>
-				</ol>
-			</td>
 			<td width="96px">
 				<p align="center">
 					<a id="viewCandidacy" data-candidacy-id="<%= candidacy.id %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>
@@ -36,3 +25,23 @@
 <% }); %>
 	</tbody>
 </table>
+<div class="row-fluid">
+	<div class="span12">
+		<h4><%= $.i18n.prop('EisigisiDEPYpopsifiouFileList') %>:</h4>
+		<ul>
+		<% _.each(candidacies, function(candidacy) { %>
+			<li>
+				<strong><%= candidacy.snapshot.basicInfo.firstname %> (<%= candidacy.snapshot.basicInfoLatin.firstname %>) <%= candidacy.snapshot.basicInfo.lastname %> (<%= candidacy.snapshot.basicInfoLatin.lastname %>), <%= candidacy.snapshot.basicInfo.fathername %> (<%= candidacy.snapshot.basicInfoLatin.fathername %>)</strong>
+				<ul class="unstyled">
+					<% _.each(candidacy.proposedEvaluators, function(proposedEvaluator, index) { %>
+					<li>
+						<i><%= $.i18n.prop("ProposedEvaluator") %> <%= index + 1 %>: </i><%= proposedEvaluator.fullname + " (" + proposedEvaluator.email + ")"%>
+						<input type="hidden" name="eisigisiDepYpopsifiouFileList" data-candidacy-evaluator-id="<%= proposedEvaluator.id %>"/>
+					</li>
+					<% }); %>
+				</ul>
+			</li>
+		<% }); %>
+		</ul>
+	</div>
+</div>

@@ -1,15 +1,15 @@
-<table class="file-table">
+<table class="file-table-edit">
 <% if (editable) { %>
 <thead>
 	<tr>
-		<th></th>
+		<th width="1px"></th>
 		<th><%= $.i18n.prop('FileName') %></th>
 		<th><%= $.i18n.prop('FileSize') %></th>
 		<th><%= $.i18n.prop('FileDate') %></th>
 <% if (withMetadata) { %>
 		<th><%= $.i18n.prop('FileDescription') %></th>
 <% } %>
-		<th></th>
+		<th width="1px"></th>
 	</tr>
 </thead>
 <% } %>
@@ -18,7 +18,7 @@
 <% _.each(files, function(file) { %>
 <% if (!_.isUndefined(file.id)) { %>
 <tr>
-		<td><span class="badge"><%= row++ %></span></td>
+		<td width="1px"><span class="badge"><%= row++ %></span></td>
 		<td>
 	<% if (withMetadata && file.name) { %>
 			<a href='<%= file.currentBody.url %>' target="viewfile"><%= file.name %>, (<%= file.currentBody.originalFilename %>)</a>
@@ -36,12 +36,8 @@
 		<td><%= file.description %></td>
 	<% } %>
 	<% if (editable) { %>
-		<td>
-			<div class="btn-toolbar pull-right">
-  				<div class="btn-group">
-  					<a id="delete" data-file-id="<%= file.id %>" class="btn btn-small btn-danger" rel="tooltip" title="<%= $.i18n.prop('btn_delete') %>"><i class="icon-trash icon-white"></i></a>
-				</div>
-			</div>
+		<td width="1px">
+			<a id="delete" data-file-id="<%= file.id %>" class="btn btn-small btn-danger pull-right" rel="tooltip" title="<%= $.i18n.prop('btn_delete') %>"><i class="icon-trash icon-white"></i></a>
 		</td>
 	</tr>
 	<% } %>

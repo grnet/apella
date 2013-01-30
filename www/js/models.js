@@ -961,7 +961,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		defaults : {
 			id : undefined,
 			position : {
-				id : undefined,
+				id : undefined
 			},
 			candidacies : []
 		}
@@ -974,7 +974,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		defaults : {
 			id : undefined,
 			position : {
-				id : undefined,
+				id : undefined
 			},
 			committeeMeetingDate : undefined,
 			members : []
@@ -1006,7 +1006,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		defaults : {
 			id : undefined,
 			position : {
-				id : undefined,
+				id : undefined
 			},
 			evaluators : []
 		}

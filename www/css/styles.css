@@ -81,11 +81,9 @@ dl.dl-table {
 }
 
 /* File Table */
-.file-table {
-	width: auto;
+.file-table, .file-table-edit {
+	width: 100%;
 	margin-bottom: 10px;
-	background-color: #f9f9f9;
-	border: 1px solid #dddddd;
   	border-collapse: separate;
   	*border-collapse: collapse;
   	-webkit-border-radius: 4px;
@@ -93,11 +91,16 @@ dl.dl-table {
     border-radius: 4px;
 }
 
-.file-table tbody tr:hover td {
-	border-bottom: 1px solid #dddddd;
+.file-table-edit {
+	background-color: #f9f9f9;
+	border: 1px solid #dddddd;
 }
 
-.file-table th,.file-table td {
+.file-table-edit tbody tr:hover td {
+	background-color: #ffffff;
+}
+
+.file-table th,.file-table td, .file-table-edit th,.file-table-edit td {
 	text-align: left;
 	vertical-align: middle;
 	padding-left: 4px;
@@ -105,14 +108,18 @@ dl.dl-table {
 	padding-top: 0px;
 	padding-bottom: 0px;
 	border : none;
+}
+
+.file-table-edit th,.file-table-edit td {
 	border-bottom: 1px solid #f9f9f9;
 }
 
-.file-table th {
+
+.file-table th, .file-table-edit th {
 	font-weight: bold;
 }
 
-.file-table thead th {
+.file-table thead th, .file-table-edit thead th {
 	padding-top: 1px;
 	padding-bottom: 0px;
 	vertical-align: bottom;
