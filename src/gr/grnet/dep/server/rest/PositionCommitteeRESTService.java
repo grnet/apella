@@ -182,6 +182,12 @@ public class PositionCommitteeRESTService extends RESTService {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		// Retrieve new Members from Institution's Register
+		Map<Long, PositionCommitteeMember> existingCommitteeMemberAsMap = new HashMap<Long, PositionCommitteeMember>();
+		for (PositionCommitteeMember existingCommitteeMember : newCommittee.getMembers()) {
+			existingCommitteeMemberAsMap.put(existingCommitteeMember.getRegisterMember().getId(), existingCommitteeMember);
+		}
+
+		// Retrieve new Members from Institution's Register
 		Map<Long, MemberType> newCommitteeMemberAsMap = new HashMap<Long, MemberType>();
 		for (PositionCommitteeMember newCommitteeMember : newCommittee.getMembers()) {
 			newCommitteeMemberAsMap.put(newCommitteeMember.getRegisterMember().getId(), newCommitteeMember.getType());
@@ -252,11 +258,15 @@ public class PositionCommitteeRESTService extends RESTService {
 			existingCommittee.copyFrom(newCommittee);
 			existingCommittee.getMembers().clear();
 			for (RegisterMember newRegisterMember : newRegisterMembers) {
-				PositionCommitteeMember newCommitteeMember = new PositionCommitteeMember();
+				PositionCommitteeMember newCommitteeMember = null;
+				if (existingCommitteeMemberAsMap.containsKey(newRegisterMember.getId())) {
+					newCommitteeMember = existingCommitteeMemberAsMap.get(newRegisterMember.getId());
+				} else {
+					newCommitteeMember = new PositionCommitteeMember();
+				}
 				newCommitteeMember.setCommittee(existingCommittee);
 				newCommitteeMember.setRegisterMember(newRegisterMember);
 				newCommitteeMember.setType(newCommitteeMemberAsMap.get(newRegisterMember.getId()));
-				existingCommittee.getMembers().add(newCommitteeMember);
 			}
 			em.flush();
 			// Return result

@@ -154,6 +154,11 @@ public class PositionEvaluationRESTService extends RESTService {
 		}
 
 		// Retrieve new Members from Institution's Register
+		Map<Long, PositionEvaluator> existingEvaluatorsRegisterMap = new HashMap<Long, PositionEvaluator>();
+		for (PositionEvaluator existingEvaluator : existingEvaluation.getEvaluators()) {
+			existingEvaluatorsRegisterMap.put(existingEvaluator.getRegisterMember().getId(), existingEvaluator);
+		}
+		// Retrieve new Members from Institution's Register
 		Map<Long, Long> newEvaluatorsRegisterMap = new HashMap<Long, Long>();
 		for (PositionEvaluator newEvaluator : newEvaluation.getEvaluators()) {
 			newEvaluatorsRegisterMap.put(newEvaluator.getRegisterMember().getId(), newEvaluator.getPosition());
@@ -189,10 +194,15 @@ public class PositionEvaluationRESTService extends RESTService {
 			existingEvaluation.copyFrom(newEvaluation);
 			existingEvaluation.getEvaluators().clear();
 			for (RegisterMember newRegisterMember : newRegisterMembers) {
-				PositionEvaluator newEvaluator = new PositionEvaluator();
+				PositionEvaluator newEvaluator = null;
+				if (existingEvaluatorsRegisterMap.containsKey(newRegisterMember.getId())) {
+					newEvaluator = existingEvaluatorsRegisterMap.get(newRegisterMember.getId());
+				} else {
+					newEvaluator = new PositionEvaluator();
+				}
 				newEvaluator.setRegisterMember(newRegisterMember);
 				newEvaluator.setPosition(newEvaluatorsRegisterMap.get(newRegisterMember.getId()));
-				existingPosition.getPhase().getEvaluation().addEvaluator(newEvaluator);
+				existingEvaluation.addEvaluator(newEvaluator);
 			}
 			em.flush();
 			// Return result
