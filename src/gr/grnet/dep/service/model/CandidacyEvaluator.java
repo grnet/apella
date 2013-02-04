@@ -7,7 +7,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Version;
-import javax.validation.constraints.NotNull;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 
@@ -28,10 +27,8 @@ public class CandidacyEvaluator implements Serializable {
 	@Version
 	private int version;
 
-	@NotNull
 	private String fullname;
 
-	@NotNull
 	private String email;
 
 	@ManyToOne

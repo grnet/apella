@@ -102,7 +102,6 @@ public class User implements Serializable {
 
 	private String passwordSalt;
 
-	@NotNull
 	private Date registrationDate;
 
 	private Long verificationNumber;

@@ -1,21 +1,14 @@
 package gr.grnet.dep.service.model;
 
 import javax.persistence.Embeddable;
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.NotEmpty;
 
 @Embeddable
 public class Address {
 
-	@NotNull
-	@NotEmpty
 	private String street;
 
 	private String number;
 
-	@NotNull
-	@NotEmpty
 	private String zip;
 
 	private String city;

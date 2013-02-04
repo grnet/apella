@@ -1,20 +1,13 @@
 package gr.grnet.dep.service.model;
 
 import javax.persistence.Embeddable;
-import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlTransient;
-
-import org.hibernate.validator.constraints.NotEmpty;
 
 @Embeddable
 public class BasicInformation {
 
-	@NotNull
-	@NotEmpty
 	private String firstname;
 
-	@NotNull
-	@NotEmpty
 	private String lastname;
 
 	private String fathername;

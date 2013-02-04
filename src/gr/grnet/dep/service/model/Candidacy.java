@@ -25,7 +25,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
-import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.map.annotate.JsonView;
@@ -48,7 +47,6 @@ public class Candidacy {
 
 	private boolean permanent;
 
-	@NotNull
 	@Temporal(TemporalType.TIMESTAMP)
 	Date date;
 

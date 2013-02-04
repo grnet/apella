@@ -575,7 +575,12 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			"fek" : undefined,
 			"fekSubject" : undefined,
 			"manager" : undefined,
-			"ministry" : undefined
+			"ministry" : undefined,
+			"alternateBasicInfo" : {},
+			"alternateBasicInfoLatin" : {},
+			"alternateContactInfo" : {
+				"address" : {}
+			}
 		},
 		isPrimary : function() {
 			var self = this;
