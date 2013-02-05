@@ -345,5 +345,4 @@ public class Candidacy {
 		this.snapshot.getFiles().size();
 		this.proposedEvaluators.size();
 	}
-
 }

@@ -26,7 +26,11 @@
 		<td width="1px"><%= $.i18n.prop("PositionCommitteeMemberType" + type) %>
 		</td>
 		<td width="1px">
+		<% if (_.isEqual(member.access, "READ_FULL")) { %>
 			<a id="viewMember" href="#user/<%= member.registerMember.professor.user.id %>"><%= member.registerMember.professor.user.id %> </a>
+		<% } else { %>
+			<%= member.registerMember.professor.user.id %>
+		<% } %>
 		</td>
 		<td><%= member.external ? $.i18n.prop("RegisterMemberExternal") : $.i18n.prop("RegisterMemberInternal") %></td>
 		<td><%= member.registerMember.professor.user.basicInfo.firstname %></td>

@@ -3,6 +3,7 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Subject;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -24,7 +25,7 @@ public class SubjectRESTService extends RESTService {
 
 	@GET
 	@SuppressWarnings("unchecked")
-	public List<Subject> getAll() {
+	public Collection<Subject> getAll() {
 		return (List<Subject>) em.createQuery(
 			"select distinct s from Subject s ")
 			.getResultList();
@@ -33,7 +34,7 @@ public class SubjectRESTService extends RESTService {
 	@GET
 	@Path("/search")
 	@SuppressWarnings("unchecked")
-	public List<Subject> search(@QueryParam("query") String query) {
+	public Collection<Subject> search(@QueryParam("query") String query) {
 		return (List<Subject>) em.createQuery(
 			"select s from Subject s " +
 				"where s.name like :query")

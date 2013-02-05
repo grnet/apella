@@ -44,7 +44,7 @@ public class PositionSearchRESTService extends RESTService {
 	@GET
 	@Path("/search")
 	@JsonView({PublicPositionView.class})
-	public List<Position> search(@HeaderParam(TOKEN_HEADER) String authToken, @QueryParam("criteria") String criteriaString) {
+	public Collection<Position> search(@HeaderParam(TOKEN_HEADER) String authToken, @QueryParam("criteria") String criteriaString) {
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 			Date today = sdf.parse(sdf.format(new Date()));

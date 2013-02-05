@@ -21,6 +21,7 @@ import gr.grnet.dep.service.util.MailClient;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -64,7 +65,7 @@ public class UserRESTService extends RESTService {
 	@GET
 	@JsonView({DetailedUserView.class})
 	@SuppressWarnings("unchecked")
-	public List<User> getAll(
+	public Collection<User> getAll(
 		@HeaderParam(TOKEN_HEADER) String authToken,
 		@QueryParam("username") String username,
 		@QueryParam("firstname") String firstname,

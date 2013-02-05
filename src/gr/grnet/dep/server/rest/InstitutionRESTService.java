@@ -3,6 +3,7 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Institution;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -23,7 +24,7 @@ public class InstitutionRESTService extends RESTService {
 
 	@GET
 	@SuppressWarnings("unchecked")
-	public List<Institution> getAll() {
+	public Collection<Institution> getAll() {
 		return (List<Institution>) em.createQuery(
 			"select distinct i from Institution i ")
 			.getResultList();

@@ -40,7 +40,8 @@ public class CandidateRESTService extends RESTService {
 		if (candidate == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidate.id");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !candidate.getUser().getId().equals(loggedOn.getId())) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!candidate.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 

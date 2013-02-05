@@ -3873,39 +3873,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		renderCandidacies : function($el) {
 			var self = this;
 			var positionCandidaciesView = undefined;
-			var candidacyView = undefined;
-			var positionCandidacies = new Models.PositionCandidacies({}, {
-				position : self.model.get("id")
-			});
-			positionCandidacies.on("candidacy:selected", function(candidacyId) {
-				if (candidacyView) {
-					candidacyView.model.trigger("candidacy:deselected", candidacyView.model);
-					candidacyView.close();
+			var positionCandidacies = new Models.PositionCandidacies({
+				id : self.model.get("phase").candidacies.id,
+				position : {
+					id : self.model.get("id")
 				}
-				var candidacy = new Models.Candidacy({
-					id : candidacyId
-				});
-				candidacy.fetch({
-					cache : false,
-					success : function() {
-						candidacyView = new Views.CandidacyView({
-							model : candidacy
-						});
-						self.$("div[data-candidacy-id=" + candidacy.get("id") + "]").html(candidacyView.render().el);
-						self.$("td[data-candidacy-id=" + candidacy.get("id") + "]").show();
-					}
-				});
-			});
-			positionCandidacies.on("candidacy:deselected", function(candidacyId) {
-				if (candidacyView) {
-					candidacyView.close();
-				}
-				self.$("td[data-candidacy-id=" + candidacyId + "]").hide();
-				self.$("div[data-candidacy-id=" + candidacyId + "]").html();
 			});
 			positionCandidaciesView = new Views.PositionCandidaciesView({
 				position : self.model,
-				collection : positionCandidacies
+				model : positionCandidacies
 			});
 			positionCandidacies.fetch({
 				cache : false,
@@ -4519,8 +4495,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(event) {
 			var self = this;
 			self.closeInnerViews();
-			self.$el.html(self.template(self.model.toJSON()));
-
+			var tpl_data = self.model.toJSON();
+			if (App.loggedOnUser.isAssociatedWithDepartment(self.model.get("position").department) || App.loggedOnUser.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE")) {
+				_.each(tpl_data.members, function(member) {
+					member.access = "READ_FULL";
+				});
+			}
+			self.$el.html(self.template(tpl_data));
 			// Add Files
 			if (self.model.has("id")) {
 				var files = new Models.Files();
@@ -4823,7 +4804,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(event) {
 			var self = this;
 			self.closeInnerViews();
-			self.$el.html(self.template(self.model.toJSON()));
+			var tpl_data = self.model.toJSON();
+			if (App.loggedOnUser.isAssociatedWithDepartment(self.model.get("position").department) || App.loggedOnUser.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE")) {
+				_.each(tpl_data.evaluators, function(evaluator) {
+					evaluator.access = "READ_FULL";
+				});
+			}
+			self.$el.html(self.template(tpl_data));
 
 			// Add Files
 			_.each(self.model.get("evaluators"), function(evaluator) {
@@ -5128,6 +5115,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		initialize : function() {
 			var self = this;
 			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			self.template = _.template(tpl_position_candidacies);
 			self.model.bind('change', self.render, self);
 			self.model.bind("destroy", self.close, self);
 		},
@@ -5151,9 +5139,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 									return file.get("evaluator").id === proposedEvaluator.id;
 								}));
 								filteredFiles.url = collection.url;
-								self.addFileList(filteredFiles, "EISIGISI_DEP_YPOPSIFIOU", self.$("input[name=eisigisiDepYpopsifiouFileList][data-candidacy-evaluator-id=" + proposedEvaluator.id + "]"), {
-									withMetadata : true,
-									editable : self.isEditable("eisigisiDepYpopsifiouFileList")
+								self.addFileList(filteredFiles, "EISIGISI_DEP_YPOPSIFIOU", self.$("div#eisigisiDepYpopsifiouFileList[data-candidacy-evaluator-id=" + proposedEvaluator.id + "]"), {
+									withMetadata : true
 								});
 							});
 						});

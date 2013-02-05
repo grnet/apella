@@ -25,6 +25,7 @@ import gr.grnet.dep.service.model.file.FileType;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -67,7 +68,7 @@ public class PositionRESTService extends RESTService {
 
 	@GET
 	@JsonView({PublicPositionView.class})
-	public List<Position> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
+	public Collection<Position> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
 		User loggedOnUser = getLoggedOn(authToken);
 		if (loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) ||
 			loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
@@ -105,7 +106,7 @@ public class PositionRESTService extends RESTService {
 	@GET
 	@Path("/public")
 	@JsonView({PublicPositionView.class})
-	public List<Position> getPublic() {
+	public Collection<Position> getPublic() {
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 			Date today = sdf.parse(sdf.format(new Date()));

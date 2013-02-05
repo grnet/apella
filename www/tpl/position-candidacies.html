@@ -18,7 +18,7 @@
 			<td><%= candidacy.snapshot.basicInfo.fathername %> (<%= candidacy.snapshot.basicInfoLatin.fathername %>)</td>
 			<td width="96px">
 				<p align="center">
-					<a id="viewCandidacy" data-candidacy-id="<%= candidacy.id %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>
+					<a id="viewCandidacy" href="#candidacy/<%= candidacy.id %>" data-candidacy-id="<%= candidacy.id %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>
 				</p>
 			</td>
 		</tr>
@@ -36,7 +36,7 @@
 					<% _.each(candidacy.proposedEvaluators, function(proposedEvaluator, index) { %>
 					<li>
 						<i><%= $.i18n.prop("ProposedEvaluator") %> <%= index + 1 %>: </i><%= proposedEvaluator.fullname + " (" + proposedEvaluator.email + ")"%>
-						<input type="hidden" name="eisigisiDepYpopsifiouFileList" data-candidacy-evaluator-id="<%= proposedEvaluator.id %>"/>
+						<div id="eisigisiDepYpopsifiouFileList" data-candidacy-evaluator-id="<%= proposedEvaluator.id %>"></div>
 					</li>
 					<% }); %>
 				</ul>

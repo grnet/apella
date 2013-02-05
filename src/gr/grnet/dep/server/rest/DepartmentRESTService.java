@@ -3,6 +3,7 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Department;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.Stateless;
@@ -18,7 +19,7 @@ public class DepartmentRESTService extends RESTService {
 
 	@GET
 	@SuppressWarnings("unchecked")
-	public List<Department> getAll() {
+	public Collection<Department> getAll() {
 		return (List<Department>) em.createQuery(
 			"select distinct d from Department d ")
 			.getResultList();

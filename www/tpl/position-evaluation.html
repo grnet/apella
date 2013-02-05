@@ -15,7 +15,11 @@
 	<% _.each(evaluators, function(evaluator) { %>
 	<tr id="positionEvaluator_<%= evaluator.position %>">
 		<td>
+		<% if (_.isEqual(evaluator.access, "READ_FULL")) { %>
 			<a id="viewEvaluator" href="#user/<%= evaluator.registerMember.professor.user.id %>"><%= evaluator.registerMember.professor.user.id %> </a>
+		<% } else { %>
+			<%= evaluator.registerMember.professor.user.id %>
+		<% } %>
 		</td>
 		<td><%= member.external ? $.i18n.prop("RegisterMemberExternal") : $.i18n.prop("RegisterMemberInternal") %></td>
 		<td><%= evaluator.registerMember.professor.user.basicInfo.firstname %></td>

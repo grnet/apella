@@ -513,7 +513,7 @@ public class PositionEvaluationRESTService extends RESTService {
 	@GET
 	@Path("/{evaluationId:[0-9]+}/register")
 	@JsonView({DetailedRegisterMemberView.class})
-	public List<RegisterMember> getPositionEvaluationRegisterMembers(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId) {
+	public Collection<RegisterMember> getPositionEvaluationRegisterMembers(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionEvaluation existingEvaluation = em.find(PositionEvaluation.class, evaluationId);
 		if (existingEvaluation == null) {

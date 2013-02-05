@@ -6,6 +6,7 @@ import gr.grnet.dep.service.model.InstitutionRegulatoryFramework;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -33,7 +34,7 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 
 	@GET
 	@SuppressWarnings("unchecked")
-	public List<InstitutionRegulatoryFramework> getAll() {
+	public Collection<InstitutionRegulatoryFramework> getAll() {
 		return (List<InstitutionRegulatoryFramework>) em.createQuery(
 			"select i from InstitutionRegulatoryFramework i " +
 				"where i.permanent = true")

@@ -68,7 +68,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	@GET
 	@Path("/{committeeId:[0-9]+}/register")
 	@JsonView({DetailedPositionCommitteeMemberView.class})
-	public List<RegisterMember> getPositionCommiteeRegisterMembers(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId) {
+	public Collection<RegisterMember> getPositionCommiteeRegisterMembers(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCommittee existingCommittee = em.find(PositionCommittee.class, committeeId);
 		if (existingCommittee == null) {

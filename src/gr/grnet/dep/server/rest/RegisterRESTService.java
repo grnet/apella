@@ -292,7 +292,7 @@ public class RegisterRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9]+}/professor")
 	@JsonView({DetailedRegisterMemberView.class})
-	public List<Role> getRegisterProfessors(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId) {
+	public Collection<Role> getRegisterProfessors(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId) {
 		User loggedOn = getLoggedOn(authToken);
 		Register existingRegister = em.find(Register.class, registerId);
 		// Validate:

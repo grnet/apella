@@ -3,6 +3,7 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Rank;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.Stateless;
@@ -19,7 +20,7 @@ public class RankRESTService extends RESTService {
 
 	@GET
 	@SuppressWarnings("unchecked")
-	public List<Rank> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
+	public Collection<Rank> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
 		getLoggedOn(authToken);
 		return (List<Rank>) em.createQuery(
 			"select distinct r from Rank r ")
