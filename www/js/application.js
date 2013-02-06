@@ -34,6 +34,7 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 				delete this._superCallObjects[methodName];
 				return result;
 			}
+
 			function findSuper(methodName, childObject) {
 				var object = childObject;
 				while (object[methodName] === childObject[methodName]) {
@@ -41,6 +42,7 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 				}
 				return object;
 			}
+
 			_.each([ "Model", "Collection", "View", "Router" ], function(klass) {
 				Backbone[klass].prototype._super = _super;
 			});
@@ -119,16 +121,18 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 					var ca = document.cookie.split(';');
 					for ( var i = 0; i < ca.length; i++) {
 						var c = ca[i];
-						while (c.charAt(0) == ' ')
+						while (c.charAt(0) == ' ') {
 							c = c.substring(1, c.length);
-						if (c.indexOf(nameEQ) == 0)
+						}
+						if (c.indexOf(nameEQ) == 0) {
 							return c.substring(nameEQ.length, c.length);
+						}
 					}
 					return null;
 				},
 
 				removeCookie : function(name) {
-					addCookie(name, "", -1);
+					window.App.util.addCookie(name, "", -1);
 				}
 			}
 		};

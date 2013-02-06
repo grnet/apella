@@ -5,13 +5,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 	Routers.RegistrationRouter = Backbone.Router.extend({
 
 		initialize : function() {
+			var languageView;
+
 			_.extend(this, Backbone.Events);
 			_.bindAll(this, "showRegisterView", "showVerificationView", "showRegisterSelectView", "showRegisterSuccessView");
 			$(document).ajaxStart(App.blockUI);
 			$(document).ajaxStop(App.unblockUI);
 
 			App.institutions = new Models.Institutions();
-			var languageView = new Views.LanguageView({});
+			languageView = new Views.LanguageView({});
 			languageView.render();
 
 			Backbone.history.start();
@@ -48,14 +50,16 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 		},
 
 		showRegisterView : function(role) {
+			var userRegistration;
+			var userRegistrationView;
 			this.clear();
 			if (_.indexOf(App.allowedRoles, role) >= 0) {
-				var userRegistration = new Models.User({
+				userRegistration = new Models.User({
 					"roles" : [ {
 						"discriminator" : role
 					} ]
 				});
-				var userRegistrationView = new Views.UserRegistrationView({
+				userRegistrationView = new Views.UserRegistrationView({
 					model : userRegistration
 				});
 				$("#featured").html(userRegistrationView.render().el);
@@ -103,13 +107,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 		initialize : function() {
 			var self = this;
+			var languageView;
 
 			_.extend(this, Backbone.Events);
 			_.bindAll(this, "start", "showLoginView", "showHomeView", "showUserSearchView", "showUserView");
 			$(document).ajaxStart(App.blockUI);
 			$(document).ajaxStop(App.unblockUI);
 
-			var languageView = new Views.LanguageView({});
+			languageView = new Views.LanguageView({});
 			languageView.render();
 
 			// Init LoggedOnUser
@@ -137,13 +142,16 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 		start : function(eventName, authToken) {
 			var self = this;
+			var popup;
+			var adminmenuView;
+			var usermenuView;
 			// Check that user is indeed Administrator
 			if (!App.loggedOnUser.hasRole("ADMINISTRATOR")) {
 				App.loggedOnUser = new Models.User();
 				App.loggedOnUser.on("user:loggedon", self.start);
 				self.showLoginView();
 
-				var popup = new Views.PopupView({
+				popup = new Views.PopupView({
 					type : "warning",
 					message : $.i18n.prop("error.insufficient.privileges")
 				});
@@ -155,11 +163,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 			// Create Header, Menu, and other side content and
 			// bind them to the same loggedOnUser model
-			var adminmenuView = new Views.AdminMenuView({
+			adminmenuView = new Views.AdminMenuView({
 				model : App.loggedOnUser
 			});
 			adminmenuView.render();
-			var usermenuView = new Views.UserMenuView({
+			usermenuView = new Views.UserMenuView({
 				model : App.loggedOnUser
 			});
 			usermenuView.render();
@@ -197,38 +205,47 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 		},
 
 		showLoginView : function() {
-			this.clear();
+			var self = this;
+			var loginView;
 
-			var loginView = new Views.AdminLoginView({
+			self.clear();
+			loginView = new Views.AdminLoginView({
 				model : App.loggedOnUser
 			});
 			$("#content").html(loginView.render().el);
 
-			this.currentView = loginView;
+			self.currentView = loginView;
 		},
 
 		showHomeView : function() {
-			this.clear();
-			this.refreshBreadcrumb([ $.i18n.prop('menu_home') ]);
+			var self = this;
+			self.clear();
+			self.refreshBreadcrumb([ $.i18n.prop('menu_home') ]);
 			$("#content").html("<h1>HOME</h1>");
 		},
 
 		showAccountView : function() {
-			this.clear();
-			var accountView = new Views.AccountView({
+			var self = this;
+			var accountView;
+			self.clear();
+			accountView = new Views.AccountView({
 				model : App.loggedOnUser
 			});
 
-			this.refreshBreadcrumb([ $.i18n.prop('menu_account') ]);
+			self.refreshBreadcrumb([ $.i18n.prop('menu_account') ]);
 			$("#content").append(accountView.render().el);
 
-			this.currentView = accountView;
+			self.currentView = accountView;
 		},
 
 		showUserSearchView : function(query) {
 			var self = this;
+			var users;
+			var userSearchView;
+			var userListView;
+
 			self.clear();
-			var users = new Models.Users();
+			users = new Models.Users();
 			users.on("user:selected", function(user) {
 				if (user) {
 					self.showUserView(user.id, user);
@@ -237,19 +254,19 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					});
 				}
 			}, this);
-			var userSearchView = new Views.UserSearchView({
+			userSearchView = new Views.UserSearchView({
 				"query" : query ? JSON.parse(decodeURI(query)) : undefined,
 				collection : users
 			});
-			var userListView = new Views.UserListView({
+			userListView = new Views.UserListView({
 				collection : users
 			});
 
-			this.refreshBreadcrumb([ $.i18n.prop('adminmenu_users') ]);
+			self.refreshBreadcrumb([ $.i18n.prop('adminmenu_users') ]);
 			$("#featured").append(userSearchView.render().el);
 			$("#content").append(userListView.render().el);
 
-			this.currentView = [ userSearchView, userListView ];
+			self.currentView = [ userSearchView, userListView ];
 		},
 
 		showUserView : function(id) {
@@ -304,13 +321,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 	Routers.Router = Backbone.Router.extend({
 		initialize : function() {
 			var self = this;
+			var languageView;
 
 			_.extend(self, Backbone.Events);
 			_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showUserView", "showInstitutionAssistantsView", "showMinistryAssistantsView", "showPositionView", "showPositionsView", "showRegistersView", "showProfessorCommitteesView", "showProfessorEvaluationsView", "showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "showCandidacyView", "start");
 			$(document).ajaxStart(App.blockUI);
 			$(document).ajaxStop(App.unblockUI);
 
-			var languageView = new Views.LanguageView({});
+			languageView = new Views.LanguageView({});
 			languageView.render();
 
 			// Init LoggedOnUser
@@ -357,12 +375,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 		start : function(eventName, authToken) {
 			var self = this;
+			var popup;
+			var menuView;
+			var usermenuView;
 			// Check that this is not an ADMINISTRATOR
 			if (App.loggedOnUser.hasRole("ADMINISTRATOR")) {
 				App.loggedOnUser = new Models.User();
 				App.loggedOnUser.on("user:loggedon", self.start);
 				self.showLoginView();
-				var popup = new Views.PopupView({
+				popup = new Views.PopupView({
 					type : "warning",
 					message : $.i18n.prop("error.administrator.login")
 				});
@@ -378,11 +399,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 			// Create Header, Menu, and other side content and
 			// bind them to the same loggedOnUser model
-			var menuView = new Views.MenuView({
+			menuView = new Views.MenuView({
 				model : App.loggedOnUser
 			});
 			menuView.render();
-			var usermenuView = new Views.UserMenuView({
+			usermenuView = new Views.UserMenuView({
 				model : App.loggedOnUser
 			});
 			usermenuView.render();
@@ -422,50 +443,59 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 		},
 
 		showLoginView : function() {
-			this.clear();
+			var self = this;
+			var loginView;
+
+			self.clear();
 			$("ul.breadcrumb").hide();
-			var loginView = new Views.LoginView({
+			loginView = new Views.LoginView({
 				model : App.loggedOnUser
 			});
 			$("#featured").html(loginView.render().el);
 
-			this.currentView = loginView;
+			self.currentView = loginView;
 		},
 
 		showHomeView : function() {
-			this.clear();
-			var homeView = new Views.HomeView({
+			var self = this;
+			var homeView;
+			var announcementsView;
+			self.clear();
+			homeView = new Views.HomeView({
 				model : App.loggedOnUser
 			});
-			var announcementsView = new Views.AnnouncementListView({
+			announcementsView = new Views.AnnouncementListView({
 				collection : App.roles
 			});
 
-			this.refreshBreadcrumb([ $.i18n.prop('menu_home') ]);
+			self.refreshBreadcrumb([ $.i18n.prop('menu_home') ]);
+
 			$("#featured").html(homeView.render().el);
 			$("#content").html(announcementsView.el);
 			App.roles.fetch({
 				cache : false
 			});
 
-			this.currentView = homeView;
+			self.currentView = homeView;
 		},
 
 		showAccountView : function() {
-			this.clear();
-			var accountView = new Views.AccountView({
+			var self = this;
+			var accountView;
+			self.clear();
+			accountView = new Views.AccountView({
 				model : App.loggedOnUser
 			});
 			this.refreshBreadcrumb([ $.i18n.prop('menu_account') ]);
 			$("#content").append(accountView.render().el);
 
-			this.currentView = accountView;
+			self.currentView = accountView;
 		},
 
 		showProfileView : function(roleId) {
 			var self = this;
-			var rolesView = undefined;
-			var roleView = undefined;
+			var rolesView;
+			var roleView;
 			self.clear();
 
 			App.roles.on("role:selected", function(role) {
@@ -505,8 +535,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 		showUserView : function(id) {
 			var self = this;
-			var user, userView;
-			var roles, roleViews = [];
+			var user;
+			var userView;
+			var roles;
 
 			// Create Models
 			user = new Models.User({
@@ -533,7 +564,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 						success : function(collection, response) {
 							$("#content div#user").append(userView.render().el);
 							collection.each(function(role) {
-								roleView = new Views.RoleView({
+								var roleView = new Views.RoleView({
 									className : "row-fluid",
 									model : role
 								});
@@ -549,11 +580,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 		showInstitutionAssistantsView : function(userId) {
 			var self = this;
-			var accountView = undefined;
-			var userRoleInfoView = undefined;
+			var accountView;
+			var userRoleInfoView;
+			var assistants;
+			var assistantsView;
+
 			self.clear();
 
-			var assistants = new Models.Users();
+			assistants = new Models.Users();
 			assistants.on("user:selected", function(user) {
 				if (user) {
 					// Clean up
@@ -590,7 +624,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				}
 			}, this);
 
-			var assistantsView = new Views.InstitutionAssistantListView({
+			assistantsView = new Views.InstitutionAssistantListView({
 				collection : assistants
 			});
 			self.refreshBreadcrumb([ $.i18n.prop('menu_iassistants') ]);
@@ -613,11 +647,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 		showMinistryAssistantsView : function(userId) {
 			var self = this;
-			var accountView = undefined;
-			var userRoleInfoView = undefined;
+			var accountView;
+			var userRoleInfoView;
+			var assistants;
+			var assistantsView;
+
 			self.clear();
 
-			var assistants = new Models.Users();
+			assistants = new Models.Users();
 			assistants.on("user:selected", function(user) {
 				if (user) {
 					// Clean up
@@ -654,7 +691,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				}
 			}, this);
 
-			var assistantsView = new Views.MinistryAssistantListView({
+			assistantsView = new Views.MinistryAssistantListView({
 				collection : assistants
 			});
 			self.refreshBreadcrumb([ $.i18n.prop('menu_massistants') ]);
@@ -678,7 +715,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 		showPositionsView : function(positionId, tab) {
 			var self = this;
 			var positions = new Models.Positions();
-			var positionView = undefined;
+			var positionView;
 			var positionListView = new Views.PositionListView({
 				collection : positions,
 				user : App.loggedOnUser.get("id")
@@ -791,7 +828,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 		showRegistersView : function(registerId) {
 			var self = this;
 			var registries = new Models.Registries();
-			var registerView = undefined;
+			var registerView;
 			var registerListView = new Views.RegisterListView({
 				collection : registries
 			});
@@ -844,7 +881,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 						if (institutions) {
 							return institutions[0];
 						}
-					})()
+					}())
 				},
 				success : function() {
 					if (!_.isUndefined(registerId)) {
@@ -942,7 +979,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 		showInstitutionRegulatoryFrameworkView : function(institutionRFId) {
 			var self = this;
 			var institutionRFs = new Models.InstitutionRegulatoryFrameworks();
-			var institutionRegulatoryFrameworkView = undefined;
+			var institutionRegulatoryFrameworkView;
 			var institutionRegulatoryFrameworkListView = new Views.InstitutionRegulatoryFrameworkListView({
 				collection : institutionRFs
 			});
@@ -1020,10 +1057,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 		showPositionSearchView : function() {
 			var self = this;
-			self.clear();
-			// Models
 			var criteria = new Models.PositionSearchCriteria();
 			var positions = new Models.Positions();
+			var positionSearchCriteriaView;
+			var positionSearchResultView;
+			self.clear();
+			// Models
 			positions.url = positions.url + "/criteria/search";
 
 			// Event Handlers
@@ -1036,8 +1075,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				});
 			});
 			positions.on("position:selected", function(position) {
+				var newCandidacy;
 				if (position) {
-					var newCandidacy = new Models.Candidacy();
+					newCandidacy = new Models.Candidacy();
 					newCandidacy.save({
 						candidate : App.loggedOnUser.getRole("CANDIDATE"),
 						candidacies : {
@@ -1062,10 +1102,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			}, this);
 
 			// Views
-			var positionSearchCriteriaView = new Views.PositionSearchCriteriaView({
+			positionSearchCriteriaView = new Views.PositionSearchCriteriaView({
 				model : criteria
 			});
-			var positionSearchResultView = new Views.PositionSearchResultView({
+			positionSearchResultView = new Views.PositionSearchResultView({
 				collection : positions
 			});
 
@@ -1084,7 +1124,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 		showCandidateCandidacyView : function(candidacyId) {
 			var self = this;
-			var candidacyEditView = undefined;
+			var candidacyEditView;
 			var candidateCandidacies = new Models.CandidateCandidacies({}, {
 				candidate : App.loggedOnUser.getRole("CANDIDATE").id
 			});
@@ -1129,8 +1169,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					popup.show();
 				},
 				success : function() {
+					var selectedCandidacy;
 					if (!_.isUndefined(candidacyId)) {
-						var selectedCandidacy = candidateCandidacies.get(candidacyId);
+						selectedCandidacy = candidateCandidacies.get(candidacyId);
 						if (!selectedCandidacy) {
 							selectedCandidacy = new Models.Candidacy({
 								id : candidacyId

@@ -23,7 +23,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var file = collection.find(function(model) {
 				return _.isEqual(model.get("type"), type);
 			});
-			options = options ? options : {};
+			options = options || {};
 			if (_.isUndefined(file)) {
 				file = new Models.File({
 					"type" : type
@@ -49,7 +49,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var file = collection.find(function(model) {
 				return _.isEqual(model.get("type"), type);
 			});
-			options = options ? options : {};
+			options = options || {};
 			if (_.isUndefined(file)) {
 				file = new Models.File({
 					"type" : type
@@ -73,7 +73,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var self = this;
 			var fileListView;
 			var files = new Models.Files();
-			options = options ? options : {};
+			options = options || {};
 			options.name = $el.attr("id");
 
 			files.type = type;
@@ -100,7 +100,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var self = this;
 			var fileListView;
 			var files = new Models.Files();
-			options = options ? options : {};
+			options = options || {};
 
 			files.type = type;
 			files.url = collection.url;
@@ -124,10 +124,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		closeInnerViews : function() {
 			var self = this;
+			var fileView;
 			_.each(self.innerViews, function(innerView) {
 				innerView.close();
 			});
-			for ( var fileView in self.fileViews) {
+			for (fileView in self.fileViews) {
 				self.fileViews[fileView].close();
 			}
 			self.innerViews = [];
@@ -193,7 +194,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				menuItems.push("positions");
 			}
 			_.each(_.uniq(menuItems), function(menuItem) {
-				self.$el.append("<li><a href=\"\#" + menuItem + "\">" + $.i18n.prop("menu_" + menuItem) + "</a></li>");
+				self.$el.append("<li><a href=\"#" + menuItem + "\">" + $.i18n.prop("menu_" + menuItem) + "</a></li>");
 			});
 
 			return this;
@@ -240,7 +241,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			// Set Language Cookie:
 			App.utils.addCookie('apella-lang', language);
 			// Trigger refresh
-			location.reload(true);
+			window.location.reload();
 		},
 
 		close : function() {
@@ -267,7 +268,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(eventName) {
 			this.$el.empty();
 			this.$el.append("<ul class=\"nav\">");
-			this.$el.find("ul").append("<li><a href=\"\#users\">" + $.i18n.prop('adminmenu_users') + "</a></li>");
+			this.$el.find("ul").append("<li><a href=\"#users\">" + $.i18n.prop('adminmenu_users') + "</a></li>");
 			return this;
 		},
 
@@ -300,7 +301,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			this.$el.empty();
 			this.$el.append("<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\"> <i class=\"icon-user\"></i> " + this.model.get("username") + "<span class=\"caret\"></span></a>");
 			this.$el.append("<ul class=\"dropdown-menu\">");
-			this.$el.find("ul").append("<li><a href=\"\#account\">" + $.i18n.prop('menu_account') + "</a>");
+			this.$el.find("ul").append("<li><a href=\"#account\">" + $.i18n.prop('menu_account') + "</a>");
 			// Add Logout
 			this.$el.find("ul").append("<li><a id=\"logout\" >" + $.i18n.prop('menu_logout') + "</a>");
 			return this;
@@ -603,7 +604,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			// Highlight Required
 			if (self.validator) {
 				for ( var propName in self.validator.settings.rules) {
-					if (self.validator.settings.rules[propName].required !== undefined) {
+					if (self.validator.settings.rules[propName].required) {
 						self.$("label[for=" + propName + "]").addClass("strong");
 					}
 				}
@@ -681,6 +682,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				break;
 			case 'error':
 				self.$el.addClass("alert-error");
+				break;
+			default:
 				break;
 			}
 			return this;
@@ -844,7 +847,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				// Shibboleth
 				// Login
 				// Add institutions in selector:
-				App.institutions = App.institutions ? App.institutions : new Models.Institutions();
+				App.institutions = App.institutions || new Models.Institutions();
 				App.institutions.fetch({
 					cache : true,
 					success : function(collection, resp) {
@@ -866,11 +869,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				});
 				// Set UI components
-				if (role.institution && role.institution.registrationType === "REGISTRATION_FORM") {
+				if (role.institution && (role.institution.registrationType === "REGISTRATION_FORM")) {
 					self.$("#shibbolethLoginInstructions").hide();
 					self.$("form#institutionForm").hide();
 					self.$("form#userForm").show();
-				} else if (role.institution && role.institution.registrationType === "SHIBBOLETH") {
+				} else if (role.institution && (role.institution.registrationType === "SHIBBOLETH")) {
 					self.$("#shibbolethLoginInstructions").show();
 					self.$("form#institutionForm").hide();
 					self.$("form#userForm").hide();
@@ -885,7 +888,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				// select institution first
 
 				// Add institutions in selector:
-				App.institutions = App.institutions ? App.institutions : new Models.Institutions();
+				App.institutions = App.institutions || new Models.Institutions();
 				App.institutions.fetch({
 					cache : true,
 					success : function(collection, resp) {
@@ -1034,7 +1037,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			// Highlight Required
 			if (self.validator) {
 				for ( var propName in self.validator.settings.rules) {
-					if (self.validator.settings.rules[propName].required !== undefined) {
+					if (self.validator.settings.rules[propName].required) {
 						self.$("label[for=" + propName + "]").addClass("strong");
 					}
 				}
@@ -1272,8 +1275,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						}
 						result[row].push(tiles.shift());
 						col = (col + 1) % 3;
-						if (col == 0) {
-							row = row + 1;
+						if (col === 0) {
+							row += 1;
 						}
 					}
 					return result;
@@ -1462,7 +1465,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			// Highlight Required
 			if (self.validator) {
 				for ( var propName in self.validator.settings.rules) {
-					if (self.validator.settings.rules[propName].required !== undefined) {
+					if (self.validator.settings.rules[propName].required) {
 						self.$("label[for=" + propName + "]").addClass("strong");
 					}
 				}
@@ -1695,12 +1698,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.closeInnerViews();
 			self.$el.html(self.template({}));
 			if (self.options.query) {
-				$('form input[name=username]', this.el).val(self.options.query['username']);
-				$('form input[name=firstname]', this.el).val(self.options.query['firstname']);
-				$('form input[name=lastname]', this.el).val(self.options.query['lastname']);
-				$('form select[name=status]', this.el).val(self.options.query['status']);
-				$('form select[name=role]', this.el).val(self.options.query['role']);
-				$('form select[name=roleStatus]', this.el).val(self.options.query['roleStatus']);
+				$('form input[name=username]', this.el).val(self.options.query.username);
+				$('form input[name=firstname]', this.el).val(self.options.query.firstname);
+				$('form input[name=lastname]', this.el).val(self.options.query.lastname);
+				$('form select[name=status]', this.el).val(self.options.query.status);
+				$('form select[name=role]', this.el).val(self.options.query.role);
+				$('form select[name=roleStatus]', this.el).val(self.options.query.roleStatus);
 
 				self.search();
 			}
@@ -1756,8 +1759,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				users : (function() {
 					var result = [];
 					self.collection.each(function(model) {
+						var item;
 						if (model.has("id")) {
-							var item = model.toJSON();
+							item = model.toJSON();
 							item.cid = model.cid;
 							item.roleInfo = self.roleInfoTemplate({
 								roles : item.roles
@@ -1875,7 +1879,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		select : function(event, role) {
 			var self = this;
-			var selectedModel = role ? role : self.collection.getByCid($(event.target).attr('role'));
+			var selectedModel = role || self.collection.getByCid($(event.target).attr('role'));
 			if (selectedModel) {
 				self.collection.trigger("role:selected", selectedModel);
 			}
@@ -1908,6 +1912,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			var files;
 			self.closeInnerViews();
 			self.$el.empty();
 			if (self.model.get("discriminator") !== "ADMINISTRATOR") {
@@ -1915,7 +1920,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 				switch (self.model.get("discriminator")) {
 				case "CANDIDATE":
-					var files = new Models.Files();
+					files = new Models.Files();
 					files.url = self.model.url() + "/file";
 					files.fetch({
 						cache : false,
@@ -1942,7 +1947,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					});
 					break;
 				case "PROFESSOR_DOMESTIC":
-					var files = new Models.Files();
+					files = new Models.Files();
 					files.url = self.model.url() + "/file";
 					files.fetch({
 						cache : false,
@@ -1960,7 +1965,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					});
 					break;
 				case "PROFESSOR_FOREIGN":
-					var files = new Models.Files();
+					files = new Models.Files();
 					files.url = self.model.url() + "/file";
 					files.fetch({
 						cache : false,
@@ -1979,8 +1984,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					break;
 				case "MINISTRY_ASSISTANT":
 					break;
+				default:
+					break;
 				}
-
 			}
 			return self;
 		},
@@ -2038,6 +2044,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					return true;
 				case "dimosieusiFileList":
 					return true;
+				default:
+					break;
 				}
 				break;
 			case "PROFESSOR_DOMESTIC":
@@ -2062,6 +2070,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "subject":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				default:
+					break;
 				}
 				break;
 			case "PROFESSOR_FOREIGN":
@@ -2076,6 +2086,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "subject":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				default:
+					break;
 				}
 				break;
 			case "INSTITUTION_MANAGER":
@@ -2114,6 +2126,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "alternateaddress_country":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				default:
+					break;
 				}
 				break;
 			case "INSTITUTION_ASSISTANT":
@@ -2122,15 +2136,21 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "phone":
 					return true;
+				default:
+					break;
 				}
 				break;
 			case "MINISTRY_MANAGER":
 				switch (field) {
 				case "ministry":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				default:
+					break;
 				}
 				break;
 			case "MINISTRY_ASSISTANT":
+				break;
+			default:
 				break;
 			}
 			return false;
@@ -2141,6 +2161,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var candidate = self.collection.find(function(role) {
 				return (role.get("discriminator") === "CANDIDATE" && role.get("status") === "ACTIVE");
 			});
+			var openCandidacies;
 			if (candidate) {
 				openCandidacies = new Models.CandidateCandidacies({}, {
 					candidate : App.loggedOnUser.getRole("CANDIDATE").id
@@ -2151,7 +2172,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					},
 					cache : false,
 					success : function(collection, resp) {
-						var candidacyUpdateConfirmView = undefined;
+						var candidacyUpdateConfirmView;
 						if (collection.length > 0) {
 							candidacyUpdateConfirmView = new Views.CandidacyUpdateConfirmView({
 								"collection" : collection,
@@ -2180,6 +2201,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var candidate = self.collection.find(function(role) {
 				return (role.get("discriminator") === "CANDIDATE" && role.get("status") === "ACTIVE");
 			});
+			var openCandidacies;
 			if (candidate) {
 				openCandidacies = new Models.CandidateCandidacies({}, {
 					candidate : App.loggedOnUser.getRole("CANDIDATE").id
@@ -2190,7 +2212,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					},
 					cache : false,
 					success : function(collection, resp) {
-						var candidacyUpdateConfirmView = undefined;
+						var candidacyUpdateConfirmView;
 						if (collection.length > 0) {
 							candidacyUpdateConfirmView = new Views.CandidacyUpdateConfirmView({
 								"collection" : collection,
@@ -2217,12 +2239,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			var tpl_data;
+			var files;
 			// Close inner views (fileviews)
 			self.closeInnerViews();
 			// Re-render
 			tpl_data = _.extend(self.model.toJSON(), {
 				"primary" : self.model.isPrimary()
-			})
+			});
 			self.closeInnerViews();
 			self.$el.html(self.template(tpl_data));
 
@@ -2232,8 +2256,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			// Apply Specific Rule and fields per discriminator
 			switch (self.model.get("discriminator")) {
 			case "CANDIDATE":
-				if (self.model.get("id") !== undefined) {
-					var files = new Models.Files();
+				if (self.model.has("id")) {
+					files = new Models.Files();
 					files.url = self.model.url() + "/file";
 					files.fetch({
 						cache : false,
@@ -2307,12 +2331,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("select[name='institution']").change(function() {
 					self.$("select[name='institution']").next(".help-block").html(self.$("select[name='institution'] option:selected").text());
 
-					App.departments = App.departments ? App.departments : new Models.Departments();
+					App.departments = App.departments || new Models.Departments();
 					App.departments.fetch({
 						cache : true,
 						success : function(collection, resp) {
+							var selectedInstitution;
 							self.$("select[name='department']").empty();
-							var selectedInstitution = parseInt($("select[name='institution']", self.$el).val());
+							selectedInstitution = parseInt($("select[name='institution']", self.$el).val(), 10);
 							collection.filter(function(department) {
 								return department.get('institution').id === selectedInstitution;
 							}).forEach(function(department) {
@@ -2333,7 +2358,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						}
 					});
 				});
-				App.institutions = App.institutions ? App.institutions : new Models.Institutions();
+				App.institutions = App.institutions || new Models.Institutions();
 				App.institutions.fetch({
 					cache : true,
 					success : function(collection, resp) {
@@ -2355,7 +2380,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				});
 
-				App.ranks = App.ranks ? App.ranks : new Models.Ranks();
+				App.ranks = App.ranks || new Models.Ranks();
 				App.ranks.fetch({
 					cache : true,
 					success : function(collection, resp) {
@@ -2379,7 +2404,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				});
 
 				if (self.model.has("id")) {
-					var files = new Models.Files();
+					files = new Models.Files();
 					files.url = self.model.url() + "/file";
 					files.fetch({
 						cache : false,
@@ -2449,7 +2474,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("input[name=fekCheckbox]").change();
 				break;
 			case "PROFESSOR_FOREIGN":
-				App.ranks = App.ranks ? App.ranks : new Models.Ranks();
+				App.ranks = App.ranks || new Models.Ranks();
 				App.ranks.fetch({
 					cache : true,
 					success : function(collection, resp) {
@@ -2470,7 +2495,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				});
 				if (self.model.has("id")) {
-					var files = new Models.Files();
+					files = new Models.Files();
 					files.url = self.model.url() + "/file";
 					files.fetch({
 						cache : false,
@@ -2523,7 +2548,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("select[name='institution']").change(function(event) {
 					self.$("select[name='institution']").next(".help-block").html(self.$("select[name='institution'] option:selected").text());
 				});
-				App.institutions = App.institutions ? App.institutions : new Models.Institutions();
+				App.institutions = App.institutions || new Models.Institutions();
 				App.institutions.fetch({
 					cache : true,
 					success : function(collection, resp) {
@@ -2641,7 +2666,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("select[name='institution']").change(function(event) {
 					self.$("select[name='institution']").next(".help-block").html(self.$("select[name='institution'] option:selected").text());
 				});
-				App.institutions = App.institutions ? App.institutions : new Models.Institutions();
+				App.institutions = App.institutions || new Models.Institutions();
 				App.institutions.fetch({
 					cache : true,
 					success : function(collection, resp) {
@@ -2710,6 +2735,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				break;
 			case "MINISTRY_ASSISTANT":
 				break;
+			default:
+				break;
 			}
 			// Highlight Required
 			if (self.validator) {
@@ -2735,8 +2762,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		submit : function(event) {
 			var self = this;
-			var candidate = undefined;
-			var openCandidacies = undefined;
+			var candidate;
+			var openCandidacies;
 			var values = {};
 			// Read Input
 			switch (self.model.get("discriminator")) {
@@ -2819,6 +2846,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				break;
 			case "MINISTRY_ASSISTANT":
 				break;
+			default:
+				break;
 			}
 			// Save to model
 			candidate = self.collection.find(function(role) {
@@ -2834,7 +2863,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					},
 					cache : false,
 					success : function(collection, resp) {
-						var candidacyUpdateConfirmView = undefined;
+						var candidacyUpdateConfirmView;
 						if (collection.length > 0) {
 							candidacyUpdateConfirmView = new Views.CandidacyUpdateConfirmView({
 								"collection" : collection,
@@ -2984,15 +3013,20 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var self = this;
 			switch (self.model.get("discriminator")) {
 			case "CANDIDATE":
+				// noinspection JSHint
 				switch (field) {
 				case "tautotitaFile":
 					return true;
+				default:
+					break;
 				}
 				break;
 			case "INSTITUTION_ASSISTANT":
 				return false;
 			case "MINISTRY_ASSISTANT":
 				return false;
+			default:
+				break;
 			}
 			return false;
 		},
@@ -3105,7 +3139,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							"name" : self.$("#uploader input[name=file_name]").val(),
 							"description" : self.$("#uploader textarea[name=file_description]").val()
 						}, self.$input.data());
-						self.$input.data
 
 						if (_.isFunction(self.options.beforeUpload)) {
 							self.options.beforeUpload(data, function(data) {
@@ -3134,12 +3167,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					});
 				},
 				fail : function(e, data) {
+					var resp, popup;
 					self.$('#uploader div.progress').fadeOut('slow', function() {
 						self.$('div.progress .bar').css('width', '0%');
 						self.$("#uploader").modal("hide");
 					});
-					var resp = data.jqXHR;
-					var popup = new Views.PopupView({
+					resp = data.jqXHR;
+					popup = new Views.PopupView({
 						type : "error",
 						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
@@ -3157,8 +3191,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		deleteFile : function(event) {
 			var self = this;
 			var doDelete = function(options) {
+				var tmp;
 				options = _.extend({}, options);
-				var tmp = {
+				tmp = {
 					type : self.model.get("type"),
 					url : self.model.url,
 					urlRoot : self.model.urlRoot
@@ -3172,7 +3207,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							// Reset Object to empty (without id)
 							// status
 							self.model.urlRoot = tmp.urlRoot;
-							self.model.url = self.model.url;
+							self.model.url = tmp.url;
 							self.model.set(_.extend(self.model.defaults, {
 								"type" : tmp.type
 							}), {
@@ -3362,8 +3397,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				},
 				done : function(e, data) {
 					self.$('#uploader div.progress').fadeOut('slow', function() {
+						var newFile;
 						self.$('#uploader div.progress .bar').css('width', '0%');
-						var newFile = new Models.File(data.result);
+						newFile = new Models.File(data.result);
 						newFile.urlRoot = self.collection.url;
 						self.collection.add(newFile, {
 							silent : true
@@ -3469,7 +3505,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				announcements : []
 			};
 			self.collection.each(function(role) {
-				if (role.get("status") == "UNVERIFIED") {
+				if (role.get("status") === "UNVERIFIED") {
 					data.announcements.push({
 						text : $.i18n.prop('AnnouncementRoleStatus' + role.get("status"), $.i18n.prop(role.get('discriminator'))),
 						url : "#profile"
@@ -3518,8 +3554,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				users : (function() {
 					var result = [];
 					self.collection.each(function(model) {
+						var item;
 						if (model.has("id")) {
-							var item = model.toJSON();
+							item = model.toJSON();
 							item.cid = model.cid;
 							item.roleInfo = self.roleInfoTemplate({
 								roles : item.roles
@@ -3610,8 +3647,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				users : (function() {
 					var result = [];
 					self.collection.each(function(model) {
+						var item;
 						if (model.has("id")) {
-							var item = model.toJSON();
+							item = model.toJSON();
 							item.cid = model.cid;
 							item.roleInfo = self.roleInfoTemplate({
 								roles : item.roles
@@ -3735,8 +3773,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				positions : (function() {
 					var result = [];
 					self.collection.each(function(model) {
+						var item;
 						if (model.has("id")) {
-							var item = model.toJSON();
+							item = model.toJSON();
 							item.cid = model.cid;
 							result.push(item);
 						}
@@ -3772,13 +3811,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		renderActions : function() {
+			var self = this;
 			if (!App.loggedOnUser.hasRole("INSTITUTION_MANAGER") && !App.loggedOnUser.hasRole("INSTITUTION_ASSISTANT")) {
 				return;
 			}
 			self.$("#actions").html("<select class=\"input-xlarge\" name=\"department\"></select>");
 			self.$("#actions").append("<a id=\"createPosition\" class=\"btn\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_position') + "</a>");
 			// Departments
-			App.departments = App.departments ? App.departments : new Models.Departments();
+			App.departments = App.departments || new Models.Departments();
 			App.departments.fetch({
 				cache : true,
 				success : function(collection, resp) {
@@ -3800,7 +3840,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		selectPosition : function(event, position) {
 			var self = this;
-			var selectedModel = position ? position : self.collection.getByCid($(event.currentTarget).attr('data-position-cid'));
+			var selectedModel = position || self.collection.getByCid($(event.currentTarget).attr('data-position-cid'));
 			if (selectedModel) {
 				self.collection.trigger("position:selected", selectedModel);
 			}
@@ -3872,7 +3912,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		renderCandidacies : function($el) {
 			var self = this;
-			var positionCandidaciesView = undefined;
+			var positionCandidaciesView;
 			var positionCandidacies = new Models.PositionCandidacies({
 				id : self.model.get("phase").candidacies.id,
 				position : {
@@ -3894,16 +3934,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		renderCommittee : function($el) {
 			var self = this;
+			var positionCommittee;
+			var positionCommitteeView;
 			if (!self.model.get("phase").committee) {
 				return;
 			}
-			var positionCommittee = new Models.PositionCommittee({
+			positionCommittee = new Models.PositionCommittee({
 				id : self.model.get("phase").committee.id,
 				position : {
 					id : self.model.get("id")
 				}
 			});
-			var positionCommitteeView = new Views.PositionCommitteeView({
+			positionCommitteeView = new Views.PositionCommitteeView({
 				model : positionCommittee
 			});
 			positionCommittee.fetch({
@@ -3917,16 +3959,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		renderEvaluation : function($el) {
 			var self = this;
+			var positionEvaluation;
+			var positionEvaluationView;
 			if (!self.model.get("phase").evaluation) {
 				return;
 			}
-			var positionEvaluation = new Models.PositionEvaluation({
+			positionEvaluation = new Models.PositionEvaluation({
 				id : self.model.get("phase").evaluation.id,
 				position : {
 					id : self.model.get("id")
 				}
 			});
-			var positionEvaluationView = new Views.PositionEvaluationView({
+			positionEvaluationView = new Views.PositionEvaluationView({
 				model : positionEvaluation
 			});
 			positionEvaluation.fetch({
@@ -3940,16 +3984,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		renderNomination : function($el) {
 			var self = this;
+			var positionNomination;
+			var positionNominationView;
 			if (!self.model.get("phase").nomination) {
 				return;
 			}
-			var positionNomination = new Models.PositionNomination({
+			positionNomination = new Models.PositionNomination({
 				id : self.model.get("phase").nomination.id,
 				position : {
 					id : self.model.get("id")
 				}
 			});
-			var positionNominationView = new Views.PositionNominationView({
+			positionNominationView = new Views.PositionNominationView({
 				model : positionNomination
 			});
 			positionNomination.fetch({
@@ -3963,16 +4009,19 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		renderComplementaryDocuments : function($el) {
 			var self = this;
+			var positionComplementaryDocuments;
+			var positionComplementaryDocumentsView;
+
 			if (!self.model.get("phase").complementaryDocuments) {
 				return;
 			}
-			var positionComplementaryDocuments = new Models.PositionComplementaryDocuments({
+			positionComplementaryDocuments = new Models.PositionComplementaryDocuments({
 				id : self.model.get("phase").complementaryDocuments.id,
 				position : {
 					id : self.model.get("id")
 				}
 			});
-			var positionComplementaryDocumentsView = new Views.PositionComplementaryDocumentsView({
+			positionComplementaryDocumentsView = new Views.PositionComplementaryDocumentsView({
 				model : positionComplementaryDocuments
 			});
 			positionComplementaryDocuments.fetch({
@@ -4097,8 +4146,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		showMainTab : function($el) {
 			var self = this;
+			var positionMainEditView;
 			$el.html("Main");
-			var positionMainEditView = new Views.PositionMainEditView({
+			positionMainEditView = new Views.PositionMainEditView({
 				model : self.model
 			});
 			$el.html(positionMainEditView.el);
@@ -4108,7 +4158,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		showCandidaciesTab : function($el) {
 			var self = this;
-			var candidacyView = undefined;
 			var positionCandidacies = new Models.PositionCandidacies({
 				id : self.model.get("phase").candidacies.id,
 				position : {
@@ -4292,6 +4341,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				return self.model.isNew() || _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
 			case "closingDate":
 				return self.model.isNew() || _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
+			default:
+				break;
 			}
 			return false;
 		},
@@ -4407,10 +4458,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.model.save(values, {
 				wait : true,
 				success : function(model, resp) {
+					var popup;
 					App.router.navigate("positions/" + self.model.id + "/main", {
 						trigger : false
 					});
-					var popup = new Views.PopupView({
+					popup = new Views.PopupView({
 						type : "success",
 						message : $.i18n.prop("Success")
 					});
@@ -4445,10 +4497,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.model.destroy({
 						wait : true,
 						success : function(model, resp) {
+							var popup;
 							App.router.navigate("positions", {
 								trigger : false
 							});
-							var popup = new Views.PopupView({
+							popup = new Views.PopupView({
 								type : "success",
 								message : $.i18n.prop("Success")
 							});
@@ -4494,8 +4547,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(event) {
 			var self = this;
+			var tpl_data, files;
 			self.closeInnerViews();
-			var tpl_data = self.model.toJSON();
+			tpl_data = self.model.toJSON();
 			if (App.loggedOnUser.isAssociatedWithDepartment(self.model.get("position").department) || App.loggedOnUser.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE")) {
 				_.each(tpl_data.members, function(member) {
 					member.access = "READ_FULL";
@@ -4504,7 +4558,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.$el.html(self.template(tpl_data));
 			// Add Files
 			if (self.model.has("id")) {
-				var files = new Models.Files();
+				files = new Models.Files();
 				files.url = self.model.url() + "/file";
 				files.fetch({
 					cache : false,
@@ -4581,17 +4635,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(event) {
 			var self = this;
+			var files;
 			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 
 			// Add Existing Committee Members:
 			_.each(self.model.get("members"), function(committeeMember) {
-				addMember(committeeMember);
+				self.addMember(committeeMember);
 			});
 
 			// Add Files
 			if (self.model.has("id")) {
-				var files = new Models.Files();
+				files = new Models.Files();
 				files.url = self.model.url() + "/file";
 				files.fetch({
 					cache : false,
@@ -4652,7 +4707,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		removeMember : function(event) {
-			var self = this;
 			$(event.currentTarget).parents("tr").remove();
 		},
 
@@ -4692,6 +4746,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		cancel : function(event) {
+			var self = this;
 			self.model.fetch({
 				cache : false
 			});
@@ -4770,7 +4825,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		addMember : function(event) {
 			var self = this;
-			var cid = $(event.currentTarget).data('modelCid')
+			var cid = $(event.currentTarget).data('modelCid');
 			var selectedModel = self.collection.getByCid(cid);
 			var type = $(event.currentTarget).data('type');
 			self.collection.trigger("member:add", selectedModel, type);
@@ -4803,8 +4858,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(event) {
 			var self = this;
+			var tpl_data;
 			self.closeInnerViews();
-			var tpl_data = self.model.toJSON();
+			tpl_data = self.model.toJSON();
 			if (App.loggedOnUser.isAssociatedWithDepartment(self.model.get("position").department) || App.loggedOnUser.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE")) {
 				_.each(tpl_data.evaluators, function(evaluator) {
 					evaluator.access = "READ_FULL";
@@ -4816,8 +4872,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			_.each(self.model.get("evaluators"), function(evaluator) {
 				var positionEvaluator = new Models.PositionEvaluator(_.extend(evaluator, {
 					evaluation : self.model.toJSON()
-				}));
-				var files = new Models.Files();
+				})), files = new Models.Files();
 				files.url = positionEvaluator.url() + "/file";
 				files.fetch({
 					cache : false,
@@ -4927,10 +4982,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		renderEvaluator : function($el, evaluator) {
 			var self = this;
+			var files;
 			$el.html(self.templateRow(evaluator.toJSON()));
 			// Add files
 			if (evaluator.has("id")) {
-				var files = new Models.Files();
+				files = new Models.Files();
 				files.url = evaluator.url() + "/file";
 				files.fetch({
 					cache : false,
@@ -4973,7 +5029,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.$("legend span").popover("show");
 				}
 			});
-			confirm.show()
+			confirm.show();
 		},
 
 		submit : function(event) {
@@ -5093,7 +5149,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		addMember : function(event) {
 			var self = this;
-			var cid = $(event.currentTarget).data('modelCid')
+			var cid = $(event.currentTarget).data('modelCid');
 			var selectedModel = self.collection.getByCid(cid);
 			var position = $(event.currentTarget).data('position');
 			self.collection.trigger("member:add", selectedModel, position);
@@ -5124,11 +5180,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			var files;
 			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 			// Add files
 			if (self.model.has("id")) {
-				var files = new Models.Files();
+				files = new Models.Files();
 				files.url = self.model.url() + "/file";
 				files.fetch({
 					cache : false,
@@ -5183,12 +5240,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			var files;
 			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 
 			// Add files
 			if (self.model.has("id")) {
-				var files = new Models.Files();
+				files = new Models.Files();
 				files.url = self.model.url() + "/file";
 				files.fetch({
 					cache : false,
@@ -5237,10 +5295,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(event) {
 			var self = this;
+			var files;
 			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 			// Add Files
-			var files = new Models.Files();
+			files = new Models.Files();
 			files.url = self.model.url() + "/file";
 			files.fetch({
 				cache : false,
@@ -5268,8 +5327,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		close : function(eventName) {
 			this.closeInnerViews();
-			this.model.unbind('change', self.render, self);
-			this.model.unbind("destroy", self.close, self);
+			this.model.unbind('change', this.render, this);
+			this.model.unbind("destroy", this.close, this);
 			this.$el.unbind();
 			this.$el.remove();
 
@@ -5312,6 +5371,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(event) {
 			var self = this;
+			var files;
 			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 
@@ -5326,11 +5386,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				cache : false,
 				wait : true,
 				success : function(collection, resp) {
+					var nominatedCandidacyId = self.model.has("nominatedCandidacy") ? self.model.get("nominatedCandidacy").id : undefined;
+					var secondNominatedCandidacyId = self.model.has("secondNominatedCandidacy") ? self.model.get("secondNominatedCandidacy").id : undefined;
+					// Clean
 					self.$("select[name='nominatedCandidacy']").empty();
 					self.$("select[name='secondNominatedCandidacy']").empty();
 					// Add Candidacies in selector:
-					var nominatedCandidacyId = self.model.has("nominatedCandidacy") ? self.model.get("nominatedCandidacy").id : undefined;
-					var secondNominatedCandidacyId = self.model.has("secondNominatedCandidacy") ? self.model.get("secondNominatedCandidacy").id : undefined;
 					self.$("select[name='nominatedCandidacy']").append("<option value=''>--</option>");
 					self.$("select[name='secondNominatedCandidacy']").append("<option value=''>--</option>");
 					collection.each(function(candidacy) {
@@ -5350,7 +5411,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				}
 			});
 			// Add Files
-			var files = new Models.Files();
+			files = new Models.Files();
 			files.url = self.model.url() + "/file";
 			files.fetch({
 				cache : false,
@@ -5420,6 +5481,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		cancel : function(event) {
+			var self = this;
 			self.model.fetch({
 				cache : false
 			});
@@ -5427,8 +5489,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		close : function(eventName) {
 			this.closeInnerViews();
-			this.model.unbind('change', self.render, self);
-			this.model.unbind("destroy", self.close, self);
+			this.model.unbind('change', this.render, this);
+			this.model.unbind("destroy", this.close, this);
 			this.$el.unbind();
 			this.$el.remove();
 
@@ -5451,12 +5513,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(event) {
 			var self = this;
+			var files;
 			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 
 			// Add Files
 			if (self.model.has("id")) {
-				var files = new Models.Files();
+				files = new Models.Files();
 				files.url = self.model.url() + "/file";
 				files.fetch({
 					cache : false,
@@ -5505,12 +5568,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(event) {
 			var self = this;
+			var files;
 			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 
 			// Add Files
 			if (self.model.has("id")) {
-				var files = new Models.Files();
+				files = new Models.Files();
 				files.url = self.model.url() + "/file";
 				files.fetch({
 					cache : false,
@@ -5526,6 +5590,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		cancel : function(event) {
+			var self = this;
 			self.model.fetch({
 				cache : false
 			});
@@ -5567,8 +5632,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				registries : (function() {
 					var result = [];
 					self.collection.each(function(model) {
+						var item;
 						if (model.has("id")) {
-							var item = model.toJSON();
+							item = model.toJSON();
 							item.cid = model.cid;
 							result.push(item);
 						}
@@ -5616,7 +5682,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}
 			self.$("#actions").append("<div class=\"btn-group\"><input type=\"hidden\" name=\"institution\" /><a id=\"createRegister\" class=\"btn\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_register') + " </a></div>");
 			// Add institutions in selector:
-			App.institutions = App.institutions ? App.institutions : new Models.Institutions();
+			App.institutions = App.institutions || new Models.Institutions();
 			App.institutions.fetch({
 				cache : true,
 				success : function(collection, resp) {
@@ -5636,7 +5702,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		selectRegister : function(event, register) {
-			var selectedModel = register ? register : this.collection.getByCid($(event.currentTarget).attr('data-register-cid'));
+			var selectedModel = register || this.collection.getByCid($(event.currentTarget).attr('data-register-cid'));
 			if (selectedModel) {
 				this.collection.trigger("register:selected", selectedModel);
 			}
@@ -5753,7 +5819,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		viewMember : function(event, positionCommitteeMember) {
 			var self = this;
-			var selectedModel = positionCommitteeMember ? positionCommitteeMember : self.collection.get($(event.currentTarget).data('committeeMemberId'));
+			var selectedModel = positionCommitteeMember || self.collection.get($(event.currentTarget).data('committeeMemberId'));
 			if (selectedModel) {
 				self.collection.trigger("positionCommitteeMember:selected", selectedModel);
 			}
@@ -5863,10 +5929,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.model.save(values, {
 				wait : true,
 				success : function(model, resp) {
+					var popup;
 					App.router.navigate("registers/" + self.model.id, {
 						trigger : false
 					});
-					var popup = new Views.PopupView({
+					popup = new Views.PopupView({
 						type : "success",
 						message : $.i18n.prop("Success")
 					});
@@ -5901,10 +5968,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.model.destroy({
 						wait : true,
 						success : function(model, resp) {
+							var popup;
 							App.router.navigate("registers", {
 								trigger : false
 							});
-							var popup = new Views.PopupView({
+							popup = new Views.PopupView({
 								type : "success",
 								message : $.i18n.prop("Success")
 							});
@@ -5999,7 +6067,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		viewMember : function(event, member) {
 			var self = this;
-			var selectedModel = member ? member : self.collection.get($(event.currentTarget).data('memberId'));
+			var selectedModel = member || self.collection.get($(event.currentTarget).data('memberId'));
 			if (selectedModel) {
 				self.collection.trigger("member:selected", selectedModel);
 			}
@@ -6228,7 +6296,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		addMember : function(event) {
 			var self = this;
-			var cid = $(event.currentTarget).data('modelCid')
+			var cid = $(event.currentTarget).data('modelCid');
 			var selectedModel = self.collection.getByCid(cid);
 			var type = self.$("select[name=type][data-model-cid=" + cid + "]").val();
 			self.collection.trigger("member:add", selectedModel, type);
@@ -6301,14 +6369,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		showDetails : function(event, professor) {
 			var self = this;
-			var selectedModel = professor ? professor : self.collection.getByCid($(event.currentTarget).data('modelCid'));
+			var selectedModel = professor || self.collection.getByCid($(event.currentTarget).data('modelCid'));
 			if (selectedModel) {
 				self.collection.trigger("professor:selected", professor);
 			}
 		},
 
 		select : function(event, professor) {
-			var selectedModel = professor ? professor : this.collection.getByCid($(event.currentTarget).data('modelCid'));
+			var selectedModel = professor || this.collection.getByCid($(event.currentTarget).data('modelCid'));
 			if (selectedModel) {
 				this.collection.trigger("role:selected", selectedModel);
 			}
@@ -6370,7 +6438,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		select : function(event, positionCommitteeMember) {
 			var self = this;
-			var selectedModel = positionCommitteeMember ? positionCommitteeMember : self.collection.get($(event.currentTarget).data('committeeMemberId'));
+			var selectedModel = positionCommitteeMember || self.collection.get($(event.currentTarget).data('committeeMemberId'));
 			if (selectedModel) {
 				self.collection.trigger("positionCommitteeMember:selected", selectedModel);
 			}
@@ -6433,7 +6501,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		select : function(event, positionEvaluator) {
 			var self = this;
-			var selectedModel = positionEvaluator ? positionEvaluator : self.collection.get($(event.currentTarget).data('evaluatorId'));
+			var selectedModel = positionEvaluator || self.collection.get($(event.currentTarget).data('evaluatorId'));
 			if (selectedModel) {
 				self.collection.trigger("positionEvaluator:selected", selectedModel);
 			}
@@ -6474,8 +6542,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				institutionRFs : (function() {
 					var result = [];
 					self.collection.each(function(model) {
+						var item;
 						if (model.has("id")) {
-							var item = model.toJSON();
+							item = model.toJSON();
 							item.cid = model.cid;
 							result.push(item);
 						}
@@ -6525,7 +6594,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}
 			self.$("#actions").append("<div class=\"btn-group\"><input type=\"hidden\" name=\"institution\" /><a id=\"createInstitutionRF\" class=\"btn\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_institutionrf') + " </a></div>");
 			// Add institutions in selector:
-			App.institutions = App.institutions ? App.institutions : new Models.Institutions();
+			App.institutions = App.institutions || new Models.Institutions();
 			App.institutions.fetch({
 				cache : true,
 				success : function(collection, resp) {
@@ -6546,7 +6615,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		select : function(event, institutionRF) {
 			var self = this;
-			var selectedModel = institutionRF ? institutionRF : self.collection.getByCid($(event.currentTarget).data('institutionrfCid'));
+			var selectedModel = institutionRF || self.collection.getByCid($(event.currentTarget).data('institutionrfCid'));
 			if (selectedModel) {
 				self.collection.trigger("institutionRF:selected", selectedModel);
 			}
@@ -6659,10 +6728,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.model.save(values, {
 				wait : true,
 				success : function(model, resp) {
+					var popup;
 					App.router.navigate("regulatoryframeworks/" + self.model.id, {
 						trigger : false
 					});
-					var popup = new Views.PopupView({
+					popup = new Views.PopupView({
 						type : "success",
 						message : $.i18n.prop("Success")
 					});
@@ -6697,10 +6767,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.model.destroy({
 						wait : true,
 						success : function(model, resp) {
+							var popup;
 							App.router.navigate("regulatoryframeworks", {
 								trigger : false
 							});
-							var popup = new Views.PopupView({
+							popup = new Views.PopupView({
 								type : "success",
 								message : $.i18n.prop("Success")
 							});
@@ -6789,7 +6860,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 			// Add Departments to selector:
-			App.departments = App.departments ? App.departments : new Models.Departments();
+			App.departments = App.departments || new Models.Departments();
 			App.departments.fetch({
 				cache : true,
 				success : function(collection, resp) {
@@ -6957,7 +7028,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		select : function(event, position) {
 			var self = this;
-			var selectedModel = position ? position : self.collection.get($(event.currentTarget).data('positionId'));
+			var selectedModel = position || self.collection.get($(event.currentTarget).data('positionId'));
 			self.collection.trigger("position:selected", selectedModel);
 		},
 
@@ -7018,7 +7089,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		select : function(event, candidacy) {
 			var self = this;
-			var selectedModel = candidacy ? candidacy : self.collection.get($(event.currentTarget).data('candidacyId'));
+			var selectedModel = candidacy || self.collection.get($(event.currentTarget).data('candidacyId'));
 			self.collection.trigger("candidacy:selected", selectedModel);
 		},
 
@@ -7068,18 +7139,22 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
 			case "sympliromatikaEggrafaFileList":
 				return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI") || _.isEqual(self.model.get("candidacies").position.phase.status, "EPILOGI");
+			default:
+				break;
 			}
 			return false;
 		},
 
 		render : function(eventName) {
 			var self = this;
+			var files;
+			var sfiles;
 			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 
 			if (self.model.has("id")) {
 				// Snapshot Files
-				var sfiles = new Models.Files();
+				sfiles = new Models.Files();
 				sfiles.url = self.model.url() + "/snapshot/file";
 				sfiles.fetch({
 					cache : false,
@@ -7096,7 +7171,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				});
 				// Candidacy Files
-				var files = new Models.Files();
+				files = new Models.Files();
 				files.url = self.model.url() + "/file";
 				files.fetch({
 					cache : false,
@@ -7143,10 +7218,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.model.save(values, {
 				wait : true,
 				success : function(model, resp) {
+					var popup;
 					App.router.navigate("candidateCandidacies/" + self.model.id, {
 						trigger : false
 					});
-					var popup = new Views.PopupView({
+					popup = new Views.PopupView({
 						type : "success",
 						message : $.i18n.prop("Success")
 					});
@@ -7178,10 +7254,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.model.destroy({
 						wait : true,
 						success : function(model, resp) {
+							var popup;
 							App.router.navigate("candidateCandidacies", {
 								trigger : false
 							});
-							var popup = new Views.PopupView({
+							popup = new Views.PopupView({
 								type : "success",
 								message : $.i18n.prop("Success")
 							});
@@ -7227,11 +7304,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
+			var files;
+			var sfiles;
 			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
 
 			// Snapshot Files
-			var sfiles = new Models.Files();
+			sfiles = new Models.Files();
 			sfiles.url = self.model.url() + "/snapshot/file";
 			sfiles.fetch({
 				cache : false,
@@ -7248,7 +7327,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				}
 			});
 			// Candidacy Files
-			var files = new Models.Files();
+			files = new Models.Files();
 			files.url = self.model.url() + "/file";
 			files.fetch({
 				cache : false,

@@ -87,11 +87,11 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			return _.any(self.get("roles"), function(r) {
 				if (r.discriminator === "INSTITUTION_MANAGER" && r.institution.id === institutionId) {
 					return true;
-				} else if (r.discriminator === "INSTITUTION_ASSISTANT" && r.institution.id === institutionId) {
-					return true;
-				} else {
-					return false;
 				}
+				if (r.discriminator === "INSTITUTION_ASSISTANT" && r.institution.id === institutionId) {
+					return true;
+				}
+				return false;
 			});
 		},
 
@@ -106,11 +106,11 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			return _.any(self.get("roles"), function(r) {
 				if (r.discriminator === "INSTITUTION_MANAGER" && r.institution.id === institutionId) {
 					return true;
-				} else if (r.discriminator === "INSTITUTION_ASSISTANT" && r.institution.id === institutionId) {
-					return true;
-				} else {
-					return false;
 				}
+				if (r.discriminator === "INSTITUTION_ASSISTANT" && r.institution.id === institutionId) {
+					return true;
+				}
+				return false;
 			});
 		},
 
