@@ -125,4 +125,13 @@ public class PositionEvaluation {
 			evaluator.initializeCollections();
 		}
 	}
+
+	public boolean containsEvaluator(User user) {
+		for (PositionEvaluator member : this.evaluators) {
+			if (member.getRegisterMember().getProfessor().getUser().getId().equals(user.getId())) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

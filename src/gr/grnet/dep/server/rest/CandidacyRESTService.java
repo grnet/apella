@@ -3,6 +3,7 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
+import gr.grnet.dep.service.model.Candidacy.MediumCandidacyView;
 import gr.grnet.dep.service.model.CandidacyEvaluator;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Position;
@@ -57,8 +58,7 @@ public class CandidacyRESTService extends RESTService {
 
 	@GET
 	@Path("/{id:[0-9]+}")
-	@JsonView({DetailedCandidacyView.class})
-	public Candidacy get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+	public String get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Candidacy candidacy = (Candidacy) em.createQuery(
@@ -66,16 +66,22 @@ public class CandidacyRESTService extends RESTService {
 				.setParameter("id", id)
 				.getSingleResult();
 			Candidate candidate = candidacy.getCandidate();
-			if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-				!loggedOn.isDepartmentUser(candidacy.getCandidacies().getPosition().getDepartment()) &&
-				!candidate.getUser().getId().equals(loggedOn.getId())) {
-				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+
+			if (loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) ||
+				loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) ||
+				loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) ||
+				loggedOn.isDepartmentUser(candidacy.getCandidacies().getPosition().getDepartment()) ||
+				candidate.getUser().getId().equals(loggedOn.getId())) {
+				// Full Access
+				return toJSON(candidacy, DetailedCandidacyView.class);
 			}
-			// Initialize collections
-			candidacy.initializeCollections();
-			return candidacy;
+			if (candidacy.getCandidacies().containsCandidate(loggedOn) ||
+				candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn) ||
+				candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) {
+				// Medium (without ContactInformation and ProposedEvaluation)
+				return toJSON(candidacy, MediumCandidacyView.class);
+			}
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 		}

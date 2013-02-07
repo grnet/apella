@@ -1151,7 +1151,12 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			candidate : {
 				"id" : undefined
 			},
-			snapshot : {}
+			proposedEvaluators : [],
+			snapshot : {
+				basicInfo : {},
+				basicInfoLatin : {},
+				contactInfo : {}
+			}
 		}
 	});
 
