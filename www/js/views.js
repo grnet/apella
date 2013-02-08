@@ -1057,6 +1057,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var firstnamelatin = self.$('form input[name=firstnamelatin]').val();
 			var lastnamelatin = self.$('form input[name=lastnamelatin]').val();
 			var fathernamelatin = self.$('form input[name=fathernamelatin]').val();
+			var identification = self.$('form input[name=identification]').val();
 			var password = self.$('form input[name=password]').val();
 			var mobile = self.$('form input[name=mobile]').val();
 			var email = self.$('form input[name=email]').val();
@@ -1071,6 +1072,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			// Save to model
 			self.model.save({
 				"username" : username,
+				"identification" : identification,
 				"basicInfo" : {
 					"firstname" : firstname,
 					"lastname" : lastname,

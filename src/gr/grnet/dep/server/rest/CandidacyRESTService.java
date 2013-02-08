@@ -73,12 +73,14 @@ public class CandidacyRESTService extends RESTService {
 				loggedOn.isDepartmentUser(candidacy.getCandidacies().getPosition().getDepartment()) ||
 				candidate.getUser().getId().equals(loggedOn.getId())) {
 				// Full Access
+				candidacy.initializeCollections();
 				return toJSON(candidacy, DetailedCandidacyView.class);
 			}
 			if (candidacy.getCandidacies().containsCandidate(loggedOn) ||
 				candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn) ||
 				candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) {
 				// Medium (without ContactInformation and ProposedEvaluation)
+				candidacy.initializeCollections();
 				return toJSON(candidacy, MediumCandidacyView.class);
 			}
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");

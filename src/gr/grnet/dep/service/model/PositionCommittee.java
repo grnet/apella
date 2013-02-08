@@ -55,7 +55,7 @@ public class PositionCommittee {
 	@OneToMany(mappedBy = "committee", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<PositionCommitteeFile> files = new HashSet<PositionCommitteeFile>();
 
-	@OneToMany(mappedBy = "committee")
+	@OneToMany(mappedBy = "committee", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<PositionCommitteeMember> members = new ArrayList<PositionCommitteeMember>();
 
 	@Temporal(TemporalType.DATE)
@@ -150,11 +150,9 @@ public class PositionCommittee {
 		this.setUpdatedAt(new Date());
 	}
 
-	public void initializeCollections() {
-		this.files.size();
-		for (PositionCommitteeMember member : members) {
-			member.initializeCollections();
-		}
+	public void addMember(PositionCommitteeMember member) {
+		member.setCommittee(this);
+		this.members.add(member);
 	}
 
 	public boolean containsMember(User user) {
@@ -165,4 +163,12 @@ public class PositionCommittee {
 		}
 		return false;
 	}
+
+	public void initializeCollections() {
+		this.files.size();
+		for (PositionCommitteeMember member : members) {
+			member.initializeCollections();
+		}
+	}
+
 }

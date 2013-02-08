@@ -14,6 +14,7 @@
 	<td width="1px">
 		<a id="viewMember" href="#user/<%= registerMember.professor.user.id %>"><%= registerMember.professor.user.id %> </a>
 	</td>
+	<td><%= registerMember.external ? $.i18n.prop("RegisterMemberExternal") : $.i18n.prop("RegisterMemberInternal") %></td>
 	<td><%= registerMember.professor.user.basicInfo.firstname %></td>
 	<td><%= registerMember.professor.user.basicInfo.lastname%></td>
 	<td><%= $.i18n.prop(registerMember.professor.discriminator) %></td>

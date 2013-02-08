@@ -230,11 +230,11 @@ public class PositionCommitteeRESTService extends RESTService {
 					break;
 			}
 		}
-		if (countRegular > PositionCommitteeMember.MAX_MEMBERS) {
-			throw new RestException(Status.CONFLICT, "max.members.exceeded." + MemberType.REGULAR);
+		if (countRegular != PositionCommitteeMember.MAX_MEMBERS) {
+			throw new RestException(Status.CONFLICT, "max.regular.members.failed");
 		}
-		if (countSubstitute > PositionCommitteeMember.MAX_MEMBERS) {
-			throw new RestException(Status.CONFLICT, "max.members.exceeded." + MemberType.SUBSTITUTE);
+		if (countSubstitute != PositionCommitteeMember.MAX_MEMBERS) {
+			throw new RestException(Status.CONFLICT, "max.substitute.members.failed");
 		}
 		// Check number of internal and external members
 		int countInternal = 0;
@@ -267,7 +267,10 @@ public class PositionCommitteeRESTService extends RESTService {
 				newCommitteeMember.setCommittee(existingCommittee);
 				newCommitteeMember.setRegisterMember(newRegisterMember);
 				newCommitteeMember.setType(newCommitteeMemberAsMap.get(newRegisterMember.getId()));
+
+				existingCommittee.addMember(newCommitteeMember);
 			}
+			existingCommittee = em.merge(existingCommittee);
 			em.flush();
 			// Return result
 			existingCommittee.initializeCollections();

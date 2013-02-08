@@ -187,17 +187,17 @@ public class UserRESTService extends RESTService {
 
 	@POST
 	@JsonView({DetailedUserView.class})
-	public User create(@HeaderParam(TOKEN_HEADER) String authToken, User user) {
+	public User create(@HeaderParam(TOKEN_HEADER) String authToken, User newUser) {
 		try {
 			//1. Validate
 			// Has one role
-			if (user.getRoles().isEmpty() || user.getRoles().size() > 1) {
+			if (newUser.getRoles().isEmpty() || newUser.getRoles().size() > 1) {
 				throw new RestException(Status.CONFLICT, "one.role.required");
 			}
 			// Identification availability
 			try {
 				em.createQuery("select identification from User u where u.identification = :identification")
-					.setParameter("identification", user.getIdentification())
+					.setParameter("identification", newUser.getIdentification())
 					.setMaxResults(1)
 					.getSingleResult();
 				throw new RestException(Status.CONFLICT, "existing.identification.number");
@@ -206,7 +206,7 @@ public class UserRESTService extends RESTService {
 			// Username availability
 			try {
 				em.createQuery("select u from User u where u.username = :username")
-					.setParameter("username", user.getUsername())
+					.setParameter("username", newUser.getUsername())
 					.getSingleResult();
 				throw new RestException(Status.FORBIDDEN, "username.not.available");
 			} catch (NoResultException e) {
@@ -214,26 +214,26 @@ public class UserRESTService extends RESTService {
 			// Contact mail availability
 			try {
 				em.createQuery("select u from User u where u.contactInfo.email = :email")
-					.setParameter("email", user.getContactInfo().getEmail())
+					.setParameter("email", newUser.getContactInfo().getEmail())
 					.getSingleResult();
 				throw new RestException(Status.FORBIDDEN, "contact.email.not.available");
 			} catch (NoResultException e) {
 			}
 
 			//2. Set Fields
-			Role firstRole = user.getRoles().iterator().next();
+			Role firstRole = newUser.getRoles().iterator().next();
 			firstRole.setStatus(RoleStatus.UNAPPROVED);
 			firstRole.setStatusDate(new Date());
 
-			user.setRegistrationType(UserRegistrationType.REGISTRATION_FORM);
-			user.setRegistrationDate(new Date());
-			user.setPasswordSalt(User.generatePasswordSalt());
-			user.setPassword(User.encodePassword(user.getPassword(), user.getPasswordSalt()));
-			user.setStatus(UserStatus.UNVERIFIED);
-			user.setStatusDate(new Date());
-			user.setVerificationNumber(user.generateVerificationNumber());
-			user.setRoles(new ArrayList<Role>());
-			user.addRole(firstRole);
+			newUser.setRegistrationType(UserRegistrationType.REGISTRATION_FORM);
+			newUser.setRegistrationDate(new Date());
+			newUser.setPasswordSalt(User.generatePasswordSalt());
+			newUser.setPassword(User.encodePassword(newUser.getPassword(), newUser.getPasswordSalt()));
+			newUser.setStatus(UserStatus.UNVERIFIED);
+			newUser.setStatusDate(new Date());
+			newUser.setVerificationNumber(newUser.generateVerificationNumber());
+			newUser.setRoles(new ArrayList<Role>());
+			newUser.addRole(firstRole);
 
 			User loggedOn = null;
 			switch (firstRole.getDiscriminator()) {
@@ -242,7 +242,7 @@ public class UserRESTService extends RESTService {
 					Candidate secondRole = new Candidate();
 					secondRole.setStatus(RoleStatus.UNAPPROVED);
 					secondRole.setStatusDate(new Date());
-					user.addRole(secondRole);
+					newUser.addRole(secondRole);
 					break;
 				case PROFESSOR_FOREIGN:
 					break;
@@ -275,8 +275,8 @@ public class UserRESTService extends RESTService {
 						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 					}
 					((InstitutionAssistant) firstRole).setManager(((InstitutionManager) loggedOn.getActiveRole(RoleDiscriminator.INSTITUTION_MANAGER)));
-					user.setStatus(UserStatus.ACTIVE);
-					user.setVerificationNumber(null);
+					newUser.setStatus(UserStatus.ACTIVE);
+					newUser.setVerificationNumber(null);
 					firstRole.setStatus(RoleStatus.ACTIVE);
 					break;
 				case MINISTRY_MANAGER:
@@ -288,29 +288,29 @@ public class UserRESTService extends RESTService {
 						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 					}
 					((MinistryAssistant) firstRole).setManager(((MinistryManager) loggedOn.getActiveRole(RoleDiscriminator.MINISTRY_MANAGER)));
-					user.setStatus(UserStatus.ACTIVE);
-					user.setVerificationNumber(null);
+					newUser.setStatus(UserStatus.ACTIVE);
+					newUser.setVerificationNumber(null);
 					firstRole.setStatus(RoleStatus.ACTIVE);
 					break;
 				case ADMINISTRATOR:
 					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			//3. Update
-			em.persist(user);
+			em.persist(newUser);
 			em.flush(); //To catch the exception
 
 			//4. Send Verification E-Mail
-			if (user.getStatus() == UserStatus.UNVERIFIED) {
+			if (newUser.getStatus() == UserStatus.UNVERIFIED) {
 				try {
-					MailClient.sendVerificationEmail(user);
+					MailClient.sendVerificationEmail(newUser);
 				} catch (MessagingException e) {
-					logger.log(Level.SEVERE, "Error sending verification email to user " + user.getUsername(), e);
+					logger.log(Level.SEVERE, "Error sending verification email to user " + newUser.getUsername(), e);
 				}
 			}
 
 			//5. Return result
-			user.initializeCollections();
-			return user;
+			newUser.initializeCollections();
+			return newUser;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
