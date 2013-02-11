@@ -246,6 +246,11 @@ public class RegisterRESTService extends RESTService {
 			newMember = em.merge(newMember);
 			existingRegister.addMember(newMember);
 			em.flush();
+
+			// TODO: Send E-Mails
+			// register.create.register.member.internal@member
+			// register.create.register.member.external@member
+
 			// Return result
 			newMember.getProfessor().initializeCollections();
 			return newMember;
@@ -283,6 +288,11 @@ public class RegisterRESTService extends RESTService {
 			existingRegister.getMembers().remove(existingMember);
 			em.remove(existingMember);
 			em.flush();
+
+			// TODO: Send E-Mails
+			// register.remove.register.member.internal@member
+			// register.remove.register.member.external@member
+
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");

@@ -205,6 +205,13 @@ public class PositionEvaluationRESTService extends RESTService {
 				existingEvaluation.addEvaluator(newEvaluator);
 			}
 			em.flush();
+
+			// TODO: Send E-Mails
+			// positionEvaluation.create.evaluator@evaluator
+			// positionEvaluation.remove.evaluator@evaluator
+			// positionEvaluation.update@candidates
+			// positionEvaluation.update@committee
+
 			// Return result
 			existingEvaluation.initializeCollections();
 			return existingEvaluation;
@@ -379,6 +386,18 @@ public class PositionEvaluationRESTService extends RESTService {
 			saveFile(loggedOn, fileItems, eFile);
 			existingEvaluator.addFile(eFile);
 			em.flush();
+
+			if (eFile.getType().equals(FileType.AKSIOLOGISI)) {
+				// TODO: Send E-Mails
+				// positionEvaluation.upload.aksiologisi@committee
+				// positionEvaluation.upload.aksiologisi@evaluators
+				// position.upload@candidates
+			} else {
+				// TODO: Send E-Mails
+				// position.upload@committee
+				// position.upload@evaluators
+				// position.upload@candidates
+			}
 
 			return toJSON(eFile, SimpleFileHeaderView.class);
 		} catch (PersistenceException e) {

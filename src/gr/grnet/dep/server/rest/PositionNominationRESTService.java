@@ -121,6 +121,13 @@ public class PositionNominationRESTService extends RESTService {
 				existingNomination.setSecondNominatedCandidacy(null);
 			}
 			em.flush();
+
+			// TODO: Send E-Mails
+			// positionNomination.update.nominationCommitteeConvergenceDate@committe
+			// positionNomination.update.nominationCommitteeConvergenceDate@candidates
+			// positionNomination.update.nominationCommitteeConvergenceDate@evaluators
+			// positionNomination.update.nominated@candidate
+
 			return existingNomination;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
@@ -280,6 +287,18 @@ public class PositionNominationRESTService extends RESTService {
 			saveFile(loggedOn, fileItems, nominationFile);
 			position.getPhase().getNomination().addFile(nominationFile);
 			em.flush();
+
+			if (nominationFile.getType().equals(FileType.PRAKTIKO_EPILOGIS)) {
+				// TODO: Send E-Mails
+				// positionNomination.upload.praktikoEpilogis@committee
+				// positionNomination.upload.praktikoEpilogis@evaluators
+				// positionNomination.upload.praktikoEpilogis@candidates
+			} else {
+				// TODO: Send E-Mails
+				// position.upload@committee
+				// position.upload@evaluators
+				// position.upload@candidates
+			}
 
 			return toJSON(nominationFile, SimpleFileHeaderView.class);
 		} catch (PersistenceException e) {

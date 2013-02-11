@@ -182,7 +182,15 @@ public class CandidacyRESTService extends RESTService {
 				}
 			}
 			updateSnapshot(existingCandidacy, candidate);
-			existingCandidacy.setPermanent(true);
+			if (!existingCandidacy.isPermanent()) {
+				existingCandidacy.setPermanent(true);
+			}
+			em.flush();
+
+			//TODO: Send E-Mails
+			// 1. candidacy.create@institutionManager
+			// 2. candidacy.create.candidacyEvaluator@candidacyEvaluator
+			// 3. candidacy.create.candidacyEvaluator@institutionManager
 
 			// Return
 			existingCandidacy.initializeCollections();
@@ -219,6 +227,14 @@ public class CandidacyRESTService extends RESTService {
 			}
 			// Update
 			em.remove(existingCandidacy);
+			em.flush();
+
+			// TODO: Send E-Mails
+			// candidacy.remove@institutionManager
+			// candidacy.remove@committee
+			// candidacy.remove@evaluators
+			// candidacy.remove@candidates 
+
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");

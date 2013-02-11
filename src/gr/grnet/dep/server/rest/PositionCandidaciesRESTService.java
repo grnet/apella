@@ -242,6 +242,19 @@ public class PositionCandidaciesRESTService extends RESTService {
 			existingCandidacies.addFile(pcFile);
 			em.flush();
 
+			if (pcFile.getType().equals(FileType.EISIGISI_DEP_YPOPSIFIOU)) {
+				// TODO: Send E-Mails
+				// positionCandidacies.upload.eisigisi@candidate
+				// positionCandidacies.upload.eisigisi@candidacyEvaluator
+				// positionCandidacies.upload.eisigisi@committee
+				// positionCandidacies.upload.eisigisi@evaluators
+			} else {
+				// TODO: Send E-Mails
+				// position.upload@committee
+				// position.upload@candidates
+				// position.upload@evaluators
+			}
+
 			return toJSON(pcFile, SimpleFileHeaderView.class);
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);

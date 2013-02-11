@@ -272,6 +272,14 @@ public class PositionCommitteeRESTService extends RESTService {
 			}
 			existingCommittee = em.merge(existingCommittee);
 			em.flush();
+
+			// TODO: Send E-Mails
+			// positionCommittee.create.regular.member@member
+			// positionCommittee.create.substitute.member@member
+			// positionCommittee.update.members@candidates
+			// positionCommittee.update.committeeMeetingDate@members
+			// positionCommittee.update.committeeMeetingDate@candidates
+
 			// Return result
 			existingCommittee.initializeCollections();
 			return existingCommittee;
@@ -432,6 +440,11 @@ public class PositionCommitteeRESTService extends RESTService {
 			saveFile(loggedOn, fileItems, pcFile);
 			existingCommittee.addFile(pcFile);
 			em.flush();
+
+			// TODO: Send E-Mails
+			// position.upload@committee
+			// position.upload@candidates
+			// position.upload@evaluators
 
 			return toJSON(pcFile, SimpleFileHeaderView.class);
 		} catch (PersistenceException e) {

@@ -224,6 +224,11 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 			existingComDocs.addFile(cdFile);
 			em.flush();
 
+			// TODO: Send E-Mails
+			// position.upload@committee
+			// position.upload@candidates
+			// position.upload@evaluators
+
 			return toJSON(cdFile, SimpleFileHeaderView.class);
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
