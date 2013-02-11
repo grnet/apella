@@ -16,7 +16,6 @@ import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.DetailedUserView;
 import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.UserRegistrationType;
-import gr.grnet.dep.service.util.MailClient;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -30,7 +29,6 @@ import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.mail.MessagingException;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
@@ -301,11 +299,7 @@ public class UserRESTService extends RESTService {
 
 			//4. Send Verification E-Mail
 			if (newUser.getStatus() == UserStatus.UNVERIFIED) {
-				try {
-					MailClient.sendVerificationEmail(newUser);
-				} catch (MessagingException e) {
-					logger.log(Level.SEVERE, "Error sending verification email to user " + newUser.getUsername(), e);
-				}
+				mailService.sendVerificationEmail(newUser);
 			}
 
 			//5. Return result
@@ -528,13 +522,9 @@ public class UserRESTService extends RESTService {
 			u.setPasswordSalt(User.generatePasswordSalt());
 			u.setPassword(User.encodePassword(newPassword, u.getPasswordSalt()));
 			// Send email
-			try {
-				MailClient.sendPasswordResetEmail(u, newPassword);
-			} catch (MessagingException e) {
-				logger.log(Level.SEVERE, "Error sending reset password email to user " + u.getUsername(), e);
-				sc.setRollbackOnly();
-				throw new RestException(Status.INTERNAL_SERVER_ERROR, "messaging.exception");
-			}
+			mailService.sendPasswordResetEmail(u, newPassword);
+
+			// Return Result
 			return Response.ok().build();
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.username");
@@ -556,11 +546,9 @@ public class UserRESTService extends RESTService {
 			switch (u.getStatus()) {
 				case UNVERIFIED:
 					// Send email
-					try {
-						MailClient.sendVerificationEmail(u);
-					} catch (MessagingException e) {
-						logger.log(Level.SEVERE, "Error sending reset password email to user " + u.getUsername(), e);
-					}
+					mailService.sendVerificationEmail(u);
+
+					// Return Result
 					return Response.ok().build();
 				default:
 					throw new RestException(Status.CONFLICT, "verify.account.status." + u.getStatus().toString().toLowerCase());

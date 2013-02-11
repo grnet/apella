@@ -16,6 +16,7 @@ import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
+import gr.grnet.dep.service.util.MailService;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,6 +38,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.SessionContext;
 import javax.ejb.TransactionAttribute;
@@ -81,6 +83,9 @@ public class RESTService {
 
 	@Context
 	protected Providers providers;
+
+	@EJB
+	MailService mailService;
 
 	/**
 	 * The default MIME type for files without an explicit one.
