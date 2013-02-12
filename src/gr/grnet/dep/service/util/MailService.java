@@ -22,7 +22,7 @@ import org.apache.commons.configuration.ConfigurationException;
 @Stateless
 public class MailService {
 
-	@Resource
+	@Resource(lookup = "java:jboss/mail/Default")
 	protected Session mailSession;
 
 	private static final Logger logger = Logger.getLogger(MailService.class.getName());
