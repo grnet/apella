@@ -1,7 +1,5 @@
 package gr.grnet.dep.service.model;
 
-import gr.grnet.dep.service.model.file.ProfessorFile;
-
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -88,18 +86,6 @@ public class ProfessorForeign extends Professor {
 			return true;
 		}
 		if (this.subject == null) {
-			return true;
-		}
-		boolean hasPROFILEFile = false;
-		for (ProfessorFile file : this.getFiles()) {
-			switch (file.getType()) {
-				case PROFILE:
-					hasPROFILEFile = true;
-					break;
-				default:
-			}
-		}
-		if (!hasPROFILEFile) {
 			return true;
 		}
 		return false;

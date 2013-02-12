@@ -32,10 +32,10 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			},
 			"roles" : []
 		},
-		parse : function(resp, xhr) {
+		parse : function(response, options) {
 			// This is the only place we have access to xhr - response object
-			if (xhr) {
-				var authToken = xhr.getResponseHeader("X-Auth-Token");
+			if (options && options.xhr) {
+				var authToken = options.xhr.getResponseHeader("X-Auth-Token");
 				if (authToken) {
 					$.ajaxSetup({
 						headers : {
@@ -45,7 +45,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 					App.authToken = authToken;
 				}
 			}
-			return resp;
+			return response;
 		},
 		getRole : function(role) {
 			var self = this;

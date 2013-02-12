@@ -72,7 +72,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
-			!existingPosition.getPhase().getCommittee().containsMember(loggedOn) &&
+			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
 			!existingCandidacies.containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -102,7 +102,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
-			!existingPosition.getPhase().getCommittee().containsMember(loggedOn) &&
+			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
 			!existingCandidacies.containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -128,7 +128,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
-			!existingPosition.getPhase().getCommittee().containsMember(loggedOn) &&
+			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
 			!existingCandidacies.containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -160,7 +160,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
-			!existingPosition.getPhase().getCommittee().containsMember(loggedOn) &&
+			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
 			!existingCandidacies.containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}

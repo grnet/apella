@@ -5,7 +5,7 @@ require.config({
 	// Alias names
 	paths : {
 		// Core Libraries
-		"jquery" : "lib/jquery/jquery-1.8.3",
+		"jquery" : "lib/jquery/jquery-1.9.1",
 		"bootstrap" : "lib/bootstrap/bootstrap",
 		"underscore" : "lib/underscore/underscore",
 		"backbone" : "lib/backbone/backbone",

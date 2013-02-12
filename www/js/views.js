@@ -157,16 +157,19 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			menuItems.push("profile");
 			if (self.model.hasRoleWithStatus("PROFESSOR_DOMESTIC", "ACTIVE")) {
+				menuItems.push("regulatoryframeworks");
 				menuItems.push("registers");
 				menuItems.push("professorCommittees");
 				menuItems.push("professorEvaluations");
 			}
 			if (self.model.hasRoleWithStatus("PROFESSOR_FOREIGN", "ACTIVE")) {
+				menuItems.push("regulatoryframeworks");
 				menuItems.push("registers");
 				menuItems.push("professorCommittees");
 				menuItems.push("professorEvaluations");
 			}
 			if (self.model.hasRoleWithStatus("CANDIDATE", "ACTIVE")) {
+				menuItems.push("regulatoryframeworks");
 				menuItems.push("registers");
 				menuItems.push("sposition");
 				menuItems.push("candidateCandidacies");
@@ -1622,6 +1625,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		applyRules : function() {
 			var self = this;
 			if (self.model.hasRole("INSTITUTION_ASSISTANT") || self.model.hasRole("MINISTRY_ASSISTANT")) {
+				self.$("a#status").addClass("disabled");
 				self.$("input").attr("disabled", true);
 				self.$("a#save").hide();
 				self.$("a#remove").hide();
@@ -1800,7 +1804,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		select : function(event) {
-			var selectedModel = this.collection.getByCid($(event.currentTarget).attr('user'));
+			var selectedModel = this.collection.get($(event.currentTarget).attr('user'));
 			this.collection.trigger("user:selected", selectedModel);
 		},
 
@@ -1881,7 +1885,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		select : function(event, role) {
 			var self = this;
-			var selectedModel = role || self.collection.getByCid($(event.target).attr('role'));
+			var selectedModel = role || self.collection.get($(event.target).attr('role'));
 			if (selectedModel) {
 				self.collection.trigger("role:selected", selectedModel);
 			}
@@ -2083,7 +2087,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				case "profileURL":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "profileFile":
-					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+					return true;
 				case "rank":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "subject":
@@ -2456,7 +2460,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						profileURL : $.i18n.prop('validation_profileURL'),
 						rank : $.i18n.prop('validation_rank'),
 						subject : $.i18n.prop('validation_subject'),
-						fek : $.i18n.prop('validation_fek'),
+						fek : $.i18n.prop('validation_required'),
 						fekSubject : $.i18n.prop('validation_fekSubject'),
 						fekFile : $.i18n.prop('validation_file')
 					}
@@ -3015,9 +3019,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var self = this;
 			switch (self.model.get("discriminator")) {
 			case "CANDIDATE":
-				// noinspection JSHint
 				switch (field) {
 				case "tautotitaFile":
+					return true;
+				case "status":
 					return true;
 				default:
 					break;
@@ -3028,6 +3033,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			case "MINISTRY_ASSISTANT":
 				return false;
 			default:
+				switch (field) {
+				case "status":
+					return true;
+				default:
+					break;
+				}
 				break;
 			}
 			return false;
@@ -3036,7 +3047,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(eventName) {
 			var self = this;
 			self._super('render', [ eventName ]);
-			self.$("a#status").removeClass("disabled");
+			if (self.isEditable("status")) {
+				self.$("a#status").removeClass("disabled");
+			}
 			self.$("a#save").hide();
 			return self;
 		}
@@ -3597,7 +3610,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		select : function(event) {
-			var selectedModel = this.collection.getByCid($(event.currentTarget).attr('user'));
+			var selectedModel = this.collection.get($(event.currentTarget).attr('user'));
 			this.collection.trigger("user:selected", selectedModel);
 		},
 
@@ -3690,7 +3703,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		select : function(event) {
-			var selectedModel = this.collection.getByCid($(event.currentTarget).attr('user'));
+			var selectedModel = this.collection.get($(event.currentTarget).attr('user'));
 			this.collection.trigger("user:selected", selectedModel);
 		},
 
@@ -3842,7 +3855,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		selectPosition : function(event, position) {
 			var self = this;
-			var selectedModel = position || self.collection.getByCid($(event.currentTarget).attr('data-position-cid'));
+			var selectedModel = position || self.collection.get($(event.currentTarget).attr('data-position-cid'));
 			if (selectedModel) {
 				self.collection.trigger("position:selected", selectedModel);
 			}
@@ -4828,7 +4841,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		addMember : function(event) {
 			var self = this;
 			var cid = $(event.currentTarget).data('modelCid');
-			var selectedModel = self.collection.getByCid(cid);
+			var selectedModel = self.collection.get(cid);
 			var type = $(event.currentTarget).data('type');
 			self.collection.trigger("member:add", selectedModel, type);
 		},
@@ -4922,7 +4935,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					registerMember : registerMember.toJSON()
 				};
 				self.addMember(evaluator);
-				self.$("legend span").popover("show");
 			});
 		},
 
@@ -4946,10 +4958,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var self = this;
 			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
-			self.$("legend span").popover({
-				trigger : 'manual'
-
-			});
 			// Add Existing Evaluators:
 			_.each(self.model.get("evaluators"), function(evaluator) {
 				self.addMember(evaluator);
@@ -5028,7 +5036,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					$(event.currentTarget).parents("table").hide('slow', function() {
 						$(this).remove();
 					});
-					self.$("legend span").popover("show");
 				}
 			});
 			confirm.show();
@@ -5152,7 +5159,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		addMember : function(event) {
 			var self = this;
 			var cid = $(event.currentTarget).data('modelCid');
-			var selectedModel = self.collection.getByCid(cid);
+			var selectedModel = self.collection.get(cid);
 			var position = $(event.currentTarget).data('position');
 			self.collection.trigger("member:add", selectedModel, position);
 		},
@@ -5704,7 +5711,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		selectRegister : function(event, register) {
-			var selectedModel = register || this.collection.getByCid($(event.currentTarget).attr('data-register-cid'));
+			var selectedModel = register || this.collection.get($(event.currentTarget).attr('data-register-cid'));
 			if (selectedModel) {
 				this.collection.trigger("register:selected", selectedModel);
 			}
@@ -5816,6 +5823,27 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.$el.html(self.template({
 				members : self.collection.toJSON()
 			}));
+			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
+				self.$("table").dataTable({
+					"sDom" : "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+					"sPaginationType" : "bootstrap",
+					"oLanguage" : {
+						"sSearch" : $.i18n.prop("dataTable_sSearch"),
+						"sLengthMenu" : $.i18n.prop("dataTable_sLengthMenu"),
+						"sZeroRecords" : $.i18n.prop("dataTable_sZeroRecords"),
+						"sInfo" : $.i18n.prop("dataTable_sInfo"),
+						"sInfoEmpty" : $.i18n.prop("dataTable_sInfoEmpty"),
+						"sInfoFiltered" : $.i18n.prop("dataTable_sInfoFiltered"),
+						"oPaginate" : {
+							sFirst : $.i18n.prop("dataTable_sFirst"),
+							sPrevious : $.i18n.prop("dataTable_sPrevious"),
+							sNext : $.i18n.prop("dataTable_sNext"),
+							sLast : $.i18n.prop("dataTable_sLast")
+						}
+					}
+				});
+			}
+
 			return self;
 		},
 
@@ -6299,7 +6327,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		addMember : function(event) {
 			var self = this;
 			var cid = $(event.currentTarget).data('modelCid');
-			var selectedModel = self.collection.getByCid(cid);
+			var selectedModel = self.collection.get(cid);
 			var type = self.$("select[name=type][data-model-cid=" + cid + "]").val();
 			self.collection.trigger("member:add", selectedModel, type);
 		},
@@ -6371,14 +6399,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		showDetails : function(event, professor) {
 			var self = this;
-			var selectedModel = professor || self.collection.getByCid($(event.currentTarget).data('modelCid'));
+			var selectedModel = professor || self.collection.get($(event.currentTarget).data('modelCid'));
 			if (selectedModel) {
 				self.collection.trigger("professor:selected", professor);
 			}
 		},
 
 		select : function(event, professor) {
-			var selectedModel = professor || this.collection.getByCid($(event.currentTarget).data('modelCid'));
+			var selectedModel = professor || this.collection.get($(event.currentTarget).data('modelCid'));
 			if (selectedModel) {
 				this.collection.trigger("role:selected", selectedModel);
 			}
@@ -6617,7 +6645,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		select : function(event, institutionRF) {
 			var self = this;
-			var selectedModel = institutionRF || self.collection.getByCid($(event.currentTarget).data('institutionrfCid'));
+			var selectedModel = institutionRF || self.collection.get($(event.currentTarget).data('institutionrfCid'));
 			if (selectedModel) {
 				self.collection.trigger("institutionRF:selected", selectedModel);
 			}
