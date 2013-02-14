@@ -43,6 +43,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.codehaus.jackson.map.annotate.JsonView;
+import org.hibernate.Session;
 
 @Path("/position/{id:[0-9][0-9]*}/candidacies")
 @Stateless
@@ -60,6 +61,10 @@ public class PositionCandidaciesRESTService extends RESTService {
 	@JsonView({DetailedPositionCandidaciesView.class})
 	public PositionCandidacies get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("candidaciesId") Long candidaciesId) {
 		User loggedOn = getLoggedOn(authToken);
+
+		Session session = em.unwrap(Session.class);
+		session.enableFilter("filterPermanent");
+
 		PositionCandidacies existingCandidacies = em.find(PositionCandidacies.class, candidaciesId);
 		if (existingCandidacies == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.candidacies.id");

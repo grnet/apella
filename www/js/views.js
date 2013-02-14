@@ -948,15 +948,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					lastname : "required",
 					fathername : "required",
 					firstnamelatin : {
-						required : !_.isEqual(role.discriminator, "PROFESSOR_FOREIGN"),
+						requiredIfOtherGreek : "form input[name=firstname]",
 						onlyLatin : true
 					},
 					lastnamelatin : {
-						required : !_.isEqual(role.discriminator, "PROFESSOR_FOREIGN"),
+						requiredIfOtherGreek : "form input[name=lastname]",
 						onlyLatin : true
 					},
 					fathernamelatin : {
-						required : !_.isEqual(role.discriminator, "PROFESSOR_FOREIGN"),
+						requiredIfOtherGreek : "form input[name=fathername]",
 						onlyLatin : true
 					},
 					identification : "required",
@@ -996,15 +996,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					lastname : $.i18n.prop('validation_lastname'),
 					fathername : $.i18n.prop('validation_fathername'),
 					firstnamelatin : {
-						required : $.i18n.prop('validation_firstnamelatin'),
+						requiredIfOtherGreek : $.i18n.prop('validation_firstnamelatin'),
 						onlyLatin : $.i18n.prop('validation_latin')
 					},
 					lastnamelatin : {
-						required : $.i18n.prop('validation_lastnamelatin'),
+						requiredIfOtherGreek : $.i18n.prop('validation_lastnamelatin'),
 						onlyLatin : $.i18n.prop('validation_latin')
 					},
 					fathernamelatin : {
-						required : $.i18n.prop('validation_fathernamelatin'),
+						requiredIfOtherGreek : $.i18n.prop('validation_fathernamelatin'),
 						onlyLatin : $.i18n.prop('validation_latin')
 					},
 					identification : {
@@ -1380,15 +1380,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					lastname : "required",
 					fathername : "required",
 					firstnamelatin : {
-						required : true,
+						requiredIfOtherGreek : "form input[name=firstname]",
 						onlyLatin : true
 					},
 					lastnamelatin : {
-						required : true,
+						requiredIfOtherGreek : "form input[name=lastname]",
 						onlyLatin : true
 					},
 					fathernamelatin : {
-						required : true,
+						requiredIfOtherGreek : "form input[name=fathername]",
 						onlyLatin : true
 					},
 					identification : {
@@ -1426,15 +1426,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					lastname : $.i18n.prop('validation_lastname'),
 					fathername : $.i18n.prop('validation_fathername'),
 					firstnamelatin : {
-						required : $.i18n.prop('validation_firstnamelatin'),
+						requiredIfOtherGreek : $.i18n.prop('validation_firstnamelatin'),
 						onlyLatin : $.i18n.prop('validation_latin')
 					},
 					lastnamelatin : {
-						required : $.i18n.prop('validation_lastnamelatin'),
+						requiredIfOtherGreek : $.i18n.prop('validation_lastnamelatin'),
 						onlyLatin : $.i18n.prop('validation_latin')
 					},
 					fathernamelatin : {
-						required : $.i18n.prop('validation_fathernamelatin'),
+						requiredIfOtherGreek : $.i18n.prop('validation_fathernamelatin'),
 						onlyLatin : $.i18n.prop('validation_latin')
 					},
 					identification : {
@@ -2637,15 +2637,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						alternatelastname : $.i18n.prop('validation_lastname'),
 						alternatefathername : $.i18n.prop('validation_fathername'),
 						alternatefirstnamelatin : {
-							required : $.i18n.prop('validation_firstnamelatin'),
+							requiredIfOtherGreek : "form input[name=alternatefirstname]",
 							onlyLatin : $.i18n.prop('validation_latin')
 						},
 						alternatelastnamelatin : {
-							required : $.i18n.prop('validation_lastnamelatin'),
+							requiredIfOtherGreek : "form input[name=alternatelastname]",
 							onlyLatin : $.i18n.prop('validation_latin')
 						},
 						alternatefathernamelatin : {
-							required : $.i18n.prop('validation_fathernamelatin'),
+							requiredIfOtherGreek : "form input[name=alternatefathername]",
 							onlyLatin : $.i18n.prop('validation_latin')
 						},
 						alternatemobile : {
@@ -7139,7 +7139,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
-			_.bindAll(this, "isEditable", "submit", "cancel");
+			_.bindAll(this, "isEditable", "isEnabled", "submit", "cancel");
 			this.template = _.template(tpl_candidacy_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
@@ -7168,6 +7168,19 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			case "ekthesiAutoaksiologisisFile":
 				return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
 			case "sympliromatikaEggrafaFileList":
+				return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI") || _.isEqual(self.model.get("candidacies").position.phase.status, "EPILOGI");
+			default:
+				break;
+			}
+			return false;
+		},
+
+		isEnabled : function(buttonType) {
+			var self = this;
+			switch (buttonType) {
+			case "save":
+				return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
+			case "remove":
 				return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI") || _.isEqual(self.model.get("candidacies").position.phase.status, "EPILOGI");
 			default:
 				break;
@@ -7224,6 +7237,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.$("select, input, textarea").each(function(index) {
 				var field = $(this).attr("name");
 				if (self.isEditable(field)) {
+					$(this).removeAttr("disabled");
+				} else {
+					$(this).attr("disabled", true);
+				}
+			});
+			// Set isEnabled to buttons
+			self.$("a.btn").each(function(index) {
+				var buttonType = $(this).attr("id");
+				if (self.isEnabled(buttonType)) {
 					$(this).removeAttr("disabled");
 				} else {
 					$(this).attr("disabled", true);

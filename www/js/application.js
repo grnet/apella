@@ -5,8 +5,17 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 			ignore : []
 		});
 		$.validator.addMethod("onlyLatin", function(value, element) {
-			return this.optional(element) || /^[a-zA-Z]*$/.test(value);
+			return this.optional(element) || /^[a-zA-Z0-9]*$/.test(value);
 		}, "Please type only latin characters");
+		$.validator.addMethod("requiredIfOtherGreek", function(value, element, param) {
+			var target = $(param);
+			if (this.settings.onfocusout) {
+				target.unbind(".validate-requiredIfOtherGreek").bind("blur.validate-requiredIfOtherGreek", function() {
+					$(element).valid();
+				});
+			}
+			return (/^[a-zA-Z0-9]*$/.test(target.val()));
+		}, "Required if other field is in greek characters");
 
 		$.validator.addMethod("pwd", function(value, element) {
 			return this.optional(element) || /^[a-zA-Z0-9!@#$%^&*()]*$/.test(value);

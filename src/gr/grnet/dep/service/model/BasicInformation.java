@@ -1,7 +1,6 @@
 package gr.grnet.dep.service.model;
 
 import javax.persistence.Embeddable;
-import javax.xml.bind.annotation.XmlTransient;
 
 @Embeddable
 public class BasicInformation {
@@ -37,11 +36,6 @@ public class BasicInformation {
 	}
 
 	///////////////////////////////////////////////////////////////
-
-	@XmlTransient
-	public String getFullName() {
-		return lastname + " " + firstname;
-	}
 
 	public boolean isMissingRequiredFields() {
 		if (this.firstname == null) {

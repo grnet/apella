@@ -2,6 +2,14 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 
 	var Models = {};
 
+	// Helper function, needed in Backbone functions that extend sync
+	var getValue = function(object, prop) {
+		if (!(object && object[prop])) {
+			return null;
+		}
+		return _.isFunction(object[prop]) ? object[prop]() : object[prop];
+	};
+
 	// User
 	Models.User = Backbone.Model.extend({
 		urlRoot : "/dep/rest/user",
@@ -128,36 +136,8 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 	});
 
 	Models.User.prototype.verify = function(options) {
-		options = options ? _.clone(options) : {};
-		var model = this;
-		var success = options.success;
-		options.success = function(resp, status, xhr) {
-			if (!model.set(model.parse(resp, xhr), options)) {
-				return false;
-			}
-			if (success) {
-				success(model, resp);
-			}
-		};
-		options.error = Backbone.wrapError(options.error, model, options);
-		return (this.sync || Backbone.sync).call(this, 'verify', this, options);
-	};
-
-	Models.User.prototype.login = function(key, value, options) {
-		options = options ? _.clone(options) : {};
-		var model = this;
-		var success = options.success;
-		options.success = function(resp, status, xhr) {
-			if (!model.set(model.parse(resp, xhr), options)) {
-				return false;
-			}
-			if (success) {
-				success(model, resp);
-			}
-		};
-		options.error = Backbone.wrapError(options.error, model, options);
-
 		var attrs, current;
+
 		// Handle both `("key", value)` and `({key: value})` -style calls.
 		if (_.isObject(key) || key == null) {
 			attrs = key;
@@ -170,9 +150,8 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 
 		// If we're "wait"-ing to set changed attributes, validate early.
 		if (options.wait) {
-			if (!this._validate(attrs, options)) {
+			if (!this._validate(attrs, options))
 				return false;
-			}
 			current = _.clone(this.attributes);
 		}
 
@@ -183,6 +162,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		if (attrs && !this.set(attrs, options.wait ? silentOptions : options)) {
 			return false;
 		}
+
 		// After a successful server-side save, the client is (optionally)
 		// updated with the server-side state.
 		var model = this;
@@ -193,42 +173,26 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 				delete options.wait;
 				serverAttrs = _.extend(attrs || {}, serverAttrs);
 			}
-			if (!model.set(serverAttrs, options)) {
+			if (!model.set(serverAttrs, options))
 				return false;
-			}
 			if (success) {
 				success(model, resp);
 			} else {
 				model.trigger('sync', model, resp, options);
 			}
 		};
+
 		// Finish configuring and sending the Ajax request.
 		options.error = Backbone.wrapError(options.error, model, options);
-
-		var xhr = this.sync.call(this, 'login', this, options);
-
-		if (options.wait) {
+		var xhr = (this.sync || Backbone.sync).call(this, 'verify', this, options);
+		if (options.wait)
 			this.set(current, silentOptions);
-		}
-
 		return xhr;
 	};
 
-	Models.User.prototype.status = function(key, value, options) {
-		options = options ? _.clone(options) : {};
-		var model = this;
-		var success = options.success;
-		options.success = function(resp, status, xhr) {
-			if (!model.set(model.parse(resp, xhr), options)) {
-				return false;
-			}
-			if (success) {
-				success(model, resp);
-			}
-		};
-		options.error = Backbone.wrapError(options.error, model, options);
-
+	Models.User.prototype.login = function(key, value, options) {
 		var attrs, current;
+
 		// Handle both `("key", value)` and `({key: value})` -style calls.
 		if (_.isObject(key) || key == null) {
 			attrs = key;
@@ -241,9 +205,8 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 
 		// If we're "wait"-ing to set changed attributes, validate early.
 		if (options.wait) {
-			if (!this._validate(attrs, options)) {
+			if (!this._validate(attrs, options))
 				return false;
-			}
 			current = _.clone(this.attributes);
 		}
 
@@ -254,6 +217,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		if (attrs && !this.set(attrs, options.wait ? silentOptions : options)) {
 			return false;
 		}
+
 		// After a successful server-side save, the client is (optionally)
 		// updated with the server-side state.
 		var model = this;
@@ -264,42 +228,81 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 				delete options.wait;
 				serverAttrs = _.extend(attrs || {}, serverAttrs);
 			}
-			if (!model.set(serverAttrs, options)) {
+			if (!model.set(serverAttrs, options))
 				return false;
-			}
 			if (success) {
 				success(model, resp);
 			} else {
 				model.trigger('sync', model, resp, options);
 			}
 		};
+
 		// Finish configuring and sending the Ajax request.
 		options.error = Backbone.wrapError(options.error, model, options);
-
-		var xhr = this.sync.call(this, 'status', this, options);
-
-		if (options.wait) {
+		var xhr = (this.sync || Backbone.sync).call(this, 'login', this, options);
+		if (options.wait)
 			this.set(current, silentOptions);
+		return xhr;
+	},
+
+	Models.User.prototype.status = function(key, value, options) {
+		var attrs, current;
+
+		// Handle both `("key", value)` and `({key: value})` -style calls.
+		if (_.isObject(key) || key == null) {
+			attrs = key;
+			options = value;
+		} else {
+			attrs = {};
+			attrs[key] = value;
+		}
+		options = options ? _.clone(options) : {};
+
+		// If we're "wait"-ing to set changed attributes, validate early.
+		if (options.wait) {
+			if (!this._validate(attrs, options))
+				return false;
+			current = _.clone(this.attributes);
 		}
 
+		// Regular saves `set` attributes before persisting to the server.
+		var silentOptions = _.extend({}, options, {
+			silent : true
+		});
+		if (attrs && !this.set(attrs, options.wait ? silentOptions : options)) {
+			return false;
+		}
+
+		// After a successful server-side save, the client is (optionally)
+		// updated with the server-side state.
+		var model = this;
+		var success = options.success;
+		options.success = function(resp, status, xhr) {
+			var serverAttrs = model.parse(resp, xhr);
+			if (options.wait) {
+				delete options.wait;
+				serverAttrs = _.extend(attrs || {}, serverAttrs);
+			}
+			if (!model.set(serverAttrs, options))
+				return false;
+			if (success) {
+				success(model, resp);
+			} else {
+				model.trigger('sync', model, resp, options);
+			}
+		};
+
+		// Finish configuring and sending the Ajax request.
+		options.error = Backbone.wrapError(options.error, model, options);
+		var xhr = (this.sync || Backbone.sync).call(this, 'status', this, options);
+		if (options.wait)
+			this.set(current, silentOptions);
 		return xhr;
 	};
 
 	Models.User.prototype.resetPassword = function(key, value, options) {
-		options = options ? _.clone(options) : {};
-		var model = this;
-		var success = options.success;
-		options.success = function(resp, status, xhr) {
-			if (!model.set(model.parse(resp, xhr), options)) {
-				return false;
-			}
-			if (success) {
-				success(model, resp);
-			}
-		};
-		options.error = Backbone.wrapError(options.error, model, options);
-
 		var attrs, current;
+
 		// Handle both `("key", value)` and `({key: value})` -style calls.
 		if (_.isObject(key) || key == null) {
 			attrs = key;
@@ -312,9 +315,8 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 
 		// If we're "wait"-ing to set changed attributes, validate early.
 		if (options.wait) {
-			if (!this._validate(attrs, options)) {
+			if (!this._validate(attrs, options))
 				return false;
-			}
 			current = _.clone(this.attributes);
 		}
 
@@ -325,6 +327,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		if (attrs && !this.set(attrs, options.wait ? silentOptions : options)) {
 			return false;
 		}
+
 		// After a successful server-side save, the client is (optionally)
 		// updated with the server-side state.
 		var model = this;
@@ -335,42 +338,26 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 				delete options.wait;
 				serverAttrs = _.extend(attrs || {}, serverAttrs);
 			}
-			if (!model.set(serverAttrs, options)) {
+			if (!model.set(serverAttrs, options))
 				return false;
-			}
 			if (success) {
 				success(model, resp);
 			} else {
 				model.trigger('sync', model, resp, options);
 			}
 		};
+
 		// Finish configuring and sending the Ajax request.
 		options.error = Backbone.wrapError(options.error, model, options);
-
-		var xhr = this.sync.call(this, 'resetPassword', this, options);
-
-		if (options.wait) {
+		var xhr = (this.sync || Backbone.sync).call(this, 'resetPassword', this, options);
+		if (options.wait)
 			this.set(current, silentOptions);
-		}
-
 		return xhr;
 	};
 
 	Models.User.prototype.resendVerificationEmail = function(key, value, options) {
-		options = options ? _.clone(options) : {};
-		var model = this;
-		var success = options.success;
-		options.success = function(resp, status, xhr) {
-			if (!model.set(model.parse(resp, xhr), options)) {
-				return false;
-			}
-			if (success) {
-				success(model, resp);
-			}
-		};
-		options.error = Backbone.wrapError(options.error, model, options);
-
 		var attrs, current;
+
 		// Handle both `("key", value)` and `({key: value})` -style calls.
 		if (_.isObject(key) || key == null) {
 			attrs = key;
@@ -383,9 +370,8 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 
 		// If we're "wait"-ing to set changed attributes, validate early.
 		if (options.wait) {
-			if (!this._validate(attrs, options)) {
+			if (!this._validate(attrs, options))
 				return false;
-			}
 			current = _.clone(this.attributes);
 		}
 
@@ -396,6 +382,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		if (attrs && !this.set(attrs, options.wait ? silentOptions : options)) {
 			return false;
 		}
+
 		// After a successful server-side save, the client is (optionally)
 		// updated with the server-side state.
 		var model = this;
@@ -406,24 +393,20 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 				delete options.wait;
 				serverAttrs = _.extend(attrs || {}, serverAttrs);
 			}
-			if (!model.set(serverAttrs, options)) {
+			if (!model.set(serverAttrs, options))
 				return false;
-			}
 			if (success) {
 				success(model, resp);
 			} else {
 				model.trigger('sync', model, resp, options);
 			}
 		};
+
 		// Finish configuring and sending the Ajax request.
 		options.error = Backbone.wrapError(options.error, model, options);
-
-		var xhr = this.sync.call(this, 'resendVerificationEmail', this, options);
-
-		if (options.wait) {
+		var xhr = (this.sync || Backbone.sync).call(this, 'resendVerificationEmail', this, options);
+		if (options.wait)
 			this.set(current, silentOptions);
-		}
-
 		return xhr;
 	};
 
@@ -593,20 +576,8 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 	});
 
 	Models.Role.prototype.status = function(key, value, options) {
-		options = options ? _.clone(options) : {};
-		var model = this;
-		var success = options.success;
-		options.success = function(resp, status, xhr) {
-			if (!model.set(model.parse(resp, xhr), options)) {
-				return false;
-			}
-			if (success) {
-				success(model, resp);
-			}
-		};
-		options.error = Backbone.wrapError(options.error, model, options);
-
 		var attrs, current;
+
 		// Handle both `("key", value)` and `({key: value})` -style calls.
 		if (_.isObject(key) || key == null) {
 			attrs = key;
@@ -619,9 +590,8 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 
 		// If we're "wait"-ing to set changed attributes, validate early.
 		if (options.wait) {
-			if (!this._validate(attrs, options)) {
+			if (!this._validate(attrs, options))
 				return false;
-			}
 			current = _.clone(this.attributes);
 		}
 
@@ -632,6 +602,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		if (attrs && !this.set(attrs, options.wait ? silentOptions : options)) {
 			return false;
 		}
+
 		// After a successful server-side save, the client is (optionally)
 		// updated with the server-side state.
 		var model = this;
@@ -642,24 +613,20 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 				delete options.wait;
 				serverAttrs = _.extend(attrs || {}, serverAttrs);
 			}
-			if (!model.set(serverAttrs, options)) {
+			if (!model.set(serverAttrs, options))
 				return false;
-			}
 			if (success) {
 				success(model, resp);
 			} else {
 				model.trigger('sync', model, resp, options);
 			}
 		};
+
 		// Finish configuring and sending the Ajax request.
 		options.error = Backbone.wrapError(options.error, model, options);
-
-		var xhr = this.sync.call(this, 'status', this, options);
-
-		if (options.wait) {
+		var xhr = (this.sync || Backbone.sync).call(this, 'status', this, options);
+		if (options.wait)
 			this.set(current, silentOptions);
-		}
-
 		return xhr;
 	};
 
@@ -852,20 +819,8 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 	});
 
 	Models.Position.prototype.phase = function(key, value, options) {
-		options = options ? _.clone(options) : {};
-		var model = this;
-		var success = options.success;
-		options.success = function(resp, status, xhr) {
-			if (!model.set(model.parse(resp, xhr), options)) {
-				return false;
-			}
-			if (success) {
-				success(model, resp);
-			}
-		};
-		options.error = Backbone.wrapError(options.error, model, options);
-
 		var attrs, current;
+
 		// Handle both `("key", value)` and `({key: value})` -style calls.
 		if (_.isObject(key) || key == null) {
 			attrs = key;
@@ -878,9 +833,8 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 
 		// If we're "wait"-ing to set changed attributes, validate early.
 		if (options.wait) {
-			if (!this._validate(attrs, options)) {
+			if (!this._validate(attrs, options))
 				return false;
-			}
 			current = _.clone(this.attributes);
 		}
 
@@ -891,6 +845,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		if (attrs && !this.set(attrs, options.wait ? silentOptions : options)) {
 			return false;
 		}
+
 		// After a successful server-side save, the client is (optionally)
 		// updated with the server-side state.
 		var model = this;
@@ -901,24 +856,20 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 				delete options.wait;
 				serverAttrs = _.extend(attrs || {}, serverAttrs);
 			}
-			if (!model.set(serverAttrs, options)) {
+			if (!model.set(serverAttrs, options))
 				return false;
-			}
 			if (success) {
 				success(model, resp);
 			} else {
 				model.trigger('sync', model, resp, options);
 			}
 		};
+
 		// Finish configuring and sending the Ajax request.
 		options.error = Backbone.wrapError(options.error, model, options);
-
-		var xhr = this.sync.call(this, 'phase', this, options);
-
-		if (options.wait) {
+		var xhr = (this.sync || Backbone.sync).call(this, 'phase', this, options);
+		if (options.wait)
 			this.set(current, silentOptions);
-		}
-
 		return xhr;
 	};
 

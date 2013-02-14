@@ -28,8 +28,10 @@ import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.map.annotate.JsonView;
+import org.hibernate.annotations.FilterDef;
 
 @Entity
+@FilterDef(name = "filterPermanent", defaultCondition = "permanent")
 public class Candidacy {
 
 	public static interface CandidacyView {
