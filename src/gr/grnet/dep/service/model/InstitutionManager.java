@@ -38,8 +38,6 @@ public class InstitutionManager extends Role {
 
 	private String verificationAuthorityName;
 
-	private String phone;
-
 	@Valid
 	@Embedded
 	@NotNull
@@ -84,14 +82,6 @@ public class InstitutionManager extends Role {
 		this.verificationAuthorityName = verificationAuthorityName;
 	}
 
-	public String getPhone() {
-		return phone;
-	}
-
-	public void setPhone(String phone) {
-		this.phone = phone;
-	}
-
 	public BasicInformation getAlternateBasicInfo() {
 		return alternateBasicInfo;
 	}
@@ -128,7 +118,6 @@ public class InstitutionManager extends Role {
 		this.setInstitution(im.getInstitution());
 		this.setVerificationAuthority(im.getVerificationAuthority());
 		this.setVerificationAuthorityName(im.getVerificationAuthorityName());
-		this.setPhone(im.getPhone());
 		this.setAlternateBasicInfo(im.getAlternateBasicInfo());
 		this.setAlternateBasicInfoLatin(im.getAlternateBasicInfoLatin());
 		this.setAlternateContactInfo(im.getAlternateContactInfo());
@@ -171,9 +160,6 @@ public class InstitutionManager extends Role {
 			return true;
 		}
 		if (this.verificationAuthorityName == null) {
-			return true;
-		}
-		if (this.phone == null) {
 			return true;
 		}
 		if (this.alternateBasicInfo.isMissingRequiredFields()) {
