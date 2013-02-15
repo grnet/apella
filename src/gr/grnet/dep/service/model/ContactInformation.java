@@ -1,5 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.util.CompareUtil;
+
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
@@ -21,6 +23,8 @@ public class ContactInformation {
 
 	@Size(min = 10)
 	private String mobile;
+	
+	private String phone;
 
 	public Address getAddress() {
 		return address;
@@ -44,6 +48,14 @@ public class ContactInformation {
 
 	public void setMobile(String mobile) {
 		this.mobile = mobile;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
 	}
 
 	public boolean isMissingRequiredFields() {
@@ -80,6 +92,11 @@ public class ContactInformation {
 		if (!this.getMobile().equals(that.getMobile())) {
 			return false;
 		}
+		if (!CompareUtil.equalsIgnoreNull(this.getPhone(), that.getPhone())) {
+			return false;
+		}
 		return true;
 	}
+	
+	
 }

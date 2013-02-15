@@ -1,5 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.util.CompareUtil;
+
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -139,22 +141,22 @@ public class InstitutionManager extends Role {
 			return false;
 		}
 		InstitutionManager other = (InstitutionManager) role;
-		if (!compare(this.institution.getId(), other.getInstitution().getId())) {
+		if (!CompareUtil.equalsIgnoreNull(this.institution.getId(), other.getInstitution().getId())) {
 			return false;
 		}
-		if (!compare(this.verificationAuthority, other.getVerificationAuthority())) {
+		if (!CompareUtil.equalsIgnoreNull(this.verificationAuthority, other.getVerificationAuthority())) {
 			return false;
 		}
-		if (!compare(this.verificationAuthorityName, other.getVerificationAuthorityName())) {
+		if (!CompareUtil.equalsIgnoreNull(this.verificationAuthorityName, other.getVerificationAuthorityName())) {
 			return false;
 		}
-		if (!compare(this.getAlternateBasicInfo(), other.getAlternateBasicInfo())) {
+		if (!CompareUtil.equalsIgnoreNull(this.getAlternateBasicInfo(), other.getAlternateBasicInfo())) {
 			return false;
 		}
-		if (!compare(this.getAlternateBasicInfoLatin(), other.getAlternateBasicInfoLatin())) {
+		if (!CompareUtil.equalsIgnoreNull(this.getAlternateBasicInfoLatin(), other.getAlternateBasicInfoLatin())) {
 			return false;
 		}
-		if (!compare(this.getAlternateContactInfo(), other.getAlternateContactInfo())) {
+		if (!CompareUtil.equalsIgnoreNull(this.getAlternateContactInfo(), other.getAlternateContactInfo())) {
 			return false;
 		}
 		return true;

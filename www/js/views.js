@@ -1,7 +1,10 @@
-define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file.html", "text!tpl/file-edit.html", "text!tpl/file-list.html", "text!tpl/file-list-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html", "text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html", "text!tpl/professor-committees.html", "text!tpl/professor-evaluations.html", "text!tpl/register.html", "text!tpl/institution-regulatory-framework.html", "text!tpl/institution-regulatory-framework-edit.html", "text!tpl/position-search-criteria.html", "text!tpl/position-search-result.html", "text!tpl/candidacy-edit.html", "text!tpl/candidate-candidacy-list.html",
-	"text!tpl/candidacy.html", "text!tpl/candidacy-update-confirm.html", "text!tpl/institution-regulatory-framework-list.html", "text!tpl/register-members.html", "text!tpl/register-members-edit.html", "text!tpl/register-members-edit-professor-list.html", "text!tpl/register-member-edit.html", "text!tpl/overlay.html", "text!tpl/position-main-edit.html", "text!tpl/position-candidacies-edit.html", "text!tpl/position-committee-edit.html", "text!tpl/position-committee-member-edit.html", "text!tpl/position-evaluation-edit.html", "text!tpl/position-evaluation-edit-register-member-list.html", "text!tpl/position-evaluation-evaluator-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-candidacies.html", "text!tpl/position-committee.html", "text!tpl/position-evaluation.html", "text!tpl/position-nomination.html", "text!tpl/position-complementaryDocuments.html", "text!tpl/position-nomination-edit.html", "text!tpl/position-complementaryDocuments-edit.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit,
-	tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_members, tpl_register_members_edit, tpl_register_members_edit_professor_list, tpl_register_member_edit, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list,
-	tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation, tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit) {
+define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file.html", "text!tpl/file-edit.html", "text!tpl/file-list.html", "text!tpl/file-list-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html",
+	"text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html", "text!tpl/professor-committees.html", "text!tpl/professor-evaluations.html", "text!tpl/register.html", "text!tpl/institution-regulatory-framework.html", "text!tpl/institution-regulatory-framework-edit.html", "text!tpl/position-search-criteria.html", "text!tpl/position-search-result.html", "text!tpl/candidacy-edit.html",
+	"text!tpl/candidate-candidacy-list.html", "text!tpl/candidacy.html", "text!tpl/candidacy-update-confirm.html", "text!tpl/institution-regulatory-framework-list.html", "text!tpl/register-members.html", "text!tpl/register-members-edit.html", "text!tpl/register-members-edit-professor-list.html", "text!tpl/register-member-edit.html", "text!tpl/overlay.html", "text!tpl/position-main-edit.html", "text!tpl/position-candidacies-edit.html", "text!tpl/position-committee-edit.html", "text!tpl/position-committee-member-edit.html", "text!tpl/position-evaluation-edit.html",
+	"text!tpl/position-evaluation-edit-register-member-list.html", "text!tpl/position-evaluation-evaluator-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-candidacies.html", "text!tpl/position-committee.html", "text!tpl/position-evaluation.html", "text!tpl/position-nomination.html", "text!tpl/position-complementaryDocuments.html", "text!tpl/position-nomination-edit.html", "text!tpl/position-complementaryDocuments-edit.html" ], function($, _, Backbone, App,
+	Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit, tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework,
+	tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_members, tpl_register_members_edit, tpl_register_members_edit_professor_list, tpl_register_member_edit, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list,
+	tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation, tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit) {
 
 	/** ****************************************************************** */
 
@@ -980,6 +983,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						number : true,
 						minlength : 10
 					},
+					phone : {
+						required : _.isEqual(role.discriminator, "INSTITUTION_MANAGER"),
+						number : true,
+						minlength : 10
+					},
 					address_street : "required",
 					address_number : "required",
 					address_zip : "required",
@@ -1026,6 +1034,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						minlength : $.i18n.prop('validation_minlength', 2)
 					},
 					mobile : {
+						required : $.i18n.prop('validation_mobile'),
+						number : $.i18n.prop('validation_number'),
+						minlength : $.i18n.prop('validation_minlength', 10)
+					},
+					phone : {
 						required : $.i18n.prop('validation_phone'),
 						number : $.i18n.prop('validation_number'),
 						minlength : $.i18n.prop('validation_minlength', 10)
@@ -1063,6 +1076,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var identification = self.$('form input[name=identification]').val();
 			var password = self.$('form input[name=password]').val();
 			var mobile = self.$('form input[name=mobile]').val();
+			var phone = self.$('form input[name=phone]').val();
 			var email = self.$('form input[name=email]').val();
 			var address_street = self.$('form input[name=address_street]').val();
 			var address_number = self.$('form input[name=address_number]').val();
@@ -1095,7 +1109,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						"country" : address_country
 					},
 					"email" : email,
-					"mobile" : mobile
+					"mobile" : mobile,
+					"phone" : phone
 				},
 				"password" : password
 			}, {
@@ -1409,6 +1424,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						number : true,
 						minlength : 10
 					},
+					phone : {
+						required : (self.model.hasRoleWithStatus("INSTITUTION_MANAGER") || self.model.hasRoleWithStatus("INSTITUTION_ASSISTANT")),
+						number : true,
+						minlength : 10
+					},
 					email : {
 						required : true,
 						email : true,
@@ -1451,6 +1471,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						equalTo : $.i18n.prop('validation_confirmpassword')
 					},
 					mobile : {
+						required : $.i18n.prop('validation_mobile'),
+						number : $.i18n.prop('validation_number'),
+						minlength : $.i18n.prop('validation_minlength', 10)
+					},
+					phone : {
 						required : $.i18n.prop('validation_phone'),
 						number : $.i18n.prop('validation_number'),
 						minlength : $.i18n.prop('validation_minlength', 10)
@@ -1501,6 +1526,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var password = self.$('form input[name=password]').val();
 			var email = self.$('form input[name=email]').val();
 			var mobile = self.$('form input[name=mobile]').val();
+			var phone = self.$('form input[name=phone]').val();
 			var address_street = self.$('form input[name=address_street]').val();
 			var address_number = self.$('form input[name=address_number]').val();
 			var address_zip = self.$('form input[name=address_zip]').val();
@@ -1532,7 +1558,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						"country" : address_country
 					},
 					"email" : email,
-					"mobile" : mobile
+					"mobile" : mobile,
+					"phone" : phone
 				},
 				"password" : password
 			}, {
@@ -2104,8 +2131,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "verificationAuthorityName":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
-				case "phone":
-					return true;
 				case "alternatefirstname":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "alternatelastname":
@@ -2121,6 +2146,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				case "alternateemail":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "alternatemobile":
+					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+				case "alternatephone":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "alternateaddress_street":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
@@ -2140,8 +2167,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				switch (field) {
 				case "institution":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
-				case "phone":
-					return true;
 				default:
 					break;
 				}
@@ -2588,11 +2613,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						institution : "required",
 						verificationAuthority : "required",
 						verificationAuthorityName : "required",
-						phone : {
-							required : true,
-							number : true,
-							minlength : 10
-						},
 						alternatefirstname : "required",
 						alternatelastname : "required",
 						alternatefathername : "required",
@@ -2618,6 +2638,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							number : true,
 							minlength : 10
 						},
+						alternatephone : {
+							required : true,
+							number : true,
+							minlength : 10
+						},
 						alternateaddress_street : "required",
 						alternateaddress_number : "required",
 						alternateaddress_zip : "required",
@@ -2628,11 +2653,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						institution : $.i18n.prop('validation_institution'),
 						verificationAuthority : $.i18n.prop('validation_verificationAuthority'),
 						verificationAuthorityName : $.i18n.prop('validation_verificationAuthorityName'),
-						phone : {
-							required : $.i18n.prop('validation_phone'),
-							number : $.i18n.prop('validation_number'),
-							minlength : $.i18n.prop('validation_minlength', 10)
-						},
 						alternatefirstname : $.i18n.prop('validation_firstname'),
 						alternatelastname : $.i18n.prop('validation_lastname'),
 						alternatefathername : $.i18n.prop('validation_fathername'),
@@ -2649,6 +2669,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							onlyLatin : $.i18n.prop('validation_latin')
 						},
 						alternatemobile : {
+							required : $.i18n.prop('validation_mobile'),
+							number : $.i18n.prop('validation_number'),
+							minlength : $.i18n.prop('validation_minlength', 10)
+						},
+						alternatephone : {
 							required : $.i18n.prop('validation_phone'),
 							number : $.i18n.prop('validation_number'),
 							minlength : $.i18n.prop('validation_minlength', 10)
@@ -2703,20 +2728,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						$(element).parent(".controls").parent(".control-group").removeClass("error");
 					},
 					rules : {
-						institution : "required",
-						phone : {
-							required : true,
-							number : true,
-							minlength : 10
-						}
+						institution : "required"
 					},
 					messages : {
-						institution : $.i18n.prop('validation_institution'),
-						phone : {
-							required : $.i18n.prop('validation_phone'),
-							number : $.i18n.prop('validation_number'),
-							minlength : $.i18n.prop('validation_minlength', 10)
-						}
+						institution : $.i18n.prop('validation_institution')
 					}
 				});
 				break;
@@ -2817,7 +2832,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				};
 				values.verificationAuthority = self.$('form select[name=verificationAuthority]').val();
 				values.verificationAuthorityName = self.$('form input[name=verificationAuthorityName]').val();
-				values.phone = self.$('form input[name=phone]').val();
 				values.alternateBasicInfo = {
 					"firstname" : self.$('form input[name=alternatefirstname]').val(),
 					"lastname" : self.$('form input[name=alternatelastname]').val(),
@@ -2837,14 +2851,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						"country" : self.$('form input[name=alternateaddress_country]').val()
 					},
 					"email" : self.$('form input[name=alternateemail]').val(),
-					"mobile" : self.$('form input[name=alternatemobile]').val()
+					"mobile" : self.$('form input[name=alternatemobile]').val(),
+					"phone" : self.$('form input[name=alternatephone]').val(),
 				};
 				break;
 			case "INSTITUTION_ASSISTANT":
 				values.institution = {
 					"id" : self.$('form select[name=institution]').val()
 				};
-				values.phone = self.$('form input[name=phone]').val();
 				break;
 
 			case "MINISTRY_MANAGER":

@@ -192,16 +192,10 @@
 				</div>
 			</div>
 			<div class="control-group">
-				<label class="control-label" for="institutionManagerForm"><%= $.i18n.prop('InstitututionManagerForm') %>:</label>
+				<label class="control-label" for="institutionManagerForm"><%= $.i18n.prop('InstitutionManagerForm') %>:</label>
 				<div class="controls">
-					<a id="forma_DEAN" href="/dep/rest/role/<%= id %>/documents/Forma_allagis_Diax_Idrymatos" target="documents"><%= $.i18n.prop('InstitututionManagerFormDEAN') %></a>
-					<a id="forma_PRESIDENT" href="/dep/rest/role/<%= id %>/documents/Forma_allagis_Diax_Idrymatos" target="documents"><%= $.i18n.prop('InstitututionManagerFormPRESIDENT') %></a>
-				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="phone"><%= $.i18n.prop('Phone') %>:</label>
-				<div class="controls">
-				<input class="input-xlarge" name="phone" type="text" value="<%= phone %>" />
+					<a id="forma_DEAN" href="/dep/rest/role/<%= id %>/documents/Forma_allagis_Diax_Idrymatos" target="documents"><%= $.i18n.prop('InstitutionManagerFormDEAN') %></a>
+					<a id="forma_PRESIDENT" href="/dep/rest/role/<%= id %>/documents/Forma_allagis_Diax_Idrymatos" target="documents"><%= $.i18n.prop('InstitutionManagerFormPRESIDENT') %></a>
 				</div>
 			</div>
 		</fieldset>
@@ -253,6 +247,12 @@
 				<label class="control-label" for="alternatemobile"><%= $.i18n.prop('Mobile') %>:</label>
 				<div class="controls">
 					<input class="input-xlarge" type="text" name="alternatemobile" value="<%= alternateContactInfo.mobile %>" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="alternatephone"><%= $.i18n.prop('Phone') %>:</label>
+				<div class="controls">
+					<input class="input-xlarge" type="text" name="alternatephone" value="<%= alternateContactInfo.phone %>" />
 				</div>
 			</div>
 			<div class="control-group">
@@ -317,12 +317,6 @@
 					<select class="input-xlarge" name="institution" >
 					</select>
 					<span class="help-block"></span>
-				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="phone"><%= $.i18n.prop('Phone') %>:</label>
-				<div class="controls">
-					<input class="input-xlarge" name="phone" type="text" value="<%= phone %>" />
 				</div>
 			</div>
 			<div class="form-actions">

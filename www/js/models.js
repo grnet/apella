@@ -599,7 +599,6 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			// Specific Fields
 			"verificationAuthority" : undefined,
 			"verificationAuthorityName" : undefined,
-			"phone" : undefined,
 			"institution" : undefined,
 			"department" : undefined,
 			"profileURL" : undefined,

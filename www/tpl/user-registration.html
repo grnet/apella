@@ -96,6 +96,12 @@
 					<input type="text" class="input-xlarge" name="mobile" />
 				</div>
 			</div>
+			<div class="control-group">
+				<label class="control-label" for="phone"><%= _.isEqual(discriminator, "INSTITUTION_MANAGER") ? $.i18n.prop('InstitutionPhone') : $.i18n.prop('Phone') %>:</label>
+				<div class="controls">
+					<input type="text" class="input-xlarge" name="phone" />
+				</div>
+			</div>
 		</fieldset>
 		<fieldset>
 			<legend><%= $.i18n.prop('Address') %></legend>

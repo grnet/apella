@@ -1,5 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.util.CompareUtil;
+
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -79,7 +81,7 @@ public class InstitutionAssistant extends Role {
 			return false;
 		}
 		InstitutionAssistant other = (InstitutionAssistant) role;
-		if (!compare(this.institution.getId(), other.getInstitution().getId())) {
+		if (!CompareUtil.equalsIgnoreNull(this.institution.getId(), other.getInstitution().getId())) {
 			return false;
 		}
 		return true;

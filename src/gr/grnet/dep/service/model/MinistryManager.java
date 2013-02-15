@@ -1,5 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.util.CompareUtil;
+
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
@@ -43,7 +45,7 @@ public class MinistryManager extends Role {
 			return false;
 		}
 		MinistryManager other = (MinistryManager) role;
-		if (!compare(this.ministry, other.getMinistry())) {
+		if (!CompareUtil.equalsIgnoreNull(this.ministry, other.getMinistry())) {
 			return false;
 		}
 		return true;

@@ -1,6 +1,7 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.file.ProfessorFile;
+import gr.grnet.dep.service.util.CompareUtil;
 
 import java.util.logging.Logger;
 
@@ -119,19 +120,19 @@ public class ProfessorDomestic extends Professor {
 			return false;
 		}
 		ProfessorDomestic other = (ProfessorDomestic) role;
-		if (!compare(this.institution.getId(), other.getInstitution().getId())) {
+		if (!CompareUtil.equalsIgnoreNull(this.institution.getId(), other.getInstitution().getId())) {
 			return false;
 		}
-		if (!compare(this.department.getId(), other.getDepartment().getId())) {
+		if (!CompareUtil.equalsIgnoreNull(this.department.getId(), other.getDepartment().getId())) {
 			return false;
 		}
-		if (!compare(this.fek, other.getFek())) {
+		if (!CompareUtil.equalsIgnoreNull(this.fek, other.getFek())) {
 			return false;
 		}
-		if (!compare(this.fekSubject, other.getFekSubject())) {
+		if (!CompareUtil.equalsIgnoreNull(this.fekSubject, other.getFekSubject())) {
 			return false;
 		}
-		if (!compare(this.subject, other.getSubject())) {
+		if (!CompareUtil.equalsIgnoreNull(this.subject, other.getSubject())) {
 			return false;
 		}
 		return true;
