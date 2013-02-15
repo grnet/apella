@@ -217,17 +217,32 @@ public class PositionCommitteeRESTService extends RESTService {
 				throw new RestException(Status.CONFLICT, "member.is.evaluator");
 			}
 		}
-		// Check number of regular and substitute
+		// Check committee structure
 		int countRegular = 0;
 		int countSubstitute = 0;
-		for (MemberType type : newCommitteeMemberAsMap.values()) {
+		int countInternalRegular = 0;
+		int countInternalSubstitute = 0;
+		int countExternalRegular = 0;
+		int countExternalSubstitute = 0;
+		for (RegisterMember newRegisterMember : newRegisterMembers) {
+			MemberType type = newCommitteeMemberAsMap.get(newRegisterMember.getId());
 			switch (type) {
-				case REGULAR:
-					countRegular++;
-					break;
-				case SUBSTITUTE:
-					countSubstitute++;
-					break;
+			case REGULAR:
+				countRegular++;
+				if (newRegisterMember.isExternal()) {
+					countExternalRegular++;
+				} else {
+					countInternalRegular++;
+				}
+				break;
+			case SUBSTITUTE:
+				countSubstitute++;
+				if (newRegisterMember.isExternal()) {
+					countExternalSubstitute++;
+				} else {
+					countInternalSubstitute++;
+				}
+				break;
 			}
 		}
 		if (countRegular != PositionCommitteeMember.MAX_MEMBERS) {
@@ -236,21 +251,17 @@ public class PositionCommitteeRESTService extends RESTService {
 		if (countSubstitute != PositionCommitteeMember.MAX_MEMBERS) {
 			throw new RestException(Status.CONFLICT, "max.substitute.members.failed");
 		}
-		// Check number of internal and external members
-		int countInternal = 0;
-		int countExternal = 0;
-		for (RegisterMember newRegisterMember : newRegisterMembers) {
-			if (newRegisterMember.isExternal()) {
-				countExternal++;
-			} else {
-				countInternal++;
-			}
+		if (countInternalRegular < PositionCommitteeMember.MIN_INTERNAL) {
+			throw new RestException(Status.CONFLICT, "min.internal.regular.members.failed");
 		}
-		if (countInternal < PositionCommitteeMember.MIN_INTERNAL) {
-			throw new RestException(Status.CONFLICT, "min.internal.members.failed");
+		if (countInternalSubstitute < PositionCommitteeMember.MIN_INTERNAL) {
+			throw new RestException(Status.CONFLICT, "min.internal.substitute.members.failed");
 		}
-		if (countExternal < PositionCommitteeMember.MIN_EXTERNAL) {
-			throw new RestException(Status.CONFLICT, "min.external.members.failed");
+		if (countExternalRegular < PositionCommitteeMember.MIN_EXTERNAL) {
+			throw new RestException(Status.CONFLICT, "min.external.regular.members.failed");
+		}
+		if (countExternalSubstitute < PositionCommitteeMember.MIN_EXTERNAL) {
+			throw new RestException(Status.CONFLICT, "min.external.substitute.members.failed");
 		}
 
 		// Update
