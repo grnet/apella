@@ -2,14 +2,6 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 
 	var Models = {};
 
-	// Helper function, needed in Backbone functions that extend sync
-	var getValue = function(object, prop) {
-		if (!(object && object[prop])) {
-			return null;
-		}
-		return _.isFunction(object[prop]) ? object[prop]() : object[prop];
-	};
-
 	// User
 	Models.User = Backbone.Model.extend({
 		urlRoot : "/dep/rest/user",
@@ -40,7 +32,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			},
 			"roles" : []
 		},
-		parse : function(response, options) {
+		parse : function(resp, options) {
 			// This is the only place we have access to xhr - response object
 			if (options && options.xhr) {
 				var authToken = options.xhr.getResponseHeader("X-Auth-Token");
@@ -53,7 +45,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 					App.authToken = authToken;
 				}
 			}
-			return response;
+			return resp;
 		},
 		getRole : function(role) {
 			var self = this;
@@ -132,404 +124,462 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 				}
 				return memo;
 			}, []);
+		},
+
+		// Sync Methods
+		verify : function(options) {
+			options = options ? _.clone(options) : {};
+			if (options.parse === void 0)
+				options.parse = true;
+			var success = options.success;
+			options.success = function(model, resp, options) {
+				if (!model.set(model.parse(resp, options), options))
+					return false;
+				if (success)
+					success(model, resp, options);
+			};
+			return this.sync('verify', this, options);
+		},
+
+		login : function(key, val, options) {
+			var attrs, success, xhr, attributes = this.attributes;
+
+			// Handle both `"key", value` and `{key: value}` -style
+			// arguments.
+			if (key == null || typeof key === 'object') {
+				attrs = key;
+				options = val;
+			} else {
+				(attrs = {})[key] = val;
+			}
+
+			// If we're not waiting and attributes exist, save acts as
+			// `set(attr).save(null, opts)`.
+			if (attrs && (!options || !options.wait) && !this.set(attrs, options))
+				return false;
+
+			options = _.extend({
+				validate : true
+			}, options);
+
+			// Do not persist invalid models.
+			if (!this._validate(attrs, options))
+				return false;
+
+			// Set temporary attributes if `{wait: true}`.
+			if (attrs && options.wait) {
+				this.attributes = _.extend({}, attributes, attrs);
+			}
+
+			// After a successful server-side save, the client is
+			// (optionally)
+			// updated with the server-side state.
+			if (options.parse === void 0)
+				options.parse = true;
+			success = options.success;
+			options.success = function(model, resp, options) {
+				// Ensure attributes are restored during synchronous saves.
+				model.attributes = attributes;
+				var serverAttrs = model.parse(resp, options);
+				if (options.wait)
+					serverAttrs = _.extend(attrs || {}, serverAttrs);
+				if (_.isObject(serverAttrs) && !model.set(serverAttrs, options)) {
+					return false;
+				}
+				if (success)
+					success(model, resp, options);
+			};
+
+			// Finish configuring and sending the Ajax request.
+			xhr = this.sync("login", this, options);
+
+			// Restore attributes.
+			if (attrs && options.wait)
+				this.attributes = attributes;
+
+			return xhr;
+		},
+
+		status : function(key, val, options) {
+			var attrs, success, xhr, attributes = this.attributes;
+
+			// Handle both `"key", value` and `{key: value}` -style
+			// arguments.
+			if (key == null || typeof key === 'object') {
+				attrs = key;
+				options = val;
+			} else {
+				(attrs = {})[key] = val;
+			}
+
+			// If we're not waiting and attributes exist, save acts as
+			// `set(attr).save(null, opts)`.
+			if (attrs && (!options || !options.wait) && !this.set(attrs, options))
+				return false;
+
+			options = _.extend({
+				validate : true
+			}, options);
+
+			// Do not persist invalid models.
+			if (!this._validate(attrs, options))
+				return false;
+
+			// Set temporary attributes if `{wait: true}`.
+			if (attrs && options.wait) {
+				this.attributes = _.extend({}, attributes, attrs);
+			}
+
+			// After a successful server-side save, the client is
+			// (optionally)
+			// updated with the server-side state.
+			if (options.parse === void 0)
+				options.parse = true;
+			success = options.success;
+			options.success = function(model, resp, options) {
+				// Ensure attributes are restored during synchronous saves.
+				model.attributes = attributes;
+				var serverAttrs = model.parse(resp, options);
+				if (options.wait)
+					serverAttrs = _.extend(attrs || {}, serverAttrs);
+				if (_.isObject(serverAttrs) && !model.set(serverAttrs, options)) {
+					return false;
+				}
+				if (success)
+					success(model, resp, options);
+			};
+
+			// Finish configuring and sending the Ajax request.
+			xhr = this.sync("status", this, options);
+
+			// Restore attributes.
+			if (attrs && options.wait)
+				this.attributes = attributes;
+
+			return xhr;
+		},
+
+		resetPassword : function(key, val, options) {
+			var attrs, success, xhr, attributes = this.attributes;
+
+			// Handle both `"key", value` and `{key: value}` -style
+			// arguments.
+			if (key == null || typeof key === 'object') {
+				attrs = key;
+				options = val;
+			} else {
+				(attrs = {})[key] = val;
+			}
+
+			// If we're not waiting and attributes exist, save acts as
+			// `set(attr).save(null, opts)`.
+			if (attrs && (!options || !options.wait) && !this.set(attrs, options))
+				return false;
+
+			options = _.extend({
+				validate : true
+			}, options);
+
+			// Do not persist invalid models.
+			if (!this._validate(attrs, options))
+				return false;
+
+			// Set temporary attributes if `{wait: true}`.
+			if (attrs && options.wait) {
+				this.attributes = _.extend({}, attributes, attrs);
+			}
+
+			// After a successful server-side save, the client is
+			// (optionally)
+			// updated with the server-side state.
+			if (options.parse === void 0)
+				options.parse = true;
+			success = options.success;
+			options.success = function(model, resp, options) {
+				// Ensure attributes are restored during synchronous saves.
+				model.attributes = attributes;
+				var serverAttrs = model.parse(resp, options);
+				if (options.wait)
+					serverAttrs = _.extend(attrs || {}, serverAttrs);
+				if (_.isObject(serverAttrs) && !model.set(serverAttrs, options)) {
+					return false;
+				}
+				if (success)
+					success(model, resp, options);
+			};
+
+			// Finish configuring and sending the Ajax request.
+			xhr = this.sync("resetPassword", this, options);
+
+			// Restore attributes.
+			if (attrs && options.wait)
+				this.attributes = attributes;
+
+			return xhr;
+		},
+
+		resendVerificationEmail : function(key, val, options) {
+			var attrs, success, xhr, attributes = this.attributes;
+
+			// Handle both `"key", value` and `{key: value}` -style
+			// arguments.
+			if (key == null || typeof key === 'object') {
+				attrs = key;
+				options = val;
+			} else {
+				(attrs = {})[key] = val;
+			}
+
+			// If we're not waiting and attributes exist, save acts as
+			// `set(attr).save(null, opts)`.
+			if (attrs && (!options || !options.wait) && !this.set(attrs, options))
+				return false;
+
+			options = _.extend({
+				validate : true
+			}, options);
+
+			// Do not persist invalid models.
+			if (!this._validate(attrs, options))
+				return false;
+
+			// Set temporary attributes if `{wait: true}`.
+			if (attrs && options.wait) {
+				this.attributes = _.extend({}, attributes, attrs);
+			}
+
+			// After a successful server-side save, the client is
+			// (optionally)
+			// updated with the server-side state.
+			if (options.parse === void 0)
+				options.parse = true;
+			success = options.success;
+			options.success = function(model, resp, options) {
+				// Ensure attributes are restored during synchronous saves.
+				model.attributes = attributes;
+				var serverAttrs = model.parse(resp, options);
+				if (options.wait)
+					serverAttrs = _.extend(attrs || {}, serverAttrs);
+				if (_.isObject(serverAttrs) && !model.set(serverAttrs, options)) {
+					return false;
+				}
+				if (success)
+					success(model, resp, options);
+			};
+
+			// Finish configuring and sending the Ajax request.
+			xhr = this.sync("resendVerificationEmail", this, options);
+
+			// Restore attributes.
+			if (attrs && options.wait)
+				this.attributes = attributes;
+
+			return xhr;
+		},
+
+		sync : function(method, model, options) {
+			switch (method) {
+
+			case "verify":
+				// Default options, unless specified.
+				_.defaults(options || (options = {}), {
+					emulateHTTP : Backbone.emulateHTTP,
+					emulateJSON : Backbone.emulateJSON
+				});
+				// Default JSON-request options.
+				var params = {
+					type : 'PUT',
+					dataType : 'json',
+					contentType : 'application/json',
+					data : JSON.stringify(model.toJSON())
+				};
+				// Ensure that we have a URL.
+				if (!options.url) {
+					if (model.url) {
+						params.url = (_.isFunction(model.url) ? model.url() : model.url) + "/verify";
+					} else {
+						urlError();
+					}
+				}
+				var success = options.success;
+				options.success = function(resp) {
+					if (success)
+						success(model, resp, options);
+					model.trigger('sync', model, resp, options);
+				};
+				var error = options.error;
+				options.error = function(xhr) {
+					if (error)
+						error(model, xhr, options);
+					model.trigger('error', model, xhr, options);
+				};
+				// Make the request, allowing the user to override any Ajax
+				// options.
+				var xhr = options.xhr = Backbone.ajax(_.extend(params, options));
+				model.trigger('request', model, xhr, options);
+				return xhr;
+
+			case "login":
+				// Default options, unless specified.
+				options || (options = {});
+				var params = {
+					type : 'PUT',
+					dataType : 'json',
+					data : {
+						"username" : model.get("username"),
+						"password" : model.get("password")
+					}
+				};
+				// Ensure that we have a URL.
+				if (!options.url) {
+					if (model.url) {
+						params.url = (_.isFunction(model.url) ? model.url() : model.url) + "/login";
+					} else {
+						urlError();
+					}
+				}
+				var success = options.success;
+				options.success = function(resp) {
+					if (success)
+						success(model, resp, options);
+					model.trigger('sync', model, resp, options);
+				};
+				var error = options.error;
+				options.error = function(xhr) {
+					if (error)
+						error(model, xhr, options);
+					model.trigger('error', model, xhr, options);
+				};
+				// Make the request, allowing the user to override any Ajax
+				// options.
+				var xhr = options.xhr = Backbone.ajax(_.extend(params, options));
+				model.trigger('request', model, xhr, options);
+				return xhr;
+
+			case "status":
+				// Default options, unless specified.
+				_.defaults(options || (options = {}), {
+					emulateHTTP : Backbone.emulateHTTP,
+					emulateJSON : Backbone.emulateJSON
+				});
+				var params = {
+					type : 'PUT',
+					dataType : 'json',
+					contentType : 'application/json',
+					data : JSON.stringify({
+						"id" : model.get("id"),
+						"status" : model.get("status")
+					})
+				};
+				// Ensure that we have a URL.
+				if (!options.url) {
+					if (model.url) {
+						params.url = (_.isFunction(model.url) ? model.url() : model.url) + "/status";
+					} else {
+						urlError();
+					}
+				}
+				var success = options.success;
+				options.success = function(resp) {
+					if (success)
+						success(model, resp, options);
+					model.trigger('sync', model, resp, options);
+				};
+				var error = options.error;
+				options.error = function(xhr) {
+					if (error)
+						error(model, xhr, options);
+					model.trigger('error', model, xhr, options);
+				};
+				// Make the request, allowing the user to override any Ajax
+				// options.
+				var xhr = options.xhr = Backbone.ajax(_.extend(params, options));
+				model.trigger('request', model, xhr, options);
+				return xhr;
+
+			case "resetPassword":
+				// Default options, unless specified.
+				_.defaults(options || (options = {}), {
+					emulateHTTP : Backbone.emulateHTTP,
+					emulateJSON : Backbone.emulateJSON
+				});
+				var params = {
+					type : 'PUT',
+					dataType : 'json',
+					data : {
+						"username" : model.get("username")
+					}
+				};
+				// Ensure that we have a URL.
+				if (!options.url) {
+					if (model.url) {
+						params.url = (_.isFunction(model.url) ? model.url() : model.url) + "/resetPassword";
+					} else {
+						urlError();
+					}
+				}
+				var success = options.success;
+				options.success = function(resp) {
+					if (success)
+						success(model, resp, options);
+					model.trigger('sync', model, resp, options);
+				};
+				var error = options.error;
+				options.error = function(xhr) {
+					if (error)
+						error(model, xhr, options);
+					model.trigger('error', model, xhr, options);
+				};
+				// Make the request, allowing the user to override any Ajax
+				// options.
+				var xhr = options.xhr = Backbone.ajax(_.extend(params, options));
+				model.trigger('request', model, xhr, options);
+				return xhr;
+
+			case "resendVerificationEmail":
+				// Default options, unless specified.
+				_.defaults(options || (options = {}), {
+					emulateHTTP : Backbone.emulateHTTP,
+					emulateJSON : Backbone.emulateJSON
+				});
+				var params = {
+					type : 'PUT',
+					dataType : 'json',
+					data : {
+						"username" : model.get("username")
+					}
+				};
+				// Ensure that we have a URL.
+				if (!options.url) {
+					if (model.url) {
+						params.url = (_.isFunction(model.url) ? model.url() : model.url) + "/sendVerificationEmail";
+					} else {
+						urlError();
+					}
+				}
+				var success = options.success;
+				options.success = function(resp) {
+					if (success)
+						success(model, resp, options);
+					model.trigger('sync', model, resp, options);
+				};
+				var error = options.error;
+				options.error = function(xhr) {
+					if (error)
+						error(model, xhr, options);
+					model.trigger('error', model, xhr, options);
+				};
+				// Make the request, allowing the user to override any Ajax
+				// options.
+				var xhr = options.xhr = Backbone.ajax(_.extend(params, options));
+				model.trigger('request', model, xhr, options);
+				return xhr;
+
+			default:
+				return (Backbone.sync).call(this, method, this, options);
+			}
 		}
 	});
-
-	Models.User.prototype.verify = function(options) {
-		var attrs, current;
-
-		// Handle both `("key", value)` and `({key: value})` -style calls.
-		if (_.isObject(key) || key == null) {
-			attrs = key;
-			options = value;
-		} else {
-			attrs = {};
-			attrs[key] = value;
-		}
-		options = options ? _.clone(options) : {};
-
-		// If we're "wait"-ing to set changed attributes, validate early.
-		if (options.wait) {
-			if (!this._validate(attrs, options))
-				return false;
-			current = _.clone(this.attributes);
-		}
-
-		// Regular saves `set` attributes before persisting to the server.
-		var silentOptions = _.extend({}, options, {
-			silent : true
-		});
-		if (attrs && !this.set(attrs, options.wait ? silentOptions : options)) {
-			return false;
-		}
-
-		// After a successful server-side save, the client is (optionally)
-		// updated with the server-side state.
-		var model = this;
-		var success = options.success;
-		options.success = function(resp, status, xhr) {
-			var serverAttrs = model.parse(resp, xhr);
-			if (options.wait) {
-				delete options.wait;
-				serverAttrs = _.extend(attrs || {}, serverAttrs);
-			}
-			if (!model.set(serverAttrs, options))
-				return false;
-			if (success) {
-				success(model, resp);
-			} else {
-				model.trigger('sync', model, resp, options);
-			}
-		};
-
-		// Finish configuring and sending the Ajax request.
-		options.error = Backbone.wrapError(options.error, model, options);
-		var xhr = (this.sync || Backbone.sync).call(this, 'verify', this, options);
-		if (options.wait)
-			this.set(current, silentOptions);
-		return xhr;
-	};
-
-	Models.User.prototype.login = function(key, value, options) {
-		var attrs, current;
-
-		// Handle both `("key", value)` and `({key: value})` -style calls.
-		if (_.isObject(key) || key == null) {
-			attrs = key;
-			options = value;
-		} else {
-			attrs = {};
-			attrs[key] = value;
-		}
-		options = options ? _.clone(options) : {};
-
-		// If we're "wait"-ing to set changed attributes, validate early.
-		if (options.wait) {
-			if (!this._validate(attrs, options))
-				return false;
-			current = _.clone(this.attributes);
-		}
-
-		// Regular saves `set` attributes before persisting to the server.
-		var silentOptions = _.extend({}, options, {
-			silent : true
-		});
-		if (attrs && !this.set(attrs, options.wait ? silentOptions : options)) {
-			return false;
-		}
-
-		// After a successful server-side save, the client is (optionally)
-		// updated with the server-side state.
-		var model = this;
-		var success = options.success;
-		options.success = function(resp, status, xhr) {
-			var serverAttrs = model.parse(resp, xhr);
-			if (options.wait) {
-				delete options.wait;
-				serverAttrs = _.extend(attrs || {}, serverAttrs);
-			}
-			if (!model.set(serverAttrs, options))
-				return false;
-			if (success) {
-				success(model, resp);
-			} else {
-				model.trigger('sync', model, resp, options);
-			}
-		};
-
-		// Finish configuring and sending the Ajax request.
-		options.error = Backbone.wrapError(options.error, model, options);
-		var xhr = (this.sync || Backbone.sync).call(this, 'login', this, options);
-		if (options.wait)
-			this.set(current, silentOptions);
-		return xhr;
-	},
-
-	Models.User.prototype.status = function(key, value, options) {
-		var attrs, current;
-
-		// Handle both `("key", value)` and `({key: value})` -style calls.
-		if (_.isObject(key) || key == null) {
-			attrs = key;
-			options = value;
-		} else {
-			attrs = {};
-			attrs[key] = value;
-		}
-		options = options ? _.clone(options) : {};
-
-		// If we're "wait"-ing to set changed attributes, validate early.
-		if (options.wait) {
-			if (!this._validate(attrs, options))
-				return false;
-			current = _.clone(this.attributes);
-		}
-
-		// Regular saves `set` attributes before persisting to the server.
-		var silentOptions = _.extend({}, options, {
-			silent : true
-		});
-		if (attrs && !this.set(attrs, options.wait ? silentOptions : options)) {
-			return false;
-		}
-
-		// After a successful server-side save, the client is (optionally)
-		// updated with the server-side state.
-		var model = this;
-		var success = options.success;
-		options.success = function(resp, status, xhr) {
-			var serverAttrs = model.parse(resp, xhr);
-			if (options.wait) {
-				delete options.wait;
-				serverAttrs = _.extend(attrs || {}, serverAttrs);
-			}
-			if (!model.set(serverAttrs, options))
-				return false;
-			if (success) {
-				success(model, resp);
-			} else {
-				model.trigger('sync', model, resp, options);
-			}
-		};
-
-		// Finish configuring and sending the Ajax request.
-		options.error = Backbone.wrapError(options.error, model, options);
-		var xhr = (this.sync || Backbone.sync).call(this, 'status', this, options);
-		if (options.wait)
-			this.set(current, silentOptions);
-		return xhr;
-	};
-
-	Models.User.prototype.resetPassword = function(key, value, options) {
-		var attrs, current;
-
-		// Handle both `("key", value)` and `({key: value})` -style calls.
-		if (_.isObject(key) || key == null) {
-			attrs = key;
-			options = value;
-		} else {
-			attrs = {};
-			attrs[key] = value;
-		}
-		options = options ? _.clone(options) : {};
-
-		// If we're "wait"-ing to set changed attributes, validate early.
-		if (options.wait) {
-			if (!this._validate(attrs, options))
-				return false;
-			current = _.clone(this.attributes);
-		}
-
-		// Regular saves `set` attributes before persisting to the server.
-		var silentOptions = _.extend({}, options, {
-			silent : true
-		});
-		if (attrs && !this.set(attrs, options.wait ? silentOptions : options)) {
-			return false;
-		}
-
-		// After a successful server-side save, the client is (optionally)
-		// updated with the server-side state.
-		var model = this;
-		var success = options.success;
-		options.success = function(resp, status, xhr) {
-			var serverAttrs = model.parse(resp, xhr);
-			if (options.wait) {
-				delete options.wait;
-				serverAttrs = _.extend(attrs || {}, serverAttrs);
-			}
-			if (!model.set(serverAttrs, options))
-				return false;
-			if (success) {
-				success(model, resp);
-			} else {
-				model.trigger('sync', model, resp, options);
-			}
-		};
-
-		// Finish configuring and sending the Ajax request.
-		options.error = Backbone.wrapError(options.error, model, options);
-		var xhr = (this.sync || Backbone.sync).call(this, 'resetPassword', this, options);
-		if (options.wait)
-			this.set(current, silentOptions);
-		return xhr;
-	};
-
-	Models.User.prototype.resendVerificationEmail = function(key, value, options) {
-		var attrs, current;
-
-		// Handle both `("key", value)` and `({key: value})` -style calls.
-		if (_.isObject(key) || key == null) {
-			attrs = key;
-			options = value;
-		} else {
-			attrs = {};
-			attrs[key] = value;
-		}
-		options = options ? _.clone(options) : {};
-
-		// If we're "wait"-ing to set changed attributes, validate early.
-		if (options.wait) {
-			if (!this._validate(attrs, options))
-				return false;
-			current = _.clone(this.attributes);
-		}
-
-		// Regular saves `set` attributes before persisting to the server.
-		var silentOptions = _.extend({}, options, {
-			silent : true
-		});
-		if (attrs && !this.set(attrs, options.wait ? silentOptions : options)) {
-			return false;
-		}
-
-		// After a successful server-side save, the client is (optionally)
-		// updated with the server-side state.
-		var model = this;
-		var success = options.success;
-		options.success = function(resp, status, xhr) {
-			var serverAttrs = model.parse(resp, xhr);
-			if (options.wait) {
-				delete options.wait;
-				serverAttrs = _.extend(attrs || {}, serverAttrs);
-			}
-			if (!model.set(serverAttrs, options))
-				return false;
-			if (success) {
-				success(model, resp);
-			} else {
-				model.trigger('sync', model, resp, options);
-			}
-		};
-
-		// Finish configuring and sending the Ajax request.
-		options.error = Backbone.wrapError(options.error, model, options);
-		var xhr = (this.sync || Backbone.sync).call(this, 'resendVerificationEmail', this, options);
-		if (options.wait)
-			this.set(current, silentOptions);
-		return xhr;
-	};
-
-	Models.User.prototype.sync = function(method, model, options) {
-		switch (method) {
-
-		case "verify":
-			// Default options, unless specified.
-			options || (options = {});
-			// Default JSON-request options.
-			var params = {
-				type : 'PUT',
-				dataType : 'json',
-				contentType : 'application/json',
-				data : JSON.stringify(model.toJSON())
-			};
-
-			// Ensure that we have a URL.
-			if (!options.url) {
-				if (model.url) {
-					params.url = (_.isFunction(model.url) ? model.url() : model.url) + "/verify";
-				} else {
-					urlError();
-				}
-			}
-			// Make the request, allowing the user to override any Ajax options.
-			return $.ajax(_.extend(params, options));
-
-		case "login":
-			// Default options, unless specified.
-			options || (options = {});
-			// Default JSON-request options.
-			var params = {
-				type : 'PUT',
-				dataType : 'json',
-				data : {
-					"username" : model.get("username"),
-					"password" : model.get("password")
-				}
-			};
-			// Ensure that we have a URL.
-			if (!options.url) {
-				if (model.url) {
-					params.url = (_.isFunction(model.url) ? model.url() : model.url) + "/login";
-				} else {
-					urlError();
-				}
-			}
-			// Make the request, allowing the user to override any Ajax options.
-			return $.ajax(_.extend(params, options));
-
-		case "status":
-			// Default options, unless specified.
-			options || (options = {});
-			// Default JSON-request options.
-			var params = {
-				type : 'PUT',
-				dataType : 'json',
-				contentType : 'application/json',
-				data : JSON.stringify({
-					"id" : model.get("id"),
-					"status" : model.get("status")
-				})
-			};
-			// Ensure that we have a URL.
-			if (!options.url) {
-				if (model.url) {
-					params.url = (_.isFunction(model.url) ? model.url() : model.url) + "/status";
-				} else {
-					urlError();
-				}
-			}
-			// Make the request, allowing the user to override any Ajax options.
-			return $.ajax(_.extend(params, options));
-
-		case "resetPassword":
-			// Default options, unless specified.
-			options || (options = {});
-			// Default JSON-request options.
-			var params = {
-				type : 'PUT',
-				dataType : 'json',
-				data : {
-					"username" : model.get("username")
-				}
-			};
-			// Ensure that we have a URL.
-			if (!options.url) {
-				if (model.url) {
-					params.url = (_.isFunction(model.url) ? model.url() : model.url) + "/resetPassword";
-				} else {
-					urlError();
-				}
-			}
-			// Make the request, allowing the user to override any Ajax options.
-			return $.ajax(_.extend(params, options));
-
-		case "resendVerificationEmail":
-			// Default options, unless specified.
-			options || (options = {});
-			// Default JSON-request options.
-			var params = {
-				type : 'PUT',
-				dataType : 'json',
-				data : {
-					"username" : model.get("username")
-				}
-			};
-			// Ensure that we have a URL.
-			if (!options.url) {
-				if (model.url) {
-					params.url = (_.isFunction(model.url) ? model.url() : model.url) + "/sendVerificationEmail";
-				} else {
-					urlError();
-				}
-			}
-			// Make the request, allowing the user to override any Ajax options.
-			return $.ajax(_.extend(params, options));
-
-		default:
-			return (Backbone.sync).call(this, method, this, options);
-		}
-	};
 
 	Models.Users = Backbone.Collection.extend({
 		model : Models.User,
@@ -572,95 +622,118 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			} else {
 				return false;
 			}
-		}
-	});
+		},
 
-	Models.Role.prototype.status = function(key, value, options) {
-		var attrs, current;
+		// Sync
+		status : function(key, val, options) {
+			var attrs, success, xhr, attributes = this.attributes;
 
-		// Handle both `("key", value)` and `({key: value})` -style calls.
-		if (_.isObject(key) || key == null) {
-			attrs = key;
-			options = value;
-		} else {
-			attrs = {};
-			attrs[key] = value;
-		}
-		options = options ? _.clone(options) : {};
+			// Handle both `"key", value` and `{key: value}` -style
+			// arguments.
+			if (key == null || typeof key === 'object') {
+				attrs = key;
+				options = val;
+			} else {
+				(attrs = {})[key] = val;
+			}
 
-		// If we're "wait"-ing to set changed attributes, validate early.
-		if (options.wait) {
+			// If we're not waiting and attributes exist, save acts as
+			// `set(attr).save(null, opts)`.
+			if (attrs && (!options || !options.wait) && !this.set(attrs, options))
+				return false;
+
+			options = _.extend({
+				validate : true
+			}, options);
+
+			// Do not persist invalid models.
 			if (!this._validate(attrs, options))
 				return false;
-			current = _.clone(this.attributes);
-		}
 
-		// Regular saves `set` attributes before persisting to the server.
-		var silentOptions = _.extend({}, options, {
-			silent : true
-		});
-		if (attrs && !this.set(attrs, options.wait ? silentOptions : options)) {
-			return false;
-		}
-
-		// After a successful server-side save, the client is (optionally)
-		// updated with the server-side state.
-		var model = this;
-		var success = options.success;
-		options.success = function(resp, status, xhr) {
-			var serverAttrs = model.parse(resp, xhr);
-			if (options.wait) {
-				delete options.wait;
-				serverAttrs = _.extend(attrs || {}, serverAttrs);
+			// Set temporary attributes if `{wait: true}`.
+			if (attrs && options.wait) {
+				this.attributes = _.extend({}, attributes, attrs);
 			}
-			if (!model.set(serverAttrs, options))
-				return false;
-			if (success) {
-				success(model, resp);
-			} else {
-				model.trigger('sync', model, resp, options);
-			}
-		};
 
-		// Finish configuring and sending the Ajax request.
-		options.error = Backbone.wrapError(options.error, model, options);
-		var xhr = (this.sync || Backbone.sync).call(this, 'status', this, options);
-		if (options.wait)
-			this.set(current, silentOptions);
-		return xhr;
-	};
-
-	Models.Role.prototype.sync = function(method, model, options) {
-		switch (method) {
-		case "status":
-			// Default options, unless specified.
-			options || (options = {});
-			// Default JSON-request options.
-			var params = {
-				type : 'PUT',
-				dataType : 'json',
-				contentType : 'application/json',
-				data : JSON.stringify({
-					"id" : model.get("id"),
-					"discriminator" : model.get("discriminator"),
-					"status" : model.get("status")
-				})
-			};
-			// Ensure that we have a URL.
-			if (!options.url) {
-				if (model.url) {
-					params.url = (_.isFunction(model.url) ? model.url() : model.url) + "/status";
-				} else {
-					urlError();
+			// After a successful server-side save, the client is
+			// (optionally)
+			// updated with the server-side state.
+			if (options.parse === void 0)
+				options.parse = true;
+			success = options.success;
+			options.success = function(model, resp, options) {
+				// Ensure attributes are restored during synchronous saves.
+				model.attributes = attributes;
+				var serverAttrs = model.parse(resp, options);
+				if (options.wait)
+					serverAttrs = _.extend(attrs || {}, serverAttrs);
+				if (_.isObject(serverAttrs) && !model.set(serverAttrs, options)) {
+					return false;
 				}
-			}
-			// Make the request, allowing the user to override any Ajax options.
-			return $.ajax(_.extend(params, options));
+				if (success)
+					success(model, resp, options);
+			};
 
-		default:
-			return (Backbone.sync).call(this, method, this, options);
+			// Finish configuring and sending the Ajax request.
+			xhr = this.sync("status", this, options);
+
+			// Restore attributes.
+			if (attrs && options.wait)
+				this.attributes = attributes;
+
+			return xhr;
+		},
+
+		sync : function(method, model, options) {
+			switch (method) {
+			case "status":
+				// Default options, unless specified.
+				_.defaults(options || (options = {}), {
+					emulateHTTP : Backbone.emulateHTTP,
+					emulateJSON : Backbone.emulateJSON
+				});
+				// Default JSON-request options.
+				var params = {
+					type : 'PUT',
+					dataType : 'json',
+					contentType : 'application/json',
+					data : JSON.stringify({
+						"id" : model.get("id"),
+						"discriminator" : model.get("discriminator"),
+						"status" : model.get("status")
+					})
+				};
+				// Ensure that we have a URL.
+				if (!options.url) {
+					if (model.url) {
+						params.url = (_.isFunction(model.url) ? model.url() : model.url) + "/status";
+					} else {
+						urlError();
+					}
+				}
+				var success = options.success;
+				options.success = function(resp) {
+					if (success)
+						success(model, resp, options);
+					model.trigger('sync', model, resp, options);
+				};
+				var error = options.error;
+				options.error = function(xhr) {
+					if (error)
+						error(model, xhr, options);
+					model.trigger('error', model, xhr, options);
+				};
+				// Make the request, allowing the user to override any Ajax
+				// options.
+				var xhr = options.xhr = Backbone.ajax(_.extend(params, options));
+				model.trigger('request', model, xhr, options);
+				return xhr;
+
+			default:
+				return (Backbone.sync).call(this, method, this, options);
+			}
 		}
-	};
+	});
 
 	Models.Roles = Backbone.Collection.extend({
 		model : Models.Role,
@@ -815,95 +888,118 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 					id : undefined
 				}
 			}
-		}
-	});
+		},
 
-	Models.Position.prototype.phase = function(key, value, options) {
-		var attrs, current;
+		phase : function(key, val, options) {
+			var attrs, success, xhr, attributes = this.attributes;
 
-		// Handle both `("key", value)` and `({key: value})` -style calls.
-		if (_.isObject(key) || key == null) {
-			attrs = key;
-			options = value;
-		} else {
-			attrs = {};
-			attrs[key] = value;
-		}
-		options = options ? _.clone(options) : {};
+			// Handle both `"key", value` and `{key: value}` -style
+			// arguments.
+			if (key == null || typeof key === 'object') {
+				attrs = key;
+				options = val;
+			} else {
+				(attrs = {})[key] = val;
+			}
 
-		// If we're "wait"-ing to set changed attributes, validate early.
-		if (options.wait) {
+			// If we're not waiting and attributes exist, save acts as
+			// `set(attr).save(null, opts)`.
+			if (attrs && (!options || !options.wait) && !this.set(attrs, options))
+				return false;
+
+			options = _.extend({
+				validate : true
+			}, options);
+
+			// Do not persist invalid models.
 			if (!this._validate(attrs, options))
 				return false;
-			current = _.clone(this.attributes);
-		}
 
-		// Regular saves `set` attributes before persisting to the server.
-		var silentOptions = _.extend({}, options, {
-			silent : true
-		});
-		if (attrs && !this.set(attrs, options.wait ? silentOptions : options)) {
-			return false;
-		}
-
-		// After a successful server-side save, the client is (optionally)
-		// updated with the server-side state.
-		var model = this;
-		var success = options.success;
-		options.success = function(resp, status, xhr) {
-			var serverAttrs = model.parse(resp, xhr);
-			if (options.wait) {
-				delete options.wait;
-				serverAttrs = _.extend(attrs || {}, serverAttrs);
+			// Set temporary attributes if `{wait: true}`.
+			if (attrs && options.wait) {
+				this.attributes = _.extend({}, attributes, attrs);
 			}
-			if (!model.set(serverAttrs, options))
-				return false;
-			if (success) {
-				success(model, resp);
-			} else {
-				model.trigger('sync', model, resp, options);
-			}
-		};
 
-		// Finish configuring and sending the Ajax request.
-		options.error = Backbone.wrapError(options.error, model, options);
-		var xhr = (this.sync || Backbone.sync).call(this, 'phase', this, options);
-		if (options.wait)
-			this.set(current, silentOptions);
-		return xhr;
-	};
-
-	Models.Position.prototype.sync = function(method, model, options) {
-		switch (method) {
-		case "phase":
-			// Default options, unless specified.
-			options || (options = {});
-			// Default JSON-request options.
-			var params = {
-				type : 'PUT',
-				dataType : 'json',
-				contentType : 'application/json',
-				data : JSON.stringify({
-					phase : {
-						"status" : model.get("phase").status
-					}
-				})
-			};
-			// Ensure that we have a URL.
-			if (!options.url) {
-				if (model.url) {
-					params.url = (_.isFunction(model.url) ? model.url() : model.url) + "/phase";
-				} else {
-					urlError();
+			// After a successful server-side save, the client is
+			// (optionally)
+			// updated with the server-side state.
+			if (options.parse === void 0)
+				options.parse = true;
+			success = options.success;
+			options.success = function(model, resp, options) {
+				// Ensure attributes are restored during synchronous saves.
+				model.attributes = attributes;
+				var serverAttrs = model.parse(resp, options);
+				if (options.wait)
+					serverAttrs = _.extend(attrs || {}, serverAttrs);
+				if (_.isObject(serverAttrs) && !model.set(serverAttrs, options)) {
+					return false;
 				}
-			}
-			// Make the request, allowing the user to override any Ajax options.
-			return $.ajax(_.extend(params, options));
+				if (success)
+					success(model, resp, options);
+			};
 
-		default:
-			return (Backbone.sync).call(this, method, this, options);
+			// Finish configuring and sending the Ajax request.
+			xhr = this.sync("phase", this, options);
+
+			// Restore attributes.
+			if (attrs && options.wait)
+				this.attributes = attributes;
+
+			return xhr;
+		},
+
+		sync : function(method, model, options) {
+			switch (method) {
+			case "phase":
+
+				// Default options, unless specified.
+				_.defaults(options || (options = {}), {
+					emulateHTTP : Backbone.emulateHTTP,
+					emulateJSON : Backbone.emulateJSON
+				});
+				// Default JSON-request options.
+				var params = {
+					type : 'PUT',
+					dataType : 'json',
+					contentType : 'application/json',
+					data : JSON.stringify({
+						phase : {
+							"status" : model.get("phase").status
+						}
+					})
+				};
+				// Ensure that we have a URL.
+				if (!options.url) {
+					if (model.url) {
+						params.url = (_.isFunction(model.url) ? model.url() : model.url) + "/phase";
+					} else {
+						urlError();
+					}
+				}
+				var success = options.success;
+				options.success = function(resp) {
+					if (success)
+						success(model, resp, options);
+					model.trigger('sync', model, resp, options);
+				};
+				var error = options.error;
+				options.error = function(xhr) {
+					if (error)
+						error(model, xhr, options);
+					model.trigger('error', model, xhr, options);
+				};
+				// Make the request, allowing the user to override any Ajax
+				// options.
+				var xhr = options.xhr = Backbone.ajax(_.extend(params, options));
+				model.trigger('request', model, xhr, options);
+				return xhr;
+
+			default:
+				return (Backbone.sync).call(this, method, this, options);
+			}
 		}
-	};
+	});
 
 	Models.Positions = Backbone.Collection.extend({
 		url : "/dep/rest/position",
