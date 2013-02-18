@@ -13,9 +13,10 @@
 					<table class="table table-striped table-bordered">
 						<thead>
 							<tr>
+								<th></th>
 								<th><%= $.i18n.prop("PositionCommitteeMemberType") %></th>
-								<th><%= $.i18n.prop("ID") %></th>
 								<th><%= $.i18n.prop("RegisterMemberExternal") + " / " + $.i18n.prop("RegisterMemberInternal") %></th>
+								<th><%= $.i18n.prop("ID") %></th>
 								<th><%= $.i18n.prop("Name") %></th>
 								<th><%= $.i18n.prop("Surname") %></th>
 								<th><%= $.i18n.prop("Profile") %></th>
@@ -29,7 +30,7 @@
 						</tbody>
 						<tfoot>
 							<tr>
-								<td colspan="9">
+								<td colspan="10">
 									<div class="btn-toolbar" id="actions">
 										<div class="btn-group">
 											<a id="toggleRegisterMembers" class="btn"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_register_members') %></a>

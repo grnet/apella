@@ -1,6 +1,6 @@
 define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i18n", "jquery.validate", "jquery.dataTables", "jquery.dataTables.bootstrap", "jquery.blockUI", "jquery.file.upload", "jquery.iframe-transport", "backbone.cache" ], function($, _, Backbone) {
 	if (!window.App) {
-		// Configuration
+		// Validator Plugin Extensions/Configurations
 		$.validator.setDefaults({
 			ignore : []
 		});
@@ -33,6 +33,34 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 		$.datepicker.setDefaults({
 			dateFormat : "dd/mm/yy"
 		});
+		// DataTables Plugin Extensions/Configurations
+		$.fn.dataTableExt.oApi.fnAddTr = function(oSettings, nTrHTML) {
+			if (typeof bRedraw == 'undefined') {
+				bRedraw = true;
+			}
+			var nTr = $.parseHTML(nTrHTML)[0];
+			var nTds = nTr.getElementsByTagName('td');
+			if (nTds.length != oSettings.aoColumns.length) {
+				alert('Warning: not adding new TR - columns and TD elements must match');
+				return;
+			}
+
+			var aData = [];
+			for ( var i = 0; i < nTds.length; i++) {
+				aData.push(nTds[i].innerHTML || " ");
+			}
+
+			/* Add the data and then replace DataTable's generated TR with ours */
+			var iIndex = this.oApi._fnAddData(oSettings, aData);
+			oSettings.aoData[iIndex].nTr.id = nTr.id;
+
+			oSettings.aiDisplay = oSettings.aiDisplayMaster.slice();
+
+			if (bRedraw) {
+				this.oApi._fnReDraw(oSettings);
+			}
+		};
+
 		// Add _super function in Model, Views
 		(function(Backbone) {
 			function _super(methodName, args) {

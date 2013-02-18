@@ -183,7 +183,7 @@ public class PositionCommitteeRESTService extends RESTService {
 		}
 		// Retrieve new Members from Institution's Register
 		Map<Long, PositionCommitteeMember> existingCommitteeMemberAsMap = new HashMap<Long, PositionCommitteeMember>();
-		for (PositionCommitteeMember existingCommitteeMember : newCommittee.getMembers()) {
+		for (PositionCommitteeMember existingCommitteeMember : existingCommittee.getMembers()) {
 			existingCommitteeMemberAsMap.put(existingCommitteeMember.getRegisterMember().getId(), existingCommitteeMember);
 		}
 
@@ -227,22 +227,22 @@ public class PositionCommitteeRESTService extends RESTService {
 		for (RegisterMember newRegisterMember : newRegisterMembers) {
 			MemberType type = newCommitteeMemberAsMap.get(newRegisterMember.getId());
 			switch (type) {
-			case REGULAR:
-				countRegular++;
-				if (newRegisterMember.isExternal()) {
-					countExternalRegular++;
-				} else {
-					countInternalRegular++;
-				}
-				break;
-			case SUBSTITUTE:
-				countSubstitute++;
-				if (newRegisterMember.isExternal()) {
-					countExternalSubstitute++;
-				} else {
-					countInternalSubstitute++;
-				}
-				break;
+				case REGULAR:
+					countRegular++;
+					if (newRegisterMember.isExternal()) {
+						countExternalRegular++;
+					} else {
+						countInternalRegular++;
+					}
+					break;
+				case SUBSTITUTE:
+					countSubstitute++;
+					if (newRegisterMember.isExternal()) {
+						countExternalSubstitute++;
+					} else {
+						countInternalSubstitute++;
+					}
+					break;
 			}
 		}
 		if (countRegular != PositionCommitteeMember.MAX_MEMBERS) {
@@ -267,6 +267,7 @@ public class PositionCommitteeRESTService extends RESTService {
 		// Update
 		try {
 			existingCommittee.copyFrom(newCommittee);
+
 			existingCommittee.getMembers().clear();
 			for (RegisterMember newRegisterMember : newRegisterMembers) {
 				PositionCommitteeMember newCommitteeMember = null;
@@ -274,13 +275,12 @@ public class PositionCommitteeRESTService extends RESTService {
 					newCommitteeMember = existingCommitteeMemberAsMap.get(newRegisterMember.getId());
 				} else {
 					newCommitteeMember = new PositionCommitteeMember();
+					newCommitteeMember.setRegisterMember(newRegisterMember);
 				}
-				newCommitteeMember.setCommittee(existingCommittee);
-				newCommitteeMember.setRegisterMember(newRegisterMember);
 				newCommitteeMember.setType(newCommitteeMemberAsMap.get(newRegisterMember.getId()));
-
 				existingCommittee.addMember(newCommitteeMember);
 			}
+
 			existingCommittee = em.merge(existingCommittee);
 			em.flush();
 

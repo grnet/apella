@@ -1,20 +1,15 @@
 <tr id="positionCommitteeMember">
+	<td width="1px" align="right">
+		<%= index %>
+	</td>
 	<td width="1px">
 		<input type="hidden" name="registerMemberId" value="<%= registerMember.id %>">
-		<select class="input-medium" name="type">
-			<% if (_.isEqual(type, "REGULAR")) { %>
-			<option value="REGULAR" selected><%= $.i18n.prop("PositionCommitteeMemberTypeREGULAR") %></option>
-			<option value="SUBSTITUTE"><%= $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") %></option>
-			<% } else if (_.isEqual(type, "SUBSTITUTE")) { %>
-			<option value="REGULAR"><%= $.i18n.prop("PositionCommitteeMemberTypeREGULAR") %></option>
-			<option value="SUBSTITUTE" selected><%= $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") %></option> 
-			<% } %>
-		</select>
+		<%= $.i18n.prop("PositionCommitteeMemberType" + type) %>
 	</td>
+	<td><%= registerMember.external ? $.i18n.prop("RegisterMemberExternal") : $.i18n.prop("RegisterMemberInternal") %></td>
 	<td width="1px">
 		<a id="viewMember" href="#user/<%= registerMember.professor.user.id %>"><%= registerMember.professor.user.id %> </a>
 	</td>
-	<td><%= registerMember.external ? $.i18n.prop("RegisterMemberExternal") : $.i18n.prop("RegisterMemberInternal") %></td>
 	<td><%= registerMember.professor.user.basicInfo.firstname %></td>
 	<td><%= registerMember.professor.user.basicInfo.lastname%></td>
 	<td><%= $.i18n.prop(registerMember.professor.discriminator) %></td>
@@ -30,7 +25,9 @@
 			<%= registerMember.professor.department.department %> 
 		<% } %>
 	</td>
-	<td width="120px">
-		<a id="removeMember" class="btn btn-mini btn-danger"><i class="icon-minus icon-white"></i> <%= $.i18n.prop('btn_remove_member') %></a>
+	<td>
+		<div class="btn-group">
+			<a id="removeMember" class="btn btn-small btn-danger" data-register-member-id="<%= registerMember.id %>" rel="tooltip" title="<%= $.i18n.prop('btn_remove_member') %>"><i class="icon-remove-circle icon-white"></i></a>
+		</div>
 	</td>
 </tr>

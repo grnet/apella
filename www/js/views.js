@@ -1,10 +1,7 @@
-define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file.html", "text!tpl/file-edit.html", "text!tpl/file-list.html", "text!tpl/file-list-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html",
-	"text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html", "text!tpl/professor-committees.html", "text!tpl/professor-evaluations.html", "text!tpl/register.html", "text!tpl/institution-regulatory-framework.html", "text!tpl/institution-regulatory-framework-edit.html", "text!tpl/position-search-criteria.html", "text!tpl/position-search-result.html", "text!tpl/candidacy-edit.html",
-	"text!tpl/candidate-candidacy-list.html", "text!tpl/candidacy.html", "text!tpl/candidacy-update-confirm.html", "text!tpl/institution-regulatory-framework-list.html", "text!tpl/register-members.html", "text!tpl/register-members-edit.html", "text!tpl/register-members-edit-professor-list.html", "text!tpl/register-member-edit.html", "text!tpl/overlay.html", "text!tpl/position-main-edit.html", "text!tpl/position-candidacies-edit.html", "text!tpl/position-committee-edit.html", "text!tpl/position-committee-member-edit.html", "text!tpl/position-evaluation-edit.html",
-	"text!tpl/position-evaluation-edit-register-member-list.html", "text!tpl/position-evaluation-evaluator-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-candidacies.html", "text!tpl/position-committee.html", "text!tpl/position-evaluation.html", "text!tpl/position-nomination.html", "text!tpl/position-complementaryDocuments.html", "text!tpl/position-nomination-edit.html", "text!tpl/position-complementaryDocuments-edit.html" ], function($, _, Backbone, App,
-	Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit, tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework,
-	tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_members, tpl_register_members_edit, tpl_register_members_edit_professor_list, tpl_register_member_edit, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list,
-	tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation, tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit) {
+define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file.html", "text!tpl/file-edit.html", "text!tpl/file-list.html", "text!tpl/file-list-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html", "text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html", "text!tpl/professor-committees.html", "text!tpl/professor-evaluations.html", "text!tpl/register.html", "text!tpl/institution-regulatory-framework.html", "text!tpl/institution-regulatory-framework-edit.html", "text!tpl/position-search-criteria.html", "text!tpl/position-search-result.html", "text!tpl/candidacy-edit.html", "text!tpl/candidate-candidacy-list.html",
+	"text!tpl/candidacy.html", "text!tpl/candidacy-update-confirm.html", "text!tpl/institution-regulatory-framework-list.html", "text!tpl/register-members.html", "text!tpl/register-members-edit.html", "text!tpl/register-members-edit-professor-list.html", "text!tpl/register-member-edit.html", "text!tpl/overlay.html", "text!tpl/position-main-edit.html", "text!tpl/position-candidacies-edit.html", "text!tpl/position-committee-edit.html", "text!tpl/position-committee-member-edit.html", "text!tpl/position-evaluation-edit.html", "text!tpl/position-evaluation-edit-register-member-list.html", "text!tpl/position-evaluation-evaluator-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-candidacies.html", "text!tpl/position-committee.html", "text!tpl/position-evaluation.html", "text!tpl/position-nomination.html", "text!tpl/position-complementaryDocuments.html", "text!tpl/position-nomination-edit.html", "text!tpl/position-complementaryDocuments-edit.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit,
+	tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_members, tpl_register_members_edit, tpl_register_members_edit_professor_list, tpl_register_member_edit, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list,
+	tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation, tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit) {
 
 	/** ****************************************************************** */
 
@@ -4628,7 +4625,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		initialize : function() {
 			var self = this;
 			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
-			_.bindAll(this, "isEditable", "toggleRegisterMembers", "addMember", "removeMember", "submit", "cancel");
+			_.bindAll(this, "renderCommitteeMembers", "isEditable", "toggleRegisterMembers", "addMember", "removeMember", "submit", "cancel");
 			self.template = _.template(tpl_position_committee_edit);
 			self.templateRow = _.template(tpl_position_committee_member_edit);
 
@@ -4669,9 +4666,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.$el.html(self.template(self.model.toJSON()));
 
 			// Add Existing Committee Members:
-			_.each(self.model.get("members"), function(committeeMember) {
-				self.addMember(committeeMember);
-			});
+			self.renderCommitteeMembers();
 
 			// Add Files
 			if (self.model.has("id")) {
@@ -4721,7 +4716,20 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					$(this).parents("form").validate().element(this);
 				}
 			});
+
 			return self;
+		},
+
+		renderCommitteeMembers : function() {
+			var self = this;
+			self.$("div#positionCommittee table tbody").empty();
+			_.each(_.sortBy(self.model.get("members"), function(committeeMember) {
+				return "" + committeeMember.type + (committeeMember.registerMember.external ? "1" : "0") + committeeMember.registerMember.id;
+			}), function(committeeMember, index) {
+				self.$("div#positionCommittee table tbody").append(self.templateRow(_.extend(committeeMember, {
+					"index" : index + 1
+				})));
+			});
 		},
 
 		toggleRegisterMembers : function(event) {
@@ -4732,29 +4740,37 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		addMember : function(committeeMember) {
 			var self = this;
-			self.$("div#positionCommittee table tbody").append(self.templateRow(committeeMember));
+			if (_.any(self.model.get("members"), function(member) {
+				return _.isEqual(member.registerMember.id, committeeMember.registerMember.id);
+			})) {
+				var popup = new Views.PopupView({
+					type : "error",
+					message : $.i18n.prop("error.member.already.exists")
+				});
+				popup.show();
+			} else {
+				self.model.get("members").push(committeeMember);
+				self.renderCommitteeMembers();
+			}
 		},
 
 		removeMember : function(event) {
-			$(event.currentTarget).parents("tr").remove();
+			var self = this;
+			var registerMemberId = $(event.currentTarget).data("registerMemberId");
+			var committee = self.model.get("members");
+			var position = _.indexOf(committee, _.find(committee, function(member) {
+				return _.isEqual(member.registerMember.id, registerMemberId);
+			}));
+			committee.splice(position, 1);
+			self.renderCommitteeMembers();
 		},
 
 		submit : function(event) {
 			var self = this;
 			var values = {
 				committeeMeetingDate : self.$("input[name=committeeMeetingDate]").val(),
-				members : []
+				members : self.model.get("members")
 			};
-			self.$("tr#positionCommitteeMember").each(function() {
-				var committeeMember = {
-					registerMember : {
-						id : $(this).find("input[name=registerMemberId]").val()
-					},
-					type : $(this).find("select[name=type]").val()
-				};
-				values.members.push(committeeMember);
-			});
-
 			self.model.save(values, {
 				wait : true,
 				success : function(model, resp) {
