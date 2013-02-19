@@ -131,7 +131,7 @@ public class PositionRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	@Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-	public String get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @QueryParam("phase") Integer order) {
+	public String get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @QueryParam("order") Integer order) {
 		User loggedOn = getLoggedOn(authToken);
 		Position p = getAndCheckPosition(loggedOn, positionId);
 

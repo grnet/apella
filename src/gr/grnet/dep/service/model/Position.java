@@ -6,6 +6,8 @@ import gr.grnet.dep.service.util.SimpleDateSerializer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -14,6 +16,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
@@ -79,6 +82,7 @@ public class Position {
 	private PositionPhase phase;
 
 	@OneToMany(mappedBy = "position", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OrderBy("order ASC")
 	private List<PositionPhase> phases = new ArrayList<PositionPhase>();
 
 	@ManyToOne
@@ -175,10 +179,21 @@ public class Position {
 	public void setCreatedBy(User createdBy) {
 		this.createdBy = createdBy;
 	}
+	
+	/////////////////////////////////////////////////////
+	@JsonView({PositionView.class})
+	public Map<Integer, PositionStatus> getPhasesMap() {
+		Map<Integer, PositionStatus> phasesMap = new TreeMap<Integer, PositionStatus> ();
+		for (PositionPhase phase : this.phases) {
+			phasesMap.put(phase.getOrder(), phase.getStatus());
+		}
+		return phasesMap;
+	}
+	
 
 	public void addPhase(PositionPhase phase) {
 		phase.setPosition(this);
-		phase.setOrder(this.getPhases().size() - 1);
+		phase.setOrder(this.getPhases().size());
 		phase.setCreatedAt(new Date());
 		phase.setUpdatedAt(new Date());
 
@@ -199,6 +214,7 @@ public class Position {
 		position.setSubject(this.subject);
 		// Add selected phase
 		position.setPhase(phases.get(order));
+		position.setPhases(this.phases);
 
 		return position;
 	}
@@ -214,5 +230,6 @@ public class Position {
 	}
 
 	public void initializeCollections() {
+		this.phases.size();
 	}
 }

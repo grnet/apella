@@ -360,6 +360,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			"positions/:positionId" : "showPositionsView",
 			"positions/:positionId/:tab" : "showPositionsView",
 			"position/:positionId" : "showPositionView",
+			"position/:positionId/:order" : "showPositionView",
 			"registers" : "showRegistersView",
 			"registers/:registerId" : "showRegistersView",
 			"requests" : "showRequestsView",
@@ -803,7 +804,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			this.currentView = positionListView;
 		},
 
-		showPositionView : function(positionId) {
+		showPositionView : function(positionId, order) {
 			var self = this;
 			var position = new Models.Position({
 				id : positionId
@@ -812,11 +813,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				model : position
 			});
 			// Add to UI
+			self.clear();
 			$("#content").unbind();
 			$("#content").empty();
 			$("#content").html(positionView.el);
 			// Fetch
 			position.fetch({
+				url : position.url() + (order ? "?order=" + order : ""),
 				cache : false,
 				success : function() {
 					self.refreshBreadcrumb([ $.i18n.prop('menu_position'), position.get("name") ]);

@@ -8,15 +8,27 @@
   <li><a id="selectTab" data-target="complementaryDocuments"><%= $.i18n.prop('PositionLoipaDioikitikaEggrafa') %></a></li>
   <li class="dropdown">
 	<a class="dropdown-toggle" data-toggle="dropdown">
-		<%= $.i18n.prop('AddPhase') %>
+		<%= $.i18n.prop('OtherPhases') %>
 		<span class="caret"></span>
 	</a>
 	<ul class="dropdown-menu">
-		<li><a id="addPhase" data-phase-status ="ANOIXTI"><i class="icon-next icon-white"></i> <%= $.i18n.prop('PositionStatus_ANOIXTI') %></a></li>
-		<li><a id="addPhase" data-phase-status ="EPILOGI"><i class="icon-next icon-white"></i> <%= $.i18n.prop('PositionStatus_EPILOGI') %></a></li>
-		<li><a id="addPhase" data-phase-status ="ANAPOMPI"><i class="icon-next icon-white"></i> <%= $.i18n.prop('PositionStatus_ANAPOMPI') %></a></li>
-		<li><a id="addPhase" data-phase-status ="STELEXOMENI"><i class="icon-next icon-white"></i> <%= $.i18n.prop('PositionStatus_STELEXOMENI') %></a></li>
-		<li><a id="addPhase" data-phase-status ="CANCELLED"><i class="icon-next icon-white"></i> <%= $.i18n.prop('PositionStatus_CANCELLED') %></a></li>
+		<% _.each(phasesMap, function(value, key) { %>
+			<% if ("" + key === "" + phase.order) { %>
+				<li><a tabindex="-1"><i class="icon-eye-close"></i> <%= $.i18n.prop('PositionStatus_' + value) %></a></li>
+			<% } else { %>
+				<li><a tabindex="-1" href="#position/<%= id %>/<%= key %>"><i class="icon-eye-open"></i> <%= $.i18n.prop('PositionStatus_' + value) %></a></li>				
+			<% } %>
+		<% }); %>
+		<li class="dropdown-submenu">
+		 	<a tabindex="-1"><%= $.i18n.prop('AddPhase') %></a>
+			<ul class="dropdown-menu">
+				<li><a tabindex="-1" id="addPhase" data-phase-status ="ANOIXTI"><i class="icon-plus"></i> <%= $.i18n.prop('PositionStatus_ANOIXTI') %></a></li>
+				<li><a tabindex="-1" id="addPhase" data-phase-status ="EPILOGI"><i class="icon-plus"></i> <%= $.i18n.prop('PositionStatus_EPILOGI') %></a></li>
+				<li><a tabindex="-1" id="addPhase" data-phase-status ="ANAPOMPI"><i class="icon-plus"></i> <%= $.i18n.prop('PositionStatus_ANAPOMPI') %></a></li>
+				<li><a tabindex="-1" id="addPhase" data-phase-status ="STELEXOMENI"><i class="icon-plus"></i> <%= $.i18n.prop('PositionStatus_STELEXOMENI') %></a></li>
+				<li><a tabindex="-1" id="addPhase" data-phase-status ="CANCELLED"><i class="icon-plus"></i> <%= $.i18n.prop('PositionStatus_CANCELLED') %></a></li>
+			</ul>
+	  	</li>
 	</ul>
   </li>
 </ul>
