@@ -176,6 +176,7 @@ public class PositionRESTService extends RESTService {
 			}
 			Date now = new Date();
 			position.setPermanent(false);
+			position.setCreatedBy(loggedOn);
 
 			position.setPhase(new PositionPhase());
 			position.getPhase().setPosition(position);
@@ -364,7 +365,27 @@ public class PositionRESTService extends RESTService {
 					}
 					break;
 				case STELEXOMENI:
-					throw new RestException(Status.CONFLICT, "wrong.position.status");
+					switch (newStatus) {
+					case ENTAGMENI:
+					case ANOIXTI:
+					case EPILOGI:
+					case ANAPOMPI:
+					case STELEXOMENI:
+						throw new RestException(Status.CONFLICT, "wrong.position.status");
+					case CANCELLED:
+						// Validate
+						newPhase = new PositionPhase();
+						newPhase.setStatus(PositionStatus.CANCELLED);
+						newPhase.setCandidacies(existingPhase.getCandidacies());
+						newPhase.setCommittee(existingPhase.getCommittee());
+						newPhase.setEvaluation(existingPhase.getEvaluation());
+						newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
+						newPhase.setNomination(existingPhase.getNomination());
+						// Add to Position
+						existingPosition.addPhase(newPhase);
+						break;
+				}
+				break;
 				case ANAPOMPI:
 					switch (newStatus) {
 						case ENTAGMENI:

@@ -4081,7 +4081,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			"ANOIXTI" : [ "EPILOGI" ],
 			"EPILOGI" : [ "ANAPOMPI", "STELEXOMENI", "CANCELLED" ],
 			"ANAPOMPI" : [ "EPILOGI" ],
-			"STELEXOMENI" : [],
+			"STELEXOMENI" : [ "CANCELLED" ],
 			"CANCELLED" : [ "EPILOGI" ]
 		},
 

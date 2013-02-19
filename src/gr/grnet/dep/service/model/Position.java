@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 public class Position {
@@ -79,6 +80,9 @@ public class Position {
 
 	@OneToMany(mappedBy = "position", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<PositionPhase> phases = new ArrayList<PositionPhase>();
+
+	@ManyToOne
+	private User createdBy;
 
 	public Long getId() {
 		return id;
@@ -163,6 +167,15 @@ public class Position {
 		this.phases = phases;
 	}
 
+	@JsonView({PositionView.class})
+	public User getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(User createdBy) {
+		this.createdBy = createdBy;
+	}
+
 	public void addPhase(PositionPhase phase) {
 		phase.setPosition(this);
 		phase.setOrder(this.getPhases().size() - 1);
@@ -179,6 +192,7 @@ public class Position {
 		position.setDepartment(this.department);
 		position.setDescription(this.description);
 		position.setFek(this.fek);
+		position.setFekSentDate(this.fekSentDate);
 		position.setId(this.id);
 		position.setName(this.name);
 		position.setPermanent(this.permanent);

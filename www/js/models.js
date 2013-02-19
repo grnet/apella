@@ -28,7 +28,8 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 					"country" : ""
 				},
 				"email" : "",
-				"mobile" : ""
+				"mobile" : "",
+				"phone" : ""
 			},
 			"roles" : []
 		},
@@ -885,6 +886,18 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 				},
 				complementaryDocuments : {
 					id : undefined
+				}
+			},
+			createdBy : {
+				"id" : undefined,
+				"username" : undefined,
+				"basicInfo" : {
+				},
+				"basicInfoLatin" : {
+				},
+				"contactInfo" : {
+					"address" : {
+					}
 				}
 			}
 		},
