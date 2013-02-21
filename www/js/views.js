@@ -1946,7 +1946,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.closeInnerViews();
 			self.$el.empty();
 			if (self.model.get("discriminator") !== "ADMINISTRATOR") {
-				self.$el.append($(self.template(self.model.toJSON())));
+				self.$el.append(self.template(self.model.toJSON()));
 
 				switch (self.model.get("discriminator")) {
 				case "CANDIDATE":
@@ -2849,7 +2849,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					},
 					"email" : self.$('form input[name=alternateemail]').val(),
 					"mobile" : self.$('form input[name=alternatemobile]').val(),
-					"phone" : self.$('form input[name=alternatephone]').val(),
+					"phone" : self.$('form input[name=alternatephone]').val()
 				};
 				break;
 			case "INSTITUTION_ASSISTANT":
@@ -4576,6 +4576,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var tpl_data, files;
 			self.closeInnerViews();
 			tpl_data = self.model.toJSON();
+			tpl_data.members = _.sortBy(tpl_data.members, function(committeeMember) {
+				return "" + committeeMember.type + (committeeMember.registerMember.external ? "1" : "0") + committeeMember.registerMember.id;
+			});
 			if (App.loggedOnUser.isAssociatedWithDepartment(self.model.get("position").department) || App.loggedOnUser.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE")) {
 				_.each(tpl_data.members, function(member) {
 					member.access = "READ_FULL";

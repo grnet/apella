@@ -179,17 +179,16 @@ public class Position {
 	public void setCreatedBy(User createdBy) {
 		this.createdBy = createdBy;
 	}
-	
+
 	/////////////////////////////////////////////////////
 	@JsonView({PositionView.class})
 	public Map<Integer, PositionStatus> getPhasesMap() {
-		Map<Integer, PositionStatus> phasesMap = new TreeMap<Integer, PositionStatus> ();
+		Map<Integer, PositionStatus> phasesMap = new TreeMap<Integer, PositionStatus>();
 		for (PositionPhase phase : this.phases) {
 			phasesMap.put(phase.getOrder(), phase.getStatus());
 		}
 		return phasesMap;
 	}
-	
 
 	public void addPhase(PositionPhase phase) {
 		phase.setPosition(this);
@@ -213,7 +212,12 @@ public class Position {
 		position.setPermanent(this.permanent);
 		position.setSubject(this.subject);
 		// Add selected phase
-		position.setPhase(phases.get(order));
+		for (PositionPhase phase : this.phases) {
+			if (phase.getOrder().equals(order)) {
+				position.setPhase(phase);
+				break;
+			}
+		}
 		position.setPhases(this.phases);
 
 		return position;

@@ -1,4 +1,4 @@
-<% if (discriminator === "PROFESSOR_DOMESTIC") { %>
+﻿<% if (discriminator === "PROFESSOR_DOMESTIC") { %>
 <div id="PROFESSOR_DOMESTIC">
 	<h4><%= $.i18n.prop('PROFESSOR_DOMESTIC') %></h4>
 	<dl class="dl-glossary">
@@ -46,7 +46,6 @@
 		<dd><% if (!_.isUndefined(rank)) { %><%= rank.name %><% } %></dd>
 		<dt><%= $.i18n.prop('Subject') %></dt>
 		<dd><% if (!_.isUndefined(subject)) { %><%= subject.name %><% } %></dd>
-		.
 	</dl>
 </div>
 <% } %> <% if (discriminator === "INSTITUTION_MANAGER") { %>
@@ -72,7 +71,8 @@
 		<dt><%= $.i18n.prop('Ministry') %></dt>
 		<dd><%= ministry %></dd>
 	</dl>
-</div> <% if (discriminator === "MINISTRY_ASSISTANT") { %>
+</div>
+<% } %> <% if (discriminator === "MINISTRY_ASSISTANT") { %>
 <div id="MINISTRY_ASSISTANT">
 	<h4><%= $.i18n.prop('MINISTRY_ASSISTANT') %></h4>
 	<dl class="dl-glossary">
@@ -80,7 +80,6 @@
 		<dd><%= ministry %></dd>
 	</dl>
 </div>
-<% } %>
 <% } %> <% if (discriminator === "CANDIDATE") { %>
 <div id="CANDIDATE">
 	<h4><%= $.i18n.prop('CANDIDATE') %></h4>

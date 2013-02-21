@@ -23,7 +23,7 @@
 	<tbody>
 	<% _.each(members, function(member) { %>
 	<tr id="positionCommitteeMember">
-		<td width="1px"><%= $.i18n.prop("PositionCommitteeMemberType" + type) %>
+		<td width="1px"><%= $.i18n.prop("PositionCommitteeMemberType" + member.type) %>
 		</td>
 		<td width="1px">
 		<% if (_.isEqual(member.access, "READ_FULL")) { %>
@@ -38,7 +38,7 @@
 		<td><%= $.i18n.prop(member.registerMember.professor.discriminator) %></td>
 		<td>
 			<% if (_.isObject(member.registerMember.professor.institution)) { %> 
-				<%= registerMember.professor.institution.name %>
+				<%= member.registerMember.professor.institution.name %>
 			<% } else if (!_.isUndefined(member.registerMember.professor.institution)) { %> 
 				<%= member.registerMember.professor.institution %> 
 			<% } %>

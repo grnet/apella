@@ -21,7 +21,7 @@
 			<%= evaluator.registerMember.professor.user.id %>
 		<% } %>
 		</td>
-		<td><%= member.external ? $.i18n.prop("RegisterMemberExternal") : $.i18n.prop("RegisterMemberInternal") %></td>
+		<td><%= evaluator.registerMember.external ? $.i18n.prop("RegisterMemberExternal") : $.i18n.prop("RegisterMemberInternal") %></td>
 		<td><%= evaluator.registerMember.professor.user.basicInfo.firstname %></td>
 		<td><%= evaluator.registerMember.professor.user.basicInfo.lastname%></td>
 		<td><%= $.i18n.prop(evaluator.registerMember.professor.discriminator) %></td>
