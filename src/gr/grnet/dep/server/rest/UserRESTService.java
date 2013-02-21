@@ -21,7 +21,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -185,7 +187,7 @@ public class UserRESTService extends RESTService {
 
 	@POST
 	@JsonView({DetailedUserView.class})
-	public User create(@HeaderParam(TOKEN_HEADER) String authToken, User newUser) {
+	public User create(@HeaderParam(TOKEN_HEADER) String authToken, final User newUser) {
 		try {
 			//1. Validate
 			// Has one role
@@ -299,7 +301,18 @@ public class UserRESTService extends RESTService {
 
 			//4. Send Verification E-Mail
 			if (newUser.getStatus() == UserStatus.UNVERIFIED) {
-				mailService.sendVerificationEmail(newUser);
+				sendEmail(newUser.getContactInfo().getEmail(),
+					"verification.title",
+					"verification.body",
+					Collections.unmodifiableMap(new HashMap<String, String>() {
+
+						{
+							put("username", newUser.getUsername());
+							put("firstname", newUser.getBasicInfo().getFirstname());
+							put("lastname", newUser.getBasicInfo().getLastname());
+							put("verificationLink", conf.getString("host") + "/depui/registration.html?#email=" + newUser.getUsername() + "&verification=" + newUser.getVerificationNumber());
+						}
+					}));
 			}
 
 			//5. Return result
@@ -511,19 +524,29 @@ public class UserRESTService extends RESTService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public Response resetPassword(@FormParam("username") String username) {
 		try {
-			User u = (User) em.createQuery(
+			final User u = (User) em.createQuery(
 				"from User u " +
 					"left join fetch u.roles " +
 					"where u.username = :username")
 				.setParameter("username", username)
 				.getSingleResult();
 			// Reset password
-			String newPassword = User.generatePassword();
+			final String newPassword = User.generatePassword();
 			u.setPasswordSalt(User.generatePasswordSalt());
 			u.setPassword(User.encodePassword(newPassword, u.getPasswordSalt()));
 			// Send email
-			mailService.sendPasswordResetEmail(u, newPassword);
+			sendEmail(u.getContactInfo().getEmail(),
+				"password.reset.title",
+				"password.reset.body",
+				Collections.unmodifiableMap(new HashMap<String, String>() {
 
+					{
+						put("username", u.getUsername());
+						put("firstname", u.getBasicInfo().getFirstname());
+						put("lastname", u.getBasicInfo().getLastname());
+						put("newPassword", newPassword);
+					}
+				}));
 			// Return Result
 			return Response.ok().build();
 		} catch (NoResultException e) {
@@ -536,7 +559,7 @@ public class UserRESTService extends RESTService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public Response sendVerificationEmail(@FormParam("username") String username) {
 		try {
-			User u = (User) em.createQuery(
+			final User u = (User) em.createQuery(
 				"from User u " +
 					"left join fetch u.roles " +
 					"where u.username = :username")
@@ -546,7 +569,18 @@ public class UserRESTService extends RESTService {
 			switch (u.getStatus()) {
 				case UNVERIFIED:
 					// Send email
-					mailService.sendVerificationEmail(u);
+					sendEmail(u.getContactInfo().getEmail(),
+						"verification.title",
+						"verification.body",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", u.getUsername());
+								put("firstname", u.getBasicInfo().getFirstname());
+								put("lastname", u.getBasicInfo().getLastname());
+								put("verificationLink", conf.getString("host") + "/depui/registration.html?#email=" + u.getUsername() + "&verification=" + u.getVerificationNumber());
+							}
+						}));
 
 					// Return Result
 					return Response.ok().build();

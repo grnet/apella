@@ -8,6 +8,8 @@ import gr.grnet.dep.service.model.CandidacyEvaluator;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
+import gr.grnet.dep.service.model.PositionCommitteeMember;
+import gr.grnet.dep.service.model.PositionEvaluator;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.CandidacyFile;
@@ -20,7 +22,10 @@ import gr.grnet.dep.service.util.DateUtil;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -157,7 +162,7 @@ public class CandidacyRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			// Validate
-			Candidacy existingCandidacy = em.find(Candidacy.class, id);
+			final Candidacy existingCandidacy = em.find(Candidacy.class, id);
 			if (existingCandidacy == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 			}
@@ -187,10 +192,78 @@ public class CandidacyRESTService extends RESTService {
 			}
 			em.flush();
 
-			//TODO: Send E-Mails
+			// Send E-Mails
 			// 1. candidacy.create@institutionManager
+			sendEmail(existingCandidacy.getCandidacies().getPosition().getCreatedBy().getContactInfo().getEmail(),
+				"default.subject",
+				"candidacy.create@institutionManager",
+				Collections.unmodifiableMap(new HashMap<String, String>() {
+
+					{
+						put("username", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getUsername());
+						put("position", existingCandidacy.getCandidacies().getPosition().getName());
+						put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
+						put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
+					}
+				}));
 			// 2. candidacy.create.candidacyEvaluator@candidacyEvaluator
+			for (final CandidacyEvaluator evaluator : candidacy.getProposedEvaluators()) {
+				sendEmail(evaluator.getEmail(),
+					"default.subject",
+					"candidacy.create.candidacyEvaluator@candidacyEvaluator",
+					Collections.unmodifiableMap(new HashMap<String, String>() {
+
+						{
+							put("evaluator_name", evaluator.getFullname());
+							put("position", existingCandidacy.getCandidacies().getPosition().getName());
+							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
+							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
+							put("candidate_firstname", existingCandidacy.getSnapshot().getBasicInfo().getFirstname());
+							put("candidate_lastname", existingCandidacy.getSnapshot().getBasicInfo().getLastname());
+							put("im_firstname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getFirstname());
+							put("im_lastname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getLastname());
+							put("im_email", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getContactInfo().getEmail());
+							put("im_phone", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getContactInfo().getPhone());
+						}
+					}));
+			}
 			// 3. candidacy.create.candidacyEvaluator@institutionManager
+			for (final CandidacyEvaluator evaluator : candidacy.getProposedEvaluators()) {
+				sendEmail(existingCandidacy.getCandidacies().getPosition().getCreatedBy().getContactInfo().getEmail(),
+					"default.subject",
+					"candidacy.create.candidacyEvaluator@institutionManager",
+					Collections.unmodifiableMap(new HashMap<String, String>() {
+
+						{
+							put("evaluator_name", evaluator.getFullname());
+							put("position", existingCandidacy.getCandidacies().getPosition().getName());
+							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
+							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
+							put("candidate_firstname", existingCandidacy.getSnapshot().getBasicInfo().getFirstname());
+							put("candidate_lastname", existingCandidacy.getSnapshot().getBasicInfo().getLastname());
+							Iterator<CandidacyEvaluator> it = existingCandidacy.getProposedEvaluators().iterator();
+							if (it.hasNext()) {
+								CandidacyEvaluator eval = it.next();
+								put("evaluator1_name", eval.getFullname());
+								put("evaluator1_email", eval.getEmail());
+							} else {
+								put("evaluator1_name", "-");
+								put("evaluator1_email", "-");
+								put("evaluator2_name", "-");
+								put("evaluator2_email", "-");
+							}
+							if (it.hasNext()) {
+								CandidacyEvaluator eval = it.next();
+								put("evaluator2_name", eval.getFullname());
+								put("evaluator2_email", eval.getEmail());
+							} else {
+								put("evaluator2_name", "-");
+								put("evaluator2_email", "-");
+							}
+						}
+					}));
+			}
+			// END: Send E-Mails
 
 			// Return
 			existingCandidacy.initializeCollections();
@@ -207,7 +280,7 @@ public class CandidacyRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			// Validate
-			Candidacy existingCandidacy = em.find(Candidacy.class, id);
+			final Candidacy existingCandidacy = em.find(Candidacy.class, id);
 			if (existingCandidacy == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 			}
@@ -225,15 +298,73 @@ public class CandidacyRESTService extends RESTService {
 				&& DateUtil.compareDates(position.getPhase().getNomination().getNominationCommitteeConvergenceDate(), new Date()) <= 0) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status.committee.converged");
 			}
+
+			// Send E-Mails
+			// 1. candidacy.remove@institutionManager
+			sendEmail(existingCandidacy.getCandidacies().getPosition().getCreatedBy().getContactInfo().getEmail(),
+				"default.subject",
+				"candidacy.remove@institutionManager",
+				Collections.unmodifiableMap(new HashMap<String, String>() {
+
+					{
+						put("username", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getUsername());
+						put("position", existingCandidacy.getCandidacies().getPosition().getName());
+						put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
+						put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
+					}
+				}));
+			// 2. candidacy.remove@committee
+			for (final PositionCommitteeMember member : existingCandidacy.getCandidacies().getPosition().getPhase().getCommittee().getMembers()) {
+				sendEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+					"default.subject",
+					"candidacy.remove@committee",
+					Collections.unmodifiableMap(new HashMap<String, String>() {
+
+						{
+							put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
+							put("position", existingCandidacy.getCandidacies().getPosition().getName());
+							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
+							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
+						}
+					}));
+			}
+			// 3. candidacy.remove@evaluators
+			for (final PositionEvaluator evaluator : existingCandidacy.getCandidacies().getPosition().getPhase().getEvaluation().getEvaluators()) {
+				sendEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+					"default.subject",
+					"candidacy.remove@evaluators",
+					Collections.unmodifiableMap(new HashMap<String, String>() {
+
+						{
+							put("username", evaluator.getRegisterMember().getProfessor().getUser().getUsername());
+							put("position", existingCandidacy.getCandidacies().getPosition().getName());
+							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
+							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
+						}
+					}));
+			}
+			// 4. candidacy.remove@candidates 
+			for (final Candidacy candidacy : existingCandidacy.getCandidacies().getCandidacies()) {
+				if (candidacy.isPermanent()) {
+					sendEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"candidacy.remove@candidates",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", candidacy.getCandidate().getUser().getUsername());
+								put("position", existingCandidacy.getCandidacies().getPosition().getName());
+								put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
+								put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
+							}
+						}));
+				}
+			}
+			// End: Send E-Mails
+
 			// Update
 			em.remove(existingCandidacy);
 			em.flush();
-
-			// TODO: Send E-Mails
-			// candidacy.remove@institutionManager
-			// candidacy.remove@committee
-			// candidacy.remove@evaluators
-			// candidacy.remove@candidates 
 
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();

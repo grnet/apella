@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,6 +59,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Providers;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
@@ -86,6 +88,15 @@ public class RESTService {
 
 	@EJB
 	MailService mailService;
+
+	protected static Configuration conf;
+
+	static {
+		try {
+			conf = DEPConfigurationFactory.getServerConfiguration();
+		} catch (ConfigurationException e) {
+		}
+	}
 
 	/**
 	 * The default MIME type for files without an explicit one.
@@ -607,5 +618,16 @@ public class RESTService {
 				"where d.id in (:departmentIds)")
 			.setParameter("departmentIds", departmentIds)
 			.getResultList();
+	}
+
+	protected void sendEmail(String aToEmailAddr, String aSubjectKey, String aBodyKey, Map<String, String> parameters) {
+		ResourceBundle resources = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-mail", new Locale("el"));
+		String aSubject = resources.getString(aSubjectKey);
+		String aBody = resources.getString(aBodyKey);
+		for (String key : parameters.keySet()) {
+			aBody = aBody.replaceAll("\\[" + key + "\\]", parameters.get(key));
+		}
+		// TODO: Change this to POST a Message and MailService to receive it
+		mailService.sendEmail(aToEmailAddr, aSubject, aBody);
 	}
 }

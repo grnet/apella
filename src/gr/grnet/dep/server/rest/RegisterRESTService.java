@@ -15,6 +15,8 @@ import gr.grnet.dep.service.model.User;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -243,17 +245,41 @@ public class RegisterRESTService extends RESTService {
 				default:
 					break;
 			}
-			newMember = em.merge(newMember);
-			existingRegister.addMember(newMember);
+			final RegisterMember savedMember = em.merge(newMember);
+			existingRegister.addMember(savedMember);
 			em.flush();
 
-			// TODO: Send E-Mails
-			// register.create.register.member.internal@member
-			// register.create.register.member.external@member
+			// Send E-Mails
+			if (savedMember.isExternal()) {
+				// register.create.register.member.external@member
+				sendEmail(savedMember.getProfessor().getUser().getContactInfo().getEmail(),
+					"default.subject",
+					"register.create.register.member.external@member",
+					Collections.unmodifiableMap(new HashMap<String, String>() {
+
+						{
+							put("username", savedMember.getProfessor().getUser().getUsername());
+							put("institution", savedMember.getRegister().getInstitution().getName());
+						}
+					}));
+			} else {
+				// register.create.register.member.internal@member
+				sendEmail(savedMember.getProfessor().getUser().getContactInfo().getEmail(),
+					"default.subject",
+					"register.create.register.member.internal@member",
+					Collections.unmodifiableMap(new HashMap<String, String>() {
+
+						{
+							put("username", savedMember.getProfessor().getUser().getUsername());
+							put("institution", savedMember.getRegister().getInstitution().getName());
+						}
+					}));
+			}
+			// End: Send E-Mails
 
 			// Return result
-			newMember.getProfessor().initializeCollections();
-			return newMember;
+			savedMember.getProfessor().initializeCollections();
+			return savedMember;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
@@ -283,15 +309,41 @@ public class RegisterRESTService extends RESTService {
 		if (existingMember == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.member.id");
 		}
+
+		// Send E-Mails
+		final RegisterMember emailMember = existingMember;
+		if (emailMember.isExternal()) {
+			// register.remove.register.member.external@member
+			sendEmail(emailMember.getProfessor().getUser().getContactInfo().getEmail(),
+				"default.subject",
+				"register.remove.register.member.external@member",
+				Collections.unmodifiableMap(new HashMap<String, String>() {
+
+					{
+						put("username", emailMember.getProfessor().getUser().getUsername());
+						put("institution", emailMember.getRegister().getInstitution().getName());
+					}
+				}));
+		} else {
+			// register.remove.register.member.internal@member
+			sendEmail(emailMember.getProfessor().getUser().getContactInfo().getEmail(),
+				"default.subject",
+				"register.remove.register.member.internal@member",
+				Collections.unmodifiableMap(new HashMap<String, String>() {
+
+					{
+						put("username", emailMember.getProfessor().getUser().getUsername());
+						put("institution", emailMember.getRegister().getInstitution().getName());
+					}
+				}));
+		}
+		// End: Send E-Mails
+
 		// Remove
 		try {
 			existingRegister.getMembers().remove(existingMember);
 			em.remove(existingMember);
 			em.flush();
-
-			// TODO: Send E-Mails
-			// register.remove.register.member.internal@member
-			// register.remove.register.member.external@member
 
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();

@@ -1,9 +1,5 @@
 package gr.grnet.dep.service.util;
 
-import gr.grnet.dep.service.model.User;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,7 +33,7 @@ public class MailService {
 		}
 	}
 
-	private void sendEmail(String aToEmailAddr, String aSubject, String aBody) {
+	public void sendEmail(String aToEmailAddr, String aSubject, String aBody) {
 		logger.log(Level.INFO, "Sending email to " + aToEmailAddr + " " + aSubject + "\n" + aBody);
 		try {
 			MimeMessage message = new MimeMessage(mailSession);
@@ -48,28 +44,6 @@ public class MailService {
 		} catch (MessagingException e) {
 			logger.log(Level.SEVERE, "Failed to send email to " + aToEmailAddr + " " + aSubject + "\n" + aBody, e);
 		}
-	}
-
-	public void sendVerificationEmail(User u) {
-		ResourceBundle resources = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-mail", new Locale("el"));
-		String title = resources.getString("verification.title");
-		String body = resources.getString("verification.body")
-			.replace("[username]", u.getUsername())
-			.replace("[firstname]", u.getBasicInfo().getFirstname())
-			.replace("[lastname]", u.getBasicInfo().getLastname())
-			.replace("[verificationLink]", conf.getString("host") + "/depui/registration.html?#email=" + u.getUsername() + "&verification=" + u.getVerificationNumber());
-		sendEmail(u.getContactInfo().getEmail(), title, body);
-	}
-
-	public void sendPasswordResetEmail(User u, String newPassword) {
-		ResourceBundle resources = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-mail", new Locale("el"));
-		String title = resources.getString("password.reset.title");
-		String body = resources.getString("password.reset.body")
-			.replace("[username]", u.getUsername())
-			.replace("[firstname]", u.getBasicInfo().getFirstname())
-			.replace("[lastname]", u.getBasicInfo().getLastname())
-			.replace("[newPassword]", newPassword);
-		sendEmail(u.getContactInfo().getEmail(), title, body);
 	}
 
 }
