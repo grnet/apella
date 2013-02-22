@@ -1,10 +1,13 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
+import gr.grnet.dep.service.model.PositionCommitteeMember;
 import gr.grnet.dep.service.model.PositionComplementaryDocuments;
 import gr.grnet.dep.service.model.PositionComplementaryDocuments.DetailedPositionComplementaryDocumentsView;
+import gr.grnet.dep.service.model.PositionEvaluator;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.ComplementaryDocumentsFile;
@@ -15,6 +18,8 @@ import gr.grnet.dep.service.model.file.FileType;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -217,17 +222,60 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 			}
 
 			// Create
-			ComplementaryDocumentsFile cdFile = new ComplementaryDocumentsFile();
+			final ComplementaryDocumentsFile cdFile = new ComplementaryDocumentsFile();
 			cdFile.setComplementaryDocuments(existingComDocs);
 			cdFile.setOwner(loggedOn);
 			saveFile(loggedOn, fileItems, cdFile);
 			existingComDocs.addFile(cdFile);
 			em.flush();
 
-			// TODO: Send E-Mails
+			// Send E-Mails
 			// position.upload@committee
+			for (final PositionCommitteeMember member : cdFile.getComplementaryDocuments().getPosition().getPhase().getCommittee().getMembers()) {
+				sendEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+					"default.subject",
+					"position.upload@committee",
+					Collections.unmodifiableMap(new HashMap<String, String>() {
+
+						{
+							put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
+							put("position", cdFile.getComplementaryDocuments().getPosition().getName());
+							put("institution", cdFile.getComplementaryDocuments().getPosition().getDepartment().getInstitution().getName());
+							put("department", cdFile.getComplementaryDocuments().getPosition().getDepartment().getDepartment());
+						}
+					}));
+			}
 			// position.upload@candidates
+			for (final Candidacy candidacy : cdFile.getComplementaryDocuments().getPosition().getPhase().getCandidacies().getCandidacies()) {
+				sendEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+					"default.subject",
+					"position.upload@candidates",
+					Collections.unmodifiableMap(new HashMap<String, String>() {
+
+						{
+							put("username", candidacy.getCandidate().getUser().getUsername());
+							put("position", cdFile.getComplementaryDocuments().getPosition().getName());
+							put("institution", cdFile.getComplementaryDocuments().getPosition().getDepartment().getInstitution().getName());
+							put("department", cdFile.getComplementaryDocuments().getPosition().getDepartment().getDepartment());
+						}
+					}));
+			}
 			// position.upload@evaluators
+			for (final PositionEvaluator evaluator : cdFile.getComplementaryDocuments().getPosition().getPhase().getEvaluation().getEvaluators()) {
+				sendEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+					"default.subject",
+					"position.upload@evaluators",
+					Collections.unmodifiableMap(new HashMap<String, String>() {
+
+						{
+							put("username", evaluator.getRegisterMember().getProfessor().getUser().getUsername());
+							put("position", cdFile.getComplementaryDocuments().getPosition().getName());
+							put("institution", cdFile.getComplementaryDocuments().getPosition().getDepartment().getInstitution().getName());
+							put("department", cdFile.getComplementaryDocuments().getPosition().getDepartment().getDepartment());
+						}
+					}));
+			}
+			// End: Send E-Mails
 
 			return toJSON(cdFile, SimpleFileHeaderView.class);
 		} catch (PersistenceException e) {

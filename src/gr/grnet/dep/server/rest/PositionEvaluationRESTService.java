@@ -1,6 +1,7 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.PositionCommitteeMember;
@@ -23,7 +24,9 @@ import gr.grnet.dep.service.model.file.PositionEvaluatorFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -131,7 +134,7 @@ public class PositionEvaluationRESTService extends RESTService {
 	@JsonView({DetailedPositionEvaluationView.class})
 	public PositionEvaluation updatePositionEvaluation(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, PositionEvaluation newEvaluation) {
 		User loggedOn = getLoggedOn(authToken);
-		PositionEvaluation existingEvaluation = em.find(PositionEvaluation.class, evaluationId);
+		final PositionEvaluation existingEvaluation = em.find(PositionEvaluation.class, evaluationId);
 		if (existingEvaluation == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.evaluation.id");
 		}
@@ -189,6 +192,8 @@ public class PositionEvaluationRESTService extends RESTService {
 				throw new RestException(Status.CONFLICT, "member.in.committe");
 			}
 		}
+
+		Set<Long> addedEvaluatorIds = new HashSet<Long>();
 		try {
 			// Update
 			existingEvaluation.copyFrom(newEvaluation);
@@ -199,18 +204,88 @@ public class PositionEvaluationRESTService extends RESTService {
 					newEvaluator = existingEvaluatorsRegisterMap.get(newRegisterMember.getId());
 				} else {
 					newEvaluator = new PositionEvaluator();
+					newEvaluator.setRegisterMember(newRegisterMember);
+					newEvaluator.setPosition(newEvaluatorsRegisterMap.get(newRegisterMember.getId()));
+
+					addedEvaluatorIds.add(newRegisterMember.getId());
 				}
-				newEvaluator.setRegisterMember(newRegisterMember);
-				newEvaluator.setPosition(newEvaluatorsRegisterMap.get(newRegisterMember.getId()));
 				existingEvaluation.addEvaluator(newEvaluator);
 			}
 			em.flush();
 
-			// TODO: Send E-Mails
-			// positionEvaluation.create.evaluator@evaluator
-			// positionEvaluation.remove.evaluator@evaluator
-			// positionEvaluation.update@candidates
-			// positionEvaluation.update@committee
+			// Send E-Mails
+			for (final PositionEvaluator evaluator : existingEvaluation.getEvaluators()) {
+				if (addedEvaluatorIds.contains(evaluator.getRegisterMember().getId())) {
+					// positionEvaluation.create.evaluator@evaluator
+					sendEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"positionEvaluation.create.evaluator@evaluator",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", evaluator.getRegisterMember().getProfessor().getUser().getUsername());
+								put("position", existingEvaluation.getPosition().getName());
+								put("institution", existingEvaluation.getPosition().getDepartment().getInstitution().getName());
+								put("department", existingEvaluation.getPosition().getDepartment().getDepartment());
+							}
+						}));
+				}
+			}
+			boolean removed = false;
+			for (Long id : existingEvaluatorsRegisterMap.keySet()) {
+				if (!newEvaluatorsRegisterMap.keySet().contains(id)) {
+					removed = true;
+					final PositionEvaluator removedEvaluator = existingEvaluatorsRegisterMap.get(id);
+					// positionEvaluation.remove.evaluator@evaluator
+					sendEmail(removedEvaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"positionEvaluation.remove.evaluator@evaluator",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", removedEvaluator.getRegisterMember().getProfessor().getUser().getUsername());
+								put("position", existingEvaluation.getPosition().getName());
+								put("institution", existingEvaluation.getPosition().getDepartment().getInstitution().getName());
+								put("department", existingEvaluation.getPosition().getDepartment().getDepartment());
+							}
+						}));
+				}
+			}
+
+			if (!addedEvaluatorIds.isEmpty() || removed) {
+				// positionEvaluation.update@committee
+				for (final PositionCommitteeMember member : existingEvaluation.getPosition().getPhase().getCommittee().getMembers()) {
+					sendEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"positionEvaluation.update@committee",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
+								put("position", existingEvaluation.getPosition().getName());
+								put("institution", existingEvaluation.getPosition().getDepartment().getInstitution().getName());
+								put("department", existingEvaluation.getPosition().getDepartment().getDepartment());
+							}
+						}));
+				}
+				// positionEvaluation.update@candidates
+				for (final Candidacy candidacy : existingEvaluation.getPosition().getPhase().getCandidacies().getCandidacies()) {
+					sendEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"positionEvaluation.update@candidates",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", candidacy.getCandidate().getUser().getUsername());
+								put("position", existingEvaluation.getPosition().getName());
+								put("institution", existingEvaluation.getPosition().getDepartment().getInstitution().getName());
+								put("department", existingEvaluation.getPosition().getDepartment().getDepartment());
+							}
+						}));
+				}
+
+			}
+			// End: Send E-Mails
 
 			// Return result
 			existingEvaluation.initializeCollections();
@@ -380,23 +455,106 @@ public class PositionEvaluationRESTService extends RESTService {
 			}
 
 			// Create
-			PositionEvaluatorFile eFile = new PositionEvaluatorFile();
+			final PositionEvaluatorFile eFile = new PositionEvaluatorFile();
 			eFile.setEvaluator(existingEvaluator);
 			eFile.setOwner(loggedOn);
 			saveFile(loggedOn, fileItems, eFile);
 			existingEvaluator.addFile(eFile);
 			em.flush();
 
+			// Send E-Mails
 			if (eFile.getType().equals(FileType.AKSIOLOGISI)) {
-				// TODO: Send E-Mails
 				// positionEvaluation.upload.aksiologisi@committee
+				for (final PositionCommitteeMember member : eFile.getEvaluator().getEvaluation().getPosition().getPhase().getCommittee().getMembers()) {
+					sendEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"positionEvaluation.upload.aksiologisi@committee",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
+								put("position", eFile.getEvaluator().getEvaluation().getPosition().getName());
+								put("institution", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getInstitution().getName());
+								put("department", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getDepartment());
+							}
+						}));
+				}
+				// position.upload@candidates
+				for (final Candidacy candidacy : eFile.getEvaluator().getEvaluation().getPosition().getPhase().getCandidacies().getCandidacies()) {
+					sendEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"position.upload@candidates",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", candidacy.getCandidate().getUser().getUsername());
+								put("position", eFile.getEvaluator().getEvaluation().getPosition().getName());
+								put("institution", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getInstitution().getName());
+								put("department", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getDepartment());
+							}
+						}));
+				}
 				// positionEvaluation.upload.aksiologisi@evaluators
-				// position.upload@candidates
+				for (final PositionEvaluator evaluator : eFile.getEvaluator().getEvaluation().getPosition().getPhase().getEvaluation().getEvaluators()) {
+					sendEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"positionEvaluation.upload.aksiologisi@evaluators",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", evaluator.getRegisterMember().getProfessor().getUser().getUsername());
+								put("position", eFile.getEvaluator().getEvaluation().getPosition().getName());
+								put("institution", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getInstitution().getName());
+								put("department", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getDepartment());
+							}
+						}));
+				}
 			} else {
-				// TODO: Send E-Mails
 				// position.upload@committee
-				// position.upload@evaluators
+				for (final PositionCommitteeMember member : eFile.getEvaluator().getEvaluation().getPosition().getPhase().getCommittee().getMembers()) {
+					sendEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"position.upload@committee",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
+								put("position", eFile.getEvaluator().getEvaluation().getPosition().getName());
+								put("institution", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getInstitution().getName());
+								put("department", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getDepartment());
+							}
+						}));
+				}
 				// position.upload@candidates
+				for (final Candidacy candidacy : eFile.getEvaluator().getEvaluation().getPosition().getPhase().getCandidacies().getCandidacies()) {
+					sendEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"position.upload@candidates",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", candidacy.getCandidate().getUser().getUsername());
+								put("position", eFile.getEvaluator().getEvaluation().getPosition().getName());
+								put("institution", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getInstitution().getName());
+								put("department", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getDepartment());
+							}
+						}));
+				}
+				// position.upload@evaluators
+				for (final PositionEvaluator evaluator : eFile.getEvaluator().getEvaluation().getPosition().getPhase().getEvaluation().getEvaluators()) {
+					sendEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"position.upload@evaluators",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", evaluator.getRegisterMember().getProfessor().getUser().getUsername());
+								put("position", eFile.getEvaluator().getEvaluation().getPosition().getName());
+								put("institution", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getInstitution().getName());
+								put("department", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getDepartment());
+							}
+						}));
+				}
 			}
 
 			return toJSON(eFile, SimpleFileHeaderView.class);

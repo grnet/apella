@@ -1,6 +1,7 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.PositionCommittee;
@@ -19,11 +20,14 @@ import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.file.PositionCommitteeFile;
+import gr.grnet.dep.service.util.CompareUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -264,6 +268,10 @@ public class PositionCommitteeRESTService extends RESTService {
 			throw new RestException(Status.CONFLICT, "min.external.substitute.members.failed");
 		}
 
+		// Keep these to send mails
+		Set<Long> addedMemberIds = new HashSet<Long>();
+		boolean committeeMeetingDateUpdated = !CompareUtil.equalsIgnoreNull(existingCommittee.getCommitteeMeetingDate(), newCommittee.getCommitteeMeetingDate());
+
 		// Update
 		try {
 			existingCommittee.copyFrom(newCommittee);
@@ -276,24 +284,105 @@ public class PositionCommitteeRESTService extends RESTService {
 				} else {
 					newCommitteeMember = new PositionCommitteeMember();
 					newCommitteeMember.setRegisterMember(newRegisterMember);
+
+					addedMemberIds.add(newRegisterMember.getId());
 				}
 				newCommitteeMember.setType(newCommitteeMemberAsMap.get(newRegisterMember.getId()));
 				existingCommittee.addMember(newCommitteeMember);
 			}
 
-			existingCommittee = em.merge(existingCommittee);
+			final PositionCommittee savedCommittee = em.merge(existingCommittee);
 			em.flush();
 
-			// TODO: Send E-Mails
-			// positionCommittee.create.regular.member@member
-			// positionCommittee.create.substitute.member@member
-			// positionCommittee.update.members@candidates
-			// positionCommittee.update.committeeMeetingDate@members
-			// positionCommittee.update.committeeMeetingDate@candidates
+			// Send E-Mails
+			for (final PositionCommitteeMember member : savedCommittee.getMembers()) {
+				if (addedMemberIds.contains(member.getRegisterMember().getId())) {
+					if (member.getType().equals(MemberType.REGULAR)) {
+						// positionCommittee.create.regular.member@member
+						sendEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+							"default.subject",
+							"positionCommittee.create.regular.member@member",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
+
+								{
+									put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
+									put("position", savedCommittee.getPosition().getName());
+									put("institution", savedCommittee.getPosition().getDepartment().getInstitution().getName());
+									put("department", savedCommittee.getPosition().getDepartment().getDepartment());
+								}
+							}));
+					} else {
+						// positionCommittee.create.substitute.member@member
+						sendEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+							"default.subject",
+							"positionCommittee.create.substitute.member@member",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
+
+								{
+									put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
+									put("position", savedCommittee.getPosition().getName());
+									put("institution", savedCommittee.getPosition().getDepartment().getInstitution().getName());
+									put("department", savedCommittee.getPosition().getDepartment().getDepartment());
+								}
+							}));
+					}
+				}
+			}
+			if (!addedMemberIds.isEmpty()) {
+				// positionCommittee.update.members@candidates
+				for (final Candidacy candidacy : savedCommittee.getPosition().getPhase().getCandidacies().getCandidacies()) {
+					sendEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"positionCommittee.update.members@candidates",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", candidacy.getCandidate().getUser().getUsername());
+								put("position", savedCommittee.getPosition().getName());
+								put("institution", savedCommittee.getPosition().getDepartment().getInstitution().getName());
+								put("department", savedCommittee.getPosition().getDepartment().getDepartment());
+							}
+						}));
+				}
+			}
+			if (committeeMeetingDateUpdated) {
+				// positionCommittee.update.committeeMeetingDate@members
+				for (final PositionCommitteeMember member : savedCommittee.getMembers()) {
+					sendEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"positionCommittee.update.committeeMeetingDate@members",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
+								put("position", savedCommittee.getPosition().getName());
+								put("institution", savedCommittee.getPosition().getDepartment().getInstitution().getName());
+								put("department", savedCommittee.getPosition().getDepartment().getDepartment());
+							}
+						}));
+				}
+				// positionCommittee.update.committeeMeetingDate@candidates
+				for (final Candidacy candidacy : savedCommittee.getPosition().getPhase().getCandidacies().getCandidacies()) {
+					sendEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"positionCommittee.update.committeeMeetingDate@candidates",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", candidacy.getCandidate().getUser().getUsername());
+								put("position", savedCommittee.getPosition().getName());
+								put("institution", savedCommittee.getPosition().getDepartment().getInstitution().getName());
+								put("department", savedCommittee.getPosition().getDepartment().getDepartment());
+							}
+						}));
+				}
+			}
+
+			// End: Send E-Mails
 
 			// Return result
-			existingCommittee.initializeCollections();
-			return existingCommittee;
+			savedCommittee.initializeCollections();
+			return savedCommittee;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
@@ -445,17 +534,59 @@ public class PositionCommitteeRESTService extends RESTService {
 				return _updateFile(loggedOn, fileItems, existingFile);
 			}
 			// Create
-			PositionCommitteeFile pcFile = new PositionCommitteeFile();
+			final PositionCommitteeFile pcFile = new PositionCommitteeFile();
 			pcFile.setCommittee(existingCommittee);
 			pcFile.setOwner(loggedOn);
 			saveFile(loggedOn, fileItems, pcFile);
 			existingCommittee.addFile(pcFile);
 			em.flush();
 
-			// TODO: Send E-Mails
+			// Send E-Mails
 			// position.upload@committee
+			for (final PositionCommitteeMember member : pcFile.getCommittee().getPosition().getPhase().getCommittee().getMembers()) {
+				sendEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+					"default.subject",
+					"position.upload@committee",
+					Collections.unmodifiableMap(new HashMap<String, String>() {
+
+						{
+							put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
+							put("position", pcFile.getCommittee().getPosition().getName());
+							put("institution", pcFile.getCommittee().getPosition().getDepartment().getInstitution().getName());
+							put("department", pcFile.getCommittee().getPosition().getDepartment().getDepartment());
+						}
+					}));
+			}
 			// position.upload@candidates
+			for (final Candidacy candidacy : pcFile.getCommittee().getPosition().getPhase().getCandidacies().getCandidacies()) {
+				sendEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+					"default.subject",
+					"position.upload@candidates",
+					Collections.unmodifiableMap(new HashMap<String, String>() {
+
+						{
+							put("username", candidacy.getCandidate().getUser().getUsername());
+							put("position", pcFile.getCommittee().getPosition().getName());
+							put("institution", pcFile.getCommittee().getPosition().getDepartment().getInstitution().getName());
+							put("department", pcFile.getCommittee().getPosition().getDepartment().getDepartment());
+						}
+					}));
+			}
 			// position.upload@evaluators
+			for (final PositionEvaluator evaluator : pcFile.getCommittee().getPosition().getPhase().getEvaluation().getEvaluators()) {
+				sendEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+					"default.subject",
+					"position.upload@evaluators",
+					Collections.unmodifiableMap(new HashMap<String, String>() {
+
+						{
+							put("username", evaluator.getRegisterMember().getProfessor().getUser().getUsername());
+							put("position", pcFile.getCommittee().getPosition().getName());
+							put("institution", pcFile.getCommittee().getPosition().getDepartment().getInstitution().getName());
+							put("department", pcFile.getCommittee().getPosition().getDepartment().getDepartment());
+						}
+					}));
+			}
 
 			return toJSON(pcFile, SimpleFileHeaderView.class);
 		} catch (PersistenceException e) {

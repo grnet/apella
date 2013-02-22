@@ -7,6 +7,8 @@ import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.PositionCandidacies;
 import gr.grnet.dep.service.model.PositionCandidacies.DetailedPositionCandidaciesView;
+import gr.grnet.dep.service.model.PositionCommitteeMember;
+import gr.grnet.dep.service.model.PositionEvaluator;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.FileBody;
@@ -17,6 +19,8 @@ import gr.grnet.dep.service.model.file.PositionCandidaciesFile;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -227,7 +231,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 		if (candidacyEvaluatorId == null) {
 			throw new RestException(Status.BAD_REQUEST, "missing.candidacy.evaluator");
 		}
-		CandidacyEvaluator existingEvaluator = findCandidacyEvaluator(existingCandidacies, candidacyEvaluatorId);
+		final CandidacyEvaluator existingEvaluator = findCandidacyEvaluator(existingCandidacies, candidacyEvaluatorId);
 		if (existingEvaluator == null) {
 			throw new RestException(Status.BAD_REQUEST, "wrong.candidacy.evaluator.id");
 		}
@@ -239,7 +243,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 				return _updateFile(loggedOn, fileItems, existingFile);
 			}
 			// Create
-			PositionCandidaciesFile pcFile = new PositionCandidaciesFile();
+			final PositionCandidaciesFile pcFile = new PositionCandidaciesFile();
 			pcFile.setCandidacies(existingCandidacies);
 			pcFile.setEvaluator(existingEvaluator);
 			pcFile.setOwner(loggedOn);
@@ -247,18 +251,119 @@ public class PositionCandidaciesRESTService extends RESTService {
 			existingCandidacies.addFile(pcFile);
 			em.flush();
 
+			// Send E-Mails
 			if (pcFile.getType().equals(FileType.EISIGISI_DEP_YPOPSIFIOU)) {
-				// TODO: Send E-Mails
+
 				// positionCandidacies.upload.eisigisi@candidate
+				sendEmail(existingEvaluator.getCandidacy().getCandidate().getUser().getContactInfo().getEmail(),
+					"default.subject",
+					"positionCandidacies.upload.eisigisi@candidate",
+					Collections.unmodifiableMap(new HashMap<String, String>() {
+
+						{
+							put("username", existingEvaluator.getCandidacy().getCandidate().getUser().getUsername());
+							put("candidacyEvaluator_name", existingEvaluator.getFullname());
+						}
+					}));
 				// positionCandidacies.upload.eisigisi@candidacyEvaluator
+				sendEmail(existingEvaluator.getEmail(),
+					"default.subject",
+					"positionCandidacies.upload.eisigisi@candidate",
+					Collections.unmodifiableMap(new HashMap<String, String>() {
+
+						{
+							put("name", existingEvaluator.getFullname());
+							put("candidate_firstname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getFirstname());
+							put("candidate_lastname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getFirstname());
+							put("position", existingEvaluator.getCandidacy().getCandidacies().getPosition().getName());
+							put("institution", existingEvaluator.getCandidacy().getCandidacies().getPosition().getDepartment().getInstitution().getName());
+							put("department", existingEvaluator.getCandidacy().getCandidacies().getPosition().getDepartment().getDepartment());
+						}
+					}));
+
 				// positionCandidacies.upload.eisigisi@committee
+				for (final PositionCommitteeMember member : existingEvaluator.getCandidacy().getCandidacies().getPosition().getPhase().getCommittee().getMembers()) {
+					sendEmail(existingEvaluator.getEmail(),
+						"default.subject",
+						"positionCandidacies.upload.eisigisi@committee",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
+								put("candidate_firstname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getFirstname());
+								put("candidate_lastname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getFirstname());
+								put("position", existingEvaluator.getCandidacy().getCandidacies().getPosition().getName());
+								put("institution", existingEvaluator.getCandidacy().getCandidacies().getPosition().getDepartment().getInstitution().getName());
+								put("department", existingEvaluator.getCandidacy().getCandidacies().getPosition().getDepartment().getDepartment());
+							}
+						}));
+				}
 				// positionCandidacies.upload.eisigisi@evaluators
+				for (final PositionEvaluator evaluator : existingEvaluator.getCandidacy().getCandidacies().getPosition().getPhase().getEvaluation().getEvaluators()) {
+					sendEmail(existingEvaluator.getEmail(),
+						"default.subject",
+						"positionCandidacies.upload.eisigisi@evaluators",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", evaluator.getRegisterMember().getProfessor().getUser().getUsername());
+								put("candidate_firstname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getFirstname());
+								put("candidate_lastname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getFirstname());
+								put("position", existingEvaluator.getCandidacy().getCandidacies().getPosition().getName());
+								put("institution", existingEvaluator.getCandidacy().getCandidacies().getPosition().getDepartment().getInstitution().getName());
+								put("department", existingEvaluator.getCandidacy().getCandidacies().getPosition().getDepartment().getDepartment());
+							}
+						}));
+				}
 			} else {
-				// TODO: Send E-Mails
 				// position.upload@committee
+				for (final PositionCommitteeMember member : existingEvaluator.getCandidacy().getCandidacies().getPosition().getPhase().getCommittee().getMembers()) {
+					sendEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"position.upload@committee",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
+								put("position", pcFile.getCandidacies().getPosition().getName());
+								put("institution", pcFile.getCandidacies().getPosition().getDepartment().getInstitution().getName());
+								put("department", pcFile.getCandidacies().getPosition().getDepartment().getDepartment());
+							}
+						}));
+				}
 				// position.upload@candidates
+				for (final Candidacy candidacy : pcFile.getCandidacies().getCandidacies()) {
+					sendEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"position.upload@candidates",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", candidacy.getCandidate().getUser().getUsername());
+								put("position", pcFile.getCandidacies().getPosition().getName());
+								put("institution", pcFile.getCandidacies().getPosition().getDepartment().getInstitution().getName());
+								put("department", pcFile.getCandidacies().getPosition().getDepartment().getDepartment());
+							}
+						}));
+				}
 				// position.upload@evaluators
+				for (final PositionEvaluator evaluator : existingEvaluator.getCandidacy().getCandidacies().getPosition().getPhase().getEvaluation().getEvaluators()) {
+					sendEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"position.upload@evaluators",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", evaluator.getRegisterMember().getProfessor().getUser().getUsername());
+								put("position", pcFile.getCandidacies().getPosition().getName());
+								put("institution", pcFile.getCandidacies().getPosition().getDepartment().getInstitution().getName());
+								put("department", pcFile.getCandidacies().getPosition().getDepartment().getDepartment());
+							}
+						}));
+				}
 			}
+
+			// End: Send E-Mails
 
 			return toJSON(pcFile, SimpleFileHeaderView.class);
 		} catch (PersistenceException e) {
