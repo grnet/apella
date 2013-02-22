@@ -320,6 +320,10 @@
 						<entry name="topic/test" />
 						<entry name="java:jboss/exported/jms/topic/test" />
 					</jms-topic>
+					<jms-queue name="mailQueue">
+						<entry name="queue/EMailQ" />
+						<entry name="java:jboss/exported/jms/queue/EMailQ" />
+					</jms-queue>
 				</jms-destinations>
 			</hornetq-server>
 		</subsystem>

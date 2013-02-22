@@ -4,7 +4,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
-import javax.ejb.Stateless;
+import javax.ejb.ActivationConfigProperty;
+import javax.ejb.EJBException;
+import javax.ejb.MessageDriven;
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
+import javax.jms.MessageListener;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -12,28 +17,32 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-
-@Stateless
-public class MailService {
+@MessageDriven(activationConfig = {
+	@ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+	@ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/EMailQ")
+})
+public class MailService implements MessageListener {
 
 	@Resource(lookup = "java:jboss/mail/Default")
 	protected Session mailSession;
 
 	private static final Logger logger = Logger.getLogger(MailService.class.getName());
 
-	private static Configuration conf;
-
-	static {
+	@Override
+	public void onMessage(javax.jms.Message message) {
+		MapMessage mailMessage = (MapMessage) message;
 		try {
-			conf = DEPConfigurationFactory.getServerConfiguration();
-		} catch (ConfigurationException e) {
-			logger.log(Level.SEVERE, "", e);
+			String aToEmailAddr = mailMessage.getString("aToEmailAddr");
+			String aSubject = mailMessage.getString("aSubject");
+			String aBody = mailMessage.getString("aBody");
+			sendEmail(aToEmailAddr, aSubject, aBody);
+		} catch (JMSException e) {
+			logger.log(Level.WARNING, "", e);
+			throw new EJBException(e);
 		}
 	}
 
-	public void sendEmail(String aToEmailAddr, String aSubject, String aBody) {
+	private void sendEmail(String aToEmailAddr, String aSubject, String aBody) {
 		logger.log(Level.INFO, "Sending email to " + aToEmailAddr + " " + aSubject + "\n" + aBody);
 		try {
 			MimeMessage message = new MimeMessage(mailSession);
