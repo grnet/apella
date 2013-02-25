@@ -23,7 +23,7 @@ import javax.mail.internet.MimeMessage;
 })
 public class MailService implements MessageListener {
 
-	@Resource(lookup = "java:jboss/mail/Default")
+	@Resource(name = "java:jboss/mail/Default")
 	protected Session mailSession;
 
 	private static final Logger logger = Logger.getLogger(MailService.class.getName());
