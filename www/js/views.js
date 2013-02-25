@@ -563,7 +563,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		events : {
-			"click a#save" : function() {
+			"click a#save" : function(event) {
+				if ($(event.currentTarget).attr("disabled")) {
+					event.preventDefault();
+					return;
+				}
 				$("form", this.el).submit();
 			},
 			"submit form" : "login"
@@ -830,7 +834,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		events : {
-			"click a#save" : function() {
+			"click a#save" : function(event) {
+				if ($(event.currentTarget).attr("disabled")) {
+					event.preventDefault();
+					return;
+				}
 				this.$("form#userForm").submit();
 			},
 			"click a#selectInstitution" : "selectInstitution",
@@ -861,7 +869,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
 							}
 						});
-						self.$("select[name='institution']").change();
+						self.$("select[name='institution']").change({
+							triggeredBy : "application"
+						});
 					},
 					error : function(model, resp, options) {
 						var popup = new Views.PopupView({
@@ -902,7 +912,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
 							}
 						});
-						self.$("select[name='institution']").change();
+						self.$("select[name='institution']").change({
+							triggeredBy : "application"
+						});
 					},
 					error : function(model, resp, options) {
 						var popup = new Views.PopupView({
@@ -1057,6 +1069,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}
 
 			return self;
+		},
+
+		change : function(event) {
+			var self = this;
+			if ((event.data && _.isEqual(event.data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
+				return;
+			}
+			self.$("a#save").removeAttr("disabled");
 		},
 
 		submit : function(event) {
@@ -1317,14 +1337,19 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
-			_.bindAll(this, "submit", "remove", "status", "cancel", "applyRules");
+			_.bindAll(this, "change", "submit", "remove", "status", "cancel", "applyRules");
 			this.template = _.template(tpl_user_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
 		},
 
 		events : {
-			"click a#save" : function() {
+			"change select,input,textarea" : "change",
+			"click a#save" : function(event) {
+				if ($(event.currentTarget).attr("disabled")) {
+					event.preventDefault();
+					return;
+				}
 				$("form", this.el).submit();
 			},
 			"click a[data-action=status]" : "status",
@@ -1497,6 +1522,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				}
 			}
+			// Disable Save Button until user changes a field
+			self.$("a#save").attr("disabled", true);
+
 			// Return
 			return self;
 		},
@@ -1507,6 +1535,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.validator.resetForm();
 				self.render();
 			}
+		},
+
+		change : function(event) {
+			var self = this;
+			if ((event.data && _.isEqual(event.data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
+				return;
+			}
+			self.$("a#save").removeAttr("disabled");
 		},
 
 		submit : function(event) {
@@ -2040,14 +2076,19 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
-			_.bindAll(this, "isEditable", "beforeUpload", "beforeDelete", "submit", "cancel");
+			_.bindAll(this, "change", "isEditable", "beforeUpload", "beforeDelete", "submit", "cancel");
 			this.template = _.template(tpl_role_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
 		},
 
 		events : {
-			"click a#save" : function() {
+			"change select,input,textarea" : "change",
+			"click a#save" : function(event) {
+				if ($(event.currentTarget).attr("disabled")) {
+					event.preventDefault();
+					return;
+				}
 				$("form", this.el).submit();
 			},
 			"click a[data-action=status]" : "status",
@@ -2375,7 +2416,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 									self.$("select[name='department']").append("<option value='" + department.get("id") + "'>" + department.get("department") + "</option>");
 								}
 							});
-							self.$("select[name='department']").change();
+							self.$("select[name='department']").change({
+								triggeredBy : "application"
+							});
 						},
 						error : function(model, resp, options) {
 							var popup = new Views.PopupView({
@@ -2397,7 +2440,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
 							}
 						});
-						self.$("select[name='institution']").change();
+						self.$("select[name='institution']").change({
+							triggeredBy : "application"
+						});
 					},
 					error : function(model, resp, options) {
 						var popup = new Views.PopupView({
@@ -2419,7 +2464,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								$("select[name='rank']", self.$el).append("<option value='" + rank.get("id") + "'>" + rank.get("name") + "</option>");
 							}
 						});
-						self.$("select[name='rank']").change();
+						self.$("select[name='rank']").change({
+							triggeredBy : "application"
+						});
 
 					},
 					error : function(model, resp, options) {
@@ -2499,7 +2546,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				});
 				self.$("input[name=fekCheckbox]").attr("checked", _.isObject(self.model.get("subject")));
-				self.$("input[name=fekCheckbox]").change();
+				self.$("input[name=fekCheckbox]").change({
+					triggeredBy : "application"
+				});
 				break;
 			case "PROFESSOR_FOREIGN":
 				App.ranks = App.ranks || new Models.Ranks();
@@ -2587,7 +2636,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
 							}
 						});
-						self.$("select[name='institution']").change();
+						self.$("select[name='institution']").change({
+							triggeredBy : "application"
+						});
 					},
 					error : function(model, resp, options) {
 						var popup = new Views.PopupView({
@@ -2687,7 +2738,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						alternateaddress_country : $.i18n.prop('validation_country')
 					}
 				});
-				self.$("select[name='verificationAuthority']").change();
+				self.$("select[name='verificationAuthority']").change({
+					triggeredBy : "application"
+				});
 				break;
 
 			case "INSTITUTION_ASSISTANT":
@@ -2705,7 +2758,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
 							}
 						});
-						self.$("select[name='institution']").change();
+						self.$("select[name='institution']").change({
+							triggeredBy : "application"
+						});
 					},
 					error : function(model, resp, options) {
 						var popup = new Views.PopupView({
@@ -2773,9 +2828,19 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					$(this).attr("disabled", true);
 				}
 			});
+			// Disable Save Button until user changes a field
+			self.$("a#save").attr("disabled", true);
 
 			self.$('a[rel=popover]').popover();
 			return self;
+		},
+
+		change : function(event) {
+			var self = this;
+			if ((event.data && _.isEqual(event.data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
+				return;
+			}
+			self.$("a#save").removeAttr("disabled");
 		},
 
 		submit : function(event) {
@@ -4328,18 +4393,22 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
-			_.bindAll(this, "isEditable", "submit", "cancel");
+			_.bindAll(this, "change", "isEditable", "submit", "cancel");
 			this.template = _.template(tpl_position_main_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
 		},
 
 		events : {
+			"change select,input,textarea" : "change",
 			"click a#cancel" : "cancel",
 			"click a#remove" : "remove",
-			"click a#save" : function() {
-				var self = this;
-				self.$("form").submit();
+			"click a#save" : function(event) {
+				if ($(event.currentTarget).attr("disabled")) {
+					event.preventDefault();
+					return;
+				}
+				$("form", this.el).submit();
 			},
 			"submit form" : "submit"
 		},
@@ -4455,7 +4524,17 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				}
 			}
+			// Disable Save Button until user changes a field
+			self.$("a#save").attr("disabled", true);
 			return self;
+		},
+
+		change : function(event) {
+			var self = this;
+			if ((event.data && _.isEqual(event.data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
+				return;
+			}
+			self.$("a#save").removeAttr("disabled");
 		},
 
 		submit : function(event) {
@@ -4628,7 +4707,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		initialize : function() {
 			var self = this;
 			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
-			_.bindAll(this, "renderCommitteeMembers", "isEditable", "toggleRegisterMembers", "addMember", "removeMember", "submit", "cancel");
+			_.bindAll(this, "change", "renderCommitteeMembers", "isEditable", "toggleRegisterMembers", "addMember", "removeMember", "submit", "cancel");
 			self.template = _.template(tpl_position_committee_edit);
 			self.templateRow = _.template(tpl_position_committee_member_edit);
 
@@ -4648,11 +4727,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		events : {
+			"change select,input,textarea" : "change",
 			"click a#toggleRegisterMembers" : "toggleRegisterMembers",
 			"click a#removeMember" : "removeMember",
-			"click a#saveCommittee" : function() {
-				var self = this;
-				self.$("form").submit();
+			"click a#saveCommittee" : function(event) {
+				if ($(event.currentTarget).attr("disabled")) {
+					event.preventDefault();
+					return;
+				}
+				$("form", this.el).submit();
 			},
 			"submit form" : "submit"
 		},
@@ -4719,6 +4802,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					$(this).parents("form").validate().element(this);
 				}
 			});
+			// Disable Save Button until user changes a field
+			self.$("a#saveCommittee").attr("disabled", true);
 
 			return self;
 		},
@@ -4755,6 +4840,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.model.get("members").push(committeeMember);
 				self.renderCommitteeMembers();
 			}
+			
+			self.change(jQuery.Event("change", {
+				data : {
+					triggeredBy : "user"
+				}
+			}));
 		},
 
 		removeMember : function(event) {
@@ -4766,6 +4857,20 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}));
 			committee.splice(position, 1);
 			self.renderCommitteeMembers();
+			
+			self.change(jQuery.Event("change", {
+				data : {
+					triggeredBy : "user"
+				}
+			}));
+		},
+
+		change : function(event) {
+			var self = this;
+			if ((event.data && _.isEqual(event.data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
+				return;
+			}
+			self.$("a#saveCommittee").removeAttr("disabled");
 		},
 
 		submit : function(event) {
@@ -4952,7 +5057,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		initialize : function() {
 			var self = this;
 			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
-			_.bindAll(this, "renderEvaluator", "isEditable", "toggleRegisterMembers", "addMember", "removeMember", "submit", "cancel");
+			_.bindAll(this, "change", "renderEvaluator", "isEditable", "toggleRegisterMembers", "addMember", "removeMember", "submit", "cancel");
 			self.template = _.template(tpl_position_evaluation_edit);
 			self.templateRow = _.template(tpl_position_evaluation_evaluator_edit);
 
@@ -4972,12 +5077,16 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		events : {
+			"change select,input,textarea" : "change",
 			"click a#toggleRegisterMembers" : "toggleRegisterMembers",
 			"click a#cancel" : "cancel",
 			"click a#removeMember" : "removeMember",
-			"click a#saveEvaluation" : function() {
-				var self = this;
-				self.$("form").submit();
+			"click a#saveEvaluation" : function(event) {
+				if ($(event.currentTarget).attr("disabled")) {
+					event.preventDefault();
+					return;
+				}
+				$("form", this.el).submit();
 			},
 			"submit form" : "submit"
 		},
@@ -5020,6 +5129,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					$(this).parents("form").validate().element(this);
 				}
 			});
+			// Disable Save Button until user changes a field
+			self.$("a#saveEvaluation").attr("disabled", true);
+
 			return self;
 		},
 
@@ -5058,6 +5170,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}));
 			// Select element to replace, raise some alerts for files ...
 			self.renderEvaluator(self.$("#positionEvaluator_" + positionEvaluator.get("position")), positionEvaluator);
+			
+			self.change(jQuery.Event("change", {
+				data : {
+					triggeredBy : "user"
+				}
+			}));
 		},
 
 		removeMember : function(event) {
@@ -5069,9 +5187,22 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					$(event.currentTarget).parents("table").hide('slow', function() {
 						$(this).remove();
 					});
+					self.change(jQuery.Event("change", {
+						data : {
+							triggeredBy : "user"
+						}
+					}));
 				}
 			});
 			confirm.show();
+		},
+
+		change : function(event) {
+			var self = this;
+			if ((event.data && _.isEqual(event.data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
+				return;
+			}
+			self.$("a#saveEvaluation").removeAttr("disabled");
 		},
 
 		submit : function(event) {
@@ -5388,7 +5519,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		initialize : function() {
 			var self = this;
 			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
-			_.bindAll(this, "isEditable", "submit", "cancel");
+			_.bindAll(this, "change", "isEditable", "submit", "cancel");
 			self.template = _.template(tpl_position_nomination_edit);
 			self.model.bind('change', self.render, self);
 			self.model.bind("destroy", self.close, self);
@@ -5399,9 +5530,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		events : {
-			"click a#saveNomination" : function() {
-				var self = this;
-				self.$("form").submit();
+			"change select,input,textarea" : "change",
+			"click a#saveNomination" : function(event) {
+				if ($(event.currentTarget).attr("disabled")) {
+					event.preventDefault();
+					return;
+				}
+				$("form", this.el).submit();
 			},
 			"submit form" : "submit"
 		},
@@ -5448,8 +5583,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							self.$("select[name='secondNominatedCandidacy']").append("<option value='" + candidacy.get("id") + "'>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + " (" + candidacy.get("snapshot").username + ")" + "</option>");
 						}
 					});
-					self.$("select[name='nominatedCandidacy']").change();
-					self.$("select[name='secondNominatedCandidacy']").change();
+					self.$("select[name='nominatedCandidacy']").change({
+						triggeredBy : "application"
+					});
+					self.$("select[name='secondNominatedCandidacy']").change({
+						triggeredBy : "application"
+					});
 				}
 			});
 			// Add Files
@@ -5488,8 +5627,20 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					$(this).parents("form").validate().element(this);
 				}
 			});
+			// Disable Save Button until user changes a field
+			self.$("a#saveNomination").attr("disabled", true);
+
 			return self;
 		},
+
+		change : function(event) {
+			var self = this;
+			if ((event.data && (event.data && _.isEqual(event.data.triggeredBy, "application"))) || $(event.currentTarget).attr('type') === 'hidden') {
+				return;
+			}
+			self.$("a#saveNomination").removeAttr("disabled");
+		},
+
 		submit : function(event) {
 			var self = this;
 			var values = {
@@ -5908,16 +6059,21 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
-			_.bindAll(this, "submit", "remove", "cancel", "addMembersView");
+			_.bindAll(this, "change", "submit", "remove", "cancel", "addMembersView");
 			this.template = _.template(tpl_register_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
 		},
 
 		events : {
+			"change select,input,textarea" : "change",
 			"click a#cancel" : "cancel",
 			"click a#remove" : "remove",
-			"click a#save" : function() {
+			"click a#save" : function(event) {
+				if ($(event.currentTarget).attr("disabled")) {
+					event.preventDefault();
+					return;
+				}
 				$("form", this.el).submit();
 			},
 			"submit form" : "submit"
@@ -5961,6 +6117,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				}
 			}
+			// Disable Save Button until user changes a field
+			self.$("a#save").attr("disabled", true);
+
 			return self;
 		},
 
@@ -5978,6 +6137,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			members.fetch({
 				cache : false
 			});
+		},
+
+		change : function(event) {
+			var self = this;
+			if ((event.data && (event.data && _.isEqual(event.data.triggeredBy, "application"))) || $(event.currentTarget).attr('type') === 'hidden') {
+				return;
+			}
+			self.$("a#save").removeAttr("disabled");
 		},
 
 		submit : function(event) {
@@ -6227,7 +6394,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		},
 
 		events : {
-			"click a#saveRegisterMember" : function() {
+			"click a#saveRegisterMember" : function(event) {
+				if ($(event.currentTarget).attr("disabled")) {
+					event.preventDefault();
+					return;
+				}
 				$("form", this.el).submit();
 			},
 			"submit form" : "submit",
@@ -6726,16 +6897,21 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		initialize : function() {
 			var self = this;
 			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
-			_.bindAll(this, "submit", "cancel", "remove");
+			_.bindAll(this, "change", "submit", "cancel", "remove");
 			self.template = _.template(tpl_institution_regulatory_framework_edit);
 			self.model.bind('change', self.render, self);
 			self.model.bind("destroy", self.close, self);
 		},
 
 		events : {
+			"change select,input,textarea" : "change",
 			"click a#cancel" : "cancel",
 			"click a#remove" : "remove",
-			"click a#save" : function() {
+			"click a#save" : function(event) {
+				if ($(event.currentTarget).attr("disabled")) {
+					event.preventDefault();
+					return;
+				}
 				$("form", this.el).submit();
 			},
 			"submit form" : "submit"
@@ -6777,8 +6953,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				}
 			}
+			// Disable Save Button until user changes a field
+			self.$("a#save").attr("disabled", true);
 
 			return self;
+		},
+
+		change : function(event) {
+			var self = this;
+			if ((event.data && _.isEqual(event.data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
+				return;
+			}
+			self.$("a#save").removeAttr("disabled");
 		},
 
 		submit : function(event) {
@@ -6911,7 +7097,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			"click a#removeDepartment" : "removeDepartment",
 			"click a#addSubject" : "addSubject",
 			"click a#removeSubject" : "removeSubject",
-			"click a#save" : function() {
+			"click a#save" : function(event) {
+				if ($(event.currentTarget).attr("disabled")) {
+					event.preventDefault();
+					return;
+				}
 				$("form", this.el).submit();
 			},
 			"submit form" : "submit",
@@ -6995,6 +7185,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				})
 			};
 			self.model.trigger("criteria:search", values);
+		},
+
+		change : function(event) {
+			var self = this;
+			if ((event.data && _.isEqual(event.data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
+				return;
+			}
+			self.$("a#save").removeAttr("disabled");
 		},
 
 		submit : function(event) {
@@ -7172,16 +7370,21 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
-			_.bindAll(this, "isEditable", "isEnabled", "submit", "cancel");
+			_.bindAll(this, "change", "isEditable", "isEnabled", "submit", "cancel");
 			this.template = _.template(tpl_candidacy_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
 		},
 
 		events : {
+			"change select,input,textarea" : "change",
 			"click a#cancel" : "cancel",
 			"click a#remove" : "remove",
-			"click a#save" : function() {
+			"click a#save" : function(event) {
+				if ($(event.currentTarget).attr("disabled")) {
+					event.preventDefault();
+					return;
+				}
 				$("form", this.el).submit();
 			},
 			"submit form" : "submit"
@@ -7284,8 +7487,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					$(this).attr("disabled", true);
 				}
 			});
+			// Disable Save Button until user changes a field
+			self.$("a#save").attr("disabled", true);
 
 			return self;
+		},
+
+		change : function(event) {
+			var self = this;
+			if ((event.data && _.isEqual(event.data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
+				return;
+			}
+			self.$("a#save").removeAttr("disabled");
 		},
 
 		submit : function(event) {
