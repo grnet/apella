@@ -24,6 +24,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -55,6 +56,8 @@ public class Candidacy {
 	@Temporal(TemporalType.TIMESTAMP)
 	Date date;
 
+	boolean openToOtherCandidates = false;
+
 	@ManyToOne
 	private Candidate candidate;
 
@@ -66,6 +69,9 @@ public class Candidacy {
 
 	@OneToMany(mappedBy = "candidacy", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<CandidacyEvaluator> proposedEvaluators = new HashSet<CandidacyEvaluator>();
+	
+	@Transient
+	Boolean allowedToSee;
 
 	public static class CandidacySnapshot {
 
@@ -79,12 +85,12 @@ public class Candidacy {
 
 		@Embedded
 		@AttributeOverrides({
-			@AttributeOverride(name = "email", column = @Column(unique = false))
+				@AttributeOverride(name = "email", column = @Column(unique = false))
 		})
 		private ContactInformation contactInfo = new ContactInformation();
 
 		@ManyToMany
-		@JoinTable(inverseJoinColumns = {@JoinColumn(name = "files_id")})
+		@JoinTable(inverseJoinColumns = { @JoinColumn(name = "files_id") })
 		private Set<FileBody> files = new HashSet<FileBody>();
 
 		// For ProfessorDomestic
@@ -132,7 +138,7 @@ public class Candidacy {
 			this.basicInfoLatin = basicInfoLatin;
 		}
 
-		@JsonView({DetailedCandidacyView.class})
+		@JsonView({ DetailedCandidacyView.class })
 		public ContactInformation getContactInfo() {
 			return contactInfo;
 		}
@@ -239,7 +245,15 @@ public class Candidacy {
 		this.date = date;
 	}
 
-	@JsonView({MediumCandidacyView.class})
+	public boolean isOpenToOtherCandidates() {
+		return openToOtherCandidates;
+	}
+
+	public void setOpenToOtherCandidates(boolean openToOtherCandidates) {
+		this.openToOtherCandidates = openToOtherCandidates;
+	}
+
+	@JsonView({ MediumCandidacyView.class })
 	public Candidate getCandidate() {
 		return candidate;
 	}
@@ -248,7 +262,7 @@ public class Candidacy {
 		this.candidate = candidate;
 	}
 
-	@JsonView({MediumCandidacyView.class})
+	@JsonView({ MediumCandidacyView.class })
 	public PositionCandidacies getCandidacies() {
 		return candidacies;
 	}
@@ -257,7 +271,7 @@ public class Candidacy {
 		this.candidacies = candidacies;
 	}
 
-	@JsonView({DetailedCandidacyView.class, DetailedPositionCandidaciesView.class})
+	@JsonView({ DetailedCandidacyView.class, DetailedPositionCandidaciesView.class })
 	public Set<CandidacyEvaluator> getProposedEvaluators() {
 		return proposedEvaluators;
 	}
@@ -292,8 +306,16 @@ public class Candidacy {
 		this.files.add(file);
 		file.setCandidacy(this);
 	}
+	
+	public Boolean getAllowedToSee() {
+		return allowedToSee;
+	}
 
-	///////////////////////////////////////////////////////////////
+	public void setAllowedToSee(Boolean allowedToSee) {
+		this.allowedToSee = allowedToSee;
+	}
+
+	// /////////////////////////////////////////////////////////////
 
 	@XmlTransient
 	public Set<CandidateFile> getSnapshotFiles() {

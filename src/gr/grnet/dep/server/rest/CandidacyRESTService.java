@@ -81,9 +81,13 @@ public class CandidacyRESTService extends RESTService {
 				candidacy.initializeCollections();
 				return toJSON(candidacy, DetailedCandidacyView.class);
 			}
-			if (candidacy.getCandidacies().containsCandidate(loggedOn) ||
-				candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn) ||
+			if (candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn) ||
 				candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) {
+				// Medium (without ContactInformation and ProposedEvaluation)
+				candidacy.initializeCollections();
+				return toJSON(candidacy, MediumCandidacyView.class);
+			}
+			if (candidacy.isOpenToOtherCandidates() && candidacy.getCandidacies().containsCandidate(loggedOn)) {
 				// Medium (without ContactInformation and ProposedEvaluation)
 				candidacy.initializeCollections();
 				return toJSON(candidacy, MediumCandidacyView.class);
@@ -138,6 +142,7 @@ public class CandidacyRESTService extends RESTService {
 			candidacy.setCandidate(candidate);
 			candidacy.setCandidacies(position.getPhase().getCandidacies());
 			candidacy.setDate(new Date());
+			candidacy.setOpenToOtherCandidates(false);
 			candidacy.setPermanent(false);
 			candidacy.getProposedEvaluators().clear();
 			validateCandidacy(candidacy, candidate);
@@ -180,6 +185,7 @@ public class CandidacyRESTService extends RESTService {
 			validateCandidacy(existingCandidacy, candidate);
 
 			// Update
+			existingCandidacy.setOpenToOtherCandidates(candidacy.isOpenToOtherCandidates());
 			existingCandidacy.getProposedEvaluators().clear();
 			for (CandidacyEvaluator evaluator : candidacy.getProposedEvaluators()) {
 				if (!evaluator.isMissingRequiredField()) {

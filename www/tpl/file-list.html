@@ -1,4 +1,16 @@
 <table class="file-table">
+<thead>
+	<tr>
+		<th width="1px"></th>
+		<th><%= $.i18n.prop('FileName') %></th>
+		<th><%= $.i18n.prop('FileSize') %></th>
+		<th><%= $.i18n.prop('FileDate') %></th>
+<% if (withMetadata) { %>
+		<th><%= $.i18n.prop('FileDescription') %></th>
+<% } %>
+		<th width="1px"></th>
+	</tr>
+</thead>
 <tbody>
 <% var row = 1; %>
 <% _.each(files, function(file) { %>

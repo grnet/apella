@@ -7379,7 +7379,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		events : {
 			"change select,input,textarea" : "change",
 			"click a#cancel" : "cancel",
-			"click a#remove" : "remove",
+			"click a#remove" : function(event) {
+				if ($(event.currentTarget).attr("disabled")) {
+					event.preventDefault();
+					return;
+				}
+				this.remove();
+			},
 			"click a#save" : function(event) {
 				if ($(event.currentTarget).attr("disabled")) {
 					event.preventDefault();
@@ -7393,6 +7399,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		isEditable : function(field) {
 			var self = this;
 			switch (field) {
+			case "openToOtherCandidates":
+				return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
 			case "evaluator_fullname_0":
 				return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
 			case "evaluator_fullname_1":
@@ -7498,13 +7506,16 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			if ((event.data && _.isEqual(event.data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
 				return;
 			}
-			self.$("a#save").removeAttr("disabled");
+			if (self.isEnabled("save")) {
+				self.$("a#save").removeAttr("disabled");
+			}
 		},
 
 		submit : function(event) {
 			var self = this;
 			var values = {};
 			// Read Input
+			values.openToOtherCandidates = self.$('form input[name=openToOtherCandidates]').is(':checked');
 			values.proposedEvaluators = [ {
 				fullname : self.$('form input[name=evaluator_fullname_0]').val(),
 				email : self.$('form input[name=evaluator_email_0]').val()
@@ -7543,7 +7554,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.render();
 		},
 
-		remove : function() {
+		remove : function(event) {
 			var self = this;
 			var confirm = new Views.ConfirmView({
 				title : $.i18n.prop('Confirm'),

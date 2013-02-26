@@ -35,7 +35,7 @@ public class Position {
 	public static interface PositionView extends PublicPositionView {
 	};
 
-	public static interface CommitteeMemberPositionView extends PositionView {
+	public static interface MemberPositionView extends PositionView {
 	};
 
 	public static interface CandidatePositionView extends PositionView {

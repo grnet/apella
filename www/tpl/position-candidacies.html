@@ -17,9 +17,11 @@
 			<td><%= candidacy.snapshot.basicInfo.lastname %> (<%= candidacy.snapshot.basicInfoLatin.lastname %>)</td>
 			<td><%= candidacy.snapshot.basicInfo.fathername %> (<%= candidacy.snapshot.basicInfoLatin.fathername %>)</td>
 			<td width="96px">
+			<% if (candidacy.allowedToSee) { %>
 				<p align="center">
-					<a id="viewCandidacy" href="#candidacy/<%= candidacy.id %>" data-candidacy-id="<%= candidacy.id %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>
+					<a id="viewCandidacy" href="#candidacy/<%= candidacy.id %>" data-candidacy-id="<%= candidacy.id %>"><%= $.i18n.prop('btn_view') %></a>
 				</p>
+			<% } %>
 			</td>
 		</tr>
 <% }); %>

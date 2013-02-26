@@ -112,6 +112,8 @@
 			<zipfileset dir="${src.dir}">
 				<include name="import.sql" />
 				<include name="**/*.properties" />
+				<include name="**/*.png" />
+				<include name="**/*.jpg" />
 			</zipfileset>
 		</jar>
 	</target>

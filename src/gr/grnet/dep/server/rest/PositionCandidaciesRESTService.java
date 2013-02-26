@@ -82,10 +82,19 @@ public class PositionCandidaciesRESTService extends RESTService {
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
 			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
+			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
 			!existingCandidacies.containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		existingCandidacies.initializeCollections();
+		for (Candidacy candidacy : existingCandidacies.getCandidacies()) {
+			if (!candidacy.isOpenToOtherCandidates() && !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId()) && existingCandidacies.containsCandidate(loggedOn)) {
+				candidacy.setAllowedToSee(Boolean.FALSE);
+			} else {
+				// all other cases: owner, admin, mm, ma, im, ia, committee, evaluator
+				candidacy.setAllowedToSee(Boolean.TRUE);
+			}
+		}
 		return existingCandidacies;
 	}
 
@@ -112,6 +121,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
 			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
+			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
 			!existingCandidacies.containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -138,6 +148,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
 			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
+			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
 			!existingCandidacies.containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -170,6 +181,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
 			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
+			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
 			!existingCandidacies.containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}

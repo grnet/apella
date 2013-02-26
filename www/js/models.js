@@ -1191,6 +1191,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			id : undefined,
 			permanent : undefined,
 			date : undefined,
+			openToOtherCandidates : undefined,
 			candidacies : {
 				id : undefined,
 				openingDate : undefined,

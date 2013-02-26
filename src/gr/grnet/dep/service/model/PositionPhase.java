@@ -1,7 +1,7 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.Position.CandidatePositionView;
-import gr.grnet.dep.service.model.Position.CommitteeMemberPositionView;
+import gr.grnet.dep.service.model.Position.MemberPositionView;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.Position.PublicPositionView;
@@ -118,7 +118,7 @@ public class PositionPhase {
 		this.order = order;
 	}
 
-	@JsonView({PublicPositionView.class, PositionCommitteeMemberView.class, DetailedPositionView.class, CommitteeMemberPositionView.class, CandidatePositionView.class, PositionEvaluatorView.class})
+	@JsonView({PublicPositionView.class, PositionCommitteeMemberView.class, DetailedPositionView.class, MemberPositionView.class, CandidatePositionView.class, PositionEvaluatorView.class})
 	public PositionCandidacies getCandidacies() {
 		return candidacies;
 	}
@@ -127,7 +127,7 @@ public class PositionPhase {
 		this.candidacies = candidacies;
 	}
 
-	@JsonView({DetailedPositionView.class, CommitteeMemberPositionView.class, CandidatePositionView.class})
+	@JsonView({DetailedPositionView.class, MemberPositionView.class, CandidatePositionView.class})
 	public PositionCommittee getCommittee() {
 		return committee;
 	}
@@ -136,7 +136,7 @@ public class PositionPhase {
 		this.committee = committee;
 	}
 
-	@JsonView({DetailedPositionView.class, CommitteeMemberPositionView.class})
+	@JsonView({DetailedPositionView.class, MemberPositionView.class})
 	public PositionEvaluation getEvaluation() {
 		return evaluation;
 	}
@@ -145,7 +145,7 @@ public class PositionPhase {
 		this.evaluation = evaluation;
 	}
 
-	@JsonView({DetailedPositionView.class, CommitteeMemberPositionView.class, CandidatePositionView.class})
+	@JsonView({DetailedPositionView.class, MemberPositionView.class, CandidatePositionView.class})
 	public PositionNomination getNomination() {
 		return nomination;
 	}
@@ -154,7 +154,7 @@ public class PositionPhase {
 		this.nomination = nomination;
 	}
 
-	@JsonView({DetailedPositionView.class, CommitteeMemberPositionView.class})
+	@JsonView({DetailedPositionView.class, MemberPositionView.class})
 	public PositionComplementaryDocuments getComplementaryDocuments() {
 		return complementaryDocuments;
 	}
