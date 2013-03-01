@@ -25,21 +25,17 @@ public class SubjectRESTService extends RESTService {
 
 	@GET
 	@SuppressWarnings("unchecked")
-	public Collection<Subject> getAll() {
-		return (List<Subject>) em.createQuery(
-			"select distinct s from Subject s ")
-			.getResultList();
-	}
-
-	@GET
-	@Path("/search")
-	@SuppressWarnings("unchecked")
-	public Collection<Subject> search(@QueryParam("query") String query) {
-		return (List<Subject>) em.createQuery(
-			"select s from Subject s " +
-				"where s.name like :query")
-			.setParameter("query", "%" + query + "%")
-			.getResultList();
+	public Collection<Subject> get(@QueryParam("query") String query) {
+		List<Subject> result = null;
+		if (query == null) {
+			result = em.createQuery("select distinct s from Subject s ")
+				.getResultList();
+		} else {
+			result = em.createQuery("select s from Subject s where s.name like :query")
+				.setParameter("query", query + "%")
+				.getResultList();
+		}
+		return result;
 	}
 
 	@GET

@@ -891,13 +891,10 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			createdBy : {
 				"id" : undefined,
 				"username" : undefined,
-				"basicInfo" : {
-				},
-				"basicInfoLatin" : {
-				},
+				"basicInfo" : {},
+				"basicInfoLatin" : {},
 				"contactInfo" : {
-					"address" : {
-					}
+					"address" : {}
 				}
 			}
 		},
@@ -1240,6 +1237,19 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 		url : function() {
 			return "/dep/rest/candidate/" + this.candidate + "/candidacies";
 		}
+	});
+
+	Models.Subject = Backbone.Model.extend({
+		urlRoot : "/dep/rest/subject/",
+		defaults : {
+			id : undefined,
+			name : undefined
+		}
+	});
+
+	Models.Subjects = Backbone.Collection.extend({
+		model : Models.Subject,
+		url : "/dep/rest/subject/"
 	});
 
 	return Models;

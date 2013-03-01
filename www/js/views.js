@@ -2477,6 +2477,22 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						popup.show();
 					}
 				});
+				// Enable typeahead for Subjects:
+				self.$('input[name=subject], input[name=fekSubject]').typeahead({
+					source : function(query, process) {
+						var subjects = new Models.Subjects();
+						subjects.fetch({
+							cache : false,
+							data : {
+								"query" : query
+							},
+							success : function(collection, response, options) {
+								var data = collection.pluck("name");
+								process(data);
+							}
+						});
+					}
+				});
 
 				if (self.model.has("id")) {
 					files = new Models.Files();
@@ -2569,6 +2585,22 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 						});
 						popup.show();
+					}
+				});
+				// Enable typeahead for Subjects:
+				self.$('input[name=subject]').typeahead({
+					source : function(query, process) {
+						var subjects = new Models.Subjects();
+						subjects.fetch({
+							cache : false,
+							data : {
+								"query" : query
+							},
+							success : function(collection, response, options) {
+								var data = collection.pluck("name");
+								process(data);
+							}
+						});
 					}
 				});
 				if (self.model.has("id")) {
@@ -4468,6 +4500,22 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					$(this).parents("form").validate().element(this);
 				}
 			});
+			// Enable typeahead for Subjects:
+			self.$('input[name=subject]').typeahead({
+				source : function(query, process) {
+					var subjects = new Models.Subjects();
+					subjects.fetch({
+						cache : false,
+						data : {
+							"query" : query
+						},
+						success : function(collection, response, options) {
+							var data = collection.pluck("name");
+							process(data);
+						}
+					});
+				}
+			});
 			// Validation
 			self.validator = $("form", this.el).validate({
 				errorElement : "span",
@@ -4840,7 +4888,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.model.get("members").push(committeeMember);
 				self.renderCommitteeMembers();
 			}
-			
+
 			self.change(jQuery.Event("change", {
 				data : {
 					triggeredBy : "user"
@@ -4857,7 +4905,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}));
 			committee.splice(position, 1);
 			self.renderCommitteeMembers();
-			
+
 			self.change(jQuery.Event("change", {
 				data : {
 					triggeredBy : "user"
@@ -5170,7 +5218,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}));
 			// Select element to replace, raise some alerts for files ...
 			self.renderEvaluator(self.$("#positionEvaluator_" + positionEvaluator.get("position")), positionEvaluator);
-			
+
 			self.change(jQuery.Event("change", {
 				data : {
 					triggeredBy : "user"
@@ -7135,6 +7183,23 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					popup.show();
 				}
 			});
+			// Enable typeahead for Subjects:
+			self.$('input[name=suggestSubject]').typeahead({
+				source : function(query, process) {
+					var subjects = new Models.Subjects();
+					subjects.fetch({
+						cache : false,
+						data : {
+							"query" : query
+						},
+						success : function(collection, response, options) {
+							var data = collection.pluck("name");
+							process(data);
+						}
+					});
+				}
+			});
+
 			// Add Departments:
 			_.each(self.model.get("departments"), function(department) {
 				self.addDepartment(undefined, department);
