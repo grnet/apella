@@ -369,6 +369,9 @@ public class CandidacyRESTService extends RESTService {
 			// End: Send E-Mails
 
 			// Update
+			for (FileHeader fh : existingCandidacy.getFiles()) {
+				deleteCompletely(fh);
+			}
 			em.remove(existingCandidacy);
 			em.flush();
 
