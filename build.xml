@@ -35,10 +35,6 @@
 	<property name="rest.war.dir" value="${basedir}/rest.war" />
 	<property name="rest.war.lib.dir" value="${rest.war.dir}/WEB-INF/lib" />
 
-	<property name="services.dir" value="${basedir}/sar" />
-	<property name="services.meta-inf.dir" value="${services.dir}/META-INF" />
-	<property name="services.dist.sar" value="${ant.project.name}.sar" />
-
 	<property name="www.dir" value="${basedir}/www" />
 	<property name="www.dist.war" value="depui.war" />
 
@@ -110,8 +106,8 @@
 				<include name="**/service/**" />
 			</zipfileset>
 			<zipfileset dir="${src.dir}">
-				<include name="import.sql" />
 				<include name="**/*.properties" />
+				<include name="**/*.xml" />
 				<include name="**/*.png" />
 				<include name="**/*.jpg" />
 			</zipfileset>
@@ -138,7 +134,6 @@
 			<zipfileset dir="${build.dir}">
 				<include name="ejbs.jar" />
 				<include name="${rest.dist.war}" />
-				<include name="${services.dist.sar}" />
 			</zipfileset>
 		</jar>
 	</target>

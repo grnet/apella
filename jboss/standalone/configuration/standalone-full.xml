@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
 <server xmlns="urn:jboss:domain:1.2">
+
 	<extensions>
 		<extension module="org.jboss.as.clustering.infinispan" />
 		<extension module="org.jboss.as.cmp" />
@@ -31,10 +32,12 @@
 		<extension module="org.jboss.as.webservices" />
 		<extension module="org.jboss.as.weld" />
 	</extensions>
+
 	<system-properties>
 		<property name="org.apache.coyote.http11.Http11Protocol.COMPRESSION" value="on" />
 		<property name="org.apache.coyote.http11.Http11Protocol.COMPRESSION_MIME_TYPES" value="text/javascript,text/css,text/html" />
 	</system-properties>
+
 	<management>
 		<security-realms>
 			<security-realm name="ManagementRealm">
@@ -57,6 +60,7 @@
 			</http-interface>
 		</management-interfaces>
 	</management>
+
 	<profile>
 		<subsystem xmlns="urn:jboss:domain:logging:1.1">
 			<console-handler name="CONSOLE">
@@ -108,7 +112,7 @@
 						<password>sa</password>
 					</security>
 				</datasource>
-				<datasource jndi-name="java:jboss/datasources/apelladb" pool-name="apelladb" enabled="true" jta="false" use-ccm="false">
+				<datasource jta="false" jndi-name="java:jboss/datasources/apelladb" pool-name="apelladb" enabled="true" use-ccm="false">
 					<connection-url>jdbc:postgresql://dbvm.ebs.gr:5433/apelladb</connection-url>
 					<driver>org.postgresql</driver>
 					<pool>
@@ -204,11 +208,12 @@
 		</subsystem>
 		<subsystem xmlns="urn:jboss:domain:jacorb:1.1">
 			<orb>
-				<initializers transactions="spec" security="on" />
+				<initializers security="on" transactions="spec" />
 			</orb>
 		</subsystem>
 		<subsystem xmlns="urn:jboss:domain:jaxr:1.1">
 			<connection-factory jndi-name="java:jboss/jaxr/ConnectionFactory" />
+			<properties />
 		</subsystem>
 		<subsystem xmlns="urn:jboss:domain:jaxrs:1.0" />
 		<subsystem xmlns="urn:jboss:domain:jca:1.1">
@@ -249,6 +254,7 @@
 				<persistence-enabled>true</persistence-enabled>
 				<journal-file-size>102400</journal-file-size>
 				<journal-min-files>2</journal-min-files>
+
 				<connectors>
 					<netty-connector name="netty" socket-binding="messaging" />
 					<netty-connector name="netty-throughput" socket-binding="messaging-throughput">
@@ -256,6 +262,7 @@
 					</netty-connector>
 					<in-vm-connector name="in-vm" server-id="0" />
 				</connectors>
+
 				<acceptors>
 					<netty-acceptor name="netty" socket-binding="messaging" />
 					<netty-acceptor name="netty-throughput" socket-binding="messaging-throughput">
@@ -264,6 +271,7 @@
 					</netty-acceptor>
 					<in-vm-acceptor name="in-vm" server-id="0" />
 				</acceptors>
+
 				<security-settings>
 					<security-setting match="#">
 						<permission type="send" roles="guest" />
@@ -272,8 +280,8 @@
 						<permission type="deleteNonDurableQueue" roles="guest" />
 					</security-setting>
 				</security-settings>
+
 				<address-settings>
-					<!--default for catch all -->
 					<address-setting match="#">
 						<dead-letter-address>jms.queue.DLQ</dead-letter-address>
 						<expiry-address>jms.queue.ExpiryQueue</expiry-address>
@@ -283,6 +291,7 @@
 						<message-counter-history-day-limit>10</message-counter-history-day-limit>
 					</address-setting>
 				</address-settings>
+
 				<jms-connection-factories>
 					<connection-factory name="InVmConnectionFactory">
 						<connectors>
@@ -311,6 +320,7 @@
 						</entries>
 					</pooled-connection-factory>
 				</jms-connection-factories>
+
 				<jms-destinations>
 					<jms-queue name="testQueue">
 						<entry name="queue/test" />
@@ -330,14 +340,11 @@
 		<subsystem xmlns="urn:jboss:domain:naming:1.1" />
 		<subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="lazy">
 			<properties>
-				<!-- Specifies the beginning start level of the framework -->
 				<property name="org.osgi.framework.startlevel.beginning">1</property>
 			</properties>
 			<capabilities>
-				<!-- modules registered with the OSGi layer on startup -->
 				<capability name="javax.servlet.api:v25" />
 				<capability name="javax.transaction.api" />
-				<!-- bundles started in startlevel 1 -->
 				<capability name="org.apache.felix.log" startlevel="1" />
 				<capability name="org.jboss.osgi.logging" startlevel="1" />
 				<capability name="org.apache.felix.configadmin" startlevel="1" />
@@ -406,6 +413,7 @@
 		</subsystem>
 		<subsystem xmlns="urn:jboss:domain:weld:1.0" />
 	</profile>
+
 	<interfaces>
 		<interface name="management">
 			<inet-address value="${jboss.bind.address.management:127.0.0.1}" />
@@ -413,12 +421,11 @@
 		<interface name="public">
 			<inet-address value="${jboss.bind.address:127.0.0.1}" />
 		</interface>
-		<!-- TODO - only show this if the jacorb subsystem is added -->
 		<interface name="unsecure">
-			<!-- ~ Used for IIOP sockets in the standard configuration. ~ To secure JacORB you need to setup SSL -->
 			<inet-address value="${jboss.bind.address.unsecure:127.0.0.1}" />
 		</interface>
 	</interfaces>
+
 	<socket-binding-group name="standard-sockets" default-interface="public" port-offset="${jboss.socket.binding.port-offset:0}">
 		<socket-binding name="management-native" interface="management" port="${jboss.management.native.port:9999}" />
 		<socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}" />
@@ -438,4 +445,5 @@
 			<remote-destination host="localhost" port="25" />
 		</outbound-socket-binding>
 	</socket-binding-group>
+
 </server>
