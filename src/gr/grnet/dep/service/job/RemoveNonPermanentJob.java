@@ -1,7 +1,5 @@
 package gr.grnet.dep.service.job;
 
-import gr.grnet.dep.server.rest.RESTService;
-import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
@@ -29,7 +27,7 @@ public class RemoveNonPermanentJob implements Job {
 	@PersistenceContext(unitName = "apelladb")
 	protected EntityManager em;
 
-	private static Logger staticLogger = Logger.getLogger(RESTService.class.getName());
+	private static Logger staticLogger = Logger.getLogger(RemoveNonPermanentJob.class.getName());
 
 	static String savePath;
 
@@ -107,7 +105,7 @@ public class RemoveNonPermanentJob implements Job {
 
 	///////////////////////////////////////////////////
 
-	private void deleteCompletely(FileHeader fh) throws RestException {
+	private void deleteCompletely(FileHeader fh) {
 		List<FileBody> fileBodies = fh.getBodies();
 		for (int i = fileBodies.size() - 1; i >= 0; i--) {
 			File file = deleteFileBody(fh);
@@ -115,7 +113,7 @@ public class RemoveNonPermanentJob implements Job {
 		}
 	}
 
-	private <T extends FileHeader> File deleteFileBody(T fh) throws RestException {
+	private <T extends FileHeader> File deleteFileBody(T fh) {
 		int size = fh.getBodies().size();
 		// Delete the file itself, if possible.
 		FileBody fb = fh.getCurrentBody();
