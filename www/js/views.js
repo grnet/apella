@@ -869,7 +869,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
 							}
 						});
-						self.$("select[name='institution']").change({
+						self.$("select[name='institution']").trigger("change", {
 							triggeredBy : "application"
 						});
 					},
@@ -912,7 +912,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
 							}
 						});
-						self.$("select[name='institution']").change({
+						self.$("select[name='institution']").trigger("change", {
 							triggeredBy : "application"
 						});
 					},
@@ -995,7 +995,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					phone : {
 						required : _.isEqual(role.discriminator, "INSTITUTION_MANAGER"),
 						number : true,
-						minlength : 10
+						minlength : 10,
+						maxlength : 10
 					},
 					address_street : "required",
 					address_number : "required",
@@ -1050,7 +1051,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					phone : {
 						required : $.i18n.prop('validation_phone'),
 						number : $.i18n.prop('validation_number'),
-						minlength : $.i18n.prop('validation_minlength', 10)
+						minlength : $.i18n.prop('validation_minlength', 10),
+						maxlength : $.i18n.prop('validation_maxlength', 10)
 					},
 					address_street : $.i18n.prop('validation_street'),
 					address_number : $.i18n.prop('validation_number'),
@@ -2391,8 +2393,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				});
 				break;
 			case "PROFESSOR_DOMESTIC":
-				// Bind change on institution selector to update
-				// department
+				// Bind change on institution selector to update department
 				// selector
 				self.$("select[name='department']").change(function(event) {
 					self.$("select[name='department']").next(".help-block").html(self.$("select[name='department'] option:selected").text());
@@ -2416,7 +2417,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 									self.$("select[name='department']").append("<option value='" + department.get("id") + "'>" + department.get("department") + "</option>");
 								}
 							});
-							self.$("select[name='department']").change({
+							self.$("select[name='department']").trigger("change", {
 								triggeredBy : "application"
 							});
 						},
@@ -2440,7 +2441,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
 							}
 						});
-						self.$("select[name='institution']").change({
+						self.$("select[name='institution']").trigger("change", {
 							triggeredBy : "application"
 						});
 					},
@@ -2464,7 +2465,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								$("select[name='rank']", self.$el).append("<option value='" + rank.get("id") + "'>" + rank.get("name") + "</option>");
 							}
 						});
-						self.$("select[name='rank']").change({
+						self.$("select[name='rank']").trigger("change", {
 							triggeredBy : "application"
 						});
 
@@ -2562,7 +2563,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				});
 				self.$("input[name=fekCheckbox]").attr("checked", _.isObject(self.model.get("subject")));
-				self.$("input[name=fekCheckbox]").change({
+				self.$("input[name=fekCheckbox]").trigger("change", {
 					triggeredBy : "application"
 				});
 				break;
@@ -2646,13 +2647,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				});
 				break;
 			case "INSTITUTION_MANAGER":
-				self.$("select[name='verificationAuthority']").val(self.model.get("verificationAuthority"));
 				self.$("select[name='verificationAuthority']").change(function(event) {
 					var authority = self.$("select[name='verificationAuthority']").val();
 					self.$("label[for='verificationAuthorityName']").html($.i18n.prop('VerificationAuthorityName') + " " + $.i18n.prop('VerificationAuthority' + authority));
 					self.$("a[id^=forma_]*").hide();
 					self.$("a#forma_" + authority).show();
 				});
+				self.$("select[name='verificationAuthority']").val(self.model.get("verificationAuthority"));
 
 				self.$("select[name='institution']").change(function(event) {
 					self.$("select[name='institution']").next(".help-block").html(self.$("select[name='institution'] option:selected").text());
@@ -2668,7 +2669,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
 							}
 						});
-						self.$("select[name='institution']").change({
+						self.$("select[name='institution']").trigger("change", {
 							triggeredBy : "application"
 						});
 					},
@@ -2770,7 +2771,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						alternateaddress_country : $.i18n.prop('validation_country')
 					}
 				});
-				self.$("select[name='verificationAuthority']").change({
+				self.$("select[name='verificationAuthority']").trigger("change", {
 					triggeredBy : "application"
 				});
 				break;
@@ -2790,7 +2791,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
 							}
 						});
-						self.$("select[name='institution']").change({
+						self.$("select[name='institution']").trigger("change", {
 							triggeredBy : "application"
 						});
 					},
@@ -3326,27 +3327,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					wait : true,
 					success : function(model, resp) {
 						var popup;
-						if (_.isNull(resp)) {
-							// Reset Object to empty (without id)
-							// status
-							self.model.urlRoot = tmp.urlRoot;
-							self.model.url = tmp.url;
-							self.model.set(_.extend(self.model.defaults, {
-								"type" : tmp.type
-							}), {
-								silent : false
-							});
-							popup = new Views.PopupView({
-								type : "success",
-								message : $.i18n.prop("Success")
-							});
-						} else {
-							self.model.set(resp);
-							popup = new Views.PopupView({
-								type : "warning",
-								message : $.i18n.prop("FileReverted")
-							});
-						}
+						// Reset Object to empty (without id) status
+						self.model.urlRoot = tmp.urlRoot;
+						self.model.url = tmp.url;
+						self.model.set(_.extend(self.model.defaults, {
+							"type" : tmp.type
+						}), {
+							silent : false
+						});
+						popup = new Views.PopupView({
+							type : "success",
+							message : $.i18n.prop("Success")
+						});
 						popup.show();
 					},
 					error : function(model, resp, options) {
@@ -3562,19 +3554,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					wait : true,
 					success : function(model, resp) {
 						var popup;
-						if (_.isNull(resp)) {
-							popup = new Views.PopupView({
-								type : "success",
-								message : $.i18n.prop("Success")
-							});
-						} else {
-							selectedModel.set(resp);
-							self.collection.add(selectedModel);
-							popup = new Views.PopupView({
-								type : "warning",
-								message : $.i18n.prop("FileReverted")
-							});
-						}
+						popup = new Views.PopupView({
+							type : "success",
+							message : $.i18n.prop("Success")
+						});
 						popup.show();
 					},
 					error : function(model, resp, options) {
@@ -5631,10 +5614,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							self.$("select[name='secondNominatedCandidacy']").append("<option value='" + candidacy.get("id") + "'>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + " (" + candidacy.get("snapshot").username + ")" + "</option>");
 						}
 					});
-					self.$("select[name='nominatedCandidacy']").change({
+					self.$("select[name='nominatedCandidacy']").trigger("change", {
 						triggeredBy : "application"
 					});
-					self.$("select[name='secondNominatedCandidacy']").change({
+					self.$("select[name='secondNominatedCandidacy']").trigger("change", {
 						triggeredBy : "application"
 					});
 				}

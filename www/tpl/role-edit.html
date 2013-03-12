@@ -191,13 +191,6 @@
 				<input class="input-xlarge" name="verificationAuthorityName" type="text" value="<%= verificationAuthorityName %>" />
 				</div>
 			</div>
-			<div class="control-group">
-				<label class="control-label" for="institutionManagerForm"><%= $.i18n.prop('InstitutionManagerForm') %>:</label>
-				<div class="controls">
-					<a id="forma_DEAN" href="/dep/rest/role/<%= id %>/documents/Forma_allagis_Diax_Idrymatos" target="documents"><%= $.i18n.prop('InstitutionManagerFormDEAN') %></a>
-					<a id="forma_PRESIDENT" href="/dep/rest/role/<%= id %>/documents/Forma_allagis_Diax_Idrymatos" target="documents"><%= $.i18n.prop('InstitutionManagerFormPRESIDENT') %></a>
-				</div>
-			</div>
 		</fieldset>
 		<fieldset>
 			<legend><%= $.i18n.prop('AlternateInstitutionManager') %></legend>
@@ -283,6 +276,15 @@
 				<label class="control-label" for="alternateaddress_country"><%= $.i18n.prop('Country') %>:</label>
 				<div class="controls">
 					<input class="input-xlarge" type="text" name="alternateaddress_country" value="<%= alternateContactInfo.address.country %>" />
+				</div>
+			</div>
+		</fieldset>
+		<fieldset>
+			<div class="control-group">
+				<label class="control-label" for="institutionManagerForm"><%= $.i18n.prop('InstitutionManagerForm') %>:</label>
+				<div class="controls">
+					<a id="forma_DEAN" href="/dep/rest/role/<%= id %>/documents/Forma_allagis_Diax_Idrymatos" target="documents"><%= $.i18n.prop('InstitutionManagerFormDEAN') %></a>
+					<a id="forma_PRESIDENT" href="/dep/rest/role/<%= id %>/documents/Forma_allagis_Diax_Idrymatos" target="documents"><%= $.i18n.prop('InstitutionManagerFormPRESIDENT') %></a>
 				</div>
 			</div>
 			<div class="form-actions">

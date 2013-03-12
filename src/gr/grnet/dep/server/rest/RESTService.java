@@ -629,8 +629,13 @@ public class RESTService {
 		String aSubject = resources.getString(aSubjectKey);
 		String aBody = resources.getString(aBodyKey);
 		for (String key : parameters.keySet()) {
-			aBody = aBody.replaceAll("\\[" + key + "\\]", parameters.get(key));
+			String value = parameters.get(key);
+			if (value == null || value.trim().isEmpty()) {
+				value = "-";
+			}
+			aBody = aBody.replaceAll("\\[" + key + "\\]", value);
 		}
+		// Validate Email
 		Connection qConn = null;
 		javax.jms.Session session = null;
 		MessageProducer sender = null;

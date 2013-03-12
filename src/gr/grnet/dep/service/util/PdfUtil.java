@@ -50,7 +50,9 @@ public class PdfUtil {
 			logoEU.scaleToFit(1200, 36);
 			Image logoEspa = Image.getInstance(loadImage("logo_espa.jpg"));
 			logoEspa.scaleToFit(1200, 36);
-			
+			Image logoDM = Image.getInstance(loadImage("logo-dm.jpg"));
+			logoDM.scaleToFit(1200, 36);
+
 			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 			Date now = new Date();
 
@@ -59,10 +61,10 @@ public class PdfUtil {
 			PdfWriter.getInstance(doc, output);
 
 			doc.open();
-			
+
 			logoApella.setAlignment(Element.ALIGN_RIGHT);
 			doc.add(logoApella);
-			
+
 			Paragraph p = new Paragraph("Αριθμός Βεβαίωσης:  " + im.getUser().getId() + " / " + sdf.format(now), boldFont);
 			p.setAlignment(Element.ALIGN_RIGHT);
 			doc.add(p);
@@ -115,10 +117,6 @@ public class PdfUtil {
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
-			p = new Paragraph(" ", boldFont);
-			p.setAlignment(Element.ALIGN_LEFT);
-			doc.add(p);
-
 			p = new Paragraph("Βεβαίωση Συμμετοχή Διαχειριστή Ιδρύματος στην Απέλλα", largerBoldFont);
 			p.setAlignment(Element.ALIGN_CENTER);
 			doc.add(p);
@@ -137,16 +135,16 @@ public class PdfUtil {
 
 			PdfPTable institutionTable = new PdfPTable(2);
 			institutionTable.setWidthPercentage(100);
-			institutionTable.setWidths(new float[] { 30, 70 });
+			institutionTable.setWidths(new float[] {30, 70});
 			institutionTable.addCell(createCell(new Phrase("ΙΔΡΥΜΑ", normalFont), Element.ALIGN_LEFT, 1));
 			institutionTable.addCell(createCell(new Phrase(im.getInstitution().getName(), normalFont), Element.ALIGN_LEFT, 1));
 			switch (im.getVerificationAuthority()) {
-			case DEAN:
-				institutionTable.addCell(createCell(new Phrase("ΟΝ/ΜΟ ΠΡΥΤΑΝΗ", normalFont), Element.ALIGN_LEFT, 1));
-				break;
-			case PRESIDENT:
-				institutionTable.addCell(createCell(new Phrase("ΟΝ/ΜΟ ΠΡΟΕΔΡΟΥ", normalFont), Element.ALIGN_LEFT, 1));
-				break;
+				case DEAN:
+					institutionTable.addCell(createCell(new Phrase("ΟΝ/ΜΟ ΠΡΥΤΑΝΗ", normalFont), Element.ALIGN_LEFT, 1));
+					break;
+				case PRESIDENT:
+					institutionTable.addCell(createCell(new Phrase("ΟΝ/ΜΟ ΠΡΟΕΔΡΟΥ", normalFont), Element.ALIGN_LEFT, 1));
+					break;
 			}
 			institutionTable.addCell(createCell(new Phrase(im.getVerificationAuthorityName(), normalFont), Element.ALIGN_LEFT, 1));
 			doc.add(institutionTable);
@@ -163,21 +161,17 @@ public class PdfUtil {
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
-			p = new Paragraph(" ", boldFont);
-			p.setAlignment(Element.ALIGN_LEFT);
-			doc.add(p);
-
 			p = new Paragraph("Βεβαιώνεται ότι το ως άνω Ίδρυμα ορίζει ως Διαχειριστή Ιδρύματος στο πρόγραμμα ΑΠΕΛΛΑ τον/την " +
-					im.getUser().getBasicInfo().getFirstname() +
-					" " +
-					im.getUser().getBasicInfo().getLastname() +
-					" με e-mail " +
-					im.getUser().getContactInfo().getEmail() +
-					", τηλέφωνο " +
-					im.getUser().getContactInfo().getPhone() +
-					" και όνομα χρήστη " +
-					im.getUser().getUsername()
-					, normalFont);
+				im.getUser().getBasicInfo().getFirstname() +
+				" " +
+				im.getUser().getBasicInfo().getLastname() +
+				" με e-mail " +
+				im.getUser().getContactInfo().getEmail() +
+				", τηλέφωνο " +
+				im.getUser().getContactInfo().getPhone() +
+				" και όνομα χρήστη " +
+				im.getUser().getUsername()
+				, normalFont);
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
@@ -186,22 +180,14 @@ public class PdfUtil {
 			doc.add(p);
 
 			p = new Paragraph("Αναπληρωτής Διαχειριστής Ιδρύματος ορίζεται ο/η " +
-					im.getAlternateBasicInfo().getFirstname() +
-					" " +
-					im.getAlternateBasicInfo().getLastname() +
-					" με e-mail " +
-					im.getAlternateContactInfo().getEmail() +
-					", τηλέφωνο " +
-					im.getAlternateContactInfo().getPhone(),
-					normalFont);
-			p.setAlignment(Element.ALIGN_LEFT);
-			doc.add(p);
-
-			p = new Paragraph(" ", boldFont);
-			p.setAlignment(Element.ALIGN_LEFT);
-			doc.add(p);
-
-			p = new Paragraph(" ", boldFont);
+				im.getAlternateBasicInfo().getFirstname() +
+				" " +
+				im.getAlternateBasicInfo().getLastname() +
+				" με e-mail " +
+				im.getAlternateContactInfo().getEmail() +
+				", τηλέφωνο " +
+				im.getAlternateContactInfo().getPhone(),
+				normalFont);
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
@@ -223,32 +209,33 @@ public class PdfUtil {
 
 			PdfPTable signTable = new PdfPTable(3);
 			signTable.setWidthPercentage(100);
-			signTable.setWidths(new float[] { 33, 33, 33 });
+			signTable.setWidths(new float[] {33, 33, 33});
 			signTable.addCell(createCell(new Phrase("__/__/____", normalFont), Element.ALIGN_CENTER, 0));
 			signTable.addCell(createCell(new Phrase(" ", normalFont), Element.ALIGN_CENTER, 0));
 			signTable.addCell(createCell(new Phrase(" ", normalFont), Element.ALIGN_CENTER, 0));
 			signTable.addCell(createCell(new Phrase("ΗΜΕΡΟΜΗΝΙΑ", normalFont), Element.ALIGN_CENTER, 0));
 			switch (im.getVerificationAuthority()) {
-			case DEAN:
-				signTable.addCell(createCell(new Phrase("Υπογραφή Πρύτανη", normalFont), Element.ALIGN_CENTER, 0));
-				break;
-			case PRESIDENT:
-				signTable.addCell(createCell(new Phrase("Υπογραφή Προέδρου", normalFont), Element.ALIGN_CENTER, 0));
-				break;
+				case DEAN:
+					signTable.addCell(createCell(new Phrase("Υπογραφή Πρύτανη", normalFont), Element.ALIGN_CENTER, 0));
+					break;
+				case PRESIDENT:
+					signTable.addCell(createCell(new Phrase("Υπογραφή Προέδρου", normalFont), Element.ALIGN_CENTER, 0));
+					break;
 			}
 			signTable.addCell(createCell(new Phrase("Σφραγίδα Ιδρύματος", normalFont), Element.ALIGN_CENTER, 0));
 			doc.add(signTable);
-			
+
 			p = new Paragraph(" ", boldFont);
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
-			
-			PdfPTable logoTable = new PdfPTable(3);
+
+			PdfPTable logoTable = new PdfPTable(4);
 			logoTable.setHorizontalAlignment(Element.ALIGN_CENTER);
-			logoTable.setWidths(new float[] { 33, 33, 33 });
+			logoTable.setWidths(new float[] {33, 33, 17, 15});
 			logoTable.addCell(createImageCell(logoGRnet, Element.ALIGN_CENTER, 0));
 			logoTable.addCell(createImageCell(logoEU, Element.ALIGN_CENTER, 0));
 			logoTable.addCell(createImageCell(logoEspa, Element.ALIGN_CENTER, 0));
+			logoTable.addCell(createImageCell(logoDM, Element.ALIGN_CENTER, 0));
 			doc.add(logoTable);
 
 			doc.close();
@@ -274,7 +261,7 @@ public class PdfUtil {
 
 			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 			Date now = new Date();
-			
+
 			Image logoApella = Image.getInstance(loadImage("logo_apella.png"));
 			logoApella.scaleToFit(1200, 120);
 			Image logoGRnet = Image.getInstance(loadImage("logo_grnet.png"));
@@ -283,16 +270,18 @@ public class PdfUtil {
 			logoEU.scaleToFit(1200, 36);
 			Image logoEspa = Image.getInstance(loadImage("logo_espa.jpg"));
 			logoEspa.scaleToFit(1200, 36);
+			Image logoDM = Image.getInstance(loadImage("logo-dm.jpg"));
+			logoDM.scaleToFit(1200, 36);
 
 			Document doc = new Document();
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			PdfWriter.getInstance(doc, output);
 
 			doc.open();
-			
+
 			logoApella.setAlignment(Element.ALIGN_RIGHT);
 			doc.add(logoApella);
-			
+
 			Paragraph p = new Paragraph("Αριθμός Βεβαίωσης:  " + candidate.getUser().getId() + " / " + sdf.format(now), boldFont);
 			p.setAlignment(Element.ALIGN_RIGHT);
 			doc.add(p);
@@ -366,23 +355,23 @@ public class PdfUtil {
 			doc.add(p);
 
 			p = new Paragraph("Βεβαιώνεται ότι ο " +
-					candidate.getUser().getBasicInfo().getFirstname() +
-					" ( " +
-					candidate.getUser().getBasicInfoLatin().getFirstname() +
-					" )" +
-					candidate.getUser().getBasicInfo().getLastname() +
-					" ( " +
-					candidate.getUser().getBasicInfoLatin().getLastname() +
-					" )" +
-					" με Α.Δ.Τ. "
-					+ candidate.getUser().getIdentification() +
-					", e-mail "
-					+ candidate.getUser().getContactInfo().getEmail() +
-					" και τηλέφωνο " +
-					candidate.getUser().getContactInfo().getMobile() +
-					" συμμετέχει στο πρόγραμμα \"Απέλλα - Σύστημα Εκλογής και Εξέλιξης Μελών ΔΕΠ\" με το Όνομα Χρήστη "
-					+ candidate.getUser().getUsername(),
-					normalFont);
+				candidate.getUser().getBasicInfo().getFirstname() +
+				" ( " +
+				candidate.getUser().getBasicInfoLatin().getFirstname() +
+				" )" +
+				candidate.getUser().getBasicInfo().getLastname() +
+				" ( " +
+				candidate.getUser().getBasicInfoLatin().getLastname() +
+				" )" +
+				" με Α.Δ.Τ. "
+				+ candidate.getUser().getIdentification() +
+				", e-mail "
+				+ candidate.getUser().getContactInfo().getEmail() +
+				" και τηλέφωνο " +
+				candidate.getUser().getContactInfo().getMobile() +
+				" συμμετέχει στο πρόγραμμα \"Απέλλα - Σύστημα Εκλογής και Εξέλιξης Μελών ΔΕΠ\" με το Όνομα Χρήστη "
+				+ candidate.getUser().getUsername(),
+				normalFont);
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
@@ -391,7 +380,7 @@ public class PdfUtil {
 			doc.add(p);
 
 			p = new Paragraph("O συμμετέχων δηλώνει υπεύθυνα ότι αποδέχεται τους όρους και τις προϋποθέσεις του προγράμματος " +
-					"\"Απέλλα - Σύστημα Εκλογής και Εξέλιξης Μελών ΔΕΠ\", όπως κάθε φορά ισχύουν", normalFont);
+				"\"Απέλλα - Σύστημα Εκλογής και Εξέλιξης Μελών ΔΕΠ\", όπως κάθε φορά ισχύουν", normalFont);
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
@@ -421,25 +410,26 @@ public class PdfUtil {
 
 			PdfPTable signTable = new PdfPTable(2);
 			signTable.setWidthPercentage(100);
-			signTable.setWidths(new float[] { 50, 50 });
+			signTable.setWidths(new float[] {50, 50});
 			signTable.addCell(createCell(new Phrase(" ", normalFont), Element.ALIGN_CENTER, 0));
 			signTable.addCell(createCell(new Phrase("Ο/Η Συμμετέχων", normalFont), Element.ALIGN_CENTER, 0));
 			signTable.addCell(createCell(new Phrase("__/__/____", normalFont), Element.ALIGN_CENTER, 0));
 			signTable.addCell(createCell(new Phrase(" ", normalFont), Element.ALIGN_CENTER, 0));
 			signTable.addCell(createCell(new Phrase("ΗΜΕΡΟΜΗΝΙΑ", normalFont), Element.ALIGN_CENTER, 0));
-			signTable.addCell(createCell(new Phrase("Σφραγίδα Ιδρύματος", normalFont), Element.ALIGN_CENTER, 0));
+			signTable.addCell(createCell(new Phrase("Υπογραφή", normalFont), Element.ALIGN_CENTER, 0));
 			doc.add(signTable);
-			
+
 			p = new Paragraph(" ", boldFont);
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
-			
-			PdfPTable logoTable = new PdfPTable(3);
+
+			PdfPTable logoTable = new PdfPTable(4);
 			logoTable.setHorizontalAlignment(Element.ALIGN_CENTER);
-			logoTable.setWidths(new float[] { 33, 33, 33 });
+			logoTable.setWidths(new float[] {33, 33, 17, 15});
 			logoTable.addCell(createImageCell(logoGRnet, Element.ALIGN_CENTER, 0));
 			logoTable.addCell(createImageCell(logoEU, Element.ALIGN_CENTER, 0));
 			logoTable.addCell(createImageCell(logoEspa, Element.ALIGN_CENTER, 0));
+			logoTable.addCell(createImageCell(logoDM, Element.ALIGN_CENTER, 0));
 			doc.add(logoTable);
 
 			doc.close();
@@ -461,7 +451,7 @@ public class PdfUtil {
 		cell.setPadding(10);
 		return cell;
 	}
-	
+
 	private static PdfPCell createImageCell(Image img, int align, int borderWidth) {
 		PdfPCell cell = new PdfPCell(img);
 		cell.setBorderWidth(borderWidth);
@@ -469,7 +459,7 @@ public class PdfUtil {
 		cell.setPadding(10);
 		return cell;
 	}
-	
+
 	private static byte[] loadImage(String img) {
 		InputStream is = Image.class.getClassLoader().getResourceAsStream("gr/grnet/dep/service/util/resources/" + img);
 		try {

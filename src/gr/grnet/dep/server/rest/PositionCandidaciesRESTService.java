@@ -280,7 +280,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 				// positionCandidacies.upload.eisigisi@candidacyEvaluator
 				sendEmail(existingEvaluator.getEmail(),
 					"default.subject",
-					"positionCandidacies.upload.eisigisi@candidate",
+					"positionCandidacies.upload.eisigisi@candidacyEvaluator",
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{

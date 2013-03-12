@@ -548,7 +548,7 @@ public class UserRESTService extends RESTService {
 					}
 				}));
 			// Return Result
-			return Response.ok().build();
+			return Response.noContent().build();
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.username");
 		}
@@ -583,7 +583,7 @@ public class UserRESTService extends RESTService {
 						}));
 
 					// Return Result
-					return Response.ok().build();
+					return Response.noContent().build();
 				default:
 					throw new RestException(Status.CONFLICT, "verify.account.status." + u.getStatus().toString().toLowerCase());
 			}
