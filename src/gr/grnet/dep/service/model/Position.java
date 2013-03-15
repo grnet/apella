@@ -19,6 +19,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -77,6 +78,9 @@ public class Position {
 
 	@Temporal(TemporalType.DATE)
 	private Date fekSentDate;
+
+	@Transient
+	private Boolean canSubmitCandidacy = Boolean.TRUE;
 
 	@ManyToOne(cascade = CascadeType.ALL)
 	private PositionPhase phase;
@@ -152,6 +156,14 @@ public class Position {
 	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setFekSentDate(Date fekSentDate) {
 		this.fekSentDate = fekSentDate;
+	}
+
+	public Boolean getCanSubmitCandidacy() {
+		return canSubmitCandidacy;
+	}
+
+	public void setCanSubmitCandidacy(Boolean canSubmitCandidacy) {
+		this.canSubmitCandidacy = canSubmitCandidacy;
 	}
 
 	public PositionPhase getPhase() {

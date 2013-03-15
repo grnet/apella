@@ -22,10 +22,9 @@
 	<dd><%= nominationFEK %></dd>
 	
 	<dt><%= $.i18n.prop('NominatedCandidacy') %></dt>
-	<dd><%= _.isUndefined(nominatedCandidacy) ? undefined : nominatedCandidacy.snapshot.username %></dd>
-	
+	<dd><%= _.isUndefined(nominatedCandidacy) ? undefined : nominatedCandidacy.snapshot.basicInfo.firstname + " " + nominatedCandidacy.snapshot.basicInfo.lastname + " (" + nominatedCandidacy.snapshot.username + ")" %></dd>
 	<dt><%= $.i18n.prop('SecondNominatedCandidacy') %></dt>
-	<dd><%= !_.isObject(secondNominatedCandidacy) ? undefined : secondNominatedCandidacy.snapshot.username %></dd>
+	<dd><%= !_.isObject(secondNominatedCandidacy) ? undefined : secondNominatedCandidacy.snapshot.basicInfo.firstname + " " + secondNominatedCandidacy.snapshot.basicInfo.lastname + " (" + secondNominatedCandidacy.snapshot.username + ")" %></dd>
 	
 	<dt><%= $.i18n.prop('ApofasiAnapompisFile') %></dt>
 	<dd>

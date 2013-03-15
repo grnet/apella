@@ -1524,8 +1524,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				}
 			}
-			// Disable Save Button until user changes a field
-			self.$("a#save").attr("disabled", true);
+			// Disable Save Button until user changes a field,
+			// don't for non-permanent
+			if (self.model.get("permanent")) {
+				self.$("a#save").attr("disabled", true);
+			}
 
 			// Return
 			return self;
@@ -2861,8 +2864,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					$(this).attr("disabled", true);
 				}
 			});
-			// Disable Save Button until user changes a field
-			self.$("a#save").attr("disabled", true);
+			// Disable Save Button until user changes a field,
+			// don't for non-permanent
+			if (self.model.get("permanent")) {
+				self.$("a#save").attr("disabled", true);
+			}
 
 			self.$('a[rel=popover]').popover();
 			return self;
@@ -3416,7 +3422,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		close : function(eventName) {
 			this.closeInnerViews();
 			this.$el.unbind();
-			this.$el.remove();
+			this.$el.empty();
 		}
 	});
 
@@ -4555,8 +4561,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				}
 			}
-			// Disable Save Button until user changes a field
-			self.$("a#save").attr("disabled", true);
+			// Disable Save Button until user changes a field,
+			// don't for non-permanent
+			if (self.model.get("permanent")) {
+				self.$("a#save").attr("disabled", true);
+			}
 			return self;
 		},
 
@@ -4694,6 +4703,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					member.access = "READ_FULL";
 				});
 			}
+			console.log("RENDER: " + self.$el.html());
 			self.$el.html(self.template(tpl_data));
 			// Add Files
 			if (self.model.has("id")) {
@@ -4711,6 +4721,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						self.addFile(collection, "AITIMA_EPITROPIS_PROS_AKSIOLOGITES", self.$("#aitimaEpitropisProsAksiologitesFile"), {
 							withMetadata : true
 						});
+						console.log("SUCCESS: " + self.$el.html());
 					}
 				});
 			}
@@ -6148,8 +6159,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				}
 			}
-			// Disable Save Button until user changes a field
-			self.$("a#save").attr("disabled", true);
+			// Disable Save Button until user changes a field,
+			// don't for non-permanent
+			if (self.model.get("permanent")) {
+				self.$("a#save").attr("disabled", true);
+			}
 
 			return self;
 		},
@@ -6984,8 +6998,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				}
 			}
-			// Disable Save Button until user changes a field
-			self.$("a#save").attr("disabled", true);
+			// Disable Save Button until user changes a field,
+			// don't for non-permanent
+			if (self.model.get("permanent")) {
+				self.$("a#save").attr("disabled", true);
+			}
 
 			return self;
 		},
@@ -7304,14 +7321,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.$el.html(self.template({
 				positions : self.collection.toJSON()
 			}));
-			self.$("a#selectPosition").each(function() {
-				var position = self.collection.get($(this).data("positionId"));
-				if (position.get("phase").status === "ANOIXTI") {
-					$(this).show();
-				} else {
-					$(this).hide();
-				}
-			});
 			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 				self.$("table").dataTable({
 					"sDom" : "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
@@ -7543,8 +7552,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					$(this).attr("disabled", true);
 				}
 			});
-			// Disable Save Button until user changes a field
-			self.$("a#save").attr("disabled", true);
+			// Disable Save Button until user changes a field,
+			// don't for non-permanent
+			if (self.model.get("permanent")) {
+				self.$("a#save").attr("disabled", true);
+			}
 
 			return self;
 		},

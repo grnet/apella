@@ -9,14 +9,34 @@
 			<job-class>gr.grnet.dep.service.job.RemoveNonPermanentJob</job-class>
 		</job>
 
+		<job>
+			<name>OpenPositionsJob</name>
+			<group>APELLA_JOBS</group>
+			<description>OpenPositionsJob</description>
+			<job-class>gr.grnet.dep.service.job.OpenPositionsJob</job-class>
+		</job>
+
 		<trigger>
 			<cron>
 				<name>RemoveNonPermanentJobCronTrigger</name>
 				<group>EUDOXUS_TRIGGERS</group>
 				<job-name>RemoveNonPermanentJob</job-name>
 				<job-group>APELLA_JOBS</job-group>
-				<!-- trigger every hour (00:30, 01:30, 02:30 ....) -->
-				<cron-expression>0 30 0/1 * * ?</cron-expression>
+				<!-- trigger at 03:00 in the morning -->
+				<cron-expression>0 0 3 * * ?</cron-expression>
+			</cron>
+		</trigger>
+
+		<trigger>
+			<cron>
+				<name>OpenPositionsJobCronTrigger</name>
+				<group>EUDOXUS_TRIGGERS</group>
+				<job-name>OpenPositionsJob</job-name>
+				<job-group>APELLA_JOBS</job-group>
+				<!-- trigger at 04:00 in the morning -->
+				<!-- <cron-expression>0 0 4 * * ?</cron-expression> -->
+				<!-- trigger every 5 min for testing -->
+				<cron-expression>0 0/5 * * * ?</cron-expression>
 			</cron>
 		</trigger>
 

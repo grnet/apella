@@ -860,6 +860,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function($, _, Bac
 			status : undefined,
 			fek : undefined,
 			fekSentDate : undefined,
+			canSubmitCandidacy : undefined,
 			phase : {
 				id : undefined,
 				status : undefined,

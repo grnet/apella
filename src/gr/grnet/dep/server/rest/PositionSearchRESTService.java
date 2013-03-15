@@ -1,9 +1,11 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.Position;
+import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.Position.PublicPositionView;
 import gr.grnet.dep.service.model.PositionSearchCriteria;
 import gr.grnet.dep.service.model.PositionSearchCriteria.PositionSearchCriteriaView;
@@ -45,6 +47,7 @@ public class PositionSearchRESTService extends RESTService {
 	@Path("/search")
 	@JsonView({PublicPositionView.class})
 	public Collection<Position> search(@HeaderParam(TOKEN_HEADER) String authToken, @QueryParam("criteria") String criteriaString) {
+		User loggedOn = getLoggedOn(authToken);
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 			Date today = sdf.parse(sdf.format(new Date()));
@@ -86,10 +89,26 @@ public class PositionSearchRESTService extends RESTService {
 			@SuppressWarnings("unchecked")
 			List<Position> positions = (List<Position>) query.getResultList();
 
-			// Return Result
-			for (Position position : positions) {
-				position.initializeCollections();
+			// Calculate CanSubmitCandidacy
+			if (loggedOn.hasActiveRole(RoleDiscriminator.CANDIDATE)) {
+				Candidate candidate = (Candidate) loggedOn.getActiveRole(RoleDiscriminator.CANDIDATE);
+				for (Candidacy candidacy : candidate.getCandidacies()) {
+					for (Position position : positions) {
+						if (position.getId().equals(candidacy.getCandidacies().getPosition().getId())) {
+							position.setCanSubmitCandidacy(Boolean.FALSE);
+							break;
+						}
+					}
+				}
 			}
+			for (Position position : positions) {
+				position.initializeCollections(); // Do it here since we iterate the list
+				if (!position.getPhase().getClientStatus().equals(PositionStatus.ANOIXTI.toString())) {
+					position.setCanSubmitCandidacy(Boolean.FALSE);
+				}
+			}
+
+			// Return Result
 			return positions;
 		} catch (ParseException e) {
 			throw new RestException(Status.INTERNAL_SERVER_ERROR, "parse.exception");
