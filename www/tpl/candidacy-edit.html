@@ -13,7 +13,7 @@
 				<dt><%= $.i18n.prop('Subject') %></dt>
 				<dd><% if (!_.isUndefined(candidacies.position.subject)) { %><%= candidacies.position.subject.name %><% } %></dd>
 				<dt><%= $.i18n.prop('FEK') %></dt>
-				<dd><%= candidacies.position.fek %></dd>
+				<dd><a target="fek" href="<%= candidacies.position.fek %>"><%= $.i18n.prop('btn_view') %></a></dd>
 				<dt><%= $.i18n.prop('FEKSentDate') %></dt>
 				<dd><%= candidacies.position.fekSentDate %></dd>
 				<dt><%= $.i18n.prop('PositionStatus') %></dt>

@@ -153,8 +153,8 @@ public class PositionEvaluationRESTService extends RESTService {
 		if (!existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
-		if (newEvaluation.getEvaluators().size() > PositionEvaluator.MAX_MEMBERS) {
-			throw new RestException(Status.CONFLICT, "max.evaluators.exceeded");
+		if (newEvaluation.getEvaluators().size() != PositionEvaluator.MAX_MEMBERS) {
+			throw new RestException(Status.CONFLICT, "wrong.evaluators.size");
 		}
 
 		// Retrieve new Members from Institution's Register

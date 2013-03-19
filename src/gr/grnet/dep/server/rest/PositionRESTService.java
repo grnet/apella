@@ -225,9 +225,11 @@ public class PositionRESTService extends RESTService {
 			em.flush();
 
 			existingPosition.initializeCollections();
+
 			if (isNew) {
 				sendNotificationsToInterestedCandidates(existingPosition);
 			}
+
 			return existingPosition;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
@@ -246,12 +248,13 @@ public class PositionRESTService extends RESTService {
 				"select distinct(c.candidate) from PositionSearchCriteria c " +
 					"left join c.departments d " +
 					"left join c.subjects s " +
-					"where (s is null and d.id = :departmentId) " +
-					"or (d is null  and s.name = :subject) " +
-					"or (d.id = :departmentId and s.name = :subject")
+					"where ((s is null) and (d is not null) and (d.id = :departmentId)) " +
+					"or ((d is null) and (s is not null) and (s.name = :subject)) " +
+					"or ((s is not null) and (s.name = :subject) and (d is not null) and (d.id = :departmentId))")
 				.setParameter("departmentId", position.getDepartment().getId())
 				.setParameter("subject", position.getSubject().getName())
 				.getResultList();
+
 			// Send E-Mails
 			for (final Candidate c : candidates) {
 				sendEmail(c.getUser().getContactInfo().getEmail(),

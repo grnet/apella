@@ -1525,10 +1525,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				}
 			}
 			// Disable Save Button until user changes a field,
-			// don't for non-permanent
-			if (self.model.get("permanent")) {
-				self.$("a#save").attr("disabled", true);
-			}
+			// user does not have permanent field
+			self.$("a#save").attr("disabled", true);
 
 			// Return
 			return self;
@@ -3254,6 +3252,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.model.trigger("change");
 				}
 			});
+			self.$("#uploader a#close").on("click", function() {
+				self.$("#uploader").modal('hide');
+			});
 			// Initialize FileUpload widget
 			self.$('#uploader input[name=file]').fileupload({
 				dataType : 'json',
@@ -3484,6 +3485,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.$('#uploader div.progress').hide();
 			self.$("#uploader").on('hidden', function() {
 				self.collection.trigger("reset");
+			});
+			self.$("#uploader a#close").on("click", function() {
+				self.$("#uploader").modal('hide');
 			});
 			// Initialize FileUpload widget
 			self.$('#uploader input[name=file]').fileupload({
