@@ -17,7 +17,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,6 +28,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
+import javax.persistence.Query;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -66,6 +70,7 @@ public class RegisterRESTService extends RESTService {
 					"where r.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
+			r.initializeCollections();
 			return r;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
@@ -128,12 +133,132 @@ public class RegisterRESTService extends RESTService {
 			throw new RestException(Status.CONFLICT, "register.institution.change");
 		}
 
+		// Retrieve existing Members
+		Map<Long, RegisterMember> existingMembersAsMap = new HashMap<Long, RegisterMember>();
+		for (RegisterMember existingMember : existingRegister.getMembers()) {
+			existingMembersAsMap.put(existingMember.getProfessor().getId(), existingMember);
+		}
+		// Retrieve new Member Professor Ids
+		Set<Long> newMemberIds = new HashSet<Long>();
+		for (RegisterMember newCommitteeMember : register.getMembers()) {
+			newMemberIds.add(newCommitteeMember.getProfessor().getId());
+		}
+		List<Professor> newRegisterMembers = new ArrayList<Professor>();
+		if (!newMemberIds.isEmpty()) {
+			Query query = em.createQuery(
+				"select distinct p from Professor p " +
+					"where p.status = :status " +
+					"and p.id in (:ids)")
+				.setParameter("status", RoleStatus.ACTIVE)
+				.setParameter("ids", newMemberIds);
+			newRegisterMembers.addAll(query.getResultList());
+		}
+		if (newMemberIds.size() != newRegisterMembers.size()) {
+			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
+		}
+		Map<Long, RegisterMember> newMembersAsMap = new HashMap<Long, RegisterMember>();
+		for (Professor existingProfessor : newRegisterMembers) {
+			if (existingMembersAsMap.containsKey(existingProfessor.getId())) {
+				newMembersAsMap.put(existingProfessor.getId(), existingMembersAsMap.get(existingProfessor.getId()));
+			} else {
+				RegisterMember newMember = new RegisterMember();
+				newMember.setRegister(existingRegister);
+				newMember.setProfessor(existingProfessor);
+				switch (existingProfessor.getDiscriminator()) {
+					case PROFESSOR_DOMESTIC:
+						newMember.setExternal(existingRegister.getInstitution().getId() != ((ProfessorDomestic) existingProfessor).getInstitution().getId());
+						break;
+					case PROFESSOR_FOREIGN:
+						newMember.setExternal(true);
+						break;
+					default:
+						break;
+				}
+				newMembersAsMap.put(existingProfessor.getId(), newMember);
+			}
+		}
+
 		try {
 			// Update
 			existingRegister = existingRegister.copyFrom(register);
+			existingRegister.getMembers().clear();
+			for (RegisterMember member : newMembersAsMap.values()) {
+				existingRegister.addMember(member);
+			}
 			existingRegister.setPermanent(true);
 			existingRegister = em.merge(existingRegister);
+
+			existingRegister.initializeCollections();
 			em.flush();
+
+			// Send E-Mails:
+
+			//1. To Added Members:
+			Set<Long> addedIds = new HashSet<Long>();
+			addedIds.addAll(newMemberIds);
+			addedIds.removeAll(existingMembersAsMap.keySet());
+			for (Long professorId : addedIds) {
+				final RegisterMember savedMember = newMembersAsMap.get(professorId);
+				if (savedMember.isExternal()) {
+					// register.create.register.member.external@member
+					sendEmail(savedMember.getProfessor().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"register.create.register.member.external@member",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", savedMember.getProfessor().getUser().getUsername());
+								put("institution", savedMember.getRegister().getInstitution().getName());
+							}
+						}));
+				} else {
+					// register.create.register.member.internal@member
+					sendEmail(savedMember.getProfessor().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"register.create.register.member.internal@member",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", savedMember.getProfessor().getUser().getUsername());
+								put("institution", savedMember.getRegister().getInstitution().getName());
+							}
+						}));
+				}
+			}
+			//2. To Removed Members:
+			Set<Long> removedIds = new HashSet<Long>();
+			removedIds.addAll(existingMembersAsMap.keySet());
+			addedIds.removeAll(newMemberIds);
+			for (Long professorID : removedIds) {
+				final RegisterMember removedMember = existingMembersAsMap.get(professorID);
+				if (removedMember.isExternal()) {
+					// register.remove.register.member.external@member
+					sendEmail(removedMember.getProfessor().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"register.remove.register.member.external@member",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", removedMember.getProfessor().getUser().getUsername());
+								put("institution", removedMember.getRegister().getInstitution().getName());
+							}
+						}));
+				} else {
+					// register.remove.register.member.internal@member
+					sendEmail(removedMember.getProfessor().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"register.remove.register.member.internal@member",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", removedMember.getProfessor().getUser().getUsername());
+								put("institution", removedMember.getRegister().getInstitution().getName());
+							}
+						}));
+				}
+			}
+			// End: Send E-Mails
+
 			// Return Result
 			existingRegister.initializeCollections();
 			return existingRegister;
@@ -203,152 +328,6 @@ public class RegisterRESTService extends RESTService {
 			}
 		}
 		throw new RestException(Status.NOT_FOUND, "wrong.register.member.id");
-	}
-
-	@POST
-	@Path("/{id:[0-9]+}/members")
-	@JsonView({DetailedRegisterMemberView.class})
-	public RegisterMember createRegisterMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId, RegisterMember newMember) {
-		User loggedOn = getLoggedOn(authToken);
-		Register existingRegister = em.find(Register.class, registerId);
-		// Validate:
-		if (existingRegister == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
-		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(existingRegister.getInstitution())) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		Professor existingProfessor = em.find(Professor.class, newMember.getProfessor().getId());
-		if (existingProfessor == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
-		}
-		if (!existingProfessor.getStatus().equals(RoleStatus.ACTIVE)) {
-			throw new RestException(Status.NOT_FOUND, "wrong.professor.status");
-		}
-		// Check if already exists:
-		for (RegisterMember member : existingRegister.getMembers()) {
-			if (member.getProfessor().getId().equals(existingProfessor.getId())) {
-				throw new RestException(Status.CONFLICT, "register.member.already.exists");
-			}
-		}
-		// Update
-		try {
-			newMember.setRegister(existingRegister);
-			newMember.setProfessor(existingProfessor);
-			switch (existingProfessor.getDiscriminator()) {
-				case PROFESSOR_DOMESTIC:
-					newMember.setExternal(existingRegister.getInstitution().getId() != ((ProfessorDomestic) existingProfessor).getInstitution().getId());
-					break;
-				case PROFESSOR_FOREIGN:
-					newMember.setExternal(true);
-					break;
-				default:
-					break;
-			}
-			final RegisterMember savedMember = em.merge(newMember);
-			existingRegister.addMember(savedMember);
-			em.flush();
-
-			// Send E-Mails
-			if (savedMember.isExternal()) {
-				// register.create.register.member.external@member
-				sendEmail(savedMember.getProfessor().getUser().getContactInfo().getEmail(),
-					"default.subject",
-					"register.create.register.member.external@member",
-					Collections.unmodifiableMap(new HashMap<String, String>() {
-
-						{
-							put("username", savedMember.getProfessor().getUser().getUsername());
-							put("institution", savedMember.getRegister().getInstitution().getName());
-						}
-					}));
-			} else {
-				// register.create.register.member.internal@member
-				sendEmail(savedMember.getProfessor().getUser().getContactInfo().getEmail(),
-					"default.subject",
-					"register.create.register.member.internal@member",
-					Collections.unmodifiableMap(new HashMap<String, String>() {
-
-						{
-							put("username", savedMember.getProfessor().getUser().getUsername());
-							put("institution", savedMember.getRegister().getInstitution().getName());
-						}
-					}));
-			}
-			// End: Send E-Mails
-
-			// Return result
-			savedMember.getProfessor().initializeCollections();
-			return savedMember;
-		} catch (PersistenceException e) {
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
-		}
-	}
-
-	@DELETE
-	@Path("/{id:[0-9]+}/members/{memberId:[0-9][0-9]*}")
-	public void removeRegisterMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId, @PathParam("memberId") Long memberId) {
-		User loggedOn = getLoggedOn(authToken);
-		Register existingRegister = em.find(Register.class, registerId);
-		// Validate:
-		if (existingRegister == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
-		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(existingRegister.getInstitution())) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		// Check if it exists:
-		RegisterMember existingMember = null;
-		for (RegisterMember member : existingRegister.getMembers()) {
-			if (member.getId().equals(memberId)) {
-				existingMember = member;
-				break;
-			}
-		}
-		if (existingMember == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.register.member.id");
-		}
-
-		// Send E-Mails
-		final RegisterMember emailMember = existingMember;
-		if (emailMember.isExternal()) {
-			// register.remove.register.member.external@member
-			sendEmail(emailMember.getProfessor().getUser().getContactInfo().getEmail(),
-				"default.subject",
-				"register.remove.register.member.external@member",
-				Collections.unmodifiableMap(new HashMap<String, String>() {
-
-					{
-						put("username", emailMember.getProfessor().getUser().getUsername());
-						put("institution", emailMember.getRegister().getInstitution().getName());
-					}
-				}));
-		} else {
-			// register.remove.register.member.internal@member
-			sendEmail(emailMember.getProfessor().getUser().getContactInfo().getEmail(),
-				"default.subject",
-				"register.remove.register.member.internal@member",
-				Collections.unmodifiableMap(new HashMap<String, String>() {
-
-					{
-						put("username", emailMember.getProfessor().getUser().getUsername());
-						put("institution", emailMember.getRegister().getInstitution().getName());
-					}
-				}));
-		}
-		// End: Send E-Mails
-
-		// Remove
-		try {
-			existingRegister.getMembers().remove(existingMember);
-			em.remove(existingMember);
-			em.flush();
-
-		} catch (PersistenceException e) {
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
-		}
 	}
 
 	@GET

@@ -1,7 +1,7 @@
 define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file.html", "text!tpl/file-edit.html", "text!tpl/file-list.html", "text!tpl/file-list-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html", "text!tpl/user-registration-select.html", "text!tpl/user-registration-success.html", "text!tpl/user-registration.html", "text!tpl/user-role-info.html", "text!tpl/user-search.html", "text!tpl/user-verification.html", "text!tpl/user.html", "text!tpl/language.html", "text!tpl/professor-committees.html", "text!tpl/professor-evaluations.html", "text!tpl/register.html", "text!tpl/institution-regulatory-framework.html", "text!tpl/institution-regulatory-framework-edit.html", "text!tpl/position-search-criteria.html", "text!tpl/position-search-result.html", "text!tpl/candidacy-edit.html", "text!tpl/candidate-candidacy-list.html",
-	"text!tpl/candidacy.html", "text!tpl/candidacy-update-confirm.html", "text!tpl/institution-regulatory-framework-list.html", "text!tpl/register-members.html", "text!tpl/register-members-edit.html", "text!tpl/register-members-edit-professor-list.html", "text!tpl/register-member-edit.html", "text!tpl/overlay.html", "text!tpl/position-main-edit.html", "text!tpl/position-candidacies-edit.html", "text!tpl/position-committee-edit.html", "text!tpl/position-committee-member-edit.html", "text!tpl/position-evaluation-edit.html", "text!tpl/position-evaluation-edit-register-member-list.html", "text!tpl/position-evaluation-evaluator-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-candidacies.html", "text!tpl/position-committee.html", "text!tpl/position-evaluation.html", "text!tpl/position-nomination.html", "text!tpl/position-complementaryDocuments.html", "text!tpl/position-nomination-edit.html", "text!tpl/position-complementaryDocuments-edit.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit,
-	tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_members, tpl_register_members_edit, tpl_register_members_edit_professor_list, tpl_register_member_edit, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list,
-	tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation, tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit) {
+	"text!tpl/candidacy.html", "text!tpl/candidacy-update-confirm.html", "text!tpl/institution-regulatory-framework-list.html", "text!tpl/register-members-edit.html", "text!tpl/register-members-edit-professor-list.html", "text!tpl/overlay.html", "text!tpl/position-main-edit.html", "text!tpl/position-candidacies-edit.html", "text!tpl/position-committee-edit.html", "text!tpl/position-committee-member-edit.html", "text!tpl/position-evaluation-edit.html", "text!tpl/position-evaluation-edit-register-member-list.html", "text!tpl/position-evaluation-evaluator-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html", "text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-candidacies.html", "text!tpl/position-committee.html", "text!tpl/position-evaluation.html", "text!tpl/position-nomination.html", "text!tpl/position-complementaryDocuments.html", "text!tpl/position-nomination-edit.html", "text!tpl/position-complementaryDocuments-edit.html" ], function($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit, tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main,
+	tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_members_edit, tpl_register_members_edit_professor_list, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation, tpl_position_nomination,
+	tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit) {
 
 	/** ****************************************************************** */
 
@@ -4707,7 +4707,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					member.access = "READ_FULL";
 				});
 			}
-			console.log("RENDER: " + self.$el.html());
 			self.$el.html(self.template(tpl_data));
 			// Add Files
 			if (self.model.has("id")) {
@@ -5989,7 +5988,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		initialize : function() {
 			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
-			_.bindAll(this, "addMembersView");
 			this.template = _.template(tpl_register);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
@@ -5999,60 +5997,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		render : function(eventName) {
 			var self = this;
-			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
-			// Add Members
-			self.addMembersView(self.$("#members"));
-			return self;
-		},
 
-		addMembersView : function($el) {
-			var self = this;
-			var members = new Models.RegisterMembers({}, {
-				register : self.model.get("id")
-			});
-			var registerMembersView = new Views.RegisterMembersView({
-				register : self.model,
-				collection : members
-			});
-
-			$el.html(registerMembersView.el);
-			members.fetch({
-				cache : false
-			});
-		},
-
-		close : function() {
-			this.closeInnerViews();
-			this.model.unbind("change");
-			this.model.unbind("destroy");
-			$(this.el).unbind();
-			$(this.el).remove();
-		}
-	});
-
-	/***************************************************************************
-	 * RegisterMembersView *****************************************************
-	 **************************************************************************/
-	Views.RegisterMembersView = Views.BaseView.extend({
-		tagName : "div",
-
-		initialize : function() {
-			var self = this;
-			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
-			_.bindAll(self, "viewMember");
-			self.template = _.template(tpl_register_members);
-			self.collection.bind('reset', this.render, this);
-		},
-
-		events : {},
-
-		render : function(eventName) {
-			var self = this;
-			self.closeInnerViews();
-			self.$el.html(self.template({
-				members : self.collection.toJSON()
-			}));
 			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 				self.$("table").dataTable({
 					"sDom" : "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
@@ -6077,19 +6023,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			return self;
 		},
 
-		viewMember : function(event, positionCommitteeMember) {
-			var self = this;
-			var selectedModel = positionCommitteeMember || self.collection.get($(event.currentTarget).data('committeeMemberId'));
-			if (selectedModel) {
-				self.collection.trigger("positionCommitteeMember:selected", selectedModel);
-			}
-		},
-
-		close : function(eventName) {
-			this.closeInnerViews();
-			this.collection.unbind('reset', this.render, this);
-			this.$el.unbind();
-			this.$el.remove();
+		close : function() {
+			this.model.unbind("change");
+			this.model.unbind("destroy");
+			$(this.el).unbind();
+			$(this.el).remove();
 		}
 	});
 
@@ -6104,11 +6042,29 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		validator : undefined,
 
 		initialize : function() {
+			var self = this;
+
 			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
-			_.bindAll(this, "change", "submit", "remove", "cancel", "addMembersView");
-			this.template = _.template(tpl_register_edit);
-			this.model.bind('change', this.render, this);
-			this.model.bind("destroy", this.close, this);
+			_.bindAll(this, "change", "renderMembers", "toggleAddMember", "submit", "remove", "cancel", "allowedToEdit", "addMember", "removeMember");
+
+			self.template = _.template(tpl_register_edit);
+			self.templateRow = _.template(tpl_register_members_edit);
+			self.model.bind('change', self.render, self);
+			self.model.bind("destroy", self.close, self);
+
+			// Initialize Professor, no request is performed until
+			// render
+			self.professors = new Models.Professors();
+			self.professors.url = self.model.url() + "/professor";
+			self.professors.on("member:add", function(professor) {
+				var registerMember = {
+					register : {
+						id : self.model.get("id")
+					},
+					professor : professor.toJSON()
+				};
+				self.addMember(registerMember);
+			});
 		},
 
 		events : {
@@ -6122,18 +6078,41 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				}
 				$("form", this.el).submit();
 			},
-			"submit form" : "submit"
+			"submit form" : "submit",
+			"click a#toggleAddMember" : "toggleAddMember",
+			"click a#removeMember" : "removeMember"
+		},
+
+		allowedToEdit : function() {
+			return true;
 		},
 
 		render : function(eventName) {
 			var self = this;
 			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
-			// Add Members
-			if (self.model.has("id")) {
-				self.addMembersView(self.$("#registerMembers"));
+
+			// Existing Members
+			self.renderMembers();
+
+			if (self.allowedToEdit()) {
+				// Inner View
+				if (self.professorListView) {
+					self.professorListView.close();
+				}
+				self.professorListView = new Views.RegisterMembersEditProfessorListView({
+					collection : self.professors
+				});
+				self.$("div#register-professor-list").hide();
+				self.$("div#register-professor-list").html(self.professorListView.el);
+				self.$("select").removeAttr("disabled");
+				self.$("a.btn").show();
+
+				self.professors.fetch();
 			} else {
-				self.$("#registerMembers").html($.i18n.prop("PressSave"));
+				self.$("div#committee-professor-list").hide();
+				self.$("select").attr("disabled", true);
+				self.$("a.btn").hide();
 			}
 
 			// Widgets
@@ -6168,23 +6147,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			if (self.model.get("permanent")) {
 				self.$("a#save").attr("disabled", true);
 			}
-
 			return self;
 		},
 
-		addMembersView : function($el) {
+		renderMembers : function() {
 			var self = this;
-			var members = new Models.RegisterMembers({}, {
-				register : self.model.get("id")
-			});
-			var registerMembersView = new Views.RegisterMembersEditView({
-				register : self.model,
-				collection : members
-			});
-
-			$el.html(registerMembersView.el);
-			members.fetch({
-				cache : false
+			self.$("div#registerMembers table tbody").empty();
+			_.each(self.model.get("members"), function(registerMember, index) {
+				self.$("div#registerMembers table tbody").append(self.templateRow(registerMember));
 			});
 		},
 
@@ -6196,6 +6166,50 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.$("a#save").removeAttr("disabled");
 		},
 
+		toggleAddMember : function(event) {
+			var self = this;
+			self.$("div#register-professor-list").toggle();
+			self.$("a#toggleAddMember").toggleClass('active');
+		},
+
+		addMember : function(registerMember) {
+			var self = this;
+			if (_.any(self.model.get("members"), function(member) {
+				return _.isEqual(member.professor.id, registerMember.professor.id);
+			})) {
+				var popup = new Views.PopupView({
+					type : "error",
+					message : $.i18n.prop("error.member.already.exists")
+				});
+				popup.show();
+			} else {
+				self.model.get("members").push(registerMember);
+				self.renderCommitteeMembers();
+			}
+			self.change(jQuery.Event("change", {
+				data : {
+					triggeredBy : "user"
+				}
+			}));
+		},
+
+		removeMember : function(event) {
+			var self = this;
+			var registerMemberId = $(event.currentTarget).data("registerMemberId");
+			var registerMembers = self.model.get("members");
+			var index = _.indexOf(registerMembers, _.find(registerMembers, function(member) {
+				return _.isEqual(member.id, registerMemberId);
+			}));
+			registerMembers.splice(index, 1);
+			self.renderMembers();
+
+			self.change(jQuery.Event("change", {
+				data : {
+					triggeredBy : "user"
+				}
+			}));
+		},
+
 		submit : function(event) {
 			var self = this;
 			var values = {};
@@ -6204,6 +6218,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			values.institution = {
 				"id" : self.$('form input[name=institution]').val()
 			};
+			values.members = self.model.get("members");
 			// Save to model
 			self.model.save(values, {
 				wait : true,
@@ -6228,14 +6243,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			});
 			event.preventDefault();
 			return false;
-		},
-
-		cancel : function(event) {
-			var self = this;
-			if (self.validator) {
-				self.validator.resetForm();
-			}
-			self.render();
 		},
 
 		remove : function() {
@@ -6271,251 +6278,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			return false;
 		},
 
+		cancel : function(event) {
+			var self = this;
+			if (self.validator) {
+				self.validator.resetForm();
+			}
+			self.render();
+		},
+
 		close : function() {
 			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
-		}
-	});
-
-	/***************************************************************************
-	 * RegisterMembersEditView *************************************************
-	 **************************************************************************/
-	Views.RegisterMembersEditView = Views.BaseView.extend({
-		tagName : "div",
-
-		uploader : undefined,
-
-		initialize : function() {
-			var self = this;
-			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
-			_.bindAll(this, "allowedToEdit", "viewMember", "addMember", "removeMember", "toggleAddMember");
-			self.template = _.template(tpl_register_members_edit);
-			self.collection.bind('reset', this.render, this);
-			self.collection.bind("change", this.render, this);
-			self.collection.bind('remove', this.render, this);
-			self.collection.bind('add', this.render, this);
-
-			// Initialize Professor, no request is performed until
-			// render
-			self.professors = new Models.Professors();
-			self.professors.url = self.options.register.url() + "/professor";
-			self.professors.on("member:add", function(role, type) {
-				self.addMember(role, type);
-			});
-		},
-
-		events : {
-			"click a#removeMember" : "removeMember",
-			"click a#toggleAddMember" : "toggleAddMember",
-			"click a#viewMember" : "viewMember"
-		},
-
-		allowedToEdit : function() {
-			return true;
-		},
-
-		render : function(eventName) {
-			var self = this;
-			self.closeInnerViews();
-			self.$el.html(self.template({
-				members : self.collection.toJSON()
-			}));
-
-			if (self.allowedToEdit()) {
-				// Inner View
-				if (self.professorListView) {
-					self.professorListView.close();
-				}
-				self.professorListView = new Views.RegisterMembersEditProfessorListView({
-					collection : self.professors
-				});
-				self.$("div#register-professor-list").hide();
-				self.$("div#register-professor-list").html(self.professorListView.el);
-				self.$("select").removeAttr("disabled");
-				self.$("a.btn").show();
-
-				self.professors.fetch();
-			} else {
-				self.$("div#committee-professor-list").hide();
-				self.$("select").attr("disabled", true);
-				self.$("a.btn").hide();
-			}
-			return self;
-		},
-
-		viewMember : function(event, member) {
-			var self = this;
-			var selectedModel = member || self.collection.get($(event.currentTarget).data('memberId'));
-			if (selectedModel) {
-				self.collection.trigger("member:selected", selectedModel);
-			}
-		},
-
-		toggleAddMember : function(event) {
-			var self = this;
-			self.$("div#register-professor-list").toggle();
-			self.$("a#toggleAddMember").toggleClass('active');
-		},
-
-		addMember : function(professor) {
-			var self = this;
-			var registerMember = new Models.RegisterMember({
-				"register" : {
-					id : self.options.register.get("id")
-				},
-				"professor" : professor.toJSON()
-			});
-			// Save
-			registerMember.save({}, {
-				wait : true,
-				success : function(model, resp) {
-					var popup = new Views.PopupView({
-						type : "success",
-						message : $.i18n.prop("Success")
-					});
-					popup.show();
-					self.collection.add(registerMember);
-				},
-				error : function(model, resp, options) {
-					var popup = new Views.PopupView({
-						type : "error",
-						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-					});
-					popup.show();
-				}
-			});
-		},
-
-		removeMember : function(event) {
-			var self = this;
-			var selectedModel = self.collection.get($(event.currentTarget).data('memberId'));
-			var confirm = new Views.ConfirmView({
-				title : $.i18n.prop('Confirm'),
-				message : $.i18n.prop('AreYouSure'),
-				yes : function() {
-					selectedModel.destroy({
-						wait : true,
-						success : function(model, resp) {
-							var popup = new Views.PopupView({
-								type : "success",
-								message : $.i18n.prop("Success")
-							});
-							popup.show();
-						},
-						error : function(model, resp, options) {
-							var popup = new Views.PopupView({
-								type : "error",
-								message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-							});
-							popup.show();
-						}
-					});
-				}
-			});
-			confirm.show();
-		},
-
-		close : function(eventName) {
-			this.closeInnerViews();
-			this.professors.off("role:selected");
-			this.professorListView.close();
-			this.collection.unbind('reset', this.render, this);
-			this.collection.unbind('remove', this.render, this);
-			this.collection.unbind('add', this.render, this);
-			this.$el.unbind();
-			this.$el.remove();
-
-		}
-	});
-
-	/***************************************************************************
-	 * RegisterMemberEditView (Not Used) ***************************************
-	 **************************************************************************/
-	Views.RegisterMemberEditView = Views.BaseView.extend({
-		tagName : "div",
-
-		initialize : function() {
-			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
-			_.bindAll(this, "addSubject", "removeSubject", "submit");
-			this.template = _.template(tpl_register_member_edit);
-			this.model.bind('change', this.render, this);
-		},
-
-		events : {
-			"click a#saveRegisterMember" : function(event) {
-				if ($(event.currentTarget).attr("disabled")) {
-					event.preventDefault();
-					return;
-				}
-				$("form", this.el).submit();
-			},
-			"submit form" : "submit",
-			"click a#addSubject" : "addSubject",
-			"click a#removeSubject" : "removeSubject"
-		},
-
-		render : function(eventName) {
-			var self = this;
-			// 1. Render
-			self.closeInnerViews();
-			self.$el.html(this.template(self.model.toJSON()));
-			_.each(self.model.get("subjects"), function(subject) {
-				self.addSubject(undefined, subject.name);
-			});
-			// Return
-			return self;
-		},
-
-		addSubject : function(event, subject) {
-			var self = this;
-			subject = subject || self.$("input[name=suggestSubject]").val();
-			self.$("#subjects").append("<div class=\"controls\" id=\"subject\"><div class=\"input-append\"><input type=\"text\" class=\"input-xlarge\" name=\"subject\" value=\"" + subject + "\" disabled /><a id=\"removeSubject\" data-subject=\"" + subject + "\" class=\"btn btn-danger\"><i class=\"icon-minus\"></i></a></div></div>");
-			self.$("input[name=suggestSubject]").val("");
-		},
-
-		removeSubject : function(event) {
-			$(event.currentTarget).parents("div#subject").remove();
-		},
-
-		submit : function(event) {
-			var self = this;
-			// Read Input
-			var values = {
-				subjects : []
-			};
-			self.$("form input[name=subject]").each(function(index) {
-				values.subjects.push({
-					name : $(this).val()
-				});
-			});
-			// Save to model
-			self.model.save(values, {
-				wait : true,
-				success : function(model, resp) {
-					var popup = new Views.PopupView({
-						type : "success",
-						message : $.i18n.prop("Success")
-					});
-					popup.show();
-					self.model.trigger("sync", model);
-				},
-				error : function(model, resp, options) {
-					var popup = new Views.PopupView({
-						type : "error",
-						message : $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-					});
-					popup.show();
-				}
-			});
-			return false;
-		},
-
-		close : function() {
-			this.closeInnerViews();
-			this.model.unbind('change', this.render, this);
-			this.$el.unbind();
-			this.$el.remove();
 		}
 	});
 
