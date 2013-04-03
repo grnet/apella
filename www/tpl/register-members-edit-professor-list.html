@@ -32,7 +32,9 @@
 				<% } %>
 			</td>
 			<td>
+				<% if (!professor.isMember) { %> 
 				<a id="addMember" data-model-cid="<%= professor.cid %>" class="btn btn-mini btn-success"><i class="icon-plus icon-white"></i> <%= $.i18n.prop('btn_add') %></a>
+				<% } %>
 			</td>
 		</tr>
 		<% }); %>

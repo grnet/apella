@@ -640,6 +640,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					if (!_.isUndefined(userId)) {
 						assistants.trigger("user:selected", assistants.get(userId));
 					}
+					assistantsView.render();
 				}
 			});
 

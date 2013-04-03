@@ -6101,6 +6101,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.professorListView.close();
 				}
 				self.professorListView = new Views.RegisterMembersEditProfessorListView({
+					model : self.model, // This is needed to allow disable
+					// button for existing members
 					collection : self.professors
 				});
 				self.$("div#register-professor-list").hide();
@@ -6108,7 +6110,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("select").removeAttr("disabled");
 				self.$("a.btn").show();
 
-				self.professors.fetch();
+				self.professors.fetch({
+					success : function(collection, response, options) {
+						collection.trigger("reset");
+					}
+				});
 			} else {
 				self.$("div#committee-professor-list").hide();
 				self.$("select").attr("disabled", true);
@@ -6152,9 +6158,34 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		renderMembers : function() {
 			var self = this;
+			if ($.fn.DataTable.fnIsDataTable(self.$("div#registerMembers table")[0])) {
+				self.$("div#registerMembers table").dataTable().fnDestroy();
+			}
+
 			self.$("div#registerMembers table tbody").empty();
-			_.each(self.model.get("members"), function(registerMember, index) {
+			_.each(_.sortBy(self.model.get("members"), function(registerMember) {
+				return "" + registerMember.external + registerMember.professor.id;
+			}), function(registerMember, index) {
 				self.$("div#registerMembers table tbody").append(self.templateRow(registerMember));
+			});
+
+			self.$("#registerMembers table").dataTable({
+				"sDom" : "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+				"sPaginationType" : "bootstrap",
+				"oLanguage" : {
+					"sSearch" : $.i18n.prop("dataTable_sSearch"),
+					"sLengthMenu" : $.i18n.prop("dataTable_sLengthMenu"),
+					"sZeroRecords" : $.i18n.prop("dataTable_sZeroRecords"),
+					"sInfo" : $.i18n.prop("dataTable_sInfo"),
+					"sInfoEmpty" : $.i18n.prop("dataTable_sInfoEmpty"),
+					"sInfoFiltered" : $.i18n.prop("dataTable_sInfoFiltered"),
+					"oPaginate" : {
+						sFirst : $.i18n.prop("dataTable_sFirst"),
+						sPrevious : $.i18n.prop("dataTable_sPrevious"),
+						sNext : $.i18n.prop("dataTable_sNext"),
+						sLast : $.i18n.prop("dataTable_sLast")
+					}
+				}
 			});
 		},
 
@@ -6184,7 +6215,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				popup.show();
 			} else {
 				self.model.get("members").push(registerMember);
-				self.renderCommitteeMembers();
+				self.model.trigger("change:members");
+				self.renderMembers();
+				var popup = new Views.PopupView({
+					type : "success",
+					message : $.i18n.prop("AddedMustPressSave")
+				});
+				popup.show();
 			}
 			self.change(jQuery.Event("change", {
 				data : {
@@ -6195,12 +6232,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		removeMember : function(event) {
 			var self = this;
-			var registerMemberId = $(event.currentTarget).data("registerMemberId");
+			var professorId = $(event.currentTarget).data("professorId");
 			var registerMembers = self.model.get("members");
 			var index = _.indexOf(registerMembers, _.find(registerMembers, function(member) {
-				return _.isEqual(member.id, registerMemberId);
+				return _.isEqual(member.professor.id, professorId);
 			}));
 			registerMembers.splice(index, 1);
+			self.model.trigger("change:members");
 			self.renderMembers();
 
 			self.change(jQuery.Event("change", {
@@ -6306,6 +6344,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			this.template = _.template(tpl_register_members_edit_professor_list);
 			this.collection.bind("change", this.render, this);
 			this.collection.bind("reset", this.render, this);
+			this.model.bind("change:members", this.render, this);
 		},
 
 		events : {
@@ -6320,6 +6359,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.collection.each(function(model) {
 						var item = model.toJSON();
 						item.cid = model.cid;
+						item.isMember = _.some(self.model.get("members"), function(member) {
+							return _.isEqual(member.professor.id, item.id);
+						});
 						result.push(item);
 					});
 					return result;

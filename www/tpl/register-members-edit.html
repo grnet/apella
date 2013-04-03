@@ -1,7 +1,7 @@
 <tr>
 	<td><%= $.i18n.prop(external ? "Yes" : "No") %></td>
 	<td>
-		<a id="viewMember" data-committee-member-id="<%= id %>" href="#user/<%= professor.user.id %>"><%= professor.user.id %> </a>
+		<a id="viewMember" href="#user/<%= professor.user.id %>"><%= professor.user.id %> </a>
 	</td>
 	<td><%= professor.user.basicInfo.firstname %></td>
 	<td><%= professor.user.basicInfo.lastname%></td>
@@ -30,7 +30,7 @@
 	</td>
 	<td width="70px">
 		<div class="btn-group">
-			<a id="removeMember" data-register-member-id="<%= id %>" class="btn btn-mini btn-danger"><i class="icon-minus icon-white"></i> <%= $.i18n.prop('btn_remove_member') %></a>
+			<a id="removeMember" data-professor-id="<%= professor.id %>" class="btn btn-mini btn-danger"><i class="icon-minus icon-white"></i> <%= $.i18n.prop('btn_remove_member') %></a>
 		</div>
 	</td>
 </tr>
