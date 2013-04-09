@@ -1,5 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.util.CompareUtil;
+
 import java.io.Serializable;
 
 import javax.persistence.Entity;
@@ -73,4 +75,7 @@ public class CandidacyEvaluator implements Serializable {
 		return this.fullname == null || this.email == null;
 	}
 
+	public static boolean compareCriticalFields(CandidacyEvaluator a, CandidacyEvaluator b) {
+		return CompareUtil.equalsIgnoreNull(a.getFullname(), b.getFullname()) && CompareUtil.equalsIgnoreNull(a.getEmail(), b.getEmail());
+	}
 }

@@ -18,11 +18,13 @@ import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
+import gr.grnet.dep.service.util.CompareUtil;
 import gr.grnet.dep.service.util.DateUtil;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -184,6 +186,20 @@ public class CandidacyRESTService extends RESTService {
 			}
 			validateCandidacy(existingCandidacy, candidate);
 
+			//Check if evaluators change:
+			boolean updatedEvaluators = CompareUtil.compareCollections(existingCandidacy.getProposedEvaluators(), candidacy.getProposedEvaluators(), new Comparator<CandidacyEvaluator>() {
+
+				@Override
+				public int compare(CandidacyEvaluator o1, CandidacyEvaluator o2) {
+					if (CandidacyEvaluator.compareCriticalFields(o1, o2)) {
+						return 0;
+					} else {
+						return ("" + o1.getFullname() + o1.getEmail()).compareTo("" + o2.getFullname() + o2.getEmail());
+					}
+				}
+
+			});
+
 			// Update
 			existingCandidacy.setOpenToOtherCandidates(candidacy.isOpenToOtherCandidates());
 			existingCandidacy.getProposedEvaluators().clear();
@@ -215,6 +231,8 @@ public class CandidacyRESTService extends RESTService {
 							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
 						}
 					}));
+			}
+			if (updatedEvaluators) {
 				// 2. candidacy.create.candidacyEvaluator@candidacyEvaluator
 				for (final CandidacyEvaluator evaluator : candidacy.getProposedEvaluators()) {
 					sendEmail(evaluator.getEmail(),
@@ -244,6 +262,7 @@ public class CandidacyRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
+								put("username", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getUsername());
 								put("evaluator_name", evaluator.getFullname());
 								put("position", existingCandidacy.getCandidacies().getPosition().getName());
 								put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
@@ -325,34 +344,38 @@ public class CandidacyRESTService extends RESTService {
 						}
 					}));
 				// 2. candidacy.remove@committee
-				for (final PositionCommitteeMember member : existingCandidacy.getCandidacies().getPosition().getPhase().getCommittee().getMembers()) {
-					sendEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"candidacy.remove@committee",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+				if (existingCandidacy.getCandidacies().getPosition().getPhase().getCommittee() != null) {
+					for (final PositionCommitteeMember member : existingCandidacy.getCandidacies().getPosition().getPhase().getCommittee().getMembers()) {
+						sendEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+							"default.subject",
+							"candidacy.remove@committee",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
-								put("position", existingCandidacy.getCandidacies().getPosition().getName());
-								put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
-								put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
-							}
-						}));
+								{
+									put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
+									put("position", existingCandidacy.getCandidacies().getPosition().getName());
+									put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
+									put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
+								}
+							}));
+					}
 				}
 				// 3. candidacy.remove@evaluators
-				for (final PositionEvaluator evaluator : existingCandidacy.getCandidacies().getPosition().getPhase().getEvaluation().getEvaluators()) {
-					sendEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"candidacy.remove@evaluators",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+				if (existingCandidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null) {
+					for (final PositionEvaluator evaluator : existingCandidacy.getCandidacies().getPosition().getPhase().getEvaluation().getEvaluators()) {
+						sendEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+							"default.subject",
+							"candidacy.remove@evaluators",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("username", evaluator.getRegisterMember().getProfessor().getUser().getUsername());
-								put("position", existingCandidacy.getCandidacies().getPosition().getName());
-								put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
-								put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
-							}
-						}));
+								{
+									put("username", evaluator.getRegisterMember().getProfessor().getUser().getUsername());
+									put("position", existingCandidacy.getCandidacies().getPosition().getName());
+									put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
+									put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
+								}
+							}));
+					}
 				}
 				// 4. candidacy.remove@candidates 
 				for (final Candidacy candidacy : existingCandidacy.getCandidacies().getCandidacies()) {

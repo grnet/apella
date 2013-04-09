@@ -941,7 +941,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			// Refresh professorCommittees from server
 			professorCommittees.fetch({
 				cache : false,
-				error : function(model, resp, options) {
+				reset : true,
+				error : function(collection, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
 						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -968,6 +969,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			// Refresh professorCommittees from server
 			professorEvaluations.fetch({
 				cache : false,
+				reset : true,
 				error : function(model, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
@@ -1021,6 +1023,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			// Refresh institutionRFs from server
 			institutionRFs.fetch({
 				cache : false,
+				reset : true,
 				success : function() {
 					if (!_.isUndefined(institutionRFId)) {
 						var selectedInstitutionRF = institutionRFs.get(institutionRFId);
@@ -1165,14 +1168,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			// Refresh candidateCandidacies from server
 			candidateCandidacies.fetch({
 				cache : false,
-				error : function(model, resp, options) {
+				reset : true,
+				error : function(collection, resp, options) {
 					var popup = new Views.PopupView({
 						type : "error",
 						message : $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
 				},
-				success : function() {
+				success : function(collection, resp, options) {
 					var selectedCandidacy;
 					if (!_.isUndefined(candidacyId)) {
 						selectedCandidacy = candidateCandidacies.get(candidacyId);

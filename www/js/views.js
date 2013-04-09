@@ -1073,9 +1073,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			return self;
 		},
 
-		change : function(event) {
+		change : function(event, data) {
 			var self = this;
-			if ((event.data && _.isEqual(event.data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
+			if ((data && _.isEqual(data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
 				return;
 			}
 			self.$("a#save").removeAttr("disabled");
@@ -1540,9 +1540,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}
 		},
 
-		change : function(event) {
+		change : function(event, data) {
 			var self = this;
-			if ((event.data && _.isEqual(event.data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
+			if ((data && _.isEqual(data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
 				return;
 			}
 			self.$("a#save").removeAttr("disabled");
@@ -2863,18 +2863,16 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				}
 			});
 			// Disable Save Button until user changes a field,
-			// don't for non-permanent
-			if (self.model.get("permanent")) {
-				self.$("a#save").attr("disabled", true);
-			}
+			// roles do not have permanent field
+			self.$("a#save").attr("disabled", true);
 
 			self.$('a[rel=popover]').popover();
 			return self;
 		},
 
-		change : function(event) {
+		change : function(event, data) {
 			var self = this;
-			if ((event.data && _.isEqual(event.data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
+			if ((data && _.isEqual(data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
 				return;
 			}
 			self.$("a#save").removeAttr("disabled");
@@ -4573,9 +4571,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			return self;
 		},
 
-		change : function(event) {
+		change : function(event, data) {
 			var self = this;
-			if ((event.data && _.isEqual(event.data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
+			if ((data && _.isEqual(data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
 				return;
 			}
 			self.$("a#save").removeAttr("disabled");
@@ -4910,12 +4908,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}));
 		},
 
-		change : function(event) {
+		change : function(event, data) {
 			var self = this;
-			if ((event.data && _.isEqual(event.data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
+			if ((data && _.isEqual(data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
 				return;
 			}
-			self.$("a#saveCommittee").removeAttr("disabled");
+			self.$("a#save").removeAttr("disabled");
 		},
 
 		submit : function(event) {
@@ -5242,12 +5240,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			confirm.show();
 		},
 
-		change : function(event) {
+		change : function(event, data) {
 			var self = this;
-			if ((event.data && _.isEqual(event.data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
+			if ((data && _.isEqual(data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
 				return;
 			}
-			self.$("a#saveEvaluation").removeAttr("disabled");
+			self.$("a#save").removeAttr("disabled");
 		},
 
 		submit : function(event) {
@@ -5678,12 +5676,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			return self;
 		},
 
-		change : function(event) {
+		change : function(event, data) {
 			var self = this;
-			if ((event.data && (event.data && _.isEqual(event.data.triggeredBy, "application"))) || $(event.currentTarget).attr('type') === 'hidden') {
+			if ((data && _.isEqual(data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
 				return;
 			}
-			self.$("a#saveNomination").removeAttr("disabled");
+			self.$("a#save").removeAttr("disabled");
 		},
 
 		submit : function(event) {
@@ -6189,9 +6187,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			});
 		},
 
-		change : function(event) {
+		change : function(event, data) {
 			var self = this;
-			if ((event.data && (event.data && _.isEqual(event.data.triggeredBy, "application"))) || $(event.currentTarget).attr('type') === 'hidden') {
+			if ((data && _.isEqual(data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
 				return;
 			}
 			self.$("a#save").removeAttr("disabled");
@@ -6827,9 +6825,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			return self;
 		},
 
-		change : function(event) {
+		change : function(event, data) {
 			var self = this;
-			if ((event.data && _.isEqual(event.data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
+			if ((data && _.isEqual(data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
 				return;
 			}
 			self.$("a#save").removeAttr("disabled");
@@ -7072,9 +7070,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.model.trigger("criteria:search", values);
 		},
 
-		change : function(event) {
+		change : function(event, data) {
 			var self = this;
-			if ((event.data && _.isEqual(event.data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
+			if ((data && _.isEqual(data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
 				return;
 			}
 			self.$("a#save").removeAttr("disabled");
@@ -7363,6 +7361,29 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					$(this).attr("disabled", true);
 				}
 			});
+			// Validator
+			self.validator = self.$("form").validate({
+				errorElement : "span",
+				errorClass : "help-inline",
+				highlight : function(element, errorClass, validClass) {
+					$(element).parent(".controls").parent(".control-group").addClass("error");
+				},
+				unhighlight : function(element, errorClass, validClass) {
+					$(element).parent(".controls").parent(".control-group").removeClass("error");
+				},
+				rules : {
+					"evaluator_email_0" : {
+						"email" : true
+					},
+					"evaluator_email_1" : {
+						"email" : true
+					}
+				},
+				messages : {
+					"evaluator_email_0" : $.i18n.prop('validation_email'),
+					"evaluator_email_1" : $.i18n.prop('validation_email')
+				}
+			});
 			// Set isEnabled to buttons
 			self.$("a.btn").each(function(index) {
 				var buttonType = $(this).attr("id");
@@ -7381,14 +7402,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			return self;
 		},
 
-		change : function(event) {
+		change : function(event, data) {
 			var self = this;
-			if ((event.data && _.isEqual(event.data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
+			if ((data && _.isEqual(data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
 				return;
 			}
-			if (self.isEnabled("save")) {
-				self.$("a#save").removeAttr("disabled");
-			}
+			self.$("a#save").removeAttr("disabled");
 		},
 
 		submit : function(event) {
