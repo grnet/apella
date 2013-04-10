@@ -4844,6 +4844,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.registerMembersView.close();
 				}
 				self.registerMembersView = new Views.PositionCommitteeEditRegisterMembersView({
+					model : self.model,
 					collection : self.registerMembers
 				});
 				self.$("div#committee-register-members").hide();
@@ -4901,14 +4902,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				popup.show();
 			} else {
 				self.model.get("members").push(committeeMember);
+				self.model.trigger("change:members");
+				self.change(jQuery.Event("change"), {
+					triggeredBy : "user"
+				});
 				self.renderCommitteeMembers();
 			}
-
-			self.change(jQuery.Event("change", {
-				data : {
-					triggeredBy : "user"
-				}
-			}));
 		},
 
 		removeMember : function(event) {
@@ -4920,12 +4919,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}));
 			committee.splice(position, 1);
 			self.renderCommitteeMembers();
-
-			self.change(jQuery.Event("change", {
-				data : {
-					triggeredBy : "user"
-				}
-			}));
+			self.model.trigger("change:members");
+			self.change(jQuery.Event("change"), {
+				triggeredBy : "user"
+			});
 		},
 
 		change : function(event, data) {
@@ -4933,7 +4930,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			if ((data && _.isEqual(data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
 				return;
 			}
-			self.$("a#save").removeAttr("disabled");
+			self.$("a#saveCommittee").removeAttr("disabled");
 		},
 
 		submit : function(event) {
@@ -4994,6 +4991,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			this.template = _.template(tpl_position_committee_edit_register_member_list);
 			this.collection.bind("change", this.render, this);
 			this.collection.bind("reset", this.render, this);
+			this.model.bind("change:members", this.render, this);
 		},
 
 		events : {
@@ -5008,6 +5006,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.collection.each(function(model) {
 						var item = model.toJSON();
 						item.cid = model.cid;
+						item.isMember = _.some(self.model.get("members"), function(member) {
+							return _.isEqual(member.registerMember.id, item.id);
+						});
 						result.push(item);
 					});
 					return result;
@@ -5121,7 +5122,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		initialize : function() {
 			var self = this;
 			_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
-			_.bindAll(this, "change", "renderEvaluator", "isEditable", "toggleRegisterMembers", "addMember", "removeMember", "submit", "cancel");
+			_.bindAll(this, "change", "renderEvaluators", "isEditable", "toggleRegisterMembers", "addMember", "removeMember", "submit", "cancel");
 			self.template = _.template(tpl_position_evaluation_edit);
 			self.templateRow = _.template(tpl_position_evaluation_evaluator_edit);
 
@@ -5164,10 +5165,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			var self = this;
 			self.closeInnerViews();
 			self.$el.html(self.template(self.model.toJSON()));
+
 			// Add Existing Evaluators:
-			_.each(self.model.get("evaluators"), function(evaluator) {
-				self.addMember(evaluator);
-			});
+			self.renderEvaluators();
+
 			// Add RegisterMembers (for adding/removing)
 			if (self.isEditable("positionEvaluation")) {
 				// Inner View
@@ -5175,6 +5176,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.registerMembersView.close();
 				}
 				self.registerMembersView = new Views.PositionEvaluationEditRegisterMembersView({
+					model : self.model,
 					collection : self.registerMembers
 				});
 				self.$("div#evaluation-register-members").hide();
@@ -5201,26 +5203,31 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			return self;
 		},
 
-		renderEvaluator : function($el, evaluator) {
+		renderEvaluators : function() {
 			var self = this;
 			var files;
-			$el.html(self.templateRow(evaluator.toJSON()));
-			// Add files
-			if (evaluator.has("id")) {
-				files = new Models.Files();
-				files.url = evaluator.url() + "/file";
-				files.fetch({
-					cache : false,
-					success : function(collection, response) {
-						self.addFileListEdit(collection, "AKSIOLOGISI", $el.find("input[name=aksiologisiFileList]"), {
-							withMetadata : true,
-							editable : self.isEditable("aksiologisiFileList")
-						});
-					}
-				});
-			} else {
-				$el.find("#aksiologisiFileList").html($.i18n.prop("PressSave"));
-			}
+			self.$("div#positionEvaluator_0").empty();
+			self.$("div#positionEvaluator_1").empty();
+			_.each(self.model.get("evaluators"), function(evaluator, index) {
+				var $el = self.$("div#positionEvaluator_" + evaluator.position);
+				$el.html(self.templateRow(evaluator));
+				// Add files
+				if (evaluator.id) {
+					files = new Models.Files();
+					files.url = self.model.url() + "/evaluator/" + evaluator.id + "/file";
+					files.fetch({
+						cache : false,
+						success : function(collection, response) {
+							self.addFileListEdit(collection, "AKSIOLOGISI", $el.find("input[name=aksiologisiFileList]"), {
+								withMetadata : true,
+								editable : self.isEditable("aksiologisiFileList")
+							});
+						}
+					});
+				} else {
+					$el.find("#aksiologisiFileList").html($.i18n.prop("PressSave"));
+				}
+			});
 		},
 
 		toggleRegisterMembers : function(event) {
@@ -5231,17 +5238,23 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		addMember : function(evaluator) {
 			var self = this;
-			var positionEvaluator = new Models.PositionEvaluator(_.extend(evaluator, {
-				evaluation : self.model.toJSON()
-			}));
-			// Select element to replace, raise some alerts for files ...
-			self.renderEvaluator(self.$("#positionEvaluator_" + positionEvaluator.get("position")), positionEvaluator);
-
-			self.change(jQuery.Event("change", {
-				data : {
+			if (_.any(self.model.get("evaluators"), function(member) {
+				return _.isEqual(member.registerMember.id, evaluator.registerMember.id);
+			})) {
+				var popup = new Views.PopupView({
+					type : "error",
+					message : $.i18n.prop("error.member.already.exists")
+				});
+				popup.show();
+			} else {
+				self.model.get("evaluators")[evaluator.position] = evaluator;
+				self.model.trigger("change:members");
+				self.change(jQuery.Event("change"), {
 					triggeredBy : "user"
-				}
-			}));
+				});
+				console.log("Added", self.model.get("evaluators"));
+				self.renderEvaluators();
+			}
 		},
 
 		removeMember : function(event) {
@@ -5250,14 +5263,21 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				title : $.i18n.prop('Confirm'),
 				message : $.i18n.prop('AreYouSure'),
 				yes : function() {
-					$(event.currentTarget).parents("table").hide('slow', function() {
-						$(this).remove();
-					});
-					self.change(jQuery.Event("change", {
-						data : {
-							triggeredBy : "user"
-						}
+					var registerMemberId = $(event.currentTarget).data("registerMemberId");
+					var evaluators = self.model.get("evaluators");
+					console.log("Removin", evaluators);
+					var position = _.indexOf(evaluators, _.find(evaluators, function(member) {
+						return _.isEqual(member.registerMember.id, registerMemberId);
 					}));
+					evaluators.splice(position, 1);
+
+					// Render
+					console.log("Removed", self.model.get("evaluators"));
+					self.renderEvaluators();
+					self.model.trigger("change:members");
+					self.change(jQuery.Event("change"), {
+						triggeredBy : "user"
+					});
 				}
 			});
 			confirm.show();
@@ -5268,27 +5288,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			if ((data && _.isEqual(data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
 				return;
 			}
-			self.$("a#save").removeAttr("disabled");
+			self.$("a#saveEvaluation").removeAttr("disabled");
 		},
 
 		submit : function(event) {
 			var self = this;
-			var values = {
-				evaluators : []
-			};
-			self.$("[id^=positionEvaluator]").each(function() {
-				var evaluator = {
-					registerMember : {
-						id : $(this).find("input[name=registerMemberId]").val()
-					},
-					position : $(this).find("input[name=position]").val()
-				};
-				if (evaluator.registerMember.id) {
-					values.evaluators.push(evaluator);
-				}
-			});
-
-			self.model.save(values, {
+			self.model.save({}, {
 				wait : true,
 				success : function(model, resp) {
 					var popup = new Views.PopupView({
@@ -5341,6 +5346,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			this.template = _.template(tpl_position_evaluation_edit_register_member_list);
 			this.collection.bind("change", this.render, this);
 			this.collection.bind("reset", this.render, this);
+			this.model.bind("change:members", this.render, this);
 		},
 
 		events : {
@@ -5355,6 +5361,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.collection.each(function(model) {
 						var item = model.toJSON();
 						item.cid = model.cid;
+						item.isMember = _.some(self.model.get("evaluators"), function(member) {
+							return _.isEqual(member.registerMember.id, item.id);
+						});
 						result.push(item);
 					});
 					return result;
@@ -6258,11 +6267,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				});
 				popup.show();
 			}
-			self.change(jQuery.Event("change", {
-				data : {
-					triggeredBy : "user"
-				}
-			}));
+			self.change(jQuery.Event("change"), {
+				triggeredBy : "user"
+			});
 		},
 
 		removeMember : function(event) {
@@ -6276,11 +6283,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.model.trigger("change:members");
 			self.renderMembers();
 
-			self.change(jQuery.Event("change", {
-				data : {
-					triggeredBy : "user"
-				}
-			}));
+			self.change(jQuery.Event("change"), {
+				triggeredBy : "user"
+			});
 		},
 
 		submit : function(event) {

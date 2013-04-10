@@ -16,6 +16,7 @@
 		<% _.each(members, function(member) { %>
 		<tr>
 			<td>
+				<% if (!member.isMember) { %>
 				<div class="btn-group">
 					<a class="btn btn-small btn-success dropdown-toggle" data-toggle="dropdown"><%= $.i18n.prop('btn_add') %> <span class="caret"></span></a>
  					<ul class="dropdown-menu">
@@ -23,6 +24,7 @@
    						<li><a id="addMember" data-model-cid="<%= member.cid %>" data-type="SUBSTITUTE"><i class="icon-plus"></i> <%= $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") %></a></li>
  					</ul>
 				</div>
+				<% } %>
 			</td>
 			<td>
 				<a id="view" data-model-cid="<%= member.cid %>" href="#user/<%= member.professor.user.id %>"><%= member.professor.user.id %></a>

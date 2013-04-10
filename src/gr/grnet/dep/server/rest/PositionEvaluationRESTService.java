@@ -483,21 +483,6 @@ public class PositionEvaluationRESTService extends RESTService {
 							}
 						}));
 				}
-				// position.upload@candidates
-				for (final Candidacy candidacy : eFile.getEvaluator().getEvaluation().getPosition().getPhase().getCandidacies().getCandidacies()) {
-					sendEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"position.upload@candidates",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
-
-							{
-								put("username", candidacy.getCandidate().getUser().getUsername());
-								put("position", eFile.getEvaluator().getEvaluation().getPosition().getName());
-								put("institution", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getInstitution().getName());
-								put("department", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getDepartment());
-							}
-						}));
-				}
 				// positionEvaluation.upload.aksiologisi@evaluators
 				for (final PositionEvaluator evaluator : eFile.getEvaluator().getEvaluation().getPosition().getPhase().getEvaluation().getEvaluators()) {
 					sendEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
@@ -523,21 +508,6 @@ public class PositionEvaluationRESTService extends RESTService {
 
 							{
 								put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
-								put("position", eFile.getEvaluator().getEvaluation().getPosition().getName());
-								put("institution", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getInstitution().getName());
-								put("department", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getDepartment());
-							}
-						}));
-				}
-				// position.upload@candidates
-				for (final Candidacy candidacy : eFile.getEvaluator().getEvaluation().getPosition().getPhase().getCandidacies().getCandidacies()) {
-					sendEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"position.upload@candidates",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
-
-							{
-								put("username", candidacy.getCandidate().getUser().getUsername());
 								put("position", eFile.getEvaluator().getEvaluation().getPosition().getName());
 								put("institution", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getInstitution().getName());
 								put("department", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getDepartment());
