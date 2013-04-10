@@ -474,7 +474,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			$("#featured").html(homeView.render().el);
 			$("#content").html(announcementsView.el);
 			App.roles.fetch({
-				cache : false
+				cache : false,
+				reset : true
 			});
 
 			self.currentView = homeView;
@@ -523,6 +524,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 			App.roles.fetch({
 				cache : false,
+				reset : true,
 				success : function() {
 					if (!_.isUndefined(roleId)) {
 						App.roles.trigger("role:selected", App.roles.get(roleId));
@@ -562,6 +564,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					self.currentView = [ userView ];
 					roles.fetch({
 						cache : false,
+						reset : true,
 						success : function(collection, response) {
 							$("#content div#user").append(userView.render().el);
 							collection.each(function(role) {
@@ -633,6 +636,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 			assistants.fetch({
 				cache : false,
+				reset : true,
 				data : {
 					im : App.loggedOnUser.getRole("INSTITUTION_MANAGER").id
 				},
@@ -640,7 +644,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					if (!_.isUndefined(userId)) {
 						assistants.trigger("user:selected", assistants.get(userId));
 					}
-					assistantsView.render();
 				}
 			});
 
@@ -701,6 +704,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 			assistants.fetch({
 				cache : false,
+				reset : true,
 				data : {
 					mm : App.loggedOnUser.getRole("MINISTRY_MANAGER").id
 				},
@@ -766,6 +770,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			// Refresh positions from server
 			positions.fetch({
 				cache : false,
+				reset : true,
 				success : function() {
 					if (!_.isUndefined(positionId)) {
 						var selectedPosition = positions.get(positionId);
@@ -879,6 +884,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			// Refresh registries from server
 			registries.fetch({
 				cache : false,
+				reset : true,
 				data : {
 					institution : (function() {
 						var institutions = App.loggedOnUser.getAssociatedInstitutions();
@@ -1076,6 +1082,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			criteria.on("criteria:search", function(criteria) {
 				positions.fetch({
 					cache : false,
+					reset : true,
 					data : {
 						"criteria" : JSON.stringify(criteria)
 					}

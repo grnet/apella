@@ -861,6 +861,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				App.institutions = App.institutions || new Models.Institutions();
 				App.institutions.fetch({
 					cache : true,
+					reset : true,
 					success : function(collection, resp) {
 						collection.each(function(institution) {
 							if (_.isObject(role.institution) && _.isEqual(institution.id, role.institution.id)) {
@@ -904,6 +905,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				App.institutions = App.institutions || new Models.Institutions();
 				App.institutions.fetch({
 					cache : true,
+					reset : true,
 					success : function(collection, resp) {
 						collection.each(function(institution) {
 							if (_.isObject(role.institution) && _.isEqual(institution.id, role.institution.id)) {
@@ -1793,6 +1795,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			});
 			self.collection.fetch({
 				cache : false,
+				reset : true,
 				data : searchData
 			});
 		},
@@ -2141,9 +2144,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				case "fekCheckbox":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "fekSubject":
-					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+					return _.isEqual(self.model.get("status"), "UNAPPROVED") && self.model.has("fekSubject");
 				case "subject":
-					return _.isEqual(self.model.get("status"), "UNAPPROVED");
+					return _.isEqual(self.model.get("status"), "UNAPPROVED") && self.model.has("subject");
 				default:
 					break;
 				}
@@ -2243,6 +2246,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						"open" : "true"
 					},
 					cache : false,
+					reset : true,
 					success : function(collection, resp) {
 						var candidacyUpdateConfirmView;
 						if (collection.length > 0) {
@@ -2283,6 +2287,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						"open" : "true"
 					},
 					cache : false,
+					reset : true,
 					success : function(collection, resp) {
 						var candidacyUpdateConfirmView;
 						if (collection.length > 0) {
@@ -2405,6 +2410,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					App.departments = App.departments || new Models.Departments();
 					App.departments.fetch({
 						cache : true,
+						reset : true,
 						success : function(collection, resp) {
 							var selectedInstitution;
 							self.$("select[name='department']").empty();
@@ -2434,6 +2440,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				App.institutions = App.institutions || new Models.Institutions();
 				App.institutions.fetch({
 					cache : true,
+					reset : true,
 					success : function(collection, resp) {
 						collection.each(function(institution) {
 							if (_.isObject(self.model.get("institution")) && _.isEqual(institution.id, self.model.get("institution").id)) {
@@ -2458,6 +2465,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				App.ranks = App.ranks || new Models.Ranks();
 				App.ranks.fetch({
 					cache : true,
+					reset : true,
 					success : function(collection, resp) {
 						collection.each(function(rank) {
 							if (_.isObject(self.model.get("rank")) && _.isEqual(rank.id, self.model.get("rank").id)) {
@@ -2485,6 +2493,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						var subjects = new Models.Subjects();
 						subjects.fetch({
 							cache : false,
+							reset : true,
 							data : {
 								"query" : query
 							},
@@ -2552,7 +2561,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						fekFile : $.i18n.prop('validation_file')
 					}
 				});
-				self.$("input[name=fekCheckbox]").change(function(event) {
+				self.$("input[name=fekCheckbox]").change(function(event, data) {
 					if ($(this).is(":checked")) {
 						self.$("textarea[name=fekSubject]").attr("disabled", true);
 						self.$("textarea[name=fekSubject]").val("");
@@ -2572,6 +2581,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				App.ranks = App.ranks || new Models.Ranks();
 				App.ranks.fetch({
 					cache : true,
+					reset : true,
 					success : function(collection, resp) {
 						collection.each(function(rank) {
 							if (_.isObject(self.model.get("rank")) && _.isEqual(rank.id, self.model.get("rank").id)) {
@@ -2595,6 +2605,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						var subjects = new Models.Subjects();
 						subjects.fetch({
 							cache : false,
+							reset : true,
 							data : {
 								"query" : query
 							},
@@ -2662,6 +2673,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				App.institutions = App.institutions || new Models.Institutions();
 				App.institutions.fetch({
 					cache : true,
+					reset : true,
 					success : function(collection, resp) {
 						collection.each(function(institution) {
 							if (_.isObject(self.model.get("institution")) && _.isEqual(institution.id, self.model.get("institution").id)) {
@@ -2784,6 +2796,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				App.institutions = App.institutions || new Models.Institutions();
 				App.institutions.fetch({
 					cache : true,
+					reset : true,
 					success : function(collection, resp) {
 						collection.each(function(institution) {
 							if (_.isObject(self.model.get("institution")) && _.isEqual(institution.id, self.model.get("institution").id)) {
@@ -2904,12 +2917,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						"id" : self.model.has("fekSubject") ? self.model.get("fekSubject").id : undefined,
 						"name" : self.$('form textarea[name=fekSubject]').val()
 					};
+					values.subject = undefined;
 				}
 				if (self.$('form textarea[name=subject]').val() !== '') {
 					values.subject = {
 						"id" : self.model.has("subject") ? self.model.get("subject").id : undefined,
 						"name" : self.$('form textarea[name=subject]').val()
 					};
+					values.fekSubject = undefined;
 				}
 				break;
 			case "PROFESSOR_FOREIGN":
@@ -3935,6 +3950,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			App.departments = App.departments || new Models.Departments();
 			App.departments.fetch({
 				cache : true,
+				reset : true,
 				success : function(collection, resp) {
 					_.each(collection.filter(function(department) {
 						return App.loggedOnUser.isAssociatedWithDepartment(department);
@@ -4166,7 +4182,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		phases : {
 			"ENTAGMENI" : [ "ANOIXTI" ],
-			"ANOIXTI" : [ "EPILOGI" ],
+			"ANOIXTI" : [],
+			"KLEISTI" : [ "EPILOGI" ],
 			"EPILOGI" : [ "ANAPOMPI", "STELEXOMENI", "CANCELLED" ],
 			"ANAPOMPI" : [ "EPILOGI" ],
 			"STELEXOMENI" : [ "CANCELLED" ],
@@ -4193,7 +4210,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			// Phase:
 			self.$("a#addPhase").each(function() {
 				var status = $(this).data("phaseStatus");
-				if (_.any(self.phases[self.model.get("phase").status], function(nextStatus) {
+				if (_.any(self.phases[self.model.get("phase").clientStatus], function(nextStatus) {
 					return _.isEqual(status, nextStatus);
 				})) {
 					$(this).show();
@@ -4497,6 +4514,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					var subjects = new Models.Subjects();
 					subjects.fetch({
 						cache : false,
+						reset : true,
 						data : {
 							"query" : query
 						},
@@ -4833,7 +4851,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("select").removeAttr("disabled");
 				self.$("a.btn").show();
 
-				self.registerMembers.fetch();
+				self.registerMembers.fetch({
+					reset : true
+				});
 			} else {
 				self.$("div#committee-register-members").hide();
 				self.$("select").attr("disabled", true);
@@ -5072,6 +5092,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				files.url = positionEvaluator.url() + "/file";
 				files.fetch({
 					cache : false,
+					reset : true,
 					success : function(collection, response) {
 						self.addFileList(collection, "AKSIOLOGISI", self.$("#positionEvaluatorFiles_" + positionEvaluator.get("position")).find("#aksiologisiFileList"), {
 							withMetadata : true
@@ -5160,7 +5181,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("div#evaluation-register-members").html(self.registerMembersView.el);
 				self.$("a.btn").show();
 
-				self.registerMembers.fetch();
+				self.registerMembers.fetch({
+					reset : true
+				});
 			} else {
 				self.$("div#evaluation-register-members").hide();
 				self.$("select").attr("disabled", true);
@@ -5586,7 +5609,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		isEditable : function(element) {
 			var self = this;
-			return self.model.get("position").phase.status === "EPILOGI";
+			switch (element) {
+			case "praksiDiorismouFile":
+				return (self.model.get("position").phase.status === "EPILOGI" || self.model.get("position").phase.status === "STELEXOMENI");
+			default:
+				return self.model.get("position").phase.status === "EPILOGI";
+			}
+
 		},
 
 		render : function(event) {
@@ -5668,6 +5697,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			self.$("input[data-input-type=date]").datepicker({
 				onClose : function(dateText, inst) {
 					$(this).parents("form").validate().element(this);
+				}
+			});
+			// Set isEditable to fields
+			self.$("select, input, textarea").each(function(index) {
+				var field = $(this).attr("name");
+				if (self.isEditable(field)) {
+					$(this).removeAttr("disabled");
+				} else {
+					$(this).attr("disabled", true);
 				}
 			});
 			// Disable Save Button until user changes a field
@@ -5799,7 +5837,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		isEditable : function(element) {
 			var self = this;
-			return self.model.get("position").phase.status === "EPILOGI";
+			return _.indexOf([ "EPILOGI", "STELEXOMENI", "ANAPOMPI" ], self.model.get("position").phase.status) > 0;
 		},
 
 		render : function(event) {
@@ -5921,6 +5959,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			App.institutions = App.institutions || new Models.Institutions();
 			App.institutions.fetch({
 				cache : true,
+				reset : true,
 				success : function(collection, resp) {
 					var institution = collection.find(function(institution) {
 						return App.loggedOnUser.isAssociatedWithInstitution(institution);
@@ -6109,9 +6148,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("a.btn").show();
 
 				self.professors.fetch({
-					success : function(collection, response, options) {
-						collection.trigger("reset");
-					}
+					reset : true
 				});
 			} else {
 				self.$("div#committee-professor-list").hide();
@@ -6694,6 +6731,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			App.institutions = App.institutions || new Models.Institutions();
 			App.institutions.fetch({
 				cache : true,
+				reset : true,
 				success : function(collection, resp) {
 					var institution = collection.find(function(institution) {
 						return App.loggedOnUser.isAssociatedWithInstitution(institution);
@@ -6982,6 +7020,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			App.departments = App.departments || new Models.Departments();
 			App.departments.fetch({
 				cache : true,
+				reset : true,
 				success : function(collection, resp) {
 					self.$("select[name=department]").empty();
 					collection.forEach(function(department) {
@@ -7007,6 +7046,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					var subjects = new Models.Subjects();
 					subjects.fetch({
 						cache : false,
+						reset : true,
 						data : {
 							"query" : query
 						},
