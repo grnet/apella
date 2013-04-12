@@ -1,8 +1,6 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.model.Candidacy;
-import gr.grnet.dep.service.model.Candidacy.CandidacyView;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.Institution;
@@ -31,9 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -507,37 +503,5 @@ public class PositionRESTService extends RESTService {
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
-	}
-
-	/**********************************
-	 * Position Candidacies ***********
-	 **********************************/
-
-	@GET
-	@Path("/{id:[0-9][0-9]*}/candidacies")
-	@JsonView({CandidacyView.class})
-	public Set<Candidacy> getPositionCandidacies(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
-		User loggedOn = getLoggedOn(authToken);
-		Position position = getAndCheckPosition(loggedOn, positionId);
-		if (position.getPhase().getCandidacies() == null) {
-			throw new RestException(Status.FORBIDDEN, "wrong.position.id");
-		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isDepartmentUser(position.getDepartment()) &&
-			!(position.getPhase().getCommittee() != null && position.getPhase().getCommittee().containsMember(loggedOn)) &&
-			!position.getPhase().getCandidacies().containsCandidate(loggedOn)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-
-		Set<Candidacy> result = new HashSet<Candidacy>();
-		for (Candidacy candidacy : position.getPhase().getCandidacies().getCandidacies()) {
-			if (candidacy.isPermanent()) {
-				candidacy.initializeCollections();
-				result.add(candidacy);
-			}
-		}
-		return result;
 	}
 }

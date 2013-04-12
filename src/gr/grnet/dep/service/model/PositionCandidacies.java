@@ -92,7 +92,7 @@ public class PositionCandidacies {
 		this.phases = phases;
 	}
 
-	@JsonView({DetailedPositionCandidaciesView.class})
+	@JsonView({PositionCandidaciesView.class})
 	public Set<Candidacy> getCandidacies() {
 		return candidacies;
 	}
@@ -141,6 +141,7 @@ public class PositionCandidacies {
 		this.closingDate = closingDate;
 	}
 
+	@XmlTransient
 	public Set<PositionCandidaciesFile> getFiles() {
 		return files;
 	}

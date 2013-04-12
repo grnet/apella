@@ -2,11 +2,13 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
+import gr.grnet.dep.service.model.Candidacy.CandidacyView;
 import gr.grnet.dep.service.model.CandidacyEvaluator;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.PositionCandidacies;
 import gr.grnet.dep.service.model.PositionCandidacies.DetailedPositionCandidaciesView;
+import gr.grnet.dep.service.model.PositionCandidacies.PositionCandidaciesView;
 import gr.grnet.dep.service.model.PositionCommitteeMember;
 import gr.grnet.dep.service.model.PositionEvaluator;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
@@ -21,6 +23,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -61,9 +65,43 @@ public class PositionCandidaciesRESTService extends RESTService {
 	 *********************/
 
 	@GET
+	@JsonView({CandidacyView.class})
+	public Set<Candidacy> getPositionCandidacies(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
+		User loggedOn = getLoggedOn(authToken);
+		Position position = em.find(Position.class, positionId);
+		if (position == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
+		}
+		if (position.getPhase().getCandidacies() == null) {
+			throw new RestException(Status.FORBIDDEN, "wrong.position.id");
+		}
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+			!loggedOn.isDepartmentUser(position.getDepartment()) &&
+			!(position.getPhase().getCommittee() != null && position.getPhase().getCommittee().containsMember(loggedOn)) &&
+			!position.getPhase().getCandidacies().containsCandidate(loggedOn)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+
+		Set<Candidacy> result = new HashSet<Candidacy>();
+		for (Candidacy candidacy : position.getPhase().getCandidacies().getCandidacies()) {
+			if (candidacy.isPermanent()) {
+				candidacy.initializeCollections();
+				result.add(candidacy);
+			}
+		}
+		return result;
+	}
+
+	/**********************************
+	 * Position Candidacies ***********
+	 **********************************/
+
+	@GET
 	@Path("/{candidaciesId:[0-9]+}")
 	@JsonView({DetailedPositionCandidaciesView.class})
-	public PositionCandidacies get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("candidaciesId") Long candidaciesId) {
+	public String get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("candidaciesId") Long candidaciesId) {
 		User loggedOn = getLoggedOn(authToken);
 
 		Session session = em.unwrap(Session.class);
@@ -95,7 +133,20 @@ public class PositionCandidaciesRESTService extends RESTService {
 				candidacy.setAllowedToSee(Boolean.TRUE);
 			}
 		}
-		return existingCandidacies;
+		String result = null;
+		if (loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) ||
+			loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) ||
+			loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) ||
+			loggedOn.isDepartmentUser(existingPosition.getDepartment()) ||
+			(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) ||
+			(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn))) {
+			result = toJSON(existingCandidacies, DetailedPositionCandidaciesView.class);
+		} else {
+			//Is a Candidate, Evaluators are filtered
+			result = toJSON(existingCandidacies, PositionCandidaciesView.class);
+		}
+
+		return result;
 	}
 
 	/**********************
@@ -126,7 +177,23 @@ public class PositionCandidaciesRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
-		return FileHeader.filterDeleted(existingCandidacies.getFiles());
+		Set<PositionCandidaciesFile> result = FileHeader.filterDeleted(existingCandidacies.getFiles());
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
+			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
+			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn))) {
+			// Filter Files that do not belong to loggedOnUser
+			Iterator<PositionCandidaciesFile> it = result.iterator();
+			while (it.hasNext()) {
+				PositionCandidaciesFile file = it.next();
+				if (!file.getEvaluator().getCandidacy().getCandidate().getUser().getId().equals(loggedOn.getId())) {
+					it.remove();
+				}
+			}
+		}
+		return result;
 	}
 
 	@GET
@@ -155,7 +222,8 @@ public class PositionCandidaciesRESTService extends RESTService {
 		// Return Result
 		Collection<PositionCandidaciesFile> files = FileHeader.filterDeleted(existingCandidacies.getFiles());
 		for (PositionCandidaciesFile file : files) {
-			if (file.getId().equals(fileId)) {
+			if (file.getId().equals(fileId) &&
+				file.getEvaluator().getCandidacy().getCandidate().getUser().getId().equals(loggedOn.getId())) {
 				return file;
 			}
 		}
@@ -187,11 +255,12 @@ public class PositionCandidaciesRESTService extends RESTService {
 		}
 		// Return Result
 		Collection<PositionCandidaciesFile> files = FileHeader.filterDeleted(existingCandidacies.getFiles());
-		for (FileHeader file : files) {
+		for (PositionCandidaciesFile file : files) {
 			if (file.getId().equals(fileId)) {
 				if (file.getId().equals(fileId)) {
 					for (FileBody fb : file.getBodies()) {
-						if (fb.getId().equals(bodyId)) {
+						if (fb.getId().equals(bodyId) &&
+							file.getEvaluator().getCandidacy().getCandidate().getUser().getId().equals(loggedOn.getId())) {
 							return sendFileBody(fb);
 						}
 					}

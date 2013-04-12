@@ -427,6 +427,10 @@ public class CandidacyRESTService extends RESTService {
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(candidacy.getCandidacies().getPosition().getDepartment()) &&
+			!candidacy.getCandidacies().containsCandidate(loggedOn)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		if (!candidacy.isOpenToOtherCandidates() &&
 			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -449,6 +453,10 @@ public class CandidacyRESTService extends RESTService {
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(candidacy.getCandidacies().getPosition().getDepartment()) &&
+			!candidacy.getCandidacies().containsCandidate(loggedOn)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		if (!candidacy.isOpenToOtherCandidates() &&
 			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -475,6 +483,10 @@ public class CandidacyRESTService extends RESTService {
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(candidacy.getCandidacies().getPosition().getDepartment()) &&
+			!candidacy.getCandidacies().containsCandidate(loggedOn)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		if (!candidacy.isOpenToOtherCandidates() &&
 			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -504,6 +516,10 @@ public class CandidacyRESTService extends RESTService {
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(candidacy.getCandidacies().getPosition().getDepartment()) &&
+			!candidacy.getCandidacies().containsCandidate(loggedOn)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		if (!candidacy.isOpenToOtherCandidates() &&
 			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -525,6 +541,10 @@ public class CandidacyRESTService extends RESTService {
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(candidacy.getCandidacies().getPosition().getDepartment()) &&
+			!candidacy.getCandidacies().containsCandidate(loggedOn)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		if (!candidacy.isOpenToOtherCandidates() &&
 			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -551,6 +571,10 @@ public class CandidacyRESTService extends RESTService {
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
 			!loggedOn.isDepartmentUser(candidacy.getCandidacies().getPosition().getDepartment()) &&
+			!candidacy.getCandidacies().containsCandidate(loggedOn)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		if (!candidacy.isOpenToOtherCandidates() &&
 			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}

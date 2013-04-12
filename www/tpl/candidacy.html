@@ -76,9 +76,17 @@
 		<h4><%= $.i18n.prop('ProposedEvaluators') %></h4>
 		<dl class="dl-glossary">
 			<dt><%= $.i18n.prop('ProposedEvaluator') %> 1</dt>
-			<dd><%= proposedEvaluators[0]? (proposedEvaluators[0].fullname + " " + proposedEvaluators[0].email) : '-'%></dd>
+			<dd>
+			<% if (proposedEvaluators[0]) { %>
+				<%= proposedEvaluators[0].fullname%> <%= proposedEvaluators[0].email%></dd>
+			<% } %>
+			</dd>
 			<dt><%= $.i18n.prop('ProposedEvaluator') %> 2</dt>
-			<dd><%= proposedEvaluators[1]? (proposedEvaluators[1].fullname + " " + proposedEvaluators[1].email) : '-'%></dd>
+			<dd>
+			<% if (proposedEvaluators[1]) { %>
+				<%= proposedEvaluators[1].fullname%> <%= proposedEvaluators[1].email%></dd>
+			<% } %>
+			</dd>
 			<dt><%= $.i18n.prop('EkthesiAutoaksiologisisFile') %></dt>
 			<dd>
 				<div id="ekthesiAutoaksiologisisFile"></div>

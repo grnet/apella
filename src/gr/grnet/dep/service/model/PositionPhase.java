@@ -1,8 +1,8 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.Position.CandidatePositionView;
-import gr.grnet.dep.service.model.Position.MemberPositionView;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
+import gr.grnet.dep.service.model.Position.MemberPositionView;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.Position.PublicPositionView;
 import gr.grnet.dep.service.model.PositionCommitteeMember.PositionCommitteeMemberView;
@@ -136,7 +136,7 @@ public class PositionPhase {
 		this.committee = committee;
 	}
 
-	@JsonView({DetailedPositionView.class, MemberPositionView.class})
+	@JsonView({DetailedPositionView.class, MemberPositionView.class, CandidatePositionView.class})
 	public PositionEvaluation getEvaluation() {
 		return evaluation;
 	}

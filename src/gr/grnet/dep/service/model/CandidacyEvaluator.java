@@ -1,5 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
+import gr.grnet.dep.service.model.Candidacy.MediumCandidacyView;
 import gr.grnet.dep.service.util.CompareUtil;
 
 import java.io.Serializable;
@@ -53,6 +55,7 @@ public class CandidacyEvaluator implements Serializable {
 		this.candidacy = candidacy;
 	}
 
+	@JsonView({DetailedCandidacyView.class, DetailedCandidacyEvaluatorView.class})
 	public String getEmail() {
 		return email;
 	}
@@ -61,6 +64,7 @@ public class CandidacyEvaluator implements Serializable {
 		this.email = email;
 	}
 
+	@JsonView({MediumCandidacyView.class, DetailedCandidacyEvaluatorView.class})
 	public String getFullname() {
 		return fullname;
 	}

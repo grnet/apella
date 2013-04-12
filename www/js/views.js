@@ -4740,7 +4740,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						self.addFile(collection, "AITIMA_EPITROPIS_PROS_AKSIOLOGITES", self.$("#aitimaEpitropisProsAksiologitesFile"), {
 							withMetadata : true
 						});
-						console.log("SUCCESS: " + self.$el.html());
 					}
 				});
 			}
@@ -5252,7 +5251,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.change(jQuery.Event("change"), {
 					triggeredBy : "user"
 				});
-				console.log("Added", self.model.get("evaluators"));
 				self.renderEvaluators();
 			}
 		},
@@ -5265,14 +5263,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				yes : function() {
 					var registerMemberId = $(event.currentTarget).data("registerMemberId");
 					var evaluators = self.model.get("evaluators");
-					console.log("Removin", evaluators);
 					var position = _.indexOf(evaluators, _.find(evaluators, function(member) {
 						return _.isEqual(member.registerMember.id, registerMemberId);
 					}));
 					evaluators.splice(position, 1);
 
 					// Render
-					console.log("Removed", self.model.get("evaluators"));
 					self.renderEvaluators();
 					self.model.trigger("change:members");
 					self.change(jQuery.Event("change"), {
@@ -5429,10 +5425,16 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		render : function(eventName) {
 			var self = this;
 			var files;
+			var tpl_data;
 			self.closeInnerViews();
-			self.$el.html(self.template(self.model.toJSON()));
+			tpl_data = _.extend(self.model.toJSON(), {
+				showEvaluators : _.some(self.model.get("candidacies"), function(candidacy) {
+					return !_.isUndefined(candidacy.proposedEvaluators);
+				})
+			});
+			self.$el.html(self.template(tpl_data));
 			// Add files
-			if (self.model.has("id")) {
+			if (self.model.has("id") && tpl_data.showEvaluators) {
 				files = new Models.Files();
 				files.url = self.model.url() + "/file";
 				files.fetch({
