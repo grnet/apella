@@ -3208,13 +3208,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			}
 			self.closeInnerViews();
 			self.$el.html(self.template(tpl_data));
+
 			return self;
 		},
 
 		close : function(eventName) {
 			this.closeInnerViews();
 			this.$el.unbind();
-			this.$el.remove();
+			this.$el.empty();
 		}
 	});
 
@@ -3430,6 +3431,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			});
 			self.closeInnerViews();
 			self.$el.html(self.template(tpl_data));
+
 			return self;
 		},
 
@@ -3952,10 +3954,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				cache : true,
 				reset : true,
 				success : function(collection, resp) {
+					self.$("#actions select[name=department]").append("<option value='-1'>" + $.i18n.prop("PleaseSelectDepartment") + "</option>").append("<optgroup label='--------------------'></optgroup>");
 					_.each(collection.filter(function(department) {
 						return App.loggedOnUser.isAssociatedWithDepartment(department);
 					}), function(department) {
-						self.$("select[name='department']").append("<option value='" + department.get("id") + "'>" + department.get("department") + "</option>");
+						self.$("select[name='department'] optgroup").append("<option value='" + department.get("id") + "'>" + department.get("department") + "</option>");
 					});
 				},
 				error : function(model, resp, options) {
@@ -3978,10 +3981,20 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		createPosition : function(event) {
 			var self = this;
+			// Validate:
+			var departmentId = self.$("select[name='department']").val();
+			if (_.isEqual(departmentId, "-1")) {
+				self.$("select[name='department']").addClass("inputError");
+				self.$("select[name='department']").on("focus", function(event) {
+					self.$("select[name='department']").removeClass("inputError");
+				});
+				return;
+			}
+			// Create:
 			var newPosition = new Models.Position();
 			newPosition.save({
 				department : {
-					id : self.$("select[name='department']").val()
+					id : departmentId
 				}
 			}, {
 				wait : true,
@@ -5557,7 +5570,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.addFile(collection, "PROSKLISI_KOSMITORA", self.$("#prosklisiKosmitoraFile"), {
 						withMetadata : true
 					});
-					self.addFileList(collection, "PRAKTIKO_EPILOGIS", self.$("#praktikoEpilogisFile"), {
+					self.addFile(collection, "PRAKTIKO_EPILOGIS", self.$("#praktikoEpilogisFile"), {
 						withMetadata : true
 					});
 					self.addFile(collection, "DIAVIVASTIKO_PRAKTIKOU", self.$("#diavivastikoPraktikouFile"), {
@@ -7444,6 +7457,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			// don't for non-permanent
 			if (self.model.get("permanent")) {
 				self.$("a#save").attr("disabled", true);
+			}
+			// Hide remove button, until user presses first save
+			if (!self.model.get("permanent")) {
+				self.$("a#remove").hide();
 			}
 
 			return self;
