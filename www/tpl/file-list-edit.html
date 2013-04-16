@@ -1,7 +1,7 @@
 <table class="file-table-edit">
 <thead>
 	<tr>
-		<th width="1px"></th>
+		<th width="1px">#</th>
 		<th><%= $.i18n.prop('FileName') %></th>
 		<th><%= $.i18n.prop('FileSize') %></th>
 		<th><%= $.i18n.prop('FileDate') %></th>
@@ -16,7 +16,7 @@
 <% _.each(files, function(file) { %>
 <% if (!_.isUndefined(file.id)) { %>
 <tr>
-		<td width="1px"><span class="badge"><%= row++ %></span></td>
+		<td width="1px"><%= row++ %></td>
 		<td>
 	<% if (withMetadata && file.name) { %>
 			<a href='<%= file.currentBody.url %>' target="viewfile"><%= file.name %>, (<%= file.currentBody.originalFilename %>)</a>

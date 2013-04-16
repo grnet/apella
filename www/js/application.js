@@ -1,26 +1,27 @@
-define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i18n", "jquery.validate", "jquery.dataTables", "jquery.blockUI", "jquery.file.upload", "jquery.iframe-transport", "backbone.cache" ], function($, _, Backbone) {
+define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i18n", "jquery.validate", "jquery.dataTables", "jquery.blockUI", "jquery.file.upload",
+	"jquery.iframe-transport", "backbone.cache" ], function ($, _, Backbone) {
 	if (!window.App) {
 		// Validator Plugin Extensions/Configurations
 		$.validator.setDefaults({
-			ignore : []
+			ignore: []
 		});
-		$.validator.addMethod("onlyLatin", function(value, element) {
+		$.validator.addMethod("onlyLatin", function (value, element) {
 			return this.optional(element) || /^[a-zA-Z0-9]*$/.test(value);
 		}, "Please type only latin characters");
-		$.validator.addMethod("requiredIfOtherGreek", function(value, element, param) {
+		$.validator.addMethod("requiredIfOtherGreek", function (value, element, param) {
 			var target = $(param);
 			if (this.settings.onfocusout) {
-				target.unbind(".validate-requiredIfOtherGreek").bind("blur.validate-requiredIfOtherGreek", function() {
+				target.unbind(".validate-requiredIfOtherGreek").bind("blur.validate-requiredIfOtherGreek", function () {
 					$(element).valid();
 				});
 			}
 			return (/^[a-zA-Z0-9]*$/.test(target.val())) || value;
 		}, "Required if other field is in greek characters");
 
-		$.validator.addMethod("pwd", function(value, element) {
+		$.validator.addMethod("pwd", function (value, element) {
 			return this.optional(element) || /^[a-zA-Z0-9!@#$%^&*()]*$/.test(value);
 		}, "Please type only latin characters");
-		$.validator.addMethod("dateAfter", function(value, element, params) {
+		$.validator.addMethod("dateAfter", function (value, element, params) {
 			var days = params[1] * 86400000; // millisecond in a day
 			var beforeDate = params[0].datepicker("getDate");
 			var afterDate = $(element).datepicker("getDate");
@@ -31,32 +32,32 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 		}, "Date must be {1} days later than {0}");
 
 		$.datepicker.setDefaults({
-			dateFormat : "dd/mm/yy"
+			dateFormat: "dd/mm/yy"
 		});
 		// DataTables Plugin Extensions/Configurations
 
 		/* Default class modification */
 		$.extend($.fn.dataTableExt.oStdClasses, {
-			"sWrapper" : "dataTables_wrapper form-inline"
+			"sWrapper": "dataTables_wrapper form-inline"
 		});
 		/* API method to get paging information */
-		$.fn.dataTableExt.oApi.fnPagingInfo = function(oSettings) {
+		$.fn.dataTableExt.oApi.fnPagingInfo = function (oSettings) {
 			return {
-				"iStart" : oSettings._iDisplayStart,
-				"iEnd" : oSettings.fnDisplayEnd(),
-				"iLength" : oSettings._iDisplayLength,
-				"iTotal" : oSettings.fnRecordsTotal(),
-				"iFilteredTotal" : oSettings.fnRecordsDisplay(),
-				"iPage" : oSettings._iDisplayLength === -1 ? 0 : Math.ceil(oSettings._iDisplayStart / oSettings._iDisplayLength),
-				"iTotalPages" : oSettings._iDisplayLength === -1 ? 0 : Math.ceil(oSettings.fnRecordsDisplay() / oSettings._iDisplayLength)
+				"iStart": oSettings._iDisplayStart,
+				"iEnd": oSettings.fnDisplayEnd(),
+				"iLength": oSettings._iDisplayLength,
+				"iTotal": oSettings.fnRecordsTotal(),
+				"iFilteredTotal": oSettings.fnRecordsDisplay(),
+				"iPage": oSettings._iDisplayLength === -1 ? 0 : Math.ceil(oSettings._iDisplayStart / oSettings._iDisplayLength),
+				"iTotalPages": oSettings._iDisplayLength === -1 ? 0 : Math.ceil(oSettings.fnRecordsDisplay() / oSettings._iDisplayLength)
 			};
 		};
 		/* Bootstrap style pagination control */
 		$.extend($.fn.dataTableExt.oPagination, {
-			"bootstrap" : {
-				"fnInit" : function(oSettings, nPaging, fnDraw) {
+			"bootstrap": {
+				"fnInit": function (oSettings, nPaging, fnDraw) {
 					var oLang = oSettings.oLanguage.oPaginate;
-					var fnClickHandler = function(e) {
+					var fnClickHandler = function (e) {
 						e.preventDefault();
 						if (oSettings.oApi._fnPageChange(oSettings, e.data.action)) {
 							fnDraw(oSettings);
@@ -66,14 +67,14 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 					$(nPaging).addClass('pagination').append('<ul>' + '<li class="prev disabled"><a href="#">&larr; ' + oLang.sPrevious + '</a></li>' + '<li class="next disabled"><a href="#">' + oLang.sNext + ' &rarr; </a></li>' + '</ul>');
 					var els = $('a', nPaging);
 					$(els[0]).bind('click.DT', {
-						action : "previous"
+						action: "previous"
 					}, fnClickHandler);
 					$(els[1]).bind('click.DT', {
-						action : "next"
+						action: "next"
 					}, fnClickHandler);
 				},
 
-				"fnUpdate" : function(oSettings, fnDraw) {
+				"fnUpdate": function (oSettings, fnDraw) {
 					var iListLength = 5;
 					var oPaging = oSettings.oInstance.fnPagingInfo();
 					var an = oSettings.aanFeatures.p;
@@ -100,7 +101,7 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 						// Add the new list items and their event handlers
 						for (j = iStart; j <= iEnd; j++) {
 							sClass = (j == oPaging.iPage + 1) ? 'class="active"' : '';
-							$('<li ' + sClass + '><a href="#">' + j + '</a></li>').insertBefore($('li:last', an[i])[0]).bind('click', function(e) {
+							$('<li ' + sClass + '><a href="#">' + j + '</a></li>').insertBefore($('li:last', an[i])[0]).bind('click', function (e) {
 								e.preventDefault();
 								oSettings._iDisplayStart = (parseInt($('a', this).text(), 10) - 1) * oPaging.iLength;
 								fnDraw(oSettings);
@@ -125,7 +126,7 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 			}
 		});
 		/* Custom Add <tr> function */
-		$.fn.dataTableExt.oApi.fnAddTr = function(oSettings, nTrHTML) {
+		$.fn.dataTableExt.oApi.fnAddTr = function (oSettings, nTrHTML) {
 			if (typeof bRedraw == 'undefined') {
 				bRedraw = true;
 			}
@@ -137,7 +138,7 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 			}
 
 			var aData = [];
-			for ( var i = 0; i < nTds.length; i++) {
+			for (var i = 0; i < nTds.length; i++) {
 				aData.push(nTds[i].innerHTML || " ");
 			}
 
@@ -153,7 +154,7 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 		};
 
 		// Add _super function in Model, Views
-		(function(Backbone) {
+		(function (Backbone) {
 			function _super(methodName, args) {
 				this._superCallObjects || (this._superCallObjects = {});
 				var currentObject = this._superCallObjects[methodName] || this, parentObject = findSuper(methodName, currentObject);
@@ -171,53 +172,53 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 				return object;
 			}
 
-			_.each([ "Model", "Collection", "View", "Router" ], function(klass) {
+			_.each([ "Model", "Collection", "View", "Router" ], function (klass) {
 				Backbone[klass].prototype._super = _super;
 			});
 
 		})(Backbone);
 
 		window.App = {
-			allowedRoles : [ "PROFESSOR_DOMESTIC", "PROFESSOR_FOREIGN", "CANDIDATE", "INSTITUTION_MANAGER" ],
+			allowedRoles: [ "PROFESSOR_DOMESTIC", "PROFESSOR_FOREIGN", "CANDIDATE", "INSTITUTION_MANAGER" ],
 
-			blockUI : function() {
+			blockUI: function () {
 				$.blockUI({
-					message : $("<img src=\"css/images/loader.gif\" />"),
-					showOverlay : true,
-					centerY : false,
-					css : {
-						'z-index' : 2000,
-						width : '30%',
-						top : '1%',
-						left : '35%',
-						padding : 0,
-						margin : 0,
-						textAlign : 'center',
-						color : '#000',
-						border : 'none',
-						backgroundColor : 'none',
-						cursor : 'wait'
+					message: $("<img src=\"css/images/loader.gif\" />"),
+					showOverlay: true,
+					centerY: false,
+					css: {
+						'z-index': 2000,
+						width: '30%',
+						top: '1%',
+						left: '35%',
+						padding: 0,
+						margin: 0,
+						textAlign: 'center',
+						color: '#000',
+						border: 'none',
+						backgroundColor: 'none',
+						cursor: 'wait'
 					},
-					overlayCSS : {
-						'z-index' : 1999,
-						backgroundColor : 'none',
-						opacity : 1.0
+					overlayCSS: {
+						'z-index': 1999,
+						backgroundColor: 'none',
+						opacity: 1.0
 					}
 				});
 			},
 
-			unblockUI : function() {
+			unblockUI: function () {
 				$.unblockUI();
 			},
 
-			utils : {
-				dateFromString : function(str) {
+			utils: {
+				dateFromString: function (str) {
 					// "dd/mm/yy HH:MM:SS"
 					var m = str.match(/(\d+)\/(\d+)\/(\d+)\s+(\d+):(\d+):(\d+)/);
 					return new Date(+m[3], +m[2] - 1, +m[1], +m[4], +m[5], +m[6], 0);
 				},
 
-				formatFileSize : function(bytes) {
+				formatFileSize: function (bytes) {
 					var precision = 2;
 					var sizes = [ 'Bytes', 'KB', 'MB', 'GB', 'TB' ];
 					var posttxt = 0;
@@ -226,13 +227,13 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 					}
 					while (bytes >= 1024) {
 						posttxt++;
-						bytes = bytes / 1024;
+						bytes /= 1024;
 					}
 					return bytes.toFixed(precision) + "" + sizes[posttxt];
 				},
 
 				// Cookies
-				addCookie : function(name, value, days) {
+				addCookie: function (name, value, days) {
 					var date, expires;
 					if (days) {
 						date = new Date();
@@ -244,10 +245,10 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 					document.cookie = name + "=" + value + expires + "; path=/";
 				},
 
-				getCookie : function(name) {
+				getCookie: function (name) {
 					var nameEQ = name + "=";
 					var ca = document.cookie.split(';');
-					for ( var i = 0; i < ca.length; i++) {
+					for (var i = 0; i < ca.length; i++) {
 						var c = ca[i];
 						while (c.charAt(0) == ' ') {
 							c = c.substring(1, c.length);
@@ -259,7 +260,7 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 					return null;
 				},
 
-				removeCookie : function(name) {
+				removeCookie: function (name) {
 					window.App.util.addCookie(name, "", -1);
 				}
 			}

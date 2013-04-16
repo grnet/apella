@@ -161,7 +161,7 @@ public class UserRESTService extends RESTService {
 		u.initializeCollections();
 		return Response.status(200)
 			.header(TOKEN_HEADER, u.getAuthToken())
-			.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, Integer.MAX_VALUE, false))
+			.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, NewCookie.DEFAULT_MAX_AGE, false))
 			.entity(u)
 			.build();
 	}
@@ -427,7 +427,7 @@ public class UserRESTService extends RESTService {
 						u.initializeCollections();
 						return Response.status(200)
 							.header(TOKEN_HEADER, u.getAuthToken())
-							.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, Integer.MAX_VALUE, false))
+							.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, NewCookie.DEFAULT_MAX_AGE, false))
 							.entity(u)
 							.build();
 					} else {
@@ -513,7 +513,7 @@ public class UserRESTService extends RESTService {
 
 		return Response.status(200)
 			.header(TOKEN_HEADER, u.getAuthToken())
-			.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, Integer.MAX_VALUE, false))
+			.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, NewCookie.DEFAULT_MAX_AGE, false))
 			.location(nextURL)
 			.entity(u)
 			.build();
