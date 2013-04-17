@@ -1307,6 +1307,11 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 		url: "/dep/rest/subject/"
 	});
 
+	Models.GgetSubjects = Backbone.Collection.extend({
+		model: Models.Subject,
+		url: "/dep/rest/subject/gget"
+	});
+
 	return Models;
 
 });

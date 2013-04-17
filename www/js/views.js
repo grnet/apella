@@ -7155,7 +7155,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var self = this;
 				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close",
 					"closeInnerViews");
-				_.bindAll(self, "addSubject", "removeSubject", "addDepartment", "removeDepartment", "search", "submit");
+				_.bindAll(self, "renderDepartments", "renderSubjects", "readValues", "search", "submit");
 				self.template = _.template(tpl_position_search_criteria);
 				self.model.bind('change', self.render, self);
 			},
@@ -7186,15 +7186,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					cache: true,
 					reset: true,
 					success: function (collection, resp) {
-						self.$("select[name=department]").empty();
-						collection.forEach(function (department) {
-							var selected = _.any(self.model.get("departments"), function (selectedDepartment) {
-								return _.isEqual(selectedDepartment.id, department.get("id"));
-							});
-							var institution = department.get("institution").name;
-							self.$("select[name=suggestDepartment]:not(:has(optgroup[label='" + institution + "']))").append("<optgroup label='" + institution + "'>");
-							self.$("select[name=suggestDepartment] optgroup[label='" + institution + "']").append("<option value='" + department.get("id") + "' " + (selected ? "selected " : "") + "><span>" + department.get("department") + "</span></option>");
-						});
+						self.renderDepartments(collection);
 					},
 					error: function (model, resp, options) {
 						var popup = new Views.PopupView({
@@ -7204,74 +7196,121 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						popup.show();
 					}
 				});
-				// Enable typeahead for Subjects:
-				self.$('input[name=suggestSubject]').typeahead({
-					source: function (query, process) {
-						var subjects = new Models.Subjects();
-						subjects.fetch({
-							cache: false,
-							reset: true,
-							data: {
-								"query": query
-							},
-							success: function (collection, response, options) {
-								var data = collection.pluck("name");
-								process(data);
-							}
+				// Add Subjects
+				App.ggetSubjects = App.ggetSubjects || new Models.GgetSubjects();
+				App.ggetSubjects.fetch({
+					cache: true,
+					reset: true,
+					success: function (collection, resp) {
+						self.renderSubjects(collection);
+					},
+					error: function (model, resp, options) {
+						var popup = new Views.PopupView({
+							type: "error",
+							message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 						});
+						popup.show();
 					}
 				});
-
-				// Add Departments:
-				_.each(self.model.get("departments"), function (department) {
-					self.addDepartment(undefined, department);
-				});
-
-				// Add Subjects:
-				_.each(self.model.get("subjects"), function (subject) {
-					self.addSubject(undefined, subject.name);
-				});
-
 				return self;
 			},
 
-			addSubject: function (event, subject) {
+			renderDepartments: function (departments) {
 				var self = this;
-				subject = subject || self.$("input[name=suggestSubject]").val();
-				self.$("#subjects").prepend("<div id=\"subject\" class=\"input-append\"><input type=\"text\" class=\"input-xlarge\" name=\"subject\" value=\"" + subject + "\" disabled /><a id=\"removeSubject\" data-subject=\"" + subject + "\" class=\"btn btn-danger\"><i class=\"icon-minus\"></i></a></div>");
-				self.$("input[name=suggestSubject]").val("");
-			},
-
-			removeSubject: function (event) {
-				$(event.currentTarget).parents("div#subject").remove();
-			},
-
-			addDepartment: function (event, department) {
-				var self = this;
-				department = department || App.departments.get(self.$("select[name=suggestDepartment]").val()).toJSON();
-				self.$("#departments").append("<div class=\"controls\"><div id=\"department\" class=\"input-append\"><input type=\"hidden\" class=\"input-xlarge\" name=\"department\" value=\"" + department.id + "\" /><span class=\"uneditable-input input-xlarge\" title=\"" + department.institution.name + "\">" + department.department + "</span><a id=\"removeDepartment\" class=\"btn btn-danger\"><i class=\"icon-minus\"></i></a></div>");
-				self.$("select[name=suggestDepartment]").val("");
-			},
-
-			removeDepartment: function (event) {
-				$(event.currentTarget).parents("div#department").remove();
-			},
-
-			search: function (event) {
-				var self = this;
-				var values = {
-					departments: _.map(self.$("input[name=department]"), function (department) {
-						return {
-							id: $(department).val()
+				var treeData = departments.reduce(function (memo, department) {
+					var institution = department.get("institution");
+					var node = _.find(memo, function (item) {
+						return item.key === institution.id;
+					});
+					if (!node) {
+						node = {
+							title: institution.name,
+							key: institution.id,
+							expand: false,
+							isFolder: true,
+							unselectable: false,
+							children: []
 						};
-					}),
-					subjects: _.map(self.$("input[name=subject]"), function (subject) {
-						return {
-							name: $(subject).val()
+						memo.push(node);
+					}
+					node.children.push({
+						title: department.get("department"),
+						key: department.get("id"),
+						select: _.any(self.model.get("departments"), function (selectedDepartment) {
+							return _.isEqual(selectedDepartment.id, department.get("id"));
+						})
+					});
+					return memo;
+				}, []);
+
+				self.$("#departmentsTree").dynatree({
+					checkbox: true,
+					selectMode: 3,
+					children: treeData,
+					onSelect: function (flag, node) {
+						var selectedNodes = node.tree.getSelectedNodes();
+						var count = _.countBy(selectedNodes, function (selectedNode) {
+							return selectedNode.data.isFolder ? 'institution' : 'department';
+						});
+						self.$("label[for=departmentsTree] span").html(count.department ? count.department : 0);
+					},
+					onPostInit: function (isReloading, isError) {
+						var selectedNodes = this.getSelectedNodes();
+						var count = _.countBy(selectedNodes, function (selectedNode) {
+							return selectedNode.data.isFolder ? 'institution' : 'department';
+						});
+						self.$("label[for=departmentsTree] span").html(count.department ? count.department : 0);
+					}
+				});
+			},
+
+			renderSubjects: function(subjects) {
+				var self = this;
+				var treeData = subjects.reduce(function (memo, subject) {
+					var category = subject.get("category");
+					var node = _.find(memo, function (item) {
+						return item.key === category;
+					});
+					if (!node) {
+						node = {
+							title: category,
+							key: category,
+							expand: false,
+							isFolder: true,
+							unselectable: false,
+							children: []
 						};
-					})
-				};
-				self.model.trigger("criteria:search", values);
+						memo.push(node);
+					}
+					node.children.push({
+						title: subject.get("name"),
+						key: subject.get("name"),
+						select: _.any(self.model.get("subjects"), function (selectedSubject) {
+							return _.isEqual(selectedSubject.name, subject.get("name"));
+						})
+					});
+					return memo;
+				}, []);
+
+				self.$("#subjectsTree").dynatree({
+					checkbox: true,
+					selectMode: 3,
+					children: treeData,
+					onSelect: function (flag, node) {
+						var selectedNodes = node.tree.getSelectedNodes();
+						var count = _.countBy(selectedNodes, function (selectedNode) {
+							return selectedNode.data.isFolder ? 'institution' : 'department';
+						});
+						self.$("label[for=subjectsTree] span").html(count.department ? count.department : 0);
+					},
+					onPostInit: function (isReloading, isError) {
+						var selectedNodes = this.getSelectedNodes();
+						var count = _.countBy(selectedNodes, function (selectedNode) {
+							return selectedNode.data.isFolder ? 'institution' : 'department';
+						});
+						self.$("label[for=subjectsTree] span").html(count.department ? count.department : 0);
+					}
+				});
 			},
 
 			change: function (event, data) {
@@ -7283,23 +7322,36 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$("a#save").removeAttr("disabled");
 			},
 
-			submit: function (event) {
-				var self = this;
+			readValues: function () {
 				var values = {
-					departments: _.map(self.$("input[name=department]"), function (department) {
+					departments: _.map(_.filter(self.$("#departmentsTree").dynatree("getTree").getSelectedNodes(), function (node) {
+						return !node.data.isFolder;
+					}), function (node) {
 						return {
-							id: $(department).val()
+							id: node.data.key
 						};
 					}),
-					subjects: _.map(self.$("input[name=subject]"), function (subject) {
+					subjects: _.map(_.filter(self.$("#subjectsTree").dynatree("getTree").getSelectedNodes(), function (node) {
+						return !node.data.isFolder;
+					}), function (node) {
 						return {
-							name: $(subject).val()
+							name: node.data.key
 						};
-					})
+					}),
 				};
-				// Read Input
+				window.console.log("Search: ", values);
+				return values;
+			},
+
+			search: function (event) {
+				var self = this;
+				self.model.trigger("criteria:search", self.readValues());
+			},
+
+			submit: function (event) {
+				var self = this;
 				// Save to model
-				self.model.save(values, {
+				self.model.save(self.readValues(), {
 					wait: true,
 					error: function (model, resp, options) {
 						var popup = new Views.PopupView({

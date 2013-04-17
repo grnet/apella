@@ -18,6 +18,7 @@ require.config({
 		"jquery.blockUI" : "lib/jquery.blockUI/jquery.blockUI",
 		"jquery.iframe-transport" : "lib/jquery.file.upload/jquery.iframe-transport",
 		"jquery.file.upload" : "lib/jquery.file.upload/jquery.fileupload",
+		"jquery.dynatree" : "lib/jquery.dynatree/jquery.dynatree-1.2.4",
 
 		"backbone.cache" : "lib/backbone/backbone.cache",
 
@@ -43,6 +44,7 @@ require.config({
 		"jquery.blockUI" : [ "jquery" ],
 		"jquery.iframe-transport" : [ "jquery" ],
 		"jquery.file.upload" : [ "jquery", "jquery.ui", "jquery.iframe-transport" ],
+		"jquery.dynatree" :  [ "jquery", "jquery.ui"],
 
 		"backbone.cache" : [ "backbone" ]
 	}

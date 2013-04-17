@@ -1,5 +1,8 @@
 define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i18n", "jquery.validate", "jquery.dataTables", "jquery.blockUI", "jquery.file.upload",
-	"jquery.iframe-transport", "backbone.cache" ], function ($, _, Backbone) {
+	"jquery.iframe-transport", "jquery.dynatree", "backbone.cache" ], function ($, _, Backbone) {
+
+	"use strict";
+
 	if (!window.App) {
 		// Validator Plugin Extensions/Configurations
 		$.validator.setDefaults({

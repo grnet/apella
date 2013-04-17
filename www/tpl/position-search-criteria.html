@@ -1,50 +1,21 @@
-<form class="form-horizontal" onsubmit="return false">
+<form class="form" onsubmit="return false">
 	<fieldset>
 		<legend><%= $.i18n.prop('PositionSearchCriteria') %></legend>
 	</fieldset>
-	<div class="row-fluid">
-		<div class="span6">
-			<fieldset>
-				<div class="control-group" id="departments">
-					<label class="control-label" for="institution"><%= $.i18n.prop('Department') %>:</label>
-				</div>
-				<div class="control-group">
-					<div class="controls">
-						<div class="input-append">
-							<select class="input-xlarge" name="suggestDepartment" ></select>
-							<a id="addDepartment" class="btn btn-success"><i class="icon-plus"></i></a>
-						</div>
-					</div>
-				</div>
-			</fieldset>
+	<fieldset>
+		<label class="control-label" for="departmentsTree"><%= $.i18n.prop('Department') %>: <span class="help-inline"></span></label>
+		<div id="departmentsTree" class="formInput" style="height:160px;">
 		</div>
-		<div class="span6">
-			<fieldset>
-				<div class="control-group">
-					<label class="control-label" for="subject"><%= $.i18n.prop('Subject') %>:</label>
-					<div class="controls" id="subjects">
-					</div>
-				</div>
-				<div class="control-group">
-					<div class="controls">
-						<div class="input-append">
-							<input type="text" class="input-xlarge" name="suggestSubject" value ="" />
-							<a id="addSubject" class="btn btn-success"><i class="icon-plus"></i></a>
-						</div>
-					</div>
-				</div>
-			</fieldset>
+		<label class="control-label" for="subjectsTree"><%= $.i18n.prop('Subject') %>: <span class="help-inline"></span></label>
+		<div id="subjectsTree" class="formInput" style="height:160px;">
 		</div>
-	</div>
-	<div class="row-fluid">
-		<div class="span12">
-			<fieldset>
-				<div class="form-actions">
-					<a id="save" class="btn btn-success"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_position_interest') %></a>
-					<a id="search" class="btn btn-primary"><i class="icon-search icon-white"></i> <%= $.i18n.prop('btn_search') %></a>
-					<span class="help-block"><%= $.i18n.prop('PositionInterestInstructions') %></span>
-				</div>
-			</fieldset>
 		</div>
-	</div>
+	</fieldset>
+	<fieldset>
+		<div class="form-actions">
+			<a id="save" class="btn btn-success"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_position_interest') %></a>
+			<a id="search" class="btn btn-primary"><i class="icon-search icon-white"></i> <%= $.i18n.prop('btn_search') %></a>
+			<span class="help-block"><%= $.i18n.prop('PositionInterestInstructions') %></span>
+		</div>
+	</fieldset>
 </form>

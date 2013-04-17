@@ -19,6 +19,16 @@ a.help:hover {
 	font-weight: bold;
 }
 
+.formInput {
+    margin: 3px 0px;
+    padding: 3px;
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    -webkit-border-radius: 0 3px 3px 0;
+    -moz-border-radius: 0 3px 3px 0;
+    border-radius: 0 3px 3px 0;
+}
+
 .inputError {
 	color: #b94a48;
 	border-color: #b94a48;
