@@ -1,3 +1,4 @@
+/*global define */
 define([ "jquery", "underscore", "backbone", "application", "models", "views", "text!tpl/user-registration-success.html" ],
 	function ($, _, Backbone, App, Models, Views, tpl_user_registration_success) {
 		"use strict";

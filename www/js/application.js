@@ -1,3 +1,4 @@
+/*global define */
 define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i18n", "jquery.validate", "jquery.dataTables", "jquery.blockUI", "jquery.file.upload",
 	"jquery.iframe-transport", "jquery.dynatree", "backbone.cache" ], function ($, _, Backbone) {
 
@@ -136,7 +137,6 @@ define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i
 			var nTr = $.parseHTML(nTrHTML)[0];
 			var nTds = nTr.getElementsByTagName('td');
 			if (nTds.length != oSettings.aoColumns.length) {
-				alert('Warning: not adding new TR - columns and TD elements must match');
 				return;
 			}
 

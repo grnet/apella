@@ -1,3 +1,4 @@
+/*global define */
 define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file.html", "text!tpl/file-edit.html",
 	"text!tpl/file-list.html", "text!tpl/file-list-edit.html", "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html",
 	"text!tpl/professor-list.html", "text!tpl/register-edit.html", "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html",
@@ -22,6 +23,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list,
 		tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation, tpl_position_nomination,
 		tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit) {
+
+		"use strict";
 
 		/** ****************************************************************** */
 
@@ -149,7 +152,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					innerView.close();
 				});
 				for (fileView in self.fileViews) {
-					self.fileViews[fileView].close();
+					if (self.fileViews.hasOwnProperty(fileView)) {
+						self.fileViews[fileView].close();
+					}
 				}
 				self.innerViews = [];
 				self.fileViews = {};
@@ -602,6 +607,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			render: function (eventName) {
 				var self = this;
+				var propName;
 
 				self.$el.html(this.template(this.model.toJSON()));
 
@@ -637,9 +643,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				});
 				// Highlight Required
 				if (self.validator) {
-					for (var propName in self.validator.settings.rules) {
-						if (self.validator.settings.rules[propName].required) {
-							self.$("label[for=" + propName + "]").addClass("strong");
+					for (propName in self.validator.settings.rules) {
+						if (self.validator.settings.rules.hasOwnProperty(propName)) {
+							if (self.validator.settings.rules[propName].required) {
+								self.$("label[for=" + propName + "]").addClass("strong");
+							}
 						}
 					}
 				}
@@ -879,6 +887,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			render: function (event) {
 				var self = this;
+				var propName;
 				var role = self.model.get('roles')[0];
 				self.closeInnerViews();
 				self.$el.html(self.template(role));
@@ -1100,10 +1109,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				});
 				// Highlight Required
+
 				if (self.validator) {
-					for (var propName in self.validator.settings.rules) {
-						if (self.validator.settings.rules[propName].required) {
-							self.$("label[for=" + propName + "]").addClass("strong");
+					for (propName in self.validator.settings.rules) {
+						if (self.validator.settings.rules.hasOwnProperty(propName)) {
+							if (self.validator.settings.rules[propName].required) {
+								self.$("label[for=" + propName + "]").addClass("strong");
+							}
 						}
 					}
 				}
@@ -1360,7 +1372,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							}
 						}
 						return result;
-					})()
+					}())
 				})));
 				return self;
 			},
@@ -1440,6 +1452,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			render: function (eventName) {
 				var self = this;
+				var propName;
 				self.closeInnerViews();
 				// 1. Render
 				self.$el.html(this.template(self.model.toJSON()));
@@ -1559,10 +1572,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				});
 				// Highlight Required
-				if (self.validator) {
-					for (var propName in self.validator.settings.rules) {
-						if (self.validator.settings.rules[propName].required) {
-							self.$("label[for=" + propName + "]").addClass("strong");
+				if(self.validator) {
+					for (propName in self.validator.settings.rules) {
+						if (self.validator.settings.rules.hasOwnProperty(propName)) {
+							if (self.validator.settings.rules[propName].required) {
+								self.$("label[for=" + propName + "]").addClass("strong");
+							}
 						}
 					}
 				}
@@ -1886,7 +1901,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							}
 						});
 						return result;
-					})()
+					}())
 				};
 				self.closeInnerViews();
 				self.$el.html(self.template(tpl_data));
@@ -1988,7 +2003,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							result.push(item);
 						});
 						return result;
-					})()
+					}())
 				};
 				self.closeInnerViews();
 				self.$el.html(this.template(tpl_data));
@@ -2367,6 +2382,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			render: function (eventName) {
 				var self = this;
 				var tpl_data;
+				var propName;
 				var files;
 				// Close inner views (fileviews)
 				self.closeInnerViews();
@@ -2929,9 +2945,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				}
 				// Highlight Required
 				if (self.validator) {
-					for (var propName in self.validator.settings.rules) {
+					for (propName in self.validator.settings.rules) {
+						if (self.validator.settings.rules.hasOwnProperty(propName)) {
 						if (self.validator.settings.rules[propName].required !== undefined) {
 							self.$("label[for=" + propName + "]").addClass("strong");
+						}
 						}
 					}
 				}
@@ -3777,7 +3795,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							}
 						});
 						return result;
-					})()
+					}())
 				};
 				self.closeInnerViews();
 				self.$el.html(self.template(tpl_data));
@@ -3873,7 +3891,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							}
 						});
 						return result;
-					})()
+					}())
 				};
 				self.closeInnerViews();
 				self.$el.html(self.template(tpl_data));
@@ -4000,7 +4018,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							}
 						});
 						return result;
-					})()
+					}())
 				};
 				self.closeInnerViews();
 				self.$el.html(this.template(tpl_data));
@@ -4588,6 +4606,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			render: function (eventName) {
 				var self = this;
+				var propName;
 				self.closeInnerViews();
 				self.$el.html(self.template(self.model.toJSON()));
 				// Set isEditable to fields
@@ -4680,9 +4699,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				});
 				// Highlight Required
 				if (self.validator) {
-					for (var propName in self.validator.settings.rules) {
-						if (self.validator.settings.rules[propName].required !== undefined) {
-							self.$("label[for=" + propName + "]").addClass("strong");
+					for (propName in self.validator.settings.rules) {
+						if (self.validator.settings.rules.hasOwnProperty(propName)) {
+							if (self.validator.settings.rules[propName].required !== undefined) {
+								self.$("label[for=" + propName + "]").addClass("strong");
+							}
 						}
 					}
 				}
@@ -4823,7 +4844,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.closeInnerViews();
 				tpl_data = self.model.toJSON();
 				tpl_data.members = _.sortBy(tpl_data.members, function (committeeMember) {
-					return "" + committeeMember.type + (committeeMember.registerMember.external ? "1" : "0") + committeeMember.registerMember.id;
+					return committeeMember.type + (committeeMember.registerMember.external ? "1" : "0") + committeeMember.registerMember.id;
 				});
 				if (App.loggedOnUser.isAssociatedWithDepartment(self.model.get("position").department) || App.loggedOnUser.hasRoleWithStatus("MINISTRY_MANAGER",
 					"ACTIVE")) {
@@ -4991,7 +5012,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var self = this;
 				self.$("div#positionCommittee table tbody").empty();
 				_.each(_.sortBy(self.model.get("members"), function (committeeMember) {
-					return "" + committeeMember.type + (committeeMember.registerMember.external ? "1" : "0") + committeeMember.registerMember.id;
+					return committeeMember.type + (committeeMember.registerMember.external ? "1" : "0") + committeeMember.registerMember.id;
 				}), function (committeeMember, index) {
 					self.$("div#positionCommittee table tbody").append(self.templateRow(_.extend(committeeMember, {
 						"index": index + 1
@@ -5018,7 +5039,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				} else {
 					self.model.get("members").push(committeeMember);
 					self.model.trigger("change:members");
-					self.change(jQuery.Event("change"), {
+					self.change($.Event("change"), {
 						triggeredBy: "user"
 					});
 					self.renderCommitteeMembers();
@@ -5035,7 +5056,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				committee.splice(position, 1);
 				self.renderCommitteeMembers();
 				self.model.trigger("change:members");
-				self.change(jQuery.Event("change"), {
+				self.change($.Event("change"), {
 					triggeredBy: "user"
 				});
 			},
@@ -5129,7 +5150,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							result.push(item);
 						});
 						return result;
-					})()
+					}())
 				};
 				self.closeInnerViews();
 				self.$el.html(self.template(tpl_data));
@@ -5373,7 +5394,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				} else {
 					self.model.get("evaluators")[evaluator.position] = evaluator;
 					self.model.trigger("change:members");
-					self.change(jQuery.Event("change"), {
+					self.change($.Event("change"), {
 						triggeredBy: "user"
 					});
 					self.renderEvaluators();
@@ -5396,7 +5417,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						// Render
 						self.renderEvaluators();
 						self.model.trigger("change:members");
-						self.change(jQuery.Event("change"), {
+						self.change($.Event("change"), {
 							triggeredBy: "user"
 						});
 					}
@@ -5490,7 +5511,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							result.push(item);
 						});
 						return result;
-					})()
+					}())
 				};
 				self.closeInnerViews();
 				self.$el.html(self.template(tpl_data));
@@ -6068,7 +6089,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							}
 						});
 						return result;
-					})()
+					}())
 				};
 				self.closeInnerViews();
 				self.$el.html(this.template(tpl_data));
@@ -6283,6 +6304,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			render: function (eventName) {
 				var self = this;
+				var propName;
 				self.closeInnerViews();
 				self.$el.html(self.template(self.model.toJSON()));
 
@@ -6334,9 +6356,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				});
 				// Highlight Required
 				if (self.validator) {
-					for (var propName in self.validator.settings.rules) {
-						if (self.validator.settings.rules[propName].required !== undefined) {
-							self.$("label[for=" + propName + "]").addClass("strong");
+					for (propName in self.validator.settings.rules) {
+						if (self.validator.settings.rules.hasOwnProperty(propName)) {
+							if (self.validator.settings.rules[propName].required !== undefined) {
+								self.$("label[for=" + propName + "]").addClass("strong");
+							}
 						}
 					}
 				}
@@ -6356,7 +6380,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 				self.$("div#registerMembers table tbody").empty();
 				_.each(_.sortBy(self.model.get("members"), function (registerMember) {
-					return "" + registerMember.external + registerMember.professor.id;
+					return registerMember.external + registerMember.professor.id;
 				}), function (registerMember, index) {
 					self.$("div#registerMembers table tbody").append(self.templateRow(registerMember));
 				});
@@ -6417,7 +6441,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					});
 					popup.show();
 				}
-				self.change(jQuery.Event("change"), {
+				self.change($.Event("change"), {
 					triggeredBy: "user"
 				});
 			},
@@ -6433,7 +6457,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.model.trigger("change:members");
 				self.renderMembers();
 
-				self.change(jQuery.Event("change"), {
+				self.change($.Event("change"), {
 					triggeredBy: "user"
 				});
 			},
@@ -6556,7 +6580,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							result.push(item);
 						});
 						return result;
-					})()
+					}())
 				};
 				self.closeInnerViews();
 				self.$el.html(self.template(tpl_data));
@@ -6630,7 +6654,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							result.push(item);
 						});
 						return result;
-					})()
+					}())
 				};
 				self.closeInnerViews();
 				self.$el.html(self.template(tpl_data));
@@ -6844,7 +6868,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							}
 						});
 						return result;
-					})()
+					}())
 				};
 				self.closeInnerViews();
 				self.$el.html(self.template(tpl_data));
@@ -6981,6 +7005,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			render: function (eventName) {
 				var self = this;
+				var propName;
 				self.closeInnerViews();
 				self.$el.html(self.template(self.model.toJSON()));
 				self.validator = $("form", this.el).validate({
@@ -7009,9 +7034,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				});
 				// Highlight Required
 				if (self.validator) {
-					for (var propName in self.validator.settings.rules) {
-						if (self.validator.settings.rules[propName].required !== undefined) {
-							self.$("label[for=" + propName + "]").addClass("strong");
+					for (propName in self.validator.settings.rules) {
+						if (self.validator.settings.rules.hasOwnProperty(propName)) {
+							if (self.validator.settings.rules[propName].required !== undefined) {
+								self.$("label[for=" + propName + "]").addClass("strong");
+							}
 						}
 					}
 				}
@@ -7252,14 +7279,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						var count = _.countBy(selectedNodes, function (selectedNode) {
 							return selectedNode.data.isFolder ? 'institution' : 'department';
 						});
-						self.$("label[for=departmentsTree] span").html(count.department ? count.department : 0);
+						self.$("label[for=departmentsTree] span").html(count.department || 0);
 					},
 					onPostInit: function (isReloading, isError) {
 						var selectedNodes = this.getSelectedNodes();
 						var count = _.countBy(selectedNodes, function (selectedNode) {
 							return selectedNode.data.isFolder ? 'institution' : 'department';
 						});
-						self.$("label[for=departmentsTree] span").html(count.department ? count.department : 0);
+						self.$("label[for=departmentsTree] span").html(count.department || 0);
 					}
 				});
 			},
@@ -7301,14 +7328,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						var count = _.countBy(selectedNodes, function (selectedNode) {
 							return selectedNode.data.isFolder ? 'institution' : 'department';
 						});
-						self.$("label[for=subjectsTree] span").html(count.department ? count.department : 0);
+						self.$("label[for=subjectsTree] span").html(count.department || 0);
 					},
 					onPostInit: function (isReloading, isError) {
 						var selectedNodes = this.getSelectedNodes();
 						var count = _.countBy(selectedNodes, function (selectedNode) {
 							return selectedNode.data.isFolder ? 'institution' : 'department';
 						});
-						self.$("label[for=subjectsTree] span").html(count.department ? count.department : 0);
+						self.$("label[for=subjectsTree] span").html(count.department || 0);
 					}
 				});
 			},
@@ -7323,6 +7350,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			},
 
 			readValues: function () {
+				var self = this;
 				var values = {
 					departments: _.map(_.filter(self.$("#departmentsTree").dynatree("getTree").getSelectedNodes(), function (node) {
 						return !node.data.isFolder;
@@ -7337,7 +7365,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						return {
 							name: node.data.key
 						};
-					}),
+					})
 				};
 				window.console.log("Search: ", values);
 				return values;

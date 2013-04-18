@@ -1,3 +1,4 @@
+/*global define */
 define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Backbone, App) {
 	"use strict";
 
@@ -407,6 +408,8 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 		},
 
 		sync: function (method, model, options) {
+			var params, success, error,xhr;
+
 			switch (method) {
 
 				case "verify":
@@ -416,7 +419,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 						emulateJSON: Backbone.emulateJSON
 					});
 					// Default JSON-request options.
-					var params = {
+					params = {
 						type: 'PUT',
 						dataType: 'json',
 						contentType: 'application/json',
@@ -430,14 +433,14 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 							urlError();
 						}
 					}
-					var success = options.success;
+					success = options.success;
 					options.success = function (resp) {
 						if (success) {
 							success(model, resp, options);
 						}
 						model.trigger('sync', model, resp, options);
 					};
-					var error = options.error;
+					error = options.error;
 					options.error = function (xhr) {
 						if (error) {
 							error(model, xhr, options);
@@ -446,14 +449,15 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 					};
 					// Make the request, allowing the user to override any Ajax
 					// options.
-					var xhr = options.xhr = Backbone.ajax(_.extend(params, options));
+					xhr = options.xhr = Backbone.ajax(_.extend(params, options));
 					model.trigger('request', model, xhr, options);
 					return xhr;
 
 				case "login":
 					// Default options, unless specified.
 					options || (options = {});
-					var params = {
+					options = options || {};
+					params = {
 						type: 'PUT',
 						dataType: 'json',
 						data: {
@@ -469,14 +473,14 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 							urlError();
 						}
 					}
-					var success = options.success;
+					success = options.success;
 					options.success = function (resp) {
 						if (success) {
 							success(model, resp, options);
 						}
 						model.trigger('sync', model, resp, options);
 					};
-					var error = options.error;
+					error = options.error;
 					options.error = function (xhr) {
 						if (error) {
 							error(model, xhr, options);
@@ -485,7 +489,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 					};
 					// Make the request, allowing the user to override any Ajax
 					// options.
-					var xhr = options.xhr = Backbone.ajax(_.extend(params, options));
+					xhr = options.xhr = Backbone.ajax(_.extend(params, options));
 					model.trigger('request', model, xhr, options);
 					return xhr;
 
@@ -495,7 +499,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 						emulateHTTP: Backbone.emulateHTTP,
 						emulateJSON: Backbone.emulateJSON
 					});
-					var params = {
+					params = {
 						type: 'PUT',
 						dataType: 'json',
 						contentType: 'application/json',
@@ -512,14 +516,14 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 							urlError();
 						}
 					}
-					var success = options.success;
+					success = options.success;
 					options.success = function (resp) {
 						if (success) {
 							success(model, resp, options);
 						}
 						model.trigger('sync', model, resp, options);
 					};
-					var error = options.error;
+					error = options.error;
 					options.error = function (xhr) {
 						if (error) {
 							error(model, xhr, options);
@@ -528,7 +532,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 					};
 					// Make the request, allowing the user to override any Ajax
 					// options.
-					var xhr = options.xhr = Backbone.ajax(_.extend(params, options));
+					xhr = options.xhr = Backbone.ajax(_.extend(params, options));
 					model.trigger('request', model, xhr, options);
 					return xhr;
 
@@ -538,7 +542,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 						emulateHTTP: Backbone.emulateHTTP,
 						emulateJSON: Backbone.emulateJSON
 					});
-					var params = {
+					params = {
 						type: 'PUT',
 						dataType: 'json',
 						data: {
@@ -553,14 +557,14 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 							urlError();
 						}
 					}
-					var success = options.success;
+					success = options.success;
 					options.success = function (resp) {
 						if (success) {
 							success(model, resp, options);
 						}
 						model.trigger('sync', model, resp, options);
 					};
-					var error = options.error;
+					error = options.error;
 					options.error = function (xhr) {
 						if (error) {
 							error(model, xhr, options);
@@ -569,7 +573,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 					};
 					// Make the request, allowing the user to override any Ajax
 					// options.
-					var xhr = options.xhr = Backbone.ajax(_.extend(params, options));
+					xhr = options.xhr = Backbone.ajax(_.extend(params, options));
 					model.trigger('request', model, xhr, options);
 					return xhr;
 
@@ -579,7 +583,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 						emulateHTTP: Backbone.emulateHTTP,
 						emulateJSON: Backbone.emulateJSON
 					});
-					var params = {
+					params = {
 						type: 'PUT',
 						dataType: 'json',
 						data: {
@@ -594,14 +598,14 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 							urlError();
 						}
 					}
-					var success = options.success;
+					success = options.success;
 					options.success = function (resp) {
 						if (success) {
 							success(model, resp, options);
 						}
 						model.trigger('sync', model, resp, options);
 					};
-					var error = options.error;
+					error = options.error;
 					options.error = function (xhr) {
 						if (error) {
 							error(model, xhr, options);
@@ -610,7 +614,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 					};
 					// Make the request, allowing the user to override any Ajax
 					// options.
-					var xhr = options.xhr = Backbone.ajax(_.extend(params, options));
+					xhr = options.xhr = Backbone.ajax(_.extend(params, options));
 					model.trigger('request', model, xhr, options);
 					return xhr;
 
@@ -657,9 +661,8 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 			var self = this;
 			if (self.has("user")) {
 				return _.isEqual(self.get("discriminator"), self.get("user").primaryRole);
-			} else {
-				return false;
 			}
+			return false;
 		},
 
 		// Sync
@@ -729,6 +732,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 		},
 
 		sync: function (method, model, options) {
+			var params, success, error, xhr;
 			switch (method) {
 				case "status":
 					// Default options, unless specified.
@@ -737,7 +741,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 						emulateJSON: Backbone.emulateJSON
 					});
 					// Default JSON-request options.
-					var params = {
+					params = {
 						type: 'PUT',
 						dataType: 'json',
 						contentType: 'application/json',
@@ -755,14 +759,14 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 							urlError();
 						}
 					}
-					var success = options.success;
+					success = options.success;
 					options.success = function (resp) {
 						if (success) {
 							success(model, resp, options);
 						}
 						model.trigger('sync', model, resp, options);
 					};
-					var error = options.error;
+					error = options.error;
 					options.error = function (xhr) {
 						if (error) {
 							error(model, xhr, options);
@@ -771,7 +775,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 					};
 					// Make the request, allowing the user to override any Ajax
 					// options.
-					var xhr = options.xhr = Backbone.ajax(_.extend(params, options));
+					xhr = options.xhr = Backbone.ajax(_.extend(params, options));
 					model.trigger('request', model, xhr, options);
 					return xhr;
 
@@ -821,9 +825,8 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 			if (!file.has("currentBody") || !file.get("currentBody").date) {
 				// Should not happen, but better to be safe
 				return file.get("id");
-			} else {
-				return App.utils.dateFromString(file.get("currentBody").date).getTime();
 			}
+			return App.utils.dateFromString(file.get("currentBody").date).getTime();
 		}
 	});
 
@@ -875,9 +878,8 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 		comparator: function (department) {
 			if (_.isObject(department.get("institution"))) {
 				return department.get('institution').name + department.get('department');
-			} else {
-				return "_" + department.get('department');
 			}
+			return "_" + department.get('department');
 		}
 	});
 
@@ -1012,6 +1014,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 		},
 
 		sync: function (method, model, options) {
+			var params, success, error, xhr;
 			switch (method) {
 				case "phase":
 
@@ -1021,7 +1024,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 						emulateJSON: Backbone.emulateJSON
 					});
 					// Default JSON-request options.
-					var params = {
+					params = {
 						type: 'PUT',
 						dataType: 'json',
 						contentType: 'application/json',
@@ -1039,14 +1042,14 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 							urlError();
 						}
 					}
-					var success = options.success;
+					success = options.success;
 					options.success = function (resp) {
 						if (success) {
 							success(model, resp, options);
 						}
 						model.trigger('sync', model, resp, options);
 					};
-					var error = options.error;
+					error = options.error;
 					options.error = function (xhr) {
 						if (error) {
 							error(model, xhr, options);
@@ -1055,7 +1058,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 					};
 					// Make the request, allowing the user to override any Ajax
 					// options.
-					var xhr = options.xhr = Backbone.ajax(_.extend(params, options));
+					xhr = options.xhr = Backbone.ajax(_.extend(params, options));
 					model.trigger('request', model, xhr, options);
 					return xhr;
 
