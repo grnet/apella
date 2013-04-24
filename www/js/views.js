@@ -5890,7 +5890,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					"application")) || $(event.currentTarget).attr('type') === 'hidden') {
 					return;
 				}
-				self.$("a#save").removeAttr("disabled");
+				self.$("a#saveNomination").removeAttr("disabled");
 			},
 
 			submit: function (event) {
