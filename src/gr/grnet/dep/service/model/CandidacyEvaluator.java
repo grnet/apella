@@ -2,14 +2,19 @@ package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
 import gr.grnet.dep.service.model.Candidacy.MediumCandidacyView;
+import gr.grnet.dep.service.model.file.PositionCandidaciesFile;
 import gr.grnet.dep.service.util.CompareUtil;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Version;
 
 import org.codehaus.jackson.map.annotate.JsonView;
@@ -37,6 +42,9 @@ public class CandidacyEvaluator implements Serializable {
 
 	@ManyToOne
 	private Candidacy candidacy;
+
+	@OneToMany(mappedBy = "evaluator", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<PositionCandidaciesFile> files = new HashSet<PositionCandidaciesFile>();
 
 	public Long getId() {
 		return id;
@@ -74,6 +82,14 @@ public class CandidacyEvaluator implements Serializable {
 	}
 
 	//////////////////////////////////////
+
+	public Set<PositionCandidaciesFile> getFiles() {
+		return files;
+	}
+
+	public void setFiles(Set<PositionCandidaciesFile> files) {
+		this.files = files;
+	}
 
 	public boolean isMissingRequiredField() {
 		return this.fullname == null || this.email == null;

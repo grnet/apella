@@ -187,7 +187,7 @@ public class CandidacyRESTService extends RESTService {
 			validateCandidacy(existingCandidacy, candidate);
 
 			//Check if evaluators change:
-			boolean updatedEvaluators = CompareUtil.compareCollections(existingCandidacy.getProposedEvaluators(), candidacy.getProposedEvaluators(), new Comparator<CandidacyEvaluator>() {
+			boolean updatedEvaluators = !CompareUtil.compareCollections(existingCandidacy.getProposedEvaluators(), candidacy.getProposedEvaluators(), new Comparator<CandidacyEvaluator>() {
 
 				@Override
 				public int compare(CandidacyEvaluator o1, CandidacyEvaluator o2) {
@@ -379,7 +379,7 @@ public class CandidacyRESTService extends RESTService {
 				}
 				// 4. candidacy.remove@candidates 
 				for (final Candidacy candidacy : existingCandidacy.getCandidacies().getCandidacies()) {
-					if (candidacy.isPermanent()) {
+					if (candidacy.isPermanent() && !candidacy.getId().equals(existingCandidacy.getId())) {
 						sendEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
 							"default.subject",
 							"candidacy.remove@candidates",
@@ -401,6 +401,12 @@ public class CandidacyRESTService extends RESTService {
 			for (FileHeader fh : existingCandidacy.getFiles()) {
 				deleteCompletely(fh);
 			}
+			for (CandidacyEvaluator eval : existingCandidacy.getProposedEvaluators()) {
+				for (FileHeader fh : eval.getFiles()) {
+					deleteCompletely(fh);
+				}
+			}
+			existingCandidacy.getCandidacies().getCandidacies().remove(existingCandidacy);
 			em.remove(existingCandidacy);
 			em.flush();
 

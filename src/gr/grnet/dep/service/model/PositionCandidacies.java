@@ -47,7 +47,7 @@ public class PositionCandidacies {
 	@OneToMany(mappedBy = "candidacies", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<PositionPhase> phases = new HashSet<PositionPhase>();
 
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "candidacies")
+	@OneToMany(mappedBy = "candidacies", cascade = CascadeType.ALL, orphanRemoval = true)
 	@Filter(name = "filterPermanent")
 	private Set<Candidacy> candidacies = new HashSet<Candidacy>();
 
