@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.PositionCommittee.PositionCommitteeView;
 import gr.grnet.dep.service.model.PositionCommitteeMember.PositionCommitteeMemberView;
 import gr.grnet.dep.service.model.PositionEvaluation.PositionEvaluationView;
@@ -9,6 +10,7 @@ import gr.grnet.dep.service.model.Register.DetailedRegisterView;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -34,6 +36,8 @@ public class RegisterMember implements Serializable {
 	public static interface DetailedRegisterMemberView extends RegisterMemberView {
 	};
 
+	private static final Logger log = Logger.getLogger(RegisterMember.class.getName());
+
 	@Id
 	@GeneratedValue
 	private Long id;
@@ -48,8 +52,6 @@ public class RegisterMember implements Serializable {
 	private Professor professor;
 
 	private boolean external;
-
-	private boolean deleted = false;
 
 	@OneToMany(mappedBy = "registerMember", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<PositionCommitteeMember> committees = new HashSet<PositionCommitteeMember>();
@@ -83,15 +85,6 @@ public class RegisterMember implements Serializable {
 		this.professor = professor;
 	}
 
-	@XmlTransient
-	public boolean isDeleted() {
-		return deleted;
-	}
-
-	public void setDeleted(boolean deleted) {
-		this.deleted = deleted;
-	}
-
 	public boolean isExternal() {
 		return external;
 	}
@@ -120,7 +113,23 @@ public class RegisterMember implements Serializable {
 
 	///////////////////////////////
 
+	@JsonView({DetailedRegisterView.class})
+	public boolean getCanBeDeleted() {
+		for (PositionCommitteeMember member : committees) {
+			if (member.getCommittee().getPosition().getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
+				return false;
+			}
+		}
+		for (PositionEvaluator evaluator : evaluations) {
+			if (evaluator.getEvaluation().getPosition().getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	public void initializeCollections() {
+		this.committees.size();
 		this.evaluations.size();
 		this.professor.initializeCollections();
 	}

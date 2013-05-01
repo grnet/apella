@@ -29,8 +29,10 @@
 		</ul>
 	</td>
 	<td width="70px">
+		<% if (canBeDeleted) { %>
 		<div class="btn-group">
 			<a id="removeMember" data-professor-id="<%= professor.id %>" class="btn btn-mini btn-danger"><i class="icon-minus icon-white"></i> <%= $.i18n.prop('btn_remove_member') %></a>
 		</div>
+		<% } %>
 	</td>
 </tr>

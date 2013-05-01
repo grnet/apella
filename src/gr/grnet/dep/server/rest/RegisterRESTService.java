@@ -2,6 +2,7 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Institution;
+import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Register;
@@ -67,9 +68,13 @@ public class RegisterRESTService extends RESTService {
 		try {
 			Register r = (Register) em.createQuery(
 				"select r from Register r " +
+					"left join fetch r.members m " +
+					"left join fetch m.committees " +
+					"left join fetch m.evaluations " +
 					"where r.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
+
 			r.initializeCollections();
 			return r;
 		} catch (NoResultException e) {
@@ -156,6 +161,41 @@ public class RegisterRESTService extends RESTService {
 		if (newMemberIds.size() != newRegisterMembers.size()) {
 			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
 		}
+		// Calculate Added and Removed Professor IDs
+		Set<Long> addedProfessorIds = new HashSet<Long>();
+		addedProfessorIds.addAll(newMemberIds);
+		addedProfessorIds.removeAll(existingMembersAsMap.keySet());
+		Set<Long> removedProfessorIds = new HashSet<Long>();
+		removedProfessorIds.addAll(existingMembersAsMap.keySet());
+		removedProfessorIds.removeAll(newMemberIds);
+		// Validate removal
+		try {
+			em.createQuery("select pcm from PositionCommitteeMember pcm " +
+				"where pcm.registerMember.register.id = :registerId " +
+				"and pcm.committee.position.phase.status = :status " +
+				"and pcm.registerMember.professor.id in (:professorIds)")
+				.setParameter("registerId", existingRegister.getId())
+				.setParameter("status", PositionStatus.EPILOGI)
+				.setParameter("professorIds", removedProfessorIds)
+				.setMaxResults(1)
+				.getSingleResult();
+			throw new RestException(Status.CONFLICT, "professor.is.committee.member");
+		} catch (NoResultException e) {
+		}
+		try {
+			em.createQuery("select e.id from PositionEvaluator e " +
+				"where e.registerMember.register.id = :registerId " +
+				"and e.evaluation.position.phase.status = :status " +
+				"and e.registerMember.professor.id in (:professorIds)")
+				.setParameter("registerId", existingRegister.getId())
+				.setParameter("status", PositionStatus.EPILOGI)
+				.setParameter("professorIds", removedProfessorIds)
+				.setMaxResults(1)
+				.getSingleResult();
+			throw new RestException(Status.CONFLICT, "professor.is.evaluator");
+		} catch (NoResultException e) {
+		}
+		// Create new list, without replacing existing members 
 		Map<Long, RegisterMember> newMembersAsMap = new HashMap<Long, RegisterMember>();
 		for (Professor existingProfessor : newRegisterMembers) {
 			if (existingMembersAsMap.containsKey(existingProfessor.getId())) {
@@ -192,12 +232,8 @@ public class RegisterRESTService extends RESTService {
 			em.flush();
 
 			// Send E-Mails:
-
 			//1. To Added Members:
-			Set<Long> addedIds = new HashSet<Long>();
-			addedIds.addAll(newMemberIds);
-			addedIds.removeAll(existingMembersAsMap.keySet());
-			for (Long professorId : addedIds) {
+			for (Long professorId : addedProfessorIds) {
 				final RegisterMember savedMember = newMembersAsMap.get(professorId);
 				if (savedMember.isExternal()) {
 					// register.create.register.member.external@member
@@ -226,10 +262,7 @@ public class RegisterRESTService extends RESTService {
 				}
 			}
 			//2. To Removed Members:
-			Set<Long> removedIds = new HashSet<Long>();
-			removedIds.addAll(existingMembersAsMap.keySet());
-			addedIds.removeAll(newMemberIds);
-			for (Long professorID : removedIds) {
+			for (Long professorID : removedProfessorIds) {
 				final RegisterMember removedMember = existingMembersAsMap.get(professorID);
 				if (removedMember.isExternal()) {
 					// register.remove.register.member.external@member

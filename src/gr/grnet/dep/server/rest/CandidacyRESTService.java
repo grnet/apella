@@ -436,7 +436,8 @@ public class CandidacyRESTService extends RESTService {
 			!candidacy.getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!candidacy.isOpenToOtherCandidates() &&
+		if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
+			!candidacy.isOpenToOtherCandidates() &&
 			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -462,7 +463,8 @@ public class CandidacyRESTService extends RESTService {
 			!candidacy.getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!candidacy.isOpenToOtherCandidates() &&
+		if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
+			!candidacy.isOpenToOtherCandidates() &&
 			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -492,7 +494,8 @@ public class CandidacyRESTService extends RESTService {
 			!candidacy.getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!candidacy.isOpenToOtherCandidates() &&
+		if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
+			!candidacy.isOpenToOtherCandidates() &&
 			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -525,7 +528,8 @@ public class CandidacyRESTService extends RESTService {
 			!candidacy.getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!candidacy.isOpenToOtherCandidates() &&
+		if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
+			!candidacy.isOpenToOtherCandidates() &&
 			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -550,7 +554,8 @@ public class CandidacyRESTService extends RESTService {
 			!candidacy.getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!candidacy.isOpenToOtherCandidates() &&
+		if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
+			!candidacy.isOpenToOtherCandidates() &&
 			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
@@ -580,7 +585,8 @@ public class CandidacyRESTService extends RESTService {
 			!candidacy.getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!candidacy.isOpenToOtherCandidates() &&
+		if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
+			!candidacy.isOpenToOtherCandidates() &&
 			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}

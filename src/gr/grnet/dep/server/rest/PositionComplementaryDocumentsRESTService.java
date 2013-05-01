@@ -201,7 +201,8 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 			!loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
+		if (!(existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI) ||
+			existingPosition.getPhase().getStatus().equals(PositionStatus.ANAPOMPI) || existingPosition.getPhase().getStatus().equals(PositionStatus.STELEXOMENI))) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		// Parse Request
@@ -310,7 +311,8 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 			!loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
+		if (!(existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI) ||
+			existingPosition.getPhase().getStatus().equals(PositionStatus.ANAPOMPI) || existingPosition.getPhase().getStatus().equals(PositionStatus.STELEXOMENI))) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		// Parse Request
@@ -377,7 +379,8 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 			!loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
+		if (!(existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI) ||
+			existingPosition.getPhase().getStatus().equals(PositionStatus.ANAPOMPI) || existingPosition.getPhase().getStatus().equals(PositionStatus.STELEXOMENI))) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		try {

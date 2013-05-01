@@ -1193,7 +1193,8 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 		defaults: {
 			id: undefined,
 			professor: undefined,
-			internal: undefined
+			internal: undefined,
+			canBeDeleted : undefined
 		}
 	});
 

@@ -1465,8 +1465,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					},
 					phone : {
 						required : (self.model.hasRoleWithStatus("INSTITUTION_MANAGER") || self.model.hasRoleWithStatus("INSTITUTION_ASSISTANT")),
-						number : true,
-						minlength : 10
+						number: true,
+						minlength: 10,
+						maxlength: 10
 					},
 					email : {
 						required : true,
@@ -2159,9 +2160,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				case "fekCheckbox":
 					return _.isEqual(self.model.get("status"), "UNAPPROVED");
 				case "fekSubject":
-					return _.isEqual(self.model.get("status"), "UNAPPROVED") && self.model.has("fekSubject");
+					return _.isEqual(self.model.get("status"), "UNAPPROVED") && (_.isObject(self.model.get("fekSubject") || !_.isObject(self.model.get("subject"))));
 				case "subject":
-					return _.isEqual(self.model.get("status"), "UNAPPROVED") && self.model.has("subject");
+					return _.isEqual(self.model.get("status"), "UNAPPROVED") && _.isObject(self.model.get("subject"));
 				default:
 					break;
 				}
@@ -2578,19 +2579,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				});
 				self.$("input[name=fekCheckbox]").change(function(event, data) {
 					if ($(this).is(":checked")) {
-						self.$("textarea[name=fekSubject]").attr("disabled", true);
-						self.$("textarea[name=fekSubject]").val("");
+						self.$("textarea[name=fekSubject]").attr("disabled", true).val("");
 						self.$("textarea[name=subject]").removeAttr("disabled");
 					} else {
 						self.$("textarea[name=fekSubject]").removeAttr("disabled");
-						self.$("textarea[name=subject]").attr("disabled", true);
-						self.$("textarea[name=subject]").val("");
+						self.$("textarea[name=subject]").attr("disabled", true).val("");
 					}
 				});
-				self.$("input[name=fekCheckbox]").attr("checked", _.isObject(self.model.get("subject")));
-				self.$("input[name=fekCheckbox]").trigger("change", {
-					triggeredBy : "application"
-				});
+				if (_.isObject(self.model.get("subject"))) {
+					self.$("input[name=fekCheckbox]").attr("checked", true);
+				} else {
+					self.$("input[name=fekCheckbox]").removeAttr("checked");
+				}
 				break;
 			case "PROFESSOR_FOREIGN":
 				App.ranks = App.ranks || new Models.Ranks();
@@ -5643,15 +5643,17 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			"submit form" : "submit"
 		},
 
-		isEditable : function(element) {
+		isEditable: function (element) {
 			var self = this;
 			switch (element) {
-			case "praksiDiorismouFile":
-				return (self.model.get("position").phase.status === "EPILOGI" || self.model.get("position").phase.status === "STELEXOMENI");
-			default:
-				return self.model.get("position").phase.status === "EPILOGI";
+				case "secondNominatedCandidacy":
+				case "diavivastikoPraktikouFile":
+				case "praksiDiorismouFile":
+				case "nominationFEK":
+					return (self.model.get("position").phase.status === "EPILOGI" || self.model.get("position").phase.status === "STELEXOMENI");
+				default:
+					return self.model.get("position").phase.status === "EPILOGI";
 			}
-
 		},
 
 		render : function(event) {
@@ -5873,7 +5875,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 		isEditable : function(element) {
 			var self = this;
-			return _.indexOf([ "EPILOGI", "STELEXOMENI", "ANAPOMPI" ], self.model.get("position").phase.status) > 0;
+			return _.indexOf([ "EPILOGI", "STELEXOMENI", "ANAPOMPI" ], self.model.get("position").phase.status) >= 0;
 		},
 
 		render : function(event) {
