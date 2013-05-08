@@ -174,7 +174,6 @@ public class PositionEvaluationRESTService extends RESTService {
 					"join r.members rm " +
 					"where r.permanent = true " +
 					"and r.institution.id = :institutionId " +
-					"and rm.deleted = false " +
 					"and rm.external = true " +
 					"and rm.professor.status = :status " +
 					"and rm.id in (:registerIds)")
@@ -682,8 +681,7 @@ public class PositionEvaluationRESTService extends RESTService {
 				"where r.permanent = true " +
 				"and r.institution.id = :institutionId " +
 				"and m.professor.status = :status " +
-				"and m.external = true " +
-				"and m.deleted = false")
+				"and m.external = true ")
 			.setParameter("institutionId", existingPosition.getDepartment().getInstitution().getId())
 			.setParameter("status", RoleStatus.ACTIVE)
 			.getResultList();

@@ -17,13 +17,11 @@
 		<tr>
 			<td>
 				<% if (!member.isMember) { %>
-				<div class="btn-group">
-					<a class="btn btn-small btn-success dropdown-toggle" data-toggle="dropdown"><%= $.i18n.prop('btn_add') %> <span class="caret"></span></a>
- 					<ul class="dropdown-menu">
-   						<li><a id="addMember" data-model-cid="<%= member.cid %>" data-type="REGULAR"><i class="icon-plus"></i> <%= $.i18n.prop("PositionCommitteeMemberTypeREGULAR") %></a></li>
-   						<li><a id="addMember" data-model-cid="<%= member.cid %>" data-type="SUBSTITUTE"><i class="icon-plus"></i> <%= $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") %></a></li>
- 					</ul>
-				</div>
+				<select name="selectMember" class="input-small">
+					<option value="NONE">----</option>
+					<option value="REGULAR" data-model-cid="<%= member.cid %>" data-type="REGULAR"><%= $.i18n.prop("PositionCommitteeMemberTypeREGULAR") %></option>
+					<option value="SUBSTITUTE" data-model-cid="<%= member.cid %>" data-type="SUBSTITUTE"><%= $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") %></option>
+				</select>
 				<% } %>
 			</td>
 			<td>
@@ -51,8 +49,9 @@
 	</tbody>
 	<tfoot>
 		<tr>
-			<td colspan="8">
-				<div class="btn-toolbar" id="details">
+			<td colspan="9">
+				<div class="btn-toolbar pull-right" id="details">
+					<a id="addMembers" class="btn btn-success"><%= $.i18n.prop('btn_addAll') %></a>
 				</div>
 			</td>
 		</tr>

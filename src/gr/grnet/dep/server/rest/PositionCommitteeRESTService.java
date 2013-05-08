@@ -92,8 +92,7 @@ public class PositionCommitteeRESTService extends RESTService {
 				"join r.members m " +
 				"where r.permanent = true " +
 				"and r.institution.id = :institutionId " +
-				"and m.professor.status = :status " +
-				"and m.deleted = false")
+				"and m.professor.status = :status ")
 			.setParameter("institutionId", existingPosition.getDepartment().getInstitution().getId())
 			.setParameter("status", RoleStatus.ACTIVE)
 			.getResultList();
@@ -205,7 +204,6 @@ public class PositionCommitteeRESTService extends RESTService {
 					"where r.permanent = true " +
 					"and r.institution.id = :institutionId " +
 					"and m.professor.status = :status " +
-					"and m.deleted = false " +
 					"and m.id in (:registerIds)")
 				.setParameter("institutionId", existingPosition.getDepartment().getInstitution().getId())
 				.setParameter("status", RoleStatus.ACTIVE)

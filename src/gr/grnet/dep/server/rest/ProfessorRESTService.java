@@ -45,8 +45,7 @@ public class ProfessorRESTService extends RESTService {
 		}
 		List<PositionCommitteeMember> committees = em.createQuery(
 			"select pcm from PositionCommitteeMember pcm " +
-				"where pcm.registerMember.professor.id = :professorId " +
-				"and pcm.registerMember.deleted = false")
+				"where pcm.registerMember.professor.id = :professorId ")
 			.setParameter("professorId", professorId)
 			.getResultList();
 		for (PositionCommitteeMember committeeMember : committees) {
