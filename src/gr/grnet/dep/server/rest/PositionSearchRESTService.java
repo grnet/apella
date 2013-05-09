@@ -10,7 +10,7 @@ import gr.grnet.dep.service.model.Position.PublicPositionView;
 import gr.grnet.dep.service.model.PositionSearchCriteria;
 import gr.grnet.dep.service.model.PositionSearchCriteria.PositionSearchCriteriaView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
-import gr.grnet.dep.service.model.Subject;
+import gr.grnet.dep.service.model.Sector;
 import gr.grnet.dep.service.model.User;
 
 import java.text.ParseException;
@@ -57,33 +57,27 @@ public class PositionSearchRESTService extends RESTService {
 			}
 
 			// Prepare Query
-			String queryString = "from Position p " +
-				"where p.permanent = true " +
-				"and p.phase.candidacies.closingDate >= :today ";
-			if (!criteria.getDepartments().isEmpty()) {
-				queryString += "and p.department.id in (:departmentIds) ";
+			Collection<Long> departmentIds = new ArrayList<Long>();
+			departmentIds.add(-1L);
+			for (Department department : criteria.getDepartments()) {
+				departmentIds.add(department.getId());
 			}
-			if (!criteria.getSubjects().isEmpty()) {
-				queryString += "and p.subject.name in (:subjects) ";
+			Collection<Long> sectorIds = new ArrayList<Long>();
+			sectorIds.add(-1L);
+			for (Sector sector : criteria.getSectors()) {
+				sectorIds.add(sector.getId());
 			}
-
-			Query query = em.createQuery(queryString)
-				.setParameter("today", today);
-
-			if (!criteria.getDepartments().isEmpty()) {
-				Collection<Long> departmentIds = new ArrayList<Long>();
-				for (Department department : criteria.getDepartments()) {
-					departmentIds.add(department.getId());
-				}
-				query = query.setParameter("departmentIds", departmentIds);
-			}
-			if (!criteria.getSubjects().isEmpty()) {
-				Collection<String> subjects = new ArrayList<String>();
-				for (Subject subject : criteria.getSubjects()) {
-					subjects.add(subject.getName());
-				}
-				query = query.setParameter("subjects", subjects);
-			}
+			Query query = em.createQuery(
+				"from Position p " +
+					"where p.permanent = true " +
+					"and p.phase.candidacies.closingDate >= :today " +
+					"and (" +
+					"	p.department.id in (:departmentIds) " +
+					"	or p.sector.id in (:sectorIds) " +
+					")")
+				.setParameter("today", today)
+				.setParameter("departmentIds", departmentIds)
+				.setParameter("sectorIds", sectorIds);
 
 			// Execute Query
 			@SuppressWarnings("unchecked")
@@ -172,13 +166,13 @@ public class PositionSearchRESTService extends RESTService {
 			throw new RestException(Status.CONFLICT, "already.exists");
 		} catch (NoResultException e) {
 			Collection<Department> departments = supplementDepartments(newCriteria.getDepartments());
-			Collection<Subject> subjects = supplementSubjects(newCriteria.getSubjects());
+			Collection<Sector> sectors = supplementSectors(newCriteria.getSectors());
 
 			newCriteria.setCandidate(candidate);
 			newCriteria.getDepartments().clear();
 			newCriteria.getDepartments().addAll(departments);
-			newCriteria.getSubjects().clear();
-			newCriteria.getSubjects().addAll(subjects);
+			newCriteria.getSectors().clear();
+			newCriteria.getSectors().addAll(sectors);
 
 			newCriteria = em.merge(newCriteria);
 			em.flush();
@@ -200,12 +194,12 @@ public class PositionSearchRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		Collection<Department> departments = supplementDepartments(newCriteria.getDepartments());
-		Collection<Subject> subjects = supplementSubjects(newCriteria.getSubjects());
+		Collection<Sector> sectors = supplementSectors(newCriteria.getSectors());
 
 		criteria.getDepartments().clear();
 		criteria.getDepartments().addAll(departments);
-		criteria.getSubjects().clear();
-		criteria.getSubjects().addAll(subjects);
+		criteria.getSectors().clear();
+		criteria.getSectors().addAll(sectors);
 
 		em.flush();
 

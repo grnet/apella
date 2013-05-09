@@ -3,7 +3,6 @@ package gr.grnet.dep.service.model;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -35,8 +34,8 @@ public class PositionSearchCriteria {
 	@ManyToMany
 	private Set<Department> departments = new HashSet<Department>();
 
-	@ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-	private Set<Subject> subjects = new HashSet<Subject>();
+	@ManyToMany
+	private Set<Sector> sectors = new HashSet<Sector>();
 
 	public Long getId() {
 		return id;
@@ -63,23 +62,19 @@ public class PositionSearchCriteria {
 		this.departments = departments;
 	}
 
-	public Set<Subject> getSubjects() {
-		return subjects;
+	public Set<Sector> getSectors() {
+		return sectors;
 	}
 
-	public void setSubjects(Set<Subject> subjects) {
-		this.subjects = subjects;
+	public void setSectors(Set<Sector> sectors) {
+		this.sectors = sectors;
 	}
 
 	////////////////////////////////////////
 
-	public static PositionSearchCriteria valueOf(String s) {
-		return new PositionSearchCriteria();
-	}
-
 	public void initializeCollections() {
 		this.departments.size();
-		this.subjects.size();
+		this.sectors.size();
 	}
 
 }

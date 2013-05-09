@@ -18,6 +18,7 @@ import gr.grnet.dep.service.model.PositionEvaluation;
 import gr.grnet.dep.service.model.PositionNomination;
 import gr.grnet.dep.service.model.PositionPhase;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.Sector;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileType;
@@ -215,17 +216,26 @@ public class PositionRESTService extends RESTService {
 			Position existingPosition = getAndCheckPosition(loggedOn, id);
 			boolean isNew = !existingPosition.isPermanent();
 
+			// Validate
+			Sector sector = em.find(Sector.class, position.getSector().getId());
+			if (sector == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.sector.id");
+			}
+
+			// Update
 			existingPosition.copyFrom(position);
+			existingPosition.setSector(sector);
 			existingPosition.setSubject(supplementSubject(position.getSubject()));
 			existingPosition.setPermanent(true);
 			em.flush();
 
+			// Send E-Mails
 			existingPosition.initializeCollections();
-
 			if (isNew) {
 				sendNotificationsToInterestedCandidates(existingPosition);
 			}
 
+			// Return result
 			return existingPosition;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);

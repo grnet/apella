@@ -1311,9 +1311,22 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 		url: "/dep/rest/subject/"
 	});
 
-	Models.GgetSubjects = Backbone.Collection.extend({
-		model: Models.Subject,
-		url: "/dep/rest/subject/gget"
+	Models.Sector = Backbone.Model.extend({
+		urlRoot: "/dep/rest/sector/",
+		defaults: {
+			id: undefined,
+			area: undefined,
+			category: undefined
+		}
+	});
+
+	Models.Sectors = Backbone.Collection.extend({
+		model: Models.Sector,
+		url: "/dep/rest/sector/",
+		comparator : function(model) {
+			return model.get("area") + model.get("category");
+		}
+
 	});
 
 	return Models;

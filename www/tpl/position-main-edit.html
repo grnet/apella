@@ -9,7 +9,7 @@
 		<div class="control-group">
 			<label class="control-label" for="department"><%= $.i18n.prop('Department') %>:</label>
 			<div class="controls">
-				<span class="help-block" name="department"><%= department.institution.name %> : <%= department.department %></span>
+				<span class="help-block" name="department" ><%= department.institution.name %> : <%= department.department %></span>
 			</div>
 		</div>
 		<div class="control-group">
@@ -25,9 +25,18 @@
 			</div>
 		</div>
 		<div class="control-group">
+			<label class="control-label" for="sector"><%= $.i18n.prop('Sector') %>:</label>
+
+			<div class="controls">
+				<select class="input-xlarge" name="sector"></select><span class="help-block"></span>
+			</div>
+		</div>
+		<div class="control-group">
 			<label class="control-label" for="fek"><%= $.i18n.prop('FEK') %>:</label>
 			<div class="controls">
-				<input class="input-xlarge" name="fek" type="text" value="<%= fek %>" /> <a href="<%= fek %>" target="external"><%= fek %></a>
+				<input class="input-xlarge" name="fek" type="text" value="<%= fek %>" />
+				<br/>
+				<a href="<%= fek %>" target="external"><%= fek %></a>
 			</div>
 		</div>
 		<div class="control-group">

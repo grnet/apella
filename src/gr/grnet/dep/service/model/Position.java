@@ -74,6 +74,9 @@ public class Position {
 	@ManyToOne(cascade = CascadeType.ALL)
 	private Subject subject;
 
+	@ManyToOne(optional = false)
+	private Sector sector;
+
 	private String fek;
 
 	@Temporal(TemporalType.DATE)
@@ -130,6 +133,14 @@ public class Position {
 
 	public void setDepartment(Department department) {
 		this.department = department;
+	}
+
+	public Sector getSector() {
+		return sector;
+	}
+
+	public void setSector(Sector sector) {
+		this.sector = sector;
 	}
 
 	public Subject getSubject() {

@@ -4520,6 +4520,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						return self.model.isNew() || _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
 					case "subject":
 						return self.model.isNew() || _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
+					case "sector":
+						return self.model.isNew() || _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
 					case "fek":
 						return self.model.isNew() || _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
 					case "fekSentDate":
@@ -4539,6 +4541,36 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var propName;
 				self.closeInnerViews();
 				self.$el.html(self.template(self.model.toJSON()));
+				// Add Sector options
+				self.$("select[name='sector']").change(function (event) {
+					self.$("select[name='sector']").next(".help-block").html(self.$("select[name='sector'] option:selected").text());
+				});
+				App.sectors = App.sectors || new Models.Sectors();
+				App.sectors.fetch({
+					cache: true,
+					reset: true,
+					success: function (collection, resp) {
+						collection.each(function (sector) {
+							if (_.isObject(self.model.get("sector")) && _.isEqual(self.model.get("sector").id, sector.get("id"))) {
+								self.$("select[name='sector']").append("<option value='" + sector.get("id") + "' selected>" + sector.get("area") + " / " + sector.get("category") + "</option>");
+							} else {
+								self.$("select[name='sector']").append("<option value='" + sector.get("id") + "'>" + sector.get("area") + " / " + sector.get("category") + "</option>");
+							}
+						});
+						self.$("select[name='sector']").trigger("change", {
+							triggeredBy: "application"
+						});
+					},
+					error: function (model, resp, options) {
+						var popup = new Views.PopupView({
+							type: "error",
+							message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						});
+						popup.show();
+					}
+				});
+
+
 				// Set isEditable to fields
 				self.$("select, input, textarea").each(function (index) {
 					var field = $(this).attr("name");
@@ -4562,7 +4594,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}
 				});
 				// Enable typeahead for Subjects:
-				self.$('input[name=subject]').typeahead({
+				self.$('textarea[name=subject]').typeahead({
 					source: function (query, process) {
 						var subjects = new Models.Subjects();
 						subjects.fetch({
@@ -4593,6 +4625,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						description: "required",
 						department: "required",
 						subject: "required",
+						sector: "required",
 						status: "required",
 						fek: {
 							required: true,
@@ -4613,6 +4646,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						description: $.i18n.prop('validation_description'),
 						department: $.i18n.prop('validation_department'),
 						subject: $.i18n.prop('validation_subject'),
+						sector: $.i18n.prop('validation_sector'),
 						status: $.i18n.prop('validation_positionStatus'),
 						fek: $.i18n.prop('validation_fek'),
 						fekSentDate: $.i18n.prop('validation_fekSentDate'),
@@ -4664,6 +4698,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				values.description = self.$('form textarea[name=description]').val();
 				values.department = {
 					"id": self.$('form select[name=department]').val()
+				};
+				values.sector = {
+					"id" : self.$('form select[name=sector]').val()
 				};
 				values.subject = {
 					"id": self.model.has("subject") ? self.model.get("subject").id : undefined,
@@ -7090,12 +7127,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			initialize: function () {
 				var self = this;
 				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
-				_.bindAll(self, "renderDepartments", "renderSubjects", "readValues", "search", "submit");
+				_.bindAll(self, "change", "renderDepartments", "renderSectors", "readValues", "search", "submit");
 				self.template = _.template(tpl_position_search_criteria);
 				self.model.bind('change', self.render, self);
 			},
 
 			events: {
+				"change select,input:not([type=file]),textarea": "change",
 				"click a#addDepartment": "addDepartment",
 				"click a#removeDepartment": "removeDepartment",
 				"click a#addSubject": "addSubject",
@@ -7131,13 +7169,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						popup.show();
 					}
 				});
-				// Add Subjects
-				App.ggetSubjects = App.ggetSubjects || new Models.GgetSubjects();
-				App.ggetSubjects.fetch({
+				// Add Sectors
+				App.sectors = App.sectors || new Models.Sectors();
+				App.sectors.fetch({
 					cache: true,
 					reset: true,
 					success: function (collection, resp) {
-						self.renderSubjects(collection);
+						self.renderSectors(collection);
 					},
 					error: function (model, resp, options) {
 						var popup = new Views.PopupView({
@@ -7147,6 +7185,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						popup.show();
 					}
 				});
+
+				// Disable Save Button until user changes a field,
+				self.$("a#save").attr("disabled", true);
+
 				return self;
 			},
 
@@ -7187,6 +7229,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						var count = _.countBy(selectedNodes, function (selectedNode) {
 							return selectedNode.data.isFolder ? 'institution' : 'department';
 						});
+						self.change($.Event(), {
+							triggredBy: "user"
+						});
 						self.$("label[for=departmentsTree] span").html(count.department || 0);
 					},
 					onPostInit: function (isReloading, isError) {
@@ -7199,17 +7244,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				});
 			},
 
-			renderSubjects: function (subjects) {
+			renderSectors: function (sectors) {
 				var self = this;
-				var treeData = subjects.reduce(function (memo, subject) {
-					var category = subject.get("category");
+				var treeData = sectors.reduce(function (memo, sector) {
+					var sectorId = sector.get("id");
+					var area = sector.get("area");
 					var node = _.find(memo, function (item) {
-						return item.key === category;
+						return item.key === area;
 					});
 					if (!node) {
 						node = {
-							title: category,
-							key: category,
+							title: area,
+							key: area,
 							expand: false,
 							isFolder: true,
 							unselectable: false,
@@ -7218,32 +7264,35 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						memo.push(node);
 					}
 					node.children.push({
-						title: subject.get("name"),
-						key: subject.get("name"),
-						select: _.any(self.model.get("subjects"), function (selectedSubject) {
-							return _.isEqual(selectedSubject.name, subject.get("name"));
+						title: sector.get("category"),
+						key: sectorId,
+						select: _.any(self.model.get("sectors"), function (selectedSector) {
+							return _.isEqual(selectedSector.id, sectorId);
 						})
 					});
 					return memo;
 				}, []);
 
-				self.$("#subjectsTree").dynatree({
+				self.$("#sectorsTree").dynatree({
 					checkbox: true,
 					selectMode: 3,
 					children: treeData,
 					onSelect: function (flag, node) {
 						var selectedNodes = node.tree.getSelectedNodes();
 						var count = _.countBy(selectedNodes, function (selectedNode) {
-							return selectedNode.data.isFolder ? 'institution' : 'department';
+							return selectedNode.data.isFolder ? 'area' : 'category';
 						});
-						self.$("label[for=subjectsTree] span").html(count.department || 0);
+						self.change($.Event(), {
+							triggredBy: "user"
+						});
+						self.$("label[for=sectorsTree] span").html(count.category || 0);
 					},
 					onPostInit: function (isReloading, isError) {
 						var selectedNodes = this.getSelectedNodes();
 						var count = _.countBy(selectedNodes, function (selectedNode) {
-							return selectedNode.data.isFolder ? 'institution' : 'department';
+							return selectedNode.data.isFolder ? 'area' : 'category';
 						});
-						self.$("label[for=subjectsTree] span").html(count.department || 0);
+						self.$("label[for=sectorsTree] span").html(count.category || 0);
 					}
 				});
 			},
@@ -7266,11 +7315,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							id: node.data.key
 						};
 					}),
-					subjects: _.map(_.filter(self.$("#subjectsTree").dynatree("getTree").getSelectedNodes(), function (node) {
+					sectors: _.map(_.filter(self.$("#sectorsTree").dynatree("getTree").getSelectedNodes(), function (node) {
 						return !node.data.isFolder;
 					}), function (node) {
 						return {
-							name: node.data.key
+							id: node.data.key
 						};
 					})
 				};
@@ -7287,6 +7336,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				// Save to model
 				self.model.save(self.readValues(), {
 					wait: true,
+					success: function (model, resp) {
+						var popup = new Views.PopupView({
+							type: "success",
+							message: $.i18n.prop("Success")
+						});
+						popup.show();
+						self.$("a#save").attr("disabled", true);
+					},
 					error: function (model, resp, options) {
 						var popup = new Views.PopupView({
 							type: "error",

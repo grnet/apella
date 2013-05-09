@@ -8,6 +8,7 @@ import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.ProfessorForeign;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
+import gr.grnet.dep.service.model.Sector;
 import gr.grnet.dep.service.model.Subject;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.UserStatus;
@@ -621,6 +622,23 @@ public class RESTService {
 			"from Department d " +
 				"where d.id in (:departmentIds)")
 			.setParameter("departmentIds", departmentIds)
+			.getResultList();
+	}
+
+	@SuppressWarnings("unchecked")
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	public Collection<Sector> supplementSectors(Collection<Sector> sectors) {
+		if (sectors.isEmpty()) {
+			return sectors;
+		}
+		Collection<Long> sectorIds = new ArrayList<Long>();
+		for (Sector sector : sectors) {
+			sectorIds.add(sector.getId());
+		}
+		return em.createQuery(
+			"from Sector s " +
+				"where s.id in (:sectorIds)")
+			.setParameter("sectorIds", sectorIds)
 			.getResultList();
 	}
 

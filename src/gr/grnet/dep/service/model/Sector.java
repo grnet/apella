@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @Entity
 @XmlRootElement
-public class Subject {
+public class Sector {
 
 	@Id
 	@GeneratedValue
@@ -18,12 +18,11 @@ public class Subject {
 	@Version
 	private int version;
 
-	@Column(unique = true, nullable = false)
-	private String name;
+	@Column(nullable = false)
+	private String area;
 
-	public Subject() {
-		super();
-	}
+	@Column(nullable = false)
+	private String category;
 
 	public Long getId() {
 		return id;
@@ -33,12 +32,20 @@ public class Subject {
 		this.id = id;
 	}
 
-	public String getName() {
-		return name;
+	public String getArea() {
+		return area;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setArea(String area) {
+		this.area = area;
+	}
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
 	}
 
 }
