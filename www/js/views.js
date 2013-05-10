@@ -5275,7 +5275,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			isEditable: function (element) {
 				var self = this;
-				return self.model.get("position").phase.status === "EPILOGI";
+				return self.model.get("position").phase.status === "EPILOGI" && self.model.get("committeePraktikoSynedriasisUploaded");
 			},
 
 			render: function (event) {
@@ -5301,6 +5301,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.$("a.btn").show();
 
 					self.registerMembers.fetch({
+						cache : false,
 						reset: true
 					});
 				} else {

@@ -674,15 +674,24 @@ public class PositionEvaluationRESTService extends RESTService {
 			!loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+
 		// Prepare Query
+		@SuppressWarnings("unchecked")
 		List<RegisterMember> registerMembers = em.createQuery(
 			"select distinct m from Register r " +
 				"join r.members m " +
 				"where r.permanent = true " +
 				"and r.institution.id = :institutionId " +
 				"and m.professor.status = :status " +
-				"and m.external = true ")
+				"and m.external = true " +
+				"and m.id not in (" +
+				"	select rm.id from Position p " +
+				"	join p.phase.committee.members cm " +
+				"	join cm.registerMember rm " +
+				"	where p.id = :positionId " +
+				")")
 			.setParameter("institutionId", existingPosition.getDepartment().getInstitution().getId())
+			.setParameter("positionId", positionId)
 			.setParameter("status", RoleStatus.ACTIVE)
 			.getResultList();
 

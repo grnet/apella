@@ -1,6 +1,9 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.PositionEvaluator.PositionEvaluatorView;
+import gr.grnet.dep.service.model.file.FileHeader;
+import gr.grnet.dep.service.model.file.FileType;
+import gr.grnet.dep.service.model.file.PositionCommitteeFile;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 
@@ -104,12 +107,18 @@ public class PositionEvaluation {
 		return updatedAt;
 	}
 
+	@JsonView({DetailedPositionEvaluationView.class})
+	public boolean isCommitteePraktikoSynedriasisUploaded() {
+		Set<PositionCommitteeFile> committeeFiles = FileHeader.filter(this.getPosition().getPhase().getCommittee().getFiles(), FileType.PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES);
+		return !committeeFiles.isEmpty();
+	}
+
+	//////////////////////////////////////////////
+
 	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setUpdatedAt(Date updatedAt) {
 		this.updatedAt = updatedAt;
 	}
-
-	//////////////////////////////////////////////
 
 	public void addEvaluator(PositionEvaluator evaluator) {
 		evaluator.setEvaluation(this);
@@ -124,6 +133,7 @@ public class PositionEvaluation {
 		for (PositionEvaluator evaluator : this.evaluators) {
 			evaluator.initializeCollections();
 		}
+		isCommitteePraktikoSynedriasisUploaded();
 	}
 
 	public boolean containsEvaluator(User user) {
