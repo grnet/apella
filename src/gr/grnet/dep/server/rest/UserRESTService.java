@@ -301,7 +301,7 @@ public class UserRESTService extends RESTService {
 
 			//4. Send Verification E-Mail
 			if (newUser.getStatus() == UserStatus.UNVERIFIED) {
-				sendEmail(newUser.getContactInfo().getEmail(),
+				postEmail(newUser.getContactInfo().getEmail(),
 					"verification.title",
 					"verification.body",
 					Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -535,7 +535,7 @@ public class UserRESTService extends RESTService {
 			u.setPasswordSalt(User.generatePasswordSalt());
 			u.setPassword(User.encodePassword(newPassword, u.getPasswordSalt()));
 			// Send email
-			sendEmail(u.getContactInfo().getEmail(),
+			postEmail(u.getContactInfo().getEmail(),
 				"password.reset.title",
 				"password.reset.body",
 				Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -569,7 +569,7 @@ public class UserRESTService extends RESTService {
 			switch (u.getStatus()) {
 				case UNVERIFIED:
 					// Send email
-					sendEmail(u.getContactInfo().getEmail(),
+					postEmail(u.getContactInfo().getEmail(),
 						"verification.title",
 						"verification.body",
 						Collections.unmodifiableMap(new HashMap<String, String>() {

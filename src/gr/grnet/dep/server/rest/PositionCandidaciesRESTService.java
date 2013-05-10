@@ -336,7 +336,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 			if (pcFile.getType().equals(FileType.EISIGISI_DEP_YPOPSIFIOU)) {
 
 				// positionCandidacies.upload.eisigisi@candidate
-				sendEmail(existingEvaluator.getCandidacy().getCandidate().getUser().getContactInfo().getEmail(),
+				postEmail(existingEvaluator.getCandidacy().getCandidate().getUser().getContactInfo().getEmail(),
 					"default.subject",
 					"positionCandidacies.upload.eisigisi@candidate",
 					Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -347,7 +347,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 						}
 					}));
 				// positionCandidacies.upload.eisigisi@candidacyEvaluator
-				sendEmail(existingEvaluator.getEmail(),
+				postEmail(existingEvaluator.getEmail(),
 					"default.subject",
 					"positionCandidacies.upload.eisigisi@candidacyEvaluator",
 					Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -364,7 +364,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 
 				// positionCandidacies.upload.eisigisi@committee
 				for (final PositionCommitteeMember member : existingEvaluator.getCandidacy().getCandidacies().getPosition().getPhase().getCommittee().getMembers()) {
-					sendEmail(existingEvaluator.getEmail(),
+					postEmail(existingEvaluator.getEmail(),
 						"default.subject",
 						"positionCandidacies.upload.eisigisi@committee",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -381,7 +381,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 				}
 				// positionCandidacies.upload.eisigisi@evaluators
 				for (final PositionEvaluator evaluator : existingEvaluator.getCandidacy().getCandidacies().getPosition().getPhase().getEvaluation().getEvaluators()) {
-					sendEmail(existingEvaluator.getEmail(),
+					postEmail(existingEvaluator.getEmail(),
 						"default.subject",
 						"positionCandidacies.upload.eisigisi@evaluators",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -399,7 +399,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 			} else {
 				// position.upload@committee
 				for (final PositionCommitteeMember member : existingEvaluator.getCandidacy().getCandidacies().getPosition().getPhase().getCommittee().getMembers()) {
-					sendEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+					postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 						"default.subject",
 						"position.upload@committee",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -414,7 +414,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 				}
 				// position.upload@candidates
 				for (final Candidacy candidacy : pcFile.getCandidacies().getCandidacies()) {
-					sendEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+					postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
 						"default.subject",
 						"position.upload@candidates",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -429,7 +429,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 				}
 				// position.upload@evaluators
 				for (final PositionEvaluator evaluator : existingEvaluator.getCandidacy().getCandidacies().getPosition().getPhase().getEvaluation().getEvaluators()) {
-					sendEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+					postEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 						"default.subject",
 						"position.upload@evaluators",
 						Collections.unmodifiableMap(new HashMap<String, String>() {

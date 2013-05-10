@@ -7,6 +7,7 @@ import gr.grnet.dep.service.model.PositionPhase;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
+import gr.grnet.dep.service.util.MailService;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -22,6 +23,7 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+import javax.ejb.EJB;
 import javax.ejb.SessionContext;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
@@ -49,6 +51,9 @@ public class QuartzService {
 
 	@Resource
 	SessionContext sc;
+
+	@EJB
+	MailService mailService;
 
 	private static final String jndiName = "Quartz";
 
@@ -197,6 +202,12 @@ public class QuartzService {
 
 	///////////////////////////////////////////////////
 
+	public int sendEmails() {
+		return mailService.sendPendingEmails();
+	}
+
+	///////////////////////////////////////////////////
+
 	private void deleteCompletely(FileHeader fh) {
 		List<FileBody> fileBodies = fh.getBodies();
 		for (int i = fileBodies.size() - 1; i >= 0; i--) {
@@ -224,4 +235,5 @@ public class QuartzService {
 		//Return physical file, should be deleted by caller of function
 		return file;
 	}
+
 }

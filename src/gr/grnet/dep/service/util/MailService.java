@@ -1,48 +1,77 @@
 package gr.grnet.dep.service.util;
 
+import gr.grnet.dep.service.model.MailRecord;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
-import javax.ejb.ActivationConfigProperty;
-import javax.ejb.EJBException;
-import javax.ejb.MessageDriven;
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.MessageListener;
+import javax.ejb.Stateless;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 
-@MessageDriven(activationConfig = {
-	@ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-	@ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/EMailQ")
-})
-public class MailService implements MessageListener {
+@Stateless
+public class MailService {
 
 	@Resource(name = "java:jboss/mail/Default")
 	protected Session mailSession;
 
+	@PersistenceContext(unitName = "apelladb")
+	protected EntityManager em;
+
 	private static final Logger logger = Logger.getLogger(MailService.class.getName());
 
-	@Override
-	public void onMessage(javax.jms.Message message) {
-		MapMessage mailMessage = (MapMessage) message;
+	public void pushEmail(String aToEmailAddr, String aSubject, String aBody) {
+		MailRecord mail = new MailRecord();
+		mail.setToEmailAddr(aToEmailAddr);
+		mail.setSubject(aSubject);
+		mail.setBody(aBody);
 		try {
-			String aToEmailAddr = mailMessage.getString("aToEmailAddr");
-			String aSubject = mailMessage.getString("aSubject");
-			String aBody = mailMessage.getString("aBody");
-			sendEmail(aToEmailAddr, aSubject, aBody);
-		} catch (JMSException e) {
-			logger.log(Level.WARNING, "", e);
-			throw new EJBException(e);
+			em.persist(mail);
+			em.flush();
+		} catch (PersistenceException e) {
+			// Same email, already added to list
+		}
+
+	}
+
+	public MailRecord popEmail() {
+		try {
+			MailRecord mail = (MailRecord) em.createQuery(
+				"from MailRecord")
+				.setMaxResults(1)
+				.getSingleResult();
+			em.remove(mail);
+			em.flush();
+
+			return mail;
+		} catch (NoResultException e) {
+			return null;
 		}
 	}
 
-	private void sendEmail(String aToEmailAddr, String aSubject, String aBody) {
+	public int sendPendingEmails() {
+		int i = 0;
+
+		MailRecord mail = popEmail();
+		while (mail != null) {
+			sendEmail(mail);
+			mail = popEmail();
+			i += 1;
+		}
+
+		return i;
+	}
+
+	public void sendEmail(String aToEmailAddr, String aSubject, String aBody) {
 		logger.log(Level.INFO, "Sending email to " + aToEmailAddr + " " + aSubject + "\n" + aBody);
 		try {
 			MimeMessage message = new MimeMessage(mailSession);
@@ -53,6 +82,10 @@ public class MailService implements MessageListener {
 		} catch (MessagingException e) {
 			logger.log(Level.SEVERE, "Failed to send email to " + aToEmailAddr + " " + aSubject + "\n" + aBody, e);
 		}
+	}
+
+	public void sendEmail(MailRecord mail) {
+		sendEmail(mail.getToEmailAddr(), mail.getSubject(), mail.getBody());
 	}
 
 }

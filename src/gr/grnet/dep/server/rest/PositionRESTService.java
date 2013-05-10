@@ -263,7 +263,7 @@ public class PositionRESTService extends RESTService {
 
 			// Send E-Mails
 			for (final Candidate c : candidates) {
-				sendEmail(c.getUser().getContactInfo().getEmail(),
+				postEmail(c.getUser().getContactInfo().getEmail(),
 					"default.subject",
 					"position.create@interested.candidates",
 					Collections.unmodifiableMap(new HashMap<String, String>() {

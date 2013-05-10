@@ -640,7 +640,7 @@ public class RESTService {
 			.getResultList();
 	}
 
-	protected void sendEmail(String aToEmailAddr, String aSubjectKey, String aBodyKey, Map<String, String> parameters) {
+	protected void postEmail(String aToEmailAddr, String aSubjectKey, String aBodyKey, Map<String, String> parameters) {
 		ResourceBundle resources = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-mail", new Locale("el"));
 		String aSubject = resources.getString(aSubjectKey);
 		String aBody = resources.getString(aBodyKey);

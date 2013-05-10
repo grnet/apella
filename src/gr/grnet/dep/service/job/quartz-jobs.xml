@@ -15,6 +15,13 @@
 			<description>OpenPositionsJob</description>
 			<job-class>gr.grnet.dep.service.job.OpenPositionsJob</job-class>
 		</job>
+		
+		<job>
+			<name>SendEmailsJob</name>
+			<group>APELLA_JOBS</group>
+			<description>SendEmailsJob</description>
+			<job-class>gr.grnet.dep.service.job.SendEmailsJob</job-class>
+		</job>
 
 		<trigger>
 			<cron>
@@ -37,6 +44,19 @@
 				<!-- <cron-expression>0 0 4 * * ?</cron-expression> -->
 				<!-- trigger every 5 min for testing -->
 				<cron-expression>0 0/5 * * * ?</cron-expression>
+			</cron>
+		</trigger>
+		
+		<trigger>
+			<cron>
+				<name>SendEmailsJobCronTrigger</name>
+				<group>EUDOXUS_TRIGGERS</group>
+				<job-name>SendEmailsJob</job-name>
+				<job-group>APELLA_JOBS</job-group>
+				<!-- trigger at 04:00 in the morning -->
+				<!-- <cron-expression>0 0 4 * * ?</cron-expression> -->
+				<!-- trigger every 10 min for testing -->
+				<cron-expression>0 0/10 * * * ?</cron-expression>
 			</cron>
 		</trigger>
 
