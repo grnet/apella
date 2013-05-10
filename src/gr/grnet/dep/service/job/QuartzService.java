@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -30,6 +31,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 
 import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.lang.time.DateUtils;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerConfigException;
 import org.quartz.SchedulerException;
@@ -160,7 +162,7 @@ public class QuartzService {
 	}
 
 	public int openPositions() {
-		Date now = new Date();
+		Date now = DateUtils.truncate(new Date(), Calendar.DATE);
 		@SuppressWarnings("unchecked")
 		List<Position> positions = em.createQuery(
 			"from Position p where " +

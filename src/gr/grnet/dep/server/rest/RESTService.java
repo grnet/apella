@@ -584,13 +584,11 @@ public class RESTService {
 						"where s.name = :name ")
 					.setParameter("name", subject.getName())
 					.getSingleResult();
-				logger.log(Level.INFO, "Found  " + existingSubject.getId() + " " + existingSubject.getName());
 				return existingSubject;
 			} catch (NoResultException e) {
 				Subject newSubject = new Subject();
 				newSubject.setName(subject.getName());
 				em.persist(newSubject);
-				logger.log(Level.INFO, "Created " + newSubject.getId() + " " + newSubject.getName());
 				return newSubject;
 			}
 		}

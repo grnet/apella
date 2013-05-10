@@ -253,12 +253,12 @@ public class PositionRESTService extends RESTService {
 			List<Candidate> candidates = (List<Candidate>) em.createQuery(
 				"select distinct(c.candidate) from PositionSearchCriteria c " +
 					"left join c.departments d " +
-					"left join c.subjects s " +
+					"left join c.sectors s " +
 					"where ((s is null) and (d is not null) and (d.id = :departmentId)) " +
-					"or ((d is null) and (s is not null) and (s.name = :subject)) " +
-					"or ((s is not null) and (s.name = :subject) and (d is not null) and (d.id = :departmentId))")
+					"or ((d is null) and (s is not null) and (s.id = :sectorId)) " +
+					"or ((s is not null) and (s.id = :sectorId) and (d is not null) and (d.id = :departmentId))")
 				.setParameter("departmentId", position.getDepartment().getId())
-				.setParameter("subject", position.getSubject().getName())
+				.setParameter("sectorId", position.getSector().getId())
 				.getResultList();
 
 			// Send E-Mails
