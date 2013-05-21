@@ -67,17 +67,22 @@ public class PositionSearchRESTService extends RESTService {
 			for (Sector sector : criteria.getSectors()) {
 				sectorIds.add(sector.getId());
 			}
-			Query query = em.createQuery(
-				"from Position p " +
-					"where p.permanent = true " +
-					"and p.phase.candidacies.closingDate >= :today " +
-					"and (" +
+			String queryString = "from Position p " +
+				"where p.permanent = true " +
+				"and p.phase.candidacies.closingDate >= :today ";
+			if (departmentIds.size() > 1 || sectorIds.size() > 1) {
+				queryString += "and (" +
 					"	p.department.id in (:departmentIds) " +
 					"	or p.sector.id in (:sectorIds) " +
-					")")
-				.setParameter("today", today)
-				.setParameter("departmentIds", departmentIds)
-				.setParameter("sectorIds", sectorIds);
+					")";
+			}
+			Query query = em.createQuery(queryString)
+				.setParameter("today", today);
+			if (departmentIds.size() > 1 || sectorIds.size() > 1) {
+				query = query
+					.setParameter("departmentIds", departmentIds)
+					.setParameter("sectorIds", sectorIds);
+			}
 
 			// Execute Query
 			@SuppressWarnings("unchecked")

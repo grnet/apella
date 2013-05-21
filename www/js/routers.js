@@ -1237,7 +1237,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					cache: false,
 					wait: true,
 					success: function (model, response, options) {
-						self.refreshBreadcrumb([ $.i18n.prop('menu_candidacy'), model.get("snapshot").username ]);
+						self.refreshBreadcrumb([ $.i18n.prop('menu_candidacy'), (model.get("snapshot").basicInfo.firstname + " " + model.get("snapshot").basicInfo.lastname)]);
 					}
 				});
 				self.currentView = candidacyView;

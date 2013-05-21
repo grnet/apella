@@ -2182,9 +2182,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							case "fekCheckbox":
 								return _.isEqual(self.model.get("status"), "UNAPPROVED");
 							case "fekSubject":
-								return _.isEqual(self.model.get("status"), "UNAPPROVED") && (_.isObject(self.model.get("fekSubject") || !_.isObject(self.model.get("subject"))));
+								return _.isEqual(self.model.get("status"), "UNAPPROVED") &&
+									(_.isObject(self.model.get("fekSubject")) || (_.isUndefined(self.model.get("fekSubject")) && _.isUndefined(self.model.get("subject"))));
 							case "subject":
-								return _.isEqual(self.model.get("status"), "UNAPPROVED") && _.isObject(self.model.get("subject"));
+								return _.isEqual(self.model.get("status"), "UNAPPROVED") && !self.isEditable("fekSubject");
 							default:
 								break;
 						}
@@ -2611,8 +2612,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						});
 						if (_.isObject(self.model.get("subject"))) {
 							self.$("input[name=fekCheckbox]").attr("checked", true);
+							self.$("textarea[name=fekSubject]").attr("disabled", true).val("");
+							self.$("textarea[name=subject]").removeAttr("disabled");
 						} else {
 							self.$("input[name=fekCheckbox]").removeAttr("checked");
+							self.$("textarea[name=fekSubject]").removeAttr("disabled");
+							self.$("textarea[name=subject]").attr("disabled", true).val("");
 						}
 						break;
 					case "PROFESSOR_FOREIGN":
@@ -2917,6 +2922,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						$(this).attr("disabled", true);
 					}
 				});
+				console.log("3", self.$("textarea[name=fekSubject]")[0], self.$("textarea[name=subject]")[0]);
 				// Disable Save Button until user changes a field,
 				// roles do not have permanent field
 				self.$("a#save").attr("disabled", true);

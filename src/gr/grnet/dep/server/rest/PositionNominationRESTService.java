@@ -330,7 +330,8 @@ public class PositionNominationRESTService extends RESTService {
 			!loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!position.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
+		if (!position.getPhase().getStatus().equals(PositionStatus.EPILOGI) &&
+			!position.getPhase().getStatus().equals(PositionStatus.STELEXOMENI)) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		// Parse Request
@@ -486,7 +487,8 @@ public class PositionNominationRESTService extends RESTService {
 			!loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!position.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
+		if (!position.getPhase().getStatus().equals(PositionStatus.EPILOGI) &&
+			!position.getPhase().getStatus().equals(PositionStatus.STELEXOMENI)) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		// Parse Request
@@ -553,7 +555,8 @@ public class PositionNominationRESTService extends RESTService {
 			!loggedOn.isDepartmentUser(position.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!position.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
+		if (!position.getPhase().getStatus().equals(PositionStatus.EPILOGI) &&
+			!position.getPhase().getStatus().equals(PositionStatus.STELEXOMENI)) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		try {
