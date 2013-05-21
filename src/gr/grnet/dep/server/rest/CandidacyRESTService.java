@@ -147,7 +147,7 @@ public class CandidacyRESTService extends RESTService {
 			candidacy.setOpenToOtherCandidates(false);
 			candidacy.setPermanent(false);
 			candidacy.getProposedEvaluators().clear();
-			validateCandidacy(candidacy, candidate);
+			validateCandidacy(candidacy, candidate, true);
 			updateSnapshot(candidacy, candidate);
 
 			em.persist(candidacy);
@@ -173,6 +173,7 @@ public class CandidacyRESTService extends RESTService {
 			if (existingCandidacy == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 			}
+			boolean isNew = !existingCandidacy.isPermanent();
 			Candidate candidate = existingCandidacy.getCandidate();
 			if (candidate.getUser().getId() != loggedOn.getId()) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -184,8 +185,8 @@ public class CandidacyRESTService extends RESTService {
 			if (candidacy.getProposedEvaluators().size() > CandidacyEvaluator.MAX_MEMBERS) {
 				throw new RestException(Status.CONFLICT, "max.evaluators.exceeded");
 			}
-			validateCandidacy(existingCandidacy, candidate);
-
+			// Check files and candidate status
+			validateCandidacy(existingCandidacy, candidate, isNew);
 			//Check if evaluators change:
 			boolean updatedEvaluators = !CompareUtil.compareCollections(existingCandidacy.getProposedEvaluators(), candidacy.getProposedEvaluators(), new Comparator<CandidacyEvaluator>() {
 
@@ -201,18 +202,17 @@ public class CandidacyRESTService extends RESTService {
 			});
 
 			// Update
+			if (isNew) {
+				// Fetch from Profile
+				updateSnapshot(existingCandidacy, candidate);
+			}
+			existingCandidacy.setPermanent(true);
 			existingCandidacy.setOpenToOtherCandidates(candidacy.isOpenToOtherCandidates());
 			existingCandidacy.getProposedEvaluators().clear();
 			for (CandidacyEvaluator evaluator : candidacy.getProposedEvaluators()) {
 				if (!evaluator.isMissingRequiredField()) {
 					existingCandidacy.addProposedEvaluator(evaluator);
 				}
-			}
-			updateSnapshot(existingCandidacy, candidate);
-
-			boolean isNew = !existingCandidacy.isPermanent();
-			if (isNew) {
-				existingCandidacy.setPermanent(true);
 			}
 			em.flush();
 

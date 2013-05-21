@@ -209,6 +209,17 @@ public class PositionCandidaciesRESTService extends RESTService {
 		if (!existingPosition.getId().equals(positionId)) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
+		// Find File
+		Collection<PositionCandidaciesFile> files = FileHeader.filterDeleted(existingCandidacies.getFiles());
+		PositionCandidaciesFile existingFile = null;
+		for (PositionCandidaciesFile file : files) {
+			if (file.getId().equals(fileId)) {
+				existingFile = file;
+			}
+		}
+		if (existingFile == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+		}
 		// Validate:
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
@@ -216,18 +227,11 @@ public class PositionCandidaciesRESTService extends RESTService {
 			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
 			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
 			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-			!existingCandidacies.containsCandidate(loggedOn)) {
+			!existingFile.getEvaluator().getCandidacy().getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
-		Collection<PositionCandidaciesFile> files = FileHeader.filterDeleted(existingCandidacies.getFiles());
-		for (PositionCandidaciesFile file : files) {
-			if (file.getId().equals(fileId) &&
-				file.getEvaluator().getCandidacy().getCandidate().getUser().getId().equals(loggedOn.getId())) {
-				return file;
-			}
-		}
-		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+		return existingFile;
 	}
 
 	@GET
@@ -243,6 +247,17 @@ public class PositionCandidaciesRESTService extends RESTService {
 		if (!existingPosition.getId().equals(positionId)) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
+		// Find File
+		Collection<PositionCandidaciesFile> files = FileHeader.filterDeleted(existingCandidacies.getFiles());
+		PositionCandidaciesFile existingFile = null;
+		for (PositionCandidaciesFile file : files) {
+			if (file.getId().equals(fileId)) {
+				existingFile = file;
+			}
+		}
+		if (existingFile == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+		}
 		// Validate:
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
@@ -250,21 +265,13 @@ public class PositionCandidaciesRESTService extends RESTService {
 			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
 			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
 			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-			!existingCandidacies.containsCandidate(loggedOn)) {
+			!existingFile.getEvaluator().getCandidacy().getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
-		Collection<PositionCandidaciesFile> files = FileHeader.filterDeleted(existingCandidacies.getFiles());
-		for (PositionCandidaciesFile file : files) {
-			if (file.getId().equals(fileId)) {
-				if (file.getId().equals(fileId)) {
-					for (FileBody fb : file.getBodies()) {
-						if (fb.getId().equals(bodyId) &&
-							file.getEvaluator().getCandidacy().getCandidate().getUser().getId().equals(loggedOn.getId())) {
-							return sendFileBody(fb);
-						}
-					}
-				}
+		for (FileBody fb : existingFile.getBodies()) {
+			if (fb.getId().equals(bodyId)) {
+				return sendFileBody(fb);
 			}
 		}
 		throw new RestException(Status.NOT_FOUND, "wrong.file.id");

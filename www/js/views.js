@@ -1084,8 +1084,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						phone: {
 							required: $.i18n.prop('validation_phone'),
 							number: $.i18n.prop('validation_number'),
-							minlength: $.i18n.prop('validation_minlength', 10),
-							maxlength: $.i18n.prop('validation_maxlength', 10)
+							minlength: $.i18n.prop('validation_phone'),
+							maxlength: $.i18n.prop('validation_phone')
 						},
 						address_street: $.i18n.prop('validation_street'),
 						address_number: $.i18n.prop('validation_number'),
@@ -1540,7 +1540,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						phone: {
 							required: $.i18n.prop('validation_phone'),
 							number: $.i18n.prop('validation_number'),
-							minlength: $.i18n.prop('validation_minlength', 10)
+							minlength: $.i18n.prop('validation_phone'),
+							maxlength: $.i18n.prop('validation_phone')
 						},
 						email: {
 							required: $.i18n.prop('validation_email'),
@@ -4526,6 +4527,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						return self.model.isNew() || _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
 					case "subject":
 						return self.model.isNew() || _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
+					case "area":
+						return self.model.isNew() || _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
 					case "sector":
 						return self.model.isNew() || _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
 					case "fek":
@@ -4549,21 +4552,46 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$el.html(self.template(self.model.toJSON()));
 				// Add Sector options
 				self.$("select[name='sector']").change(function (event) {
-					self.$("select[name='sector']").next(".help-block").html(self.$("select[name='sector'] option:selected").text());
+					self.$("select[name='sector']").next(".help-block").html(self.$("select[name='area'] option:selected").text() + " / " + self.$("select[name='sector'] option:selected").text());
 				});
 				App.sectors = App.sectors || new Models.Sectors();
+				//////////////////////
+				self.$("select[name='area']").change(function () {
+					var selectedArea;
+					self.$("select[name='sector']").empty();
+					selectedArea = self.$("select[name='area']").val();
+
+					self.$("select[name='sector']").append("<option value=''>--</option>");
+					App.sectors.filter(function (sector) {
+						return sector.get('area') === selectedArea;
+					}).forEach(function (sector) {
+							if (_.isObject(self.model.get("sector")) && _.isEqual(self.model.get("sector").id, sector.get("id"))) {
+								self.$("select[name='sector']").append("<option value='" + sector.get("id") + "' selected>" + sector.get("category") + "</option>");
+							} else {
+								self.$("select[name='sector']").append("<option value='" + sector.get("id") + "'>" + sector.get("category") + "</option>");
+							}
+						});
+					self.$("select[name='sector']").trigger("change", {
+						triggeredBy: "application"
+					});
+				});
 				App.sectors.fetch({
 					cache: true,
 					reset: true,
 					success: function (collection, resp) {
-						collection.each(function (sector) {
-							if (_.isObject(self.model.get("sector")) && _.isEqual(self.model.get("sector").id, sector.get("id"))) {
-								self.$("select[name='sector']").append("<option value='" + sector.get("id") + "' selected>" + sector.get("area") + " / " + sector.get("category") + "</option>");
+						var areas = collection.map(function (sector) {
+							return sector.get("area");
+						});
+						areas = _.uniq(areas);
+						self.$("select[name='area']").append("<option value=''>--</option>");
+						_.each(areas, function (area) {
+							if (_.isObject(self.model.get("sector")) && _.isEqual(self.model.get("sector").area, area)) {
+								self.$("select[name='area']").append("<option value='" + area + "' selected>" + area + "</option>");
 							} else {
-								self.$("select[name='sector']").append("<option value='" + sector.get("id") + "'>" + sector.get("area") + " / " + sector.get("category") + "</option>");
+								self.$("select[name='area']").append("<option value='" + area + "'>" + area + "</option>");
 							}
 						});
-						self.$("select[name='sector']").trigger("change", {
+						self.$("select[name='area']").trigger("change", {
 							triggeredBy: "application"
 						});
 					},
@@ -4575,7 +4603,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						popup.show();
 					}
 				});
-
 
 				// Set isEditable to fields
 				self.$("select, input, textarea").each(function (index) {
@@ -4706,7 +4733,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					"id": self.$('form select[name=department]').val()
 				};
 				values.sector = {
-					"id" : self.$('form select[name=sector]').val()
+					"id": self.$('form select[name=sector]').val()
 				};
 				values.subject = {
 					"id": self.model.has("subject") ? self.model.get("subject").id : undefined,
@@ -4978,7 +5005,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			toggleRegisterMembers: function () {
 				var self = this;
 				self.$("div#committee-register-members").slideToggle({
-					complete : function() {
+					complete: function () {
 						var toggleButton = self.$("a#toggleRegisterMembers");
 						toggleButton.toggleClass('active');
 					}
@@ -5307,7 +5334,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.$("a.btn").show();
 
 					self.registerMembers.fetch({
-						cache : false,
+						cache: false,
 						reset: true
 					});
 				} else {
@@ -6222,26 +6249,17 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var self = this;
 
 				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
-				_.bindAll(this, "change", "renderMembers", "toggleAddMember", "submit", "remove", "cancel", "allowedToEdit", "addMember", "removeMember");
+				_.bindAll(this, "change", "renderMembers", "toggleAddMember", "submit", "remove", "cancel", "allowedToEdit", "addMembers", "removeMember");
 
 				self.template = _.template(tpl_register_edit);
 				self.templateRow = _.template(tpl_register_members_edit);
 				self.model.bind('change', self.render, self);
 				self.model.bind("destroy", self.close, self);
 
-				// Initialize Professor, no request is performed until
-				// render
+				// Initialize Professor, no request is performed until render
 				self.professors = new Models.Professors();
 				self.professors.url = self.model.url() + "/professor";
-				self.professors.on("member:add", function (professor) {
-					var registerMember = {
-						register: {
-							id: self.model.get("id")
-						},
-						professor: professor.toJSON()
-					};
-					self.addMember(registerMember);
-				});
+				self.professors.on("members:add", self.addMembers);
 			},
 
 			events: {
@@ -6377,34 +6395,42 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			toggleAddMember: function (event) {
 				var self = this;
-				self.$("div#register-professor-list").toggle();
-				self.$("a#toggleAddMember").toggleClass('active');
+				self.$("div#register-professor-list").slideToggle({
+					complete: function () {
+						var toggleButton = self.$("a#toggleAddMember");
+						toggleButton.toggleClass('active');
+					}
+				});
 			},
 
-			addMember: function (registerMember) {
+			addMembers: function (newRegisterMembers) {
 				var self = this;
-				var popup;
-				if (_.any(self.model.get("members"), function (member) {
-					return _.isEqual(member.professor.id, registerMember.professor.id);
+				var popup, i;
+				if (_.any(self.model.get("members"), function (existingMember) {
+					return _.some(newRegisterMembers, function (newRegisterMember) {
+						return _.isEqual(existingMember.professor.id, newRegisterMember.professor.id);
+					});
 				})) {
 					popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error.member.already.exists")
 					});
 					popup.show();
-				} else {
-					self.model.get("members").push(registerMember);
-					self.model.trigger("change:members");
-					self.renderMembers();
-					popup = new Views.PopupView({
-						type: "success",
-						message: $.i18n.prop("AddedMustPressSave")
-					});
-					popup.show();
+					return;
 				}
+				// Add new members
+				for (i = 0; i < newRegisterMembers.length; i += 1) {
+					self.model.get("members").push(newRegisterMembers[i]);
+				}
+				self.model.trigger("change:members");
 				self.change($.Event("change"), {
 					triggeredBy: "user"
 				});
+				self.renderMembers();
+				//Scroll To top of table, to see added members
+				window.scrollTo(0, self.$("div#registerMembers").parent().position().top - 50);
+				self.toggleAddMember();
+				self.renderMembers();
 			},
 
 			removeMember: function (event) {
@@ -6515,7 +6541,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			initialize: function () {
 				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
-				_.bindAll(this, "addMember");
+				_.bindAll(this, "addMembers");
 				this.template = _.template(tpl_register_members_edit_professor_list);
 				this.collection.bind("change", this.render, this);
 				this.collection.bind("reset", this.render, this);
@@ -6523,7 +6549,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			},
 
 			events: {
-				"click a#addMember": "addMember"
+				"click a#addMembers": "addMembers"
 			},
 
 			render: function (eventName) {
@@ -6568,12 +6594,31 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				return self;
 			},
 
-			addMember: function (event) {
+			addMembers: function (event) {
 				var self = this;
-				var cid = $(event.currentTarget).data('modelCid');
-				var selectedModel = self.collection.get(cid);
-				var type = self.$("select[name=type][data-model-cid=" + cid + "]").val();
-				self.collection.trigger("member:add", selectedModel, type);
+				var registerMembers = [];
+				// Use dataTable to select elements, as pagination removes them from DOM
+				self.$("table").dataTable().$('input[type=checkbox]:checked').each(function () {
+					var selectedCheckbox,
+						cid, professor,
+						registerMember;
+					selectedCheckbox = $(this);
+					cid = selectedCheckbox.data('modelCid');
+					if (!cid) {
+						return;
+					}
+					professor = self.collection.get(cid);
+					registerMember = {
+						"register": {
+							id: self.model.get("id")
+						},
+						"professor": professor.toJSON(),
+						internal: undefined,
+						canBeDeleted: true
+					};
+					registerMembers.push(registerMember);
+				});
+				self.collection.trigger("members:add", registerMembers);
 			},
 
 			close: function () {

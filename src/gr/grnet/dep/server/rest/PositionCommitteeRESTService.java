@@ -20,7 +20,7 @@ import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.file.PositionCommitteeFile;
-import gr.grnet.dep.service.util.CompareUtil;
+import gr.grnet.dep.service.util.DateUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -269,7 +269,9 @@ public class PositionCommitteeRESTService extends RESTService {
 
 		// Keep these to send mails
 		Set<Long> addedMemberIds = new HashSet<Long>();
-		boolean committeeMeetingDateUpdated = !CompareUtil.equalsIgnoreNull(existingCommittee.getCommitteeMeetingDate(), newCommittee.getCommitteeMeetingDate());
+		Set<Long> removedMemberIds = new HashSet<Long>();
+		removedMemberIds.addAll(existingCommitteeMemberAsMap.keySet());
+		boolean committeeMeetingDateUpdated = DateUtil.compareDates(existingCommittee.getCommitteeMeetingDate(), newCommittee.getCommitteeMeetingDate()) != 0;
 
 		// Update
 		try {
@@ -289,6 +291,7 @@ public class PositionCommitteeRESTService extends RESTService {
 				newCommitteeMember.setType(newCommitteeMemberAsMap.get(newRegisterMember.getId()));
 				existingCommittee.addMember(newCommitteeMember);
 			}
+			removedMemberIds.removeAll(addedMemberIds);
 
 			final PositionCommittee savedCommittee = em.merge(existingCommittee);
 			em.flush();
@@ -327,7 +330,39 @@ public class PositionCommitteeRESTService extends RESTService {
 					}
 				}
 			}
-			if (!addedMemberIds.isEmpty()) {
+			for (Long registerMemberID : removedMemberIds) {
+				final PositionCommitteeMember removedMember = existingCommitteeMemberAsMap.get(registerMemberID);
+				if (removedMember.getType().equals(MemberType.REGULAR)) {
+					// positionCommittee.removed.regular.member@member
+					postEmail(removedMember.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"positionCommittee.removed.regular.member@member",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", removedMember.getRegisterMember().getProfessor().getUser().getUsername());
+								put("position", savedCommittee.getPosition().getName());
+								put("institution", savedCommittee.getPosition().getDepartment().getInstitution().getName());
+								put("department", savedCommittee.getPosition().getDepartment().getDepartment());
+							}
+						}));
+				} else {
+					// positionCommittee.removed.substitute.member@member
+					postEmail(removedMember.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"positionCommittee.removed.substitute.member@member",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", removedMember.getRegisterMember().getProfessor().getUser().getUsername());
+								put("position", savedCommittee.getPosition().getName());
+								put("institution", savedCommittee.getPosition().getDepartment().getInstitution().getName());
+								put("department", savedCommittee.getPosition().getDepartment().getDepartment());
+							}
+						}));
+				}
+			}
+			if (!addedMemberIds.isEmpty() && !removedMemberIds.isEmpty()) {
 				// positionCommittee.update.members@candidates
 				for (final Candidacy candidacy : savedCommittee.getPosition().getPhase().getCandidacies().getCandidacies()) {
 					postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),

@@ -13,6 +13,12 @@ public class DateUtil {
 	 * @return
 	 */
 	public static int compareDates(Date date1, Date date2) {
+		if (date1 == null) {
+			date1 = new Date(0);
+		}
+		if (date2 == null) {
+			date2 = new Date(0);
+		}
 		Calendar cal1 = Calendar.getInstance();
 		cal1.setTime(date1);
 		Calendar cal2 = Calendar.getInstance();

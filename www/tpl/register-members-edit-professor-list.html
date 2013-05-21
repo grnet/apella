@@ -1,18 +1,23 @@
 <table class="table table-striped table-bordered">
 	<thead>
 		<tr>
+			<th></th>
 			<th><%= $.i18n.prop("ID") %></th>
 			<th><%= $.i18n.prop("Name") %></th>
 			<th><%= $.i18n.prop("Surname") %></th>
 			<th><%= $.i18n.prop("Profile") %></th>
 			<th><%= $.i18n.prop("Institution") %></th>
 			<th><%= $.i18n.prop("Department") %></th>
-			<th></th>
 		</tr>
 	</thead>
 	<tbody>
 		<% _.each(professors, function(professor) { %>
 		<tr>
+			<td>
+				<% if (!professor.isMember) { %>
+					<input type="checkbox" value="<%= professor.cid %>" data-model-cid="<%= professor.cid %>" />
+				<% } %>
+			</td>
 			<td>
 				<a id="view" data-model-cid="<%= professor.cid %>" href="#user/<%= professor.user.id %>"><%= professor.user.id %></a>	
 			</td>
@@ -31,18 +36,14 @@
 					<%= professor.department.department %> 
 				<% } %>
 			</td>
-			<td>
-				<% if (!professor.isMember) { %> 
-				<a id="addMember" data-model-cid="<%= professor.cid %>" class="btn btn-mini btn-success"><i class="icon-plus icon-white"></i> <%= $.i18n.prop('btn_add') %></a>
-				<% } %>
-			</td>
 		</tr>
 		<% }); %>
 	</tbody>
 	<tfoot>
 		<tr>
 			<td colspan="7">
-				<div class="btn-toolbar" id="details">
+				<div class="btn-toolbar pull-right" id="details">
+					<a id="addMembers" class="btn btn-success"><%= $.i18n.prop('btn_addAll') %></a>
 				</div>
 			</td>
 		</tr>

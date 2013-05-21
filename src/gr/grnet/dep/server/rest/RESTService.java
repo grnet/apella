@@ -228,19 +228,32 @@ public class RESTService {
 	 * @param candidacy
 	 * @param candidate
 	 */
-	protected void validateCandidacy(Candidacy candidacy, Candidate candidate) {
+	protected void validateCandidacy(Candidacy candidacy, Candidate candidate, boolean isNew) {
 		if (!candidate.getStatus().equals(RoleStatus.ACTIVE)) {
 			throw new RestException(Status.CONFLICT, "validation.candidacy.inactive.role");
 		}
-		if (FileHeader.filter(candidate.getFiles(), FileType.DIMOSIEYSI).size() == 0) {
-			throw new RestException(Status.CONFLICT, "validation.candidacy.no.dimosieysi");
-		}
-		if (FileHeader.filter(candidate.getFiles(), FileType.BIOGRAFIKO).size() == 0) {
-			throw new RestException(Status.CONFLICT, "validation.candidacy.no.cv");
-		}
-		if (candidate.getUser().getPrimaryRole().equals(RoleDiscriminator.CANDIDATE) &&
-			FileHeader.filter(candidate.getFiles(), FileType.PTYXIO).size() == 0) {
-			throw new RestException(Status.CONFLICT, "validation.candidacy.no.ptyxio");
+		if (isNew) {
+			if (FileHeader.filter(candidate.getFiles(), FileType.DIMOSIEYSI).size() == 0) {
+				throw new RestException(Status.CONFLICT, "validation.candidacy.no.dimosieysi");
+			}
+			if (FileHeader.filter(candidate.getFiles(), FileType.BIOGRAFIKO).size() == 0) {
+				throw new RestException(Status.CONFLICT, "validation.candidacy.no.cv");
+			}
+			if (candidate.getUser().getPrimaryRole().equals(RoleDiscriminator.CANDIDATE) &&
+				FileHeader.filter(candidate.getFiles(), FileType.PTYXIO).size() == 0) {
+				throw new RestException(Status.CONFLICT, "validation.candidacy.no.ptyxio");
+			}
+		} else {
+			if (FileHeader.filter(candidacy.getSnapshotFiles(), FileType.DIMOSIEYSI).size() == 0) {
+				throw new RestException(Status.CONFLICT, "validation.candidacy.no.dimosieysi");
+			}
+			if (FileHeader.filter(candidacy.getSnapshotFiles(), FileType.BIOGRAFIKO).size() == 0) {
+				throw new RestException(Status.CONFLICT, "validation.candidacy.no.cv");
+			}
+			if (candidate.getUser().getPrimaryRole().equals(RoleDiscriminator.CANDIDATE) &&
+				FileHeader.filter(candidacy.getSnapshotFiles(), FileType.PTYXIO).size() == 0) {
+				throw new RestException(Status.CONFLICT, "validation.candidacy.no.ptyxio");
+			}
 		}
 	}
 
@@ -276,7 +289,7 @@ public class RESTService {
 
 		// Validate all candidacies
 		for (Candidacy candidacy : openCandidacies) {
-			validateCandidacy(candidacy, candidate);
+			validateCandidacy(candidacy, candidate, false);
 		}
 		// If all valid, update
 		for (Candidacy candidacy : openCandidacies) {
@@ -651,6 +664,9 @@ public class RESTService {
 			}
 			aBody = aBody.replaceAll("\\[" + key + "\\]", value);
 		}
+		// Replace login with link
+		aBody = aBody.replaceAll("\\[login\\]", "<a href=\"" + conf.getString("home.url") + "\">login</a>");
+
 		// Validate Email
 		Connection qConn = null;
 		javax.jms.Session session = null;
