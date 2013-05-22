@@ -5,7 +5,7 @@
 	optimize : "closure",
 	closure : {
 		CompilerOptions : {},
-		CompilationLevel : 'WHITESPACE_ONLY',
+		CompilationLevel : 'SIMPLE_OPTIMIZATIONS',
 		loggingLevel : 'WARNING'
 	},
 	inlineText : true,

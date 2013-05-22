@@ -1,7 +1,7 @@
 // Sets the require.js configuration for your application.
 require.config({
 	waitSeconds : 30,
-	urlArgs : "v=20130319",
+	urlArgs : "v=20130522",
 	// Alias names
 	paths : {
 		// Core Libraries
@@ -44,7 +44,7 @@ require.config({
 		"jquery.blockUI" : [ "jquery" ],
 		"jquery.iframe-transport" : [ "jquery" ],
 		"jquery.file.upload" : [ "jquery", "jquery.ui", "jquery.iframe-transport" ],
-		"jquery.dynatree" :  [ "jquery", "jquery.ui"],
+		"jquery.dynatree" : [ "jquery", "jquery.ui" ],
 
 		"backbone.cache" : [ "backbone" ]
 	}
