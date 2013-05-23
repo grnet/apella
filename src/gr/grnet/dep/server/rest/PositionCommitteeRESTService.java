@@ -197,6 +197,7 @@ public class PositionCommitteeRESTService extends RESTService {
 			newCommitteeMemberAsMap.put(newCommitteeMember.getRegisterMember().getId(), newCommitteeMember.getType());
 		}
 		List<RegisterMember> newRegisterMembers = new ArrayList<RegisterMember>();
+
 		if (!newCommitteeMemberAsMap.isEmpty()) {
 			Query query = em.createQuery(
 				"select distinct m from Register r " +
@@ -333,10 +334,10 @@ public class PositionCommitteeRESTService extends RESTService {
 			for (Long registerMemberID : removedMemberIds) {
 				final PositionCommitteeMember removedMember = existingCommitteeMemberAsMap.get(registerMemberID);
 				if (removedMember.getType().equals(MemberType.REGULAR)) {
-					// positionCommittee.removed.regular.member@member
+					// positionCommittee.remove.regular.member@member
 					postEmail(removedMember.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 						"default.subject",
-						"positionCommittee.removed.regular.member@member",
+						"positionCommittee.remove.regular.member@member",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
@@ -347,10 +348,10 @@ public class PositionCommitteeRESTService extends RESTService {
 							}
 						}));
 				} else {
-					// positionCommittee.removed.substitute.member@member
+					// positionCommittee.remove.substitute.member@member
 					postEmail(removedMember.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 						"default.subject",
-						"positionCommittee.removed.substitute.member@member",
+						"positionCommittee.remove.substitute.member@member",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
@@ -362,12 +363,12 @@ public class PositionCommitteeRESTService extends RESTService {
 						}));
 				}
 			}
-			if (!addedMemberIds.isEmpty() && !removedMemberIds.isEmpty()) {
-				// positionCommittee.update.members@candidates
+			if (!addedMemberIds.isEmpty() && removedMemberIds.isEmpty()) {
+				// positionCommittee.create.members@candidates
 				for (final Candidacy candidacy : savedCommittee.getPosition().getPhase().getCandidacies().getCandidacies()) {
 					postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
 						"default.subject",
-						"positionCommittee.update.members@candidates",
+						"positionCommittee.create.members@candidates",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
@@ -378,6 +379,57 @@ public class PositionCommitteeRESTService extends RESTService {
 							}
 						}));
 				}
+			}
+			if (!removedMemberIds.isEmpty()) {
+				//positionCommittee.remove.members@candidates
+				for (final Candidacy candidacy : savedCommittee.getPosition().getPhase().getCandidacies().getCandidacies()) {
+					postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"positionCommittee.remove.members@candidates",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", candidacy.getCandidate().getUser().getUsername());
+								put("position", savedCommittee.getPosition().getName());
+								put("institution", savedCommittee.getPosition().getDepartment().getInstitution().getName());
+								put("department", savedCommittee.getPosition().getDepartment().getDepartment());
+							}
+						}));
+				}
+				//positionCommittee.remove.members@evaluators
+				if (savedCommittee.getPosition().getPhase().getEvaluation() != null) {
+					for (final PositionEvaluator member : savedCommittee.getPosition().getPhase().getEvaluation().getEvaluators()) {
+						//positionCommittee.remove.members@members
+						postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+							"default.subject",
+							"positionCommittee.remove.members@evaluators",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
+
+								{
+									put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
+									put("position", savedCommittee.getPosition().getName());
+									put("institution", savedCommittee.getPosition().getDepartment().getInstitution().getName());
+									put("department", savedCommittee.getPosition().getDepartment().getDepartment());
+								}
+							}));
+					}
+				}
+				//positionCommittee.remove.members@members
+				for (final PositionCommitteeMember member : savedCommittee.getMembers()) {
+					postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"positionCommittee.remove.members@members",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
+								put("position", savedCommittee.getPosition().getName());
+								put("institution", savedCommittee.getPosition().getDepartment().getInstitution().getName());
+								put("department", savedCommittee.getPosition().getDepartment().getDepartment());
+							}
+						}));
+				}
+
 			}
 			if (committeeMeetingDateUpdated) {
 				// positionCommittee.update.committeeMeetingDate@members

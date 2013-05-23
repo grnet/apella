@@ -244,14 +244,18 @@ public class RESTService {
 				throw new RestException(Status.CONFLICT, "validation.candidacy.no.ptyxio");
 			}
 		} else {
-			if (FileHeader.filter(candidacy.getSnapshotFiles(), FileType.DIMOSIEYSI).size() == 0) {
+			for (FileHeader fh : candidacy.getSnapshotFiles()) {
+				logger.info(fh.getId() + " " + fh.getType() + " " + fh.isDeleted());
+			}
+
+			if (FileHeader.filterIncludingDeleted(candidacy.getSnapshotFiles(), FileType.DIMOSIEYSI).size() == 0) {
 				throw new RestException(Status.CONFLICT, "validation.candidacy.no.dimosieysi");
 			}
-			if (FileHeader.filter(candidacy.getSnapshotFiles(), FileType.BIOGRAFIKO).size() == 0) {
+			if (FileHeader.filterIncludingDeleted(candidacy.getSnapshotFiles(), FileType.BIOGRAFIKO).size() == 0) {
 				throw new RestException(Status.CONFLICT, "validation.candidacy.no.cv");
 			}
 			if (candidate.getUser().getPrimaryRole().equals(RoleDiscriminator.CANDIDATE) &&
-				FileHeader.filter(candidacy.getSnapshotFiles(), FileType.PTYXIO).size() == 0) {
+				FileHeader.filterIncludingDeleted(candidacy.getSnapshotFiles(), FileType.PTYXIO).size() == 0) {
 				throw new RestException(Status.CONFLICT, "validation.candidacy.no.ptyxio");
 			}
 		}

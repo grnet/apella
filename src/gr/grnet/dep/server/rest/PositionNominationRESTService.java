@@ -15,7 +15,7 @@ import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.file.PositionNominationFile;
-import gr.grnet.dep.service.util.CompareUtil;
+import gr.grnet.dep.service.util.DateUtil;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -103,8 +103,9 @@ public class PositionNominationRESTService extends RESTService {
 				throw new RestException(Status.FORBIDDEN, "wrong.position.nomination.phase");
 			}
 
-			boolean updatedNominationCommitteeConvergenceDate = CompareUtil.equalsIgnoreNull(existingNomination.getNominationCommitteeConvergenceDate(), newNomination.getNominationCommitteeConvergenceDate());
+			boolean updatedNominationCommitteeConvergenceDate = DateUtil.compareDates(existingNomination.getNominationCommitteeConvergenceDate(), newNomination.getNominationCommitteeConvergenceDate()) == 0;
 			boolean updatedNominatedCandidacy = (newNomination.getNominatedCandidacy() != null && newNomination.getNominatedCandidacy().getId() != null) && (existingNomination.getNominatedCandidacy() == null || !existingNomination.getNominatedCandidacy().getId().equals(newNomination.getNominatedCandidacy().getId()));
+			boolean updatedSecondNominatedCandidacy = (newNomination.getSecondNominatedCandidacy() != null && newNomination.getSecondNominatedCandidacy().getId() != null) && (existingNomination.getSecondNominatedCandidacy() == null || !existingNomination.getSecondNominatedCandidacy().getId().equals(newNomination.getSecondNominatedCandidacy().getId()));
 			//Update
 			existingNomination.copyFrom(newNomination);
 			// Add Nominated
@@ -185,6 +186,21 @@ public class PositionNominationRESTService extends RESTService {
 				postEmail(existingNomination.getNominatedCandidacy().getCandidate().getUser().getContactInfo().getEmail(),
 					"default.subject",
 					"positionNomination.update.nominated@candidate",
+					Collections.unmodifiableMap(new HashMap<String, String>() {
+
+						{
+							put("username", existingNomination.getNominatedCandidacy().getCandidate().getUser().getUsername());
+							put("position", existingNomination.getPosition().getName());
+							put("institution", existingNomination.getPosition().getDepartment().getInstitution().getName());
+							put("department", existingNomination.getPosition().getDepartment().getDepartment());
+						}
+					}));
+			}
+			if (updatedSecondNominatedCandidacy) {
+				// positionNomination.update.nominated@candidate
+				postEmail(existingNomination.getNominatedCandidacy().getCandidate().getUser().getContactInfo().getEmail(),
+					"default.subject",
+					"positionNomination.update.secondNominated@candidate",
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{

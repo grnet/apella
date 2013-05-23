@@ -4,6 +4,7 @@ import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.InstitutionManager;
+import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.ProfessorForeign;
@@ -434,7 +435,6 @@ public class RoleRESTService extends RESTService {
 			throw new EJBException(e);
 		}
 	}
-
 
 	/***************************
 	 * File Functions **********
@@ -923,6 +923,33 @@ public class RoleRESTService extends RESTService {
 						.setMaxResults(1)
 						.getSingleResult();
 					throw new RestException(Status.CONFLICT, "exists.active.institution.manager");
+				} catch (NoResultException e) {
+				}
+			}
+		}
+
+		if (primaryRole instanceof ProfessorDomestic || primaryRole instanceof ProfessorForeign) {
+			if (!requestRole.getStatus().equals(RoleStatus.ACTIVE)) {
+				try {
+					em.createQuery("select pcm from PositionCommitteeMember pcm " +
+						"where pcm.committee.position.phase.status = :status " +
+						"and pcm.registerMember.professor.id = :professorId")
+						.setParameter("status", PositionStatus.EPILOGI)
+						.setParameter("professorId", primaryRole.getId())
+						.setMaxResults(1)
+						.getSingleResult();
+					throw new RestException(Status.CONFLICT, "professor.is.committee.member");
+				} catch (NoResultException e) {
+				}
+				try {
+					em.createQuery("select e.id from PositionEvaluator e " +
+						"where e.evaluation.position.phase.status = :status " +
+						"and e.registerMember.professor.id = :professorId")
+						.setParameter("status", PositionStatus.EPILOGI)
+						.setParameter("professorId", primaryRole.getId())
+						.setMaxResults(1)
+						.getSingleResult();
+					throw new RestException(Status.CONFLICT, "professor.is.evaluator");
 				} catch (NoResultException e) {
 				}
 			}

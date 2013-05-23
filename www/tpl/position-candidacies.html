@@ -2,7 +2,6 @@
 <table class="table table-bordered">
 	<thead>
 		<tr>
-			<th><%= $.i18n.prop("Username") %></th>
 			<th><%= $.i18n.prop("Name") %></th>
 			<th><%= $.i18n.prop("Surname") %></th>
 			<th><%= $.i18n.prop("FatherName") %></th>
@@ -12,7 +11,6 @@
 	<tbody>
 <% _.each(candidacies, function(candidacy) { %>
 		<tr>
-			<td><%= candidacy.snapshot.username %></td>
 			<td><%= candidacy.snapshot.basicInfo.firstname %> (<%= candidacy.snapshot.basicInfoLatin.firstname %>)</td>
 			<td><%= candidacy.snapshot.basicInfo.lastname %> (<%= candidacy.snapshot.basicInfoLatin.lastname %>)</td>
 			<td><%= candidacy.snapshot.basicInfo.fathername %> (<%= candidacy.snapshot.basicInfoLatin.fathername %>)</td>

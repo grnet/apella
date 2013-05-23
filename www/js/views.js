@@ -4097,8 +4097,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			render: function (eventName) {
 				var self = this;
+				var tpl_data = self.model.toJSON();
+				//Remove CreatedBy if loggedOn===owner of Position
+				if (self.model.get("createdBy").id === App.loggedOnUser.get("id")) {
+					tpl_data.createdBy.id = undefined;
+				}
+
 				self.closeInnerViews();
-				self.$el.html(self.template(self.model.toJSON()));
+				self.$el.html(self.template(tpl_data));
 
 				// Dependencies:
 				self.renderCandidacies(self.$("#positionCandidacies"));
@@ -4266,8 +4272,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			render: function (eventName) {
 				var self = this;
+				var tpl_data = self.model.toJSON();
+				//Remove CreatedBy if loggedOn===owner of Position
+				if (self.model.get("createdBy").id === App.loggedOnUser.get("id")) {
+					tpl_data.createdBy.id = undefined;
+				}
+
 				self.closeInnerViews();
-				self.$el.html(self.template(self.model.toJSON()));
+				self.$el.html(self.template(tpl_data));
+
 				// Phase:
 				self.$("a#addPhase").each(function () {
 					var status = $(this).data("phaseStatus");

@@ -77,7 +77,7 @@ public class MailService {
 			MimeMessage message = new MimeMessage(mailSession);
 			message.addRecipient(Message.RecipientType.TO, new InternetAddress(aToEmailAddr));
 			message.setSubject(aSubject, "UTF-8");
-			message.setText(aBody, "UTF-8");
+			message.setContent(aBody, "text/html");
 			Transport.send(message);
 		} catch (MessagingException e) {
 			logger.log(Level.SEVERE, "Failed to send email to " + aToEmailAddr + " " + aSubject + "\n" + aBody, e);
