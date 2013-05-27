@@ -156,6 +156,9 @@ public class PositionEvaluationRESTService extends RESTService {
 		if (newEvaluation.getEvaluators().size() != PositionEvaluator.MAX_MEMBERS) {
 			throw new RestException(Status.CONFLICT, "wrong.evaluators.size");
 		}
+		if (!newEvaluation.canUpdateEvaluators()) {
+			throw new RestException(Status.CONFLICT, "committee.missing.praktiko.synedriasis.epitropis.gia.aksiologites");
+		}
 
 		// Retrieve new Members from Institution's Register
 		Map<Long, PositionEvaluator> existingEvaluatorsRegisterMap = new HashMap<Long, PositionEvaluator>();
@@ -185,7 +188,7 @@ public class PositionEvaluationRESTService extends RESTService {
 		if (newEvaluatorsRegisterMap.keySet().size() != newRegisterMembers.size()) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.member.id");
 		}
-		// Extra Validation
+
 		// Check if a member is in Commitee
 		for (PositionCommitteeMember committeeMember : existingPosition.getPhase().getCommittee().getMembers()) {
 			if (newEvaluatorsRegisterMap.containsKey(committeeMember.getRegisterMember().getId())) {
@@ -433,6 +436,10 @@ public class PositionEvaluationRESTService extends RESTService {
 		if (!existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
+		if (!existingEvaluation.canUploadEvaluations()) {
+			throw new RestException(Status.CONFLICT, "committee.missing.aitima.epitropis.pros.aksiologites");
+		}
+
 		// Parse Request
 		List<FileItem> fileItems = readMultipartFormData(request);
 		// Find required type:

@@ -12,7 +12,9 @@ import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
@@ -77,7 +79,13 @@ public class MailService {
 			MimeMessage message = new MimeMessage(mailSession);
 			message.addRecipient(Message.RecipientType.TO, new InternetAddress(aToEmailAddr));
 			message.setSubject(aSubject, "UTF-8");
-			message.setContent(aBody, "text/html");
+
+			MimeMultipart multipart = new MimeMultipart("alternative");
+			MimeBodyPart htmlBodyPart = new MimeBodyPart();
+			htmlBodyPart.setContent(aBody, "text/html; charset=utf-8");
+			multipart.addBodyPart(htmlBodyPart);
+			message.setContent(multipart);
+
 			Transport.send(message);
 		} catch (MessagingException e) {
 			logger.log(Level.SEVERE, "Failed to send email to " + aToEmailAddr + " " + aSubject + "\n" + aBody, e);

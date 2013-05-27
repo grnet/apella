@@ -4934,7 +4934,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			isEditable: function (element) {
 				var self = this;
-				return self.model.get("position").phase.status === "EPILOGI";
+				switch (element) {
+					case "positionCommittee" :
+						return self.model.get("position").phase.status === "EPILOGI";
+					case "apofasiSystasisEpitropisFileList":
+						return self.model.get("position").phase.status === "EPILOGI";
+					case "praktikoSynedriasisEpitropisGiaAksiologitesFile":
+						return self.model.get("position").phase.status === "EPILOGI" && self.model.get("committeeMeetingDate");
+					case "aitimaEpitropisProsAksiologitesFile":
+						return self.model.get("position").phase.status === "EPILOGI" && self.model.get("committeeMeetingDate");
+					default:
+						return self.model.get("position").phase.status === "EPILOGI";
+				}
 			},
 
 			render: function (event) {
@@ -5321,7 +5332,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			isEditable: function (element) {
 				var self = this;
-				return self.model.get("position").phase.status === "EPILOGI" && self.model.get("committeePraktikoSynedriasisUploaded");
+				switch (element) {
+					case "positionEvaluation" :
+						return self.model.get("position").phase.status === "EPILOGI" && self.model.get("canUpdateEvaluators");
+					case "aksiologisiFileList" :
+						return self.model.get("position").phase.status === "EPILOGI" && self.model.get("canUploadEvaluations");
+					default :
+						return self.model.get("position").phase.status === "EPILOGI";
+				}
 			},
 
 			render: function (event) {
@@ -5788,13 +5806,17 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			isEditable: function (element) {
 				var self = this;
 				switch (element) {
-					case "secondNominatedCandidacy":
+					case "praktikoEpilogisFile":
 					case "diavivastikoPraktikouFile":
+						return (self.model.get("position").phase.status === "EPILOGI" || self.model.get("position").phase.status === "STELEXOMENI") &&
+							self.model.get("nominationCommitteeConvergenceDate");
+					case "nominatedCandidacy":
+					case "secondNominatedCandidacy":
 					case "praksiDiorismouFile":
 					case "nominationFEK":
-						return (self.model.get("position").phase.status === "EPILOGI" || self.model.get("position").phase.status === "STELEXOMENI");
+						return self.model.get("position").phase.status === "STELEXOMENI";
 					default:
-						return self.model.get("position").phase.status === "EPILOGI";
+						return self.model.get("position").phase.status === "EPILOGI" || self.model.get("position").phase.status === "STELEXOMENI";
 				}
 			},
 

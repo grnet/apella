@@ -108,8 +108,14 @@ public class PositionEvaluation {
 	}
 
 	@JsonView({DetailedPositionEvaluationView.class})
-	public boolean isCommitteePraktikoSynedriasisUploaded() {
+	public boolean canUpdateEvaluators() {
 		Set<PositionCommitteeFile> committeeFiles = FileHeader.filter(this.getPosition().getPhase().getCommittee().getFiles(), FileType.PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES);
+		return !committeeFiles.isEmpty();
+	}
+
+	@JsonView({DetailedPositionEvaluationView.class})
+	public boolean canUploadEvaluations() {
+		Set<PositionCommitteeFile> committeeFiles = FileHeader.filter(this.getPosition().getPhase().getCommittee().getFiles(), FileType.AITIMA_EPITROPIS_PROS_AKSIOLOGITES);
 		return !committeeFiles.isEmpty();
 	}
 
@@ -133,7 +139,8 @@ public class PositionEvaluation {
 		for (PositionEvaluator evaluator : this.evaluators) {
 			evaluator.initializeCollections();
 		}
-		isCommitteePraktikoSynedriasisUploaded();
+		canUpdateEvaluators();
+		canUploadEvaluations();
 	}
 
 	public boolean containsEvaluator(User user) {

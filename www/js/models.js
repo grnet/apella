@@ -1096,7 +1096,8 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 				id: undefined
 			},
 			committeeMeetingDate: undefined,
-			members: []
+			members: [],
+			canUpdateMembers : undefined
 		}
 	});
 
@@ -1127,7 +1128,9 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 			position: {
 				id: undefined
 			},
-			evaluators: []
+			evaluators: [],
+			canUpdateEvaluators : undefined,
+			canUploadEvaluations : undefined
 		}
 	});
 

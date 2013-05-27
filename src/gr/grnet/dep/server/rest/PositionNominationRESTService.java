@@ -102,10 +102,33 @@ public class PositionNominationRESTService extends RESTService {
 			if (!existingPosition.getPhase().getNomination().getId().equals(existingNomination.getId())) {
 				throw new RestException(Status.FORBIDDEN, "wrong.position.nomination.phase");
 			}
+			if (!existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI) &&
+				!existingPosition.getPhase().getStatus().equals(PositionStatus.STELEXOMENI)) {
+				throw new RestException(Status.CONFLICT, "wrong.position.status");
+			}
 
 			boolean updatedNominationCommitteeConvergenceDate = DateUtil.compareDates(existingNomination.getNominationCommitteeConvergenceDate(), newNomination.getNominationCommitteeConvergenceDate()) == 0;
 			boolean updatedNominatedCandidacy = (newNomination.getNominatedCandidacy() != null && newNomination.getNominatedCandidacy().getId() != null) && (existingNomination.getNominatedCandidacy() == null || !existingNomination.getNominatedCandidacy().getId().equals(newNomination.getNominatedCandidacy().getId()));
 			boolean updatedSecondNominatedCandidacy = (newNomination.getSecondNominatedCandidacy() != null && newNomination.getSecondNominatedCandidacy().getId() != null) && (existingNomination.getSecondNominatedCandidacy() == null || !existingNomination.getSecondNominatedCandidacy().getId().equals(newNomination.getSecondNominatedCandidacy().getId()));
+
+			// Validation Rules
+			// 5) Να μην είναι δυνατή η συμπλήρωση του πεδίου "Ημερομηνία Σύγκλησης Επιτροπής για Επιλογή" εάν δεν είναι συμπληρωμένο 
+			// το πεδίο "Πρόσκληση Κοσμήτορα για Σύγκληση της Επιτροπής για επιλογή"
+			if (newNomination.getNominationCommitteeConvergenceDate() != null &&
+				FileHeader.filter(existingNomination.getFiles(), FileType.PROSKLISI_KOSMITORA).isEmpty()) {
+				throw new RestException(Status.CONFLICT, "nomination.missing.prosklisi.kosmitora");
+			}
+			// 7) Να μην είναι δυνατή η συμπλήρωση των πεδίων "Διαβιβαστικό Πρακτικού, "Εκλεγέντας", "Δεύτερος Καταλληλότερος Υποψήφιος", εάν δεν έχει αναρτηθεί το Πρακτικό Επιλογής.
+			if ((newNomination.getNominatedCandidacy() != null || newNomination.getSecondNominatedCandidacy() != null)
+				&& FileHeader.filter(existingNomination.getFiles(), FileType.PRAKTIKO_EPILOGIS).isEmpty()) {
+				throw new RestException(Status.CONFLICT, "nomination.missing.praktiko.epilogis");
+			}
+			// 8) Τα πεδία "Πράξη Διορισμού" και "ΦΕΚ Πράξης Διορισμού" να ενεργοποιούνται μόνο μετά τη μετάβαση της θέσης σε status "Στελεχωμένη".
+			if (newNomination.getNominationFEK() != null
+				&& !existingPosition.getPhase().getStatus().equals(PositionStatus.STELEXOMENI)) {
+				throw new RestException(Status.CONFLICT, "wrong.position.status");
+			}
+
 			//Update
 			existingNomination.copyFrom(newNomination);
 			// Add Nominated
@@ -362,6 +385,16 @@ public class PositionNominationRESTService extends RESTService {
 		}
 		if (type == null) {
 			throw new RestException(Status.BAD_REQUEST, "missing.file.type");
+		}
+
+		// 6) Να μην είναι δυνατή η ανάρτηση του Πρακτικού Επιλογής αν δεν είναι συμπληρωμένο το πεδίο ""Ημερομηνία Σύγκλησης Επιτροπής για Επιλογή"
+		if ((type.equals(FileType.PRAKTIKO_EPILOGIS) || type.equals(FileType.DIAVIVASTIKO_PRAKTIKOU))
+			&& existingNomination.getNominationCommitteeConvergenceDate() == null) {
+			throw new RestException(Status.CONFLICT, "nomination.missing.committee.convergence.date");
+		}
+		// 8) Τα πεδία "Πράξη Διορισμού" και "ΦΕΚ Πράξης Διορισμού" να ενεργοποιούνται μόνο μετά τη μετάβαση της θέσης σε status "Στελεχωμένη".
+		if (type.equals(FileType.PRAKSI_DIORISMOU) && !position.getPhase().getStatus().equals(PositionStatus.STELEXOMENI)) {
+			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		try {
 			Set<PositionNominationFile> nominationFiles = FileHeader.filterIncludingDeleted(position.getPhase().getNomination().getFiles(), type);

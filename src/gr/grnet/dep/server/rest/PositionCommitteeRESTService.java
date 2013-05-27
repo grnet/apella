@@ -215,6 +215,11 @@ public class PositionCommitteeRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.member.id");
 		}
 		// Validate New Committee
+		// Να μην είναι δυνατή η συμπλήρωση της Επιτροπής εάν δεν έχει συμπληρωθεί το πεδίο "Απόφαση Σύστασης Επιτροπής".
+		if (newCommittee.getMembers().size() > 0 &&
+			FileHeader.filter(existingCommittee.getFiles(), FileType.APOFASI_SYSTASIS_EPITROPIS).isEmpty()) {
+			throw new RestException(Status.CONFLICT, "committee.missing.apofasi.systasis.epitropis");
+		}
 		// Check if a member is Evaluator
 		for (PositionEvaluator evaluator : existingPosition.getPhase().getEvaluation().getEvaluators()) {
 			if (newCommitteeMemberAsMap.containsKey(evaluator.getRegisterMember().getId())) {
@@ -615,6 +620,13 @@ public class PositionCommitteeRESTService extends RESTService {
 		if (type == null) {
 			throw new RestException(Status.BAD_REQUEST, "missing.file.type");
 		}
+		// 2) Να μην είναι δυνατή η συμπλήρωση των πεδίων 
+		// "Πρακτικό Συνεδρίασης Επιτροπής για Αξιολογητές" και "Αίτημα Επιτροπής για Αξιολογητές" εάν δεν έχει συμπληρωθεί το πεδίο "Ημερομηνία Συνεδρίασης Επιτροπής".
+		if ((type.equals(FileType.PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES) || type.equals(FileType.AITIMA_EPITROPIS_PROS_AKSIOLOGITES))
+			&& existingCommittee.getCommitteeMeetingDate() == null) {
+			throw new RestException(Status.CONFLICT, "committee.missing.committee.meeting.day");
+		}
+
 		try {
 			// Check number of file types
 			Set<PositionCommitteeFile> pcFiles = FileHeader.filterIncludingDeleted(existingCommittee.getFiles(), type);
