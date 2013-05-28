@@ -156,7 +156,7 @@ public class PositionEvaluationRESTService extends RESTService {
 		if (newEvaluation.getEvaluators().size() != PositionEvaluator.MAX_MEMBERS) {
 			throw new RestException(Status.CONFLICT, "wrong.evaluators.size");
 		}
-		if (!newEvaluation.canUpdateEvaluators()) {
+		if (!existingEvaluation.canUpdateEvaluators()) {
 			throw new RestException(Status.CONFLICT, "committee.missing.praktiko.synedriasis.epitropis.gia.aksiologites");
 		}
 
@@ -214,6 +214,7 @@ public class PositionEvaluationRESTService extends RESTService {
 				}
 				existingEvaluation.addEvaluator(newEvaluator);
 			}
+
 			em.flush();
 
 			// Send E-Mails

@@ -5810,8 +5810,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					case "diavivastikoPraktikouFile":
 						return (self.model.get("position").phase.status === "EPILOGI" || self.model.get("position").phase.status === "STELEXOMENI") &&
 							self.model.get("nominationCommitteeConvergenceDate");
-					case "nominatedCandidacy":
-					case "secondNominatedCandidacy":
 					case "praksiDiorismouFile":
 					case "nominationFEK":
 						return self.model.get("position").phase.status === "STELEXOMENI";

@@ -119,12 +119,12 @@ public class PositionNominationRESTService extends RESTService {
 				throw new RestException(Status.CONFLICT, "nomination.missing.prosklisi.kosmitora");
 			}
 			// 7) Να μην είναι δυνατή η συμπλήρωση των πεδίων "Διαβιβαστικό Πρακτικού, "Εκλεγέντας", "Δεύτερος Καταλληλότερος Υποψήφιος", εάν δεν έχει αναρτηθεί το Πρακτικό Επιλογής.
-			if ((newNomination.getNominatedCandidacy() != null || newNomination.getSecondNominatedCandidacy() != null)
+			if ((newNomination.getNominatedCandidacy().getId() != null || newNomination.getSecondNominatedCandidacy().getId() != null)
 				&& FileHeader.filter(existingNomination.getFiles(), FileType.PRAKTIKO_EPILOGIS).isEmpty()) {
 				throw new RestException(Status.CONFLICT, "nomination.missing.praktiko.epilogis");
 			}
 			// 8) Τα πεδία "Πράξη Διορισμού" και "ΦΕΚ Πράξης Διορισμού" να ενεργοποιούνται μόνο μετά τη μετάβαση της θέσης σε status "Στελεχωμένη".
-			if (newNomination.getNominationFEK() != null
+			if (newNomination.getNominationFEK() != null && !newNomination.getNominationFEK().isEmpty()
 				&& !existingPosition.getPhase().getStatus().equals(PositionStatus.STELEXOMENI)) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
