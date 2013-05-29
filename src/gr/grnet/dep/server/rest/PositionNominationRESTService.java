@@ -107,7 +107,7 @@ public class PositionNominationRESTService extends RESTService {
 				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
 
-			boolean updatedNominationCommitteeConvergenceDate = DateUtil.compareDates(existingNomination.getNominationCommitteeConvergenceDate(), newNomination.getNominationCommitteeConvergenceDate()) == 0;
+			boolean updatedNominationCommitteeConvergenceDate = DateUtil.compareDates(existingNomination.getNominationCommitteeConvergenceDate(), newNomination.getNominationCommitteeConvergenceDate()) != 0;
 			boolean updatedNominatedCandidacy = (newNomination.getNominatedCandidacy() != null && newNomination.getNominatedCandidacy().getId() != null) && (existingNomination.getNominatedCandidacy() == null || !existingNomination.getNominatedCandidacy().getId().equals(newNomination.getNominatedCandidacy().getId()));
 			boolean updatedSecondNominatedCandidacy = (newNomination.getSecondNominatedCandidacy() != null && newNomination.getSecondNominatedCandidacy().getId() != null) && (existingNomination.getSecondNominatedCandidacy() == null || !existingNomination.getSecondNominatedCandidacy().getId().equals(newNomination.getSecondNominatedCandidacy().getId()));
 
@@ -220,14 +220,14 @@ public class PositionNominationRESTService extends RESTService {
 					}));
 			}
 			if (updatedSecondNominatedCandidacy) {
-				// positionNomination.update.nominated@candidate
-				postEmail(existingNomination.getNominatedCandidacy().getCandidate().getUser().getContactInfo().getEmail(),
+				// positionNomination.update.secondNominated@candidate
+				postEmail(existingNomination.getSecondNominatedCandidacy().getCandidate().getUser().getContactInfo().getEmail(),
 					"default.subject",
 					"positionNomination.update.secondNominated@candidate",
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("username", existingNomination.getNominatedCandidacy().getCandidate().getUser().getUsername());
+							put("username", existingNomination.getSecondNominatedCandidacy().getCandidate().getUser().getUsername());
 							put("position", existingNomination.getPosition().getName());
 							put("institution", existingNomination.getPosition().getDepartment().getInstitution().getName());
 							put("department", existingNomination.getPosition().getDepartment().getDepartment());

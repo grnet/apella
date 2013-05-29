@@ -37,7 +37,9 @@ public class MailQueue implements MessageListener {
 			mail.setSubject(aSubject);
 			mail.setBody(aBody);
 
-			service.pushEmail(aToEmailAddr, aSubject, aBody);
+			service.sendEmail(mail);
+			// TODO: Use this for Production 
+			// service.pushEmail(aToEmailAddr, aSubject, aBody);
 		} catch (JMSException e) {
 			logger.log(Level.WARNING, "", e);
 			throw new EJBException(e);

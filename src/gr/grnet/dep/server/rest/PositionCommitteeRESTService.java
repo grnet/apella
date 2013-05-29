@@ -291,13 +291,13 @@ public class PositionCommitteeRESTService extends RESTService {
 				} else {
 					newCommitteeMember = new PositionCommitteeMember();
 					newCommitteeMember.setRegisterMember(newRegisterMember);
-
 					addedMemberIds.add(newRegisterMember.getId());
 				}
 				newCommitteeMember.setType(newCommitteeMemberAsMap.get(newRegisterMember.getId()));
 				existingCommittee.addMember(newCommitteeMember);
+
+				removedMemberIds.remove(newRegisterMember.getId());
 			}
-			removedMemberIds.removeAll(addedMemberIds);
 
 			final PositionCommittee savedCommittee = em.merge(existingCommittee);
 			em.flush();

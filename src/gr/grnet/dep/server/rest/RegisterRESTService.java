@@ -152,8 +152,7 @@ public class RegisterRESTService extends RESTService {
 		if (!newMemberIds.isEmpty()) {
 			Query query = em.createQuery(
 				"select distinct p from Professor p " +
-					"where p.status = :status " +
-					"and p.id in (:ids)")
+					"where p.id in (:ids)")
 				.setParameter("status", RoleStatus.ACTIVE)
 				.setParameter("ids", newMemberIds);
 			newRegisterMembers.addAll(query.getResultList());
@@ -169,31 +168,40 @@ public class RegisterRESTService extends RESTService {
 		removedProfessorIds.addAll(existingMembersAsMap.keySet());
 		removedProfessorIds.removeAll(newMemberIds);
 		// Validate removal
-		try {
-			em.createQuery("select pcm from PositionCommitteeMember pcm " +
-				"where pcm.registerMember.register.id = :registerId " +
-				"and pcm.committee.position.phase.status = :status " +
-				"and pcm.registerMember.professor.id in (:professorIds)")
-				.setParameter("registerId", existingRegister.getId())
-				.setParameter("status", PositionStatus.EPILOGI)
-				.setParameter("professorIds", removedProfessorIds)
-				.setMaxResults(1)
-				.getSingleResult();
-			throw new RestException(Status.CONFLICT, "professor.is.committee.member");
-		} catch (NoResultException e) {
+		if (removedProfessorIds.size() > 0) {
+			try {
+				em.createQuery("select pcm from PositionCommitteeMember pcm " +
+					"where pcm.registerMember.register.id = :registerId " +
+					"and pcm.committee.position.phase.status = :status " +
+					"and pcm.registerMember.professor.id in (:professorIds)")
+					.setParameter("registerId", existingRegister.getId())
+					.setParameter("status", PositionStatus.EPILOGI)
+					.setParameter("professorIds", removedProfessorIds)
+					.setMaxResults(1)
+					.getSingleResult();
+				throw new RestException(Status.CONFLICT, "professor.is.committee.member");
+			} catch (NoResultException e) {
+			}
+			try {
+				em.createQuery("select e.id from PositionEvaluator e " +
+					"where e.registerMember.register.id = :registerId " +
+					"and e.evaluation.position.phase.status = :status " +
+					"and e.registerMember.professor.id in (:professorIds)")
+					.setParameter("registerId", existingRegister.getId())
+					.setParameter("status", PositionStatus.EPILOGI)
+					.setParameter("professorIds", removedProfessorIds)
+					.setMaxResults(1)
+					.getSingleResult();
+				throw new RestException(Status.CONFLICT, "professor.is.evaluator");
+			} catch (NoResultException e) {
+			}
 		}
-		try {
-			em.createQuery("select e.id from PositionEvaluator e " +
-				"where e.registerMember.register.id = :registerId " +
-				"and e.evaluation.position.phase.status = :status " +
-				"and e.registerMember.professor.id in (:professorIds)")
-				.setParameter("registerId", existingRegister.getId())
-				.setParameter("status", PositionStatus.EPILOGI)
-				.setParameter("professorIds", removedProfessorIds)
-				.setMaxResults(1)
-				.getSingleResult();
-			throw new RestException(Status.CONFLICT, "professor.is.evaluator");
-		} catch (NoResultException e) {
+		// Validate addition
+		for (Professor p : newRegisterMembers) {
+			if (addedProfessorIds.contains(p.getId()) &&
+				!p.getStatus().equals(RoleStatus.ACTIVE)) {
+				throw new RestException(Status.CONFLICT, "professor.is.inactive");
+			}
 		}
 		// Create new list, without replacing existing members 
 		Map<Long, RegisterMember> newMembersAsMap = new HashMap<Long, RegisterMember>();

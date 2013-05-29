@@ -6462,8 +6462,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.renderMembers();
 				//Scroll To top of table, to see added members
 				window.scrollTo(0, self.$("div#registerMembers").parent().position().top - 50);
-				self.toggleAddMember();
-				self.renderMembers();
+				self.toggleAddMember($.Event("click"));
 			},
 
 			removeMember: function (event) {

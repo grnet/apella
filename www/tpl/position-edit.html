@@ -47,7 +47,7 @@
 <div class="row-fluid" id="createdBy">
 	<div class="span4">
 		<p>
-			<b><%= $.i18n.prop('InstitutionContact') %></b><br/>
+			<b><%= $.i18n.prop('PositionCreatedBy') %></b><br/>
 			<%= createdBy.basicInfo.firstname %> <%= createdBy.basicInfo.lastname %> <%= createdBy.basicInfo.fathername %><br/> 
 			<%= _.isUndefined("createdBy.basicInfoLatin.firstname")? "" :  createdBy.basicInfoLatin.firstname %> <%= _.isUndefined("createdBy.basicInfoLatin.lastname")? "" :  createdBy.basicInfoLatin.lastname %> <%= _.isUndefined("createdBy.basicInfoLatin.fathername")? "" :  createdBy.basicInfoLatin.fathername %>
 		</p>
