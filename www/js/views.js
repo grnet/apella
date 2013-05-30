@@ -434,15 +434,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						$(element).removeClass("error");
 					},
 					rules: {
-						username: {
+						email: {
 							required: true,
-							minlength: 2
+							email : true
 						}
 					},
 					messages: {
-						username: {
-							required: $.i18n.prop('validation_username'),
-							minlength: $.i18n.prop('validation_minlength', 2)
+						email: {
+							required: $.i18n.prop('validation_email'),
+							email: $.i18n.prop('validation_email')
 						}
 					}
 				});
@@ -457,15 +457,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						$(element).removeClass("error");
 					},
 					rules: {
-						username: {
+						email: {
 							required: true,
-							minlength: 2
+							email: true
 						}
 					},
 					messages: {
-						username: {
-							required: $.i18n.prop('validation_username'),
-							minlength: $.i18n.prop('validation_minlength', 2)
+						email: {
+							required: $.i18n.prop('validation_email'),
+							email: $.i18n.prop('validation_email')
 						}
 					}
 				});
@@ -515,11 +515,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			resetPassword: function (event) {
 				var self = this;
-				var username = self.$('form#resetPasswordForm input[name=username]').val();
+				var email = self.$('form#resetPasswordForm input[name=email]').val();
 
 				// Save to model
 				self.model.resetPassword({
-					"username": username
+					"email": email
 				}, {
 					wait: true,
 					success: function (model, resp) {
@@ -541,11 +541,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			resendVerificationEmail: function (event) {
 				var self = this;
-				var username = self.$('form#resendVerificationEmailForm input[name=username]').val();
+				var email = self.$('form#resendVerificationEmailForm input[name=email]').val();
 
 				// Save to model
 				self.model.resendVerificationEmail({
-					"username": username
+					"email": email
 				}, {
 					wait: true,
 					success: function (model, resp) {
@@ -986,7 +986,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					rules: {
 						username: {
 							required: true,
-							email: true,
 							minlength: 2
 						},
 						firstname: "required",
@@ -1040,7 +1039,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					messages: {
 						username: {
 							required: $.i18n.prop('validation_username'),
-							email: $.i18n.prop('validation_username'),
 							minlength: $.i18n.prop('validation_minlength', 2)
 						},
 						firstname: $.i18n.prop('validation_firstname'),
@@ -1735,7 +1733,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.$("a#remove").hide();
 				} else {
 					self.$("input").attr("disabled", true);
-					self.$("input[name=username]").removeAttr("disabled");
 					self.$("input[name=firstname]").removeAttr("disabled");
 					self.$("input[name=lastname]").removeAttr("disabled");
 					self.$("input[name=fathername]").removeAttr("disabled");

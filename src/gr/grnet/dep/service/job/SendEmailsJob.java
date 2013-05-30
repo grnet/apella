@@ -33,7 +33,6 @@ public class SendEmailsJob implements Job {
 		log.info("SendEmailsJob: Starting ...");
 		long duration = System.currentTimeMillis();
 		int sent = 0;
-		// 1. Remove Candidacy
 		sent = service().sendEmails();
 		log.info("SendEmailsJob: Sent " + sent + " Emails");
 		duration = System.currentTimeMillis() - duration;

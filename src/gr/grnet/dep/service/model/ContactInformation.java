@@ -23,7 +23,7 @@ public class ContactInformation {
 
 	@Size(min = 10)
 	private String mobile;
-	
+
 	private String phone;
 
 	public Address getAddress() {
@@ -97,6 +97,5 @@ public class ContactInformation {
 		}
 		return true;
 	}
-	
-	
+
 }

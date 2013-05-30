@@ -277,7 +277,8 @@ public class PositionCommitteeRESTService extends RESTService {
 		Set<Long> addedMemberIds = new HashSet<Long>();
 		Set<Long> removedMemberIds = new HashSet<Long>();
 		removedMemberIds.addAll(existingCommitteeMemberAsMap.keySet());
-		boolean committeeMeetingDateUpdated = DateUtil.compareDates(existingCommittee.getCommitteeMeetingDate(), newCommittee.getCommitteeMeetingDate()) != 0;
+		boolean committeeMeetingDateUpdated = (newCommittee.getCommitteeMeetingDate() != null) &&
+			(DateUtil.compareDates(existingCommittee.getCommitteeMeetingDate(), newCommittee.getCommitteeMeetingDate()) != 0);
 
 		// Update
 		try {

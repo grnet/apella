@@ -107,7 +107,8 @@ public class PositionNominationRESTService extends RESTService {
 				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
 
-			boolean updatedNominationCommitteeConvergenceDate = DateUtil.compareDates(existingNomination.getNominationCommitteeConvergenceDate(), newNomination.getNominationCommitteeConvergenceDate()) != 0;
+			boolean updatedNominationCommitteeConvergenceDate = newNomination.getNominationCommitteeConvergenceDate() != null &&
+				DateUtil.compareDates(existingNomination.getNominationCommitteeConvergenceDate(), newNomination.getNominationCommitteeConvergenceDate()) != 0;
 			boolean updatedNominatedCandidacy = (newNomination.getNominatedCandidacy() != null && newNomination.getNominatedCandidacy().getId() != null) && (existingNomination.getNominatedCandidacy() == null || !existingNomination.getNominatedCandidacy().getId().equals(newNomination.getNominatedCandidacy().getId()));
 			boolean updatedSecondNominatedCandidacy = (newNomination.getSecondNominatedCandidacy() != null && newNomination.getSecondNominatedCandidacy().getId() != null) && (existingNomination.getSecondNominatedCandidacy() == null || !existingNomination.getSecondNominatedCandidacy().getId().equals(newNomination.getSecondNominatedCandidacy().getId()));
 

@@ -63,8 +63,8 @@
 	<form id="resetPasswordForm" class="form-inline" onsubmit="return false">
 		<div class="span12">
 			<span class="help-block"><%= $.i18n.prop('Instructions_ResetPasswordForm') %></span>
-			<label class="control-label" for="username"><%= $.i18n.prop('Username') %>:</label>
-			<input class="input-xlarge" type="email" name="username" />
+			<label class="control-label" ><%= $.i18n.prop('Email') %>:</label>
+			<input class="input-xlarge" type="email" name="email" />
 			<a id="resetPassword" class="btn btn-warning"><%= $.i18n.prop('btn_resetPassword') %></a>
 		</div>
 	</form>
@@ -73,8 +73,8 @@
 	<form id="resendVerificationEmailForm" class="form-inline" onsubmit="return false">
 		<div class="span12">
 			<span class="help-block"><%= $.i18n.prop('Instructions_ResendVerificationEmail') %></span>
-			<label class="control-label" for="username"><%= $.i18n.prop('Username') %>:</label>
-			<input class="input-xlarge" type="email" name="username" />
+			<label class="control-label"><%= $.i18n.prop('Email') %>:</label>
+			<input class="input-xlarge" type="email" name="email" />
 			<a id="resendVerificationEmail" class="btn btn-warning"><%= $.i18n.prop('btn_resendVerificationEmail') %></a>
 		</div>
 	</form>

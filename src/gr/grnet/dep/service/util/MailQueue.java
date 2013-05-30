@@ -31,15 +31,19 @@ public class MailQueue implements MessageListener {
 			String aToEmailAddr = mailMessage.getString("aToEmailAddr");
 			String aSubject = mailMessage.getString("aSubject");
 			String aBody = mailMessage.getString("aBody");
+			boolean sendNow = mailMessage.getBoolean("sendNow");
 
 			MailRecord mail = new MailRecord();
 			mail.setToEmailAddr(aToEmailAddr);
 			mail.setSubject(aSubject);
 			mail.setBody(aBody);
 
-			service.sendEmail(mail);
-			// TODO: Use this for Production 
-			// service.pushEmail(aToEmailAddr, aSubject, aBody);
+			sendNow = true; //TODO: REMOVE THIS IN PRODUCTION
+			if (sendNow) {
+				service.sendEmail(mail);
+			} else {
+				service.pushEmail(aToEmailAddr, aSubject, aBody);
+			}
 		} catch (JMSException e) {
 			logger.log(Level.WARNING, "", e);
 			throw new EJBException(e);

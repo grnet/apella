@@ -371,7 +371,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 
 				// positionCandidacies.upload.eisigisi@committee
 				for (final PositionCommitteeMember member : existingEvaluator.getCandidacy().getCandidacies().getPosition().getPhase().getCommittee().getMembers()) {
-					postEmail(existingEvaluator.getEmail(),
+					postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 						"default.subject",
 						"positionCandidacies.upload.eisigisi@committee",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -388,7 +388,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 				}
 				// positionCandidacies.upload.eisigisi@evaluators
 				for (final PositionEvaluator evaluator : existingEvaluator.getCandidacy().getCandidacies().getPosition().getPhase().getEvaluation().getEvaluators()) {
-					postEmail(existingEvaluator.getEmail(),
+					postEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 						"default.subject",
 						"positionCandidacies.upload.eisigisi@evaluators",
 						Collections.unmodifiableMap(new HashMap<String, String>() {

@@ -187,8 +187,8 @@ public class CandidacyRESTService extends RESTService {
 			}
 			// Check files and candidate status
 			validateCandidacy(existingCandidacy, candidate, isNew);
-			//Check if evaluators change:
-			boolean updatedEvaluators = !CompareUtil.compareCollections(existingCandidacy.getProposedEvaluators(), candidacy.getProposedEvaluators(), new Comparator<CandidacyEvaluator>() {
+			//Check changes of Evaluators
+			Collection<CandidacyEvaluator> newEvaluators = CompareUtil.complement(candidacy.getProposedEvaluators(), existingCandidacy.getProposedEvaluators(), new Comparator<CandidacyEvaluator>() {
 
 				@Override
 				public int compare(CandidacyEvaluator o1, CandidacyEvaluator o2) {
@@ -232,9 +232,9 @@ public class CandidacyRESTService extends RESTService {
 						}
 					}));
 			}
-			if (updatedEvaluators) {
+			if (!newEvaluators.isEmpty()) {
 				// 2. candidacy.create.candidacyEvaluator@candidacyEvaluator
-				for (final CandidacyEvaluator evaluator : candidacy.getProposedEvaluators()) {
+				for (final CandidacyEvaluator evaluator : newEvaluators) {
 					postEmail(evaluator.getEmail(),
 						"default.subject",
 						"candidacy.create.candidacyEvaluator@candidacyEvaluator",
@@ -255,42 +255,39 @@ public class CandidacyRESTService extends RESTService {
 						}));
 				}
 				// 3. candidacy.create.candidacyEvaluator@institutionManager
-				for (final CandidacyEvaluator evaluator : candidacy.getProposedEvaluators()) {
-					postEmail(existingCandidacy.getCandidacies().getPosition().getCreatedBy().getContactInfo().getEmail(),
-						"default.subject",
-						"candidacy.create.candidacyEvaluator@institutionManager",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+				postEmail(existingCandidacy.getCandidacies().getPosition().getCreatedBy().getContactInfo().getEmail(),
+					"default.subject",
+					"candidacy.create.candidacyEvaluator@institutionManager",
+					Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("username", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getUsername());
-								put("evaluator_name", evaluator.getFullname());
-								put("position", existingCandidacy.getCandidacies().getPosition().getName());
-								put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
-								put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
-								put("candidate_firstname", existingCandidacy.getSnapshot().getBasicInfo().getFirstname());
-								put("candidate_lastname", existingCandidacy.getSnapshot().getBasicInfo().getLastname());
-								Iterator<CandidacyEvaluator> it = existingCandidacy.getProposedEvaluators().iterator();
-								if (it.hasNext()) {
-									CandidacyEvaluator eval = it.next();
-									put("evaluator1_name", eval.getFullname());
-									put("evaluator1_email", eval.getEmail());
-								} else {
-									put("evaluator1_name", "-");
-									put("evaluator1_email", "-");
-									put("evaluator2_name", "-");
-									put("evaluator2_email", "-");
-								}
-								if (it.hasNext()) {
-									CandidacyEvaluator eval = it.next();
-									put("evaluator2_name", eval.getFullname());
-									put("evaluator2_email", eval.getEmail());
-								} else {
-									put("evaluator2_name", "-");
-									put("evaluator2_email", "-");
-								}
+						{
+							put("username", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getUsername());
+							put("position", existingCandidacy.getCandidacies().getPosition().getName());
+							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
+							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
+							put("candidate_firstname", existingCandidacy.getSnapshot().getBasicInfo().getFirstname());
+							put("candidate_lastname", existingCandidacy.getSnapshot().getBasicInfo().getLastname());
+							Iterator<CandidacyEvaluator> it = existingCandidacy.getProposedEvaluators().iterator();
+							if (it.hasNext()) {
+								CandidacyEvaluator eval = it.next();
+								put("evaluator1_name", eval.getFullname());
+								put("evaluator1_email", eval.getEmail());
+							} else {
+								put("evaluator1_name", "-");
+								put("evaluator1_email", "-");
+								put("evaluator2_name", "-");
+								put("evaluator2_email", "-");
 							}
-						}));
-				}
+							if (it.hasNext()) {
+								CandidacyEvaluator eval = it.next();
+								put("evaluator2_name", eval.getFullname());
+								put("evaluator2_email", eval.getEmail());
+							} else {
+								put("evaluator2_name", "-");
+								put("evaluator2_email", "-");
+							}
+						}
+					}));
 				// END: Send E-Mails
 			}
 

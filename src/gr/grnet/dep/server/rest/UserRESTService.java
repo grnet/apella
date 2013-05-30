@@ -522,13 +522,13 @@ public class UserRESTService extends RESTService {
 	@PUT
 	@Path("/resetPassword")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	public Response resetPassword(@FormParam("username") String username) {
+	public Response resetPassword(@FormParam("email") String email) {
 		try {
 			final User u = (User) em.createQuery(
 				"from User u " +
 					"left join fetch u.roles " +
-					"where u.username = :username")
-				.setParameter("username", username)
+					"where u.contactInfo.email = :email")
+				.setParameter("email", email)
 				.getSingleResult();
 			// Reset password
 			final String newPassword = User.generatePassword();
@@ -546,7 +546,7 @@ public class UserRESTService extends RESTService {
 						put("lastname", u.getBasicInfo().getLastname());
 						put("newPassword", newPassword);
 					}
-				}));
+				}), true);
 			// Return Result
 			return Response.noContent().build();
 		} catch (NoResultException e) {
@@ -557,13 +557,13 @@ public class UserRESTService extends RESTService {
 	@PUT
 	@Path("/sendVerificationEmail")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	public Response sendVerificationEmail(@FormParam("username") String username) {
+	public Response sendVerificationEmail(@FormParam("email") String email) {
 		try {
 			final User u = (User) em.createQuery(
 				"from User u " +
 					"left join fetch u.roles " +
-					"where u.username = :username")
-				.setParameter("username", username)
+					"where u.contactInfo.email = :email")
+				.setParameter("username", email)
 				.getSingleResult();
 			// Validate
 			switch (u.getStatus()) {
@@ -580,7 +580,7 @@ public class UserRESTService extends RESTService {
 								put("lastname", u.getBasicInfo().getLastname());
 								put("verificationLink", conf.getString("host") + "/depui/registration.html?#email=" + u.getUsername() + "&verification=" + u.getVerificationNumber());
 							}
-						}));
+						}), true);
 
 					// Return Result
 					return Response.noContent().build();

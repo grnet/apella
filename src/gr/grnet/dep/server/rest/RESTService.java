@@ -658,6 +658,10 @@ public class RESTService {
 	}
 
 	protected void postEmail(String aToEmailAddr, String aSubjectKey, String aBodyKey, Map<String, String> parameters) {
+		postEmail(aToEmailAddr, aSubjectKey, aBodyKey, parameters, false);
+	}
+
+	protected void postEmail(String aToEmailAddr, String aSubjectKey, String aBodyKey, Map<String, String> parameters, boolean sendNow) {
 		ResourceBundle resources = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-mail", new Locale("el"));
 		String aSubject = resources.getString(aSubjectKey);
 		String aBody = resources.getString(aBodyKey);
@@ -690,6 +694,7 @@ public class RESTService {
 			mailMessage.setString("aToEmailAddr", aToEmailAddr);
 			mailMessage.setString("aSubject", aSubject);
 			mailMessage.setString("aBody", aBody);
+			mailMessage.setBoolean("sendNow", sendNow);
 
 			logger.log(Level.INFO, "Posting emailMessage to " + aToEmailAddr + " " + aSubject + "\n" + aBody);
 			sender.send(mailMessage);
