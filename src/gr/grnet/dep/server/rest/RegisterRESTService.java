@@ -153,7 +153,6 @@ public class RegisterRESTService extends RESTService {
 			Query query = em.createQuery(
 				"select distinct p from Professor p " +
 					"where p.id in (:ids)")
-				.setParameter("status", RoleStatus.ACTIVE)
 				.setParameter("ids", newMemberIds);
 			newRegisterMembers.addAll(query.getResultList());
 		}
