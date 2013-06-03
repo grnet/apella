@@ -1,6 +1,6 @@
 package gr.grnet.dep.server.rest;
 
-import gr.grnet.dep.service.model.Sector;
+import gr.grnet.dep.service.model.Country;
 
 import java.util.Collection;
 import java.util.logging.Logger;
@@ -19,7 +19,7 @@ public class CountryRESTService extends RESTService {
 
 	@GET
 	@SuppressWarnings("unchecked")
-	public Collection<Sector> getAll() {
-		return em.createQuery("from Country c order by c.region, c.subregion, c.name").getResultList();
+	public Collection<Country> getAll() {
+		return em.createQuery("from Country c order by c.name, c.code").getResultList();
 	}
 }

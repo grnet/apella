@@ -903,7 +903,10 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 
 	Models.Countries = Backbone.Collection.extend({
 		url: "/dep/rest/country",
-		model: Models.Country
+		model: Models.Country,
+		comparator: function (model) {
+			return model.get("name") + model.get("code");
+		}
 	});
 
 	Models.Position = Backbone.Model.extend({

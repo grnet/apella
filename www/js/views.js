@@ -404,9 +404,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					},
 					rules: {
 						username: {
-							required: true,
-							minlength: 5,
-							onlyLatin: true
+							required: true
 						},
 						password: {
 							required: true,
@@ -414,7 +412,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						}
 					},
 					messages: {
-						username: $.i18n.prop('validation_username'),
+						username: {
+							required: $.i18n.prop('validation_username')
+						},
 						password: {
 							required: $.i18n.prop('validation_required'),
 							minlength: $.i18n.prop('validation_minlength', 5)
@@ -434,7 +434,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					rules: {
 						email: {
 							required: true,
-							email : true
+							email: true
 						}
 					},
 					messages: {
@@ -613,9 +613,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					},
 					rules: {
 						username: {
-							required: true,
-							minlength: 5,
-							onlyLatin: true
+							required: true
 						},
 						password: {
 							required: true,
@@ -623,7 +621,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						}
 					},
 					messages: {
-						username: $.i18n.prop('validation_username'),
+						username: {
+							required: $.i18n.prop('validation_username')
+						},
 						password: {
 							required: $.i18n.prop('validation_required'),
 							minlength: $.i18n.prop('validation_minlength', 5)
@@ -1029,7 +1029,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						}
 					},
 					messages: {
-						username: $.i18n.prop('validation_username'),
+						username: {
+							required: $.i18n.prop('validation_username'),
+							minlength: $.i18n.prop('validation_minlength', 5),
+							onlyLatin: $.i18n.prop('validation_latin')
+						},
 						firstname: $.i18n.prop('validation_firstname'),
 						lastname: $.i18n.prop('validation_lastname'),
 						fathername: $.i18n.prop('validation_fathername'),
@@ -1051,7 +1055,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						password: {
 							required: $.i18n.prop('validation_required'),
 							pwd: $.i18n.prop('validation_password'),
-							minlength: $.i18n.prop('validation_minlength', 5)
+							minlength: $.i18n.prop('validation_latin', 5)
 						},
 						confirm_password: {
 							required: $.i18n.prop('validation_required'),
@@ -1472,7 +1476,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						}
 					},
 					messages: {
-						username: $.i18n.prop('validation_username'),
+						username: {
+							required: $.i18n.prop('validation_username'),
+							minlength: $.i18n.prop('validation_minlegth', 5),
+							onlyLatin: $.i18n.prop('validation_latin')
+						},
 						firstname: $.i18n.prop('validation_firstname'),
 						lastname: $.i18n.prop('validation_lastname'),
 						fathername: $.i18n.prop('validation_fathername'),
@@ -2134,8 +2142,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							case "fekCheckbox":
 								return _.isEqual(self.model.get("status"), "UNAPPROVED");
 							case "fekSubject":
-								return _.isEqual(self.model.get("status"), "UNAPPROVED") &&
-									(_.isObject(self.model.get("fekSubject")) || (_.isUndefined(self.model.get("fekSubject")) && _.isUndefined(self.model.get("subject"))));
+								return _.isEqual(self.model.get("status"),
+									"UNAPPROVED") && (_.isObject(self.model.get("fekSubject")) || (_.isUndefined(self.model.get("fekSubject")) && _.isUndefined(self.model.get("subject"))));
 							case "subject":
 								return _.isEqual(self.model.get("status"), "UNAPPROVED") && !self.isEditable("fekSubject");
 							default:
@@ -2596,7 +2604,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 									if (_.isObject(self.model.get("country")) && _.isEqual(country.get("code"), self.model.get("country").code)) {
 										$("select[name='country']", self.$el).append("<option value='" + country.get("code") + "' selected>" + country.get("name") + "</option>");
 									} else {
-										$("select[name='country']", self.$el).append("<option value='" + country.get("code")+ "'>" + country.get("name") + "</option>");
+										$("select[name='country']", self.$el).append("<option value='" + country.get("code") + "'>" + country.get("name") + "</option>");
 									}
 								});
 							},
@@ -4048,7 +4056,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			render: function (eventName) {
 				var self = this;
 				var tpl_data = self.model.toJSON();
-				//Remove CreatedBy if loggedOn===owner of Position
+				// Remove CreatedBy if loggedOn===owner of Position
 				if (self.model.get("createdBy").id === App.loggedOnUser.get("id")) {
 					tpl_data.createdBy.id = undefined;
 				}
@@ -4223,7 +4231,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			render: function (eventName) {
 				var self = this;
 				var tpl_data = self.model.toJSON();
-				//Remove CreatedBy if loggedOn===owner of Position
+				// Remove CreatedBy if loggedOn===owner of Position
 				if (self.model.get("createdBy").id === App.loggedOnUser.get("id")) {
 					tpl_data.createdBy.id = undefined;
 				}
@@ -4518,7 +4526,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					self.$("select[name='sector']").next(".help-block").html(self.$("select[name='area'] option:selected").text() + " / " + self.$("select[name='sector'] option:selected").text());
 				});
 				App.sectors = App.sectors || new Models.Sectors();
-				//////////////////////
+				// ////////////////////
 				self.$("select[name='area']").change(function () {
 					var selectedArea;
 					self.$("select[name='sector']").empty();
@@ -4885,7 +4893,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			isEditable: function (element) {
 				var self = this;
 				switch (element) {
-					case "positionCommittee" :
+					case "positionCommittee":
 						return self.model.get("position").phase.status === "EPILOGI";
 					case "apofasiSystasisEpitropisFileList":
 						return self.model.get("position").phase.status === "EPILOGI";
@@ -5012,7 +5020,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					triggeredBy: "user"
 				});
 				self.renderCommitteeMembers();
-				//Scroll To top of table, to see added members
+				// Scroll To top of table, to see added members
 				window.scrollTo(0, self.$("div#positionCommittee").parent().position().top - 50);
 				self.toggleRegisterMembers();
 			},
@@ -5151,11 +5159,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var self = this;
 				var committeeMembers = [];
 
-				// Use dataTable to select elements, as pagination removes them from DOM
+				// Use dataTable to select elements, as pagination removes them from
+				// DOM
 				self.$("table").dataTable().$('select[name=selectMember] option:selected').each(function () {
-					var selectedOption,
-						cid, type, model,
-						committeeMember;
+					var selectedOption, cid, type, model, committeeMember;
 					selectedOption = $(this);
 					cid = selectedOption.data('modelCid');
 					if (!cid) {
@@ -5283,11 +5290,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			isEditable: function (element) {
 				var self = this;
 				switch (element) {
-					case "positionEvaluation" :
+					case "positionEvaluation":
 						return self.model.get("position").phase.status === "EPILOGI" && self.model.get("canUpdateEvaluators");
-					case "aksiologisiFileList" :
+					case "aksiologisiFileList":
 						return self.model.get("position").phase.status === "EPILOGI" && self.model.get("canUploadEvaluations");
-					default :
+					default:
 						return self.model.get("position").phase.status === "EPILOGI";
 				}
 			},
@@ -5758,8 +5765,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				switch (element) {
 					case "praktikoEpilogisFile":
 					case "diavivastikoPraktikouFile":
-						return (self.model.get("position").phase.status === "EPILOGI" || self.model.get("position").phase.status === "STELEXOMENI") &&
-							self.model.get("nominationCommitteeConvergenceDate");
+						return (self.model.get("position").phase.status === "EPILOGI" || self.model.get("position").phase.status === "STELEXOMENI") && self.model.get("nominationCommitteeConvergenceDate");
 					case "praksiDiorismouFile":
 					case "nominationFEK":
 						return self.model.get("position").phase.status === "STELEXOMENI";
@@ -6410,7 +6416,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					triggeredBy: "user"
 				});
 				self.renderMembers();
-				//Scroll To top of table, to see added members
+				// Scroll To top of table, to see added members
 				window.scrollTo(0, self.$("div#registerMembers").parent().position().top - 50);
 				self.toggleAddMember($.Event("click"));
 			},
@@ -6579,11 +6585,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			addMembers: function (event) {
 				var self = this;
 				var registerMembers = [];
-				// Use dataTable to select elements, as pagination removes them from DOM
+				// Use dataTable to select elements, as pagination removes them from
+				// DOM
 				self.$("table").dataTable().$('input[type=checkbox]:checked').each(function () {
-					var selectedCheckbox,
-						cid, professor,
-						registerMember;
+					var selectedCheckbox, cid, professor, registerMember;
 					selectedCheckbox = $(this);
 					cid = selectedCheckbox.data('modelCid');
 					if (!cid) {
