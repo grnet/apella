@@ -237,7 +237,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 			// Send E-Mails
 			// position.upload@committee
 			for (final PositionCommitteeMember member : cdFile.getComplementaryDocuments().getPosition().getPhase().getCommittee().getMembers()) {
-				postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+				mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 					"default.subject",
 					"position.upload@committee",
 					Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -252,7 +252,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 			}
 			// position.upload@candidates
 			for (final Candidacy candidacy : cdFile.getComplementaryDocuments().getPosition().getPhase().getCandidacies().getCandidacies()) {
-				postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+				mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
 					"default.subject",
 					"position.upload@candidates",
 					Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -267,7 +267,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 			}
 			// position.upload@evaluators
 			for (final PositionEvaluator evaluator : cdFile.getComplementaryDocuments().getPosition().getPhase().getEvaluation().getEvaluators()) {
-				postEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+				mailService.postEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 					"default.subject",
 					"position.upload@evaluators",
 					Collections.unmodifiableMap(new HashMap<String, String>() {

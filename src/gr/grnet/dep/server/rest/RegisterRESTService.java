@@ -244,7 +244,7 @@ public class RegisterRESTService extends RESTService {
 				final RegisterMember savedMember = newMembersAsMap.get(professorId);
 				if (savedMember.isExternal()) {
 					// register.create.register.member.external@member
-					postEmail(savedMember.getProfessor().getUser().getContactInfo().getEmail(),
+					mailService.postEmail(savedMember.getProfessor().getUser().getContactInfo().getEmail(),
 						"default.subject",
 						"register.create.register.member.external@member",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -256,7 +256,7 @@ public class RegisterRESTService extends RESTService {
 						}));
 				} else {
 					// register.create.register.member.internal@member
-					postEmail(savedMember.getProfessor().getUser().getContactInfo().getEmail(),
+					mailService.postEmail(savedMember.getProfessor().getUser().getContactInfo().getEmail(),
 						"default.subject",
 						"register.create.register.member.internal@member",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -273,7 +273,7 @@ public class RegisterRESTService extends RESTService {
 				final RegisterMember removedMember = existingMembersAsMap.get(professorID);
 				if (removedMember.isExternal()) {
 					// register.remove.register.member.external@member
-					postEmail(removedMember.getProfessor().getUser().getContactInfo().getEmail(),
+					mailService.postEmail(removedMember.getProfessor().getUser().getContactInfo().getEmail(),
 						"default.subject",
 						"register.remove.register.member.external@member",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -285,7 +285,7 @@ public class RegisterRESTService extends RESTService {
 						}));
 				} else {
 					// register.remove.register.member.internal@member
-					postEmail(removedMember.getProfessor().getUser().getContactInfo().getEmail(),
+					mailService.postEmail(removedMember.getProfessor().getUser().getContactInfo().getEmail(),
 						"default.subject",
 						"register.remove.register.member.internal@member",
 						Collections.unmodifiableMap(new HashMap<String, String>() {

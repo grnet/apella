@@ -219,7 +219,7 @@ public class CandidacyRESTService extends RESTService {
 			if (isNew) {
 				// Send E-Mails
 				// 1. candidacy.create@institutionManager
-				postEmail(existingCandidacy.getCandidacies().getPosition().getCreatedBy().getContactInfo().getEmail(),
+				mailService.postEmail(existingCandidacy.getCandidacies().getPosition().getCreatedBy().getContactInfo().getEmail(),
 					"default.subject",
 					"candidacy.create@institutionManager",
 					Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -235,7 +235,7 @@ public class CandidacyRESTService extends RESTService {
 			if (!newEvaluators.isEmpty()) {
 				// 2. candidacy.create.candidacyEvaluator@candidacyEvaluator
 				for (final CandidacyEvaluator evaluator : newEvaluators) {
-					postEmail(evaluator.getEmail(),
+					mailService.postEmail(evaluator.getEmail(),
 						"default.subject",
 						"candidacy.create.candidacyEvaluator@candidacyEvaluator",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -255,7 +255,7 @@ public class CandidacyRESTService extends RESTService {
 						}));
 				}
 				// 3. candidacy.create.candidacyEvaluator@institutionManager
-				postEmail(existingCandidacy.getCandidacies().getPosition().getCreatedBy().getContactInfo().getEmail(),
+				mailService.postEmail(existingCandidacy.getCandidacies().getPosition().getCreatedBy().getContactInfo().getEmail(),
 					"default.subject",
 					"candidacy.create.candidacyEvaluator@institutionManager",
 					Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -328,7 +328,7 @@ public class CandidacyRESTService extends RESTService {
 			if (existingCandidacy.isPermanent()) {
 				// Send E-Mails
 				// 1. candidacy.remove@institutionManager
-				postEmail(existingCandidacy.getCandidacies().getPosition().getCreatedBy().getContactInfo().getEmail(),
+				mailService.postEmail(existingCandidacy.getCandidacies().getPosition().getCreatedBy().getContactInfo().getEmail(),
 					"default.subject",
 					"candidacy.remove@institutionManager",
 					Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -343,7 +343,7 @@ public class CandidacyRESTService extends RESTService {
 				// 2. candidacy.remove@committee
 				if (existingCandidacy.getCandidacies().getPosition().getPhase().getCommittee() != null) {
 					for (final PositionCommitteeMember member : existingCandidacy.getCandidacies().getPosition().getPhase().getCommittee().getMembers()) {
-						postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+						mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 							"default.subject",
 							"candidacy.remove@committee",
 							Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -360,7 +360,7 @@ public class CandidacyRESTService extends RESTService {
 				// 3. candidacy.remove@evaluators
 				if (existingCandidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null) {
 					for (final PositionEvaluator evaluator : existingCandidacy.getCandidacies().getPosition().getPhase().getEvaluation().getEvaluators()) {
-						postEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+						mailService.postEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 							"default.subject",
 							"candidacy.remove@evaluators",
 							Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -377,7 +377,7 @@ public class CandidacyRESTService extends RESTService {
 				// 4. candidacy.remove@candidates 
 				for (final Candidacy candidacy : existingCandidacy.getCandidacies().getCandidacies()) {
 					if (candidacy.isPermanent() && !candidacy.getId().equals(existingCandidacy.getId())) {
-						postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+						mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
 							"default.subject",
 							"candidacy.remove@candidates",
 							Collections.unmodifiableMap(new HashMap<String, String>() {

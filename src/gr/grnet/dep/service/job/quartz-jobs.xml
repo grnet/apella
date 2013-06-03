@@ -22,6 +22,13 @@
 			<description>SendEmailsJob</description>
 			<job-class>gr.grnet.dep.service.job.SendEmailsJob</job-class>
 		</job>
+		
+		<job>
+			<name>NotifyOnClosedPositionsJob</name>
+			<group>APELLA_JOBS</group>
+			<description>NotifyOnClosedPositionsJob</description>
+			<job-class>gr.grnet.dep.service.job.NotifyOnClosedPositionsJob</job-class>
+		</job>
 
 		<trigger>
 			<cron>
@@ -52,6 +59,19 @@
 				<name>SendEmailsJobCronTrigger</name>
 				<group>EUDOXUS_TRIGGERS</group>
 				<job-name>SendEmailsJob</job-name>
+				<job-group>APELLA_JOBS</job-group>
+				<!-- trigger at 04:00 in the morning -->
+				<!-- <cron-expression>0 0 4 * * ?</cron-expression> -->
+				<!-- trigger every 10 min for testing -->
+				<cron-expression>0 0/2 * * * ?</cron-expression>
+			</cron>
+		</trigger>
+		
+		<trigger>
+			<cron>
+				<name>NotifyOnClosedPositionsJobTrigger</name>
+				<group>EUDOXUS_TRIGGERS</group>
+				<job-name>NotifyOnClosedPositionsJob</job-name>
 				<job-group>APELLA_JOBS</job-group>
 				<!-- trigger at 04:00 in the morning -->
 				<!-- <cron-expression>0 0 4 * * ?</cron-expression> -->

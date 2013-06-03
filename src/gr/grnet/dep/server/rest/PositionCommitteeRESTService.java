@@ -308,7 +308,7 @@ public class PositionCommitteeRESTService extends RESTService {
 				if (addedMemberIds.contains(member.getRegisterMember().getId())) {
 					if (member.getType().equals(MemberType.REGULAR)) {
 						// positionCommittee.create.regular.member@member
-						postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+						mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 							"default.subject",
 							"positionCommittee.create.regular.member@member",
 							Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -322,7 +322,7 @@ public class PositionCommitteeRESTService extends RESTService {
 							}));
 					} else {
 						// positionCommittee.create.substitute.member@member
-						postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+						mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 							"default.subject",
 							"positionCommittee.create.substitute.member@member",
 							Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -341,7 +341,7 @@ public class PositionCommitteeRESTService extends RESTService {
 				final PositionCommitteeMember removedMember = existingCommitteeMemberAsMap.get(registerMemberID);
 				if (removedMember.getType().equals(MemberType.REGULAR)) {
 					// positionCommittee.remove.regular.member@member
-					postEmail(removedMember.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+					mailService.postEmail(removedMember.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 						"default.subject",
 						"positionCommittee.remove.regular.member@member",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -355,7 +355,7 @@ public class PositionCommitteeRESTService extends RESTService {
 						}));
 				} else {
 					// positionCommittee.remove.substitute.member@member
-					postEmail(removedMember.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+					mailService.postEmail(removedMember.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 						"default.subject",
 						"positionCommittee.remove.substitute.member@member",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -372,7 +372,7 @@ public class PositionCommitteeRESTService extends RESTService {
 			if (!addedMemberIds.isEmpty() && removedMemberIds.isEmpty()) {
 				// positionCommittee.create.members@candidates
 				for (final Candidacy candidacy : savedCommittee.getPosition().getPhase().getCandidacies().getCandidacies()) {
-					postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+					mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
 						"default.subject",
 						"positionCommittee.create.members@candidates",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -389,7 +389,7 @@ public class PositionCommitteeRESTService extends RESTService {
 			if (!removedMemberIds.isEmpty()) {
 				//positionCommittee.remove.members@candidates
 				for (final Candidacy candidacy : savedCommittee.getPosition().getPhase().getCandidacies().getCandidacies()) {
-					postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+					mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
 						"default.subject",
 						"positionCommittee.remove.members@candidates",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -406,7 +406,7 @@ public class PositionCommitteeRESTService extends RESTService {
 				if (savedCommittee.getPosition().getPhase().getEvaluation() != null) {
 					for (final PositionEvaluator member : savedCommittee.getPosition().getPhase().getEvaluation().getEvaluators()) {
 						//positionCommittee.remove.members@members
-						postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+						mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 							"default.subject",
 							"positionCommittee.remove.members@evaluators",
 							Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -422,7 +422,7 @@ public class PositionCommitteeRESTService extends RESTService {
 				}
 				//positionCommittee.remove.members@members
 				for (final PositionCommitteeMember member : savedCommittee.getMembers()) {
-					postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+					mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 						"default.subject",
 						"positionCommittee.remove.members@members",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -440,7 +440,7 @@ public class PositionCommitteeRESTService extends RESTService {
 			if (committeeMeetingDateUpdated) {
 				// positionCommittee.update.committeeMeetingDate@members
 				for (final PositionCommitteeMember member : savedCommittee.getMembers()) {
-					postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+					mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 						"default.subject",
 						"positionCommittee.update.committeeMeetingDate@members",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -455,7 +455,7 @@ public class PositionCommitteeRESTService extends RESTService {
 				}
 				// positionCommittee.update.committeeMeetingDate@candidates
 				for (final Candidacy candidacy : savedCommittee.getPosition().getPhase().getCandidacies().getCandidacies()) {
-					postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+					mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
 						"default.subject",
 						"positionCommittee.update.committeeMeetingDate@candidates",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -646,7 +646,7 @@ public class PositionCommitteeRESTService extends RESTService {
 			// Send E-Mails
 			// position.upload@committee
 			for (final PositionCommitteeMember member : pcFile.getCommittee().getPosition().getPhase().getCommittee().getMembers()) {
-				postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+				mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 					"default.subject",
 					"position.upload@committee",
 					Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -661,7 +661,7 @@ public class PositionCommitteeRESTService extends RESTService {
 			}
 			// position.upload@candidates
 			for (final Candidacy candidacy : pcFile.getCommittee().getPosition().getPhase().getCandidacies().getCandidacies()) {
-				postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+				mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
 					"default.subject",
 					"position.upload@candidates",
 					Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -676,7 +676,7 @@ public class PositionCommitteeRESTService extends RESTService {
 			}
 			// position.upload@evaluators
 			for (final PositionEvaluator evaluator : pcFile.getCommittee().getPosition().getPhase().getEvaluation().getEvaluators()) {
-				postEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+				mailService.postEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 					"default.subject",
 					"position.upload@evaluators",
 					Collections.unmodifiableMap(new HashMap<String, String>() {

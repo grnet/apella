@@ -2,11 +2,21 @@ package gr.grnet.dep.service.util;
 
 import gr.grnet.dep.service.model.MailRecord;
 
+import java.util.Locale;
+import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.QueueConnectionFactory;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -15,10 +25,15 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
+
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
 
 @Stateless
 public class MailService {
@@ -28,6 +43,15 @@ public class MailService {
 
 	@PersistenceContext(unitName = "apelladb")
 	protected EntityManager em;
+
+	protected static Configuration conf;
+
+	static {
+		try {
+			conf = DEPConfigurationFactory.getServerConfiguration();
+		} catch (ConfigurationException e) {
+		}
+	}
 
 	private static final Logger logger = Logger.getLogger(MailService.class.getName());
 
@@ -71,6 +95,65 @@ public class MailService {
 		}
 
 		return i;
+	}
+
+	public void postEmail(String aToEmailAddr, String aSubjectKey, String aBodyKey, Map<String, String> parameters) {
+		postEmail(aToEmailAddr, aSubjectKey, aBodyKey, parameters, false);
+	}
+
+	public void postEmail(String aToEmailAddr, String aSubjectKey, String aBodyKey, Map<String, String> parameters, boolean sendNow) {
+		ResourceBundle resources = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-mail", new Locale("el"));
+		String aSubject = resources.getString(aSubjectKey);
+		String aBody = resources.getString(aBodyKey);
+		for (String key : parameters.keySet()) {
+			String value = parameters.get(key);
+			if (value == null || value.trim().isEmpty()) {
+				value = "-";
+			}
+			aBody = aBody.replaceAll("\\[" + key + "\\]", value);
+		}
+		// Replace login with link
+		aBody = aBody.replaceAll("\\[login\\]", "<a href=\"" + conf.getString("home.url") + "\">login</a>");
+
+		// Validate Email
+		Connection qConn = null;
+		javax.jms.Session session = null;
+		MessageProducer sender = null;
+		try {
+
+			javax.naming.Context jndiCtx = new InitialContext();
+
+			ConnectionFactory factory = (QueueConnectionFactory) jndiCtx.lookup("/ConnectionFactory");
+			Queue queue = (Queue) jndiCtx.lookup("queue/EMailQ");
+			qConn = factory.createConnection();
+			session = qConn.createSession(false, javax.jms.Session.AUTO_ACKNOWLEDGE);
+			sender = session.createProducer(queue);
+
+			MapMessage mailMessage = session.createMapMessage();
+			mailMessage.setJMSCorrelationID("mail");
+			mailMessage.setString("aToEmailAddr", aToEmailAddr);
+			mailMessage.setString("aSubject", aSubject);
+			mailMessage.setString("aBody", aBody);
+			mailMessage.setBoolean("sendNow", sendNow);
+
+			logger.log(Level.INFO, "Posting emailMessage to " + aToEmailAddr + " " + aSubject + "\n" + aBody);
+			sender.send(mailMessage);
+		} catch (NamingException e) {
+			logger.log(Level.SEVERE, "Message not published: ", e);
+		} catch (JMSException e) {
+			logger.log(Level.SEVERE, "Message not published: ", e);
+		} finally {
+			try {
+				if (sender != null)
+					sender.close();
+				if (session != null)
+					session.close();
+				if (qConn != null)
+					qConn.close();
+			} catch (JMSException e) {
+				logger.log(Level.WARNING, "Message not published: ", e);
+			}
+		}
 	}
 
 	public void sendEmail(String aToEmailAddr, String aSubject, String aBody) {

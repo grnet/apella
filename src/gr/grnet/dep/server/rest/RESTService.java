@@ -17,6 +17,7 @@ import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
+import gr.grnet.dep.service.util.MailService;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,26 +34,17 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.SessionContext;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.QueueConnectionFactory;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
@@ -93,6 +85,9 @@ public class RESTService {
 
 	@Context
 	protected Providers providers;
+
+	@EJB
+	MailService mailService;
 
 	protected static Configuration conf;
 
@@ -657,62 +652,4 @@ public class RESTService {
 			.getResultList();
 	}
 
-	protected void postEmail(String aToEmailAddr, String aSubjectKey, String aBodyKey, Map<String, String> parameters) {
-		postEmail(aToEmailAddr, aSubjectKey, aBodyKey, parameters, false);
-	}
-
-	protected void postEmail(String aToEmailAddr, String aSubjectKey, String aBodyKey, Map<String, String> parameters, boolean sendNow) {
-		ResourceBundle resources = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-mail", new Locale("el"));
-		String aSubject = resources.getString(aSubjectKey);
-		String aBody = resources.getString(aBodyKey);
-		for (String key : parameters.keySet()) {
-			String value = parameters.get(key);
-			if (value == null || value.trim().isEmpty()) {
-				value = "-";
-			}
-			aBody = aBody.replaceAll("\\[" + key + "\\]", value);
-		}
-		// Replace login with link
-		aBody = aBody.replaceAll("\\[login\\]", "<a href=\"" + conf.getString("home.url") + "\">login</a>");
-
-		// Validate Email
-		Connection qConn = null;
-		javax.jms.Session session = null;
-		MessageProducer sender = null;
-		try {
-
-			javax.naming.Context jndiCtx = new InitialContext();
-
-			ConnectionFactory factory = (QueueConnectionFactory) jndiCtx.lookup("/ConnectionFactory");
-			Queue queue = (Queue) jndiCtx.lookup("queue/EMailQ");
-			qConn = factory.createConnection();
-			session = qConn.createSession(false, javax.jms.Session.AUTO_ACKNOWLEDGE);
-			sender = session.createProducer(queue);
-
-			MapMessage mailMessage = session.createMapMessage();
-			mailMessage.setJMSCorrelationID("mail");
-			mailMessage.setString("aToEmailAddr", aToEmailAddr);
-			mailMessage.setString("aSubject", aSubject);
-			mailMessage.setString("aBody", aBody);
-			mailMessage.setBoolean("sendNow", sendNow);
-
-			logger.log(Level.INFO, "Posting emailMessage to " + aToEmailAddr + " " + aSubject + "\n" + aBody);
-			sender.send(mailMessage);
-		} catch (NamingException e) {
-			logger.log(Level.SEVERE, "Message not published: ", e);
-		} catch (JMSException e) {
-			logger.log(Level.SEVERE, "Message not published: ", e);
-		} finally {
-			try {
-				if (sender != null)
-					sender.close();
-				if (session != null)
-					session.close();
-				if (qConn != null)
-					qConn.close();
-			} catch (JMSException e) {
-				logger.log(Level.WARNING, "Message not published: ", e);
-			}
-		}
-	}
 }

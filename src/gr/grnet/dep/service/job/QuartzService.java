@@ -14,7 +14,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -204,6 +206,42 @@ public class QuartzService {
 
 	public int sendEmails() {
 		return mailService.sendPendingEmails();
+	}
+
+	///////////////////////////////////////////////////
+
+	public int notifyOnClosedPositions(Date fromDate, Date toDate) {
+		@SuppressWarnings("unchecked")
+		List<Position> positions = em.createQuery(
+			"from Position p where " +
+				"p.permanent is true " +
+				"and p.phase.status = :status " +
+				"and p.phase.candidacies.closingDate <= :toDate " +
+				"and p.phase.candidacies.closingDate > :fromDate")
+			.setParameter("status", PositionStatus.ANOIXTI)
+			.setParameter("fromDate", fromDate)
+			.setParameter("toDate", toDate)
+			.getResultList();
+
+		for (final Position position : positions) {
+			for (final Candidacy candidacy : position.getPhase().getCandidacies().getCandidacies()) {
+				//position.update.closingDate@candidates
+				mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+					"default.subject",
+					"position.update.closingDate@candidates",
+					Collections.unmodifiableMap(new HashMap<String, String>() {
+
+						{
+							put("username", candidacy.getCandidate().getUser().getUsername());
+							put("position", position.getName());
+							put("institution", position.getDepartment().getInstitution().getName());
+							put("department", position.getDepartment().getDepartment());
+						}
+					}));
+			}
+		}
+
+		return positions.size();
 	}
 
 	///////////////////////////////////////////////////
