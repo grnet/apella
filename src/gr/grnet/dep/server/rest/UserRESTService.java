@@ -550,7 +550,7 @@ public class UserRESTService extends RESTService {
 			// Return Result
 			return Response.noContent().build();
 		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "wrong.username");
+			throw new RestException(Status.NOT_FOUND, "login.wrong.email");
 		}
 	}
 
@@ -563,7 +563,7 @@ public class UserRESTService extends RESTService {
 				"from User u " +
 					"left join fetch u.roles " +
 					"where u.contactInfo.email = :email")
-				.setParameter("username", email)
+				.setParameter("email", email)
 				.getSingleResult();
 			// Validate
 			switch (u.getStatus()) {
@@ -588,7 +588,7 @@ public class UserRESTService extends RESTService {
 					throw new RestException(Status.CONFLICT, "verify.account.status." + u.getStatus().toString().toLowerCase());
 			}
 		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "wrong.username");
+			throw new RestException(Status.NOT_FOUND, "login.wrong.email");
 		}
 	}
 

@@ -544,9 +544,10 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 					});
 					params = {
 						type: 'PUT',
+						contentType : 'application/x-www-form-urlencoded; charset=UTF-8',
 						dataType: 'json',
 						data: {
-							"username": model.get("username")
+							"email": model.get("email")
 						}
 					};
 					// Ensure that we have a URL.
@@ -585,9 +586,10 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 					});
 					params = {
 						type: 'PUT',
+						contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
 						dataType: 'json',
 						data: {
-							"username": model.get("username")
+							"email": model.get("email")
 						}
 					};
 					// Ensure that we have a URL.

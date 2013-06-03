@@ -8,16 +8,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 		Routers.RegistrationRouter = Backbone.Router.extend({
 
 			initialize: function () {
-				var languageView;
-
 				_.extend(this, Backbone.Events);
 				_.bindAll(this, "showRegisterView", "showVerificationView", "showRegisterSelectView", "showRegisterSuccessView");
 				$(document).ajaxStart(App.blockUI);
 				$(document).ajaxStop(App.unblockUI);
 
 				App.institutions = new Models.Institutions();
-				languageView = new Views.LanguageView({});
-				languageView.render();
 
 				Backbone.history.start();
 			},

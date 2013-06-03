@@ -405,7 +405,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					rules: {
 						username: {
 							required: true,
-							minlength: 2
+							minlength: 5,
+							onlyLatin: true
 						},
 						password: {
 							required: true,
@@ -413,10 +414,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						}
 					},
 					messages: {
-						username: {
-							required: $.i18n.prop('validation_username'),
-							minlength: $.i18n.prop('validation_minlength', 2)
-						},
+						username: $.i18n.prop('validation_username'),
 						password: {
 							required: $.i18n.prop('validation_required'),
 							minlength: $.i18n.prop('validation_minlength', 5)
@@ -616,7 +614,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					rules: {
 						username: {
 							required: true,
-							minlength: 2
+							minlength: 5,
+							onlyLatin: true
 						},
 						password: {
 							required: true,
@@ -624,10 +623,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						}
 					},
 					messages: {
-						username: {
-							required: $.i18n.prop('validation_username'),
-							minlength: $.i18n.prop('validation_minlength', 2)
-						},
+						username: $.i18n.prop('validation_username'),
 						password: {
 							required: $.i18n.prop('validation_required'),
 							minlength: $.i18n.prop('validation_minlength', 5)
@@ -986,7 +982,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					rules: {
 						username: {
 							required: true,
-							minlength: 2
+							minlength: 5,
+							onlyLatin: true
 						},
 						firstname: "required",
 						lastname: "required",
@@ -1037,10 +1034,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						address_country: "required"
 					},
 					messages: {
-						username: {
-							required: $.i18n.prop('validation_username'),
-							minlength: $.i18n.prop('validation_minlength', 2)
-						},
+						username: $.i18n.prop('validation_username'),
 						firstname: $.i18n.prop('validation_firstname'),
 						lastname: $.i18n.prop('validation_lastname'),
 						fathername: $.i18n.prop('validation_fathername'),
@@ -1449,7 +1443,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						$(element).parent(".controls").parent(".control-group").removeClass("error");
 					},
 					rules: {
-						username: "required",
+						username: {
+							required: true,
+							minlength: 5,
+							onlyLatin: true
+						},
 						firstname: "required",
 						lastname: "required",
 						fathername: "required",
