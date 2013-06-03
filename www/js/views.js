@@ -2146,6 +2146,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						switch (field) {
 							case "institution":
 								return _.isEqual(self.model.get("status"), "UNAPPROVED");
+							case "country":
+								return _.isEqual(self.model.get("status"), "UNAPPROVED");
 							case "profileURL":
 								return _.isEqual(self.model.get("status"), "UNAPPROVED");
 							case "profileFile":
@@ -2584,6 +2586,28 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								popup.show();
 							}
 						});
+						App.countries = App.countries || new Models.Countries();
+						App.countries.fetch({
+							cache: true,
+							reset: true,
+							success: function (collection, resp) {
+								$("select[name='country']", self.$el).append("<option value=''>--</option>");
+								collection.each(function (country) {
+									if (_.isObject(self.model.get("country")) && _.isEqual(country.get("code"), self.model.get("country").code)) {
+										$("select[name='country']", self.$el).append("<option value='" + country.get("code") + "' selected>" + country.get("name") + "</option>");
+									} else {
+										$("select[name='country']", self.$el).append("<option value='" + country.get("code")+ "'>" + country.get("name") + "</option>");
+									}
+								});
+							},
+							error: function (model, resp, options) {
+								var popup = new Views.PopupView({
+									type: "error",
+									message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+								});
+								popup.show();
+							}
+						});
 						// Enable typeahead for Subjects:
 						self.$('input[name=subject]').typeahead({
 							source: function (query, process) {
@@ -2722,7 +2746,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 									required: true,
 									number: true,
 									minlength: 10
-								},
+								}
 							},
 							messages: {
 								institution: $.i18n.prop('validation_institution'),
@@ -2854,7 +2878,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						$(this).attr("disabled", true);
 					}
 				});
-				console.log("3", self.$("textarea[name=fekSubject]")[0], self.$("textarea[name=subject]")[0]);
 				// Disable Save Button until user changes a field,
 				// roles do not have permanent field
 				self.$("a#save").attr("disabled", true);
@@ -2912,6 +2935,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						values.profileURL = self.$('form input[name=profileURL]').val();
 						values.rank = {
 							"id": self.$('form select[name=rank]').val()
+						};
+						values.country = {
+							"code": self.$('form select[name=country]').val()
 						};
 						values.subject = {
 							"id": self.model.has("subject") ? self.model.get("subject").id : undefined,

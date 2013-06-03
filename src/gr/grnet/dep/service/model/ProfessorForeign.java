@@ -23,6 +23,9 @@ public class ProfessorForeign extends Professor {
 	private String institution;
 
 	@ManyToOne
+	private Country country;
+
+	@ManyToOne
 	private Rank rank;
 
 	@ManyToOne(cascade = CascadeType.ALL)
@@ -39,6 +42,14 @@ public class ProfessorForeign extends Professor {
 
 	public void setInstitution(String institution) {
 		this.institution = institution;
+	}
+
+	public Country getCountry() {
+		return country;
+	}
+
+	public void setCountry(Country country) {
+		this.country = country;
 	}
 
 	public Rank getRank() {
@@ -66,6 +77,7 @@ public class ProfessorForeign extends Professor {
 	public Role copyFrom(Role otherRole) {
 		super.copyFrom(otherRole);
 		ProfessorForeign pf = (ProfessorForeign) otherRole;
+		setCountry(pf.getCountry());
 		setInstitution(pf.getInstitution());
 		setRank(pf.getRank());
 		return this;
@@ -77,6 +89,9 @@ public class ProfessorForeign extends Professor {
 			return true;
 		}
 		if (this.getProfileURL() == null) {
+			return true;
+		}
+		if (this.country == null) {
 			return true;
 		}
 		if (this.institution == null) {

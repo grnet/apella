@@ -401,7 +401,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 		},
 
 		sync: function (method, model, options) {
-			var params, success, error,xhr;
+			var params, success, error, xhr;
 
 			switch (method) {
 
@@ -537,7 +537,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 					});
 					params = {
 						type: 'PUT',
-						contentType : 'application/x-www-form-urlencoded; charset=UTF-8',
+						contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
 						dataType: 'json',
 						data: {
 							"email": model.get("email")
@@ -889,6 +889,23 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 		model: Models.Rank
 	});
 
+	Models.Country = Backbone.Model.extend({
+		urlRoot: "/dep/rest/country",
+		defaults: {
+			"code": undefined,
+			"name": undefined,
+			"alpha2": undefined,
+			"alpha3": undefined,
+			"region": undefined,
+			"subregion": undefined
+		}
+	});
+
+	Models.Countries = Backbone.Collection.extend({
+		url: "/dep/rest/country",
+		model: Models.Country
+	});
+
 	Models.Position = Backbone.Model.extend({
 		urlRoot: "/dep/rest/position",
 		defaults: {
@@ -1088,7 +1105,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 			},
 			committeeMeetingDate: undefined,
 			members: [],
-			canUpdateMembers : undefined
+			canUpdateMembers: undefined
 		}
 	});
 
@@ -1120,8 +1137,8 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 				id: undefined
 			},
 			evaluators: [],
-			canUpdateEvaluators : undefined,
-			canUploadEvaluations : undefined
+			canUpdateEvaluators: undefined,
+			canUploadEvaluations: undefined
 		}
 	});
 
@@ -1188,7 +1205,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 			id: undefined,
 			professor: undefined,
 			internal: undefined,
-			canBeDeleted : undefined
+			canBeDeleted: undefined
 		}
 	});
 
@@ -1317,7 +1334,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 	Models.Sectors = Backbone.Collection.extend({
 		model: Models.Sector,
 		url: "/dep/rest/sector/",
-		comparator : function(model) {
+		comparator: function (model) {
 			return model.get("area") + model.get("category");
 		}
 

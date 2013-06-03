@@ -34,6 +34,8 @@
 	<dl class="dl-glossary">
 		<dt><%= $.i18n.prop('Institution') %></dt>
 		<dd><%= institution %></dd>
+		<dt><%= $.i18n.prop('Country') %></dt>
+		<dd><% if (!_.isUndefined(country)) { %><%= country.name %><% } %></dd>
 		<dt><%= $.i18n.prop('ProfileURL') %></dt>
 		<dd>
 			<a href="<%= profileURL %>" target="external"><%= profileURL %></a>
