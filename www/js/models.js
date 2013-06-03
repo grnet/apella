@@ -22,13 +22,6 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 				"fathername": undefined
 			},
 			"contactInfo": {
-				"address": {
-					"street": "",
-					"number": "",
-					"zip": "",
-					"city": "",
-					"country": ""
-				},
 				"email": "",
 				"mobile": "",
 				"phone": ""
@@ -655,9 +648,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 			"ministry": undefined,
 			"alternateBasicInfo": {},
 			"alternateBasicInfoLatin": {},
-			"alternateContactInfo": {
-				"address": {}
-			}
+			"alternateContactInfo": {}
 		},
 		isPrimary: function () {
 			var self = this;
@@ -944,9 +935,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 				"username": undefined,
 				"basicInfo": {},
 				"basicInfoLatin": {},
-				"contactInfo": {
-					"address": {}
-				}
+				"contactInfo": {}
 			}
 		},
 

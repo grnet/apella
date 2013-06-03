@@ -1,7 +1,6 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.model.Address;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.InstitutionAssistant;
@@ -488,7 +487,6 @@ public class UserRESTService extends RESTService {
 			u.setShibPersonalUniqueCode(personalUniqueCode);
 			u.getBasicInfo().setFirstname(name);
 			u.getBasicInfo().setLastname(lastName);
-			u.getContactInfo().setAddress(new Address());
 			u.setRegistrationDate(new Date());
 			u.setStatus(UserStatus.ACTIVE); // We trust shibboleth data, and lock changes from beginning
 			u.setStatusDate(new Date());

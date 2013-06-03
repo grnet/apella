@@ -60,29 +60,19 @@
 </div>
 <% if (createdBy.id) { %>
 <div class="row-fluid" id="createdBy">
-	<div class="span4">
+	<div class="span6">
 		<p>
 			<b><%= $.i18n.prop('PositionCreatedBy') %></b><br/>
 			<%= createdBy.basicInfo.firstname %> <%= createdBy.basicInfo.lastname %> <%= createdBy.basicInfo.fathername %><br/> 
 			<%= _.isUndefined("createdBy.basicInfoLatin.firstname")? "" :  createdBy.basicInfoLatin.firstname %> <%= _.isUndefined("createdBy.basicInfoLatin.lastname")? "" :  createdBy.basicInfoLatin.lastname %> <%= _.isUndefined("createdBy.basicInfoLatin.fathername")? "" :  createdBy.basicInfoLatin.fathername %>
 		</p>
 	</div>
-	<div class="span4">
+	<div class="span6">
 		<p>
 			<b><%= $.i18n.prop('ContactInformation') %></b><br/>
 			<em><%= $.i18n.prop('Email') %>:</em> <%= createdBy.contactInfo.email %>,<br/>
 			<em><%= $.i18n.prop('Mobile') %>:</em> <%= createdBy.contactInfo.mobile %>,<br/>
 			<em><%= $.i18n.prop('Phone') %>:</em> <%= createdBy.contactInfo.phone %>
-		</p>
-	</div>
-	<div class="span4">
-		<p>
-			<b><%= $.i18n.prop('Address') %></b><br/>
-			<em><%= $.i18n.prop('Street') %>:</em> <%= createdBy.contactInfo.address.street %>,<br/>
-			<em><%= $.i18n.prop('StreetNumber') %>:</em> <%= createdBy.contactInfo.address.number %>,<br/>
-			<em><%= $.i18n.prop('Zip') %>:</em> <%= createdBy.contactInfo.address.zip %>,<br/>
-			<em><%= $.i18n.prop('City') %>:</em> <%= createdBy.contactInfo.address.city %>,<br/>
-			<em><%= $.i18n.prop('Country') %>:</em> <%= createdBy.contactInfo.address.country %>
 		</p>
 	</div>
 </div>

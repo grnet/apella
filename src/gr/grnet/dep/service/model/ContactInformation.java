@@ -4,18 +4,12 @@ import gr.grnet.dep.service.util.CompareUtil;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
-import javax.persistence.Embedded;
-import javax.validation.Valid;
 import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.Email;
 
 @Embeddable
 public class ContactInformation {
-
-	@Valid
-	@Embedded
-	private Address address = new Address();
 
 	@Email
 	@Column(unique = true)
@@ -25,14 +19,6 @@ public class ContactInformation {
 	private String mobile;
 
 	private String phone;
-
-	public Address getAddress() {
-		return address;
-	}
-
-	public void setAddress(Address address) {
-		this.address = address;
-	}
 
 	public String getEmail() {
 		return email;
@@ -59,9 +45,6 @@ public class ContactInformation {
 	}
 
 	public boolean isMissingRequiredFields() {
-		if (this.address == null) {
-			return true;
-		}
 		if (this.email == null) {
 			return true;
 		}
@@ -83,9 +66,6 @@ public class ContactInformation {
 			return false;
 		}
 		ContactInformation that = (ContactInformation) obj;
-		if (!this.getAddress().equals(that.getAddress())) {
-			return false;
-		}
 		if (!this.getEmail().equals(that.getEmail())) {
 			return false;
 		}

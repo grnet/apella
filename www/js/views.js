@@ -1026,12 +1026,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							number: true,
 							minlength: 10,
 							maxlength: 10
-						},
-						address_street: "required",
-						address_number: "required",
-						address_zip: "required",
-						address_city: "required",
-						address_country: "required"
+						}
 					},
 					messages: {
 						username: $.i18n.prop('validation_username'),
@@ -1078,12 +1073,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							number: $.i18n.prop('validation_number'),
 							minlength: $.i18n.prop('validation_phone'),
 							maxlength: $.i18n.prop('validation_phone')
-						},
-						address_street: $.i18n.prop('validation_street'),
-						address_number: $.i18n.prop('validation_number'),
-						address_zip: $.i18n.prop('validation_zip'),
-						address_city: $.i18n.prop('validation_city'),
-						address_country: $.i18n.prop('validation_country')
+						}
 					}
 				});
 				// Highlight Required
@@ -1125,11 +1115,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var mobile = self.$('form input[name=mobile]').val();
 				var phone = self.$('form input[name=phone]').val();
 				var email = self.$('form input[name=email]').val();
-				var address_street = self.$('form input[name=address_street]').val();
-				var address_number = self.$('form input[name=address_number]').val();
-				var address_zip = self.$('form input[name=address_zip]').val();
-				var address_city = self.$('form input[name=address_city]').val();
-				var address_country = self.$('form input[name=address_country]').val();
 
 				// Validate
 
@@ -1148,13 +1133,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						"fathername": fathernamelatin
 					},
 					"contactInfo": {
-						"address": {
-							"street": address_street,
-							"number": address_number,
-							"zip": address_zip,
-							"city": address_city,
-							"country": address_country
-						},
 						"email": email,
 						"mobile": mobile,
 						"phone": phone
@@ -1491,12 +1469,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							required: true,
 							email: true,
 							minlength: 2
-						},
-						address_street: "required",
-						address_number: "required",
-						address_zip: "required",
-						address_city: "required",
-						address_country: "required"
+						}
 					},
 					messages: {
 						username: $.i18n.prop('validation_username'),
@@ -1543,12 +1516,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							required: $.i18n.prop('validation_email'),
 							email: $.i18n.prop('validation_email'),
 							minlength: $.i18n.prop('validation_minlength', 2)
-						},
-						address_street: $.i18n.prop('validation_street'),
-						address_number: $.i18n.prop('validation_address'),
-						address_zip: $.i18n.prop('validation_zip'),
-						address_city: $.i18n.prop('validation_city'),
-						address_country: $.i18n.prop('validation_country')
+						}
 					}
 				});
 				// Highlight Required
@@ -1600,11 +1568,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var email = self.$('form input[name=email]').val();
 				var mobile = self.$('form input[name=mobile]').val();
 				var phone = self.$('form input[name=phone]').val();
-				var address_street = self.$('form input[name=address_street]').val();
-				var address_number = self.$('form input[name=address_number]').val();
-				var address_zip = self.$('form input[name=address_zip]').val();
-				var address_city = self.$('form input[name=address_city]').val();
-				var address_country = self.$('form input[name=address_country]').val();
 
 				// Validate
 
@@ -1623,13 +1586,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						"fathername": fathernamelatin
 					},
 					"contactInfo": {
-						"address": {
-							"street": address_street,
-							"number": address_number,
-							"zip": address_zip,
-							"city": address_city,
-							"country": address_country
-						},
 						"email": email,
 						"mobile": mobile,
 						"phone": phone
@@ -2228,16 +2184,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								return _.isEqual(self.model.get("status"), "UNAPPROVED");
 							case "alternatephone":
 								return _.isEqual(self.model.get("status"), "UNAPPROVED");
-							case "alternateaddress_street":
-								return _.isEqual(self.model.get("status"), "UNAPPROVED");
-							case "alternateaddress_number":
-								return _.isEqual(self.model.get("status"), "UNAPPROVED");
-							case "alternateaddress_zip":
-								return _.isEqual(self.model.get("status"), "UNAPPROVED");
-							case "alternateaddress_city":
-								return _.isEqual(self.model.get("status"), "UNAPPROVED");
-							case "alternateaddress_country":
-								return _.isEqual(self.model.get("status"), "UNAPPROVED");
 							default:
 								break;
 						}
@@ -2777,11 +2723,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 									number: true,
 									minlength: 10
 								},
-								alternateaddress_street: "required",
-								alternateaddress_number: "required",
-								alternateaddress_zip: "required",
-								alternateaddress_city: "required",
-								alternateaddress_country: "required"
 							},
 							messages: {
 								institution: $.i18n.prop('validation_institution'),
@@ -2816,12 +2757,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 									required: $.i18n.prop('validation_email'),
 									email: $.i18n.prop('validation_email'),
 									minlength: $.i18n.prop('validation_minlength', 2)
-								},
-								alternateaddress_street: $.i18n.prop('validation_street'),
-								alternateaddress_number: $.i18n.prop('validation_address'),
-								alternateaddress_zip: $.i18n.prop('validation_zip'),
-								alternateaddress_city: $.i18n.prop('validation_city'),
-								alternateaddress_country: $.i18n.prop('validation_country')
+								}
 							}
 						});
 						self.$("select[name='verificationAuthority']").trigger("change", {
@@ -2999,13 +2935,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							"fathername": self.$('form input[name=alternatefathernamelatin]').val()
 						};
 						values.alternateContactInfo = {
-							"address": {
-								"street": self.$('form input[name=alternateaddress_street]').val(),
-								"number": self.$('form input[name=alternateaddress_number]').val(),
-								"zip": self.$('form input[name=alternateaddress_zip]').val(),
-								"city": self.$('form input[name=alternateaddress_city]').val(),
-								"country": self.$('form input[name=alternateaddress_country]').val()
-							},
 							"email": self.$('form input[name=alternateemail]').val(),
 							"mobile": self.$('form input[name=alternatemobile]').val(),
 							"phone": self.$('form input[name=alternatephone]').val()
