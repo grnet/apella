@@ -360,7 +360,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("name", existingEvaluator.getFullname());
+							put("evaluator_name", existingEvaluator.getFullname());
 							put("candidate_firstname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getFirstname());
 							put("candidate_lastname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getFirstname());
 							put("position", existingEvaluator.getCandidacy().getCandidacies().getPosition().getName());
