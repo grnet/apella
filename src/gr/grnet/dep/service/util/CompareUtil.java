@@ -52,7 +52,10 @@ public class CompareUtil {
 	public static <T> Collection<T> complement(Collection<T> collection1, Collection<T> collection2, Comparator<T> comparator) {
 		Set<T> set1 = new TreeSet<T>(comparator);
 		set1.addAll(collection1);
-		set1.removeAll(collection2);
+		Set<T> set2 = new TreeSet<T>(comparator);
+		set2.addAll(collection2);
+
+		set1.removeAll(set2);
 		return set1;
 	}
 }

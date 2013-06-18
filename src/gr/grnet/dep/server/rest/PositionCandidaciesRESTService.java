@@ -362,7 +362,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 						{
 							put("evaluator_name", existingEvaluator.getFullname());
 							put("candidate_firstname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getFirstname());
-							put("candidate_lastname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getFirstname());
+							put("candidate_lastname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getLastname());
 							put("position", existingEvaluator.getCandidacy().getCandidacies().getPosition().getName());
 							put("institution", existingEvaluator.getCandidacy().getCandidacies().getPosition().getDepartment().getInstitution().getName());
 							put("department", existingEvaluator.getCandidacy().getCandidacies().getPosition().getDepartment().getDepartment());
@@ -379,7 +379,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 							{
 								put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
 								put("candidate_firstname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getFirstname());
-								put("candidate_lastname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getFirstname());
+								put("candidate_lastname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getLastname());
 								put("position", existingEvaluator.getCandidacy().getCandidacies().getPosition().getName());
 								put("institution", existingEvaluator.getCandidacy().getCandidacies().getPosition().getDepartment().getInstitution().getName());
 								put("department", existingEvaluator.getCandidacy().getCandidacies().getPosition().getDepartment().getDepartment());
@@ -396,7 +396,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 							{
 								put("username", evaluator.getRegisterMember().getProfessor().getUser().getUsername());
 								put("candidate_firstname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getFirstname());
-								put("candidate_lastname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getFirstname());
+								put("candidate_lastname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getLastname());
 								put("position", existingEvaluator.getCandidacy().getCandidacies().getPosition().getName());
 								put("institution", existingEvaluator.getCandidacy().getCandidacies().getPosition().getDepartment().getInstitution().getName());
 								put("department", existingEvaluator.getCandidacy().getCandidacies().getPosition().getDepartment().getDepartment());

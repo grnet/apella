@@ -99,4 +99,9 @@ public class CandidacyEvaluator implements Serializable {
 	public static boolean compareCriticalFields(CandidacyEvaluator a, CandidacyEvaluator b) {
 		return CompareUtil.equalsIgnoreNull(a.getFullname(), b.getFullname()) && CompareUtil.equalsIgnoreNull(a.getEmail(), b.getEmail());
 	}
+
+	@Override
+	public String toString() {
+		return this.fullname + " " + this.email;
+	}
 }
