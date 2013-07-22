@@ -188,6 +188,14 @@ public class CandidacyRESTService extends RESTService {
 			// Check files and candidate status
 			validateCandidacy(existingCandidacy, candidate, isNew);
 			//Check changes of Evaluators
+			// Clean Up new Evaluators:
+			Iterator<CandidacyEvaluator> it = candidacy.getProposedEvaluators().iterator();
+			while (it.hasNext()) {
+				CandidacyEvaluator ce = it.next();
+				if (ce.isMissingRequiredField()) {
+					it.remove();
+				}
+			}
 			Collection<CandidacyEvaluator> newEvaluators = CompareUtil.complement(candidacy.getProposedEvaluators(), existingCandidacy.getProposedEvaluators(), new Comparator<CandidacyEvaluator>() {
 
 				@Override
@@ -200,7 +208,6 @@ public class CandidacyRESTService extends RESTService {
 				}
 
 			});
-
 			// Update
 			if (isNew) {
 				// Fetch from Profile
@@ -210,7 +217,7 @@ public class CandidacyRESTService extends RESTService {
 			existingCandidacy.setOpenToOtherCandidates(candidacy.isOpenToOtherCandidates());
 			existingCandidacy.getProposedEvaluators().clear();
 			for (CandidacyEvaluator evaluator : candidacy.getProposedEvaluators()) {
-				if (!evaluator.isMissingRequiredField()) {
+				if (!evaluator.isMissingRequiredField()) { //Double Checking here
 					existingCandidacy.addProposedEvaluator(evaluator);
 				}
 			}
@@ -232,7 +239,6 @@ public class CandidacyRESTService extends RESTService {
 						}
 					}));
 			}
-			// TODO: Check if newEvaluators is correct (complement works as intended)
 			if (!newEvaluators.isEmpty()) {
 				// 2. candidacy.create.candidacyEvaluator@candidacyEvaluator
 				for (final CandidacyEvaluator evaluator : newEvaluators) {

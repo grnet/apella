@@ -93,7 +93,7 @@ public class CandidacyEvaluator implements Serializable {
 	}
 
 	public boolean isMissingRequiredField() {
-		return this.fullname == null || this.email == null;
+		return (this.fullname == null || this.fullname.trim().isEmpty()) || (this.email == null || this.email.trim().isEmpty());
 	}
 
 	public static boolean compareCriticalFields(CandidacyEvaluator a, CandidacyEvaluator b) {
