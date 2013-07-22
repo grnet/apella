@@ -104,218 +104,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			}
 		});
 
-		Routers.AdminRouter = Backbone.Router.extend({
-
-			initialize: function () {
-				var self = this;
-				var languageView;
-
-				_.extend(this, Backbone.Events);
-				_.bindAll(this, "start", "showLoginView", "showHomeView", "showUserSearchView", "showUserView");
-				$(document).ajaxStart(App.blockUI);
-				$(document).ajaxStop(App.unblockUI);
-
-				languageView = new Views.LanguageView({});
-				languageView.render();
-
-				// Init LoggedOnUser
-				App.loggedOnUser = new Models.User();
-				App.loggedOnUser.on("user:loggedon", self.start);
-				App.loggedOnUser.fetch({
-					url: "/dep/rest/user/loggedon",
-					cache: false,
-					success: function (model, resp) {
-						App.loggedOnUser.trigger("user:loggedon");
-					},
-					error: function (model, resp, options) {
-						self.showLoginView();
-					}
-				});
-			},
-
-			routes: {
-				"": "showHomeView",
-				"account": "showAccountView",
-				"users": "showUserSearchView",
-				"users/:query": "showUserSearchView",
-				"user/:id": "showUserView"
-			},
-
-			start: function (eventName, authToken) {
-				var self = this;
-				var popup;
-				var adminmenuView;
-				var usermenuView;
-				// Check that user is indeed Administrator
-				if (!App.loggedOnUser.hasRole("ADMINISTRATOR")) {
-					App.loggedOnUser = new Models.User();
-					App.loggedOnUser.on("user:loggedon", self.start);
-					self.showLoginView();
-
-					popup = new Views.PopupView({
-						type: "warning",
-						message: $.i18n.prop("error.insufficient.privileges")
-					});
-					popup.show();
-
-					return;
-				}
-				App.loggedOnUser.off("user:loggedon", self.start);
-
-				// Create Header, Menu, and other side content and
-				// bind them to the same loggedOnUser model
-				adminmenuView = new Views.AdminMenuView({
-					model: App.loggedOnUser
-				});
-				adminmenuView.render();
-				usermenuView = new Views.UserMenuView({
-					model: App.loggedOnUser
-				});
-				usermenuView.render();
-
-				// Start Routing
-				Backbone.history.start();
-			},
-
-			clear: function () {
-				var self = this;
-				if (_.isArray(self.currentView)) {
-					_.each(self.currentView, function (view) {
-						view.close();
-					});
-				} else if (_.isObject(self.currentView)) {
-					self.currentView.close();
-				}
-				self.currentView = undefined;
-
-				$("#featured").unbind();
-				$("#featured").empty();
-				$("#content").unbind();
-				$("#content").empty();
-			},
-
-			refreshBreadcrumb: function (tags) {
-				$("ul.breadcrumb").empty();
-				_.each(tags, function (tag) {
-					if (tag) {
-						$("ul.breadcrumb").append("<li><span class=\"divider\">/</span>" + tag + "</li>");
-					} else {
-						$("ul.breadcrumb").append("<li><span class=\"divider\">/</span>...</li>");
-					}
-				});
-			},
-
-			showLoginView: function () {
-				var self = this;
-				var loginView;
-
-				self.clear();
-				loginView = new Views.AdminLoginView({
-					model: App.loggedOnUser
-				});
-				$("#content").html(loginView.render().el);
-
-				self.currentView = loginView;
-			},
-
-			showHomeView: function () {
-				var self = this;
-				self.clear();
-				self.refreshBreadcrumb([ $.i18n.prop('menu_home') ]);
-				$("#content").html("<h1>HOME</h1>");
-			},
-
-			showAccountView: function () {
-				var self = this;
-				var accountView;
-				self.clear();
-				accountView = new Views.AccountView({
-					model: App.loggedOnUser
-				});
-
-				self.refreshBreadcrumb([ $.i18n.prop('menu_account') ]);
-				$("#content").append(accountView.render().el);
-
-				self.currentView = accountView;
-			},
-
-			showUserSearchView: function (query) {
-				var self = this;
-				var users;
-				var userSearchView;
-				var userListView;
-
-				self.clear();
-				users = new Models.Users();
-				users.on("user:selected", function (user) {
-					if (user) {
-						self.showUserView(user.id, user);
-						self.navigate("user/" + user.id, {
-							trigger: false
-						});
-					}
-				}, this);
-				userSearchView = new Views.UserSearchView({
-					"query": query ? JSON.parse(decodeURI(query)) : undefined,
-					collection: users
-				});
-				userListView = new Views.UserListView({
-					collection: users
-				});
-
-				self.refreshBreadcrumb([ $.i18n.prop('adminmenu_users') ]);
-				$("#featured").append(userSearchView.render().el);
-				$("#content").append(userListView.render().el);
-
-				self.currentView = [ userSearchView, userListView ];
-			},
-
-			showUserView: function (id) {
-				var self = this;
-				var user, userView;
-				var roles, roleView;
-
-				// Create Models
-				user = new Models.User({
-					"id": id
-				});
-				roles = new Models.Roles();
-				roles.user = id;
-
-				// Create Views, Add them to page
-				self.clear();
-
-				$("#content").html("<div class=\"row-fluid\"><div id=\"user\" class=\"span5\"></div><div id=\"roles\" class=\"span7\"></div></div>");
-				// Refresh Data
-				user.fetch({
-					cache: false,
-					success: function (model, resp) {
-						userView = new Views.AdminAccountView({
-							className: "row-fluid",
-							model: user
-						});
-						self.currentView = [ userView ];
-						roles.fetch({
-							cache: false,
-							success: function (collection, response) {
-								$("#content div#user").append(userView.render().el);
-								roleView = new Views.AdminRoleEditView({
-									className: "row-fluid",
-									model: collection.find(function (role) {
-										return role.isPrimary();
-									})
-								});
-								$("#content div#roles").append(roleView.render().el);
-								self.currentView.push(roleView);
-							}
-						});
-						self.refreshBreadcrumb([ $.i18n.prop('adminmenu_users'), $.i18n.prop('menu_user'), user.get("username") ]);
-					}
-				});
-			}
-
-		});
-
 		/***************************************************************************
 		 * ************ Routers.Router ***************************
 		 **************************************************************************/
@@ -327,7 +115,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				_.extend(self, Backbone.Events);
 				_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showUserView", "showInstitutionAssistantsView",
 					"showMinistryAssistantsView", "showPositionView", "showPositionsView", "showRegistersView", "showProfessorCommitteesView", "showProfessorEvaluationsView",
-					"showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "showCandidacyView", "start");
+					"showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "showCandidacyView", "start", "showAdminUserSearchView");
 				$(document).ajaxStart(App.blockUI);
 				$(document).ajaxStop(App.unblockUI);
 
@@ -374,27 +162,17 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				"sposition": "showPositionSearchView",
 				"candidateCandidacies": "showCandidateCandidacyView",
 				"candidateCandidacies/:candidacyId": "showCandidateCandidacyView",
-				"candidacy/:candidacyId": "showCandidacyView"
+				"candidacy/:candidacyId": "showCandidacyView",
+				// ADMIN ROUTES
+				"adminusers": "showAdminUserSearchView",
+				"adminusers/:query": "showAdminUserSearchView"
 			},
 
 			start: function (eventName, authToken) {
 				var self = this;
-				var popup;
 				var menuView;
 				var usermenuView;
-				// Check that this is not an ADMINISTRATOR
-				if (App.loggedOnUser.hasRole("ADMINISTRATOR")) {
-					App.loggedOnUser = new Models.User();
-					App.loggedOnUser.on("user:loggedon", self.start);
-					self.showLoginView();
-					popup = new Views.PopupView({
-						type: "warning",
-						message: $.i18n.prop("error.administrator.login")
-					});
-					popup.show();
 
-					return;
-				}
 				App.loggedOnUser.off("user:loggedon", self.start);
 
 				// Add necessary data
@@ -560,10 +338,17 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				user.fetch({
 					cache: false,
 					success: function (model, resp) {
-						userView = new Views.UserView({
-							className: "row-fluid",
-							model: user
-						});
+						if (App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
+							userView = new Views.AdminAccountView({
+								className: "row-fluid",
+								model: user
+							});
+						} else {
+							userView = new Views.UserView({
+								className: "row-fluid",
+								model: user
+							});
+						}
 						self.currentView = [ userView ];
 						roles.fetch({
 							cache: false,
@@ -571,10 +356,20 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 							success: function (collection, response) {
 								$("#content div#user").append(userView.render().el);
 								collection.each(function (role) {
-									var roleView = new Views.RoleView({
-										className: "row-fluid",
-										model: role
-									});
+									var roleView;
+									if (App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
+										roleView = new Views.AdminRoleEditView({
+											className: "row-fluid",
+											model: collection.find(function (role) {
+												return role.isPrimary();
+											})
+										});
+									} else {
+										roleView = new Views.RoleView({
+											className: "row-fluid",
+											model: role
+										});
+									}
 									$("#content div#roles").append(roleView.render().el);
 									self.currentView.push(roleView);
 								});
@@ -1237,6 +1032,41 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					}
 				});
 				self.currentView = candidacyView;
+			},
+
+			/***************************
+			 *** ADMIN ONLY VIEWS ******
+			 ***************************/
+
+			showAdminUserSearchView: function (query) {
+				var self = this;
+				var users;
+				var userSearchView;
+				var userListView;
+
+				self.clear();
+				users = new Models.Users();
+				users.on("user:selected", function (user) {
+					if (user) {
+						self.showUserView(user.id, user);
+						self.navigate("user/" + user.id, {
+							trigger: false
+						});
+					}
+				}, this);
+				userSearchView = new Views.UserSearchView({
+					"query": query ? JSON.parse(decodeURI(query)) : undefined,
+					collection: users
+				});
+				userListView = new Views.UserListView({
+					collection: users
+				});
+
+				self.refreshBreadcrumb([ $.i18n.prop('adminmenu_users') ]);
+				$("#featured").append(userSearchView.render().el);
+				$("#content").append(userListView.render().el);
+
+				self.currentView = [ userSearchView, userListView ];
 			}
 
 		});

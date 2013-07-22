@@ -20,10 +20,6 @@
 		include : [],
 		exclude : []
 	}, {
-		name : "admin",
-		include : [],
-		exclude : []
-	}, {
 		name : "registration",
 		include : [],
 		exclude : []

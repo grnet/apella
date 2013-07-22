@@ -88,7 +88,8 @@ public class PositionRESTService extends RESTService {
 				position.initializeCollections();
 			}
 			return positions;
-		} else if (loggedOnUser.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) ||
+		} else if (loggedOnUser.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) ||
+			loggedOnUser.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) ||
 			loggedOnUser.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT)) {
 
 			@SuppressWarnings("unchecked")
