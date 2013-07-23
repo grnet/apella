@@ -375,7 +375,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 								});
 							}
 						});
-						self.refreshBreadcrumb([ $.i18n.prop('adminmenu_users'), $.i18n.prop('menu_user'), user.get("username") ]);
+						self.refreshBreadcrumb([ $.i18n.prop('menu_adminusers'), $.i18n.prop('menu_user'), user.get("username") ]);
 					}
 				});
 			},
@@ -405,10 +405,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 						// Add
 						self.refreshBreadcrumb([ $.i18n.prop('menu_iassistants'), user.get("username") ]);
 
-						userRoleInfoView = new Views.UserRoleInfoView({
-							model: user
-						});
-						$("#content").append(userRoleInfoView.render().el);
 						accountView = new Views.AssistantAccountView({
 							model: user
 						});
@@ -1062,7 +1058,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					collection: users
 				});
 
-				self.refreshBreadcrumb([ $.i18n.prop('adminmenu_users') ]);
+				self.refreshBreadcrumb([ $.i18n.prop('menu_adminusers') ]);
 				$("#featured").append(userSearchView.render().el);
 				$("#content").append(userListView.render().el);
 

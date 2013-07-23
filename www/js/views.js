@@ -293,34 +293,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		});
 
 		/***************************************************************************
-		 * AdminMenuView ***********************************************************
-		 **************************************************************************/
-		Views.AdminMenuView = Views.BaseView.extend({
-			el: "ul#menu",
-
-			initialize: function () {
-				_.bindAll(this, "render", "close", "closeInnerViews", "addFile", "addFileList", "addFileEdit", "addFileListEdit");
-				this.model.bind('change', this.render);
-			},
-
-			events: {},
-
-			render: function (eventName) {
-				this.$el.empty();
-				this.$el.append("<ul class=\"nav\">");
-				this.$el.find("ul").append("<li><a href=\"#users\">" + $.i18n.prop('adminmenu_users') + "</a></li>");
-				return this;
-			},
-
-			close: function () {
-				this.closeInnerViews();
-				$(this.el).unbind();
-				$(this.el).remove();
-			}
-
-		});
-
-		/***************************************************************************
 		 * UserMenuView ************************************************************
 		 **************************************************************************/
 		Views.UserMenuView = Views.BaseView.extend({
@@ -1795,7 +1767,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.UserSearchView = Views.BaseView.extend({
 			tagName: "div",
 
-			className: "span12 well",
+			className: "span12",
 
 			initialize: function () {
 				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");

@@ -1,117 +1,122 @@
-<h3><%= $.i18n.prop('Candidacy') %></h3>
-<form class="form-horizontal" onsubmit="return false">
-	<div class="row-fluid">
-		<div class="span6" id="candidacy_position">
-			<h4><%= $.i18n.prop('Position') %></h4>
-			<dl class="dl-glossary">
-				<dt><%= $.i18n.prop('PositionName') %></dt>
-				<dd><%= candidacies.position.name %></dd>
-				<dt><%= $.i18n.prop('Department') %></dt>
-				<dd><%= candidacies.position.department.department %></dd>
-				<dt><%= $.i18n.prop('Description') %></dt>
-				<dd><%= candidacies.position.description %></dd>
-				<dt><%= $.i18n.prop('Subject') %></dt>
-				<dd><% if (!_.isUndefined(candidacies.position.subject)) { %><%= candidacies.position.subject.name %><% } %></dd>
-				<dt><%= $.i18n.prop('FEK') %></dt>
-				<dd><a target="fek" href="<%= candidacies.position.fek %>"><%= $.i18n.prop('btn_view') %></a></dd>
-				<dt><%= $.i18n.prop('FEKSentDate') %></dt>
-				<dd><%= candidacies.position.fekSentDate %></dd>
-				<dt><%= $.i18n.prop('PositionStatus') %></dt>
-				<dd><%= $.i18n.prop('PositionStatus_' + candidacies.position.phase.clientStatus) %></dd>
-				<dt><%= $.i18n.prop('PositionOpeningDate') %></dt>
-				<dd><%= candidacies.openingDate %></dd>
-				<dt><%= $.i18n.prop('PositionClosingDate') %></dt>
-				<dd><%= candidacies.closingDate %></dd>
-				<dt><%= $.i18n.prop('More') %></dt>
-				<dd><a id="viewPosition" href="#position/<%= candidacies.position.id %>"><%= candidacies.position.name %></a></dd>
-			</dl>
-		</div>
-		<div class="span6" id="candidacy_snapshot">
-			<h4><%= $.i18n.prop('Candidate') %></h4>
-			<dl class="dl-glossary">
-				<dt><%= $.i18n.prop('Username') %></dt>
-				<dd><%= snapshot.username %></dd>
-				<dt><%= $.i18n.prop('Name') %></dt>
-				<dd><%= snapshot.basicInfo.firstname %> (<%= snapshot.basicInfoLatin.firstname %>)</dd>
-				<dt><%= $.i18n.prop('Surname') %></dt>
-				<dd><%= snapshot.basicInfo.lastname %> (<%= snapshot.basicInfoLatin.lastname %>)</dd>
-				<dt><%= $.i18n.prop('FatherName') %></dt>
-				<dd><%= snapshot.basicInfo.fathername %> (<%= snapshot.basicInfoLatin.fathername %>)</dd>
-				<% if (snapshot.institution) { %>
-				<dt><%= $.i18n.prop('Institution') %></dt>
-				<dd><%= snapshot.institution.name %></dd>
-				<% } %>
-				<% if (snapshot.institutionString) { %>
-				<dt><%= $.i18n.prop('Institution') %></dt>
-				<dd><%= snapshot.institutionString %></dd>
-				<% } %>
-				<% if (snapshot.department) { %>
-				<dt><%= $.i18n.prop('Department') %></dt>
-				<dd><%= snapshot.department.department %></dd>
-				<% } %>
-				<% if (snapshot.rank) { %>
-				<dt><%= $.i18n.prop('Rank') %></dt>
-				<dd><%= snapshot.rank.name %></dd>
-				<% } %>
-				<% if (snapshot.subject) { %>
-				<dt><%= $.i18n.prop('Subject') %></dt>
-				<dd><%= snapshot.subject.name %></dd>
-				<% } %>
-				<% if (snapshot.fek) { %>
-				<dt><%= $.i18n.prop('FEK') %></dt>
-				<dd><%= snapshot.fek %></dd>
-				<% } %>
-				<% if (snapshot.fekSubject) { %>
-				<dt><%= $.i18n.prop('FEKSubject') %></dt>
-				<dd><%= snapshot.fekSubject.name %></dd>
-				<% } %>
-				<dt><%= $.i18n.prop('BiografikoFile') %></dt>
-				<dd>
-					<div id="biografikoFile"></div>
-				</dd>
-				<dt><%= $.i18n.prop('PtyxioFileList') %></dt>
-				<dd>
-					<div id="ptyxioFileList"></div>
-				</dd>
-				<dt><%= $.i18n.prop('DimosieusiFileList') %></dt>
-				<dd>
-					<div id="dimosieusiFileList"></div>
-				</dd>
-			</dl>
-		</div>
+<h3><%= $.i18n.prop('Candidacy') %>: <%= candidacies.position.name %></h3>
+<div class="row-fluid">
+	<div class="span6" id="candidacy_position">
+		<h4><%= $.i18n.prop('Position') %></h4>
+		<dl class="dl-glossary">
+			<dt><%= $.i18n.prop('PositionName') %></dt>
+			<dd><%= candidacies.position.name %></dd>
+			<dt><%= $.i18n.prop('Department') %></dt>
+			<dd><%= candidacies.position.department.department %></dd>
+			<dt><%= $.i18n.prop('Description') %></dt>
+			<dd><%= candidacies.position.description %></dd>
+			<dt><%= $.i18n.prop('Subject') %></dt>
+			<dd><% if (!_.isUndefined(candidacies.position.subject)) { %><%= candidacies.position.subject.name %><% } %></dd>
+			<dt><%= $.i18n.prop('FEK') %></dt>
+			<dd><a target="fek" href="<%= candidacies.position.fek %>"><%= $.i18n.prop('btn_view') %></a></dd>
+			<dt><%= $.i18n.prop('FEKSentDate') %></dt>
+			<dd><%= candidacies.position.fekSentDate %></dd>
+			<dt><%= $.i18n.prop('PositionStatus') %></dt>
+			<dd><%= $.i18n.prop('PositionStatus_' + candidacies.position.phase.clientStatus) %></dd>
+			<dt><%= $.i18n.prop('PositionOpeningDate') %></dt>
+			<dd><%= candidacies.openingDate %></dd>
+			<dt><%= $.i18n.prop('PositionClosingDate') %></dt>
+			<dd><%= candidacies.closingDate %></dd>
+			<dt><%= $.i18n.prop('More') %></dt>
+			<dd><a id="viewPosition" href="#position/<%= candidacies.position.id %>"><%= candidacies.position.name %></a></dd>
+		</dl>
 	</div>
-	<div class="row-fluid">
-		<div class="span12">
-			<h4><%= $.i18n.prop('ProposedEvaluators') %></h4>
+	<div class="span6" id="candidacy_snapshot">
+		<h4><%= $.i18n.prop('Candidate') %></h4>
+		<dl class="dl-glossary">
+			<dt><%= $.i18n.prop('Username') %></dt>
+			<dd><%= snapshot.username %></dd>
+			<dt><%= $.i18n.prop('Name') %></dt>
+			<dd><%= snapshot.basicInfo.firstname %> (<%= snapshot.basicInfoLatin.firstname %>)</dd>
+			<dt><%= $.i18n.prop('Surname') %></dt>
+			<dd><%= snapshot.basicInfo.lastname %> (<%= snapshot.basicInfoLatin.lastname %>)</dd>
+			<dt><%= $.i18n.prop('FatherName') %></dt>
+			<dd><%= snapshot.basicInfo.fathername %> (<%= snapshot.basicInfoLatin.fathername %>)</dd>
+			<% if (snapshot.institution) { %>
+			<dt><%= $.i18n.prop('Institution') %></dt>
+			<dd><%= snapshot.institution.name %></dd>
+			<% } %>
+			<% if (snapshot.institutionString) { %>
+			<dt><%= $.i18n.prop('Institution') %></dt>
+			<dd><%= snapshot.institutionString %></dd>
+			<% } %>
+			<% if (snapshot.department) { %>
+			<dt><%= $.i18n.prop('Department') %></dt>
+			<dd><%= snapshot.department.department %></dd>
+			<% } %>
+			<% if (snapshot.rank) { %>
+			<dt><%= $.i18n.prop('Rank') %></dt>
+			<dd><%= snapshot.rank.name %></dd>
+			<% } %>
+			<% if (snapshot.subject) { %>
+			<dt><%= $.i18n.prop('Subject') %></dt>
+			<dd><%= snapshot.subject.name %></dd>
+			<% } %>
+			<% if (snapshot.fek) { %>
+			<dt><%= $.i18n.prop('FEK') %></dt>
+			<dd><%= snapshot.fek %></dd>
+			<% } %>
+			<% if (snapshot.fekSubject) { %>
+			<dt><%= $.i18n.prop('FEKSubject') %></dt>
+			<dd><%= snapshot.fekSubject.name %></dd>
+			<% } %>
+			<dt><%= $.i18n.prop('BiografikoFile') %></dt>
+			<dd>
+				<div id="biografikoFile"></div>
+			</dd>
+			<dt><%= $.i18n.prop('PtyxioFileList') %></dt>
+			<dd>
+				<div id="ptyxioFileList"></div>
+			</dd>
+			<dt><%= $.i18n.prop('DimosieusiFileList') %></dt>
+			<dd>
+				<div id="dimosieusiFileList"></div>
+			</dd>
+		</dl>
+	</div>
+</div>
+<div class="row-fluid">
+	<div class="span12">
+		<form class="form-horizontal" onsubmit="return false">
 			<fieldset>
+				<legend><%= $.i18n.prop('ProposedEvaluators') %></legend>
 				<div class="control-group">
 					<label class="control-label" for="evaluator"><%= $.i18n.prop('ProposedEvaluator') %> 1:</label>
+
 					<div class="controls">
 						<input placeholder="<%= $.i18n.prop('Name') %>" type="text" class="input-large" name="evaluator_fullname_0" value="<%= proposedEvaluators[0]? proposedEvaluators[0].fullname : '' %>"/>
-						<input placeholder="<%= $.i18n.prop('Email') %>" type="text" class="input-large" name="evaluator_email_0" value="<%= proposedEvaluators[0]? proposedEvaluators[0].email : ''%>" />
+						<input placeholder="<%= $.i18n.prop('Email') %>" type="text" class="input-large" name="evaluator_email_0" value="<%= proposedEvaluators[0]? proposedEvaluators[0].email : ''%>"/>
 					</div>
 				</div>
 				<div class="control-group">
 					<label class="control-label" for="evaluator"><%= $.i18n.prop('ProposedEvaluator') %> 2:</label>
+
 					<div class="controls">
 						<input placeholder="<%= $.i18n.prop('Name') %>" type="text" class="input-large" name="evaluator_fullname_1" value="<%= proposedEvaluators[1]? proposedEvaluators[1].fullname : '' %>"/>
-						<input placeholder="<%= $.i18n.prop('Email') %>" type="text" class="input-large" name="evaluator_email_1" value="<%= proposedEvaluators[1]? proposedEvaluators[1].email : ''%>" />
+						<input placeholder="<%= $.i18n.prop('Email') %>" type="text" class="input-large" name="evaluator_email_1" value="<%= proposedEvaluators[1]? proposedEvaluators[1].email : ''%>"/>
 					</div>
 				</div>
 				<div class="control-group">
 					<label class="control-label" for="ekthesiAutoaksiologisisFile"><%= $.i18n.prop('EkthesiAutoaksiologisisFile') %>:</label>
+
 					<div class="controls">
-						<input type="hidden" name="ekthesiAutoaksiologisisFile" />
+						<input type="hidden" name="ekthesiAutoaksiologisisFile"/>
 					</div>
 				</div>
 				<div class="control-group">
 					<label class="control-label" for="sympliromatikaEggrafaFileList"><%= $.i18n.prop('SympliromatikaEggrafaFileList') %>:</label>
+
 					<div class="controls">
-						<input type="hidden" name="sympliromatikaEggrafaFileList" />
+						<input type="hidden" name="sympliromatikaEggrafaFileList"/>
 					</div>
 				</div>
 				<div class="control-group">
 					<label class="control-label" for="openToOtherCandidates"><%= $.i18n.prop('CandidacyOpenToOtherCandidates') %>:</label>
+
 					<div class="controls">
 						<input type="checkbox" name="openToOtherCandidates" value="true" <% if (openToOtherCandidates) { %> checked="true" <% } %> />
 					</div>
@@ -123,6 +128,6 @@
 					<a id="remove" class="btn btn-danger"><i class="icon-remove icon-white"></i> <%= $.i18n.prop('btn_remove_candidacy') %></a>
 				</div>
 			</fieldset>
-		</div>
+		</form>
 	</div>
-</form>
+</div>

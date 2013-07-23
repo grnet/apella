@@ -1,6 +1,6 @@
 <div class="row-fluid">
 	<div class="span12">
-		<h3><%= $.i18n.prop('Position') %></h3>
+		<h3><%= name %></h3>
 		<div class="btn-group pull-right">
  			<a class="btn dropdown-toggle" data-toggle="dropdown">
 				<%= $.i18n.prop('OtherPhases') %>
@@ -20,8 +20,10 @@
 </div>
 <div class="row-fluid">
 	<div class="span6">
-		<h4><%= name %></h4>
+		<h4><%= $.i18n.prop('PositionMain') %></h4>
 		<dl class="dl-glossary">
+			<dt><%= $.i18n.prop('Title') %></dt>
+			<dd><%= name %></dd>
 			<dt><%= $.i18n.prop('Department') %></dt>
 			<dd><%= department.department %></dd>
 			<dt><%= $.i18n.prop('Description') %></dt>
