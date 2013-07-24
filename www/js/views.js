@@ -40,6 +40,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			fileViews: {},
 
+			initialize: function (options) {
+				var self = this;
+				_.bindAll(self, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "addTitle", "close", "closeInnerViews");
+				self.addTitle();
+			},
+
 			addFile: function (collection, type, $el, options) {
 				var self = this;
 				var fileView;
@@ -145,6 +151,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.fileViews[fileListView.cid] = fileListView;
 			},
 
+			addTitle: function () {
+				var self = this;
+				if (self.options.title) {
+					self.$el.prepend("<h2>" + self.options.title + "</h2>");
+				}
+			},
+
 			closeInnerViews: function () {
 				var self = this;
 				var fileView;
@@ -167,8 +180,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.MenuView = Views.BaseView.extend({
 			el: "ul#menu",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				this.model.bind('change', this.render);
 			},
 
@@ -179,6 +192,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var menuItems = [];
 				self.closeInnerViews();
 				self.$el.empty();
+				self.addTitle();
 
 				if (self.model.hasRoleWithStatus("PROFESSOR_DOMESTIC", "ACTIVE")) {
 					menuItems.push("profile");
@@ -254,8 +268,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.LanguageView = Views.BaseView.extend({
 			el: "div#language",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "selectLanguage");
 				this.template = _.template(tpl_language);
 			},
@@ -268,7 +282,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var self = this;
 				var language = App.utils.getCookie("apella-lang");
 				self.closeInnerViews();
-				self.$el.html(self.template());
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template());
 				if (!language) {
 					language = "el";
 				}
@@ -298,8 +314,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.UserMenuView = Views.BaseView.extend({
 			el: "li#user-menu",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "logout");
 
 				this.model.bind('change', this.render);
@@ -347,8 +363,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			validatorResetPasswordForm: undefined,
 			validatorResendVerificationEmail: undefined,
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "showResetPassword", "showResendVerificationEmailForm", "resetPassword", "resendVerificationEmail", "login");
 				this.template = _.template(tpl_login_main);
 				this.model.bind('change', this.render);
@@ -373,7 +389,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			render: function (eventName) {
 				var self = this;
-				self.$el.html(self.template(self.model.toJSON()));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(self.model.toJSON()));
 				self.$("#resetPasswordForm").hide();
 				self.$("#resendVerificationEmailForm").hide();
 
@@ -562,8 +580,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			validator: undefined,
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "login");
 				this.template = _.template(tpl_login_admin);
 				this.model.bind('change', this.render);
@@ -584,7 +602,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var self = this;
 				var propName;
 
-				self.$el.html(this.template(this.model.toJSON()));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(this.template(this.model.toJSON()));
 
 				self.validator = $("form", this.el).validate({
 					errorElement: "span",
@@ -671,8 +691,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			className: "alert alert-block alert-popup fade in",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "show");
 				this.template = _.template(tpl_popup);
 			},
@@ -682,7 +702,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			render: function (eventName) {
 				var self = this;
 
-				self.$el.html(this.template({
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(this.template({
 					message: this.options.message
 				}));
 				switch (self.options.type) {
@@ -725,8 +747,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			className: "modal",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "show");
 				this.template = _.template(tpl_confirm);
 			},
@@ -742,7 +764,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			render: function (eventName) {
 				var self = this;
-				self.$el.html(self.template({
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template({
 					title: self.options.title,
 					message: self.options.message
 				}));
@@ -770,8 +794,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			innerView: undefined,
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				this.template = _.template(tpl_overlay);
 				this.innerView = this.options.innerView;
 			},
@@ -780,7 +804,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			render: function (eventName) {
 				var self = this;
-				self.$el.html(self.template({}));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template({}));
 				self.$("div.modal-body div.row-fluid").html(self.innerView.render().el);
 				self.$el.modal();
 				self.$el.on('hidden', self.close);
@@ -804,8 +830,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			validator: undefined,
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				this.template = _.template(tpl_user_registration_select);
 			},
 
@@ -813,7 +839,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			render: function (eventName) {
 				var self = this;
-				self.$el.html(this.template({
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(this.template({
 					roles: App.allowedRoles
 				}));
 				return this;
@@ -834,8 +862,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			validator: undefined,
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "submit", "selectInstitution");
 				this.template = _.template(tpl_user_registration);
 				this.model.bind('change', this.render);
@@ -858,7 +886,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var propName;
 				var role = self.model.get('roles')[0];
 				self.closeInnerViews();
-				self.$el.html(self.template(role));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(role));
 
 				if (role.discriminator === "PROFESSOR_DOMESTIC") {
 					// Especially for PROFESSOR_DOMESTIC there
@@ -1166,15 +1196,17 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.UserVerificationView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				this.template = _.template(tpl_user_verification);
 				this.model.bind('change', this.render);
 			},
 
 			render: function (eventName) {
 				var self = this;
-				self.$el.html(this.template(this.model.toJSON()));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(this.template(this.model.toJSON()));
 				return this;
 			},
 
@@ -1194,8 +1226,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			className: "span12 hero-unit",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				this.template = _.template(tpl_home);
 				this.model.bind('change', this.render);
 			},
@@ -1330,7 +1362,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				tiles = _.uniq(tiles, false, function (tile) {
 					return tile.link;
 				});
-				self.$el.html(this.template(_.extend(this.model.toJSON(), {
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(this.template(_.extend(this.model.toJSON(), {
 					"tiles": (function () {
 						var result = [];
 						var row = 0;
@@ -1364,8 +1398,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			validator: undefined,
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "change", "submit", "remove", "status", "cancel", "applyRules");
 				this.template = _.template(tpl_user_edit);
 				this.model.bind('change', this.render, this);
@@ -1428,7 +1462,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var propName;
 				self.closeInnerViews();
 				// 1. Render
-				self.$el.html(this.template(self.model.toJSON()));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(this.template(self.model.toJSON()));
 				// 2. Check State to enable/disable fields
 				self.applyRules();
 				// 3. Add Validator
@@ -1742,15 +1778,17 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				editable: true
 			},
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				this.template = _.template(tpl_user);
 				this.model.bind("change", this.render, this);
 			},
 
 			render: function (event) {
 				var self = this;
-				self.$el.html(self.template(self.model.toJSON()));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(self.model.toJSON()));
 				return self;
 			},
 
@@ -1769,8 +1807,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			className: "span12",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "search");
 				this.template = _.template(tpl_user_search);
 			},
@@ -1782,7 +1820,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			render: function (eventName) {
 				var self = this;
 				self.closeInnerViews();
-				self.$el.html(self.template({}));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template({}));
 				if (self.options.query) {
 					$('form input[name=username]', this.el).val(self.options.query.username);
 					$('form input[name=firstname]', this.el).val(self.options.query.firstname);
@@ -1828,8 +1868,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.UserListView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				this.template = _.template(tpl_user_list);
 				this.roleInfoTemplate = _.template(tpl_user_role_info);
 				this.collection.bind("change", this.render, this);
@@ -1860,7 +1900,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}())
 				};
 				self.closeInnerViews();
-				self.$el.html(self.template(tpl_data));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(tpl_data));
 				if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 					self.$("table").dataTable({
 						"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
@@ -1902,8 +1944,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.UserRoleInfoView = Views.BaseView.extend({
 			tagName: "p",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				this.template = _.template(tpl_user_role_info);
 				this.model.bind('change', this.render, this);
 			},
@@ -1914,7 +1956,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					roles: self.model.get("roles")
 				};
 				self.closeInnerViews();
-				self.$el.html(self.template(tpl_data));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(tpl_data));
 				return self;
 			},
 
@@ -1931,8 +1975,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.RoleTabsView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "select", "highlightSelected");
 				this.template = _.template(tpl_role_tabs);
 				this.collection.bind("change", this.render, this);
@@ -1960,7 +2004,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}())
 				};
 				self.closeInnerViews();
-				self.$el.html(this.template(tpl_data));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(this.template(tpl_data));
 				return self;
 			},
 
@@ -1991,9 +2037,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.RoleView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
+			initialize: function (options) {
 				this.template = _.template(tpl_role);
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+				this._super('initialize', [ options ]);
 				this.model.bind("change", this.render, this);
 			},
 
@@ -2002,6 +2048,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var files;
 				self.closeInnerViews();
 				self.$el.empty();
+				self.addTitle();
 				if (self.model.get("discriminator") !== "ADMINISTRATOR") {
 					self.$el.append(self.template(self.model.toJSON()));
 
@@ -2095,8 +2142,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			validator: undefined,
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "change", "isEditable", "beforeUpload", "beforeDelete", "submit", "cancel");
 				this.template = _.template(tpl_role_edit);
 				this.model.bind('change', this.render, this);
@@ -2334,7 +2381,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					"primary": self.model.isPrimary()
 				});
 				self.closeInnerViews();
-				self.$el.html(self.template(tpl_data));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(tpl_data));
 
 				// Apply Global Rules
 				self.$("a#status").addClass("disabled");
@@ -3213,8 +3262,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			className: "",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				this.template = _.template(tpl_file);
 				this.model.bind('change', this.render, this);
 			},
@@ -3225,7 +3274,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var self = this;
 				self.closeInnerViews();
 				if (self.model.isNew()) {
-					self.$el.html("-");
+					self.$el.empty();
+					self.addTitle();
+					self.$el.append("-");
 				} else {
 					var tpl_data = {
 						withMetadata: self.options.withMetadata,
@@ -3234,7 +3285,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					if (_.isObject(tpl_data.file.currentBody)) {
 						tpl_data.file.currentBody.url = self.model.url() + "/body/" + tpl_data.file.currentBody.id + "?X-Auth-Token=" + encodeURIComponent(App.authToken);
 					}
-					self.$el.html(self.template(tpl_data));
+					self.$el.empty();
+					self.addTitle();
+					self.$el.append(self.template(tpl_data));
 				}
 
 				return self;
@@ -3254,8 +3307,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			uploader: undefined,
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "deleteFile", "toggleUpload");
 				this.template = _.template(tpl_file_edit);
 				this.model.bind('change', this.render, this);
@@ -3281,7 +3334,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					tpl_data.file.currentBody.url = self.model.url() + "/body/" + tpl_data.file.currentBody.id + "?X-Auth-Token=" + encodeURIComponent(App.authToken);
 				}
 				self.closeInnerViews();
-				self.$el.html(self.template(tpl_data));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(tpl_data));
 				self.$input.focus().val(self.model.get("id"));
 
 				self.$('#uploader div.progress').hide();
@@ -3428,8 +3483,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			className: "",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				this.template = _.template(tpl_file_list);
 				this.collection.bind('reset', this.render, this);
 			},
@@ -3458,7 +3513,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					tpl_data.files.push(file);
 				});
 				self.closeInnerViews();
-				self.$el.html(self.template(tpl_data));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(tpl_data));
 
 				return self;
 			},
@@ -3478,8 +3535,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			className: "",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "toggleUpload", "deleteFile");
 				this.template = _.template(tpl_file_list_edit);
 				this.collection.bind('reset', this.render, this);
@@ -3518,7 +3575,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					tpl_data.files.push(file);
 				});
 				self.closeInnerViews();
-				self.$el.html(self.template(tpl_data));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(tpl_data));
 				self.$input.val(self.collection.length);
 
 				// Initialize FileUpload Modal
@@ -3649,8 +3708,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.AnnouncementListView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				this.template = _.template(tpl_announcement_list);
 				this.collection.bind('reset', this.render);
 			},
@@ -3673,7 +3732,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				});
 				// 2. Show
 				self.closeInnerViews();
-				self.$el.html(self.template(data));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(data));
 
 				return self;
 			},
@@ -3692,8 +3753,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.InstitutionAssistantListView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				this.template = _.template(tpl_user_list);
 				this.roleInfoTemplate = _.template(tpl_user_role_info);
 				this.collection.bind("add", this.render, this);
@@ -3727,7 +3788,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}())
 				};
 				self.closeInnerViews();
-				self.$el.html(self.template(tpl_data));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(tpl_data));
 				if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 					self.$("table").dataTable({
 						"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
@@ -3787,8 +3850,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.MinistryAssistantListView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				this.template = _.template(tpl_user_list);
 				this.roleInfoTemplate = _.template(tpl_user_role_info);
 				this.collection.bind("add", this.render, this);
@@ -3822,7 +3885,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}())
 				};
 				self.closeInnerViews();
-				self.$el.html(self.template(tpl_data));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(tpl_data));
 				if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 					self.$("table").dataTable({
 						"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
@@ -3915,8 +3980,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.PositionListView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "renderActions", "selectPosition", "createPosition");
 				this.template = _.template(tpl_position_list);
 				this.collection.bind("change", this.render, this);
@@ -3947,7 +4012,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}())
 				};
 				self.closeInnerViews();
-				self.$el.html(this.template(tpl_data));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(this.template(tpl_data));
 				if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 					self.$("table").dataTable({
 						"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
@@ -4059,8 +4126,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			id: "positionview",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "renderCandidacies", "renderCommittee", "renderEvaluation", "renderNomination", "renderComplementaryDocuments");
 				this.template = _.template(tpl_position);
 				this.model.bind('change', this.render, this);
@@ -4079,7 +4146,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				}
 
 				self.closeInnerViews();
-				self.$el.html(self.template(tpl_data));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(tpl_data));
 
 				// Dependencies:
 				self.renderCandidacies(self.$("#positionCandidacies"));
@@ -4231,8 +4300,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				"CANCELLED": [ "EPILOGI" ]
 			},
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "addPhase", "showTab", "showMainTab", "showCandidaciesTab", "showCommitteeTab", "showEvaluationTab", "showNominationTab",
 					"showComplementaryDocumentsTab");
 				this.template = _.template(tpl_position_edit);
@@ -4254,7 +4323,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				}
 
 				self.closeInnerViews();
-				self.$el.html(self.template(tpl_data));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(tpl_data));
 
 				// Phase:
 				self.$("a#addPhase").each(function () {
@@ -4478,8 +4549,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			validator: undefined,
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "change", "isEditable", "submit", "cancel");
 				this.template = _.template(tpl_position_main_edit);
 				this.model.bind('change', this.render, this);
@@ -4537,7 +4608,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var self = this;
 				var propName;
 				self.closeInnerViews();
-				self.$el.html(self.template(self.model.toJSON()));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(self.model.toJSON()));
 				// Add Sector options
 				self.$("select[name='sector']").change(function (event) {
 					self.$("select[name='sector']").next(".help-block").html(self.$("select[name='area'] option:selected").text() + " / " + self.$("select[name='sector'] option:selected").text());
@@ -4814,8 +4887,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			uploader: undefined,
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				this.template = _.template(tpl_position_committee);
 				this.model.bind('change', this.render, this);
 				this.model.bind("destroy", this.close, this);
@@ -4836,7 +4909,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						member.access = "READ_FULL";
 					});
 				}
-				self.$el.html(self.template(tpl_data));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(tpl_data));
 				// Add Files
 				if (self.model.has("id")) {
 					files = new Models.Files();
@@ -4877,9 +4952,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			uploader: undefined,
 
-			initialize: function () {
+			initialize: function (options) {
 				var self = this;
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "change", "renderCommitteeMembers", "isEditable", "toggleRegisterMembers", "addMembers", "removeMember", "submit", "cancel");
 				self.template = _.template(tpl_position_committee_edit);
 				self.templateRow = _.template(tpl_position_committee_member_edit);
@@ -4927,7 +5002,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var self = this;
 				var files;
 				self.closeInnerViews();
-				self.$el.html(self.template(self.model.toJSON()));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(self.model.toJSON()));
 
 				// Add Existing Committee Members:
 				self.renderCommitteeMembers();
@@ -5117,8 +5194,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.PositionCommitteeEditRegisterMembersView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "addMembers");
 				this.template = _.template(tpl_position_committee_edit_register_member_list);
 				this.collection.bind("change", this.render, this);
@@ -5147,7 +5224,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}())
 				};
 				self.closeInnerViews();
-				self.$el.html(self.template(tpl_data));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(tpl_data));
 
 				if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 					self.$("table").dataTable({
@@ -5211,9 +5290,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			uploader: undefined,
 
-			initialize: function () {
+			initialize: function (options) {
 				var self = this;
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+				this._super('initialize', [ options ]);
 				self.template = _.template(tpl_position_evaluation);
 				self.model.bind('change', self.render, self);
 				self.model.bind("destroy", self.close, self);
@@ -5231,7 +5310,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						evaluator.access = "READ_FULL";
 					});
 				}
-				self.$el.html(self.template(tpl_data));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(tpl_data));
 
 				// Add Files
 				_.each(self.model.get("evaluators"), function (evaluator) {
@@ -5267,9 +5348,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.PositionEvaluationEditView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
+			initialize: function (options) {
 				var self = this;
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "change", "renderEvaluators", "isEditable", "toggleRegisterMembers", "addMember", "removeMember", "submit", "cancel");
 				self.template = _.template(tpl_position_evaluation_edit);
 				self.templateRow = _.template(tpl_position_evaluation_evaluator_edit);
@@ -5319,7 +5400,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			render: function (event) {
 				var self = this;
 				self.closeInnerViews();
-				self.$el.html(self.template(self.model.toJSON()));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(self.model.toJSON()));
 
 				// Add Existing Evaluators:
 				self.renderEvaluators();
@@ -5493,8 +5576,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.PositionEvaluationEditRegisterMembersView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "addMember");
 				this.template = _.template(tpl_position_evaluation_edit_register_member_list);
 				this.collection.bind("change", this.render, this);
@@ -5523,7 +5606,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}())
 				};
 				self.closeInnerViews();
-				self.$el.html(self.template(tpl_data));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(tpl_data));
 
 				if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 					self.$("table").dataTable({
@@ -5569,9 +5654,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.PositionCandidaciesView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
+			initialize: function (options) {
 				var self = this;
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+				this._super('initialize', [ options ]);
 				self.template = _.template(tpl_position_candidacies);
 				self.model.bind('change', self.render, self);
 				self.model.bind("destroy", self.close, self);
@@ -5589,7 +5674,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						return !_.isUndefined(candidacy.proposedEvaluators);
 					})
 				});
-				self.$el.html(self.template(tpl_data));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(tpl_data));
 				// Add files
 				if (self.model.has("id") && tpl_data.showEvaluators) {
 					files = new Models.Files();
@@ -5631,9 +5718,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.PositionCandidaciesEditView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
+			initialize: function (options) {
 				var self = this;
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+				this._super('initialize', [ options ]);
 				self.template = _.template(tpl_position_candidacies_edit);
 				self.model.bind('change', self.render, self);
 				self.model.bind("destroy", self.close, self);
@@ -5650,7 +5737,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var self = this;
 				var files;
 				self.closeInnerViews();
-				self.$el.html(self.template(self.model.toJSON()));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(self.model.toJSON()));
 
 				// Add files
 				if (self.model.has("id")) {
@@ -5694,9 +5783,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.PositionNominationView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
+			initialize: function (options) {
 				var self = this;
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+				this._super('initialize', [ options ]);
 				self.template = _.template(tpl_position_nomination);
 				self.model.bind('change', self.render, self);
 				self.model.bind("destroy", self.close, self);
@@ -5706,7 +5795,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var self = this;
 				var files;
 				self.closeInnerViews();
-				self.$el.html(self.template(self.model.toJSON()));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(self.model.toJSON()));
 				// Add Files
 				files = new Models.Files();
 				files.url = self.model.url() + "/file";
@@ -5752,9 +5843,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			uploader: undefined,
 
-			initialize: function () {
+			initialize: function (options) {
 				var self = this;
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "change", "isEditable", "submit", "cancel");
 				self.template = _.template(tpl_position_nomination_edit);
 				self.model.bind('change', self.render, self);
@@ -5795,7 +5886,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var self = this;
 				var files;
 				self.closeInnerViews();
-				self.$el.html(self.template(self.model.toJSON()));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(self.model.toJSON()));
 
 				// Add Nominated and Second Nominated:
 				self.$("select[name='nominatedCandidacy']").change(function (event) {
@@ -5950,9 +6043,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.PositionComplementaryDocumentsView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
+			initialize: function (options) {
 				var self = this;
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+				this._super('initialize', [ options ]);
 				self.template = _.template(tpl_position_complementaryDocuments);
 				self.model.bind('change', self.render, self);
 				self.model.bind("destroy", self.close, self);
@@ -5962,7 +6055,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var self = this;
 				var files;
 				self.closeInnerViews();
-				self.$el.html(self.template(self.model.toJSON()));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(self.model.toJSON()));
 
 				// Add Files
 				if (self.model.has("id")) {
@@ -5997,9 +6092,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			uploader: undefined,
 
-			initialize: function () {
+			initialize: function (options) {
 				var self = this;
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+				this._super('initialize', [ options ]);
 				_.bindAll(self, "cancel");
 				self.template = _.template(tpl_position_complementaryDocuments_edit);
 				self.model.bind('change', self.render, self);
@@ -6017,7 +6112,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var self = this;
 				var files;
 				self.closeInnerViews();
-				self.$el.html(self.template(self.model.toJSON()));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(self.model.toJSON()));
 
 				// Add Files
 				if (self.model.has("id")) {
@@ -6058,8 +6155,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.RegisterListView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "renderActions", "selectRegister", "createRegister");
 				this.template = _.template(tpl_register_list);
 				this.collection.bind("change", this.render, this);
@@ -6090,7 +6187,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}())
 				};
 				self.closeInnerViews();
-				self.$el.html(this.template(tpl_data));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(this.template(tpl_data));
 
 				if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 					self.$("table").dataTable({
@@ -6196,8 +6295,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			validator: undefined,
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				this.template = _.template(tpl_register);
 				this.model.bind('change', this.render, this);
 				this.model.bind("destroy", this.close, this);
@@ -6207,7 +6306,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			render: function (eventName) {
 				var self = this;
-				self.$el.html(self.template(self.model.toJSON()));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(self.model.toJSON()));
 
 				if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 					self.$("table").dataTable({
@@ -6251,10 +6352,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			validator: undefined,
 
-			initialize: function () {
+			initialize: function (options) {
 				var self = this;
 
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "change", "renderMembers", "toggleAddMember", "submit", "remove", "cancel", "allowedToEdit", "addMembers", "removeMember");
 
 				self.template = _.template(tpl_register_edit);
@@ -6292,7 +6393,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var self = this;
 				var propName;
 				self.closeInnerViews();
-				self.$el.html(self.template(self.model.toJSON()));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(self.model.toJSON()));
 
 				// Existing Members
 				self.renderMembers();
@@ -6544,8 +6647,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.RegisterMembersEditProfessorListView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "addMembers");
 				this.template = _.template(tpl_register_members_edit_professor_list);
 				this.collection.bind("change", this.render, this);
@@ -6574,7 +6677,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}())
 				};
 				self.closeInnerViews();
-				self.$el.html(self.template(tpl_data));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(tpl_data));
 
 				if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 					self.$("table").dataTable({
@@ -6639,8 +6744,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.ProfessorListView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "showDetails", "select");
 				this.template = _.template(tpl_professor_list);
 				this.collection.bind("change", this.render, this);
@@ -6665,7 +6770,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}())
 				};
 				self.closeInnerViews();
-				self.$el.html(self.template(tpl_data));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(tpl_data));
 
 				if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 					self.$("table").dataTable({
@@ -6718,9 +6825,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.ProfessorCommitteesView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
+			initialize: function (options) {
 				var self = this;
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+				this._super('initialize', [ options ]);
 				_.bindAll(self, "select");
 				self.template = _.template(tpl_professor_committees);
 				self.collection.bind('reset', self.render, self);
@@ -6733,7 +6840,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			render: function (eventName) {
 				var self = this;
 				self.closeInnerViews();
-				self.$el.html(self.template({
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template({
 					committees: self.collection.toJSON()
 				}));
 				if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
@@ -6781,9 +6890,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.ProfessorEvaluationsView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
+			initialize: function (options) {
 				var self = this;
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+				this._super('initialize', [ options ]);
 				_.bindAll(self, "select");
 				self.template = _.template(tpl_professor_evaluations);
 				self.collection.bind('reset', self.render, self);
@@ -6796,7 +6905,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			render: function (eventName) {
 				var self = this;
 				self.closeInnerViews();
-				self.$el.html(self.template({
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template({
 					evaluations: self.collection.toJSON()
 				}));
 				if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
@@ -6844,9 +6955,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.InstitutionRegulatoryFrameworkListView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
+			initialize: function (options) {
 				var self = this;
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+				this._super('initialize', [ options ]);
 				_.bindAll(self, "renderActions", "select", "create");
 				self.template = _.template(tpl_institution_regulatory_framework_list);
 				self.collection.bind('reset', self.render, self);
@@ -6876,7 +6987,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					}())
 				};
 				self.closeInnerViews();
-				self.$el.html(self.template(tpl_data));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(tpl_data));
 
 				// Widgets
 				if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
@@ -6984,9 +7097,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.InstitutionRegulatoryFrameworkEditView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
+			initialize: function (options) {
 				var self = this;
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "change", "submit", "cancel", "remove");
 				self.template = _.template(tpl_institution_regulatory_framework_edit);
 				self.model.bind('change', self.render, self);
@@ -7011,7 +7124,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var self = this;
 				var propName;
 				self.closeInnerViews();
-				self.$el.html(self.template(self.model.toJSON()));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(self.model.toJSON()));
 				self.validator = $("form", this.el).validate({
 					errorElement: "span",
 					errorClass: "help-inline",
@@ -7150,9 +7265,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.InstitutionRegulatoryFrameworkView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
+			initialize: function (options) {
 				var self = this;
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+				this._super('initialize', [ options ]);
 				self.template = _.template(tpl_institution_regulatory_framework);
 				self.model.bind('change', self.render, self);
 			},
@@ -7162,7 +7277,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			render: function (eventName) {
 				var self = this;
 				self.closeInnerViews();
-				self.$el.html(self.template(self.model.toJSON()));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(self.model.toJSON()));
 				return self;
 			},
 
@@ -7180,9 +7297,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.PositionSearchCriteriaView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
+			initialize: function (options) {
 				var self = this;
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+				this._super('initialize', [ options ]);
 				_.bindAll(self, "change", "renderDepartments", "renderSectors", "readValues", "search", "submit");
 				self.template = _.template(tpl_position_search_criteria);
 				self.model.bind('change', self.render, self);
@@ -7208,7 +7325,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			render: function (event) {
 				var self = this;
 				self.closeInnerViews();
-				self.$el.html(self.template(self.model.toJSON()));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(self.model.toJSON()));
 				// Add Departments to selector:
 				App.departments = App.departments || new Models.Departments();
 				App.departments.fetch({
@@ -7426,9 +7545,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.PositionSearchResultView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
+			initialize: function (options) {
 				var self = this;
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+				this._super('initialize', [ options ]);
 				self.template = _.template(tpl_position_search_result);
 				self.collection.bind('reset', self.render, self);
 			},
@@ -7440,7 +7559,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			render: function (eventName) {
 				var self = this;
 				self.closeInnerViews();
-				self.$el.html(self.template({
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template({
 					positions: self.collection.toJSON()
 				}));
 				if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
@@ -7486,9 +7607,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.CandidateCandidacyListView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
+			initialize: function (options) {
 				var self = this;
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+				this._super('initialize', [ options ]);
 				_.bindAll(self, "select");
 				self.template = _.template(tpl_candidate_candidacy_list);
 				self.collection.bind('reset', self.render, self);
@@ -7502,7 +7623,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			render: function (eventName) {
 				var self = this;
 				self.closeInnerViews();
-				self.$el.html(self.template({
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template({
 					candidacies: self.collection.toJSON()
 				}));
 				if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
@@ -7549,8 +7672,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		Views.CandidacyEditView = Views.BaseView.extend({
 			tagName: "div",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "change", "isEditable", "isEnabled", "submit", "cancel");
 				this.template = _.template(tpl_candidacy_edit);
 				this.model.bind('change', this.render, this);
@@ -7620,7 +7743,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var files;
 				var sfiles;
 				self.closeInnerViews();
-				self.$el.html(self.template(self.model.toJSON()));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(self.model.toJSON()));
 
 				if (self.model.has("id")) {
 					// Snapshot Files
@@ -7816,8 +7941,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			validator: undefined,
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				this.template = _.template(tpl_candidacy);
 				this.model.bind('change', this.render, this);
 				this.model.bind("destroy", this.close, this);
@@ -7830,7 +7955,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var files;
 				var sfiles;
 				self.closeInnerViews();
-				self.$el.html(self.template(self.model.toJSON()));
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template(self.model.toJSON()));
 
 				// Snapshot Files
 				sfiles = new Models.Files();
@@ -7881,8 +8008,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			className: "modal",
 
-			initialize: function () {
-				_.bindAll(this, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "close", "closeInnerViews");
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
 				_.bindAll(this, "show");
 				this.template = _.template(tpl_candidacy_update_confirm);
 			},
@@ -7905,7 +8032,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			render: function (eventName) {
 				var self = this;
 				self.closeInnerViews();
-				self.$el.html(self.template({
+				self.$el.empty();
+				self.addTitle();
+				self.$el.append(self.template({
 					candidacies: self.collection.toJSON()
 				}));
 			},

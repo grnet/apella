@@ -267,6 +267,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				var accountView;
 				self.clear();
 				accountView = new Views.AccountView({
+					title : $.i18n.prop('Account'),
 					model: App.loggedOnUser
 				});
 				this.refreshBreadcrumb([ $.i18n.prop('menu_account') ]);
@@ -298,6 +299,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				});
 
 				rolesView = new Views.RoleTabsView({
+					title: $.i18n.prop('Profile'),
 					collection: App.roles
 				});
 				self.refreshBreadcrumb([ $.i18n.prop('menu_profile') ]);
@@ -332,7 +334,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 				// Create Views, Add them to page
 				self.clear();
-
 				$("#content").html("<div class=\"row-fluid\"><div id=\"user\" class=\"span5\"></div><div id=\"roles\" class=\"span7\"></div></div>");
 				// Refresh Data
 				user.fetch({
@@ -423,6 +424,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				}, this);
 
 				assistantsView = new Views.InstitutionAssistantListView({
+					title : $.i18n.prop('menu_iassistants'),
 					collection: assistants
 				});
 				self.refreshBreadcrumb([ $.i18n.prop('menu_iassistants') ]);
