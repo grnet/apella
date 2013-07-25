@@ -113,9 +113,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				var languageView;
 
 				_.extend(self, Backbone.Events);
-				_.bindAll(self, "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showUserView", "showInstitutionAssistantsView",
+				_.bindAll(self, "setTitle", "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showUserView", "showInstitutionAssistantsView",
 					"showMinistryAssistantsView", "showPositionView", "showPositionsView", "showRegistersView", "showProfessorCommitteesView", "showProfessorEvaluationsView",
 					"showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "showCandidacyView", "start", "showAdminUserSearchView");
+
+				self.on("route", function (routefn) {
+					self.setTitle(routefn);
+				});
+
 				$(document).ajaxStart(App.blockUI);
 				$(document).ajaxStop(App.unblockUI);
 
@@ -154,7 +159,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				"position/:positionId/:order": "showPositionView",
 				"registers": "showRegistersView",
 				"registers/:registerId": "showRegistersView",
-				"requests": "showRequestsView",
 				"professorCommittees": "showProfessorCommitteesView",
 				"professorEvaluations": "showProfessorEvaluationsView",
 				"regulatoryframeworks": "showInstitutionRegulatoryFrameworkView",
@@ -213,6 +217,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				$("#content").empty();
 			},
 
+			setTitle: function (route) {
+				var title = route.replace(/^show/, '').replace(/View/, 'Title');
+				$("#pageTitle").html($.i18n.prop(title));
+			},
+
 			refreshBreadcrumb: function (tags) {
 				$("ul.breadcrumb").empty();
 				_.each(tags, function (tag) {
@@ -267,7 +276,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				var accountView;
 				self.clear();
 				accountView = new Views.AccountView({
-					title : $.i18n.prop('Account'),
 					model: App.loggedOnUser
 				});
 				this.refreshBreadcrumb([ $.i18n.prop('menu_account') ]);
@@ -299,7 +307,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				});
 
 				rolesView = new Views.RoleTabsView({
-					title: $.i18n.prop('Profile'),
 					collection: App.roles
 				});
 				self.refreshBreadcrumb([ $.i18n.prop('menu_profile') ]);
@@ -424,7 +431,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				}, this);
 
 				assistantsView = new Views.InstitutionAssistantListView({
-					title : $.i18n.prop('menu_iassistants'),
 					collection: assistants
 				});
 				self.refreshBreadcrumb([ $.i18n.prop('menu_iassistants') ]);
@@ -1070,4 +1076,5 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 		});
 
 		return Routers;
-	});
+	})
+;
