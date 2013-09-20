@@ -107,6 +107,8 @@ public class User implements Serializable {
 
 	private Long verificationNumber;
 
+	private String jiraIssueKey;
+
 	private Date lastLoginDate;
 
 	@Column(unique = true)
@@ -234,6 +236,14 @@ public class User implements Serializable {
 
 	public void setVerificationNumber(Long verificationNumber) {
 		this.verificationNumber = verificationNumber;
+	}
+
+	public String getJiraIssueKey() {
+		return jiraIssueKey;
+	}
+
+	public void setJiraIssueKey(String jiraIssueKey) {
+		this.jiraIssueKey = jiraIssueKey;
 	}
 
 	public Date getLastLoginDate() {

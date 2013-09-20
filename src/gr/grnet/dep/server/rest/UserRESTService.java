@@ -314,7 +314,10 @@ public class UserRESTService extends RESTService {
 					}));
 			}
 
-			//5. Return result
+			//5. Open Issue:
+			jiraService.postJira("OPEN", newUser.getId());
+
+			//6. Return result
 			newUser.initializeCollections();
 			return newUser;
 		} catch (PersistenceException e) {
@@ -374,6 +377,12 @@ public class UserRESTService extends RESTService {
 
 			em.flush();
 			existingUser.initializeCollections();
+
+			// Update Issue
+			if (existingUser.getStatus().equals(UserStatus.UNVERIFIED)) {
+				jiraService.postJira("UPDATE", existingUser.getId());
+			}
+
 			return existingUser;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
@@ -637,6 +646,7 @@ public class UserRESTService extends RESTService {
 		if (existingUser == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.user.id");
 		}
+		UserStatus previousStatus = existingUser.getStatus();
 		boolean canUpdate = loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR);
 		if (!canUpdate && existingUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
 			InstitutionAssistant ia = (InstitutionAssistant) existingUser.getActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT);
@@ -661,6 +671,14 @@ public class UserRESTService extends RESTService {
 			em.flush();
 
 			u.initializeCollections();
+
+			// Jira
+			if (previousStatus.equals(UserStatus.UNVERIFIED) && u.getStatus().equals(UserStatus.ACTIVE)) {
+				jiraService.postJira("CLOSE", u.getId());
+			} else if (previousStatus.equals(UserStatus.ACTIVE) && u.getStatus().equals(UserStatus.UNVERIFIED)) {
+				jiraService.postJira("OPEN", u.getId());
+			}
+
 			return u;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.user.id");
@@ -670,5 +688,4 @@ public class UserRESTService extends RESTService {
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
-
 }

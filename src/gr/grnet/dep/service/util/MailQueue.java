@@ -38,7 +38,6 @@ public class MailQueue implements MessageListener {
 			mail.setSubject(aSubject);
 			mail.setBody(aBody);
 
-			sendNow = true; //TODO: REMOVE THIS IN PRODUCTION
 			if (sendNow) {
 				service.sendEmail(mail);
 			} else {

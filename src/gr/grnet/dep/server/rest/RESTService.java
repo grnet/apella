@@ -17,6 +17,7 @@ import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
+import gr.grnet.dep.service.util.JiraService;
 import gr.grnet.dep.service.util.MailService;
 
 import java.io.File;
@@ -88,6 +89,9 @@ public class RESTService {
 
 	@EJB
 	MailService mailService;
+
+	@EJB
+	JiraService jiraService;
 
 	protected static Configuration conf;
 
