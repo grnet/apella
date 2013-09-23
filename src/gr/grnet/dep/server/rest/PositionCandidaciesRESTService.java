@@ -350,17 +350,19 @@ public class PositionCandidaciesRESTService extends RESTService {
 
 						{
 							put("username", existingEvaluator.getCandidacy().getCandidate().getUser().getUsername());
-							put("candidacyEvaluator_name", existingEvaluator.getFullname());
+							put("candidacyEvaluator_firstname", existingEvaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+							put("candidacyEvaluator_lastname", existingEvaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 						}
 					}));
 				// positionCandidacies.upload.eisigisi@candidacyEvaluator
-				mailService.postEmail(existingEvaluator.getEmail(),
+				mailService.postEmail(existingEvaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 					"default.subject",
 					"positionCandidacies.upload.eisigisi@candidacyEvaluator",
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("evaluator_name", existingEvaluator.getFullname());
+							put("evaluator_firstname", existingEvaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+							put("evaluator_lastname", existingEvaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 							put("candidate_firstname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getFirstname());
 							put("candidate_lastname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getLastname());
 							put("position", existingEvaluator.getCandidacy().getCandidacies().getPosition().getName());

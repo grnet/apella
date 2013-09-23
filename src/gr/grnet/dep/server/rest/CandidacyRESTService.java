@@ -10,7 +10,9 @@ import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.PositionCommitteeMember;
 import gr.grnet.dep.service.model.PositionEvaluator;
+import gr.grnet.dep.service.model.RegisterMember;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.CandidacyFile;
 import gr.grnet.dep.service.model.file.CandidateFile;
@@ -22,13 +24,17 @@ import gr.grnet.dep.service.util.CompareUtil;
 import gr.grnet.dep.service.util.DateUtil;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,6 +42,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
+import javax.persistence.Query;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -188,23 +195,34 @@ public class CandidacyRESTService extends RESTService {
 			// Check files and candidate status
 			validateCandidacy(existingCandidacy, candidate, isNew);
 			//Check changes of Evaluators
-			// Clean Up new Evaluators:
-			Iterator<CandidacyEvaluator> it = candidacy.getProposedEvaluators().iterator();
-			while (it.hasNext()) {
-				CandidacyEvaluator ce = it.next();
-				if (ce.isMissingRequiredField()) {
-					it.remove();
-				}
+			Set<Long> newRegisterMemberIds = new HashSet<Long>();
+			Map<Long, CandidacyEvaluator> existingRegisterMembersAsMap = new HashMap<Long, CandidacyEvaluator>();
+			for (CandidacyEvaluator existingEvaluator : existingCandidacy.getProposedEvaluators()) {
+				existingRegisterMembersAsMap.put(existingEvaluator.getRegisterMember().getId(), existingEvaluator);
+			}
+			for (CandidacyEvaluator newEvaluator : candidacy.getProposedEvaluators()) {
+				newRegisterMemberIds.add(newEvaluator.getRegisterMember().getId());
+			}
+			List<RegisterMember> newRegisterMembers = new ArrayList<RegisterMember>();
+			if (!newRegisterMemberIds.isEmpty()) {
+				Query query = em.createQuery(
+					"select distinct m from Register r " +
+						"join r.members m " +
+						"where r.permanent = true " +
+						"and r.institution.id = :institutionId " +
+						"and m.professor.status = :status " +
+						"and m.id in (:registerIds)")
+					.setParameter("institutionId", candidacy.getCandidacies().getPosition().getDepartment().getInstitution().getId())
+					.setParameter("status", RoleStatus.ACTIVE)
+					.setParameter("registerIds", newRegisterMemberIds);
+				newRegisterMembers.addAll(query.getResultList());
 			}
 			Collection<CandidacyEvaluator> newEvaluators = CompareUtil.complement(candidacy.getProposedEvaluators(), existingCandidacy.getProposedEvaluators(), new Comparator<CandidacyEvaluator>() {
 
 				@Override
 				public int compare(CandidacyEvaluator o1, CandidacyEvaluator o2) {
-					if (CandidacyEvaluator.compareCriticalFields(o1, o2)) {
-						return 0;
-					} else {
-						return ("" + o1.getFullname() + o1.getEmail()).compareTo("" + o2.getFullname() + o2.getEmail());
-					}
+					return o1.getRegisterMember().getId().compareTo(o2.getRegisterMember().getId());
+
 				}
 
 			});
@@ -216,11 +234,18 @@ public class CandidacyRESTService extends RESTService {
 			existingCandidacy.setPermanent(true);
 			existingCandidacy.setOpenToOtherCandidates(candidacy.isOpenToOtherCandidates());
 			existingCandidacy.getProposedEvaluators().clear();
-			for (CandidacyEvaluator evaluator : candidacy.getProposedEvaluators()) {
-				if (!evaluator.isMissingRequiredField()) { //Double Checking here
-					existingCandidacy.addProposedEvaluator(evaluator);
+			for (RegisterMember newRegisterMember : newRegisterMembers) {
+				CandidacyEvaluator candidacyEvaluator = null;
+				if (existingRegisterMembersAsMap.containsKey(newRegisterMember.getId())) {
+					candidacyEvaluator = existingRegisterMembersAsMap.get(newRegisterMember.getId());
+				} else {
+					candidacyEvaluator = new CandidacyEvaluator();
+					candidacyEvaluator.setCandidacy(existingCandidacy);
+					candidacyEvaluator.setRegisterMember(newRegisterMember);
 				}
+				candidacy.addProposedEvaluator(candidacyEvaluator);
 			}
+
 			em.flush();
 
 			if (isNew) {
@@ -242,13 +267,14 @@ public class CandidacyRESTService extends RESTService {
 			if (!newEvaluators.isEmpty()) {
 				// 2. candidacy.create.candidacyEvaluator@candidacyEvaluator
 				for (final CandidacyEvaluator evaluator : newEvaluators) {
-					mailService.postEmail(evaluator.getEmail(),
+					mailService.postEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 						"default.subject",
 						"candidacy.create.candidacyEvaluator@candidacyEvaluator",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("evaluator_name", evaluator.getFullname());
+								put("evaluator_firstname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+								put("evaluator_lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", existingCandidacy.getCandidacies().getPosition().getName());
 								put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
 								put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
@@ -277,20 +303,25 @@ public class CandidacyRESTService extends RESTService {
 							Iterator<CandidacyEvaluator> it = existingCandidacy.getProposedEvaluators().iterator();
 							if (it.hasNext()) {
 								CandidacyEvaluator eval = it.next();
-								put("evaluator1_name", eval.getFullname());
-								put("evaluator1_email", eval.getEmail());
+								put("evaluator1_firstname", eval.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+								put("evaluator1_lastname", eval.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
+								put("evaluator1_email", eval.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail());
 							} else {
-								put("evaluator1_name", "-");
+								put("evaluator1_firstname", "-");
+								put("evaluator1_lastname", "-");
 								put("evaluator1_email", "-");
-								put("evaluator2_name", "-");
+								put("evaluator2_firstname", "-");
+								put("evaluator2_lastname", "-");
 								put("evaluator2_email", "-");
 							}
 							if (it.hasNext()) {
 								CandidacyEvaluator eval = it.next();
-								put("evaluator2_name", eval.getFullname());
-								put("evaluator2_email", eval.getEmail());
+								put("evaluator2_firstname", eval.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+								put("evaluator2_lastname", eval.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
+								put("evaluator2_email", eval.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail());
 							} else {
-								put("evaluator2_name", "-");
+								put("evaluator2_firstname", "-");
+								put("evaluator2_lastname", "-");
 								put("evaluator2_email", "-");
 							}
 						}

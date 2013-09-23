@@ -1,7 +1,6 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
-import gr.grnet.dep.service.model.Candidacy.MediumCandidacyView;
 import gr.grnet.dep.service.model.PositionCandidacies.DetailedPositionCandidaciesView;
 import gr.grnet.dep.service.model.file.PositionCandidaciesFile;
 import gr.grnet.dep.service.util.CompareUtil;
@@ -37,9 +36,8 @@ public class CandidacyEvaluator implements Serializable {
 	@Version
 	private int version;
 
-	private String fullname;
-
-	private String email;
+	@ManyToOne
+	private RegisterMember registerMember;
 
 	@ManyToOne
 	private Candidacy candidacy;
@@ -65,21 +63,12 @@ public class CandidacyEvaluator implements Serializable {
 	}
 
 	@JsonView({DetailedCandidacyView.class, DetailedCandidacyEvaluatorView.class, DetailedPositionCandidaciesView.class})
-	public String getEmail() {
-		return email;
+	public RegisterMember getRegisterMember() {
+		return this.registerMember;
 	}
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	@JsonView({MediumCandidacyView.class, DetailedCandidacyEvaluatorView.class, DetailedPositionCandidaciesView.class})
-	public String getFullname() {
-		return fullname;
-	}
-
-	public void setFullname(String fullname) {
-		this.fullname = fullname;
+	public void setRegisterMember(RegisterMember registerMember) {
+		this.registerMember = registerMember;
 	}
 
 	//////////////////////////////////////
@@ -93,15 +82,10 @@ public class CandidacyEvaluator implements Serializable {
 	}
 
 	public boolean isMissingRequiredField() {
-		return (this.fullname == null || this.fullname.trim().isEmpty()) || (this.email == null || this.email.trim().isEmpty());
+		return this.registerMember == null;
 	}
 
 	public static boolean compareCriticalFields(CandidacyEvaluator a, CandidacyEvaluator b) {
-		return CompareUtil.equalsIgnoreNull(a.getFullname(), b.getFullname()) && CompareUtil.equalsIgnoreNull(a.getEmail(), b.getEmail());
-	}
-
-	@Override
-	public String toString() {
-		return this.fullname + " " + this.email;
+		return CompareUtil.equalsIgnoreNull(a.getRegisterMember().getId(), b.getRegisterMember().getId());
 	}
 }
