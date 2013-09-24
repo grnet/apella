@@ -6868,7 +6868,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				return self;
 			},
 
-			select: function (event, positionCommitteeMember) {
+			select: function (eventPositionCommitteeRegisterMembers, positionCommitteeMember) {
 				var self = this;
 				var selectedModel = positionCommitteeMember || self.collection.get($(event.currentTarget).data('committeeMemberId'));
 				if (selectedModel) {
@@ -7673,11 +7673,17 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			tagName: "div",
 
 			initialize: function (options) {
-				this._super('initialize', [ options ]);
+				var self = this;
+
+				self._super('initialize', [ options ]);
 				_.bindAll(this, "change", "isEditable", "isEnabled", "submit", "cancel");
-				this.template = _.template(tpl_candidacy_edit);
-				this.model.bind('change', this.render, this);
-				this.model.bind("destroy", this.close, this);
+				self.template = _.template(tpl_candidacy_edit);
+				self.model.bind('change', self.render, self);
+				self.model.bind("destroy", self.close, self);
+
+				// Initialize Registers, no request is performed until render
+				self.registerMembers = new Models.CandidacyRegisterMembers();
+				self.registerMembers.url = self.model.url() + "/register";
 			},
 
 			events: {
@@ -7705,13 +7711,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				switch (field) {
 					case "openToOtherCandidates":
 						return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
-					case "evaluator_fullname_0":
+					case "evaluator_0":
 						return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
-					case "evaluator_fullname_1":
-						return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
-					case "evaluator_email_0":
-						return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
-					case "evaluator_email_1":
+					case "evaluator_1":
 						return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
 					case "ekthesiAutoaksiologisisFile":
 						return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
@@ -7740,6 +7742,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			render: function (eventName) {
 				var self = this;
+				var candidacyRegisterMembers;
 				var files;
 				var sfiles;
 				self.closeInnerViews();
@@ -7747,6 +7750,46 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.addTitle();
 				self.$el.append(self.template(self.model.toJSON()));
 
+				// Fill Selectors with registerMembers
+				self.$("select[name='evaluator_0']").change(function (event) {
+					self.$("select[name='evaluator_0']").next(".help-block").html(self.$("select[name='evaluator_0'] option:selected").text());
+				});
+				self.$("select[name='evaluator_1']").change(function (event) {
+					self.$("select[name='evaluator_1']").next(".help-block").html(self.$("select[name='evaluator_1'] option:selected").text());
+				});
+				self.registerMembers.fetch({
+					cache : true,
+					reset: true,
+					success: function (collection, resp) {
+						self.$("select[name='evaluator_0']").empty();
+						self.$("select[name='evaluator_1']").empty();
+						self.$("select[name='evaluator_0']").append("<option value=''>--</option>");
+						self.$("select[name='evaluator_1']").append("<option value=''>--</option>");
+						collection.each(function (registerMember) {
+							self.$("select[name='evaluator_0']").append("<option value='" + registerMember.get("id") + "'>" + registerMember.get("professor").user.basicInfo.firstname + " " + registerMember.get("professor").user.basicInfo.lastname + "</option>");
+							self.$("select[name='evaluator_1']").append("<option value='" + registerMember.get("id") + "'>" + registerMember.get("professor").user.basicInfo.firstname + " " + registerMember.get("professor").user.basicInfo.lastname + "</option>");
+						});
+						// Set Selected
+						_.each(self.model.get("proposedEvaluators"), function (proposedEvaluator, index) {
+							$("select[name='evaluator_" + index + "'] > option[value=" + proposedEvaluator.registerMember.id + "]").prop("selected", true);
+						});
+						self.$("select[name='evaluator_0']").trigger("change", {
+							triggeredBy: "application"
+						});
+						self.$("select[name='evaluator_1']").trigger("change", {
+							triggeredBy: "application"
+						});
+					},
+					error: function (model, resp, options) {
+						var popup = new Views.PopupView({
+							type: "error",
+							message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						});
+						popup.show();
+					}
+				});
+
+				// Files
 				if (self.model.has("id")) {
 					// Snapshot Files
 					sfiles = new Models.Files();
@@ -7785,6 +7828,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				} else {
 					self.$("#mitrooFileList").html($.i18n.prop("PressSave"));
 				}
+
 				// Set isEditable to fields
 				self.$("select, input, textarea").each(function (index) {
 					var field = $(this).attr("name");
@@ -7805,16 +7849,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						$(element).parent(".controls").parent(".control-group").removeClass("error");
 					},
 					rules: {
-						"evaluator_email_0": {
-							"email": true
-						},
-						"evaluator_email_1": {
-							"email": true
-						}
 					},
 					messages: {
-						"evaluator_email_0": $.i18n.prop('validation_email'),
-						"evaluator_email_1": $.i18n.prop('validation_email')
 					}
 				});
 				// Set isEnabled to buttons
@@ -7854,12 +7890,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				values.openToOtherCandidates = self.$('form input[name=openToOtherCandidates]').is(':checked');
 				values.proposedEvaluators = [
 					{
-						fullname: self.$('form input[name=evaluator_fullname_0]').val(),
-						email: self.$('form input[name=evaluator_email_0]').val()
+						registerMember : {
+							id : self.$('form select[name=evaluator_0]').val()
+						}
 					},
 					{
-						fullname: self.$('form input[name=evaluator_fullname_1]').val(),
-						email: self.$('form input[name=evaluator_email_1]').val()
+						registerMember: {
+							id: self.$('form select[name=evaluator_1]').val()
+						}
 					}
 				];
 				// Save to model

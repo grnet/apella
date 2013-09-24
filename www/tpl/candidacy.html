@@ -75,13 +75,14 @@
 			<dt><%= $.i18n.prop('ProposedEvaluator') %> 1</dt>
 			<dd>
 			<% if (proposedEvaluators[0]) { %>
-				<%= proposedEvaluators[0].fullname%> <%= proposedEvaluators[0].email%></dd>
+				<%= proposedEvaluators[0].registerMember.professor.user.basinInfo.firstname %> <%= proposedEvaluators[0].registerMember.professor.user.basinInfo.lastname %></dd>
 			<% } %>
 			</dd>
 			<dt><%= $.i18n.prop('ProposedEvaluator') %> 2</dt>
 			<dd>
 			<% if (proposedEvaluators[1]) { %>
-				<%= proposedEvaluators[1].fullname%> <%= proposedEvaluators[1].email%></dd>
+				<%= proposedEvaluators[1].registerMember.professor.user.basinInfo.firstname %> <%= proposedEvaluators[1].registerMember.professor.user.basinInfo.lastname %>
+			</dd>
 			<% } %>
 			</dd>
 			<dt><%= $.i18n.prop('EkthesiAutoaksiologisisFile') %></dt>

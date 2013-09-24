@@ -5,6 +5,7 @@ import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
 import gr.grnet.dep.service.model.Candidacy.MediumCandidacyView;
 import gr.grnet.dep.service.model.CandidacyEvaluator;
+import gr.grnet.dep.service.model.CandidacyEvaluator.DetailedCandidacyEvaluatorView;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
@@ -20,14 +21,12 @@ import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
-import gr.grnet.dep.service.util.CompareUtil;
 import gr.grnet.dep.service.util.DateUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -217,15 +216,7 @@ public class CandidacyRESTService extends RESTService {
 					.setParameter("registerIds", newRegisterMemberIds);
 				newRegisterMembers.addAll(query.getResultList());
 			}
-			Collection<CandidacyEvaluator> newEvaluators = CompareUtil.complement(candidacy.getProposedEvaluators(), existingCandidacy.getProposedEvaluators(), new Comparator<CandidacyEvaluator>() {
-
-				@Override
-				public int compare(CandidacyEvaluator o1, CandidacyEvaluator o2) {
-					return o1.getRegisterMember().getId().compareTo(o2.getRegisterMember().getId());
-
-				}
-
-			});
+			Collection<CandidacyEvaluator> addedEvaluators = new ArrayList<CandidacyEvaluator>();
 			// Update
 			if (isNew) {
 				// Fetch from Profile
@@ -242,8 +233,9 @@ public class CandidacyRESTService extends RESTService {
 					candidacyEvaluator = new CandidacyEvaluator();
 					candidacyEvaluator.setCandidacy(existingCandidacy);
 					candidacyEvaluator.setRegisterMember(newRegisterMember);
+					addedEvaluators.add(candidacyEvaluator);
 				}
-				candidacy.addProposedEvaluator(candidacyEvaluator);
+				existingCandidacy.addProposedEvaluator(candidacyEvaluator);
 			}
 
 			em.flush();
@@ -264,9 +256,9 @@ public class CandidacyRESTService extends RESTService {
 						}
 					}));
 			}
-			if (!newEvaluators.isEmpty()) {
+			if (!addedEvaluators.isEmpty()) {
 				// 2. candidacy.create.candidacyEvaluator@candidacyEvaluator
-				for (final CandidacyEvaluator evaluator : newEvaluators) {
+				for (final CandidacyEvaluator evaluator : addedEvaluators) {
 					mailService.postEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 						"default.subject",
 						"candidacy.create.candidacyEvaluator@candidacyEvaluator",
@@ -449,6 +441,37 @@ public class CandidacyRESTService extends RESTService {
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
+	}
+
+	/*********************
+	 * Register Members **
+	 *********************/
+
+	@GET
+	@Path("/{id:[0-9]+}/register")
+	@JsonView({DetailedCandidacyEvaluatorView.class})
+	public Collection<RegisterMember> getPositionCommiteeRegisterMembers(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("id") Long candidacyId) {
+		getLoggedOn(authToken);
+		final Candidacy existingCandidacy = em.find(Candidacy.class, candidacyId);
+		if (existingCandidacy == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
+		}
+		// Prepare Query
+		List<RegisterMember> registerMembers = em.createQuery(
+			"select distinct m from Register r " +
+				"join r.members m " +
+				"where r.permanent = true " +
+				"and r.institution.id = :institutionId " +
+				"and m.professor.status = :status ")
+			.setParameter("institutionId", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getId())
+			.setParameter("status", RoleStatus.ACTIVE)
+			.getResultList();
+
+		// Execute
+		for (RegisterMember r : registerMembers) {
+			r.initializeCollections();
+		}
+		return registerMembers;
 	}
 
 	/*******************************

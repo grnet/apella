@@ -1281,13 +1281,18 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 			candidate: {
 				"id": undefined
 			},
-			proposedEvaluators: [],
+			proposedEvaluators: [], // {registerMember : {id : x}}
 			snapshot: {
 				basicInfo: {},
 				basicInfoLatin: {},
 				contactInfo: {}
 			}
 		}
+	});
+
+	Models.CandidacyRegisterMembers = Backbone.Collection.extend({
+		model: Models.RegisterMember,
+		url: undefined
 	});
 
 	Models.Candidacies = Backbone.Collection.extend({

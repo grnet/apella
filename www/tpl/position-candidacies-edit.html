@@ -39,7 +39,7 @@
 				<ul class="unstyled">
 					<% _.each(candidacy.proposedEvaluators, function(proposedEvaluator, index) { %>
 					<li>
-						<i><%= $.i18n.prop("ProposedEvaluator") %> <%= index + 1 %>: </i><%= proposedEvaluator.fullname + " (" + proposedEvaluator.email + ")"%>
+						<i><%= $.i18n.prop("ProposedEvaluator") %> <%= index + 1 %>: </i><%= proposedEvaluator.registerMember.id %>
 						<input type="hidden" name="eisigisiDepYpopsifiouFileList" data-candidacy-evaluator-id="<%= proposedEvaluator.id %>"/>
 					</li>
 					<% }); %>

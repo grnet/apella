@@ -334,6 +334,10 @@
 						<entry name="queue/EMailQ" />
 						<entry name="java:jboss/exported/jms/queue/EMailQ" />
 					</jms-queue>
+					<jms-queue name="jiraQueue">
+						<entry name="queue/JiraQ" />
+						<entry name="java:jboss/exported/jms/queue/JiraQ" />
+					</jms-queue>
 				</jms-destinations>
 			</hornetq-server>
 		</subsystem>

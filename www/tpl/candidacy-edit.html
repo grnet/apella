@@ -85,18 +85,16 @@
 				<legend><%= $.i18n.prop('ProposedEvaluators') %></legend>
 				<div class="control-group">
 					<label class="control-label" for="evaluator"><%= $.i18n.prop('ProposedEvaluator') %> 1:</label>
-
 					<div class="controls">
-						<input placeholder="<%= $.i18n.prop('Name') %>" type="text" class="input-large" name="evaluator_fullname_0" value="<%= proposedEvaluators[0]? proposedEvaluators[0].fullname : '' %>"/>
-						<input placeholder="<%= $.i18n.prop('Email') %>" type="text" class="input-large" name="evaluator_email_0" value="<%= proposedEvaluators[0]? proposedEvaluators[0].email : ''%>"/>
+						<select class="input-large" name="evaluator_0">
+						</select>
 					</div>
 				</div>
 				<div class="control-group">
 					<label class="control-label" for="evaluator"><%= $.i18n.prop('ProposedEvaluator') %> 2:</label>
-
 					<div class="controls">
-						<input placeholder="<%= $.i18n.prop('Name') %>" type="text" class="input-large" name="evaluator_fullname_1" value="<%= proposedEvaluators[1]? proposedEvaluators[1].fullname : '' %>"/>
-						<input placeholder="<%= $.i18n.prop('Email') %>" type="text" class="input-large" name="evaluator_email_1" value="<%= proposedEvaluators[1]? proposedEvaluators[1].email : ''%>"/>
+						<select class="input-large" name="evaluator_1">
+						</select>
 					</div>
 				</div>
 				<div class="control-group">
