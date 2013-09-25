@@ -19,6 +19,9 @@ require.config({
 		"jquery.iframe-transport" : "lib/jquery.file.upload/jquery.iframe-transport",
 		"jquery.file.upload" : "lib/jquery.file.upload/jquery.fileupload",
 		"jquery.dynatree" : "lib/jquery.dynatree/jquery.dynatree-1.2.4",
+		"jquery.selectize" : "lib/selectize/selectize",
+		"microplugin" : "lib/selectize/microplugin",
+		"sifter" : "lib/selectize/sifter",
 
 		"backbone.cache" : "lib/backbone/backbone.cache",
 
@@ -45,6 +48,7 @@ require.config({
 		"jquery.iframe-transport" : [ "jquery" ],
 		"jquery.file.upload" : [ "jquery", "jquery.ui", "jquery.iframe-transport" ],
 		"jquery.dynatree" : [ "jquery", "jquery.ui" ],
+		"jquery.selectize" : [ "jquery", "microplugin", "sifter", "jquery.ui", "bootstrap" ],
 
 		"backbone.cache" : [ "backbone" ]
 	}

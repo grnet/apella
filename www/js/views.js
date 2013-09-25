@@ -7676,7 +7676,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				var self = this;
 
 				self._super('initialize', [ options ]);
-				_.bindAll(this, "change", "isEditable", "isEnabled", "submit", "cancel");
+				_.bindAll(this, "renderRegisterMembers", "change", "isEditable", "isEnabled", "submit", "cancel");
 				self.template = _.template(tpl_candidacy_edit);
 				self.model.bind('change', self.render, self);
 				self.model.bind("destroy", self.close, self);
@@ -7751,43 +7751,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$el.append(self.template(self.model.toJSON()));
 
 				// Fill Selectors with registerMembers
-				self.$("select[name='evaluator_0']").change(function (event) {
-					self.$("select[name='evaluator_0']").next(".help-block").html(self.$("select[name='evaluator_0'] option:selected").text());
-				});
-				self.$("select[name='evaluator_1']").change(function (event) {
-					self.$("select[name='evaluator_1']").next(".help-block").html(self.$("select[name='evaluator_1'] option:selected").text());
-				});
-				self.registerMembers.fetch({
-					cache : true,
-					reset: true,
-					success: function (collection, resp) {
-						self.$("select[name='evaluator_0']").empty();
-						self.$("select[name='evaluator_1']").empty();
-						self.$("select[name='evaluator_0']").append("<option value=''>--</option>");
-						self.$("select[name='evaluator_1']").append("<option value=''>--</option>");
-						collection.each(function (registerMember) {
-							self.$("select[name='evaluator_0']").append("<option value='" + registerMember.get("id") + "'>" + registerMember.get("professor").user.basicInfo.firstname + " " + registerMember.get("professor").user.basicInfo.lastname + "</option>");
-							self.$("select[name='evaluator_1']").append("<option value='" + registerMember.get("id") + "'>" + registerMember.get("professor").user.basicInfo.firstname + " " + registerMember.get("professor").user.basicInfo.lastname + "</option>");
-						});
-						// Set Selected
-						_.each(self.model.get("proposedEvaluators"), function (proposedEvaluator, index) {
-							$("select[name='evaluator_" + index + "'] > option[value=" + proposedEvaluator.registerMember.id + "]").prop("selected", true);
-						});
-						self.$("select[name='evaluator_0']").trigger("change", {
-							triggeredBy: "application"
-						});
-						self.$("select[name='evaluator_1']").trigger("change", {
-							triggeredBy: "application"
-						});
-					},
-					error: function (model, resp, options) {
-						var popup = new Views.PopupView({
-							type: "error",
-							message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-						});
-						popup.show();
-					}
-				});
+				self.renderRegisterMembers();
 
 				// Files
 				if (self.model.has("id")) {
@@ -7875,6 +7839,75 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				return self;
 			},
 
+			renderRegisterMembers: function () {
+				var self = this;
+
+				self.registerMembers.fetch({
+					cache: true,
+					reset: true,
+					success: function (collection, resp) {
+						_.each(self.$selectize, function (element) {
+							element.selectize.destroy();
+						});
+						self.$selectize = self.$("select[name^=evaluator_]").selectize({
+							valueField: 'id',
+							diacritics : true,
+							create: false,
+							hideSelected : true,
+							sortField: 'professor.user.basicInfo.firstname',
+							options: collection.toJSON(),
+							render: {
+								item: function (item, escape) { //Shows when selected
+									return '<div>' +
+										'<strong>' + escape(item.professor.user.basicInfo.firstname) + " " + escape(item.professor.user.basicInfo.lastname) + '</strong><br/>' +
+										$.i18n.prop(item.professor.discriminator) + '<br/>' +
+										(item.professor.discriminator === "PROFESSOR_DOMESTIC" ?
+											($.i18n.prop('Institution') + ': ' + escape(item.professor.department.institution.name) + "<br/>" +
+												$.i18n.prop('Department') + ": " + escape(item.professor.department.department))
+											:
+											($.i18n.prop('Institution') + ': ' + escape(item.professor.institution) + '<br/>')
+											) +
+										'</div>';
+								},
+								option: function (item, escape) { //Shows in dropddown
+									return '<div>' +
+										'<strong>' + escape(item.professor.user.basicInfo.firstname) + " " + escape(item.professor.user.basicInfo.lastname) + '</strong><br/>' +
+										$.i18n.prop(item.professor.discriminator) + '<br/>' +
+										(item.professor.discriminator === "PROFESSOR_DOMESTIC" ?
+											($.i18n.prop('Institution') + ': ' + escape(item.professor.department.institution.name) + "<br/>" +
+												$.i18n.prop('Department') + ": " + escape(item.professor.department.department))
+											:
+											($.i18n.prop('Institution') + ': ' + escape(item.professor.institution) + '<br/>')
+											) +
+										'</div>';
+								}
+							},
+							score : function(search) {
+								return function (item) {
+									var concat = item.professor.user.basicInfo.firstname + " " + item.professor.user.basicInfo.lastname;
+									var pos = concat.indexOf(search);
+									return pos >= 0 ? 1000 - pos : 0;
+								};
+							}
+						});
+						// Set Value
+						_.each(self.model.get("proposedEvaluators"), function (evaluator, index) {
+							self.$("select[name=evaluator_" + index + "]")[0]
+								.selectize
+								.setValue(evaluator.registerMember.id);
+						});
+						// Enable/Disable
+					},
+					error: function (model, resp, options) {
+						var popup = new Views.PopupView({
+							type: "error",
+							message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						});
+						popup.show();
+					}
+				});
+			},
+
 			change: function (event, data) {
 				var self = this;
 				if ((data && _.isEqual(data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
@@ -7890,8 +7923,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				values.openToOtherCandidates = self.$('form input[name=openToOtherCandidates]').is(':checked');
 				values.proposedEvaluators = [
 					{
-						registerMember : {
-							id : self.$('form select[name=evaluator_0]').val()
+						registerMember: {
+							id: self.$('form select[name=evaluator_0]').val()
 						}
 					},
 					{

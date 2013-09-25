@@ -1,6 +1,6 @@
 /*global define */
 define([ "jquery", "underscore", "backbone", "bootstrap", "jquery.ui", "jquery.i18n", "jquery.validate", "jquery.dataTables", "jquery.blockUI", "jquery.file.upload",
-	"jquery.iframe-transport", "jquery.dynatree", "backbone.cache" ], function ($, _, Backbone) {
+	"jquery.iframe-transport", "jquery.dynatree", "jquery.selectize", "backbone.cache" ], function ($, _, Backbone) {
 
 	"use strict";
 

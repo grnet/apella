@@ -36,7 +36,19 @@
 				<ul class="unstyled">
 					<% _.each(candidacy.proposedEvaluators, function(proposedEvaluator, index) { %>
 					<li>
-						<i><%= $.i18n.prop("ProposedEvaluator") %> <%= index + 1 %>: </i><%= proposedEvaluator.registerMember.id %>
+						<i><%= $.i18n.prop("ProposedEvaluator") %> <%= index + 1 %>: </i>
+						<ul class="unstyled">
+							<li><%= proposedEvaluator.registerMember.professor.user.basicInfo.firstname %> <%=
+								proposedEvaluator.registerMember.professor.user.basicInfo.lastname%>
+							</li>
+							<li><%= $.i18n.prop(proposedEvaluator.registerMember.professor.discriminator) %></li>
+							<% if (proposedEvaluator.registerMember.professor.discriminator === "PROFESSOR_DOMESTIC") { %>
+							<li><%= $.i18n.prop('Institution') %>: <%= $.i18n.prop(proposedEvaluator.registerMember.professor.department.institution.name) %></li>
+							<li><%= $.i18n.prop('Department') %>: <%= $.i18n.prop(proposedEvaluator.registerMember.professor.department.department) %></li>
+							<% } else { %>
+							<li><%= $.i18n.prop('Institution') %>: <%= $.i18n.prop(proposedEvaluator.registerMember.professor.institution) %></li>
+							<% } %>
+						</ul>
 						<div id="eisigisiDepYpopsifiouFileList" data-candidacy-evaluator-id="<%= proposedEvaluator.id %>"></div>
 					</li>
 					<% }); %>
