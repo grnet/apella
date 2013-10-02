@@ -13,10 +13,12 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.persistence.Version;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
+@XmlRootElement
 @Table(uniqueConstraints = {
 	@UniqueConstraint(columnNames = {"committee_id", "registerMember_id"})
 })

@@ -35,8 +35,8 @@ import org.codehaus.jackson.annotate.JsonTypeInfo.As;
 import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
-@Inheritance(strategy = InheritanceType.JOINED)
 @XmlRootElement
+@Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "Roles")
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = As.PROPERTY, property = "discriminator")
 @JsonSubTypes({

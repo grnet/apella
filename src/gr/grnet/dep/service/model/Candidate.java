@@ -12,9 +12,11 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 @Entity
+@XmlRootElement
 @DiscriminatorValue("CANDIDATE")
 public class Candidate extends Role {
 

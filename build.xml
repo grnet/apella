@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <project name="DEPElections" default="deploy" basedir=".">
-	<property file="build.properties" />
 	<property environment="env" />
+	<property file="build.properties" />
 	<property name="deps.dir" value="${basedir}/dependencies" />
 
 	<property name="jboss.args" value="--server-config=standalone-full.xml" />
@@ -195,6 +195,37 @@
 
 	<target name="clean-dependencies" depends="clean" description="Delete all downloaded dependencies">
 		<delete dir="${deps.dir}" />
+	</target>
+
+	<!-- Documentation Generator -->
+
+	<path id="enunciate.classpath">
+		<path refid="project.class.path" />
+		<fileset dir="${enunciate.home}/lib">
+			<include name="*.jar" />
+			<exclude name="enunciate-jaxws-ri-1.27.jar" />
+			<exclude name="enunciate-jersey-1.27.jar" />
+			<exclude name="enunciate-jersey-rt.1.27.jar" />
+			<exclude name="enunciate-c-1.27.jar" />
+			<exclude name="enunciate-csharp-1.27.jar" />
+		</fileset>
+		<fileset dir="${enunciate.home}/lib/modules/jboss">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<taskdef name="enunciate" classname="org.codehaus.enunciate.main.EnunciateTask">
+		<classpath refid="enunciate.classpath" />
+	</taskdef>
+
+	<pathconvert property="enunciate.classpathProp" refid="enunciate.classpath" />
+	<target name="doc">
+		<enunciate basedir="${src.dir}">
+			<include name="**/*.java" />
+			<classpath refid="enunciate.classpath" />
+			<export artifactId="docs" destination="${build.dir}/docs.zip"/>
+			<javacArgument argument="-g" />
+		</enunciate>
 	</target>
 
 </project>

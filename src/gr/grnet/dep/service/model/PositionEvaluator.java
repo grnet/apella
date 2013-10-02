@@ -14,11 +14,13 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Version;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
+@XmlRootElement
 public class PositionEvaluator implements Serializable {
 
 	private static final long serialVersionUID = 8362685537946833737L;

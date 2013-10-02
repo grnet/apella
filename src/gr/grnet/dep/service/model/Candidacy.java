@@ -26,12 +26,14 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.persistence.Version;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 import org.hibernate.annotations.FilterDef;
 
 @Entity
+@XmlRootElement
 @FilterDef(name = "filterPermanent", defaultCondition = "permanent")
 public class Candidacy {
 

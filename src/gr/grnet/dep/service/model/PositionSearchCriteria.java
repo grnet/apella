@@ -9,10 +9,12 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Version;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
+@XmlRootElement
 public class PositionSearchCriteria {
 
 	public static interface PositionSearchCriteriaView {

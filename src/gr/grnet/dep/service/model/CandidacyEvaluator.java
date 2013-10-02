@@ -16,10 +16,12 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Version;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
+@XmlRootElement
 public class CandidacyEvaluator implements Serializable {
 
 	private static final long serialVersionUID = -8436764731554690767L;

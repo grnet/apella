@@ -69,6 +69,13 @@ public class CandidacyRESTService extends RESTService {
 	@Inject
 	private Logger log;
 
+	/**
+	 * Get Candidacy by ID
+	 * 
+	 * @param authToken The Authentication Token
+	 * @param id The Id of the Candidacy
+	 * @return Candidacy
+	 */
 	@GET
 	@Path("/{id:[0-9]+}")
 	public String get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
