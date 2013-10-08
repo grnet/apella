@@ -26,16 +26,12 @@ public class JiraQueue implements MessageListener {
 	public void onMessage(javax.jms.Message message) {
 		MapMessage jiraMessage = (MapMessage) message;
 		try {
-			String action = jiraMessage.getStringProperty("action");
-			Long userId = jiraMessage.getLongProperty("user");
+			Long userId = jiraMessage.getLong("userId");
+			String status = jiraMessage.getString("status");
+			String summary = jiraMessage.getString("summary");
+			String description = jiraMessage.getString("description");
 
-			if (action.equals("OPEN")) {
-				service.openIssue(userId);
-			} else if (action.equals("UPDATE")) {
-				service.updateIssue(userId);
-			} else if (action.equals("CLOSE")) {
-				service.closeIssue(userId);
-			}
+			service.updateIssue(userId, status, summary, description);
 
 		} catch (JMSException e) {
 			logger.log(Level.WARNING, "", e);

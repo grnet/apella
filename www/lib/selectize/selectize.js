@@ -692,7 +692,7 @@
 				},
 				'option_create': function(data, escape) {
 					return '<div class="create">Add <strong>' + escape(data.input) + '</strong>&hellip;</div>';
-				},
+				}
 			};
 	
 			self.settings.render = $.extend({}, templates, self.settings.render);
@@ -1215,7 +1215,7 @@
 			return {
 				fields    : $.isArray(fields) ? fields : [fields],
 				sort      : settings.sortField,
-				direction : settings.sortDirection,
+				direction : settings.sortDirection
 			};
 		},
 	
@@ -2489,7 +2489,7 @@
 			label     : '&times;',
 			title     : 'Remove',
 			className : 'remove',
-			append    : true,
+			append    : true
 		}, options);
 	
 		var self = this;

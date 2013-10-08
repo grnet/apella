@@ -186,7 +186,7 @@ public class UserRESTService extends RESTService {
 
 	@POST
 	@JsonView({DetailedUserView.class})
-	public User create(@HeaderParam(TOKEN_HEADER) String authToken, final User newUser) {
+	public User create(@HeaderParam(TOKEN_HEADER) String authToken, User newUser) {
 		try {
 			//1. Validate
 			// Has one role
@@ -295,7 +295,7 @@ public class UserRESTService extends RESTService {
 					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			//3. Update
-			em.persist(newUser);
+			final User savedUser = em.merge(newUser);
 			em.flush(); //To catch the exception
 
 			//4. Send Verification E-Mail
@@ -306,16 +306,32 @@ public class UserRESTService extends RESTService {
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("username", newUser.getUsername());
-							put("firstname", newUser.getBasicInfo().getFirstname());
-							put("lastname", newUser.getBasicInfo().getLastname());
-							put("verificationLink", conf.getString("host") + "/depui/registration.html?#email=" + newUser.getUsername() + "&verification=" + newUser.getVerificationNumber());
+							put("username", savedUser.getUsername());
+							put("firstname", savedUser.getBasicInfo().getFirstname());
+							put("lastname", savedUser.getBasicInfo().getLastname());
+							put("verificationLink", conf.getString("host") + "/depui/registration.html?#email=" + savedUser.getUsername() + "&verification=" + savedUser.getVerificationNumber());
 						}
 					}));
 			}
 
-			//5. Open Issue:
-			jiraService.postJira("OPEN", newUser.getId());
+			//5. Post Issue:
+			if (firstRole.getDiscriminator().equals(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+				jiraService.postJira(newUser.getId(), "Closed", "institution.manager.created.assistant.summary", "institution.manager.created.assistant.description", Collections.unmodifiableMap(new HashMap<String, String>() {
+
+					{
+						put("username", savedUser.getUsername());
+						put("email", savedUser.getContactInfo().getEmail());
+					}
+				}));
+			} else {
+				jiraService.postJira(newUser.getId(), "Closed", "user.created.account.summary", "user.created.account.description", Collections.unmodifiableMap(new HashMap<String, String>() {
+
+					{
+						put("username", savedUser.getUsername());
+						put("email", savedUser.getContactInfo().getEmail());
+					}
+				}));
+			}
 
 			//6. Return result
 			newUser.initializeCollections();
@@ -377,11 +393,6 @@ public class UserRESTService extends RESTService {
 
 			em.flush();
 			existingUser.initializeCollections();
-
-			// Update Issue
-			if (existingUser.getStatus().equals(UserStatus.UNVERIFIED)) {
-				jiraService.postJira("UPDATE", existingUser.getId());
-			}
 
 			return existingUser;
 		} catch (PersistenceException e) {
@@ -604,7 +615,7 @@ public class UserRESTService extends RESTService {
 	@JsonView({DetailedUserView.class})
 	public User verify(User user) {
 		try {
-			User u = (User) em.createQuery(
+			final User u = (User) em.createQuery(
 				"from User u " +
 					"left join fetch u.roles " +
 					"where u.username = :username")
@@ -623,6 +634,16 @@ public class UserRESTService extends RESTService {
 
 					em.flush();
 					u.initializeCollections();
+
+					// Post to Jira
+					jiraService.postJira(u.getId(), "Closed", "user.verified.email.summary", "user.verified.email.description", Collections.unmodifiableMap(new HashMap<String, String>() {
+
+						{
+							put("username", u.getUsername());
+							put("email", u.getContactInfo().getEmail());
+						}
+					}));
+
 					return u;
 				default:
 					throw new RestException(Status.FORBIDDEN, "verify.account.status." + u.getStatus().toString().toLowerCase());
@@ -641,12 +662,11 @@ public class UserRESTService extends RESTService {
 	@Path("/{id:[0-9][0-9]*}/status")
 	@JsonView({DetailedUserView.class})
 	public User updateStatus(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, User requestUser) {
-		User loggedOn = getLoggedOn(authToken);
+		final User loggedOn = getLoggedOn(authToken);
 		User existingUser = em.find(User.class, id);
 		if (existingUser == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.user.id");
 		}
-		UserStatus previousStatus = existingUser.getStatus();
 		boolean canUpdate = loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR);
 		if (!canUpdate && existingUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
 			InstitutionAssistant ia = (InstitutionAssistant) existingUser.getActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT);
@@ -660,7 +680,7 @@ public class UserRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
-			User u = (User) em.createQuery(
+			final User u = (User) em.createQuery(
 				"from User u " +
 					"left join fetch u.roles " +
 					"where u.id=:id")
@@ -672,11 +692,14 @@ public class UserRESTService extends RESTService {
 
 			u.initializeCollections();
 
-			// Jira
-			if (previousStatus.equals(UserStatus.UNVERIFIED) && u.getStatus().equals(UserStatus.ACTIVE)) {
-				jiraService.postJira("CLOSE", u.getId());
-			} else if (previousStatus.equals(UserStatus.ACTIVE) && u.getStatus().equals(UserStatus.UNVERIFIED)) {
-				jiraService.postJira("OPEN", u.getId());
+			// Post to Jira
+			if (u.getStatus().equals(UserStatus.BLOCKED)) {
+				jiraService.postJira(u.getId(), "Closed", "helpdesk.blocked.user.summary", "helpdesk.blocked.user.description", Collections.unmodifiableMap(new HashMap<String, String>() {
+
+					{
+						put("admin", loggedOn.getUsername());
+					}
+				}));
 			}
 
 			return u;

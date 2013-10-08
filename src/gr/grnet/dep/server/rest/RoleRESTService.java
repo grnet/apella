@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -375,6 +376,18 @@ public class RoleRESTService extends RESTService {
 			em.flush();
 
 			existingRole.initializeCollections();
+
+			// Post to Jira
+			if (!existingRole.isMissingRequiredFields()) {
+				final String username = existingRole.getUser().getUsername();
+				jiraService.postJira(existingRole.getUser().getId(), "Closed", "user.created.role.summary", "user.created.role.description", Collections.unmodifiableMap(new HashMap<String, String>() {
+
+					{
+						put("username", username);
+					}
+				}));
+			}
+
 			return existingRole;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
@@ -894,7 +907,7 @@ public class RoleRESTService extends RESTService {
 	@Path("/{id:[0-9][0-9]*}/status")
 	@JsonView({DetailedRoleView.class})
 	public Role updateStatus(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Role requestRole) {
-		User loggedOn = getLoggedOn(authToken);
+		final User loggedOn = getLoggedOn(authToken);
 		Role primaryRole = em.find(Role.class, id);
 		// Validate
 		if (primaryRole == null) {
@@ -974,6 +987,29 @@ public class RoleRESTService extends RESTService {
 			}
 			// Return result
 			primaryRole.initializeCollections();
+
+			// Post to Jira
+			switch (primaryRole.getStatus()) {
+				case ACTIVE:
+					jiraService.postJira(primaryRole.getUser().getId(), "Closed", "helpdesk.activated.role.summary", "helpdesk.activated.role.description", Collections.unmodifiableMap(new HashMap<String, String>() {
+
+						{
+							put("admin", loggedOn.getUsername());
+						}
+					}));
+					break;
+				case UNAPPROVED:
+					jiraService.postJira(primaryRole.getUser().getId(), "CLOSED", "heldesk.deactivated.role.summary", "heldesk.deactivated.role.description", Collections.unmodifiableMap(new HashMap<String, String>() {
+
+						{
+							put("admin", loggedOn.getUsername());
+						}
+					}));
+					break;
+				default:
+					break;
+			}
+
 			return primaryRole;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);

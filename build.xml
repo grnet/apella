@@ -223,7 +223,9 @@
 		<enunciate basedir="${src.dir}">
 			<include name="**/*.java" />
 			<classpath refid="enunciate.classpath" />
-			<export artifactId="docs" destination="${build.dir}/docs.zip"/>
+			<export artifactId="docs" destination="${build.dir}/docs.zip">
+			</export>
+			
 			<javacArgument argument="-g" />
 		</enunciate>
 	</target>

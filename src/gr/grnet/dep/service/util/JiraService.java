@@ -2,6 +2,9 @@ package gr.grnet.dep.service.util;
 
 import gr.grnet.dep.service.model.User;
 
+import java.util.Locale;
+import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -45,11 +48,15 @@ public class JiraService {
 		}
 	}
 
-	private static final String username = "anglen";
+	private static final String username = "apella";
 
-	private static final String password = "angelosjira";
+	private static final String password = "!@#$%^&*()";
 
-	private static final String sesRootURL = "https://ebsdev.atlassian.net/rest/api/2";
+	private static final String sesRootURL = "https://staging.tts.grnet.gr/jira/rest/api/2";
+
+	private static final String userRootURL = "http://test.apella.grnet.gr:8080/depui/#user/{userId}";
+
+	private static final String jiraProjectKey = "APELLA";
 
 	private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -70,11 +77,10 @@ public class JiraService {
 		ClientRequest request = new ClientRequest(sesRootURL + path);
 		request.accept(MediaType.APPLICATION_JSON);
 		request.header("Authorization", "Basic " + authenticationString());
-		request.body(MediaType.APPLICATION_JSON, data.toString());
-
+		request.body("application/json", data);
 		ClientResponse<String> response = request.post(String.class);
 		if (response.getStatus() < 200 || response.getStatus() > 299) {
-			throw new Exception("Error Code " + response.getStatus());
+			throw new Exception("Response Error post " + path + " : " + response.getStatus() + " " + response.getEntity());
 		}
 
 		String json = response.getEntity();
@@ -92,7 +98,19 @@ public class JiraService {
 		return doGet("/issue/" + issueKey);
 	}
 
-	public void postJira(String action, Long userId) {
+	public void postJira(Long userId, String status, String summaryKey, String descriptionKey, Map<String, String> parameters) {
+		ResourceBundle resources = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-jira", new Locale("el"));
+		String summary = resources.getString(summaryKey);
+		String description = resources.getString(descriptionKey);
+		for (String key : parameters.keySet()) {
+			String value = parameters.get(key);
+			if (value == null || value.trim().isEmpty()) {
+				value = "-";
+			}
+			summary = summary.replaceAll("\\{" + key + "\\}", value);
+			description = description.replaceAll("\\{" + key + "\\}", value);
+		}
+
 		Connection qConn = null;
 		javax.jms.Session session = null;
 		MessageProducer sender = null;
@@ -108,10 +126,12 @@ public class JiraService {
 
 			MapMessage jiraMessage = session.createMapMessage();
 			jiraMessage.setJMSCorrelationID("jira");
-			jiraMessage.setString("action", action);
-			jiraMessage.setLong("user", userId);
+			jiraMessage.setLong("userId", userId);
+			jiraMessage.setString("status", status);
+			jiraMessage.setString("summary", summary);
+			jiraMessage.setString("description", description);
 
-			logger.log(Level.INFO, "Posting Jira Message " + action + " : " + userId);
+			logger.log(Level.INFO, "Posting Jira Message " + userId + " | " + status + " | " + summary + " | " + description);
 			sender.send(jiraMessage);
 		} catch (NamingException e) {
 			logger.log(Level.SEVERE, "Message not published: ", e);
@@ -131,78 +151,82 @@ public class JiraService {
 		}
 	}
 
-	public void openIssue(Long userId) throws Exception {
+	public void updateIssue(Long userId, String status, String summary, String description) {
 		User user = em.find(User.class, userId);
 		if (user == null) {
-			logger.warning("Tried to open issue for not existin user " + userId);
+			logger.info("Tried to POST Jira Issue to non existin user: " + userId + " " + status + " " + summary + " " + description);
 			return;
 		}
 
-		ObjectNode data = mapper.createObjectNode();
-		ObjectNode fields = mapper.createObjectNode();
-		ObjectNode project = mapper.createObjectNode();
+		// Prepare Data:
+
+		ObjectNode issue = mapper.createObjectNode();
+		// Type
 		ObjectNode issuetype = mapper.createObjectNode();
+		issuetype.put("name", "Συμβάν");
+		// Project
+		ObjectNode project = mapper.createObjectNode();
+		project.put("key", jiraProjectKey);
 
-		data.put("fields", fields);
+		// Fields
+		ObjectNode fields = mapper.createObjectNode();
 		fields.put("project", project);
-		fields.put("summary", "A Summary " + System.currentTimeMillis());
-		fields.put("description", "A description " + System.currentTimeMillis());
-		project.put("key", "TESTREST");
-		issuetype.put("name", "Task");
 		fields.put("issuetype", issuetype);
+		fields.put("summary", summary);
+		fields.put("description", description.concat("\n\n" + createUserInfo(user)));
+		issue.put("fields", fields);
 
-		logger.info("openIssue POST (not implemented): " + data.toString());
-		//JsonNode result = doPost("/issue/", data);
-	}
+		// Send to Jira
+		try {
+			logger.info("updateIssue POST :\n" + issue.toString());
+			JsonNode response = doPost("/issue/", issue);
+			logger.info("updateIssue POST Result :\n" + response.toString());
+			// TODO: Change Status to Closed
+			/*
+			if (!status.equals("Open")) {
+				// Set Status
+				JsonNode statusNode = createUpdateStatusNode(status);
+				logger.info("updateIssue POST :\n" + statusNode.toString());
+				response = doPost("/issue/" + response.get("key").getTextValue() + "/transitions", statusNode);
+				logger.info("updateIssue POST :\n" + response.toString());
+			}
+			*/
 
-	public void updateIssue(Long userId) throws Exception {
-		User user = em.find(User.class, userId);
-		if (user == null) {
-			logger.warning("Tried to open issue for not existin user " + userId);
-			return;
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Error posting to Jira\n" + e.getMessage());
 		}
-		String jiraIssueKey = user.getJiraIssueKey();
-
-		ObjectNode data = mapper.createObjectNode();
-		ObjectNode fields = mapper.createObjectNode();
-		ObjectNode project = mapper.createObjectNode();
-		ObjectNode issuetype = mapper.createObjectNode();
-
-		data.put("fields", fields);
-		fields.put("project", project);
-		fields.put("summary", "A Summary " + System.currentTimeMillis());
-		fields.put("description", "A description " + System.currentTimeMillis());
-		project.put("key", "TESTREST");
-		issuetype.put("name", "Task");
-		fields.put("issuetype", issuetype);
-
-		logger.info("closeIssue POST (not implemented): " + jiraIssueKey + " " + data.toString());
-		//JsonNode result = doPost("/issue/", data);
 	}
 
-	public void closeIssue(Long userId) throws Exception {
-		User user = em.find(User.class, userId);
-		if (user == null) {
-			logger.warning("Tried to open issue for not existin user " + userId);
-			return;
-		}
-		String jiraIssueKey = user.getJiraIssueKey();
+	public JsonNode createUpdateStatusNode(String status) {
 
-		ObjectNode data = mapper.createObjectNode();
+		ObjectNode issue = mapper.createObjectNode();
+
 		ObjectNode fields = mapper.createObjectNode();
-		ObjectNode project = mapper.createObjectNode();
-		ObjectNode issuetype = mapper.createObjectNode();
 
-		data.put("fields", fields);
-		fields.put("project", project);
-		fields.put("summary", "A Summary " + System.currentTimeMillis());
-		fields.put("description", "A description " + System.currentTimeMillis());
-		project.put("key", "TESTREST");
-		issuetype.put("name", "Task");
-		fields.put("issuetype", issuetype);
+		ObjectNode resolution = mapper.createObjectNode();
+		resolution.put("name", status);
+		fields.put("resolution", resolution);
 
-		logger.info("closeIssue POST (not implemented): " + jiraIssueKey + " " + data.toString());
-		//JsonNode result = doPost("/issue/", data);
+		issue.put("fields", fields);
 
+		ObjectNode transition = mapper.createObjectNode();
+		transition.put("id", 2);
+		issue.put("transition", transition);
+
+		return issue;
 	}
+
+	private String createUserInfo(User user) {
+		ResourceBundle resources = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-jira", new Locale("el"));
+		String comment = resources.getString("user.info")
+			.replaceAll("\\{username\\}", user.getUsername())
+			.replaceAll("\\{firstname\\}", user.getBasicInfo().getFirstname())
+			.replaceAll("\\{lastname\\}", user.getBasicInfo().getLastname())
+			.replaceAll("\\{email\\}", user.getContactInfo().getEmail())
+			.replaceAll("\\{mobile\\}", user.getContactInfo().getMobile())
+			.replaceAll("\\{link\\}", userRootURL.replaceAll("\\{userId\\}", user.getId().toString()));
+
+		return comment;
+	}
+
 }
