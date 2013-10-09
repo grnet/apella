@@ -374,5 +374,8 @@ public class Candidacy {
 		this.candidate.getFiles().size();
 		this.snapshot.getFiles().size();
 		this.proposedEvaluators.size();
+		for (CandidacyEvaluator eval : proposedEvaluators) {
+			eval.getRegisterMember().initializeCollections();
+		}
 	}
 }

@@ -170,6 +170,8 @@ public class PositionRESTService extends RESTService {
 				result = toJSON(order == null ? p : p.as(order), MemberPositionView.class);
 			} else if (phase.getEvaluation() != null && phase.getEvaluation().containsEvaluator(loggedOn)) {
 				result = toJSON(order == null ? p : p.as(order), MemberPositionView.class);
+			} else if (phase.getCandidacies().containsCandidate(loggedOn)) {
+				result = toJSON(order == null ? p : p.as(order), CandidatePositionView.class);
 			} else {
 				result = toJSON(order == null ? p : p.as(order), PositionView.class);
 			}

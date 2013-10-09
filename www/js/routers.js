@@ -362,25 +362,27 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 							cache: false,
 							reset: true,
 							success: function (collection, response) {
+								var roleView;
 								$("#content div#user").append(userView.render().el);
-								collection.each(function (role) {
-									var roleView;
-									if (App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
-										roleView = new Views.AdminRoleEditView({
-											className: "row-fluid",
-											model: collection.find(function (role) {
-												return role.isPrimary();
-											})
-										});
-									} else {
+								if (App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
+									roleView = new Views.AdminRoleEditView({
+										className: "row-fluid",
+										model: collection.find(function (role) {
+											return role.isPrimary();
+										})
+									});
+									$("#content div#roles").append(roleView.render().el);
+									self.currentView.push(roleView);
+								} else {
+									collection.each(function (role) {
 										roleView = new Views.RoleView({
 											className: "row-fluid",
 											model: role
 										});
-									}
-									$("#content div#roles").append(roleView.render().el);
-									self.currentView.push(roleView);
-								});
+										$("#content div#roles").append(roleView.render().el);
+										self.currentView.push(roleView);
+									});
+								}
 							}
 						});
 						self.refreshBreadcrumb([ $.i18n.prop('menu_adminusers'), $.i18n.prop('menu_user'), user.get("username") ]);

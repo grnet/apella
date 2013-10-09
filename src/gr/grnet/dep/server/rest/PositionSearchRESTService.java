@@ -100,10 +100,12 @@ public class PositionSearchRESTService extends RESTService {
 			if (loggedOn.hasActiveRole(RoleDiscriminator.CANDIDATE)) {
 				Candidate candidate = (Candidate) loggedOn.getActiveRole(RoleDiscriminator.CANDIDATE);
 				for (Candidacy candidacy : candidate.getCandidacies()) {
-					for (Position position : positions) {
-						if (position.getId().equals(candidacy.getCandidacies().getPosition().getId())) {
-							position.setCanSubmitCandidacy(Boolean.FALSE);
-							break;
+					if (candidacy.isPermanent()) {
+						for (Position position : positions) {
+							if (position.getId().equals(candidacy.getCandidacies().getPosition().getId())) {
+								position.setCanSubmitCandidacy(Boolean.FALSE);
+								break;
+							}
 						}
 					}
 				}
