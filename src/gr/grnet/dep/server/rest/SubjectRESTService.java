@@ -23,6 +23,12 @@ public class SubjectRESTService extends RESTService {
 	@Inject
 	private Logger log;
 
+	/**
+	 * Returns all subjects
+	 * 
+	 * @param query
+	 * @return
+	 */
 	@GET
 	@SuppressWarnings("unchecked")
 	public Collection<Subject> get(@QueryParam("query") String query) {
@@ -37,6 +43,14 @@ public class SubjectRESTService extends RESTService {
 		}
 		return result;
 	}
+
+	/**
+	 * Returns specified subject
+	 * 
+	 * @param id
+	 * @return
+	 * @HTTP 404 X-Error-Code: wrong.subject.id
+	 */
 
 	@GET
 	@Path("/{id:[0-9]+}")

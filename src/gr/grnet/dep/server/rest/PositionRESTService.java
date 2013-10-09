@@ -67,6 +67,12 @@ public class PositionRESTService extends RESTService {
 		return position;
 	}
 
+	/**
+	 * Returns all positions
+	 * 
+	 * @param authToken
+	 * @return A list of position
+	 */
 	@GET
 	@JsonView({PublicPositionView.class})
 	public Collection<Position> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
@@ -105,6 +111,11 @@ public class PositionRESTService extends RESTService {
 		throw new RestException(Status.UNAUTHORIZED, "insufficient.privileges");
 	}
 
+	/**
+	 * Returns the list of public positions
+	 * 
+	 * @return A list of position
+	 */
 	@GET
 	@Path("/public")
 	@JsonView({PublicPositionView.class})
@@ -130,6 +141,15 @@ public class PositionRESTService extends RESTService {
 
 	}
 
+	/**
+	 * Return the full position description
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param order If specified a specific phase will be returned instead of
+	 *            the last one
+	 * @returnWrapper gr.grnet.dep.service.model.Position
+	 */
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	@Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
@@ -166,6 +186,15 @@ public class PositionRESTService extends RESTService {
 		return result;
 	}
 
+	/**
+	 * Creates a non-finalized position entry
+	 * 
+	 * @param authToken
+	 * @param position
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.department.id
+	 */
 	@POST
 	@JsonView({DetailedPositionView.class})
 	public Position create(@HeaderParam(TOKEN_HEADER) String authToken, Position position) {
@@ -208,6 +237,17 @@ public class PositionRESTService extends RESTService {
 		}
 	}
 
+	/**
+	 * Updates and finalizes the position
+	 * 
+	 * @param authToken
+	 * @param id
+	 * @param position
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.sector.id
+	 */
 	@PUT
 	@Path("/{id:[0-9]+}")
 	@JsonView({DetailedPositionView.class})
@@ -215,6 +255,9 @@ public class PositionRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Position existingPosition = getAndCheckPosition(loggedOn, id);
+			if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+			}
 			boolean isNew = !existingPosition.isPermanent();
 
 			// Validate
@@ -283,12 +326,24 @@ public class PositionRESTService extends RESTService {
 
 	}
 
+	/**
+	 * Removes the position entry
+	 * 
+	 * @param authToken
+	 * @param id
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 409 X-Error-Code: wrong.position.status.cannot.delete
+	 */
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}")
 	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Position position = getAndCheckPosition(loggedOn, id);
+			if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+			}
 			if (!position.getPhase().getStatus().equals(PositionStatus.ENTAGMENI)) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status.cannot.delete");
 			}
@@ -301,6 +356,24 @@ public class PositionRESTService extends RESTService {
 		}
 	}
 
+	/**
+	 * Adds a new phase in the position
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param position
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 409 X-Error-Code: position.phase.anoixti.wrong.closing.date
+	 * @HTTP 409 X-Error-Code: wrong.position.status
+	 * @HTTP 409 X-Error-Code: position.phase.epilogi.wrong.closing.date
+	 * @HTTP 409 X-Error-Code: position.phase.anapompi.missing.apofasi
+	 * @HTTP 409 X-Error-Code:
+	 *       position.phase.stelexomeni.missing.nominated.candidacy
+	 * @HTTP 409 X-Error-Code:
+	 *       position.phase.stelexomeni.missing.praktiko.epilogis
+	 */
 	@PUT
 	@Path("/{id:[0-9][0-9]*}/phase")
 	@JsonView({DetailedPositionView.class})
@@ -309,6 +382,9 @@ public class PositionRESTService extends RESTService {
 		try {
 			PositionStatus newStatus = position.getPhase().getStatus();
 			Position existingPosition = getAndCheckPosition(loggedOn, positionId);
+			if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+			}
 			PositionPhase existingPhase = existingPosition.getPhase();
 			PositionPhase newPhase = null;
 			// Go through all transition scenarios,

@@ -60,7 +60,6 @@ public class DEPConfigurationFactory {
 		try {
 			if (serverConfiguration == null) {
 				PropertiesConfiguration config = (PropertiesConfiguration) getClass(PropertiesConfiguration.class.getCanonicalName()).newInstance();
-				//PropertiesConfiguration config = (PropertiesConfiguration) Class.forName("org.apache.commons.configuration.PropertiesConfiguration") .newInstance();
 				config.setBasePath("");
 				config.setFileName(serverConfigFilename);
 				config.setEncoding("ISO-8859-1");
@@ -68,6 +67,7 @@ public class DEPConfigurationFactory {
 				config.setReloadingStrategy(new VfsFileChangedReloadingStrategy());
 				config.load();
 				config.setAutoSave(true);
+
 				serverConfiguration = config;
 			}
 			return serverConfiguration;

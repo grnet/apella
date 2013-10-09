@@ -31,6 +31,16 @@ public class CandidateRESTService extends RESTService {
 	@Inject
 	private Logger log;
 
+	/**
+	 * Returns Candidate's Candidacies
+	 * 
+	 * @param authToken The authentication token
+	 * @param candidateId The ID of the candidate
+	 * @param open If it set returns only candidacies of open positions
+	 * @return
+	 * @HTTP 403 X-Error-Code: wrong.candidate.id
+	 * @HTTP 404 X-Error-Code: insufficient.privileges
+	 */
 	@GET
 	@Path("/{id:[0-9]+}/candidacies")
 	@JsonView({DetailedCandidacyView.class})

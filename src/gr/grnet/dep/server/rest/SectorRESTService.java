@@ -17,6 +17,11 @@ public class SectorRESTService extends RESTService {
 	@Inject
 	private Logger log;
 
+	/**
+	 * Returns all sectors
+	 * 
+	 * @return
+	 */
 	@GET
 	@SuppressWarnings("unchecked")
 	public Collection<Sector> getAll() {

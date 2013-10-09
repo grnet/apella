@@ -56,6 +56,17 @@ public class PositionNominationRESTService extends RESTService {
 	@Inject
 	private Logger log;
 
+	/**
+	 * Returns the nomination description of the specified position
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param nominationId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.nomination.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 */
 	@GET
 	@Path("/{nominationId:[0-9][0-9]*}")
 	@JsonView({DetailedPositionNominationView.class})
@@ -82,6 +93,23 @@ public class PositionNominationRESTService extends RESTService {
 		return existingNomination;
 	}
 
+	/**
+	 * Update the nomination of the specified position
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param nominationId
+	 * @param newNomination
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.nomination.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.register.member.id
+	 * @HTTP 409 X-Error-Code: wrong.position.nomination.phase
+	 * @HTTP 409 X-Error-Code: wrong.position.status
+	 * @HTTP 409 X-Error-Code: nomination.missing.prosklisi.kosmitora
+	 * @HTTP 409 X-Error-Code: nomination.missing.praktiko.epilogis
+	 */
 	@PUT
 	@Path("/{nominationId:[0-9][0-9]*}")
 	@JsonView({DetailedPositionNominationView.class})
@@ -250,6 +278,18 @@ public class PositionNominationRESTService extends RESTService {
 	 * File Functions *****
 	 ***********************/
 
+	/**
+	 * Returns the list of file descriptions associated with position
+	 * nomination
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param nominationId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.nomination.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 */
 	@GET
 	@Path("/{nominationId:[0-9]+}/file")
 	@JsonView({SimpleFileHeaderView.class})
@@ -277,6 +317,20 @@ public class PositionNominationRESTService extends RESTService {
 		return FileHeader.filterDeleted(position.getPhase().getNomination().getFiles());
 	}
 
+	/**
+	 * Return the file description of the file with given id and associated with
+	 * given position nomination
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param nominationId
+	 * @param fileId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.nomination.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 */
 	@GET
 	@Path("/{nominationId:[0-9]+}/file/{fileId:[0-9]+}")
 	@JsonView({SimpleFileHeaderView.class})
@@ -310,6 +364,21 @@ public class PositionNominationRESTService extends RESTService {
 		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 	}
 
+	/**
+	 * Return the file data of the file with given id and associated with
+	 * given position nomination
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param nominationId
+	 * @param fileId
+	 * @param bodyId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.nomination.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 */
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/{nominationId:[0-9]+}/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
@@ -348,6 +417,24 @@ public class PositionNominationRESTService extends RESTService {
 		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 	}
 
+	/**
+	 * Handles upload of a new file associated with given position nomination
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param nominationId
+	 * @param request
+	 * @return
+	 * @throws FileUploadException
+	 * @throws IOException
+	 * @HTTP 400 X-Error-Code: missing.file.type
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.nomination.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 409 X-Error-Code: wrong.position.nomination.phase
+	 * @HTTP 409 X-Error-Code: wrong.position.status
+	 * @HTTP 409 X-Error-Code: nomination.missing.committee.convergence.date
+	 */
 	@POST
 	@Path("/{nominationId:[0-9]+}/file")
 	@Consumes("multipart/form-data")
@@ -515,6 +602,27 @@ public class PositionNominationRESTService extends RESTService {
 		}
 	}
 
+	/**
+	 * Handles upload that updates an existing file associated with position
+	 * nomination
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param nominationId
+	 * @param fileId
+	 * @param request
+	 * @return
+	 * @throws FileUploadException
+	 * @throws IOException
+	 * @HTTP 400 X-Error-Code: missing.file.type
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.nomination.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 * @HTTP 409 X-Error-Code: wrong.position.nomination.phase
+	 * @HTTP 409 X-Error-Code: wrong.position.status
+	 * @HTTP 409 X-Error-Code: wrong.file.type
+	 */
 	@POST
 	@Path("/{nominationId:[0-9]+}/file/{fileId:[0-9]+}")
 	@Consumes("multipart/form-data")
@@ -578,11 +686,19 @@ public class PositionNominationRESTService extends RESTService {
 	}
 
 	/**
-	 * Deletes the last body of given file, if possible.
+	 * Removes the specified file
 	 * 
 	 * @param authToken
-	 * @param id
+	 * @param positionId
+	 * @param nominationId
+	 * @param fileId
 	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.nomination.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 * @HTTP 409 X-Error-Code: wrong.position.nomination.phase
+	 * @HTTP 409 X-Error-Code: wrong.position.status
 	 */
 	@DELETE
 	@Path("/{nominationId:[0-9]+}/file/{fileId:([0-9]+)?}")

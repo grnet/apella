@@ -64,6 +64,17 @@ public class PositionEvaluationRESTService extends RESTService {
 	@Inject
 	private Logger log;
 
+	/**
+	 * Returns the specific Position Evaluation info of given Position
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param evaluationId
+	 * @return
+	 * @HTTP 403 X-Error-Code insufficient.privileges
+	 * @HTTP 404 X-Error-Code wrong.position.evaluation.id
+	 * @HTTP 404 X-Error-Code wrong.position.id
+	 */
 	@GET
 	@Path("/{evaluationId:[0-9]+}")
 	@JsonView({DetailedPositionEvaluationView.class})
@@ -93,6 +104,19 @@ public class PositionEvaluationRESTService extends RESTService {
 		return existingEvaluation;
 	}
 
+	/**
+	 * Returns information on spsecific evaluator of the position
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param evaluationId
+	 * @param evaluatorId
+	 * @return
+	 * @HTTP 403 X-Error-Code insufficient.privileges
+	 * @HTTP 404 X-Error-Code wrong.position.evaluation.id
+	 * @HTTP 404 X-Error-Code wrong.position.id
+	 * @HTTP 404 X-Error-Code wrong.position.evaluator.id
+	 */
 	@GET
 	@Path("/{evaluationId:[0-9]+}/evaluator/{evaluatorId:[0-9]+}")
 	@JsonView({DetailedPositionEvaluatorView.class})
@@ -130,6 +154,25 @@ public class PositionEvaluationRESTService extends RESTService {
 		return existingEvaluator;
 	}
 
+	/**
+	 * Updates the position evaluation with evaluators
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param evaluationId
+	 * @param newEvaluation
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.evaluation.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.register.member.id
+	 * @HTTP 409 X-Error-Code: wrong.position.evaluation.phase
+	 * @HTTP 409 X-Error-Code: wrong.position.status
+	 * @HTTP 409 X-Error-Code: member.in.committe
+	 * @HTTP 409 X-Error-Code: wrong.evaluators.size
+	 * @HTTP 409 X-Error-Code:
+	 *       committee.missing.praktiko.synedriasis.epitropis.gia.aksiologites
+	 */
 	@PUT
 	@Path("/{evaluationId:[0-9]+}")
 	@JsonView({DetailedPositionEvaluationView.class})
@@ -304,6 +347,19 @@ public class PositionEvaluationRESTService extends RESTService {
 	 * File Functions *****
 	 ***********************/
 
+	/**
+	 * Returns the list of file descriptions associated with position evaluator
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param evaluationId
+	 * @param evaluatorId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.evaluator.id
+	 * @HTTP 404 X-Error-Code: wrong.position.evaluation.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 */
 	@GET
 	@Path("/{evaluationId:[0-9]+}/evaluator/{evaluatorId:[0-9]+}/file")
 	@JsonView({SimpleFileHeaderView.class})
@@ -334,6 +390,22 @@ public class PositionEvaluationRESTService extends RESTService {
 		return files;
 	}
 
+	/**
+	 * Return the file description of the file with given id and associated with
+	 * given position evaluator
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param evaluationId
+	 * @param evaluatorId
+	 * @param fileId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.evaluator.id
+	 * @HTTP 404 X-Error-Code: wrong.position.evaluation.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 */
 	@GET
 	@Path("/{evaluationId:[0-9]+}/evaluator/{evaluatorId:[0-9]+}/file/{fileId:[0-9]+}")
 	@JsonView({SimpleFileHeaderView.class})
@@ -369,6 +441,23 @@ public class PositionEvaluationRESTService extends RESTService {
 		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 	}
 
+	/**
+	 * Return the file data of the file with given id and associated with
+	 * given position evaluator
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param evaluationId
+	 * @param evaluatorId
+	 * @param fileId
+	 * @param bodyId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.evaluator.id
+	 * @HTTP 404 X-Error-Code: wrong.position.evaluation.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 */
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/{evaluationId:[0-9]+}/evaluator/{evaluatorId:[0-9]+}/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
@@ -410,6 +499,27 @@ public class PositionEvaluationRESTService extends RESTService {
 		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 	}
 
+	/**
+	 * Handles upload of a new file associated with given position evaluator
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param evaluationId
+	 * @param evaluatorId
+	 * @param request
+	 * @return
+	 * @throws FileUploadException
+	 * @throws IOException
+	 * @HTTP 400 X-Error-Code: missing.file.type
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.evaluator.id
+	 * @HTTP 404 X-Error-Code: wrong.position.evaluation.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 409 X-Error-Code: wrong.position.evaluation.phase
+	 * @HTTP 409 X-Error-Code: wrong.position.status
+	 * @HTTP 409 X-Error-Code:
+	 *       committee.missing.aitima.epitropis.pros.aksiologites
+	 */
 	@POST
 	@Path("/{evaluationId:[0-9]+}/evaluator/{evaluatorId:[0-9]+}/file")
 	@Consumes("multipart/form-data")
@@ -543,6 +653,29 @@ public class PositionEvaluationRESTService extends RESTService {
 		}
 	}
 
+	/**
+	 * Handles upload that updates an existing file associated with position
+	 * evaluator
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param evaluationId
+	 * @param evaluatorId
+	 * @param fileId
+	 * @param request
+	 * @returnWrapper gr.grnet.dep.service.model.file.PositionEvaluatorFile
+	 * @throws FileUploadException
+	 * @throws IOException
+	 * @HTTP 400 X-Error-Code: missing.file.type
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.evaluator.id
+	 * @HTTP 404 X-Error-Code: wrong.position.evaluation.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 * @HTTP 409 X-Error-Code: wrong.position.evaluation.phase
+	 * @HTTP 409 X-Error-Code: wrong.position.status
+	 * @HTTP 409 X-Error-Code: wrong.file.type
+	 */
 	@POST
 	@Path("/{evaluationId:[0-9]+}/evaluator/{evaluatorId:[0-9]+}/file/{fileId:[0-9]+}")
 	@Consumes("multipart/form-data")
@@ -607,11 +740,23 @@ public class PositionEvaluationRESTService extends RESTService {
 	}
 
 	/**
-	 * Deletes the last body of given file, if possible.
+	 * Removes the specified file
 	 * 
 	 * @param authToken
-	 * @param id
+	 * @param positionId
+	 * @param evaluationId
+	 * @param evaluatorId
+	 * @param fileId
 	 * @return
+	 * @throws FileUploadException
+	 * @throws IOException
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.evaluator.id
+	 * @HTTP 404 X-Error-Code: wrong.position.evaluation.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 * @HTTP 409 X-Error-Code: wrong.position.evaluation.phase
+	 * @HTTP 409 X-Error-Code: wrong.position.status
 	 */
 	@DELETE
 	@Path("/{evaluationId:[0-9]+}/evaluator/{evaluatorId:[0-9]+}/file/{fileId:[0-9]+}")
@@ -665,6 +810,16 @@ public class PositionEvaluationRESTService extends RESTService {
 	/****************************
 	 * RegisterMember Functions *
 	 ****************************/
+
+	/**
+	 * Returns a list of the register members participating in the evaluation of
+	 * the specififed position
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param evaluationId
+	 * @return
+	 */
 	@GET
 	@Path("/{evaluationId:[0-9]+}/register")
 	@JsonView({DetailedRegisterMemberView.class})

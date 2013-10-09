@@ -54,6 +54,17 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 	@Inject
 	private Logger log;
 
+	/**
+	 * Retrieves the complementary documents parameter of the specified position
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param cdId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.complentaryDocuments.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 */
 	@GET
 	@Path("/{cdId:[0-9]+}")
 	@JsonView({DetailedPositionComplementaryDocumentsView.class})
@@ -83,6 +94,18 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 	 * File Functions *****
 	 ***********************/
 
+	/**
+	 * Returns the list of file descriptions associated with position
+	 * candidacies
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param cdId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.complentaryDocuments.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 */
 	@GET
 	@Path("/{cdId:[0-9]+}/file")
 	@JsonView({SimpleFileHeaderView.class})
@@ -110,6 +133,20 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 		return files;
 	}
 
+	/**
+	 * Return the file description of the file with given id and associated with
+	 * given position complementary documents
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param cdId
+	 * @param fileId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.complentaryDocuments.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 */
 	@GET
 	@Path("/{cdId:[0-9]+}/file/{fileId:[0-9]+}")
 	@JsonView({SimpleFileHeaderView.class})
@@ -142,6 +179,21 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 	}
 
+	/**
+	 * Return the file data of the file with given id and associated with
+	 * given position complementary documents
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param cdId
+	 * @param fileId
+	 * @param bodyId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.complentaryDocuments.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 */
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/{cdId:[0-9]+}/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
@@ -180,6 +232,24 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 	}
 
+	/**
+	 * Handles upload of a new file associated with given position complementary
+	 * documents
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param cdId
+	 * @param request
+	 * @return
+	 * @throws FileUploadException
+	 * @throws IOException
+	 * @HTTP 400 X-Error-Code: missing.file.type
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.complentaryDocuments.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 409 X-Error-Code: wrong.position.complentaryDocuments.phase
+	 * @HTTP 409 X-Error-Code: wrong.position.status
+	 */
 	@POST
 	@Path("/{cdId:[0-9]+}/file")
 	@Consumes("multipart/form-data")
@@ -290,6 +360,27 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 		}
 	}
 
+	/**
+	 * Handles upload that updates an existing file associated with position
+	 * complementary documents
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param cdId
+	 * @param fileId
+	 * @param request
+	 * @return
+	 * @throws FileUploadException
+	 * @throws IOException
+	 * @HTTP 400 X-Error-Code: missing.file.type
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.complentaryDocuments.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 * @HTTP 409 X-Error-Code: wrong.position.complentaryDocuments.phase
+	 * @HTTP 409 X-Error-Code: wrong.file.type
+	 * @HTTP 409 X-Error-Code: wrong.position.status
+	 */
 	@POST
 	@Path("/{cdId:[0-9]+}/file/{fileId:[0-9]+}")
 	@Consumes("multipart/form-data")
@@ -353,11 +444,19 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 	}
 
 	/**
-	 * Deletes the last body of given file, if possible.
+	 * Removes the specified file
 	 * 
 	 * @param authToken
-	 * @param id
+	 * @param cdId
+	 * @param positionId
+	 * @param fileId
 	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.complentaryDocuments.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 * @HTTP 409 X-Error-Code: wrong.position.complentaryDocuments.phase
+	 * @HTTP 409 X-Error-Code: wrong.position.status
 	 */
 	@DELETE
 	@Path("/{cdId:[0-9]+}/file/{fileId:([0-9]+)?}")

@@ -70,11 +70,13 @@ public class CandidacyRESTService extends RESTService {
 	private Logger log;
 
 	/**
-	 * Get Candidacy by ID
+	 * Get Candidacy by it's ID
 	 * 
 	 * @param authToken The Authentication Token
 	 * @param id The Id of the Candidacy
-	 * @return Candidacy
+	 * @returnWrapped gr.grnet.dep.service.model.Candidacy
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.candidacy.id
 	 */
 	@GET
 	@Path("/{id:[0-9]+}")
@@ -113,6 +115,18 @@ public class CandidacyRESTService extends RESTService {
 		}
 	}
 
+	/**
+	 * Creates a new Candidacy, not finalized
+	 * 
+	 * @param authToken The Authentication Token
+	 * @param candidacy
+	 * @return The new candidacy, with ID
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 403 X-Error-Code: wrong.position.candidacies.openingDate
+	 * @HTTP 403 X-Error-Code: wrong.position.candidacies.closingDate
+	 * @HTTP 404 X-Error-Code: wrong.candidate.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 */
 	@POST
 	@JsonView({DetailedCandidacyView.class})
 	public Candidacy create(@HeaderParam(TOKEN_HEADER) String authToken, Candidacy candidacy) {
@@ -138,7 +152,7 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.FORBIDDEN, "wrong.position.candidacies.closingDate");
 			}
 			if (!position.getPhase().getStatus().equals(PositionStatus.ANOIXTI)) {
-				throw new RestException(Status.NOT_FOUND, "wrong.position.status");
+				throw new RestException(Status.FORBIDDEN, "wrong.position.status");
 			}
 			try {
 				Candidacy existingCandidacy = (Candidacy) em.createQuery(
@@ -175,6 +189,18 @@ public class CandidacyRESTService extends RESTService {
 		}
 	}
 
+	/**
+	 * Saves and finalizes candidacy
+	 * 
+	 * @param authToken The Authentication Token
+	 * @param id
+	 * @param candidacy
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.candidacy.id
+	 * @HTTP 409 X-Error-Code: wrong.position.status
+	 * @HTTP 409 X-Error-Code: max.evaluators.exceeded
+	 */
 	@PUT
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedCandidacyView.class})
@@ -193,7 +219,7 @@ public class CandidacyRESTService extends RESTService {
 			}
 			Position position = existingCandidacy.getCandidacies().getPosition();
 			if (!position.getPhase().getStatus().equals(PositionStatus.ANOIXTI)) {
-				throw new RestException(Status.NOT_FOUND, "wrong.position.status");
+				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
 			if (candidacy.getProposedEvaluators().size() > CandidacyEvaluator.MAX_MEMBERS) {
 				throw new RestException(Status.CONFLICT, "max.evaluators.exceeded");
@@ -337,6 +363,16 @@ public class CandidacyRESTService extends RESTService {
 		}
 	}
 
+	/**
+	 * Deletes the submitted candidacy
+	 * 
+	 * @param authToken The Authentication Token
+	 * @param id
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.candidacy.id
+	 * @HTTP 409 X-Error-Code: wrong.position.status
+	 * @HTTP 409 X-Error-Code: wrong.position.status.committee.converged
+	 */
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}")
 	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
@@ -454,10 +490,19 @@ public class CandidacyRESTService extends RESTService {
 	 * Register Members **
 	 *********************/
 
+	/**
+	 * Returns the list of Register Members selectable
+	 * as Evaluators for this Candidacy
+	 * 
+	 * @param authToken The Authentication Token
+	 * @param positionId
+	 * @param candidacyId
+	 * @returnWrapped gr.grnet.dep.service.model.RegisterMember Array
+	 */
 	@GET
 	@Path("/{id:[0-9]+}/register")
 	@JsonView({DetailedCandidacyEvaluatorView.class})
-	public Collection<RegisterMember> getPositionCommiteeRegisterMembers(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("id") Long candidacyId) {
+	public Collection<RegisterMember> getCandidacyRegisterMembers(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("id") Long candidacyId) {
 		getLoggedOn(authToken);
 		final Candidacy existingCandidacy = em.find(Candidacy.class, candidacyId);
 		if (existingCandidacy == null) {
@@ -484,6 +529,17 @@ public class CandidacyRESTService extends RESTService {
 	/*******************************
 	 * Snapshot File Functions *****
 	 *******************************/
+
+	/**
+	 * Returns the list of snapshot files of this candidacy
+	 * (copied from profile)
+	 * 
+	 * @param authToken The Authentication Token
+	 * @param candidacyId
+	 * @return Array of gr.grnet.dep.service.model.file.CandidateFile Array
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.candidacy.id
+	 */
 	@GET
 	@Path("/{id:[0-9][0-9]*}/snapshot/file")
 	@JsonView({SimpleFileHeaderView.class})
@@ -511,6 +567,17 @@ public class CandidacyRESTService extends RESTService {
 		return candidacy.getSnapshotFiles();
 	}
 
+	/**
+	 * Returns the file description with the given id
+	 * 
+	 * @param authToken The authentication Token
+	 * @param candidacyId
+	 * @param fileId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.candidacy.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 */
 	@GET
 	@Path("/{id:[0-9]+}/snapshot/file/{fileId:[0-9]+}")
 	@JsonView({SimpleFileHeaderView.class})
@@ -542,6 +609,18 @@ public class CandidacyRESTService extends RESTService {
 		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 	}
 
+	/**
+	 * Returns the actual file body (binary)
+	 * 
+	 * @param authToken
+	 * @param candidacyId
+	 * @param fileId
+	 * @param bodyId
+	 * @return file body
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.candidacy.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 */
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/{id:[0-9]+}/snapshot/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
@@ -576,6 +655,16 @@ public class CandidacyRESTService extends RESTService {
 	/*******************************
 	 * Candidacy File Functions ****
 	 *******************************/
+
+	/**
+	 * Returns files specific to this candidacy
+	 * 
+	 * @param authToken The authentication Token
+	 * @param candidacyId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.candidacy.id
+	 */
 	@GET
 	@Path("/{id:[0-9][0-9]*}/file")
 	@JsonView({SimpleFileHeaderView.class})
@@ -602,6 +691,17 @@ public class CandidacyRESTService extends RESTService {
 		return FileHeader.filterDeleted(candidacy.getFiles());
 	}
 
+	/**
+	 * Returns file description of a file in candidacy
+	 * 
+	 * @param authToken
+	 * @param candidacyId
+	 * @param fileId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.candidacy.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 */
 	@GET
 	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}")
 	@JsonView({SimpleFileHeaderView.class})
@@ -633,6 +733,18 @@ public class CandidacyRESTService extends RESTService {
 		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 	}
 
+	/**
+	 * Returns the actual file body (binary)
+	 * 
+	 * @param authToken
+	 * @param candidacyId
+	 * @param fileId
+	 * @param bodyId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.candidacy.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 */
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
@@ -668,6 +780,20 @@ public class CandidacyRESTService extends RESTService {
 		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 	}
 
+	/**
+	 * Uploads a new file
+	 * 
+	 * @param authToken
+	 * @param candidacyId
+	 * @param request
+	 * @returnWrapped gr.grnet.dep.service.model.file.CandidacyFile
+	 * @throws FileUploadException
+	 * @throws IOException
+	 * @HTTP 400 X-Error-Code: missing.file.type
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.candidacy.id
+	 * @HTTP 409 X-Error-Code: wrong.position.status
+	 */
 	@POST
 	@Path("/{id:[0-9][0-9]*}/file")
 	@Consumes("multipart/form-data")
@@ -722,6 +848,21 @@ public class CandidacyRESTService extends RESTService {
 		}
 	}
 
+	/**
+	 * Uploads and updates an existing file
+	 * 
+	 * @param authToken
+	 * @param candidacyId
+	 * @param fileId
+	 * @param request
+	 * @returnWrapped gr.grnet.dep.service.model.file.CandidacyFile
+	 * @throws FileUploadException
+	 * @throws IOException
+	 * @HTTP 400 X-Error-Code: missing.file.type
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.candidacy.id
+	 * @HTTP 409 X-Error-Code: wrong.position.status
+	 */
 	@POST
 	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}")
 	@Consumes("multipart/form-data")
@@ -773,11 +914,16 @@ public class CandidacyRESTService extends RESTService {
 	}
 
 	/**
-	 * Deletes the last body of given file, if possible.
+	 * Removes the file body
 	 * 
 	 * @param authToken
-	 * @param id
+	 * @param candidacyId
+	 * @param fileId
 	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.candidacy.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 * @HTTP 409 X-Error-Code: wrong.position.status
 	 */
 	@DELETE
 	@Path("/{id:[0-9]+}/file/{fileId:([0-9]+)?}")

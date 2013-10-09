@@ -69,6 +69,18 @@ public class PositionCommitteeRESTService extends RESTService {
 	 * Register Members **
 	 *********************/
 
+	/**
+	 * Returns the list of register members associates with specified position
+	 * committee
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param committeeId
+	 * @return A list of registerMember
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.committee.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 */
 	@GET
 	@Path("/{committeeId:[0-9]+}/register")
 	@JsonView({DetailedPositionCommitteeMemberView.class})
@@ -110,6 +122,17 @@ public class PositionCommitteeRESTService extends RESTService {
 	 * Committee *********
 	 *********************/
 
+	/**
+	 * Returns the committee description of the specified position
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param committeeId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.committee.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 */
 	@GET
 	@Path("/{committeeId:[0-9]+}")
 	@JsonView({DetailedPositionCommitteeView.class})
@@ -136,6 +159,19 @@ public class PositionCommitteeRESTService extends RESTService {
 		return existingCommittee;
 	}
 
+	/**
+	 * Returns information of the specified member of the committee
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param committeeId
+	 * @param cmId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.committee.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.position.commitee.member.id
+	 */
 	@GET
 	@Path("/{committeeId:[0-9]+}/member/{cmId:[0-9]+}")
 	@JsonView({DetailedPositionCommitteeMemberView.class})
@@ -163,6 +199,29 @@ public class PositionCommitteeRESTService extends RESTService {
 		throw new RestException(Status.NOT_FOUND, "wrong.position.commitee.member.id");
 	}
 
+	/**
+	 * Updates the specified committee of the position
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param committeeId
+	 * @param newCommittee
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.committee.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.register.member.id
+	 * @HTTP 409 X-Error-Code: wrong.position.committee.phase
+	 * @HTTP 409 X-Error-Code: wrong.position.status
+	 * @HTTP 409 X-Error-Code: committee.missing.apofasi.systasis.epitropis
+	 * @HTTP 409 X-Error-Code: member.is.evaluator
+	 * @HTTP 409 X-Error-Code: max.regular.members.failed
+	 * @HTTP 409 X-Error-Code: max.substitute.members.failed
+	 * @HTTP 409 X-Error-Code: min.internal.regular.members.failed
+	 * @HTTP 409 X-Error-Code: min.internal.substitute.members.failed
+	 * @HTTP 409 X-Error-Code: min.external.regular.members.failed
+	 * @HTTP 409 X-Error-Code: min.external.substitute.members.failed
+	 */
 	@PUT
 	@Path("/{committeeId:[0-9]+}")
 	@JsonView({DetailedPositionCommitteeView.class})
@@ -177,7 +236,7 @@ public class PositionCommitteeRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
 		if (!existingPosition.getPhase().getCommittee().getId().equals(committeeId)) {
-			throw new RestException(Status.FORBIDDEN, "wrong.position.committee.phase");
+			throw new RestException(Status.CONFLICT, "wrong.position.committee.phase");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -485,6 +544,18 @@ public class PositionCommitteeRESTService extends RESTService {
 	 * File Functions *****
 	 **********************/
 
+	/**
+	 * Returns the list of file descriptions associated with position
+	 * committee
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param committeeId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.committee.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 */
 	@GET
 	@Path("/{committeeId:[0-9]+}/file")
 	@JsonView({SimpleFileHeaderView.class})
@@ -512,6 +583,20 @@ public class PositionCommitteeRESTService extends RESTService {
 		return FileHeader.filterDeleted(existingCommittee.getFiles());
 	}
 
+	/**
+	 * Return the file description of the file with given id and associated with
+	 * given position committee
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param committeeId
+	 * @param fileId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.committee.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 */
 	@GET
 	@Path("/{committeeId:[0-9]+}/file/{fileId:[0-9]+}")
 	@JsonView({SimpleFileHeaderView.class})
@@ -545,6 +630,21 @@ public class PositionCommitteeRESTService extends RESTService {
 		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 	}
 
+	/**
+	 * Return the file data of the file with given id and associated with
+	 * given position committtee
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param committeeId
+	 * @param fileId
+	 * @param bodyId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.committee.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 */
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/{committeeId:[0-9]+}/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
@@ -584,6 +684,24 @@ public class PositionCommitteeRESTService extends RESTService {
 		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 	}
 
+	/**
+	 * Handles upload of a new file associated with given position committee
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param committeeId
+	 * @param request
+	 * @return
+	 * @throws FileUploadException
+	 * @throws IOException
+	 * @HTTP 400 X-Error-Code: missing.file.type
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.committee.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 409 X-Error-Code: wrong.position.committee.phase
+	 * @HTTP 409 X-Error-Code: wrong.position.status
+	 * @HTTP 409 X-Error-Code: committee.missing.committee.meeting.day
+	 */
 	@POST
 	@Path("/{committeeId:[0-9]+}/file")
 	@Consumes("multipart/form-data")
@@ -599,7 +717,7 @@ public class PositionCommitteeRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
 		if (!existingPosition.getPhase().getCommittee().getId().equals(committeeId)) {
-			throw new RestException(Status.FORBIDDEN, "wrong.position.committee.phase");
+			throw new RestException(Status.CONFLICT, "wrong.position.committee.phase");
 		}
 		// Validate:
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
@@ -698,6 +816,27 @@ public class PositionCommitteeRESTService extends RESTService {
 		}
 	}
 
+	/**
+	 * Handles upload that updates an existing file associated with position
+	 * committee
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param committeeId
+	 * @param fileId
+	 * @param request
+	 * @return
+	 * @throws FileUploadException
+	 * @throws IOException
+	 * @HTTP 400 X-Error-Code: missing.file.type
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.committee.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 * @HTTP 409 X-Error-Code: wrong.position.committee.phase
+	 * @HTTP 409 X-Error-Code: wrong.position.status
+	 * @HTTP 409 X-Error-Code: wrong.file.type
+	 */
 	@POST
 	@Path("/{committeeId:[0-9]+}/file/{fileId:[0-9]+}")
 	@Consumes("multipart/form-data")
@@ -713,7 +852,7 @@ public class PositionCommitteeRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
 		if (!existingPosition.getPhase().getCommittee().getId().equals(committeeId)) {
-			throw new RestException(Status.FORBIDDEN, "wrong.position.committee.phase");
+			throw new RestException(Status.CONFLICT, "wrong.position.committee.phase");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
@@ -760,11 +899,19 @@ public class PositionCommitteeRESTService extends RESTService {
 	}
 
 	/**
-	 * Deletes the last body of given file, if possible.
+	 * Removes the specified file
 	 * 
 	 * @param authToken
-	 * @param id
+	 * @param committeeId
+	 * @param positionId
+	 * @param fileId
 	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.committee.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 * @HTTP 409 X-Error-Code: wrong.position.committee.phase
+	 * @HTTP 409 X-Error-Code: wrong.position.status
 	 */
 	@DELETE
 	@Path("/{committeeId:[0-9]+}/file/{fileId:[0-9]+}")

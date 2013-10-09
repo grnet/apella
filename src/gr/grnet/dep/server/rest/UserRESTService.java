@@ -316,7 +316,7 @@ public class UserRESTService extends RESTService {
 
 			//5. Post Issue:
 			if (firstRole.getDiscriminator().equals(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
-				jiraService.postJira(newUser.getId(), "Closed", "institution.manager.created.assistant.summary", "institution.manager.created.assistant.description", Collections.unmodifiableMap(new HashMap<String, String>() {
+				jiraService.postJira(savedUser.getId(), "Closed", "institution.manager.created.assistant.summary", "institution.manager.created.assistant.description", Collections.unmodifiableMap(new HashMap<String, String>() {
 
 					{
 						put("username", savedUser.getUsername());
@@ -324,7 +324,7 @@ public class UserRESTService extends RESTService {
 					}
 				}));
 			} else {
-				jiraService.postJira(newUser.getId(), "Closed", "user.created.account.summary", "user.created.account.description", Collections.unmodifiableMap(new HashMap<String, String>() {
+				jiraService.postJira(savedUser.getId(), "Closed", "user.created.account.summary", "user.created.account.description", Collections.unmodifiableMap(new HashMap<String, String>() {
 
 					{
 						put("username", savedUser.getUsername());

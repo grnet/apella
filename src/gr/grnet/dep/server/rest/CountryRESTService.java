@@ -17,6 +17,11 @@ public class CountryRESTService extends RESTService {
 	@Inject
 	private Logger log;
 
+	/**
+	 * Returns all Countries
+	 * 
+	 * @return
+	 */
 	@GET
 	@SuppressWarnings("unchecked")
 	public Collection<Country> getAll() {

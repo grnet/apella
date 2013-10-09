@@ -43,6 +43,14 @@ public class PositionSearchRESTService extends RESTService {
 	@Inject
 	private Logger log;
 
+	/**
+	 * Searches for Positions given specific criteria
+	 * 
+	 * @param authToken The authentication token
+	 * @param criteriaString A JSON representation of query parameters
+	 * @return
+	 * @HTTP 400 X-Error-Code: bad.criteria.format
+	 */
 	@GET
 	@Path("/search")
 	@JsonView({PublicPositionView.class})
@@ -114,6 +122,12 @@ public class PositionSearchRESTService extends RESTService {
 		}
 	}
 
+	/**
+	 * Returns saved search criteria of logged on User
+	 * 
+	 * @param authToken
+	 * @return
+	 */
 	@GET
 	@JsonView({PositionSearchCriteriaView.class})
 	public PositionSearchCriteria get(@HeaderParam(TOKEN_HEADER) String authToken) {
@@ -136,6 +150,15 @@ public class PositionSearchRESTService extends RESTService {
 		}
 	}
 
+	/**
+	 * Return saved search criteria of User with given id
+	 * 
+	 * @param authToken
+	 * @param id
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.search.criteria.id
+	 */
 	@GET
 	@Path("/{id:[0-9]+}")
 	@JsonView({PositionSearchCriteriaView.class})
@@ -153,6 +176,15 @@ public class PositionSearchRESTService extends RESTService {
 		return criteria;
 	}
 
+	/**
+	 * Creates search critera for logged user
+	 * 
+	 * @param authToken
+	 * @param newCriteria
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 409 X-Error-Code: already.exists
+	 */
 	@POST
 	@JsonView({PositionSearchCriteriaView.class})
 	public PositionSearchCriteria create(@HeaderParam(TOKEN_HEADER) String authToken, PositionSearchCriteria newCriteria) {
@@ -185,6 +217,16 @@ public class PositionSearchRESTService extends RESTService {
 		}
 	}
 
+	/**
+	 * Update search criteria of logged user with given criteria id
+	 * 
+	 * @param authToken The authentication token
+	 * @param id
+	 * @param newCriteria
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.search.criteria.id
+	 */
 	@PUT
 	@Path("/{id:[0-9]+}")
 	@JsonView({PositionSearchCriteriaView.class})

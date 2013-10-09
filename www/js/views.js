@@ -194,49 +194,45 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$el.empty();
 				self.addTitle();
 
-				if (self.model.hasRoleWithStatus("PROFESSOR_DOMESTIC", "ACTIVE")) {
+				if (!self.model.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
 					menuItems.push("profile");
+				}
+				if (self.model.hasRoleWithStatus("PROFESSOR_DOMESTIC", "ACTIVE")) {
 					menuItems.push("regulatoryframeworks");
 					menuItems.push("registers");
 					menuItems.push("professorCommittees");
 					menuItems.push("professorEvaluations");
 				}
 				if (self.model.hasRoleWithStatus("PROFESSOR_FOREIGN", "ACTIVE")) {
-					menuItems.push("profile");
 					menuItems.push("regulatoryframeworks");
 					menuItems.push("registers");
 					menuItems.push("professorCommittees");
 					menuItems.push("professorEvaluations");
 				}
 				if (self.model.hasRoleWithStatus("CANDIDATE", "ACTIVE")) {
-					menuItems.push("profile");
 					menuItems.push("regulatoryframeworks");
 					menuItems.push("registers");
 					menuItems.push("sposition");
 					menuItems.push("candidateCandidacies");
 				}
 				if (self.model.hasRoleWithStatus("INSTITUTION_MANAGER", "ACTIVE")) {
-					menuItems.push("profile");
 					menuItems.push("iassistants");
 					menuItems.push("regulatoryframeworks");
 					menuItems.push("registers");
 					menuItems.push("positions");
 				}
 				if (self.model.hasRoleWithStatus("INSTITUTION_ASSISTANT", "ACTIVE")) {
-					menuItems.push("profile");
 					menuItems.push("regulatoryframeworks");
 					menuItems.push("registers");
 					menuItems.push("positions");
 				}
 				if (self.model.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE")) {
-					menuItems.push("profile");
 					menuItems.push("massistants");
 					menuItems.push("regulatoryframeworks");
 					menuItems.push("registers");
 					menuItems.push("positions");
 				}
 				if (self.model.hasRoleWithStatus("MINISTRY_ASSISTANT", "ACTIVE")) {
-					menuItems.push("profile");
 					menuItems.push("regulatoryframeworks");
 					menuItems.push("registers");
 					menuItems.push("positions");
@@ -1240,10 +1236,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				tiles.push({
 					link: "account"
 				});
-				if (self.model.hasRoleWithStatus("PROFESSOR_DOMESTIC", "ACTIVE")) {
+				if (!self.model.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
 					tiles.push({
 						link: "profile"
 					});
+				}
+				if (self.model.hasRoleWithStatus("PROFESSOR_DOMESTIC", "ACTIVE")) {
 					tiles.push({
 						link: "registers"
 					});
@@ -1256,9 +1254,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				}
 				if (self.model.hasRoleWithStatus("PROFESSOR_FOREIGN", "ACTIVE")) {
 					tiles.push({
-						link: "profile"
-					});
-					tiles.push({
 						link: "registers"
 					});
 					tiles.push({
@@ -1270,9 +1265,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				}
 				if (self.model.hasRoleWithStatus("CANDIDATE", "ACTIVE")) {
 					tiles.push({
-						link: "profile"
-					});
-					tiles.push({
 						link: "registers"
 					});
 					tiles.push({
@@ -1283,9 +1275,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					});
 				}
 				if (self.model.hasRoleWithStatus("INSTITUTION_MANAGER", "ACTIVE")) {
-					tiles.push({
-						link: "profile"
-					});
 					tiles.push({
 						link: "iassistants"
 					});
@@ -1301,9 +1290,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				}
 				if (self.model.hasRoleWithStatus("INSTITUTION_ASSISTANT", "ACTIVE")) {
 					tiles.push({
-						link: "profile"
-					});
-					tiles.push({
 						link: "regulatoryframeworks"
 					});
 					tiles.push({
@@ -1314,9 +1300,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					});
 				}
 				if (self.model.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE")) {
-					tiles.push({
-						link: "profile"
-					});
 					tiles.push({
 						link: "massistants"
 					});
@@ -1331,9 +1314,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 					});
 				}
 				if (self.model.hasRoleWithStatus("MINISTRY_ASSISTANT", "ACTIVE")) {
-					tiles.push({
-						link: "profile"
-					});
 					tiles.push({
 						link: "regulatoryframeworks"
 					});
@@ -7851,9 +7831,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						});
 						self.$selectize = self.$("select[name^=evaluator_]").selectize({
 							valueField: 'id',
-							diacritics : true,
+							diacritics: true,
 							create: false,
-							hideSelected : true,
+							hideSelected: true,
 							sortField: 'professor.user.basicInfo.firstname',
 							options: collection.toJSON(),
 							render: {
@@ -7882,7 +7862,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 										'</div>';
 								}
 							},
-							score : function(search) {
+							score: function (search) {
 								return function (item) {
 									var concat = item.professor.user.basicInfo.firstname + " " + item.professor.user.basicInfo.lastname;
 									var pos = concat.indexOf(search);

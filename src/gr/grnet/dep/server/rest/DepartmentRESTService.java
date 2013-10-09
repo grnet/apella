@@ -17,6 +17,11 @@ import javax.ws.rs.core.Response.Status;
 @Stateless
 public class DepartmentRESTService extends RESTService {
 
+	/**
+	 * Returns all Departments
+	 * 
+	 * @return
+	 */
 	@GET
 	@SuppressWarnings("unchecked")
 	public Collection<Department> getAll() {
@@ -25,6 +30,12 @@ public class DepartmentRESTService extends RESTService {
 			.getResultList();
 	}
 
+	/**
+	 * Returns Department with given id
+	 * 
+	 * @param id
+	 * @return
+	 */
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	public Department get(@PathParam("id") long id) {

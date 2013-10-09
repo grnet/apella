@@ -18,6 +18,12 @@ import javax.ws.rs.core.Response.Status;
 @Stateless
 public class RankRESTService extends RESTService {
 
+	/**
+	 * Returns all existing ranks
+	 * 
+	 * @param authToken The authenticatio token
+	 * @return
+	 */
 	@GET
 	@SuppressWarnings("unchecked")
 	public Collection<Rank> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
@@ -27,6 +33,13 @@ public class RankRESTService extends RESTService {
 			.getResultList();
 	}
 
+	/**
+	 * Returns Rank with given id
+	 * 
+	 * @param authToken
+	 * @param id
+	 * @return
+	 */
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	public Rank get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {

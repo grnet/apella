@@ -220,6 +220,8 @@
 
 	<pathconvert property="enunciate.classpathProp" refid="enunciate.classpath" />
 	<target name="doc">
+		<delete file="${build.dir}/docs.zip" />
+		<delete dir="${build.dir}/docs/" />
 		<enunciate basedir="${src.dir}">
 			<include name="**/*.java" />
 			<classpath refid="enunciate.classpath" />
@@ -228,6 +230,7 @@
 			
 			<javacArgument argument="-g" />
 		</enunciate>
+		<unzip src="${build.dir}/docs.zip" dest="${build.dir}/docs/"></unzip>
 	</target>
 
 </project>

@@ -30,6 +30,15 @@ public class ProfessorRESTService extends RESTService {
 	@Inject
 	private Logger log;
 
+	/**
+	 * Returns committees that the professor participates
+	 * 
+	 * @param authToken
+	 * @param professorId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.professor.id
+	 */
 	@GET
 	@Path("/{id:[0-9]+}/committees")
 	@JsonView({PositionCommitteeMemberView.class})
@@ -54,6 +63,15 @@ public class ProfessorRESTService extends RESTService {
 		return committees;
 	}
 
+	/**
+	 * Returns professor's participations as evaluator in positions
+	 * 
+	 * @param authToken
+	 * @param professorId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.professor.id
+	 */
 	@GET
 	@Path("/{id:[0-9]+}/evaluations")
 	@JsonView({PositionEvaluatorView.class})

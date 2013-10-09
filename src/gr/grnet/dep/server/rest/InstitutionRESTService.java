@@ -22,6 +22,11 @@ public class InstitutionRESTService extends RESTService {
 	@Inject
 	private Logger log;
 
+	/**
+	 * Returns all Institutions
+	 * 
+	 * @return
+	 */
 	@GET
 	@SuppressWarnings("unchecked")
 	public Collection<Institution> getAll() {
@@ -30,6 +35,12 @@ public class InstitutionRESTService extends RESTService {
 			.getResultList();
 	}
 
+	/**
+	 * Returns Institution with given ID
+	 * 
+	 * @param id
+	 * @return
+	 */
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	public Institution get(@PathParam("id") long id) {

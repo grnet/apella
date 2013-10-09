@@ -166,6 +166,15 @@ public class RoleRESTService extends RESTService {
 		forbiddenPairs = Collections.unmodifiableSet(aSet);
 	}
 
+	/**
+	 * Returns roles of user based on parameters
+	 * 
+	 * @param authToken Authentication Token
+	 * @param userID ID of user
+	 * @param discriminators Comma separated list of types of roles
+	 * @param statuses Comma separated list of status of roles
+	 * @return
+	 */
 	@GET
 	@JsonView({DetailedRoleView.class})
 	public Collection<Role> getAll(@HeaderParam(TOKEN_HEADER) String authToken, @QueryParam("user") Long userID, @QueryParam("discriminator") String discriminators, @QueryParam("status") String statuses) {
@@ -240,6 +249,14 @@ public class RoleRESTService extends RESTService {
 		return false;
 	}
 
+	/**
+	 * Returns role with given id
+	 * 
+	 * @param authToken
+	 * @param id
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 */
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedRoleView.class})
@@ -266,6 +283,16 @@ public class RoleRESTService extends RESTService {
 		return r;
 	}
 
+	/**
+	 * Adds a role to an existing user
+	 * 
+	 * @param authToken
+	 * @param newRole
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.id
+	 * @HTTP 409 X-Error-Code: incompatible.role
+	 */
 	@POST
 	@JsonView({DetailedRoleView.class})
 	public Role create(@HeaderParam(TOKEN_HEADER) String authToken, Role newRole) {
@@ -313,6 +340,20 @@ public class RoleRESTService extends RESTService {
 		}
 	}
 
+	/**
+	 * Updates role of user
+	 * 
+	 * @param authToken
+	 * @param id
+	 * @param updateCandidacies If true it will also update all open candidacies
+	 *            connected to this profile
+	 * @param role
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.role.id
+	 * @HTTP 409 X-Error-Code: cannot.change.critical.fields
+	 * @HTTP 409 X-Error-Code: manager.institution.mismatch
+	 */
 	@PUT
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedRoleView.class})
@@ -327,7 +368,7 @@ public class RoleRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (!existingRole.getStatus().equals(RoleStatus.UNAPPROVED) && !existingRole.compareCriticalFields(role)) {
-			throw new RestException(Status.FORBIDDEN, "cannot.change.critical.fields");
+			throw new RestException(Status.CONFLICT, "cannot.change.critical.fields");
 		}
 		if (updateCandidacies == null) {
 			updateCandidacies = false;
@@ -405,6 +446,19 @@ public class RoleRESTService extends RESTService {
 		Forma_Ypopsifiou
 	}
 
+	/**
+	 * Creates a PDF File with
+	 * (1) the form required for Institution Managers or
+	 * (2) the form for Candidates
+	 * 
+	 * @param authToken
+	 * @param id
+	 * @param fileName Name of file (Forma_allagis_Diax_Idrymatos or
+	 *            Forma_Ypopsifiou)
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.role.id
+	 */
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/{id:[0-9]+}/documents/{fileName}")
@@ -453,6 +507,15 @@ public class RoleRESTService extends RESTService {
 	 * File Functions **********
 	 ***************************/
 
+	/**
+	 * Retrieves files of role
+	 * 
+	 * @param authToken
+	 * @param id
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.role.id
+	 */
 	@GET
 	@Path("/{id:[0-9][0-9]*}/file")
 	@JsonView({SimpleFileHeaderView.class})
@@ -461,7 +524,7 @@ public class RoleRESTService extends RESTService {
 		Role role = em.find(Role.class, id);
 		// Validate:
 		if (role == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.role.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
@@ -487,6 +550,16 @@ public class RoleRESTService extends RESTService {
 		throw new RestException(Status.BAD_REQUEST, "wrong.id");
 	}
 
+	/**
+	 * Retrieves specific file description of specific role
+	 * 
+	 * @param authToken Authentication Token
+	 * @param id
+	 * @param fileId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.role.id
+	 */
 	@GET
 	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}")
 	@JsonView({SimpleFileHeaderView.class})
@@ -495,7 +568,7 @@ public class RoleRESTService extends RESTService {
 		Role role = em.find(Role.class, id);
 		// Validate:
 		if (role == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.role.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
@@ -525,6 +598,17 @@ public class RoleRESTService extends RESTService {
 		throw new RestException(Status.BAD_REQUEST, "wrong.id");
 	}
 
+	/**
+	 * Retrieves file body (binary) of specified file
+	 * 
+	 * @param authToken
+	 * @param id
+	 * @param fileId
+	 * @param bodyId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.role.id
+	 */
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
@@ -571,6 +655,21 @@ public class RoleRESTService extends RESTService {
 		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 	}
 
+	/**
+	 * Creates a new file associated with specified role
+	 * 
+	 * @param authToken
+	 * @param id
+	 * @param request
+	 * @return A JSON representation of the file description, needs to be
+	 *         text/plain since it is handled by a multipart-form
+	 * @throws FileUploadException
+	 * @throws IOException
+	 * @HTTP 400 X-Error-Code: missing.file.type
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.role.id
+	 * @HTTP 409 X-Error-Code: cannot.change.critical.fields
+	 */
 	@POST
 	@Path("/{id:[0-9][0-9]*}/file")
 	@Consumes("multipart/form-data")
@@ -580,7 +679,7 @@ public class RoleRESTService extends RESTService {
 		Role role = em.find(Role.class, id);
 		// Validate:
 		if (role == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.role.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -610,7 +709,7 @@ public class RoleRESTService extends RESTService {
 						case TAYTOTHTA:
 						case FORMA_SYMMETOXIS:
 						case BEBAIWSH_STRATIOTIKIS_THITIAS:
-							throw new RestException(Status.FORBIDDEN, "cannot.change.critical.fields");
+							throw new RestException(Status.CONFLICT, "cannot.change.critical.fields");
 						default:
 					}
 				}
@@ -680,6 +779,24 @@ public class RoleRESTService extends RESTService {
 		}
 	}
 
+	/**
+	 * Updates the specified file
+	 * 
+	 * @param authToken
+	 * @param id
+	 * @param fileId
+	 * @param request
+	 * @param updateCandidacies If set to true, it will update open position
+	 *            connected with this profile
+	 * @return A JSON representation of the file description, needs to be
+	 *         text/plain since it is handled by a multipart-form
+	 * @throws FileUploadException
+	 * @throws IOException
+	 * @HTTP 400 X-Error-Code: missing.file.type
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.role.id
+	 * @HTTP 409 X-Error-Code: cannot.change.critical.fields
+	 */
 	@POST
 	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}")
 	@Consumes("multipart/form-data")
@@ -797,10 +914,13 @@ public class RoleRESTService extends RESTService {
 	}
 
 	/**
-	 * Deletes the last body of given file, if possible.
+	 * Removes the specified file
 	 * 
 	 * @param authToken
 	 * @param id
+	 * @param fileId
+	 * @param updateCandidacies If set to true it will update also open
+	 *            candidacies connected with this profile
 	 * @return
 	 */
 	@DELETE
@@ -903,6 +1023,14 @@ public class RoleRESTService extends RESTService {
 	 *** Administrator Only Functions ***
 	 ************************************/
 
+	/**
+	 * Used by admins to update status of users
+	 * 
+	 * @param authToken
+	 * @param id
+	 * @param requestRole
+	 * @return
+	 */
 	@PUT
 	@Path("/{id:[0-9][0-9]*}/status")
 	@JsonView({DetailedRoleView.class})

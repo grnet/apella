@@ -48,6 +48,12 @@ public class RegisterRESTService extends RESTService {
 	@Inject
 	private Logger log;
 
+	/**
+	 * Returns all registers
+	 * 
+	 * @param authToken
+	 * @return
+	 */
 	@GET
 	@JsonView({DetailedRegisterView.class})
 	public Collection<Register> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
@@ -60,6 +66,14 @@ public class RegisterRESTService extends RESTService {
 		return registers;
 	}
 
+	/**
+	 * Returns register with given ID
+	 * 
+	 * @param authToken
+	 * @param id
+	 * @return
+	 * @HTTP 404 X-Error-Code: wrong.register.id
+	 */
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedRegisterView.class})
@@ -83,6 +97,16 @@ public class RegisterRESTService extends RESTService {
 
 	}
 
+	/**
+	 * Creates a new Register, non-finalized
+	 * 
+	 * @param authToken
+	 * @param newRegister
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.department.id
+	 * @HTTP 409 X-Error-Code: register.already.exists
+	 */
 	@POST
 	@JsonView({DetailedRegisterView.class})
 	public Register create(@HeaderParam(TOKEN_HEADER) String authToken, Register newRegister) {
@@ -121,6 +145,18 @@ public class RegisterRESTService extends RESTService {
 		}
 	}
 
+	/**
+	 * Updates and finalizes the Register with the given ID
+	 * 
+	 * @param authToken
+	 * @param id
+	 * @param register
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.register.id
+	 * @HTTP 404 X-Error-Code: wrong.professor.id
+	 * @HTTP 409 X-Error-Code: register.institution.change
+	 */
 	@PUT
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedRegisterView.class})
@@ -129,7 +165,7 @@ public class RegisterRESTService extends RESTService {
 		Register existingRegister = em.find(Register.class, id);
 		// Validate:
 		if (existingRegister == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
+			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -309,6 +345,14 @@ public class RegisterRESTService extends RESTService {
 		}
 	}
 
+	/**
+	 * Removes the Register with the given ID
+	 * 
+	 * @param authToken
+	 * @param id
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.register.id
+	 */
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}")
 	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
@@ -335,6 +379,14 @@ public class RegisterRESTService extends RESTService {
 	 * Members Functions ***
 	 ***********************/
 
+	/**
+	 * Returns the list of Register Members of this Register
+	 * 
+	 * @param authToken
+	 * @param registerId
+	 * @return
+	 * @HTTP 404 X-Error-Code: wrong.register.id
+	 */
 	@GET
 	@Path("/{id:[0-9]+}/members")
 	@JsonView({DetailedRegisterMemberView.class})
@@ -351,6 +403,16 @@ public class RegisterRESTService extends RESTService {
 		return register.getMembers();
 	}
 
+	/**
+	 * Returns the specific member of this register with the given ID
+	 * 
+	 * @param authToken
+	 * @param registerId
+	 * @param memberId
+	 * @return
+	 * @HTTP 404 X-Error-Code: wrong.register.id
+	 * @HTTP 404 X-Error-Code: wrong.register.member.id
+	 */
 	@GET
 	@Path("/{id:[0-9]+}/members/{memberId:[0-9]+}")
 	@JsonView({DetailedRegisterMemberView.class})
@@ -370,6 +432,15 @@ public class RegisterRESTService extends RESTService {
 		throw new RestException(Status.NOT_FOUND, "wrong.register.member.id");
 	}
 
+	/**
+	 * Returns a list of professors that can be added in this register
+	 * 
+	 * @param authToken
+	 * @param registerId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.register.id
+	 */
 	@GET
 	@Path("/{id:[0-9]+}/professor")
 	@JsonView({DetailedRegisterMemberView.class})

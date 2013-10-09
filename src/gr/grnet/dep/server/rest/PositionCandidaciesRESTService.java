@@ -64,6 +64,16 @@ public class PositionCandidaciesRESTService extends RESTService {
 	 * Candidacies *********
 	 *********************/
 
+	/**
+	 * Returns the list of Candidacies for this position
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @return
+	 * @HTTP 403 X-Error-Code insufficient.privileges
+	 * @HTTP 404 X-Error-Code wrong.position.id
+	 * @HTTP 409 X-Error-Code wrong.position.id
+	 */
 	@GET
 	@JsonView({CandidacyView.class})
 	public Set<Candidacy> getPositionCandidacies(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
@@ -73,7 +83,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
 		if (position.getPhase().getCandidacies() == null) {
-			throw new RestException(Status.FORBIDDEN, "wrong.position.id");
+			throw new RestException(Status.CONFLICT, "wrong.position.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
@@ -98,6 +108,17 @@ public class PositionCandidaciesRESTService extends RESTService {
 	 * Position Candidacies ***********
 	 **********************************/
 
+	/**
+	 * Returns the specific PositionCandidacies info of given Position
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param candidaciesId
+	 * @returnWrapper gr.grnet.dep.service.model.PositionCandidacies
+	 * @HTTP 403 X-Error-Code insufficient.privileges
+	 * @HTTP 404 X-Error-Code wrong.position.candidacies.id
+	 * @HTTP 404 X-Error-Code wrong.position.id
+	 */
 	@GET
 	@Path("/{candidaciesId:[0-9]+}")
 	@JsonView({DetailedPositionCandidaciesView.class})
@@ -153,6 +174,18 @@ public class PositionCandidaciesRESTService extends RESTService {
 	 * File Functions *****
 	 **********************/
 
+	/**
+	 * Returns the list of file descriptions associated with position
+	 * candidacies
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param candidaciesId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.candidacies.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 */
 	@GET
 	@Path("/{candidaciesId:[0-9]+}/file")
 	@JsonView({SimpleFileHeaderView.class})
@@ -196,6 +229,20 @@ public class PositionCandidaciesRESTService extends RESTService {
 		return result;
 	}
 
+	/**
+	 * Return the file description of the file with given id and associated with
+	 * given position candidacies
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param candidaciesId
+	 * @param fileId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.candidacies.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 */
 	@GET
 	@Path("/{candidaciesId:[0-9]+}/file/{fileId:[0-9]+}")
 	@JsonView({SimpleFileHeaderView.class})
@@ -234,6 +281,21 @@ public class PositionCandidaciesRESTService extends RESTService {
 		return existingFile;
 	}
 
+	/**
+	 * Return the file data of the file with given id and associated with
+	 * given position candidacies
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param candidaciesId
+	 * @param fileId
+	 * @param bodyId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.candidacies.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 */
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/{candidaciesId:[0-9]+}/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
@@ -277,6 +339,25 @@ public class PositionCandidaciesRESTService extends RESTService {
 		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 	}
 
+	/**
+	 * Handles upload of a new file associated with given position candidacies
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param candidaciesId
+	 * @param request
+	 * @returnWrapper gr.grnet.dep.service.model.file.PositionCandidaciesFile
+	 * @throws FileUploadException
+	 * @throws IOException
+	 * @HTTP 400 X-Error-Code: missing.file.type
+	 * @HTTP 400 X-Error-Code: missing.candidacy.evaluator
+	 * @HTTP 400 X-Error-Code: wrong.candidacy.evaluator.id
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.candidacies.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 409 X-Error-Code: wrong.position.candidacies.phase
+	 * @HTTP 409 X-Error-Code: wrong.position.status
+	 */
 	@POST
 	@Path("/{candidaciesId:[0-9]+}/file")
 	@Consumes("multipart/form-data")
@@ -292,7 +373,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
 		if (!existingPosition.getPhase().getCandidacies().getId().equals(candidaciesId)) {
-			throw new RestException(Status.FORBIDDEN, "wrong.position.candidacies.phase");
+			throw new RestException(Status.CONFLICT, "wrong.position.candidacies.phase");
 		}
 		// Validate:
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
@@ -463,6 +544,29 @@ public class PositionCandidaciesRESTService extends RESTService {
 		}
 	}
 
+	/**
+	 * Handles upload that updates an existing file associated with position
+	 * candidacies
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param candidaciesId
+	 * @param fileId
+	 * @param request
+	 * @returnWrapper gr.grnet.dep.service.model.file.PositionCandidaciesFile
+	 * @throws FileUploadException
+	 * @throws IOException
+	 * @HTTP 400 X-Error-Code: missing.file.type
+	 * @HTTP 400 X-Error-Code: missing.candidacy.evaluator
+	 * @HTTP 400 X-Error-Code: wrong.candidacy.evaluator.id
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.candidacies.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 * @HTTP 409 X-Error-Code: wrong.position.candidacies.phase
+	 * @HTTP 409 X-Error-Code: wrong.file.type
+	 * @HTTP 409 X-Error-Code: wrong.position.status
+	 */
 	@POST
 	@Path("/{candidaciesId:[0-9]+}/file/{fileId:[0-9]+}")
 	@Consumes("multipart/form-data")
@@ -534,11 +638,20 @@ public class PositionCandidaciesRESTService extends RESTService {
 	}
 
 	/**
-	 * Deletes the last body of given file, if possible.
+	 * Removes the specified file
 	 * 
 	 * @param authToken
-	 * @param id
+	 * @param candidaciesId
+	 * @param positionId
+	 * @param fileId
 	 * @return
+	 * @HTTP 400 X-Error-Code: missing.file.type
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.candidacies.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 * @HTTP 404 X-Error-Code: wrong.file.id
+	 * @HTTP 409 X-Error-Code: wrong.position.candidacies.phase
+	 * @HTTP 409 X-Error-Code: wrong.position.status
 	 */
 	@DELETE
 	@Path("/{candidaciesId:[0-9]+}/file/{fileId:[0-9]+}")
@@ -554,7 +667,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
 		if (!existingPosition.getPhase().getCandidacies().getId().equals(candidaciesId)) {
-			throw new RestException(Status.FORBIDDEN, "wrong.position.candidacies.phase");
+			throw new RestException(Status.CONFLICT, "wrong.position.candidacies.phase");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.isDepartmentUser(existingPosition.getDepartment())) {

@@ -32,6 +32,11 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 	@Inject
 	private Logger log;
 
+	/**
+	 * Returns Regulatory Frameworks of all Institutions
+	 * 
+	 * @return
+	 */
 	@GET
 	@SuppressWarnings("unchecked")
 	public Collection<InstitutionRegulatoryFramework> getAll() {
@@ -41,6 +46,12 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 			.getResultList();
 	}
 
+	/**
+	 * Returns Regulatory Framework with given ID
+	 * 
+	 * @param id
+	 * @return
+	 */
 	@GET
 	@Path("/{id:[0-9]+}")
 	public InstitutionRegulatoryFramework get(@PathParam("id") long id) {
@@ -55,6 +66,16 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 		}
 	}
 
+	/**
+	 * Creates a Regulatory Framework, not finalized
+	 * 
+	 * @param authToken
+	 * @param newIRF
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.institution.id
+	 * @HTTP 409 X-Error-Code: institutionrf.already.exists
+	 */
 	@POST
 	public InstitutionRegulatoryFramework create(@HeaderParam(TOKEN_HEADER) String authToken, InstitutionRegulatoryFramework newIRF) {
 		User loggedOn = getLoggedOn(authToken);
@@ -92,6 +113,16 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 		}
 	}
 
+	/**
+	 * Updates and finalizes Regulatory Frameowrk with given ID
+	 * 
+	 * @param authToken
+	 * @param id
+	 * @param newIRF
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.institutionregulatoryframework.id
+	 */
 	@PUT
 	@Path("/{id:[0-9]+}")
 	public InstitutionRegulatoryFramework update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, InstitutionRegulatoryFramework newIRF) {
@@ -118,6 +149,14 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 		return existing;
 	}
 
+	/**
+	 * Removes Regulatory Framework with given ID
+	 * 
+	 * @param authToken
+	 * @param id
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.institutionregulatoryframework.id
+	 */
 	@DELETE
 	@Path("/{id:[0-9]+}")
 	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
