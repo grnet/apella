@@ -431,8 +431,8 @@ public class PositionCandidaciesRESTService extends RESTService {
 
 						{
 							put("username", existingEvaluator.getCandidacy().getCandidate().getUser().getUsername());
-							put("candidacyEvaluator_firstname", existingEvaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
-							put("candidacyEvaluator_lastname", existingEvaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
+							put("evaluator_firstname", existingEvaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+							put("evaluator_lastname", existingEvaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 						}
 					}));
 				// positionCandidacies.upload.eisigisi@candidacyEvaluator

@@ -62,8 +62,8 @@
 				<job-group>APELLA_JOBS</job-group>
 				<!-- trigger at 04:00 in the morning -->
 				<!-- <cron-expression>0 0 4 * * ?</cron-expression> -->
-				<!-- trigger every 10 min for testing -->
-				<cron-expression>0 0/2 * * * ?</cron-expression>
+				<!-- trigger every 15 sec for testing -->
+				<cron-expression>0/15 * * * * ?</cron-expression>
 			</cron>
 		</trigger>
 		

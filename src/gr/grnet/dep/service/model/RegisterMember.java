@@ -2,7 +2,6 @@ package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.Candidacy.CandidacyView;
 import gr.grnet.dep.service.model.CandidacyEvaluator.DetailedCandidacyEvaluatorView;
-import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.PositionCandidacies.DetailedPositionCandidaciesView;
 import gr.grnet.dep.service.model.PositionCommittee.PositionCommitteeView;
 import gr.grnet.dep.service.model.PositionCommitteeMember.PositionCommitteeMemberView;
@@ -62,6 +61,9 @@ public class RegisterMember implements Serializable {
 	@OneToMany(mappedBy = "registerMember", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<PositionEvaluator> evaluations = new HashSet<PositionEvaluator>();
 
+	@OneToMany(mappedBy = "registerMember", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<CandidacyEvaluator> candidacyEvaluations = new HashSet<CandidacyEvaluator>();
+
 	public Long getId() {
 		return id;
 	}
@@ -114,26 +116,47 @@ public class RegisterMember implements Serializable {
 		this.evaluations = evaluations;
 	}
 
+	@XmlTransient
+	public Set<CandidacyEvaluator> getCandidacyEvaluations() {
+		return candidacyEvaluations;
+	}
+
+	public void setCandidacyEvaluations(Set<CandidacyEvaluator> candidacyEvaluations) {
+		this.candidacyEvaluations = candidacyEvaluations;
+	}
+
 	///////////////////////////////
 
 	@JsonView({DetailedRegisterView.class})
 	public boolean getCanBeDeleted() {
+		return (!committees.isEmpty() || !evaluations.isEmpty() || !candidacyEvaluations.isEmpty());
+		/*
 		for (PositionCommitteeMember member : committees) {
-			if (member.getCommittee().getPosition().getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
+			if (member.getCommittee().getPosition().getPhase().getStatus().equals(
+				PositionStatus.EPILOGI)) {
 				return false;
 			}
 		}
 		for (PositionEvaluator evaluator : evaluations) {
-			if (evaluator.getEvaluation().getPosition().getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
+			if (evaluator.getEvaluation().getPosition().getPhase().getStatus().
+				equals(PositionStatus.EPILOGI)) {
+				return false;
+			}
+		}
+		for (CandidacyEvaluator evaluator : candidacyEvaluations) {
+			if (evaluator.getCandidacy().getCandidacies().getPosition().getPhase()
+				.getStatus().equals(PositionStatus.EPILOGI)) {
 				return false;
 			}
 		}
 		return true;
+		*/
 	}
 
 	public void initializeCollections() {
 		this.committees.size();
 		this.evaluations.size();
+		this.candidacyEvaluations.size();
 		this.professor.initializeCollections();
 	}
 

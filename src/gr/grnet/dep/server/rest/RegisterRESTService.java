@@ -207,7 +207,6 @@ public class RegisterRESTService extends RESTService {
 			try {
 				em.createQuery("select pcm from PositionCommitteeMember pcm " +
 					"where pcm.registerMember.register.id = :registerId " +
-					"and pcm.committee.position.phase.status = :status " +
 					"and pcm.registerMember.professor.id in (:professorIds)")
 					.setParameter("registerId", existingRegister.getId())
 					.setParameter("status", PositionStatus.EPILOGI)
@@ -220,7 +219,6 @@ public class RegisterRESTService extends RESTService {
 			try {
 				em.createQuery("select e.id from PositionEvaluator e " +
 					"where e.registerMember.register.id = :registerId " +
-					"and e.evaluation.position.phase.status = :status " +
 					"and e.registerMember.professor.id in (:professorIds)")
 					.setParameter("registerId", existingRegister.getId())
 					.setParameter("status", PositionStatus.EPILOGI)
@@ -228,6 +226,17 @@ public class RegisterRESTService extends RESTService {
 					.setMaxResults(1)
 					.getSingleResult();
 				throw new RestException(Status.CONFLICT, "professor.is.evaluator");
+			} catch (NoResultException e) {
+			}
+			try {
+				em.createQuery("select e.id from CandidacyEvaluator e " +
+					"where e.registerMember.register.id = :registerId " +
+					"and e.registerMember.professor.id in (:professorIds)")
+					.setParameter("registerId", existingRegister.getId())
+					.setParameter("professorIds", removedProfessorIds)
+					.setMaxResults(1)
+					.getSingleResult();
+				throw new RestException(Status.CONFLICT, "professor.is.candidacy.evaluator");
 			} catch (NoResultException e) {
 			}
 		}
