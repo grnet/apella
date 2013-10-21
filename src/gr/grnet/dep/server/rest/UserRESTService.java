@@ -19,12 +19,15 @@ import gr.grnet.dep.service.model.UserRegistrationType;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -461,7 +464,26 @@ public class UserRESTService extends RESTService {
 	}
 
 	@GET
-	@Path("/shibbolethLogin")
+	@Path("/shibboleth/test")
+	@Produces("text/plain")
+	public Response shibbolethTest(@Context HttpServletRequest request) {
+		String result = "";
+		Map<String, String[]> parameters = request.getParameterMap();
+		for (String paramName : parameters.keySet()) {
+			result = result.concat("Parameter:\t" + paramName + " = " + Arrays.toString(parameters.get(paramName)) + "\n");
+		}
+		Enumeration<String> headers = request.getHeaderNames();
+		while (headers.hasMoreElements()) {
+			String headerName = headers.nextElement();
+			result = result.concat("Header:\t\t" + headerName + " = " + request.getHeader(headerName) + "\n");
+		}
+		return Response.status(200)
+			.entity(result)
+			.build();
+	}
+
+	@GET
+	@Path("/shibboleth/login")
 	@Produces("text/html")
 	public Response shibbolethLogin(@Context HttpServletRequest request) {
 		// 1. Read Attributes from request:
