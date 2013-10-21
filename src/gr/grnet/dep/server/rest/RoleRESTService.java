@@ -442,8 +442,9 @@ public class RoleRESTService extends RESTService {
 	 ***************************/
 
 	public enum DocumentDiscriminator {
-		Forma_allagis_Diax_Idrymatos,
-		Forma_Ypopsifiou
+		InstitutionManagerCertificationDean,
+		InstitutionManagerCertificationPresident,
+		CandidateCertification
 	}
 
 	/**
@@ -469,12 +470,13 @@ public class RoleRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.role.id");
 		}
 		switch (fileName) {
-			case Forma_allagis_Diax_Idrymatos:
+			case InstitutionManagerCertificationDean:
+			case InstitutionManagerCertificationPresident:
 				if (!(role instanceof InstitutionManager)) {
 					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 				}
 				break;
-			case Forma_Ypopsifiou:
+			case CandidateCertification:
 				if (!(role instanceof Candidate)) {
 					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 				}
@@ -484,10 +486,11 @@ public class RoleRESTService extends RESTService {
 		try {
 			InputStream is = null;
 			switch (fileName) {
-				case Forma_allagis_Diax_Idrymatos:
+				case InstitutionManagerCertificationDean:
+				case InstitutionManagerCertificationPresident:
 					is = PdfUtil.generateFormaAllagisIM((InstitutionManager) role);
 					break;
-				case Forma_Ypopsifiou:
+				case CandidateCertification:
 					is = PdfUtil.generateFormaYpopsifiou((Candidate) role);
 					break;
 			}

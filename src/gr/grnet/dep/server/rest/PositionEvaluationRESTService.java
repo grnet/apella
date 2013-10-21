@@ -2,6 +2,7 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
+import gr.grnet.dep.service.model.CandidacyEvaluator;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.PositionCommitteeMember;
@@ -236,6 +237,14 @@ public class PositionEvaluationRESTService extends RESTService {
 		for (PositionCommitteeMember committeeMember : existingPosition.getPhase().getCommittee().getMembers()) {
 			if (newEvaluatorsRegisterMap.containsKey(committeeMember.getRegisterMember().getId())) {
 				throw new RestException(Status.CONFLICT, "member.in.committe");
+			}
+		}
+		// Check if a member is Candidacy Evaluator
+		for (Candidacy candidacy : existingPosition.getPhase().getCandidacies().getCandidacies()) {
+			for (CandidacyEvaluator evaluator : candidacy.getProposedEvaluators()) {
+				if (newEvaluatorsRegisterMap.containsKey(evaluator.getRegisterMember().getId())) {
+					throw new RestException(Status.CONFLICT, "member.is.candidacy.evaluator");
+				}
 			}
 		}
 

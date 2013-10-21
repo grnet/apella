@@ -7,6 +7,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
@@ -33,25 +34,16 @@ public class PdfUtil {
 
 	private static final Logger logger = Logger.getLogger(MailService.class.getName());
 
+	private static final float BASE_FONT_SIZE = 10.0f;
+
 	public static InputStream generateFormaAllagisIM(InstitutionManager im) {
 		try {
-			final float BASE_FONT_SIZE = 10.0f;
+
 			FontFactory.register("arial.ttf");
 			FontFactory.register("arialbd.ttf");
 			Font normalFont = FontFactory.getFont("Arial", BaseFont.IDENTITY_H, BASE_FONT_SIZE);
 			Font boldFont = FontFactory.getFont("Arial", BaseFont.IDENTITY_H, normalFont.getSize(), Font.BOLD);
 			Font largerBoldFont = FontFactory.getFont("Arial", BaseFont.IDENTITY_H, (float) 1.2 * normalFont.getSize(), Font.BOLD);
-
-			Image logoApella = Image.getInstance(loadImage("logo_apella.png"));
-			logoApella.scaleToFit(1200, 120);
-			Image logoGRnet = Image.getInstance(loadImage("logo_grnet.png"));
-			logoGRnet.scaleToFit(1200, 36);
-			Image logoEU = Image.getInstance(loadImage("logo_eu.jpg"));
-			logoEU.scaleToFit(1200, 36);
-			Image logoEspa = Image.getInstance(loadImage("logo_espa.jpg"));
-			logoEspa.scaleToFit(1200, 36);
-			Image logoDM = Image.getInstance(loadImage("logo-dm.jpg"));
-			logoDM.scaleToFit(1200, 36);
 
 			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 			Date now = new Date();
@@ -62,15 +54,13 @@ public class PdfUtil {
 
 			doc.open();
 
+			Image logoApella = Image.getInstance(loadImage("logo_apella.png"));
+			logoApella.scaleToFit(1200, 120);
 			logoApella.setAlignment(Element.ALIGN_RIGHT);
 			doc.add(logoApella);
 
 			Paragraph p = new Paragraph("Αριθμός Βεβαίωσης:  " + im.getUser().getId() + " / " + sdf.format(now), boldFont);
 			p.setAlignment(Element.ALIGN_RIGHT);
-			doc.add(p);
-
-			p = new Paragraph(" ", boldFont);
-			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
 			p = new Paragraph(" ", boldFont);
@@ -98,14 +88,6 @@ public class PdfUtil {
 			doc.add(p);
 
 			p = new Paragraph("FAX: 210-7724396, 210-7724397", boldFont);
-			p.setAlignment(Element.ALIGN_LEFT);
-			doc.add(p);
-
-			p = new Paragraph(" ", boldFont);
-			p.setAlignment(Element.ALIGN_LEFT);
-			doc.add(p);
-
-			p = new Paragraph(" ", boldFont);
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
@@ -148,10 +130,6 @@ public class PdfUtil {
 			}
 			institutionTable.addCell(createCell(new Phrase(im.getVerificationAuthorityName(), normalFont), Element.ALIGN_LEFT, 1));
 			doc.add(institutionTable);
-
-			p = new Paragraph(" ", boldFont);
-			p.setAlignment(Element.ALIGN_LEFT);
-			doc.add(p);
 
 			p = new Paragraph(" ", boldFont);
 			p.setAlignment(Element.ALIGN_LEFT);
@@ -229,14 +207,15 @@ public class PdfUtil {
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
-			PdfPTable logoTable = new PdfPTable(4);
-			logoTable.setHorizontalAlignment(Element.ALIGN_CENTER);
-			logoTable.setWidths(new float[] {33, 33, 17, 15});
-			logoTable.addCell(createImageCell(logoGRnet, Element.ALIGN_CENTER, 0));
-			logoTable.addCell(createImageCell(logoEU, Element.ALIGN_CENTER, 0));
-			logoTable.addCell(createImageCell(logoEspa, Element.ALIGN_CENTER, 0));
-			logoTable.addCell(createImageCell(logoDM, Element.ALIGN_CENTER, 0));
-			doc.add(logoTable);
+			p = new Paragraph(" ", boldFont);
+			p.setAlignment(Element.ALIGN_LEFT);
+			doc.add(p);
+
+			p = new Paragraph(" ", boldFont);
+			p.setAlignment(Element.ALIGN_LEFT);
+			doc.add(p);
+
+			doc.add(createLogoTable());
 
 			doc.close();
 			output.close();
@@ -252,7 +231,6 @@ public class PdfUtil {
 
 	public static InputStream generateFormaYpopsifiou(Candidate candidate) {
 		try {
-			final float BASE_FONT_SIZE = 10.0f;
 			FontFactory.register("arial.ttf");
 			FontFactory.register("arialbd.ttf");
 			Font normalFont = FontFactory.getFont("Arial", BaseFont.IDENTITY_H, BASE_FONT_SIZE);
@@ -262,23 +240,14 @@ public class PdfUtil {
 			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 			Date now = new Date();
 
-			Image logoApella = Image.getInstance(loadImage("logo_apella.png"));
-			logoApella.scaleToFit(1200, 120);
-			Image logoGRnet = Image.getInstance(loadImage("logo_grnet.png"));
-			logoGRnet.scaleToFit(1200, 36);
-			Image logoEU = Image.getInstance(loadImage("logo_eu.jpg"));
-			logoEU.scaleToFit(1200, 36);
-			Image logoEspa = Image.getInstance(loadImage("logo_espa.jpg"));
-			logoEspa.scaleToFit(1200, 36);
-			Image logoDM = Image.getInstance(loadImage("logo-dm.jpg"));
-			logoDM.scaleToFit(1200, 36);
-
 			Document doc = new Document();
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			PdfWriter.getInstance(doc, output);
 
 			doc.open();
 
+			Image logoApella = Image.getInstance(loadImage("logo_apella.png"));
+			logoApella.scaleToFit(1200, 120);
 			logoApella.setAlignment(Element.ALIGN_RIGHT);
 			doc.add(logoApella);
 
@@ -400,14 +369,6 @@ public class PdfUtil {
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
-			p = new Paragraph(" ", boldFont);
-			p.setAlignment(Element.ALIGN_LEFT);
-			doc.add(p);
-
-			p = new Paragraph(" ", boldFont);
-			p.setAlignment(Element.ALIGN_LEFT);
-			doc.add(p);
-
 			PdfPTable signTable = new PdfPTable(2);
 			signTable.setWidthPercentage(100);
 			signTable.setWidths(new float[] {50, 50});
@@ -423,14 +384,15 @@ public class PdfUtil {
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
-			PdfPTable logoTable = new PdfPTable(4);
-			logoTable.setHorizontalAlignment(Element.ALIGN_CENTER);
-			logoTable.setWidths(new float[] {33, 33, 17, 15});
-			logoTable.addCell(createImageCell(logoGRnet, Element.ALIGN_CENTER, 0));
-			logoTable.addCell(createImageCell(logoEU, Element.ALIGN_CENTER, 0));
-			logoTable.addCell(createImageCell(logoEspa, Element.ALIGN_CENTER, 0));
-			logoTable.addCell(createImageCell(logoDM, Element.ALIGN_CENTER, 0));
-			doc.add(logoTable);
+			p = new Paragraph(" ", boldFont);
+			p.setAlignment(Element.ALIGN_LEFT);
+			doc.add(p);
+
+			p = new Paragraph(" ", boldFont);
+			p.setAlignment(Element.ALIGN_LEFT);
+			doc.add(p);
+
+			doc.add(createLogoTable());
 
 			doc.close();
 			output.close();
@@ -458,6 +420,33 @@ public class PdfUtil {
 		cell.setHorizontalAlignment(align);
 		cell.setPadding(10);
 		return cell;
+	}
+
+	private static PdfPTable createLogoTable() throws MalformedURLException, IOException, DocumentException {
+		// Load resources
+		Font normalFont = FontFactory.getFont("Arial", BaseFont.IDENTITY_H, BASE_FONT_SIZE);
+		Image logoGRnet = Image.getInstance(loadImage("logo_grnet.png"));
+		logoGRnet.scaleToFit(1200, 36);
+		Image logoEU = Image.getInstance(loadImage("logo_eu.jpg"));
+		logoEU.scaleToFit(1200, 36);
+		Image logoEspa = Image.getInstance(loadImage("logo_espa.jpg"));
+		logoEspa.scaleToFit(1200, 36);
+		Image logoDM = Image.getInstance(loadImage("logo_ep.jpg"));
+		logoDM.scaleToFit(1200, 36);
+		// Create table
+		PdfPTable logoTable = new PdfPTable(4);
+		logoTable.setHorizontalAlignment(Element.ALIGN_CENTER);
+		logoTable.setWidths(new float[] {25, 25, 25, 25});
+
+		logoTable.addCell(createImageCell(logoGRnet, Element.ALIGN_CENTER, 0));
+		logoTable.addCell(createImageCell(logoEU, Element.ALIGN_CENTER, 0));
+		logoTable.addCell(createImageCell(logoDM, Element.ALIGN_CENTER, 0));
+		logoTable.addCell(createImageCell(logoEspa, Element.ALIGN_CENTER, 0));
+		PdfPCell cell = createCell(new Phrase("Με τη συγχρηματοδότηση της Ελλάδας και της Ευρωπαϊκής Ένωσης", normalFont), Element.ALIGN_CENTER, 0);
+		cell.setColspan(4);
+		logoTable.addCell(cell);
+
+		return logoTable;
 	}
 
 	private static byte[] loadImage(String img) {
