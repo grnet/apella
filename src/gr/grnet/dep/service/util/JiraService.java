@@ -54,7 +54,7 @@ public class JiraService {
 
 	private static final String sesRootURL = "https://staging.tts.grnet.gr/jira/rest/api/2";
 
-	private static final String userRootURL = "http://test.apella.grnet.gr:8080/depui/#user/{userId}";
+	private static final String userRootURL = "http://test.apella.grnet.gr#user/{userId}";
 
 	private static final String jiraProjectKey = "APELLA";
 

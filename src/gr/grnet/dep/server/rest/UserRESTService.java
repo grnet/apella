@@ -312,7 +312,7 @@ public class UserRESTService extends RESTService {
 							put("username", savedUser.getUsername());
 							put("firstname", savedUser.getBasicInfo().getFirstname());
 							put("lastname", savedUser.getBasicInfo().getLastname());
-							put("verificationLink", conf.getString("host") + "/depui/registration.html?#email=" + savedUser.getUsername() + "&verification=" + savedUser.getVerificationNumber());
+							put("verificationLink", conf.getString("home.url") + "/registration.html?#email=" + savedUser.getUsername() + "&verification=" + savedUser.getVerificationNumber());
 						}
 					}));
 			}
@@ -618,7 +618,7 @@ public class UserRESTService extends RESTService {
 								put("username", u.getUsername());
 								put("firstname", u.getBasicInfo().getFirstname());
 								put("lastname", u.getBasicInfo().getLastname());
-								put("verificationLink", conf.getString("host") + "/depui/registration.html?#email=" + u.getUsername() + "&verification=" + u.getVerificationNumber());
+								put("verificationLink", conf.getString("home.url") + "/registration.html?#email=" + u.getUsername() + "&verification=" + u.getVerificationNumber());
 							}
 						}), true);
 
