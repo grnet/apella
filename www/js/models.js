@@ -639,6 +639,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 			"verificationAuthorityName": undefined,
 			"institution": undefined,
 			"department": undefined,
+			"hasOnlineProfile" : undefined,
 			"profileURL": undefined,
 			"rank": undefined,
 			"subject": undefined,

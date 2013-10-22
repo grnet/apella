@@ -31,6 +31,16 @@ public abstract class Professor extends Role {
 	@Transient
 	private Integer evaluationsCount;
 
+	public Boolean hasOnlineProfile = true;
+
+	public boolean getHasOnlineProfile() {
+		return hasOnlineProfile;
+	}
+
+	public void setHasOnlineProfile(boolean hasOnlineProfile) {
+		this.hasOnlineProfile = hasOnlineProfile;
+	}
+
 	public String getProfileURL() {
 		return profileURL;
 	}
@@ -88,6 +98,7 @@ public abstract class Professor extends Role {
 	@Override
 	public Role copyFrom(Role otherRole) {
 		Professor p = (Professor) otherRole;
+		setHasOnlineProfile(p.getHasOnlineProfile());
 		setProfileURL(p.getProfileURL());
 		return this;
 	}

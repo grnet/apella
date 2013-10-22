@@ -2173,8 +2173,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 								return _.isEqual(self.model.get("status"), "UNAPPROVED");
 							case "department":
 								return _.isEqual(self.model.get("status"), "UNAPPROVED");
-							case "profileURL":
+							case "hasOnlineProfile":
 								return _.isEqual(self.model.get("status"), "UNAPPROVED");
+							case "profileURL":
+								return _.isEqual(self.model.get("status"), "UNAPPROVED") && self.model.get("hasOnlineProfile");
 							case "profileFile":
 								return _.isEqual(self.model.get("status"), "UNAPPROVED");
 							case "rank":
@@ -2186,8 +2188,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							case "fekCheckbox":
 								return _.isEqual(self.model.get("status"), "UNAPPROVED");
 							case "fekSubject":
-								return _.isEqual(self.model.get("status"),
-									"UNAPPROVED") && (_.isObject(self.model.get("fekSubject")) || (_.isUndefined(self.model.get("fekSubject")) && _.isUndefined(self.model.get("subject"))));
+								return _.isEqual(self.model.get("status"), "UNAPPROVED") &&
+									(_.isObject(self.model.get("fekSubject")) || (_.isUndefined(self.model.get("fekSubject")) &&
+										_.isUndefined(self.model.get("subject"))));
 							case "subject":
 								return _.isEqual(self.model.get("status"), "UNAPPROVED") && !self.isEditable("fekSubject");
 							default:
@@ -2568,15 +2571,17 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							errorElement: "span",
 							errorClass: "help-inline",
 							highlight: function (element, errorClass, validClass) {
+								window.console.log("highlight", element, errorClass, validClass, $(element).parent(".controls").parent(".control-group"));
 								$(element).parent(".controls").parent(".control-group").addClass("error");
 							},
 							unhighlight: function (element, errorClass, validClass) {
+								window.console.log("unhighlight", element, errorClass, validClass, $(element).parent(".controls").parent(".control-group"));
 								$(element).parent(".controls").parent(".control-group").removeClass("error");
 							},
 							rules: {
 								institution: "required",
 								profileURL: {
-									required: true,
+									required: "input[name=hasOnlineProfile]:not(:checked)",
 									url: true
 								},
 								rank: "required",
@@ -2591,12 +2596,22 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 							},
 							messages: {
 								institution: $.i18n.prop('validation_institution'),
-								profileURL: $.i18n.prop('validation_profileURL'),
+								profileURL: {
+									required: $.i18n.prop('validation_required'),
+									url: $.i18n.prop('validation_profileURL')
+								},
 								rank: $.i18n.prop('validation_rank'),
 								subject: $.i18n.prop('validation_subject'),
 								fek: $.i18n.prop('validation_required'),
 								fekSubject: $.i18n.prop('validation_fekSubject'),
 								fekFile: $.i18n.prop('validation_file')
+							}
+						});
+						self.$("input[name=hasOnlineProfile]").change(function (event, data) {
+							if ($(this).is(":checked")) {
+								self.$("input[name=profileURL]").focus().val("").attr("disabled", true);
+							} else {
+								self.$("input[name=profileURL]").removeAttr("disabled");
 							}
 						});
 						self.$("input[name=fekCheckbox]").change(function (event, data) {
@@ -2967,6 +2982,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						values.rank = {
 							"id": self.$('form select[name=rank]').val()
 						};
+						values.hasOnlineProfile = self.$('form input[name=hasOnlineProfile]').is(':not(:checked)');
 						values.profileURL = self.$('form input[name=profileURL]').val();
 						values.fek = self.$('form input[name=fek]').val();
 						if (self.$('form textarea[name=fekSubject]').val() !== '') {

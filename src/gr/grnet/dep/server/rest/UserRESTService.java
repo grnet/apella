@@ -83,7 +83,7 @@ public class UserRESTService extends RESTService {
 		// Prepare Query
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct u from User u " +
-			"left join u.roles r " +
+			"left join fetch u.roles r " +
 			"where u.username like :username " +
 			"and u.basicInfo.firstname like :firstname " +
 			"and u.basicInfo.lastname like :lastname ");

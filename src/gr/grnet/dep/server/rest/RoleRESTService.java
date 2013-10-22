@@ -383,6 +383,16 @@ public class RoleRESTService extends RESTService {
 					throw new RestException(Status.CONFLICT, "manager.institution.mismatch");
 				}
 				break;
+			case PROFESSOR_DOMESTIC:
+				ProfessorDomestic newProfessorDomestic = (ProfessorDomestic) role;
+				ProfessorDomestic existingProfessorDomestic = (ProfessorDomestic) existingRole;
+				boolean missingProfile;
+				missingProfile = newProfessorDomestic.getProfileURL() == null || newProfessorDomestic.getProfileURL().isEmpty();
+				missingProfile = missingProfile && FileHeader.filter(existingProfessorDomestic.getFiles(), FileType.PROFILE).isEmpty();
+				if (missingProfile) {
+					throw new RestException(Status.CONFLICT, "professor.missing.profile");
+				}
+				break;
 			default:
 				break;
 		}
