@@ -2,7 +2,6 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.InstitutionManager;
 import gr.grnet.dep.service.model.MinistryAssistant;
@@ -11,6 +10,7 @@ import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
+import gr.grnet.dep.service.model.ShibbolethInformation;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.DetailedUserView;
 import gr.grnet.dep.service.model.User.UserStatus;
@@ -487,13 +487,7 @@ public class UserRESTService extends RESTService {
 	@Produces("text/html")
 	public Response shibbolethLogin(@Context HttpServletRequest request) {
 		// 1. Read Attributes from request:
-		String personalUniqueCode = readShibbolethField(request, "HTTP_SHIB_PERSONALUNIQUECODE", "Shib-PersonalUniqueCode");
-		String name = readShibbolethField(request, "HTTP_SHIB_GIVENNAME", "Shib-givenName");
-		String lastName = readShibbolethField(request, "HTTP_SHIB_SN", "Shib-sn");
-		String affiliation = readShibbolethField(request, "HTTP_SHIB_AFFILIATION", "Shib-Affiliation");
-		String email = readShibbolethField(request, "HTTP_SHIB_MAIL", "Shib-mail");
-		String eduBranch = readShibbolethField(request, "HTTP_SHIB_UNDERGRADUATEBRANCH", "Shib-UndergraduateBranch");
-		Long departmentId = (eduBranch != null && eduBranch.matches("(\\d+)")) ? Long.valueOf(eduBranch) : null;
+		ShibbolethInformation shibbolethInfo = ShibbolethInformation.readShibbolethFields(request);
 		URI nextURL;
 		try {
 			nextURL = new URI(request.getParameter("nextURL") == null ? "" : request.getParameter("nextURL"));
@@ -502,45 +496,37 @@ public class UserRESTService extends RESTService {
 		}
 
 		// 2. Validate
-		if (personalUniqueCode == null || name == null || lastName == null || affiliation == null || email == null || eduBranch == null || departmentId == null) {
+		if (shibbolethInfo.isMissingRequiredFields()) {
 			throw new RestException(Status.BAD_REQUEST, "shibboleth.fields.error");
 		}
-		if (!affiliation.equals("Professor") || !affiliation.equals("Researcher")) {
+		if (!shibbolethInfo.getEduPersonAffiliation().equals("faculty")) {
 			throw new RestException(Status.UNAUTHORIZED, "wrong.affiliation");
-		}
-		Department department = em.find(Department.class, departmentId);
-		if (department == null) {
-			throw new RestException(Status.BAD_REQUEST, "wrong.department.id");
 		}
 
 		// 3. Find User
-		User u;
+		User u = null;
 		try {
-			u = (User) em.createQuery("")
-				.setParameter("shibPersonalUniqueCode", personalUniqueCode)
+			u = (User) em.createQuery("select u from User u " +
+				"where u.shibbolehtInfo.eduPersonTargetedID = :eduPersonTargetedID")
+				.setParameter("eduPersonTargetedID", shibbolethInfo.getEduPersonTargetedID())
 				.getSingleResult();
-			u.setUsername(email);
-			u.setAuthToken(u.generateAuthenticationToken());
 		} catch (NoResultException e) {
 			// Create User from Shibboleth Fields 
 			u = new User();
 			u.setRegistrationType(UserRegistrationType.SHIBBOLETH);
-			u.setUsername(email);
-			u.setShibPersonalUniqueCode(personalUniqueCode);
-			u.getBasicInfo().setFirstname(name);
-			u.getBasicInfo().setLastname(lastName);
+			u.getBasicInfo().setFirstname(shibbolethInfo.getGivenName());
+			u.getBasicInfo().setLastname(shibbolethInfo.getSn());
 			u.setRegistrationDate(new Date());
-			u.setStatus(UserStatus.ACTIVE); // We trust shibboleth data, and lock changes from beginning
+			u.setStatus(UserStatus.ACTIVE);
 			u.setStatusDate(new Date());
 
 			ProfessorDomestic pd = new ProfessorDomestic();
-			pd.setDepartment(department);
-			pd.setInstitution(department.getInstitution());
-			pd.setStatus(RoleStatus.ACTIVE); // We trust shibboleth data, and lock changes from beginning
+			pd.setStatus(RoleStatus.ACTIVE);
 			pd.setStatusDate(new Date());
-			//TODO: Shibboleth login: Get Rank from affiliation
 			u.addRole(pd);
 		}
+		u.setShibbolethInfo(shibbolethInfo);
+		u.setAuthToken(u.generateAuthenticationToken());
 		// 4. Persist User
 		try {
 			u = em.merge(u);
@@ -570,10 +556,15 @@ public class UserRESTService extends RESTService {
 					"where u.contactInfo.email = :email")
 				.setParameter("email", email)
 				.getSingleResult();
+			// Validate:
+			if (u.getRegistrationType().equals(UserRegistrationType.SHIBBOLETH)) {
+				throw new RestException(Status.NOT_FOUND, "login.wrong.registration.type");
+			}
 			// Reset password
 			final String newPassword = User.generatePassword();
 			u.setPasswordSalt(User.generatePasswordSalt());
 			u.setPassword(User.encodePassword(newPassword, u.getPasswordSalt()));
+
 			// Send email
 			mailService.postEmail(u.getContactInfo().getEmail(),
 				"password.reset.title",
@@ -605,7 +596,11 @@ public class UserRESTService extends RESTService {
 					"where u.contactInfo.email = :email")
 				.setParameter("email", email)
 				.getSingleResult();
+
 			// Validate
+			if (u.getRegistrationType().equals(UserRegistrationType.SHIBBOLETH)) {
+				throw new RestException(Status.NOT_FOUND, "login.wrong.registration.type");
+			}
 			switch (u.getStatus()) {
 				case UNVERIFIED:
 					// Send email
@@ -644,6 +639,9 @@ public class UserRESTService extends RESTService {
 				.setParameter("username", user.getUsername())
 				.getSingleResult();
 			// Validate
+			if (u.getRegistrationType().equals(UserRegistrationType.SHIBBOLETH)) {
+				throw new RestException(Status.NOT_FOUND, "login.wrong.registration.type");
+			}
 			switch (u.getStatus()) {
 				case UNVERIFIED:
 					if (user.getVerificationNumber() == null || !user.getVerificationNumber().equals(u.getVerificationNumber())) {

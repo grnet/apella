@@ -196,26 +196,6 @@ public class RESTService {
 		}
 	}
 
-	protected String readShibbolethField(HttpServletRequest request, String attributeName, String headerName) {
-		try {
-			Object value = request.getAttribute(attributeName);
-			String field = null;
-			if (value == null || value.toString().isEmpty()) {
-				value = request.getHeader(headerName);
-			}
-			if (value != null && !value.toString().isEmpty()) {
-				field = new String(value.toString().getBytes("ISO-8859-1"), "UTF-8");
-				if (field.indexOf(";") != -1) {
-					field = field.substring(0, field.indexOf(";"));
-				}
-			}
-			return field;
-		} catch (UnsupportedEncodingException e) {
-			staticLogger.log(Level.SEVERE, "decodeAttribute: ", e);
-			return null;
-		}
-	}
-
 	/******************************
 	 * Candidacy Snapshot *********
 	 ******************************/

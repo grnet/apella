@@ -195,7 +195,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				usermenuView.render();
 				$("ul.breadcrumb").show();
 
+				if (App.loggedOnUser.isShibbolethRegistrationIncomplete()) {
+					self.navigate("account", {
+						trigger: false
+					});
+				}
 				// Start Routing
+
 				Backbone.history.start();
 			},
 

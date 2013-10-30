@@ -65,7 +65,6 @@ public class User implements Serializable {
 	@Version
 	private int version;
 
-	@NotNull
 	@Column(unique = true)
 	private String username;
 
@@ -74,8 +73,8 @@ public class User implements Serializable {
 	@Enumerated(EnumType.STRING)
 	private UserRegistrationType registrationType;
 
-	@Column(unique = true)
-	private String shibPersonalUniqueCode;
+	@Embedded
+	private ShibbolethInformation shibbolethInfo = new ShibbolethInformation();
 
 	@Enumerated(EnumType.STRING)
 	private UserStatus status;
@@ -140,12 +139,12 @@ public class User implements Serializable {
 		this.identification = identification;
 	}
 
-	public String getShibPersonalUniqueCode() {
-		return shibPersonalUniqueCode;
+	public ShibbolethInformation getShibbolethInfo() {
+		return shibbolethInfo;
 	}
 
-	public void setShibPersonalUniqueCode(String shibPersonalUniqueCode) {
-		this.shibPersonalUniqueCode = shibPersonalUniqueCode;
+	public void setShibbolethInfo(ShibbolethInformation shibbolethInfo) {
+		this.shibbolethInfo = shibbolethInfo;
 	}
 
 	public UserRegistrationType getRegistrationType() {
@@ -265,6 +264,13 @@ public class User implements Serializable {
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////
+
+	public boolean isMissingRequiredFields() {
+		return this.basicInfo.isMissingRequiredFields() ||
+			this.contactInfo.isMissingRequiredFields() ||
+			this.shibbolethInfo.isMissingRequiredFields() ||
+			this.identification == null;
+	}
 
 	public void addRole(Role role) {
 		roles.add(role);

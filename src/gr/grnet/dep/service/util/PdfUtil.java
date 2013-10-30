@@ -99,7 +99,7 @@ public class PdfUtil {
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
-			p = new Paragraph("Βεβαίωση Συμμετοχή Διαχειριστή Ιδρύματος στην Απέλλα", largerBoldFont);
+			p = new Paragraph("Βεβαίωση Συμμετοχής Διαχειριστή Ιδρύματος στην Απέλλα", largerBoldFont);
 			p.setAlignment(Element.ALIGN_CENTER);
 			doc.add(p);
 

@@ -11,6 +11,8 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 			"id": undefined,
 			"username": undefined,
 			"identification": undefined,
+			"registrationType" : undefined,
+			"isMissingRequiredFields": undefined,
 			"basicInfo": {
 				"firstname": undefined,
 				"lastname": undefined,
@@ -26,8 +28,10 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 				"mobile": "",
 				"phone": ""
 			},
+			"shibbolethInfo" : {},
 			"roles": []
 		},
+
 		parse: function (resp, options) {
 			// This is the only place we have access to xhr - response object
 			if (options && options.xhr) {
@@ -43,6 +47,12 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 			}
 			return resp;
 		},
+
+		isShibbolethRegistrationIncomplete: function() {
+			var self = this;
+			return _.isEqual(self.get("registrationType"), "SHIBBOLETH") && self.get("isMissingRequiredField");
+		},
+
 		getRole: function (role) {
 			var self = this;
 			if (self.has("roles")) {
@@ -52,6 +62,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 			}
 			return undefined;
 		},
+
 		hasRole: function (role) {
 			var self = this;
 			if (self.has("roles")) {
@@ -639,7 +650,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 			"verificationAuthorityName": undefined,
 			"institution": undefined,
 			"department": undefined,
-			"hasOnlineProfile" : undefined,
+			"hasOnlineProfile": undefined,
 			"profileURL": undefined,
 			"rank": undefined,
 			"subject": undefined,
