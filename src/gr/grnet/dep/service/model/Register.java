@@ -6,6 +6,7 @@ import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
@@ -39,7 +40,7 @@ public class Register implements Serializable {
 	@ManyToOne(optional = false)
 	private Institution institution;
 
-	@OneToMany(mappedBy = "register", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "register", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<RegisterMember> members = new HashSet<RegisterMember>();
 
 	public Long getId() {
@@ -94,9 +95,4 @@ public class Register implements Serializable {
 		return this;
 	}
 
-	public void initializeCollections() {
-		for (RegisterMember member : this.members) {
-			member.initializeCollections();
-		}
-	}
 }

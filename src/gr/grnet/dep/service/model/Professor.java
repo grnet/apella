@@ -7,9 +7,12 @@ import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlTransient;
+
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 @Entity
 public abstract class Professor extends Role {
@@ -19,10 +22,10 @@ public abstract class Professor extends Role {
 
 	private String profileURL;
 
-	@OneToMany(mappedBy = "professor", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "professor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<ProfessorFile> files = new HashSet<ProfessorFile>();
 
-	@OneToMany(mappedBy = "professor", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "professor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<RegisterMember> registerMemberships = new HashSet<RegisterMember>();
 
 	@Transient
@@ -50,6 +53,7 @@ public abstract class Professor extends Role {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public Set<ProfessorFile> getFiles() {
 		return files;
 	}
@@ -59,6 +63,7 @@ public abstract class Professor extends Role {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public Set<RegisterMember> getRegisterMemberships() {
 		return registerMemberships;
 	}
@@ -91,11 +96,6 @@ public abstract class Professor extends Role {
 	}
 
 	@Override
-	public void initializeCollections() {
-		this.getFiles().size();
-	}
-
-	@Override
 	public Role copyFrom(Role otherRole) {
 		Professor p = (Professor) otherRole;
 		setHasOnlineProfile(p.getHasOnlineProfile());
@@ -113,6 +113,8 @@ public abstract class Professor extends Role {
 	}
 
 	@Override
+	@XmlTransient
+	@JsonIgnore
 	public boolean isMissingRequiredFields() {
 		return false;
 	}

@@ -111,7 +111,6 @@ public class PositionSearchRESTService extends RESTService {
 				}
 			}
 			for (Position position : positions) {
-				position.initializeCollections(); // Do it here since we iterate the list
 				if (!position.getPhase().getClientStatus().equals(PositionStatus.ANOIXTI.toString())) {
 					position.setCanSubmitCandidacy(Boolean.FALSE);
 				}
@@ -144,7 +143,6 @@ public class PositionSearchRESTService extends RESTService {
 					"where c.candidate.id = :candidateId ")
 				.setParameter("candidateId", candidate.getId())
 				.getSingleResult();
-			criteria.initializeCollections();
 			return criteria;
 		} catch (NoResultException e) {
 			PositionSearchCriteria criteria = new PositionSearchCriteria();

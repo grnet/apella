@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.configuration.ConfigurationException;
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.map.annotate.JsonView;
 
 /**
@@ -150,6 +151,7 @@ public final class FileBody implements Serializable {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public String getStoredFilePath() {
 		return storedFilePath;
 	}

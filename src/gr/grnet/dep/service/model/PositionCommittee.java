@@ -6,14 +6,13 @@ import gr.grnet.dep.service.model.file.PositionCommitteeFile;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
@@ -24,6 +23,7 @@ import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonView;
@@ -54,11 +54,11 @@ public class PositionCommittee {
 	@Temporal(TemporalType.DATE)
 	private Date committeeMeetingDate; // Ημερομηνία Συνεδρίασης επιτροπής
 
-	@OneToMany(mappedBy = "committee", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "committee", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<PositionCommitteeFile> files = new HashSet<PositionCommitteeFile>();
 
-	@OneToMany(mappedBy = "committee", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<PositionCommitteeMember> members = new ArrayList<PositionCommitteeMember>();
+	@OneToMany(mappedBy = "committee", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	private Set<PositionCommitteeMember> members = new HashSet<PositionCommitteeMember>();
 
 	@Temporal(TemporalType.DATE)
 	private Date createdAt;
@@ -84,6 +84,7 @@ public class PositionCommittee {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public Set<PositionPhase> getPhases() {
 		return phases;
 	}
@@ -103,6 +104,7 @@ public class PositionCommittee {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public Set<PositionCommitteeFile> getFiles() {
 		return files;
 	}
@@ -112,11 +114,11 @@ public class PositionCommittee {
 	}
 
 	@JsonView({DetailedPositionCommitteeView.class})
-	public List<PositionCommitteeMember> getMembers() {
+	public Set<PositionCommitteeMember> getMembers() {
 		return members;
 	}
 
-	public void setMembers(List<PositionCommitteeMember> members) {
+	public void setMembers(Set<PositionCommitteeMember> members) {
 		this.members = members;
 	}
 
@@ -164,13 +166,6 @@ public class PositionCommittee {
 			}
 		}
 		return false;
-	}
-
-	public void initializeCollections() {
-		this.files.size();
-		for (PositionCommitteeMember member : members) {
-			member.initializeCollections();
-		}
 	}
 
 }

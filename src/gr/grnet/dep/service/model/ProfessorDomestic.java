@@ -11,6 +11,9 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlTransient;
+
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 @Entity
 @DiscriminatorValue("PROFESSOR_DOMESTIC")
@@ -96,11 +99,6 @@ public class ProfessorDomestic extends Professor {
 	////////////////////////////////////////////////////////////////////////////
 
 	@Override
-	public void initializeCollections() {
-		super.initializeCollections();
-	}
-
-	@Override
 	public Role copyFrom(Role otherRole) {
 		super.copyFrom(otherRole);
 		ProfessorDomestic pd = (ProfessorDomestic) otherRole;
@@ -139,6 +137,8 @@ public class ProfessorDomestic extends Professor {
 	}
 
 	@Override
+	@XmlTransient
+	@JsonIgnore
 	public boolean isMissingRequiredFields() {
 		if (super.isMissingRequiredFields()) {
 			return true;

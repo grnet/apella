@@ -11,6 +11,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+
 @Entity
 @DiscriminatorValue("INSTITUTION_ASSISTANT")
 public class InstitutionAssistant extends Role {
@@ -42,6 +44,7 @@ public class InstitutionAssistant extends Role {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public InstitutionManager getManager() {
 		return manager;
 	}
@@ -51,11 +54,6 @@ public class InstitutionAssistant extends Role {
 	}
 
 	////////////////////////////////////////////////////////////////////////////
-
-	@Override
-	public void initializeCollections() {
-		manager.initializeCollections();
-	}
 
 	@Override
 	public Role copyFrom(Role otherRole) {

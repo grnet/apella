@@ -10,10 +10,13 @@ import javax.inject.Inject;
 import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 @Entity
 @XmlRootElement
@@ -26,10 +29,10 @@ public class Candidate extends Role {
 	@Transient
 	private Logger logger;
 
-	@OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<CandidateFile> files = new HashSet<CandidateFile>();
 
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "candidate")
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "candidate", fetch = FetchType.LAZY)
 	private Set<Candidacy> candidacies = new HashSet<Candidacy>();
 
 	public Candidate() {
@@ -38,6 +41,7 @@ public class Candidate extends Role {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public Set<Candidacy> getCandidacies() {
 		return candidacies;
 	}
@@ -47,6 +51,7 @@ public class Candidate extends Role {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public Set<CandidateFile> getFiles() {
 		return files;
 	}
@@ -65,12 +70,6 @@ public class Candidate extends Role {
 	public void addCandidacy(Candidacy candidacy) {
 		this.candidacies.add(candidacy);
 		candidacy.setCandidate(this);
-	}
-
-	@Override
-	public void initializeCollections() {
-		getFiles().size();
-		getCandidacies().size();
 	}
 
 	@Override

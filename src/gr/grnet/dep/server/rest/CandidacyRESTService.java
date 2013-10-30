@@ -95,18 +95,15 @@ public class CandidacyRESTService extends RESTService {
 				loggedOn.isDepartmentUser(candidacy.getCandidacies().getPosition().getDepartment()) ||
 				candidate.getUser().getId().equals(loggedOn.getId())) {
 				// Full Access
-				candidacy.initializeCollections();
 				return toJSON(candidacy, DetailedCandidacyView.class);
 			}
 			if (candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn) ||
 				candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) {
 				// Medium (without ContactInformation and ProposedEvaluation)
-				candidacy.initializeCollections();
 				return toJSON(candidacy, MediumCandidacyView.class);
 			}
 			if (candidacy.isOpenToOtherCandidates() && candidacy.getCandidacies().containsCandidate(loggedOn)) {
 				// Medium (without ContactInformation and ProposedEvaluation)
-				candidacy.initializeCollections();
 				return toJSON(candidacy, MediumCandidacyView.class);
 			}
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -163,7 +160,6 @@ public class CandidacyRESTService extends RESTService {
 					.setParameter("positionId", position.getId())
 					.getSingleResult();
 				// Return Results
-				existingCandidacy.initializeCollections();
 				return existingCandidacy;
 			} catch (NoResultException e) {
 			}
@@ -181,7 +177,6 @@ public class CandidacyRESTService extends RESTService {
 			em.flush();
 
 			// Return Results
-			candidacy.initializeCollections();
 			return candidacy;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
@@ -369,7 +364,6 @@ public class CandidacyRESTService extends RESTService {
 			}
 
 			// Return
-			existingCandidacy.initializeCollections();
 			return existingCandidacy;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
@@ -546,10 +540,6 @@ public class CandidacyRESTService extends RESTService {
 			.setParameter("status", RoleStatus.ACTIVE)
 			.getResultList();
 
-		// Execute
-		for (RegisterMember r : registerMembers) {
-			r.initializeCollections();
-		}
 		return registerMembers;
 	}
 

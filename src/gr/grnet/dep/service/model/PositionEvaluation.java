@@ -13,6 +13,7 @@ import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
@@ -23,6 +24,7 @@ import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonView;
@@ -47,10 +49,10 @@ public class PositionEvaluation {
 	@ManyToOne
 	private Position position;
 
-	@OneToMany(mappedBy = "evaluation", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "evaluation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<PositionPhase> phases = new HashSet<PositionPhase>();
 
-	@OneToMany(mappedBy = "evaluation", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "evaluation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private Set<PositionEvaluator> evaluators = new HashSet<PositionEvaluator>();
 
 	@Temporal(TemporalType.DATE)
@@ -86,6 +88,7 @@ public class PositionEvaluation {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public Set<PositionPhase> getPhases() {
 		return phases;
 	}
@@ -135,14 +138,6 @@ public class PositionEvaluation {
 
 	public void copyFrom(PositionEvaluation other) {
 		this.setUpdatedAt(new Date());
-	}
-
-	public void initializeCollections() {
-		for (PositionEvaluator evaluator : this.evaluators) {
-			evaluator.initializeCollections();
-		}
-		canUpdateEvaluators();
-		canUploadEvaluations();
 	}
 
 	public boolean containsEvaluator(User user) {

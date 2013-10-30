@@ -12,6 +12,7 @@ import java.util.TreeMap;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
@@ -24,6 +25,7 @@ import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonView;
@@ -90,7 +92,7 @@ public class Position {
 	@ManyToOne(cascade = CascadeType.ALL)
 	private PositionPhase phase;
 
-	@OneToMany(mappedBy = "position", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "position", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	@OrderBy("order ASC")
 	private List<PositionPhase> phases = new ArrayList<PositionPhase>();
 
@@ -188,6 +190,7 @@ public class Position {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public List<PositionPhase> getPhases() {
 		return phases;
 	}
@@ -258,7 +261,4 @@ public class Position {
 		}
 	}
 
-	public void initializeCollections() {
-		this.phases.size();
-	}
 }

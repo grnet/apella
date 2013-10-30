@@ -97,7 +97,6 @@ public class PositionCandidaciesRESTService extends RESTService {
 		Set<Candidacy> result = new HashSet<Candidacy>();
 		for (Candidacy candidacy : position.getPhase().getCandidacies().getCandidacies()) {
 			if (candidacy.isPermanent()) {
-				candidacy.initializeCollections();
 				result.add(candidacy);
 			}
 		}
@@ -145,7 +144,6 @@ public class PositionCandidaciesRESTService extends RESTService {
 			!existingCandidacies.containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		existingCandidacies.initializeCollections();
 		for (Candidacy candidacy : existingCandidacies.getCandidacies()) {
 			if (!candidacy.isOpenToOtherCandidates() && !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId()) && existingCandidacies.containsCandidate(loggedOn)) {
 				candidacy.setAllowedToSee(Boolean.FALSE);

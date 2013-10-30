@@ -15,6 +15,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -29,6 +30,7 @@ import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.map.annotate.JsonView;
 import org.hibernate.annotations.FilterDef;
 
@@ -66,10 +68,10 @@ public class Candidacy {
 	@ManyToOne
 	private PositionCandidacies candidacies;
 
-	@OneToMany(mappedBy = "candidacy", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "candidacy", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<CandidacyFile> files = new HashSet<CandidacyFile>();
 
-	@OneToMany(mappedBy = "candidacy", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "candidacy", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private Set<CandidacyEvaluator> proposedEvaluators = new HashSet<CandidacyEvaluator>();
 
 	@Transient
@@ -206,6 +208,7 @@ public class Candidacy {
 		}
 
 		@XmlTransient
+		@JsonIgnore
 		public Set<FileBody> getFiles() {
 			return files;
 		}
@@ -296,6 +299,7 @@ public class Candidacy {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public Set<CandidacyFile> getFiles() {
 		return files;
 	}
@@ -320,6 +324,7 @@ public class Candidacy {
 	// /////////////////////////////////////////////////////////////
 
 	@XmlTransient
+	@JsonIgnore
 	public Set<CandidateFile> getSnapshotFiles() {
 		Set<CandidateFile> result = new HashSet<CandidateFile>();
 		for (FileBody body : snapshot.getFiles()) {
@@ -368,14 +373,5 @@ public class Candidacy {
 		snapshot.setInstitutionString(professor.getInstitution());
 		snapshot.setRank(professor.getRank());
 		snapshot.setSubject(professor.getSubject());
-	}
-
-	public void initializeCollections() {
-		this.candidate.getFiles().size();
-		this.snapshot.getFiles().size();
-		this.proposedEvaluators.size();
-		for (CandidacyEvaluator eval : proposedEvaluators) {
-			eval.getRegisterMember().initializeCollections();
-		}
 	}
 }

@@ -71,9 +71,6 @@ public class CandidateRESTService extends RESTService {
 
 		@SuppressWarnings("unchecked")
 		List<Candidacy> retv = query.getResultList();
-		for (Candidacy cy : retv) {
-			cy.initializeCollections();
-		}
 		return retv;
 	}
 

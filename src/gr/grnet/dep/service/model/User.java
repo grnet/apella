@@ -13,10 +13,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.ejb.EJBException;
 import javax.persistence.CascadeType;
@@ -37,6 +38,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.codec.binary.Base64;
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonView;
 
@@ -97,7 +99,14 @@ public class User implements Serializable {
 	private ContactInformation contactInfo = new ContactInformation();
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.EAGER)
-	private List<Role> roles = new ArrayList<Role>();
+	private Set<Role> roles = new TreeSet<Role>(new Comparator<Role>() {
+
+		@Override
+		public int compare(Role o1, Role o2) {
+			return roleOrder.indexOf(o1.getDiscriminator()) - roleOrder.indexOf(o2.getDiscriminator());
+		}
+
+	});
 
 	private String password;
 
@@ -205,6 +214,7 @@ public class User implements Serializable {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public String getPasswordSalt() {
 		return passwordSalt;
 	}
@@ -214,11 +224,11 @@ public class User implements Serializable {
 	}
 
 	@JsonView({DetailedUserView.class})
-	public List<Role> getRoles() {
+	public Set<Role> getRoles() {
 		return roles;
 	}
 
-	public void setRoles(List<Role> roles) {
+	public void setRoles(Set<Role> roles) {
 		this.roles = roles;
 	}
 
@@ -255,6 +265,7 @@ public class User implements Serializable {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public String getAuthToken() {
 		return authToken;
 	}
@@ -298,22 +309,11 @@ public class User implements Serializable {
 		if (roles.isEmpty()) {
 			return null;
 		}
-		if (roles.size() == 1) {
-			return roles.get(0).getDiscriminator();
-		} else {
-			Collections.sort(roles, new Comparator<Role>() {
-
-				@Override
-				public int compare(Role o1, Role o2) {
-					return roleOrder.indexOf(o1.getDiscriminator()) - roleOrder.indexOf(o2.getDiscriminator());
-				}
-
-			});
-			return roles.get(0).getDiscriminator();
-		}
+		return roles.iterator().next().getDiscriminator();
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public Role getActiveRole(RoleDiscriminator discriminator) {
 		for (Role r : getRoles()) {
 			if (r.getDiscriminator() == discriminator && r.getStatus().equals(RoleStatus.ACTIVE)) {
@@ -333,6 +333,7 @@ public class User implements Serializable {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public List<Institution> getAssociatedInstitutions() {
 		List<Institution> institutions = new ArrayList<Institution>();
 		for (Role r : getRoles()) {
@@ -349,6 +350,7 @@ public class User implements Serializable {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public boolean isInstitutionUser(Institution institution) {
 		for (Role r : getRoles()) {
 			if (r.getDiscriminator() == RoleDiscriminator.INSTITUTION_MANAGER) {
@@ -368,6 +370,7 @@ public class User implements Serializable {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public boolean isDepartmentUser(Department department) {
 		Institution institution = department.getInstitution();
 		for (Role r : getRoles()) {
@@ -385,13 +388,6 @@ public class User implements Serializable {
 			}
 		}
 		return false;
-	}
-
-	public void initializeCollections() {
-		this.roles.size();
-		for (Role r : roles) {
-			r.initializeCollections();
-		}
 	}
 
 	/**

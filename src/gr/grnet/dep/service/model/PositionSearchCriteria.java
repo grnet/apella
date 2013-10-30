@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
@@ -33,10 +34,10 @@ public class PositionSearchCriteria {
 	@ManyToOne
 	private Candidate candidate;
 
-	@ManyToMany
+	@ManyToMany(fetch = FetchType.EAGER)
 	private Set<Department> departments = new HashSet<Department>();
 
-	@ManyToMany
+	@ManyToMany(fetch = FetchType.EAGER)
 	private Set<Sector> sectors = new HashSet<Sector>();
 
 	public Long getId() {
@@ -73,10 +74,5 @@ public class PositionSearchCriteria {
 	}
 
 	////////////////////////////////////////
-
-	public void initializeCollections() {
-		this.departments.size();
-		this.sectors.size();
-	}
 
 }

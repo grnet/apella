@@ -57,9 +57,6 @@ public class ProfessorRESTService extends RESTService {
 				"where pcm.registerMember.professor.id = :professorId ")
 			.setParameter("professorId", professorId)
 			.getResultList();
-		for (PositionCommitteeMember committeeMember : committees) {
-			committeeMember.initializeCollections();
-		}
 		return committees;
 	}
 
@@ -90,9 +87,6 @@ public class ProfessorRESTService extends RESTService {
 				"where pe.registerMember.professor.id = :professorId ")
 			.setParameter("professorId", professorId)
 			.getResultList();
-		for (PositionEvaluator evaluator : evaluations) {
-			evaluator.initializeCollections();
-		}
 		return evaluations;
 	}
 

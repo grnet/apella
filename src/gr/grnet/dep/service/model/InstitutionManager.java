@@ -109,10 +109,6 @@ public class InstitutionManager extends Role {
 	////////////////////////////////////////////////////////////////////////////
 
 	@Override
-	public void initializeCollections() {
-	}
-
-	@Override
 	public Role copyFrom(Role otherRole) {
 		InstitutionManager im = (InstitutionManager) otherRole;
 		this.setInstitution(im.getInstitution());

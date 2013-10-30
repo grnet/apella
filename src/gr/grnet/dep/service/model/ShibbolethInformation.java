@@ -12,6 +12,8 @@ public class ShibbolethInformation {
 
 	private static Logger logger = Logger.getLogger(ShibbolethInformation.class.getName());
 
+	private boolean enabled = false;
+
 	private String eduPersonTargetedID;
 
 	// givenName, HTTP_GIVENNAME
@@ -27,6 +29,14 @@ public class ShibbolethInformation {
 	//eduPersonPrimaryAffiliation -> primary_affiliation, HTTP_PRIMARY_AFFILIATION
 	//eduPersonScopedAffiliation -> affiliation, HTTP_AFFILIATION
 	private String eduPersonAffiliation;
+
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
 
 	public String getEduPersonTargetedID() {
 		return eduPersonTargetedID;

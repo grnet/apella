@@ -7,6 +7,7 @@ import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Register;
 import gr.grnet.dep.service.model.Register.DetailedRegisterView;
+import gr.grnet.dep.service.model.Register.RegisterView;
 import gr.grnet.dep.service.model.RegisterMember;
 import gr.grnet.dep.service.model.RegisterMember.DetailedRegisterMemberView;
 import gr.grnet.dep.service.model.Role;
@@ -55,7 +56,7 @@ public class RegisterRESTService extends RESTService {
 	 * @return
 	 */
 	@GET
-	@JsonView({DetailedRegisterView.class})
+	@JsonView({RegisterView.class})
 	public Collection<Register> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
 		getLoggedOn(authToken);
 		@SuppressWarnings("unchecked")
@@ -82,19 +83,25 @@ public class RegisterRESTService extends RESTService {
 		try {
 			Register r = (Register) em.createQuery(
 				"select r from Register r " +
-					"left join fetch r.members m " +
-					"left join fetch m.committees " +
-					"left join fetch m.evaluations " +
 					"where r.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
 
-			r.initializeCollections();
+			addCanBeDeletedInfo(r);
 			return r;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
 
+	}
+
+	private void addCanBeDeletedInfo(Register register) {
+		// TODO: One query, avoid laizy initialization
+		for (RegisterMember member : register.getMembers()) {
+			member.setCanBeDeleted(!member.getCommittees().isEmpty() ||
+				!member.getEvaluations().isEmpty() ||
+				!member.getCandidacyEvaluations().isEmpty());
+		}
 	}
 
 	/**
@@ -136,7 +143,7 @@ public class RegisterRESTService extends RESTService {
 			em.persist(newRegister);
 			em.flush();
 
-			newRegister.initializeCollections();
+			addCanBeDeletedInfo(newRegister);
 			return newRegister;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
@@ -280,7 +287,6 @@ public class RegisterRESTService extends RESTService {
 			existingRegister.setPermanent(true);
 			existingRegister = em.merge(existingRegister);
 
-			existingRegister.initializeCollections();
 			em.flush();
 
 			// Send E-Mails:
@@ -345,7 +351,7 @@ public class RegisterRESTService extends RESTService {
 			// End: Send E-Mails
 
 			// Return Result
-			existingRegister.initializeCollections();
+			addCanBeDeletedInfo(existingRegister);
 			return existingRegister;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
@@ -406,9 +412,6 @@ public class RegisterRESTService extends RESTService {
 		if (register == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
-		for (RegisterMember member : register.getMembers()) {
-			member.getProfessor().initializeCollections();
-		}
 		return register.getMembers();
 	}
 
@@ -434,7 +437,6 @@ public class RegisterRESTService extends RESTService {
 		}
 		for (RegisterMember member : register.getMembers()) {
 			if (member.getId().equals(memberId)) {
-				member.getProfessor().initializeCollections();
 				return member;
 			}
 		}
@@ -478,10 +480,6 @@ public class RegisterRESTService extends RESTService {
 			.getResultList();
 
 		// Execute
-		for (Role r : professors) {
-			Professor p = (Professor) r;
-			r.initializeCollections();
-		}
 		return professors;
 	}
 

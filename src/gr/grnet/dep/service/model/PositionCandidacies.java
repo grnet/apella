@@ -11,6 +11,7 @@ import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
@@ -21,6 +22,7 @@ import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonView;
@@ -46,14 +48,14 @@ public class PositionCandidacies {
 	@ManyToOne
 	private Position position;
 
-	@OneToMany(mappedBy = "candidacies", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "candidacies", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<PositionPhase> phases = new HashSet<PositionPhase>();
 
-	@OneToMany(mappedBy = "candidacies", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "candidacies", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	@Filter(name = "filterPermanent")
 	private Set<Candidacy> candidacies = new HashSet<Candidacy>();
 
-	@OneToMany(mappedBy = "candidacies", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "candidacies", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<PositionCandidaciesFile> files = new HashSet<PositionCandidaciesFile>();
 
 	@Temporal(TemporalType.DATE)
@@ -86,6 +88,7 @@ public class PositionCandidacies {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public Set<PositionPhase> getPhases() {
 		return phases;
 	}
@@ -144,6 +147,7 @@ public class PositionCandidacies {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public Set<PositionCandidaciesFile> getFiles() {
 		return files;
 	}
@@ -163,13 +167,6 @@ public class PositionCandidacies {
 		this.setClosingDate(other.getClosingDate());
 		this.setOpeningDate(other.getOpeningDate());
 		this.setUpdatedAt(new Date());
-	}
-
-	public void initializeCollections() {
-		for (Candidacy candidacy : candidacies) {
-			candidacy.initializeCollections();
-		}
-		this.files.size();
 	}
 
 	public boolean containsCandidate(User user) {

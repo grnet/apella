@@ -29,10 +29,6 @@ public class MinistryManager extends Role {
 	////////////////////////////////////////////////////////////////////////////	
 
 	@Override
-	public void initializeCollections() {
-	}
-
-	@Override
 	public Role copyFrom(Role otherRole) {
 		MinistryManager mm = (MinistryManager) otherRole;
 		setMinistry(mm.getMinistry());

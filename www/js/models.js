@@ -1202,7 +1202,8 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 			id: undefined,
 			permanent: undefined,
 			title: undefined,
-			institution: undefined
+			institution: undefined,
+			members : []
 		}
 	});
 

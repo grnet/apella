@@ -9,6 +9,7 @@ import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
@@ -17,6 +18,7 @@ import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
@@ -48,7 +50,7 @@ public class PositionEvaluator implements Serializable {
 	@ManyToOne
 	private RegisterMember registerMember;
 
-	@OneToMany(mappedBy = "evaluator", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "evaluator", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<PositionEvaluatorFile> files = new HashSet<PositionEvaluatorFile>();
 
 	public Long getId() {
@@ -86,6 +88,7 @@ public class PositionEvaluator implements Serializable {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public Set<PositionEvaluatorFile> getFiles() {
 		return files;
 	}
@@ -99,10 +102,6 @@ public class PositionEvaluator implements Serializable {
 	public void addFile(PositionEvaluatorFile file) {
 		file.setEvaluator(this);
 		this.files.add(file);
-	}
-
-	public void initializeCollections() {
-		this.registerMember.initializeCollections();
 	}
 
 }

@@ -231,7 +231,6 @@ public class RoleRESTService extends RESTService {
 		List<Role> roles = query.getResultList();
 		for (Role r : roles) {
 			r.getUser().getPrimaryRole();
-			r.initializeCollections();
 		}
 		return roles;
 	}
@@ -279,7 +278,6 @@ public class RoleRESTService extends RESTService {
 			.getSingleResult();
 
 		r.getUser().getPrimaryRole();
-		r.initializeCollections();
 		return r;
 	}
 
@@ -331,7 +329,6 @@ public class RoleRESTService extends RESTService {
 			newRole.setId(null);
 			newRole = em.merge(newRole);
 			em.flush();
-			newRole.initializeCollections();
 			return newRole;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
@@ -425,8 +422,6 @@ public class RoleRESTService extends RESTService {
 			}
 			// Return Result
 			em.flush();
-
-			existingRole.initializeCollections();
 
 			// Post to Jira
 			if (!existingRole.isMissingRequiredFields()) {
@@ -550,12 +545,10 @@ public class RoleRESTService extends RESTService {
 		// Return Result
 		if (role instanceof Candidate) {
 			Candidate candidate = (Candidate) role;
-			candidate.initializeCollections();
 			GenericEntity<Set<CandidateFile>> entity = new GenericEntity<Set<CandidateFile>>(FileHeader.filterDeleted(candidate.getFiles())) {};
 			return Response.ok(entity).build();
 		} else if (role instanceof Professor) {
 			Professor professor = (Professor) role;
-			professor.initializeCollections();
 			GenericEntity<Set<ProfessorFile>> entity = new GenericEntity<Set<ProfessorFile>>(FileHeader.filterDeleted(professor.getFiles())) {};
 			return Response.ok(entity).build();
 		}
@@ -1126,8 +1119,6 @@ public class RoleRESTService extends RESTService {
 					}
 				}
 			}
-			// Return result
-			primaryRole.initializeCollections();
 
 			// Post to Jira
 			switch (primaryRole.getStatus()) {
@@ -1151,6 +1142,7 @@ public class RoleRESTService extends RESTService {
 					break;
 			}
 
+			// Return result
 			return primaryRole;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);

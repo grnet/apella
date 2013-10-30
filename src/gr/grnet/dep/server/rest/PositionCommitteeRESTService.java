@@ -114,7 +114,6 @@ public class PositionCommitteeRESTService extends RESTService {
 		for (RegisterMember r : registerMembers) {
 			Professor p = (Professor) r.getProfessor();
 			p.setCommitteesCount(Professor.countCommittees(p));
-			r.getProfessor().initializeCollections();
 		}
 		return registerMembers;
 	}
@@ -156,7 +155,6 @@ public class PositionCommitteeRESTService extends RESTService {
 			!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		existingCommittee.initializeCollections();
 		return existingCommittee;
 	}
 
@@ -542,7 +540,6 @@ public class PositionCommitteeRESTService extends RESTService {
 			// End: Send E-Mails
 
 			// Return result
-			savedCommittee.initializeCollections();
 			return savedCommittee;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();

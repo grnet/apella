@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.validator.constraints.NotEmpty;
 
 @Entity
@@ -64,6 +65,7 @@ public class Department {
 	///////////////////////////////////////////////////////////////
 
 	@XmlTransient
+	@JsonIgnore
 	public String getFullName() {
 		if (getDepartment() != null) {
 			StringBuilder sb = new StringBuilder(getDepartment());

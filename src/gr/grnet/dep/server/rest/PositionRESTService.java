@@ -63,7 +63,6 @@ public class PositionRESTService extends RESTService {
 		if (position == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
-		position.initializeCollections();
 		return position;
 	}
 
@@ -90,9 +89,6 @@ public class PositionRESTService extends RESTService {
 				.setParameter("institutions", institutions)
 				.getResultList();
 
-			for (Position position : positions) {
-				position.initializeCollections();
-			}
 			return positions;
 		} else if (loggedOnUser.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) ||
 			loggedOnUser.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) ||
@@ -103,9 +99,6 @@ public class PositionRESTService extends RESTService {
 				"from Position p " +
 					"where p.permanent = true")
 				.getResultList();
-			for (Position position : positions) {
-				position.initializeCollections();
-			}
 			return positions;
 		}
 		throw new RestException(Status.UNAUTHORIZED, "insufficient.privileges");
@@ -131,9 +124,6 @@ public class PositionRESTService extends RESTService {
 				.setParameter("today", today)
 				.getResultList();
 
-			for (Position position : positions) {
-				position.initializeCollections();
-			}
 			return positions;
 		} catch (ParseException e) {
 			throw new RestException(Status.INTERNAL_SERVER_ERROR, "parse.exception");
@@ -230,7 +220,6 @@ public class PositionRESTService extends RESTService {
 			position = em.merge(position);
 			em.flush();
 
-			position.initializeCollections();
 			return position;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
@@ -276,7 +265,6 @@ public class PositionRESTService extends RESTService {
 			em.flush();
 
 			// Send E-Mails
-			existingPosition.initializeCollections();
 			if (isNew) {
 				sendNotificationsToInterestedCandidates(existingPosition);
 			}
@@ -585,7 +573,6 @@ public class PositionRESTService extends RESTService {
 			}
 
 			em.flush();
-			existingPosition.initializeCollections();
 			return existingPosition;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);

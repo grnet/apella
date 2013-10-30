@@ -98,10 +98,9 @@ public class PositionEvaluationRESTService extends RESTService {
 			!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		for (PositionEvaluator evaluator : existingEvaluation.getEvaluators()) {
-			evaluator.getRegisterMember().getProfessor().initializeCollections();
-		}
-		existingEvaluation.initializeCollections();
+
+		existingEvaluation.canUpdateEvaluators();
+		existingEvaluation.canUploadEvaluations();
 		return existingEvaluation;
 	}
 
@@ -151,7 +150,6 @@ public class PositionEvaluationRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.evaluator.id");
 		}
 		//Return
-		existingEvaluator.getRegisterMember().getProfessor().initializeCollections();
 		return existingEvaluator;
 	}
 
@@ -344,7 +342,8 @@ public class PositionEvaluationRESTService extends RESTService {
 			// End: Send E-Mails
 
 			// Return result
-			existingEvaluation.initializeCollections();
+			existingEvaluation.canUpdateEvaluators();
+			existingEvaluation.canUploadEvaluations();
 			return existingEvaluation;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
@@ -871,7 +870,6 @@ public class PositionEvaluationRESTService extends RESTService {
 		for (RegisterMember r : registerMembers) {
 			Professor p = (Professor) r.getProfessor();
 			p.setCommitteesCount(Professor.countCommittees(p));
-			r.getProfessor().initializeCollections();
 		}
 		return registerMembers;
 	}

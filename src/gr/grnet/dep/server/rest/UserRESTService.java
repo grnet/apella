@@ -18,7 +18,6 @@ import gr.grnet.dep.service.model.UserRegistrationType;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -132,7 +131,6 @@ public class UserRESTService extends RESTService {
 			Iterator<User> it = result.iterator();
 			while (it.hasNext()) {
 				User u = it.next();
-				u.initializeCollections();
 				if (!u.getPrimaryRole().equals(RoleDiscriminator.valueOf(role))) {
 					it.remove();
 				}
@@ -140,9 +138,6 @@ public class UserRESTService extends RESTService {
 		}
 
 		// Return result
-		for (User u : result) {
-			u.initializeCollections();
-		}
 		return result;
 	}
 
@@ -160,7 +155,6 @@ public class UserRESTService extends RESTService {
 			}
 		}
 		User u = super.getLoggedOn(authToken);
-		u.initializeCollections();
 		return Response.status(200)
 			.header(TOKEN_HEADER, u.getAuthToken())
 			.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, NewCookie.DEFAULT_MAX_AGE, false))
@@ -179,7 +173,6 @@ public class UserRESTService extends RESTService {
 					"where u.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
-			u.initializeCollections();
 			return u;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
@@ -234,7 +227,6 @@ public class UserRESTService extends RESTService {
 			newUser.setStatus(UserStatus.UNVERIFIED);
 			newUser.setStatusDate(new Date());
 			newUser.setVerificationNumber(newUser.generateVerificationNumber());
-			newUser.setRoles(new ArrayList<Role>());
 			newUser.addRole(firstRole);
 
 			User loggedOn = null;
@@ -337,7 +329,6 @@ public class UserRESTService extends RESTService {
 			}
 
 			//6. Return result
-			newUser.initializeCollections();
 			return newUser;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
@@ -395,7 +386,6 @@ public class UserRESTService extends RESTService {
 			existingUser.setContactInfo(user.getContactInfo());
 
 			em.flush();
-			existingUser.initializeCollections();
 
 			return existingUser;
 		} catch (PersistenceException e) {
@@ -446,7 +436,6 @@ public class UserRESTService extends RESTService {
 					if (u.getPassword().equals(User.encodePassword(password, u.getPasswordSalt()))) {
 						u.setAuthToken(u.generateAuthenticationToken());
 						u = em.merge(u);
-						u.initializeCollections();
 						return Response.status(200)
 							.header(TOKEN_HEADER, u.getAuthToken())
 							.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, NewCookie.DEFAULT_MAX_AGE, false))
@@ -488,6 +477,7 @@ public class UserRESTService extends RESTService {
 	public Response shibbolethLogin(@Context HttpServletRequest request) {
 		// 1. Read Attributes from request:
 		ShibbolethInformation shibbolethInfo = ShibbolethInformation.readShibbolethFields(request);
+		shibbolethInfo.setEnabled(true);
 		URI nextURL;
 		try {
 			nextURL = new URI(request.getParameter("nextURL") == null ? "" : request.getParameter("nextURL"));
@@ -653,7 +643,6 @@ public class UserRESTService extends RESTService {
 					u.setVerificationNumber(null);
 
 					em.flush();
-					u.initializeCollections();
 
 					// Post to Jira
 					jiraService.postJira(u.getId(), "Closed", "user.verified.email.summary", "user.verified.email.description", Collections.unmodifiableMap(new HashMap<String, String>() {
@@ -709,8 +698,6 @@ public class UserRESTService extends RESTService {
 			u.setStatus(requestUser.getStatus());
 			u.setStatusDate(new Date());
 			em.flush();
-
-			u.initializeCollections();
 
 			// Post to Jira
 			if (u.getStatus().equals(UserStatus.BLOCKED)) {

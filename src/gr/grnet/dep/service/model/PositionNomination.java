@@ -10,6 +10,7 @@ import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
@@ -20,6 +21,7 @@ import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonView;
@@ -55,10 +57,10 @@ public class PositionNomination {
 	@ManyToOne
 	private Candidacy secondNominatedCandidacy;
 
-	@OneToMany(mappedBy = "nomination", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "nomination", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<PositionPhase> phases = new HashSet<PositionPhase>();
 
-	@OneToMany(mappedBy = "nomination", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "nomination", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<PositionNominationFile> files = new HashSet<PositionNominationFile>();
 
 	@Temporal(TemporalType.DATE)
@@ -119,6 +121,7 @@ public class PositionNomination {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public Set<PositionPhase> getPhases() {
 		return phases;
 	}
@@ -128,6 +131,7 @@ public class PositionNomination {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public Set<PositionNominationFile> getFiles() {
 		return files;
 	}
@@ -167,10 +171,6 @@ public class PositionNomination {
 		this.setNominationCommitteeConvergenceDate(nomination.getNominationCommitteeConvergenceDate());
 		this.setNominationFEK(nomination.getNominationFEK());
 		this.setUpdatedAt(new Date());
-	}
-
-	public void initializeCollections() {
-		this.files.size();
 	}
 
 }

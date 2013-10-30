@@ -16,14 +16,17 @@ import java.util.logging.Logger;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
@@ -55,13 +58,16 @@ public class RegisterMember implements Serializable {
 
 	private boolean external;
 
-	@OneToMany(mappedBy = "registerMember", cascade = CascadeType.ALL, orphanRemoval = true)
+	@Transient
+	private boolean canBeDeleted = true;
+
+	@OneToMany(mappedBy = "registerMember", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<PositionCommitteeMember> committees = new HashSet<PositionCommitteeMember>();
 
-	@OneToMany(mappedBy = "registerMember", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "registerMember", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<PositionEvaluator> evaluations = new HashSet<PositionEvaluator>();
 
-	@OneToMany(mappedBy = "registerMember", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "registerMember", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<CandidacyEvaluator> candidacyEvaluations = new HashSet<CandidacyEvaluator>();
 
 	public Long getId() {
@@ -99,6 +105,7 @@ public class RegisterMember implements Serializable {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public Set<PositionCommitteeMember> getCommittees() {
 		return committees;
 	}
@@ -108,6 +115,7 @@ public class RegisterMember implements Serializable {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public Set<PositionEvaluator> getEvaluations() {
 		return evaluations;
 	}
@@ -117,6 +125,7 @@ public class RegisterMember implements Serializable {
 	}
 
 	@XmlTransient
+	@JsonIgnore
 	public Set<CandidacyEvaluator> getCandidacyEvaluations() {
 		return candidacyEvaluations;
 	}
@@ -125,39 +134,13 @@ public class RegisterMember implements Serializable {
 		this.candidacyEvaluations = candidacyEvaluations;
 	}
 
-	///////////////////////////////
-
 	@JsonView({DetailedRegisterView.class})
 	public boolean getCanBeDeleted() {
-		return (!committees.isEmpty() || !evaluations.isEmpty() || !candidacyEvaluations.isEmpty());
-		/*
-		for (PositionCommitteeMember member : committees) {
-			if (member.getCommittee().getPosition().getPhase().getStatus().equals(
-				PositionStatus.EPILOGI)) {
-				return false;
-			}
-		}
-		for (PositionEvaluator evaluator : evaluations) {
-			if (evaluator.getEvaluation().getPosition().getPhase().getStatus().
-				equals(PositionStatus.EPILOGI)) {
-				return false;
-			}
-		}
-		for (CandidacyEvaluator evaluator : candidacyEvaluations) {
-			if (evaluator.getCandidacy().getCandidacies().getPosition().getPhase()
-				.getStatus().equals(PositionStatus.EPILOGI)) {
-				return false;
-			}
-		}
-		return true;
-		*/
+		return this.canBeDeleted;
 	}
 
-	public void initializeCollections() {
-		this.committees.size();
-		this.evaluations.size();
-		this.candidacyEvaluations.size();
-		this.professor.initializeCollections();
+	public void setCanBeDeleted(boolean canBeDeleted) {
+		this.canBeDeleted = canBeDeleted;
 	}
 
 }
