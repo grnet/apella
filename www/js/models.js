@@ -12,7 +12,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 			"username": undefined,
 			"identification": undefined,
 			"registrationType" : undefined,
-			"isMissingRequiredFields": undefined,
+			"missingRequiredFields": undefined,
 			"basicInfo": {
 				"firstname": undefined,
 				"lastname": undefined,
@@ -50,7 +50,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 
 		isShibbolethRegistrationIncomplete: function() {
 			var self = this;
-			return _.isEqual(self.get("registrationType"), "SHIBBOLETH") && self.get("isMissingRequiredField");
+			return _.isEqual(self.get("registrationType"), "SHIBBOLETH") && self.get("missingRequiredFields");
 		},
 
 		getRole: function (role) {

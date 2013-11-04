@@ -144,6 +144,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 			routes: {
 				"": "showHomeView",
+				"shibbolethAccount": "showShibbolethAccountView",
 				"account": "showAccountView",
 				"profile": "showProfileView",
 				"profile/:roleId": "showProfileView",
@@ -195,14 +196,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				usermenuView.render();
 				$("ul.breadcrumb").show();
 
+				// Start Routing
+				Backbone.history.start();
 				if (App.loggedOnUser.isShibbolethRegistrationIncomplete()) {
-					self.navigate("account", {
-						trigger: false
+					self.navigate("shibbolethAccount", {
+						trigger: true
 					});
 				}
-				// Start Routing
-
-				Backbone.history.start();
 			},
 
 			clear: function () {
@@ -285,6 +285,26 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					model: App.loggedOnUser
 				});
 				this.refreshBreadcrumb([ $.i18n.prop('menu_account') ]);
+				$("#content").append(accountView.render().el);
+
+				self.currentView = accountView;
+			},
+
+			showShibbolethAccountView: function () {
+				var self = this;
+				var accountView;
+				self.clear();
+				accountView = new Views.ShibbolethAccountView({
+					model: App.loggedOnUser
+				});
+				// When sync completes user will have completed with shibboleth account
+				self.listenToOnce(App.loggedOnUser, "sync", function() {
+					self.navigate("", {
+						trigger: true
+					});
+				});
+
+				this.refreshBreadcrumb([ $.i18n.prop('menu_shibolethAccount') ]);
 				$("#content").append(accountView.render().el);
 
 				self.currentView = accountView;

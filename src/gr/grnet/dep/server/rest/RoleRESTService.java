@@ -13,6 +13,7 @@ import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.model.UserRegistrationType;
 import gr.grnet.dep.service.model.file.CandidateFile;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
@@ -409,6 +410,16 @@ public class RoleRESTService extends RESTService {
 				default:
 					break;
 			}
+			// Activate if !misingRequiredFields and is registered by SHIBBOLETH
+			if (existingRole.getStatus().equals(RoleStatus.UNAPPROVED) &&
+				existingRole.getUser().getRegistrationType().equals(UserRegistrationType.SHIBBOLETH) &&
+				!existingRole.isMissingRequiredFields()) {
+
+				// At this point all fields are filled, so we activate the Role						
+				existingRole.setStatus(RoleStatus.ACTIVE);
+				existingRole.setStatusDate(new Date());
+			}
+
 			// Check open candidacies
 			if (updateCandidacies && existingRole.getUser().hasActiveRole(RoleDiscriminator.CANDIDATE)) {
 				try {
@@ -420,6 +431,7 @@ public class RoleRESTService extends RESTService {
 					throw e;
 				}
 			}
+
 			// Return Result
 			em.flush();
 

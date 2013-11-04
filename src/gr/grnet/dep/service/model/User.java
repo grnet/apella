@@ -153,7 +153,12 @@ public class User implements Serializable {
 	}
 
 	public void setShibbolethInfo(ShibbolethInformation shibbolethInfo) {
-		this.shibbolethInfo = shibbolethInfo;
+		// Hibernate hack for null fields in embeddable objects
+		if (shibbolethInfo == null) {
+			this.shibbolethInfo = new ShibbolethInformation();
+		} else {
+			this.shibbolethInfo = shibbolethInfo;
+		}
 	}
 
 	public UserRegistrationType getRegistrationType() {
@@ -185,7 +190,12 @@ public class User implements Serializable {
 	}
 
 	public void setBasicInfo(BasicInformation basicInfo) {
-		this.basicInfo = basicInfo;
+		// Hibernate hack for null fields in embeddable objects
+		if (basicInfo == null) {
+			this.basicInfo = new BasicInformation();
+		} else {
+			this.basicInfo = basicInfo;
+		}
 	}
 
 	public BasicInformation getBasicInfoLatin() {
@@ -193,7 +203,12 @@ public class User implements Serializable {
 	}
 
 	public void setBasicInfoLatin(BasicInformation basicInfoLatin) {
-		this.basicInfoLatin = basicInfoLatin;
+		// Hibernate hack for null fields in embeddable objects
+		if (basicInfoLatin == null) {
+			this.basicInfoLatin = new BasicInformation();
+		} else {
+			this.basicInfoLatin = basicInfoLatin;
+		}
 	}
 
 	public ContactInformation getContactInfo() {
@@ -201,7 +216,12 @@ public class User implements Serializable {
 	}
 
 	public void setContactInfo(ContactInformation contactInfo) {
-		this.contactInfo = contactInfo;
+		// Hibernate hack for null fields in embeddable objects
+		if (contactInfo == null) {
+			this.contactInfo = new ContactInformation();
+		} else {
+			this.contactInfo = contactInfo;
+		}
 	}
 
 	@JsonView({DetailedWithPasswordUserView.class})
@@ -277,9 +297,9 @@ public class User implements Serializable {
 	///////////////////////////////////////////////////////////////////////////////////////
 
 	public boolean isMissingRequiredFields() {
-		return this.basicInfo.isMissingRequiredFields() ||
-			this.contactInfo.isMissingRequiredFields() ||
-			this.shibbolethInfo.isMissingRequiredFields() ||
+		return (this.basicInfo == null || this.basicInfo.isMissingRequiredFields()) ||
+			(this.contactInfo == null || this.contactInfo.isMissingRequiredFields()) ||
+			(this.registrationType.equals(UserRegistrationType.SHIBBOLETH) && (this.shibbolethInfo == null || this.shibbolethInfo.isMissingRequiredFields())) ||
 			this.identification == null;
 	}
 

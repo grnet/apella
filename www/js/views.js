@@ -194,6 +194,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				self.$el.empty();
 				self.addTitle();
 
+				// Shibboleth Login
+				if (self.model.isShibbolethRegistrationIncomplete()) {
+					return; // Do not add any menu-items
+				}
+
 				if (!self.model.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
 					menuItems.push("profile");
 				}
@@ -322,13 +327,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 			},
 
 			render: function (eventName) {
-				this.$el.empty();
-				this.$el.append("<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\"> <i class=\"icon-user\"></i> " + this.model.get("username") + "<span class=\"caret\"></span></a>");
-				this.$el.append("<ul class=\"dropdown-menu\">");
-				this.$el.find("ul").append("<li><a href=\"#account\">" + $.i18n.prop('menu_account') + "</a>");
+				var self = this;
+
+				self.$el.empty();
+				self.$el.append("<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\"> <i class=\"icon-user\"></i> " + self.model.get("username") + "<span class=\"caret\"></span></a>");
+				self.$el.append("<ul class=\"dropdown-menu\">");
+				// Shibboleth Login
+				if (!self.model.isShibbolethRegistrationIncomplete()) {
+					self.$el.find("ul").append("<li><a href=\"#account\">" + $.i18n.prop('menu_account') + "</a>");
+				}
 				// Add Logout
-				this.$el.find("ul").append("<li><a id=\"logout\" >" + $.i18n.prop('menu_logout') + "</a>");
-				return this;
+				self.$el.find("ul").append("<li><a id=\"logout\" >" + $.i18n.prop('menu_logout') + "</a>");
+				return self;
 			},
 
 			logout: function (event) {
@@ -1708,6 +1718,45 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 				this.closeInnerViews();
 				$(this.el).unbind();
 				$(this.el).remove();
+			}
+		});
+
+		/***************************************************************************
+		 * ShibbolethAccountView ***************************************************
+		 **************************************************************************/
+		Views.ShibbolethAccountView = Views.AccountView.extend({
+			initialize: function (options) {
+				this._super('initialize', [ options ]);
+			},
+
+			applyRules: function () {
+				var self = this;
+				self.$("a#status").addClass("disabled");
+				self.$("a#save").show();
+				self.$("a#remove").hide();
+
+				self.$("input[name=username]").attr("disabled", true);
+				if (self.model.get("missingRequiredFields")) {
+					self.$("input[name=firstname]").removeAttr("disabled");
+					self.$("input[name=lastname]").removeAttr("disabled");
+					self.$("input[name=fathername]").removeAttr("disabled");
+					self.$("input[name=firstnamelatin]").removeAttr("disabled");
+					self.$("input[name=lastnamelatin]").removeAttr("disabled");
+					self.$("input[name=fathernamelatin]").removeAttr("disabled");
+					self.$("input[name=identification]").removeAttr("disabled");
+				} else {
+					self.$("input[name=firstname]").attr("disabled", true);
+					self.$("input[name=lastname]").attr("disabled", true);
+					self.$("input[name=fathername]").attr("disabled", true);
+					self.$("input[name=firstnamelatin]").attr("disabled", true);
+					self.$("input[name=lastnamelatin]").attr("disabled", true);
+					self.$("input[name=fathernamelatin]").attr("disabled", true);
+					self.$("input[name=identification]").attr("disabled", true);
+				}
+			},
+
+			render: function (eventName) {
+				return this._super('render', [ eventName ]);
 			}
 		});
 

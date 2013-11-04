@@ -472,12 +472,51 @@ public class UserRESTService extends RESTService {
 	}
 
 	@GET
+	@Path("/shibboleth/testLogin")
+	@Produces("text/html")
+	public Response shibbolethTestLogin(@Context HttpServletRequest request) {
+		// 1. Read Attributes from request:
+		Long userId;
+		URI nextURL;
+		try {
+			nextURL = new URI(request.getParameter("nextURL") == null ? "" : request.getParameter("nextURL"));
+		} catch (URISyntaxException e1) {
+			throw new RestException(Status.BAD_REQUEST, "malformed.next.url");
+		}
+		try {
+			userId = Long.valueOf(request.getParameter("user") == null ? "" : request.getParameter("user"));
+		} catch (NumberFormatException e) {
+			throw new RestException(Status.BAD_REQUEST, "malformed.user.id");
+		}
+
+		// 3. Find User
+		User u = (User) em.find(User.class, userId);
+		if (u == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.user.id");
+		}
+		try {
+			u.setAuthToken(u.generateAuthenticationToken());
+			// 4. Persist User
+			u = em.merge(u);
+			em.flush();
+		} catch (PersistenceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+		}
+
+		return Response.temporaryRedirect(nextURL)
+			.header(TOKEN_HEADER, u.getAuthToken())
+			.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, NewCookie.DEFAULT_MAX_AGE, false))
+			.build();
+	}
+
+	@GET
 	@Path("/shibboleth/login")
 	@Produces("text/html")
 	public Response shibbolethLogin(@Context HttpServletRequest request) {
 		// 1. Read Attributes from request:
 		ShibbolethInformation shibbolethInfo = ShibbolethInformation.readShibbolethFields(request);
-		shibbolethInfo.setEnabled(true);
 		URI nextURL;
 		try {
 			nextURL = new URI(request.getParameter("nextURL") == null ? "" : request.getParameter("nextURL"));
@@ -511,9 +550,14 @@ public class UserRESTService extends RESTService {
 			u.setStatusDate(new Date());
 
 			ProfessorDomestic pd = new ProfessorDomestic();
-			pd.setStatus(RoleStatus.ACTIVE);
+			pd.setStatus(RoleStatus.UNAPPROVED);
 			pd.setStatusDate(new Date());
 			u.addRole(pd);
+			// Add Second Role : CANDIDATE
+			Candidate secondRole = new Candidate();
+			secondRole.setStatus(RoleStatus.UNAPPROVED);
+			secondRole.setStatusDate(new Date());
+			u.addRole(secondRole);
 		}
 		u.setShibbolethInfo(shibbolethInfo);
 		u.setAuthToken(u.generateAuthenticationToken());
@@ -527,11 +571,9 @@ public class UserRESTService extends RESTService {
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 
-		return Response.status(200)
+		return Response.temporaryRedirect(nextURL)
 			.header(TOKEN_HEADER, u.getAuthToken())
 			.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, NewCookie.DEFAULT_MAX_AGE, false))
-			.location(nextURL)
-			.entity(u)
 			.build();
 	}
 
