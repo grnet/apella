@@ -256,19 +256,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			showHomeView: function () {
 				var self = this;
 				var homeView;
-				var announcementsView;
 				self.clear();
 				homeView = new Views.HomeView({
 					model: App.loggedOnUser
 				});
-				announcementsView = new Views.AnnouncementListView({
-					collection: App.roles
-				});
-
 				self.refreshBreadcrumb([ $.i18n.prop('menu_home') ]);
 
 				$("#featured").html(homeView.render().el);
-				$("#content").html(announcementsView.el);
 				App.roles.fetch({
 					cache: false,
 					reset: true
@@ -411,7 +405,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 								}
 							}
 						});
-						self.refreshBreadcrumb([ $.i18n.prop('menu_adminusers'), $.i18n.prop('menu_user'), user.get("username") ]);
+						self.refreshBreadcrumb([ $.i18n.prop('menu_adminusers'), $.i18n.prop('menu_user'), user.getDisplayName() ]);
 					}
 				});
 			},
@@ -439,7 +433,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 						$("#content").empty();
 
 						// Add
-						self.refreshBreadcrumb([ $.i18n.prop('menu_iassistants'), user.get("username") ]);
+						self.refreshBreadcrumb([ $.i18n.prop('menu_iassistants'), user.getDisplayName() ]);
 
 						accountView = new Views.AssistantAccountView({
 							model: user
@@ -503,7 +497,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 						$("#content").empty();
 
 						// Add
-						self.refreshBreadcrumb([ $.i18n.prop('menu_massistants'), user.get("username") ]);
+						self.refreshBreadcrumb([ $.i18n.prop('menu_massistants'), user.getDisplayName() ]);
 
 						userRoleInfoView = new Views.UserRoleInfoView({
 							model: user

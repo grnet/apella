@@ -13,7 +13,7 @@
 		<tbody>
 			<% _.each(candidacies, function(candidacy) { %>
 			<tr>
-				<td><%= candidacy.snapshot.username %></td>
+				<td><%= candidacy.snapshot.basicInfo.firstname %> <%= candidacy.snapshot.basicInfo.lastname %></td>
 				<td><%= candidacy.candidacies.position.name %></td>
 				<td><%= candidacy.candidacies.position.department.department %></td>
 			</tr>

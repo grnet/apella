@@ -1,7 +1,6 @@
 <table class="table table-striped table-bordered">
 	<thead>
 		<tr>
-			<th><%= $.i18n.prop("Username") %></th>
 			<th><%= $.i18n.prop("Name") %></th>
 			<th><%= $.i18n.prop("Surname") %></th>
 			<th><%= $.i18n.prop("UserStatus") %></th>
@@ -12,7 +11,6 @@
 	<tbody>
 		<% _.each(users, function(user) { %>
 		<tr>
-			<td><%= user.username %></td>
 			<td><%= user.basicInfo.firstname %></td>
 			<td><%= user.basicInfo.lastname%></td>
 			<td><%= $.i18n.prop('status' + user.status) %></td>

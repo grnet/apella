@@ -2,7 +2,7 @@
 	<fieldset>
 		<legend><%= $.i18n.prop('Account') %></legend>
 		<div class="control-group">
-			<label class="control-label" for="username"><%= $.i18n.prop('UserStatus') %>:</label>
+			<label class="control-label"><%= $.i18n.prop('UserStatus') %>:</label>
 			<div class="controls">
 				<div class="btn-group">
 					<a id="status" class="btn btn-small"><i class="icon-user"></i> <%= $.i18n.prop('status' + status) %></a>
@@ -15,12 +15,43 @@
 				</div>
 			</div>
 		</div>
+		<% if (_.isEqual(registrationType, 'REGISTRATION_FORM')) { %>
 		<div class="control-group">
 			<label class="control-label" for="username"><%= $.i18n.prop('Username') %>:</label>
+
 			<div class="controls">
-				<input class="input-xlarge" type="text" name="username" value="<%= username %>" />
+				<input class="input-xlarge" type="text" name="username" value="<%= username %>"/>
 			</div>
 		</div>
+		<% } else { %>
+		<div class="control-group">
+			<label class="control-label"><%= $.i18n.prop('ShibbolethFields') %>:</label>
+			<div class="controls">
+				<table>
+					<tr>
+						<td><%= $.i18n.prop('ShibbolethEduPersonTargetedID') %>: </td>
+						<td><%= shibbolethInfo.eduPersonTargetedID %></td>
+					</tr>
+					<tr>
+						<td><%= $.i18n.prop('ShibbolethGivenName') %>: </td>
+						<td><%= shibbolethInfo.givenName %></td>
+					</tr>
+					<tr>
+						<td><%= $.i18n.prop('ShibbolethSN') %>: </td>
+						<td><%= shibbolethInfo.sn %></td>
+					</tr>
+					<tr>
+						<td><%= $.i18n.prop('ShibbolethSchacHomeOrganization') %>: </td>
+						<td><%= shibbolethInfo.schacHomeOrganization %></td>
+					</tr>
+					<tr>
+						<td><%= $.i18n.prop('ShibbolethEduPersonAffiliation') %>: </td>
+						<td><%= shibbolethInfo.eduPersonAffiliation %></td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<% }  %>
 		<div class="control-group">
 			<label class="control-label" for="firstname"><%= $.i18n.prop('Name') %>:</label>
 			<div class="controls">
@@ -63,6 +94,7 @@
 				<input class="input-xlarge" name="identification" type="text" value="<%= identification %>" />
 			</div>
 		</div>
+		<% if (_.isEqual(registrationType, 'REGISTRATION_FORM')) { %>
 		<div class="control-group">
 			<label class="control-label" for="password"><%= $.i18n.prop('Password') %>:</label>
 			<div class="controls">
@@ -75,6 +107,7 @@
 				<input class="input-xlarge" type="password" name="confirm_password" />
 			</div>
 		</div>
+		<% } %>
 	</fieldset>
 	<fieldset>
 		<legend><%= $.i18n.prop('ContactInformation') %></legend>

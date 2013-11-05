@@ -96,6 +96,9 @@ public class ShibbolethInformation {
 		if (eduPersonAffiliation == null) {
 			eduPersonAffiliation = readShibbolethField(request, "HTTP_AFFILIATION", "affiliation");
 		}
+		if (eduPersonAffiliation != null && eduPersonAffiliation.contains("faculty")) {
+			eduPersonAffiliation = "faculty";
+		}
 		result.setEduPersonAffiliation(eduPersonAffiliation);
 
 		return result;

@@ -147,7 +147,7 @@ public class PositionNominationRESTService extends RESTService {
 				FileHeader.filter(existingNomination.getFiles(), FileType.PROSKLISI_KOSMITORA).isEmpty()) {
 				throw new RestException(Status.CONFLICT, "nomination.missing.prosklisi.kosmitora");
 			}
-			// 7) Να μην είναι δυνατή η συμπλήρωση των πεδίων "Διαβιβαστικό Πρακτικού, "Εκλεγέντας", "Δεύτερος Καταλληλότερος Υποψήφιος", εάν δεν έχει αναρτηθεί το Πρακτικό Επιλογής.
+			// 7) Να μην είναι δυνατή η συμπλήρωση των πεδίων "Διαβιβαστικό Πρακτικού, "Εκλεγείς", "Δεύτερος Καταλληλότερος Υποψήφιος", εάν δεν έχει αναρτηθεί το Πρακτικό Επιλογής.
 			if ((newNomination.getNominatedCandidacy().getId() != null || newNomination.getSecondNominatedCandidacy().getId() != null)
 				&& FileHeader.filter(existingNomination.getFiles(), FileType.PRAKTIKO_EPILOGIS).isEmpty()) {
 				throw new RestException(Status.CONFLICT, "nomination.missing.praktiko.epilogis");

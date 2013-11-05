@@ -53,6 +53,17 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 			return _.isEqual(self.get("registrationType"), "SHIBBOLETH") && self.get("missingRequiredFields");
 		},
 
+		getDisplayName: function() {
+			var self = this;
+			var displayName = ""
+				.concat(self.get("basicInfo").firstname || "-")
+				.concat(" ")
+				.concat(self.get("basicInfo").lastname || "-")
+				.concat(" [" + self.get("id") + "]");
+
+			return displayName;
+		},
+
 		getRole: function (role) {
 			var self = this;
 			if (self.has("roles")) {

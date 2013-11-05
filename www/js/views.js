@@ -328,9 +328,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 
 			render: function (eventName) {
 				var self = this;
-
+				var displayname = self.model.getDisplayName();
 				self.$el.empty();
-				self.$el.append("<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\"> <i class=\"icon-user\"></i> " + self.model.get("username") + "<span class=\"caret\"></span></a>");
+				self.$el.append("<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\"> <i class=\"icon-user\"></i> " + displayname + "<span class=\"caret\"></span></a>");
 				self.$el.append("<ul class=\"dropdown-menu\">");
 				// Shibboleth Login
 				if (!self.model.isShibbolethRegistrationIncomplete()) {
@@ -3748,51 +3748,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 		});
 
 		/***************************************************************************
-		 * AnnouncementListView ****************************************************
-		 **************************************************************************/
-		Views.AnnouncementListView = Views.BaseView.extend({
-			tagName: "div",
-
-			initialize: function (options) {
-				this._super('initialize', [ options ]);
-				this.template = _.template(tpl_announcement_list);
-				this.collection.bind('reset', this.render);
-			},
-
-			events: {},
-
-			render: function (eventName) {
-				var self = this;
-				// 1. Create JSON:
-				var data = {
-					announcements: []
-				};
-				self.collection.each(function (role) {
-					if (role.get("status") === "UNVERIFIED") {
-						data.announcements.push({
-							text: $.i18n.prop('AnnouncementRoleStatus' + role.get("status"), $.i18n.prop(role.get('discriminator'))),
-							url: "#profile"
-						});
-					}
-				});
-				// 2. Show
-				self.closeInnerViews();
-				self.$el.empty();
-				self.addTitle();
-				self.$el.append(self.template(data));
-
-				return self;
-			},
-
-			close: function () {
-				this.closeInnerViews();
-				$(this.el).unbind();
-				$(this.el).remove();
-			}
-
-		});
-
-		/***************************************************************************
 		 * AssistantListView *******************************************************
 		 **************************************************************************/
 		Views.InstitutionAssistantListView = Views.BaseView.extend({
@@ -5956,14 +5911,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "text!tpl/
 						self.$("select[name='secondNominatedCandidacy']").append("<option value=''>--</option>");
 						collection.each(function (candidacy) {
 							if (_.isEqual(candidacy.id, nominatedCandidacyId)) {
-								self.$("select[name='nominatedCandidacy']").append("<option value='" + candidacy.get("id") + "' selected>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + " (" + candidacy.get("snapshot").username + ")" + "</option>");
+								self.$("select[name='nominatedCandidacy']").append("<option value='" + candidacy.get("id") + "' selected>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + "</option>");
 							} else {
-								self.$("select[name='nominatedCandidacy']").append("<option value='" + candidacy.get("id") + "'>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + " (" + candidacy.get("snapshot").username + ")" + "</option>");
+								self.$("select[name='nominatedCandidacy']").append("<option value='" + candidacy.get("id") + "'>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + "</option>");
 							}
 							if (_.isEqual(candidacy.id, secondNominatedCandidacyId)) {
-								self.$("select[name='secondNominatedCandidacy']").append("<option value='" + candidacy.get("id") + "' selected>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + " (" + candidacy.get("snapshot").username + ")" + "</option>");
+								self.$("select[name='secondNominatedCandidacy']").append("<option value='" + candidacy.get("id") + "' selected>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + "</option>");
 							} else {
-								self.$("select[name='secondNominatedCandidacy']").append("<option value='" + candidacy.get("id") + "'>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + " (" + candidacy.get("snapshot").username + ")" + "</option>");
+								self.$("select[name='secondNominatedCandidacy']").append("<option value='" + candidacy.get("id") + "'>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + "</option>");
 							}
 						});
 						self.$("select[name='nominatedCandidacy']").trigger("change", {
