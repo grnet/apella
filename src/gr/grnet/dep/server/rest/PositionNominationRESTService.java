@@ -196,8 +196,8 @@ public class PositionNominationRESTService extends RESTService {
 							{
 								put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
 								put("position", existingNomination.getPosition().getPhase().getPosition().getName());
-								put("institution", existingNomination.getPosition().getPhase().getPosition().getDepartment().getInstitution().getName());
-								put("department", existingNomination.getPosition().getPhase().getPosition().getDepartment().getDepartment());
+								put("institution", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("department", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName());
 							}
 						}));
 				}
@@ -211,8 +211,8 @@ public class PositionNominationRESTService extends RESTService {
 							{
 								put("username", candidacy.getCandidate().getUser().getUsername());
 								put("position", existingNomination.getPosition().getName());
-								put("institution", existingNomination.getPosition().getDepartment().getInstitution().getName());
-								put("department", existingNomination.getPosition().getDepartment().getDepartment());
+								put("institution", existingNomination.getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("department", existingNomination.getPosition().getDepartment().getName());
 							}
 						}));
 				}
@@ -226,8 +226,8 @@ public class PositionNominationRESTService extends RESTService {
 							{
 								put("username", evaluator.getRegisterMember().getProfessor().getUser().getUsername());
 								put("position", existingNomination.getPosition().getName());
-								put("institution", existingNomination.getPosition().getDepartment().getInstitution().getName());
-								put("department", existingNomination.getPosition().getDepartment().getDepartment());
+								put("institution", existingNomination.getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("department", existingNomination.getPosition().getDepartment().getName());
 							}
 						}));
 				}
@@ -243,8 +243,8 @@ public class PositionNominationRESTService extends RESTService {
 						{
 							put("username", existingNomination.getNominatedCandidacy().getCandidate().getUser().getUsername());
 							put("position", existingNomination.getPosition().getName());
-							put("institution", existingNomination.getPosition().getDepartment().getInstitution().getName());
-							put("department", existingNomination.getPosition().getDepartment().getDepartment());
+							put("institution", existingNomination.getPosition().getDepartment().getSchool().getInstitution().getName());
+							put("department", existingNomination.getPosition().getDepartment().getName());
 						}
 					}));
 			}
@@ -258,8 +258,8 @@ public class PositionNominationRESTService extends RESTService {
 						{
 							put("username", existingNomination.getSecondNominatedCandidacy().getCandidate().getUser().getUsername());
 							put("position", existingNomination.getPosition().getName());
-							put("institution", existingNomination.getPosition().getDepartment().getInstitution().getName());
-							put("department", existingNomination.getPosition().getDepartment().getDepartment());
+							put("institution", existingNomination.getPosition().getDepartment().getSchool().getInstitution().getName());
+							put("department", existingNomination.getPosition().getDepartment().getName());
 						}
 					}));
 			}
@@ -511,8 +511,8 @@ public class PositionNominationRESTService extends RESTService {
 							{
 								put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
 								put("position", nominationFile.getNomination().getPosition().getName());
-								put("institution", nominationFile.getNomination().getPosition().getDepartment().getInstitution().getName());
-								put("department", nominationFile.getNomination().getPosition().getDepartment().getDepartment());
+								put("institution", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("department", nominationFile.getNomination().getPosition().getDepartment().getName());
 							}
 						}));
 				}
@@ -526,8 +526,8 @@ public class PositionNominationRESTService extends RESTService {
 							{
 								put("username", candidacy.getCandidate().getUser().getUsername());
 								put("position", nominationFile.getNomination().getPosition().getName());
-								put("institution", nominationFile.getNomination().getPosition().getDepartment().getInstitution().getName());
-								put("department", nominationFile.getNomination().getPosition().getDepartment().getDepartment());
+								put("institution", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("department", nominationFile.getNomination().getPosition().getDepartment().getName());
 							}
 						}));
 				}
@@ -541,8 +541,8 @@ public class PositionNominationRESTService extends RESTService {
 							{
 								put("username", evaluator.getRegisterMember().getProfessor().getUser().getUsername());
 								put("position", nominationFile.getNomination().getPosition().getName());
-								put("institution", nominationFile.getNomination().getPosition().getDepartment().getInstitution().getName());
-								put("department", nominationFile.getNomination().getPosition().getDepartment().getDepartment());
+								put("institution", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("department", nominationFile.getNomination().getPosition().getDepartment().getName());
 							}
 						}));
 				}
@@ -557,8 +557,8 @@ public class PositionNominationRESTService extends RESTService {
 							{
 								put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
 								put("position", nominationFile.getNomination().getPosition().getName());
-								put("institution", nominationFile.getNomination().getPosition().getDepartment().getInstitution().getName());
-								put("department", nominationFile.getNomination().getPosition().getDepartment().getDepartment());
+								put("institution", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("department", nominationFile.getNomination().getPosition().getDepartment().getName());
 							}
 						}));
 				}
@@ -572,8 +572,8 @@ public class PositionNominationRESTService extends RESTService {
 							{
 								put("username", candidacy.getCandidate().getUser().getUsername());
 								put("position", nominationFile.getNomination().getPosition().getName());
-								put("institution", nominationFile.getNomination().getPosition().getDepartment().getInstitution().getName());
-								put("department", nominationFile.getNomination().getPosition().getDepartment().getDepartment());
+								put("institution", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("department", nominationFile.getNomination().getPosition().getDepartment().getName());
 							}
 						}));
 				}
@@ -587,8 +587,8 @@ public class PositionNominationRESTService extends RESTService {
 							{
 								put("username", evaluator.getRegisterMember().getProfessor().getUser().getUsername());
 								put("position", nominationFile.getNomination().getPosition().getName());
-								put("institution", nominationFile.getNomination().getPosition().getDepartment().getInstitution().getName());
-								put("department", nominationFile.getNomination().getPosition().getDepartment().getDepartment());
+								put("institution", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("department", nominationFile.getNomination().getPosition().getDepartment().getName());
 							}
 						}));
 				}

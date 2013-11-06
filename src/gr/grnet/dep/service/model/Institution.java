@@ -3,9 +3,7 @@ package gr.grnet.dep.service.model;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -16,11 +14,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 public class Institution {
 
 	@Id
-	@GeneratedValue
 	private Long id;
-
-	@Version
-	private int version;
 
 	@NotNull
 	@NotEmpty
@@ -28,7 +22,11 @@ public class Institution {
 
 	@NotNull
 	@Enumerated(EnumType.STRING)
-	private UserRegistrationType registrationType = UserRegistrationType.SHIBBOLETH;
+	private InstitutionCategory category;
+
+	@NotNull
+	@Enumerated(EnumType.STRING)
+	private UserRegistrationType registrationType;
 
 	public Long getId() {
 		return id;
@@ -36,6 +34,14 @@ public class Institution {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public InstitutionCategory getCategory() {
+		return category;
+	}
+
+	public void setCategory(InstitutionCategory category) {
+		this.category = category;
 	}
 
 	public String getName() {
@@ -53,4 +59,5 @@ public class Institution {
 	public void setRegistrationType(UserRegistrationType registrationType) {
 		this.registrationType = registrationType;
 	}
+
 }

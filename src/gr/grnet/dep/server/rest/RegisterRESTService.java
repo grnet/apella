@@ -265,7 +265,7 @@ public class RegisterRESTService extends RESTService {
 				newMember.setProfessor(existingProfessor);
 				switch (existingProfessor.getDiscriminator()) {
 					case PROFESSOR_DOMESTIC:
-						newMember.setExternal(existingRegister.getInstitution().getId() != ((ProfessorDomestic) existingProfessor).getInstitution().getId());
+						newMember.setExternal(existingRegister.getInstitution().getId() != ((ProfessorDomestic) existingProfessor).getDepartment().getSchool().getInstitution().getId());
 						break;
 					case PROFESSOR_FOREIGN:
 						newMember.setExternal(true);

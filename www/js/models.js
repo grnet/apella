@@ -1,5 +1,10 @@
 /*global define */
-define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Backbone, App) {
+define([
+	"jquery",
+	"underscore",
+	"backbone",
+	"application"
+], function ($, _, Backbone, App) {
 	"use strict";
 
 	var Models = {};
@@ -11,7 +16,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 			"id": undefined,
 			"username": undefined,
 			"identification": undefined,
-			"registrationType" : undefined,
+			"registrationType": undefined,
 			"missingRequiredFields": undefined,
 			"basicInfo": {
 				"firstname": undefined,
@@ -28,7 +33,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 				"mobile": "",
 				"phone": ""
 			},
-			"shibbolethInfo" : {},
+			"shibbolethInfo": {},
 			"roles": []
 		},
 
@@ -48,12 +53,12 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 			return resp;
 		},
 
-		isShibbolethRegistrationIncomplete: function() {
+		isShibbolethRegistrationIncomplete: function () {
 			var self = this;
 			return _.isEqual(self.get("registrationType"), "SHIBBOLETH") && self.get("missingRequiredFields");
 		},
 
-		getDisplayName: function() {
+		getDisplayName: function () {
 			var self = this;
 			var displayName = ""
 				.concat(self.get("basicInfo").firstname || "-")
@@ -1214,7 +1219,7 @@ define([ "jquery", "underscore", "backbone", "application" ], function ($, _, Ba
 			permanent: undefined,
 			title: undefined,
 			institution: undefined,
-			members : []
+			members: []
 		}
 	});
 

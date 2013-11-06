@@ -239,7 +239,7 @@ public class CandidacyRESTService extends RESTService {
 						"and r.institution.id = :institutionId " +
 						"and m.professor.status = :status " +
 						"and m.id in (:registerIds)")
-					.setParameter("institutionId", candidacy.getCandidacies().getPosition().getDepartment().getInstitution().getId())
+					.setParameter("institutionId", candidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getId())
 					.setParameter("status", RoleStatus.ACTIVE)
 					.setParameter("registerIds", newRegisterMemberIds);
 				newRegisterMembers.addAll(query.getResultList());
@@ -279,8 +279,8 @@ public class CandidacyRESTService extends RESTService {
 						{
 							put("username", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getUsername());
 							put("position", existingCandidacy.getCandidacies().getPosition().getName());
-							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
-							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
+							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
+							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName());
 						}
 					}));
 				// 2. candidacy.create@candidate
@@ -292,8 +292,8 @@ public class CandidacyRESTService extends RESTService {
 						{
 							put("username", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getUsername());
 							put("position", existingCandidacy.getCandidacies().getPosition().getName());
-							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
-							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
+							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
+							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName());
 						}
 					}));
 
@@ -310,8 +310,8 @@ public class CandidacyRESTService extends RESTService {
 								put("evaluator_firstname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
 								put("evaluator_lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", existingCandidacy.getCandidacies().getPosition().getName());
-								put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
-								put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
+								put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName());
 								put("candidate_firstname", existingCandidacy.getSnapshot().getBasicInfo().getFirstname());
 								put("candidate_lastname", existingCandidacy.getSnapshot().getBasicInfo().getLastname());
 								put("im_firstname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getFirstname());
@@ -330,8 +330,8 @@ public class CandidacyRESTService extends RESTService {
 						{
 							put("username", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getUsername());
 							put("position", existingCandidacy.getCandidacies().getPosition().getName());
-							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
-							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
+							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
+							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName());
 							put("candidate_firstname", existingCandidacy.getSnapshot().getBasicInfo().getFirstname());
 							put("candidate_lastname", existingCandidacy.getSnapshot().getBasicInfo().getLastname());
 							Iterator<CandidacyEvaluator> it = existingCandidacy.getProposedEvaluators().iterator();
@@ -417,8 +417,8 @@ public class CandidacyRESTService extends RESTService {
 						{
 							put("username", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getUsername());
 							put("position", existingCandidacy.getCandidacies().getPosition().getName());
-							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
-							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
+							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
+							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName());
 						}
 					}));
 				// 2. candidacy.remove@candidate
@@ -430,8 +430,8 @@ public class CandidacyRESTService extends RESTService {
 						{
 							put("username", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getUsername());
 							put("position", existingCandidacy.getCandidacies().getPosition().getName());
-							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
-							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
+							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
+							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName());
 						}
 					}));
 				// 3. candidacy.remove@committee
@@ -445,8 +445,8 @@ public class CandidacyRESTService extends RESTService {
 								{
 									put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
 									put("position", existingCandidacy.getCandidacies().getPosition().getName());
-									put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
-									put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
+									put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
+									put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName());
 								}
 							}));
 					}
@@ -462,8 +462,8 @@ public class CandidacyRESTService extends RESTService {
 								{
 									put("username", evaluator.getRegisterMember().getProfessor().getUser().getUsername());
 									put("position", existingCandidacy.getCandidacies().getPosition().getName());
-									put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
-									put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
+									put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
+									put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName());
 								}
 							}));
 					}
@@ -479,8 +479,8 @@ public class CandidacyRESTService extends RESTService {
 								{
 									put("username", candidacy.getCandidate().getUser().getUsername());
 									put("position", existingCandidacy.getCandidacies().getPosition().getName());
-									put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getName());
-									put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getDepartment());
+									put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
+									put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName());
 								}
 							}));
 					}
@@ -536,7 +536,7 @@ public class CandidacyRESTService extends RESTService {
 				"where r.permanent = true " +
 				"and r.institution.id = :institutionId " +
 				"and m.professor.status = :status ")
-			.setParameter("institutionId", existingCandidacy.getCandidacies().getPosition().getDepartment().getInstitution().getId())
+			.setParameter("institutionId", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getId())
 			.setParameter("status", RoleStatus.ACTIVE)
 			.getResultList();
 

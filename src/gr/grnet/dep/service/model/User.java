@@ -392,7 +392,7 @@ public class User implements Serializable {
 	@XmlTransient
 	@JsonIgnore
 	public boolean isDepartmentUser(Department department) {
-		Institution institution = department.getInstitution();
+		Institution institution = department.getSchool().getInstitution();
 		for (Role r : getRoles()) {
 			if (r.getDiscriminator() == RoleDiscriminator.INSTITUTION_MANAGER) {
 				InstitutionManager im = (InstitutionManager) r;

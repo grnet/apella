@@ -27,9 +27,6 @@ public class ProfessorDomestic extends Professor {
 	private Logger logger;
 
 	@ManyToOne
-	private Institution institution;
-
-	@ManyToOne
 	private Department department;
 
 	@ManyToOne
@@ -72,14 +69,6 @@ public class ProfessorDomestic extends Professor {
 		this.fek = fek;
 	}
 
-	public Institution getInstitution() {
-		return institution;
-	}
-
-	public void setInstitution(Institution institution) {
-		this.institution = institution;
-	}
-
 	public Department getDepartment() {
 		return department;
 	}
@@ -102,7 +91,6 @@ public class ProfessorDomestic extends Professor {
 	public Role copyFrom(Role otherRole) {
 		super.copyFrom(otherRole);
 		ProfessorDomestic pd = (ProfessorDomestic) otherRole;
-		setInstitution(pd.getInstitution());
 		setDepartment(pd.getDepartment());
 		setRank(pd.getRank());
 		setFek(pd.getFek());
@@ -118,9 +106,7 @@ public class ProfessorDomestic extends Professor {
 			return false;
 		}
 		ProfessorDomestic other = (ProfessorDomestic) role;
-		if (!CompareUtil.equalsIgnoreNull(this.institution.getId(), other.getInstitution().getId())) {
-			return false;
-		}
+
 		if (!CompareUtil.equalsIgnoreNull(this.department.getId(), other.getDepartment().getId())) {
 			return false;
 		}
@@ -141,9 +127,6 @@ public class ProfessorDomestic extends Professor {
 	@JsonIgnore
 	public boolean isMissingRequiredFields() {
 		if (super.isMissingRequiredFields()) {
-			return true;
-		}
-		if (this.institution == null) {
 			return true;
 		}
 		if (this.department == null) {

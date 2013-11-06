@@ -97,10 +97,6 @@ public class Candidacy {
 		@JoinTable(inverseJoinColumns = {@JoinColumn(name = "files_id")})
 		private Set<FileBody> files = new HashSet<FileBody>();
 
-		// For ProfessorDomestic
-		@ManyToOne
-		private Institution institution;
-
 		@ManyToOne
 		private Department department;
 
@@ -149,14 +145,6 @@ public class Candidacy {
 
 		public void setContactInfo(ContactInformation contactInfo) {
 			this.contactInfo = contactInfo;
-		}
-
-		public Institution getInstitution() {
-			return institution;
-		}
-
-		public void setInstitution(Institution institution) {
-			this.institution = institution;
 		}
 
 		public Department getDepartment() {
@@ -361,7 +349,6 @@ public class Candidacy {
 	}
 
 	public void updateSnapshot(ProfessorDomestic professor) {
-		snapshot.setInstitution(professor.getInstitution());
 		snapshot.setDepartment(professor.getDepartment());
 		snapshot.setRank(professor.getRank());
 		snapshot.setSubject(professor.getSubject());
