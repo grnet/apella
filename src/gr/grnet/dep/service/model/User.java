@@ -99,14 +99,7 @@ public class User implements Serializable {
 	private ContactInformation contactInfo = new ContactInformation();
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.EAGER)
-	private Set<Role> roles = new TreeSet<Role>(new Comparator<Role>() {
-
-		@Override
-		public int compare(Role o1, Role o2) {
-			return roleOrder.indexOf(o1.getDiscriminator()) - roleOrder.indexOf(o2.getDiscriminator());
-		}
-
-	});
+	private Set<Role> roles = new TreeSet<Role>();
 
 	private String password;
 
@@ -326,10 +319,16 @@ public class User implements Serializable {
 
 	@JsonView({DetailedUserView.class, DetailedRoleView.class, PositionView.class})
 	public RoleDiscriminator getPrimaryRole() {
-		if (roles.isEmpty()) {
-			return null;
-		}
-		return roles.iterator().next().getDiscriminator();
+		TreeSet<Role> sortedRoles = new TreeSet<Role>(new Comparator<Role>() {
+
+			@Override
+			public int compare(Role o1, Role o2) {
+				return roleOrder.indexOf(o1.getDiscriminator()) - roleOrder.indexOf(o2.getDiscriminator());
+			}
+
+		});
+		sortedRoles.addAll(roles);
+		return sortedRoles.iterator().next().getDiscriminator();
 	}
 
 	@XmlTransient

@@ -231,6 +231,17 @@ div.popup {
     font-size: 75%;
 }
 
+/* Mini Table
+-------------------------------------------------- */
+.mini-table {
+
+}
+
+.mini-table td {
+    padding: 4px;
+}
+
+
 /* Definition Lists
 -------------------------------------------------- */
 dl.dl-table {

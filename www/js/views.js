@@ -14,7 +14,7 @@ define([
 	"text!tpl/position-evaluation-edit-register-member-list.html", "text!tpl/position-evaluation-evaluator-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html",
 	"text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-candidacies.html", "text!tpl/position-committee.html",
 	"text!tpl/position-evaluation.html", "text!tpl/position-nomination.html", "text!tpl/position-complementaryDocuments.html", "text!tpl/position-nomination-edit.html",
-	"text!tpl/position-complementaryDocuments-edit.html"
+	"text!tpl/position-complementaryDocuments-edit.html", "text!tpl/department-select.html", "text!tpl/department.html"
 ], function ($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit, tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main,
 	tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select,
 	tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees,
@@ -23,7 +23,7 @@ define([
 	tpl_register_members_edit, tpl_register_members_edit_professor_list, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit,
 	tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit,
 	tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation,
-	tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit) {
+	tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit, tpl_department_select, tpl_department) {
 
 	"use strict";
 	/** ****************************************************************** */
@@ -825,6 +825,136 @@ define([
 			self.$el.modal("hide");
 			self.$el.unbind();
 			self.$el.remove();
+		}
+	});
+
+	/***************************************************************************
+	 * DepartmentSelectView ****************************************************
+	 **************************************************************************/
+	Views.DepartmentSelectView = Views.BaseView.extend({
+
+		initialize: function (options) {
+			this._super('initialize', [ options ]);
+			_.bindAll(this, "onToggleEdit", "onSelectDepartment", "toggleEdit", "select", "clear");
+			this.departmentTpl = _.template(tpl_department);
+			this.template = _.template(tpl_department_select);
+			this.collection.bind("reset", this.render, this);
+
+			this.$input = $(this.el);
+			this.$input.before("<div id=\"" + this.$input.attr("name") + "\"></div>");
+			this.setElement(this.$input.prev("#" + this.$input.attr("name")));
+
+			this.model = this.collection.get(this.$input.val()) || new Models.Department();
+		},
+
+		events: {
+			"click a#selectDepartment": "onSelectDepartment",
+			"click a#toggleEdit": "onToggleEdit"
+		},
+
+		render: function () {
+			var self = this;
+			var tpl_data;
+
+			// Prepare Data
+			tpl_data = {
+				editable: self.options.editable,
+				departments: (function () {
+					var result = [];
+					_.each(self.collection.filter(self.options.filter), function (model) {
+						var item;
+						if (model.has("id")) {
+							item = model.toJSON();
+							result.push(item);
+						}
+					});
+					return result;
+				}())
+			};
+
+			// Render
+			self.closeInnerViews();
+			self.$el.empty();
+			self.$el.append(this.template(tpl_data));
+			self.$("#departmentDescription").html(self.departmentTpl(self.model.toJSON()));
+
+			// Initialize Plugins
+			if (!$.fn.DataTable.fnIsDataTable(self.$("table#departments-table"))) {
+				self.$("table#departments-table").dataTable({
+					"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+					"sPaginationType": "bootstrap",
+					"oLanguage": {
+						"sSearch": $.i18n.prop("dataTable_sSearch"),
+						"sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+						"sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+						"sInfo": $.i18n.prop("dataTable_sInfo"),
+						"sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+						"sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+						"oPaginate": {
+							sFirst: $.i18n.prop("dataTable_sFirst"),
+							sPrevious: $.i18n.prop("dataTable_sPrevious"),
+							sNext: $.i18n.prop("dataTable_sNext"),
+							sLast: $.i18n.prop("dataTable_sLast")
+						}
+					}
+				});
+			}
+			self.$("div#departments-table_wrapper").hide();
+
+			// Return result
+			return self;
+		},
+
+		onToggleEdit: function (event) {
+			var self = this;
+			self.toggleEdit();
+		},
+
+		onSelectDepartment: function (event) {
+			var self = this;
+			var id = $(event.currentTarget).attr('data-department-id');
+			self.select(id);
+		},
+
+		toggleEdit: function (show) {
+			var self = this;
+			if (_.isUndefined(show)) {
+				self.$("div#departments-table_wrapper").toggle(400);
+			} else if (show) {
+				self.$("div#departments-table_wrapper").show(400);
+			} else {
+				self.$("div#departments-table_wrapper").hide(400);
+			}
+		},
+
+		select: function (departmentId) {
+			var self = this;
+			var selectedModel;
+			if (departmentId) {
+				selectedModel = self.collection.get(departmentId);
+				if (selectedModel && !_.isEqual(selectedModel.id, self.$input.val())) {
+					self.model = selectedModel;
+					self.$input.val(selectedModel.id).trigger("change").trigger("input");
+					self.$("#departmentDescription").html(self.departmentTpl(self.model.toJSON()));
+					self.$("div#departments-table_wrapper").hide(400);
+				}
+			} else {
+				self.clear();
+			}
+		},
+
+		clear: function () {
+			var self = this;
+			self.model = new Models.Department();
+			self.$input.val(undefined).trigger("change").trigger("input");
+			self.$("#departmentDescription").html(self.departmentTpl(self.model.toJSON()));
+			self.$("div#departments-table_wrapper").hide(400);
+		},
+
+		close: function () {
+			this.closeInnerViews();
+			$(this.el).unbind();
+			$(this.el).remove();
 		}
 	});
 
@@ -2218,8 +2348,6 @@ define([
 					break;
 				case "PROFESSOR_DOMESTIC":
 					switch (field) {
-						case "institution":
-							return _.isEqual(self.model.get("status"), "UNAPPROVED");
 						case "department":
 							return _.isEqual(self.model.get("status"), "UNAPPROVED");
 						case "hasOnlineProfile":
@@ -2406,6 +2534,7 @@ define([
 			var tpl_data;
 			var propName;
 			var files;
+			var departmentSelectView
 			// Close inner views (fileviews)
 			self.closeInnerViews();
 			// Re-render
@@ -2488,71 +2617,62 @@ define([
 					});
 					break;
 				case "PROFESSOR_DOMESTIC":
-					// Bind change on institution selector to update department
-					// selector
-					self.$("select[name='department']").change(function (event) {
-						self.$("select[name='department']").next(".help-block").html(self.$("select[name='department'] option:selected").text());
-					});
-					self.$("select[name='institution']").change(function () {
-						self.$("select[name='institution']").next(".help-block").html(self.$("select[name='institution'] option:selected").text());
+					App.departments = App.departments || new Models.Departments();
+					App.ranks = App.ranks || new Models.Ranks();
 
-						App.departments = App.departments || new Models.Departments();
-						App.departments.fetch({
-							cache: true,
-							reset: true,
-							success: function (collection, resp) {
-								var selectedInstitution;
-								self.$("select[name='department']").empty();
-								selectedInstitution = parseInt($("select[name='institution']", self.$el).val(), 10);
-								collection.filter(function (department) {
-									return department.get('institution').id === selectedInstitution;
-								}).forEach(function (department) {
-										if (_.isObject(self.model.get("department")) && _.isEqual(department.id, self.model.get("department").id)) {
-											self.$("select[name='department']").append("<option value='" + department.get("id") + "' selected>" + department.get("department") + "</option>");
-										} else {
-											self.$("select[name='department']").append("<option value='" + department.get("id") + "'>" + department.get("department") + "</option>");
-										}
-									});
-								self.$("select[name='department']").trigger("change", {
-									triggeredBy: "application"
-								});
-							},
-							error: function (model, resp, options) {
-								var popup = new Views.PopupView({
-									type: "error",
-									message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-								});
-								popup.show();
+					departmentSelectView = new Views.DepartmentSelectView({
+						el: self.$("input[name=department]"),
+						collection: App.departments,
+						editable: self.isEditable("department"),
+						filter: function (departmentModel) {
+							var rank = App.ranks.get(self.$("select[name=rank]").val());
+							var institutionCategory = departmentModel.get("school").institution.category;
+							if (!rank) {
+								return true;
 							}
-						});
-					});
-					App.institutions = App.institutions || new Models.Institutions();
-					App.institutions.fetch({
-						cache: true,
-						reset: true,
-						success: function (collection, resp) {
-							collection.each(function (institution) {
-								if (_.isObject(self.model.get("institution")) && _.isEqual(institution.id, self.model.get("institution").id)) {
-									$("select[name='institution']",
-										self.$el).append("<option value='" + institution.get("id") + "' selected>" + institution.get("name") + "</option>");
-								} else {
-									$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
-								}
-							});
-							self.$("select[name='institution']").trigger("change", {
-								triggeredBy: "application"
-							});
-						},
-						error: function (model, resp, options) {
-							var popup = new Views.PopupView({
-								type: "error",
-								message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-							});
-							popup.show();
+							switch (rank.get("category")) {
+								case "PROFESSOR" :
+									return _.isEqual(institutionCategory, "INSTITUTION");
+								case "RESEARCHER" :
+									return _.isEqual(institutionCategory, "RESEARCH_CENTER");
+								default :
+									return true;
+							}
 						}
 					});
 
-					App.ranks = App.ranks || new Models.Ranks();
+					self.$("select[name='rank']").on("change", (function () {
+						// Keep previous values in this closure
+						var previousRank = App.ranks.get(self.$("select[name=rank]").val()) || new Models.Rank();
+
+						return function (event) {
+							// Trigger change on DepartmentSelectView
+							var rank = App.ranks.get(self.$("select[name=rank]").val()) || new Models.Rank();
+							var department = App.departments.get(self.$("input[name=department]").val());
+							if (!_.isEqual(rank.get("category"), previousRank.get("category"))) {
+								// If rank.category changes, close edit and re-render table with new Institution categories
+								departmentSelectView.render();
+								// If necessary clear selection
+								if (department) {
+									if (_.isEqual(rank.get("category"), "PROFESSOR") &&
+										_.isEqual(department.get("school").institution.category, "RESEARCH_CENTER")) {
+										departmentSelectView.select(undefined);
+									} else if (_.isEqual(rank.get("category"), "RESEARCHER") &&
+										_.isEqual(department.get("school").institution.category, "INSTITUTION")) {
+										departmentSelectView.select(undefined);
+									}
+								}
+							}
+							previousRank = rank;
+						};
+
+					}()));
+
+					App.departments.fetch({
+						cache: true,
+						reset: true
+					});
+
 					App.ranks.fetch({
 						cache: true,
 						reset: true,
@@ -2577,6 +2697,7 @@ define([
 							popup.show();
 						}
 					});
+
 					// Enable typeahead for Subjects:
 					self.$('input[name=subject], input[name=fekSubject]').typeahead({
 						source: function (query, process) {
@@ -2620,15 +2741,13 @@ define([
 						errorElement: "span",
 						errorClass: "help-inline",
 						highlight: function (element, errorClass, validClass) {
-							window.console.log("highlight", element, errorClass, validClass, $(element).parent(".controls").parent(".control-group"));
 							$(element).parent(".controls").parent(".control-group").addClass("error");
 						},
 						unhighlight: function (element, errorClass, validClass) {
-							window.console.log("unhighlight", element, errorClass, validClass, $(element).parent(".controls").parent(".control-group"));
 							$(element).parent(".controls").parent(".control-group").removeClass("error");
 						},
 						rules: {
-							institution: "required",
+							department: "required",
 							profileURL: {
 								required: "input[name=hasOnlineProfile]:not(:checked)",
 								url: true
@@ -2644,7 +2763,7 @@ define([
 							fekFile: "required"
 						},
 						messages: {
-							institution: $.i18n.prop('validation_institution'),
+							department: $.i18n.prop('validation_department'),
 							profileURL: {
 								required: $.i18n.prop('validation_required'),
 								url: $.i18n.prop('validation_profileURL')
@@ -3022,11 +3141,8 @@ define([
 				case "CANDIDATE":
 					break;
 				case "PROFESSOR_DOMESTIC":
-					values.institution = {
-						"id": self.$('form select[name=institution]').val()
-					};
 					values.department = {
-						"id": self.$('form select[name=department]').val()
+						"id": self.$('form input[name=department]').val()
 					};
 					values.rank = {
 						"id": self.$('form select[name=rank]').val()

@@ -103,9 +103,9 @@ define([
 			var self = this;
 			var institutionId;
 			if (department instanceof Backbone.Model) {
-				institutionId = department.get("institution").id;
+				institutionId = department.get("school").institution.id;
 			} else {
-				institutionId = department.institution.id;
+				institutionId = department.school.institution.id;
 			}
 			return _.any(self.get("roles"), function (r) {
 				if (r.discriminator === "INSTITUTION_MANAGER" && r.institution.id === institutionId) {
@@ -665,7 +665,9 @@ define([
 			"verificationAuthority": undefined,
 			"verificationAuthorityName": undefined,
 			"institution": undefined,
-			"department": undefined,
+			"department": {
+				id : undefined
+			},
 			"hasOnlineProfile": undefined,
 			"profileURL": undefined,
 			"rank": undefined,
@@ -855,7 +857,9 @@ define([
 		urlRoot: "/dep/rest/institution",
 		defaults: {
 			"id": undefined,
-			"name": undefined
+			"name": undefined,
+			category: undefined,
+			registrationType: undefined
 		}
 	});
 
@@ -864,6 +868,60 @@ define([
 		model: Models.Institution,
 		comparator: function (institution) {
 			return institution.get('name');
+		}
+	});
+
+	Models.School = Backbone.Model.extend({
+		urlRoot: "/dep/rest/school",
+		defaults: {
+			id: undefined,
+			name: undefined,
+			institution: {
+				id: undefined,
+				name: undefined,
+				category: undefined,
+				registrationType: undefined
+			}
+		},
+		getDescription: function () {
+			return this.get("instituion").name + ", " + this.get("name");
+		}
+	});
+
+	Models.Schools = Backbone.Collection.extend({
+		url: "/dep/rest/school",
+		model: Models.School,
+		comparator: function (department) {
+			return department.getDescription();
+		}
+	});
+
+	Models.Department = Backbone.Model.extend({
+		urlRoot: "/dep/rest/department",
+		defaults: {
+			"id": undefined,
+			"name": undefined,
+			"school": {
+				id: undefined,
+				name: undefined,
+				institution: {
+					id: undefined,
+					name: undefined,
+					category: undefined,
+					registrationType: undefined
+				}
+			}
+		},
+		getDescription: function () {
+			return this.get("school").institution.name + ", " + this.get("school").name + ", " + this.get("name");
+		}
+	});
+
+	Models.Departments = Backbone.Collection.extend({
+		url: "/dep/rest/department",
+		model: Models.Department,
+		comparator: function (department) {
+			return department.getDescription();
 		}
 	});
 
@@ -880,28 +938,6 @@ define([
 	Models.InstitutionRegulatoryFrameworks = Backbone.Collection.extend({
 		url: "/dep/rest/institutionrf",
 		model: Models.InstitutionRegulatoryFramework
-	});
-
-	Models.Department = Backbone.Model.extend({
-		urlRoot: "/dep/rest/department",
-		defaults: {
-			"id": undefined,
-			"department": undefined,
-			"school": undefined,
-			"fullName": undefined,
-			"institution": undefined
-		}
-	});
-
-	Models.Departments = Backbone.Collection.extend({
-		url: "/dep/rest/department",
-		model: Models.Department,
-		comparator: function (department) {
-			if (_.isObject(department.get("institution"))) {
-				return department.get('institution').name + department.get('department');
-			}
-			return "_" + department.get('department');
-		}
 	});
 
 	Models.Rank = Backbone.Model.extend({
