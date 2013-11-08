@@ -11,7 +11,7 @@
 <% _.each(positions, function(position) { %>
 		<tr>
 			<td><%= position.name %></td>
-			<td><% if (!_.isUndefined(position.department)) { %><%= position.department.department %><% } %></td>
+			<td><% if (!_.isUndefined(position.department)) { %><%= position.department.name %><% } %></td>
 			<td><%= $.i18n.prop('PositionStatus_' + position.phase.clientStatus) %></td>
 			<td width="96px">
 				<p align="center">
@@ -24,9 +24,7 @@
 	<tfoot>
 		<tr>
 			<td colspan="4">
-				<div class="btn-toolbar">
-					<div class="btn-group" id="actions">
-					</div>
+				<div class="row-fluid" id="actions">
 				</div>
 			</td>
 		</tr>

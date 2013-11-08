@@ -14,15 +14,10 @@
 	<td><%= registerMember.professor.user.basicInfo.lastname%></td>
 	<td><%= $.i18n.prop(registerMember.professor.discriminator) %></td>
 	<td>
-		<% if (_.isObject(registerMember.professor.institution)) { %> 
-			<%= registerMember.professor.institution.name %>
-		<% } else if (!_.isUndefined(registerMember.professor.institution)) { %> 
-			<%= registerMember.professor.institution %> 
-		<% } %>
-	</td>
-	<td>
-		<% if (_.isObject(registerMember.professor.department)) { %> 
-			<%= registerMember.professor.department.department %> 
+		<% if (!_.isUndefined(registerMember.professor.institution)) { %>
+		<%= registerMember.professor.institution %>
+		<% } else if (_.isObject(registerMember.professor.department)) { %>
+		<%= _.templates.department(registerMember.professor.department) %>
 		<% } %>
 	</td>
 	<td>

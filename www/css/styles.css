@@ -137,7 +137,6 @@ legend {
 .footer {
     padding: 20px;
     margin-top: 10px;
-    margin-bottom: 300px;
 }
 
 .footer p {
@@ -234,11 +233,16 @@ div.popup {
 /* Mini Table
 -------------------------------------------------- */
 .mini-table {
-
+    border: none;
+    border-collapse: collapse;
+    border-spacing: 0;
+    background-color: transparent;
 }
 
 .mini-table td {
+    border: none;
     padding: 4px;
+    background-color: transparent;
 }
 
 

@@ -3,9 +3,7 @@
 	<h3><%= $.i18n.prop('PROFESSOR_DOMESTIC') %></h3>
 	<dl class="dl-glossary">
 		<dt><%= $.i18n.prop('Institution') %></dt>
-		<dd><%= institution.name %></dd>
-		<dt><%= $.i18n.prop('Department') %></dt>
-		<dd><%= department.department %></dd>
+		<dd><%= _.tempates.department(department) %></dd>
 		<dt><%= $.i18n.prop('ProfileURL') %></dt>
 		<dd>
 			<a href="<%= profileURL %>" target="external"><%= profileURL %></a>

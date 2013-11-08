@@ -64,7 +64,7 @@ define([
 				.concat(self.get("basicInfo").firstname || "-")
 				.concat(" ")
 				.concat(self.get("basicInfo").lastname || "-")
-				.concat(" [" + self.get("id") + "]");
+				.concat(" [" + (self.get("id") || '') + "]");
 
 			return displayName;
 		},

@@ -78,7 +78,7 @@ public class Position {
 	@ManyToOne(cascade = CascadeType.ALL)
 	private Subject subject;
 
-	@ManyToOne(optional = false)
+	@ManyToOne
 	private Sector sector;
 
 	private String fek;

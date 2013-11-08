@@ -42,10 +42,9 @@
 							<li><%= proposedEvaluator.registerMember.professor.user.basicInfo.firstname %> <%= proposedEvaluator.registerMember.professor.user.basicInfo.lastname%></li>
 							<li><%= $.i18n.prop(proposedEvaluator.registerMember.professor.discriminator) %></li>
 							<% if (proposedEvaluator.registerMember.professor.discriminator === "PROFESSOR_DOMESTIC") { %>
-							<li><%= $.i18n.prop('Institution') %>: <%= $.i18n.prop(proposedEvaluator.registerMember.professor.department.institution.name) %></li>
-							<li><%= $.i18n.prop('Department') %>: <%= $.i18n.prop(proposedEvaluator.registerMember.professor.department.department) %></li>
+							<li><%= $.i18n.prop('Department') %>: <%= _.templates.department(proposedEvaluator.registerMember.professor.department) %></li>
 							<% } else { %>
-							<li><%= $.i18n.prop('Institution') %>: <%= $.i18n.prop(proposedEvaluator.registerMember.professor.institution) %></li>
+							<li><%= $.i18n.prop('Institution') %>: <%= proposedEvaluator.registerMember.professor.institution %></li>
 							<% } %>
 						</ul>
 						<input type="hidden" name="eisigisiDepYpopsifiouFileList" data-candidacy-evaluator-id="<%= proposedEvaluator.id %>"/>

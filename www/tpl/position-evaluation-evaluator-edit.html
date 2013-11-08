@@ -28,18 +28,10 @@
 	<tr>
 		<th><%= $.i18n.prop("Institution") %></th>
 		<td>
-		<% if (_.isObject(registerMember.professor.institution)) { %> 
-			<%= registerMember.professor.institution.name %> 
-		<% } else if (!_.isUndefined(registerMember.professor.institution)) { %>
-			<%= registerMember.professor.institution %> 
-		<% } %>
-		</td>
-	</tr>
-	<tr>
-		<th><%= $.i18n.prop("Department") %></th>
-		<td>
-			<% if (_.isObject(registerMember.professor.department)) { %> 
-			<%= registerMember.professor.department.department %> 
+			<% if (!_.isUndefined(registerMember.professor.institution)) { %>
+			<%= registerMember.professor.institution %>
+			<% } else if (_.isObject(registerMember.professor.department)) { %>
+			<%= _.templates.department(registerMember.professor.department) %>
 			<% } %>
 		</td>
 	</tr>

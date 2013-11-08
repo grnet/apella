@@ -15,7 +15,7 @@
 				</div>
 			</div>
 		</div>
-		<% if (_.isEqual(registrationType, 'REGISTRATION_FORM')) { %>
+		<% if (!_.isEqual(registrationType, 'SHIBBOLETH')) { %>
 		<div class="control-group">
 			<label class="control-label" for="username"><%= $.i18n.prop('Username') %>:</label>
 

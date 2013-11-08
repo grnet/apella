@@ -3,7 +3,6 @@
 		<tr>
 			<th><%= $.i18n.prop("Position") %></th>
 			<th><%= $.i18n.prop("Institution") %></th>
-			<th><%= $.i18n.prop("Department") %></th>
 			<th><%= $.i18n.prop("Description") %></th>
 			<th><%= $.i18n.prop("Subject") %></th>
 			<th><%= $.i18n.prop("FEK") %></th>
@@ -18,8 +17,7 @@
 			<td>
 				<a id="select" data-position-id="<%= evaluator.evaluation.position.id %>" href="#position/<%= evaluator.evaluation.position.id %>"><%= evaluator.evaluation.position.name %></a>
 			</td>
-			<td><%= evaluator.evaluation.position.department.institution.name %></td>
-			<td><%= evaluator.evaluation.position.department.department %></td>
+			<td><%= _.templates.department(evaluator.evaluation.position.department) %></td>
 			<td><%= evaluator.evaluation.position.description %></td>
 			<td><%= evaluator.evaluation.position.subject.name %></td>
 			<td><%= evaluator.evaluation.position.fek %>, <%= evaluator.evaluation.position.fekSentDate %></td>

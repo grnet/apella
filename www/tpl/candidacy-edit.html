@@ -5,7 +5,7 @@
 			<dt><%= $.i18n.prop('PositionName') %></dt>
 			<dd><%= candidacies.position.name %></dd>
 			<dt><%= $.i18n.prop('Department') %></dt>
-			<dd><%= candidacies.position.department.department %></dd>
+			<dd><%= _.templates.department(candidacies.position.department) %></dd>
 			<dt><%= $.i18n.prop('Description') %></dt>
 			<dd><%= candidacies.position.description %></dd>
 			<dt><%= $.i18n.prop('Subject') %></dt>
@@ -33,17 +33,13 @@
 			<dd><%= snapshot.basicInfo.lastname %> (<%= snapshot.basicInfoLatin.lastname %>)</dd>
 			<dt><%= $.i18n.prop('FatherName') %></dt>
 			<dd><%= snapshot.basicInfo.fathername %> (<%= snapshot.basicInfoLatin.fathername %>)</dd>
-			<% if (snapshot.institution) { %>
-			<dt><%= $.i18n.prop('Institution') %></dt>
-			<dd><%= snapshot.institution.name %></dd>
-			<% } %>
 			<% if (snapshot.institutionString) { %>
 			<dt><%= $.i18n.prop('Institution') %></dt>
 			<dd><%= snapshot.institutionString %></dd>
 			<% } %>
 			<% if (snapshot.department) { %>
 			<dt><%= $.i18n.prop('Department') %></dt>
-			<dd><%= snapshot.department.department %></dd>
+			<dd><%= _.templates.department(snapshot.department) %></dd>
 			<% } %>
 			<% if (snapshot.rank) { %>
 			<dt><%= $.i18n.prop('Rank') %></dt>

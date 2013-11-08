@@ -30,6 +30,13 @@ define([
 
 	var Views = {};
 
+	// Add some precompiled templates in _. so that they are accesible inside other templates
+	_.extend(_, {
+		templates: {
+			department: _.template(tpl_department)
+		}
+	});
+
 	/***************************************************************************
 	 * BaseView ***************************************************************
 	 **************************************************************************/
@@ -836,7 +843,6 @@ define([
 		initialize: function (options) {
 			this._super('initialize', [ options ]);
 			_.bindAll(this, "onToggleEdit", "onSelectDepartment", "toggleEdit", "select", "clear");
-			this.departmentTpl = _.template(tpl_department);
 			this.template = _.template(tpl_department_select);
 			this.collection.bind("reset", this.render, this);
 
@@ -876,7 +882,7 @@ define([
 			self.closeInnerViews();
 			self.$el.empty();
 			self.$el.append(this.template(tpl_data));
-			self.$("#departmentDescription").html(self.departmentTpl(self.model.toJSON()));
+			self.$("#departmentDescription").html(_.templates.department(self.model.toJSON()));
 
 			// Initialize Plugins
 			if (!$.fn.DataTable.fnIsDataTable(self.$("table#departments-table"))) {
@@ -935,7 +941,7 @@ define([
 				if (selectedModel && !_.isEqual(selectedModel.id, self.$input.val())) {
 					self.model = selectedModel;
 					self.$input.val(selectedModel.id).trigger("change").trigger("input");
-					self.$("#departmentDescription").html(self.departmentTpl(self.model.toJSON()));
+					self.$("#departmentDescription").html(_.templates.department(self.model.toJSON()));
 					self.$("div#departments-table_wrapper").hide(400);
 				}
 			} else {
@@ -947,7 +953,7 @@ define([
 			var self = this;
 			self.model = new Models.Department();
 			self.$input.val(undefined).trigger("change").trigger("input");
-			self.$("#departmentDescription").html(self.departmentTpl(self.model.toJSON()));
+			self.$("#departmentDescription").html(_.templates.department(self.model.toJSON()));
 			self.$("div#departments-table_wrapper").hide(400);
 		},
 
@@ -1033,6 +1039,8 @@ define([
 				// Shibboleth
 				// Login
 				// Add institutions in selector:
+
+				// TODO: UserRegistration Select Institution
 				App.institutions = App.institutions || new Models.Institutions();
 				App.institutions.fetch({
 					cache: true,
@@ -1083,7 +1091,9 @@ define([
 					cache: true,
 					reset: true,
 					success: function (collection, resp) {
-						collection.each(function (institution) {
+						_.each(collection.filter, function (institution) {
+							return institution.get("category") === "INSTITUTION";
+						}, function (institution) {
 							if (_.isObject(role.institution) && _.isEqual(institution.id, role.institution.id)) {
 								$("select[name='institution']",
 									self.$el).append("<option value='" + institution.get("id") + "' selected>" + institution.get("name") + "</option>");
@@ -2534,7 +2544,7 @@ define([
 			var tpl_data;
 			var propName;
 			var files;
-			var departmentSelectView
+			var departmentSelectView;
 			// Close inner views (fileviews)
 			self.closeInnerViews();
 			// Re-render
@@ -2620,6 +2630,7 @@ define([
 					App.departments = App.departments || new Models.Departments();
 					App.ranks = App.ranks || new Models.Ranks();
 
+					// Create Selector for departments
 					departmentSelectView = new Views.DepartmentSelectView({
 						el: self.$("input[name=department]"),
 						collection: App.departments,
@@ -2640,34 +2651,7 @@ define([
 							}
 						}
 					});
-
-					self.$("select[name='rank']").on("change", (function () {
-						// Keep previous values in this closure
-						var previousRank = App.ranks.get(self.$("select[name=rank]").val()) || new Models.Rank();
-
-						return function (event) {
-							// Trigger change on DepartmentSelectView
-							var rank = App.ranks.get(self.$("select[name=rank]").val()) || new Models.Rank();
-							var department = App.departments.get(self.$("input[name=department]").val());
-							if (!_.isEqual(rank.get("category"), previousRank.get("category"))) {
-								// If rank.category changes, close edit and re-render table with new Institution categories
-								departmentSelectView.render();
-								// If necessary clear selection
-								if (department) {
-									if (_.isEqual(rank.get("category"), "PROFESSOR") &&
-										_.isEqual(department.get("school").institution.category, "RESEARCH_CENTER")) {
-										departmentSelectView.select(undefined);
-									} else if (_.isEqual(rank.get("category"), "RESEARCHER") &&
-										_.isEqual(department.get("school").institution.category, "INSTITUTION")) {
-										departmentSelectView.select(undefined);
-									}
-								}
-							}
-							previousRank = rank;
-						};
-
-					}()));
-
+					// Fetch Extra data
 					App.departments.fetch({
 						cache: true,
 						reset: true
@@ -2698,24 +2682,7 @@ define([
 						}
 					});
 
-					// Enable typeahead for Subjects:
-					self.$('input[name=subject], input[name=fekSubject]').typeahead({
-						source: function (query, process) {
-							var subjects = new Models.Subjects();
-							subjects.fetch({
-								cache: false,
-								reset: true,
-								data: {
-									"query": query
-								},
-								success: function (collection, response, options) {
-									var data = collection.pluck("name");
-									process(data);
-								}
-							});
-						}
-					});
-
+					// Add Files
 					if (self.model.has("id")) {
 						files = new Models.Files();
 						files.url = self.model.url() + "/file";
@@ -2737,6 +2704,25 @@ define([
 						$("#profileFile", self.$el).html($.i18n.prop("PressSave"));
 						$("#dimosieusiFileList", self.$el).html($.i18n.prop("PressSave"));
 					}
+
+					// Enable typeahead for Subjects:
+					self.$('input[name=subject], input[name=fekSubject]').typeahead({
+						source: function (query, process) {
+							var subjects = new Models.Subjects();
+							subjects.fetch({
+								cache: false,
+								reset: true,
+								data: {
+									"query": query
+								},
+								success: function (collection, response, options) {
+									var data = collection.pluck("name");
+									process(data);
+								}
+							});
+						}
+					});
+
 					self.validator = $("form", this.el).validate({
 						errorElement: "span",
 						errorClass: "help-inline",
@@ -2775,6 +2761,34 @@ define([
 							fekFile: $.i18n.prop('validation_file')
 						}
 					});
+					// On Rank change need to update departmentSelector
+					self.$("select[name='rank']").on("change", (function () {
+						// Keep previous values in this closure
+						var previousRank = App.ranks.get(self.$("select[name=rank]").val()) || new Models.Rank();
+
+						return function (event) {
+							// Trigger change on DepartmentSelectView
+							var rank = App.ranks.get(self.$("select[name=rank]").val()) || new Models.Rank();
+							var department = App.departments.get(self.$("input[name=department]").val());
+							if (!_.isEqual(rank.get("category"), previousRank.get("category"))) {
+								// If rank.category changes, close edit and re-render table with new Institution categories
+								departmentSelectView.render();
+								// If necessary clear selection
+								if (department) {
+									if (_.isEqual(rank.get("category"), "PROFESSOR") &&
+										_.isEqual(department.get("school").institution.category, "RESEARCH_CENTER")) {
+										departmentSelectView.select(undefined);
+									} else if (_.isEqual(rank.get("category"), "RESEARCHER") &&
+										_.isEqual(department.get("school").institution.category, "INSTITUTION")) {
+										departmentSelectView.select(undefined);
+									}
+								}
+							}
+							previousRank = rank;
+						};
+
+					}()));
+					// OnlineProfile XOR ProfileFile
 					self.$("input[name=hasOnlineProfile]").change(function (event, data) {
 						if ($(this).is(":checked")) {
 							self.$("input[name=profileURL]").focus().val("").attr("disabled", true);
@@ -2791,6 +2805,7 @@ define([
 							self.$("textarea[name=subject]").attr("disabled", true).val("");
 						}
 					});
+					// Subject XOR FekSubject
 					if (_.isObject(self.model.get("subject"))) {
 						self.$("input[name=fekCheckbox]").attr("checked", true);
 						self.$("textarea[name=fekSubject]").attr("disabled", true).val("");
@@ -2921,7 +2936,9 @@ define([
 						cache: true,
 						reset: true,
 						success: function (collection, resp) {
-							collection.each(function (institution) {
+							_.each(collection.filter(function (institution) {
+								return _.isEqual(institution.get("category"), "INSTITUTION");
+							}), function (institution) {
 								if (_.isObject(self.model.get("institution")) && _.isEqual(institution.id, self.model.get("institution").id)) {
 									$("select[name='institution']",
 										self.$el).append("<option value='" + institution.get("id") + "' selected>" + institution.get("name") + "</option>");
@@ -3035,7 +3052,9 @@ define([
 						cache: true,
 						reset: true,
 						success: function (collection, resp) {
-							collection.each(function (institution) {
+							_.each(collection.filter(function (institution) {
+								return _.isEqual(institution.get("category"), "INSTITUTION");
+							}), function (institution) {
 								if (_.isObject(self.model.get("institution")) && _.isEqual(institution.id, self.model.get("institution").id)) {
 									$("select[name='institution']",
 										self.$el).append("<option value='" + institution.get("id") + "' selected>" + institution.get("name") + "</option>");
@@ -4161,19 +4180,36 @@ define([
 			if (!App.loggedOnUser.hasRole("INSTITUTION_MANAGER") && !App.loggedOnUser.hasRole("INSTITUTION_ASSISTANT")) {
 				return;
 			}
-			self.$("#actions").html("<select class=\"input-xlarge\" name=\"department\"></select>");
+			self.$("#actions").html("<select class=\"input-xlarge pull-left\" name=\"department\"></select>");
 			self.$("#actions").append("<a id=\"createPosition\" class=\"btn\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_position') + "</a>");
+
 			// Departments
 			App.departments = App.departments || new Models.Departments();
 			App.departments.fetch({
 				cache: true,
 				reset: true,
 				success: function (collection, resp) {
-					self.$("#actions select[name=department]").append("<option value='-1'>" + $.i18n.prop("PleaseSelectDepartment") + "</option>").append("<optgroup label='--------------------'></optgroup>");
-					_.each(collection.filter(function (department) {
-						return App.loggedOnUser.isAssociatedWithDepartment(department);
-					}), function (department) {
-						self.$("select[name='department'] optgroup").append("<option value='" + department.get("id") + "'>" + department.get("department") + "</option>");
+					_.each(self.$selectize, function (element) {
+						element.selectize.destroy();
+					});
+					self.$selectize = self.$("select[name=department]").selectize({
+						valueField: 'id',
+						diacritics: true,
+						create: false,
+						hideSelected: true,
+						sortField: 'name',
+						searchField: ['name'],
+						options: _.filter(collection.toJSON(), function (department) {
+							return App.loggedOnUser.isAssociatedWithDepartment(department);
+						}),
+						render: {
+							item: function (item, escape) { //Shows when selected
+								return _.templates.department(item);
+							},
+							option: function (item, escape) { //Shows in dropddown
+								return _.templates.department(item);
+							}
+						}
 					});
 				},
 				error: function (model, resp, options) {
@@ -4196,6 +4232,7 @@ define([
 
 		createPosition: function (event) {
 			var self = this;
+			var newPosition;
 			// Validate:
 			var departmentId = self.$("select[name='department']").val();
 			if (_.isEqual(departmentId, "-1")) {
@@ -4206,7 +4243,7 @@ define([
 				return;
 			}
 			// Create:
-			var newPosition = new Models.Position();
+			newPosition = new Models.Position();
 			newPosition.save({
 				department: {
 					id: departmentId
@@ -4727,6 +4764,7 @@ define([
 			self.$el.empty();
 			self.addTitle();
 			self.$el.append(self.template(self.model.toJSON()));
+
 			// Add Sector options
 			self.$("select[name='sector']").change(function (event) {
 				self.$("select[name='sector']").next(".help-block").html(self.$("select[name='area'] option:selected").text() + " / " + self.$("select[name='sector'] option:selected").text());
@@ -7486,7 +7524,7 @@ define([
 		renderDepartments: function (departments) {
 			var self = this;
 			var treeData = departments.reduce(function (memo, department) {
-				var institution = department.get("institution");
+				var institution = department.get("school").institution;
 				var node = _.find(memo, function (item) {
 					return item.key === institution.id;
 				});
@@ -7502,7 +7540,7 @@ define([
 					memo.push(node);
 				}
 				node.children.push({
-					title: department.get("department"),
+					title: department.get("name"),
 					key: department.get("id"),
 					select: _.any(self.model.get("departments"), function (selectedDepartment) {
 						return _.isEqual(selectedDepartment.id, department.get("id"));
@@ -7864,6 +7902,7 @@ define([
 			self.closeInnerViews();
 			self.$el.empty();
 			self.addTitle();
+
 			self.$el.append(self.template(self.model.toJSON()));
 
 			// Fill Selectors with registerMembers

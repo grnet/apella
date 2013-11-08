@@ -3,7 +3,6 @@
 		<tr>
 			<th><%= $.i18n.prop("Position") %></th>
 			<th><%= $.i18n.prop("Institution") %></th>
-			<th><%= $.i18n.prop("Department") %></th>
 			<th><%= $.i18n.prop("Description") %></th>
 			<th><%= $.i18n.prop("Subject") %></th>
 			<th><%= $.i18n.prop("FEK") %></th>
@@ -17,8 +16,7 @@
 		<% _.each(positions, function(position) { %>
 		<tr>
 			<td><%= position.name %></td>
-			<td><%= position.department.institution.name %></td>
-			<td><%= position.department.department %></td>
+			<td><%= _.templates.department(position.department) %></td>
 			<td><%= position.description %></td>
 			<td><%= position.subject.name %></td>
 			<td><a href="<%= position.fek %>" target="external"><%= $.i18n.prop("FEK") %></a>, <%= position.fekSentDate %></td>

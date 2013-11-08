@@ -7,15 +7,10 @@
 	<td><%= professor.user.basicInfo.lastname%></td>
 	<td><%= $.i18n.prop(professor.discriminator) %></td>
 	<td>
-		<% if (_.isObject(professor.institution)) { %> 
-			<%= professor.institution.name %> 
-		<% } else if (!_.isUndefined(professor.institution)) { %>
-			<%= professor.institution %> 
-		<% } %>
-	</td>
-	<td>
-		<% if (_.isObject(professor.department)) { %> 
-			<%= professor.department.department %> 
+		<% if (!_.isUndefined(professor.institution)) { %>
+		<%= professor.institution %>
+		<% } else if (_.isObject(professor.department)) { %>
+		<%= _.templates.department(professor.department) %>
 		<% } %>
 	</td>
 	<td>

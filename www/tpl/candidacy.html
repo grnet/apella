@@ -5,7 +5,7 @@
 			<dt><%= $.i18n.prop('PositionName') %></dt>
 			<dd><%= candidacies.position.name %></dd>
 			<dt><%= $.i18n.prop('Department') %></dt>
-			<dd><%= candidacies.position.department.department %></dd>
+			<dd><%= _.templates.department(candidacies.position.department) %></dd>
 			<dt><%= $.i18n.prop('Description') %></dt>
 			<dd><%= candidacies.position.description %></dd>
 			<dt><%= $.i18n.prop('Subject') %></dt>
@@ -31,25 +31,27 @@
 			<dd><%= snapshot.basicInfo.lastname %> (<%= snapshot.basicInfoLatin.lastname %>)</dd>
 			<dt><%= $.i18n.prop('FatherName') %></dt>
 			<dd><%= snapshot.basicInfo.fathername %> (<%= snapshot.basicInfoLatin.fathername %>)</dd>
-			<% if (snapshot.institution) { %>
-			<dt><%= $.i18n.prop('Institution') %></dt>
-			<dd><%= snapshot.institution.name %></dd>
-			<% } %> <% if (snapshot.institutionString) { %>
+			<% if (snapshot.institutionString) { %>
 			<dt><%= $.i18n.prop('Institution') %></dt>
 			<dd><%= snapshot.institutionString %></dd>
-			<% } %> <% if (snapshot.department) { %>
+			<% } %>
+			<% if (snapshot.department) { %>
 			<dt><%= $.i18n.prop('Department') %></dt>
-			<dd><%= snapshot.department.department %></dd>
-			<% } %> <% if (snapshot.rank) { %>
+			<dd><%= _.templates.department(snapshot.department) %></dd>
+			<% } %>
+			<% if (snapshot.rank) { %>
 			<dt><%= $.i18n.prop('Rank') %></dt>
 			<dd><%= snapshot.rank.name %></dd>
-			<% } %> <% if (snapshot.subject) { %>
+			<% } %>
+			<% if (snapshot.subject) { %>
 			<dt><%= $.i18n.prop('Subject') %></dt>
 			<dd><%= snapshot.subject.name %></dd>
-			<% } %> <% if (snapshot.fek) { %>
+			<% } %>
+			<% if (snapshot.fek) { %>
 			<dt><%= $.i18n.prop('FEK') %></dt>
 			<dd><a href="<%= snapshot.fek %>"><%= $.i18n.prop('ClickForMore') %></a></dd>
-			<% } %> <% if (snapshot.fekSubject) { %>
+			<% } %>
+			<% if (snapshot.fekSubject) { %>
 			<dt><%= $.i18n.prop('FEKSubject') %></dt>
 			<dd><%= snapshot.fekSubject.name %></dd>
 			<% } %>
@@ -81,28 +83,28 @@
 					</li>
 					<li><%= $.i18n.prop(proposedEvaluators[0].registerMember.professor.discriminator) %></li>
 					<% if (proposedEvaluators[0].registerMember.professor.discriminator === "PROFESSOR_DOMESTIC") { %>
-					<li><%= $.i18n.prop('Institution') %>: <%= $.i18n.prop(proposedEvaluators[0].registerMember.professor.department.institution.name) %></li>
-					<li><%= $.i18n.prop('Department') %>: <%= $.i18n.prop(proposedEvaluators[0].registerMember.professor.department.department) %></li>
+					<li><%= $.i18n.prop('Department') %>: <%= _.templates.department(proposedEvaluators[0].registerMember.professor.department) %></li>
 					<% } else { %>
-					<li><%= $.i18n.prop('Institution') %>: <%= $.i18n.prop(proposedEvaluators[0].registerMember.professor.institution) %></li>
+					<li><%= $.i18n.prop('Institution') %>: <%= proposedEvaluators[0].registerMember.professor.institution %></li>
 					<% } %>
 				</ul>
 				<% } %>
 			</dd>
 			<dt><%= $.i18n.prop('ProposedEvaluator') %> 2</dt>
 			<dd>
-			<% if (proposedEvaluators[1]) { %>
-					<ul class="unstyled">
-						<li><%= proposedEvaluators[1].registerMember.professor.user.basicInfo.firstname %> <%= proposedEvaluators[1].registerMember.professor.user.basicInfo.lastname%></li>
-						<li><%= $.i18n.prop(proposedEvaluators[1].registerMember.professor.discriminator) %></li>
-						<% if (proposedEvaluators[1].registerMember.professor.discriminator === "PROFESSOR_DOMESTIC") { %>
-						<li><%= $.i18n.prop('Institution') %>: <%= $.i18n.prop(proposedEvaluators[1].registerMember.professor.department.institution.name) %></li>
-						<li><%= $.i18n.prop('Department') %>: <%= $.i18n.prop(proposedEvaluators[1].registerMember.professor.department.department) %></li>
-						<% } else { %>
-						<li><%= $.i18n.prop('Institution') %>: <%= $.i18n.prop(proposedEvaluators[1].registerMember.professor.institution) %></li>
-						<% } %>
-					</ul>
-			<% } %>
+				<% if (proposedEvaluators[1]) { %>
+				<ul class="unstyled">
+					<li><%= proposedEvaluators[1].registerMember.professor.user.basicInfo.firstname %> <%=
+						proposedEvaluators[1].registerMember.professor.user.basicInfo.lastname%>
+					</li>
+					<li><%= $.i18n.prop(proposedEvaluators[1].registerMember.professor.discriminator) %></li>
+					<% if (proposedEvaluators[1].registerMember.professor.discriminator === "PROFESSOR_DOMESTIC") { %>
+					<li><%= $.i18n.prop('Department') %>: <%= _.templates.department(proposedEvaluators[1].registerMember.professor.department) %></li>
+					<% } else { %>
+					<li><%= $.i18n.prop('Institution') %>: <%= $.i18n.prop(proposedEvaluators[1].registerMember.professor.institution) %></li>
+					<% } %>
+				</ul>
+				<% } %>
 			</dd>
 			<dt><%= $.i18n.prop('EkthesiAutoaksiologisisFile') %></dt>
 			<dd>

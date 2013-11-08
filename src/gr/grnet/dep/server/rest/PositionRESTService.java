@@ -85,7 +85,7 @@ public class PositionRESTService extends RESTService {
 			List<Position> positions = (List<Position>) em.createQuery(
 				"from Position p " +
 					"where p.permanent = true " +
-					"and p.department.institution in (:institutions)")
+					"and p.department.school.institution in (:institutions)")
 				.setParameter("institutions", institutions)
 				.getResultList();
 

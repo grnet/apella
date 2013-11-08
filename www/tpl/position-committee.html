@@ -17,7 +17,6 @@
 			<th><%= $.i18n.prop("Surname") %></th>
 			<th><%= $.i18n.prop("Profile") %></th>
 			<th><%= $.i18n.prop("Institution") %></th>
-			<th><%= $.i18n.prop("Department") %></th>
 		</tr>
 	</thead>
 	<tbody>
@@ -37,15 +36,10 @@
 		<td><%= member.registerMember.professor.user.basicInfo.lastname%></td>
 		<td><%= $.i18n.prop(member.registerMember.professor.discriminator) %></td>
 		<td>
-			<% if (_.isObject(member.registerMember.professor.institution)) { %> 
-				<%= member.registerMember.professor.institution.name %>
-			<% } else if (!_.isUndefined(member.registerMember.professor.institution)) { %> 
-				<%= member.registerMember.professor.institution %> 
-			<% } %>
-		</td>
-		<td>
-			<% if (_.isObject(member.registerMember.professor.department)) { %> 
-				<%= member.registerMember.professor.department.department %> 
+			<% if (!_.isUndefined(member.registerMember.professor.institution)) { %>
+			<%= member.registerMember.professor.institution %>
+			<% } else if (_.isObject(member.registerMember.professor.department)) { %>
+			<%= _.templates.department(member.registerMember.professor.department) %>
 			<% } %>
 		</td>
 	</tr>
