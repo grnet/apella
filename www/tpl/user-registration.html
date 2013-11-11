@@ -1,8 +1,8 @@
-<div class="span4">
+<div class="span12">
 	<h2><%= $.i18n.prop('RegistrationForm') %></h2>
 	<p><%= $.i18n.prop('Instructions_Registration') %></p>
 </div>
-<div class="span8">
+<div class="span12">
 	<h2><%= $.i18n.prop(discriminator) %></h2>
 	<p id="shibbolethLoginInstructions"><%= $.i18n.prop('Instructions_ShibbolethLogin') %></p>
 	<form id="institutionForm" class="form-horizontal" onsubmit="return false">
@@ -11,7 +11,7 @@
 				<label class="control-label" for="institution"><%= $.i18n.prop('Institution') %></label>
 				<div class="controls">
 					<div class="input-append">
-						<select class="input-xlarge" name="institution"></select>
+						<select class="input-xxlarge" name="institution"></select>
 						<a id="selectInstitution" class="btn"><%= $.i18n.prop('btn_select') %></a>
 					</div>
 				</div>

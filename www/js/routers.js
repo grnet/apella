@@ -41,16 +41,13 @@ define([
 				self.currentView.close();
 			}
 			self.currentView = undefined;
-
-			$("#featured").unbind();
-			$("#featured").empty();
 			$("#content").unbind();
 			$("#content").empty();
 		},
 
 		showRegisterSelectView: function () {
 			var userRegistrationSelectView = new Views.UserRegistrationSelectView({});
-			$("#featured").html(userRegistrationSelectView.render().el);
+			$("#content").html(userRegistrationSelectView.render().el);
 			this.currentView = userRegistrationSelectView;
 		},
 
@@ -69,10 +66,10 @@ define([
 				userRegistrationView = new Views.UserRegistrationView({
 					model: userRegistration
 				});
-				$("#featured").html(userRegistrationView.render().el);
+				$("#content").html(userRegistrationView.render().el);
 				this.currentView = userRegistrationView;
 			} else {
-				$("#featured").empty();
+				$("#content").empty();
 				this.currentView = undefined;
 			}
 		},

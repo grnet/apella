@@ -1039,19 +1039,25 @@ define([
 				// Shibboleth
 				// Login
 				// Add institutions in selector:
-
-				// TODO: UserRegistration Select Institution
 				App.institutions = App.institutions || new Models.Institutions();
 				App.institutions.fetch({
 					cache: true,
 					reset: true,
 					success: function (collection, resp) {
-						collection.each(function (institution) {
+						self.$("select[name='institution']").empty();
+						self.$("select[name='institution']").append("<optgroup data-category=\"INSTITUTION\" label=\"" + $.i18n.prop("InstitutionCategory_INSTITUTION") + "\">");
+						self.$("select[name='institution']").append("<optgroup data-category=\"RESEARCH_CENTER\" label=\"" + $.i18n.prop("InstitutionCategory_RESEARCH_CENTER") + "\">");
+						_.each(collection.filter(function (institution) {
+							return _.isEqual(institution.get("registrationType"), "REGISTRATION_FORM");
+						}), function (institution) {
 							if (_.isObject(role.institution) && _.isEqual(institution.id, role.institution.id)) {
-								$("select[name='institution']",
-									self.$el).append("<option value='" + institution.get("id") + "' selected>" + institution.get("name") + "</option>");
+								self.$("select[name='institution']")
+									.find("optgroup[data-category=" + institution.get("category") + "]")
+									.append("<option value='" + institution.get("id") + "' selected>" + institution.get("name") + "</option>");
 							} else {
-								$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
+								self.$("select[name='institution']")
+									.find("optgroup[data-category=" + institution.get("category") + "]")
+									.append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
 							}
 						});
 						self.$("select[name='institution']").trigger("change", {
@@ -1091,14 +1097,13 @@ define([
 					cache: true,
 					reset: true,
 					success: function (collection, resp) {
-						_.each(collection.filter, function (institution) {
-							return institution.get("category") === "INSTITUTION";
-						}, function (institution) {
+						_.each(collection.filter(function (institution) {
+							return _.isEqual(institution.get("category"), "INSTITUTION");
+						}), function (institution) {
 							if (_.isObject(role.institution) && _.isEqual(institution.id, role.institution.id)) {
-								$("select[name='institution']",
-									self.$el).append("<option value='" + institution.get("id") + "' selected>" + institution.get("name") + "</option>");
+								self.$("select[name='institution']").append("<option value='" + institution.get("id") + "' selected>" + institution.get("name") + "</option>");
 							} else {
-								$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
+								self.$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
 							}
 						});
 						self.$("select[name='institution']").trigger("change", {
@@ -2391,7 +2396,7 @@ define([
 						case "country":
 							return _.isEqual(self.model.get("status"), "UNAPPROVED");
 						case "profileURL":
-							return _.isEqual(self.model.get("status"), "UNAPPROVED");
+							return _.isEqual(self.model.get("status"), "UNAPPROVED") && self.model.get("hasOnlineProfile");
 						case "profileFile":
 							return true;
 						case "rank":
@@ -2905,7 +2910,7 @@ define([
 						rules: {
 							institution: "required",
 							profileURL: {
-								required: true,
+								required: "input[name=hasOnlineProfile]:not(:checked)",
 								url: true
 							},
 							rank: "required",
@@ -2916,6 +2921,14 @@ define([
 							profileURL: $.i18n.prop('validation_profileURL'),
 							rank: $.i18n.prop('validation_rank'),
 							subject: $.i18n.prop('validation_subject')
+						}
+					});
+					// OnlineProfile XOR ProfileFile
+					self.$("input[name=hasOnlineProfile]").change(function (event, data) {
+						if ($(this).is(":checked")) {
+							self.$("input[name=profileURL]").focus().val("").attr("disabled", true);
+						} else {
+							self.$("input[name=profileURL]").removeAttr("disabled");
 						}
 					});
 					break;
@@ -3186,6 +3199,7 @@ define([
 					break;
 				case "PROFESSOR_FOREIGN":
 					values.institution = self.$('form input[name=institution]').val();
+					values.hasOnlineProfile = self.$('form input[name=hasOnlineProfile]').is(':not(:checked)');
 					values.profileURL = self.$('form input[name=profileURL]').val();
 					values.rank = {
 						"id": self.$('form select[name=rank]').val()

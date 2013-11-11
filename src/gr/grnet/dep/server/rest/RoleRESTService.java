@@ -373,6 +373,7 @@ public class RoleRESTService extends RESTService {
 		}
 		Long managerInstitutionId;
 		Long institutionId;
+		boolean missingProfile;
 		switch (existingRole.getDiscriminator()) {
 			case INSTITUTION_ASSISTANT:
 				managerInstitutionId = ((InstitutionAssistant) existingRole).getManager().getInstitution().getId();
@@ -384,9 +385,17 @@ public class RoleRESTService extends RESTService {
 			case PROFESSOR_DOMESTIC:
 				ProfessorDomestic newProfessorDomestic = (ProfessorDomestic) role;
 				ProfessorDomestic existingProfessorDomestic = (ProfessorDomestic) existingRole;
-				boolean missingProfile;
 				missingProfile = newProfessorDomestic.getProfileURL() == null || newProfessorDomestic.getProfileURL().isEmpty();
 				missingProfile = missingProfile && FileHeader.filter(existingProfessorDomestic.getFiles(), FileType.PROFILE).isEmpty();
+				if (missingProfile) {
+					throw new RestException(Status.CONFLICT, "professor.missing.profile");
+				}
+				break;
+			case PROFESSOR_FOREIGN:
+				ProfessorForeign newProfessorForeign = (ProfessorForeign) role;
+				ProfessorForeign existingProfessorForeign = (ProfessorForeign) existingRole;
+				missingProfile = newProfessorForeign.getProfileURL() == null || newProfessorForeign.getProfileURL().isEmpty();
+				missingProfile = missingProfile && FileHeader.filter(existingProfessorForeign.getFiles(), FileType.PROFILE).isEmpty();
 				if (missingProfile) {
 					throw new RestException(Status.CONFLICT, "professor.missing.profile");
 				}
