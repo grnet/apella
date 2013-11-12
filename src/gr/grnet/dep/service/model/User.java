@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -99,7 +100,7 @@ public class User implements Serializable {
 	private ContactInformation contactInfo = new ContactInformation();
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.EAGER)
-	private Set<Role> roles = new TreeSet<Role>();
+	private Set<Role> roles = new HashSet<Role>();
 
 	private String password;
 

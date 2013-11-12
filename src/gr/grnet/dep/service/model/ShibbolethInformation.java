@@ -83,10 +83,18 @@ public class ShibbolethInformation {
 	public static ShibbolethInformation readShibbolethFields(HttpServletRequest request) {
 		ShibbolethInformation result = new ShibbolethInformation();
 
-		result.setEduPersonTargetedID(readShibbolethField(request, "HTTP_PERSON_TARGETED_ID", "personTargetedID"));
 		result.setGivenName(readShibbolethField(request, "HTTP_GIVENNAME", "givenName"));
 		result.setSn(readShibbolethField(request, "HTTP_SN", "sn"));
 		result.setSchacHomeOrganization(readShibbolethField(request, "HTTP_HOME_ORGANIZATION", "homeOrganization"));
+
+		String personTargetedId = readShibbolethField(request, "HTTP_PERSON_TARGETED_ID", "personTargetedID");
+		if (personTargetedId == null || personTargetedId.trim().isEmpty()) {
+			personTargetedId = readShibbolethField(request, "HTTP_TARGETED_ID", "targeted-id");
+		}
+		if (personTargetedId == null || personTargetedId.trim().isEmpty()) {
+			personTargetedId = readShibbolethField(request, "HTTP_PERSISTENT_ID", "persistent-id");
+		}
+		result.setEduPersonTargetedID(personTargetedId);
 
 		String eduPersonAffiliation = null;
 		eduPersonAffiliation = readShibbolethField(request, "HTTP_UNSCOPED_AFFILIATION", "unscoped_affiliation");
@@ -124,4 +132,12 @@ public class ShibbolethInformation {
 		}
 	}
 
+	@Override
+	public String toString() {
+		return "EduPersonAffiliation=" + getEduPersonAffiliation() +
+			" EduPersonTargetedID=" + getEduPersonTargetedID() +
+			" GivenName=" + getGivenName() +
+			" SchacHomeOrganization=" + getSchacHomeOrganization() +
+			" Sn=" + getSn();
+	}
 }

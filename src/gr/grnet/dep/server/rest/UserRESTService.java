@@ -525,6 +525,7 @@ public class UserRESTService extends RESTService {
 		}
 
 		// 2. Validate
+		logger.info("Read shibboleth: " + shibbolethInfo.toString());
 		if (shibbolethInfo.isMissingRequiredFields()) {
 			throw new RestException(Status.BAD_REQUEST, "shibboleth.fields.error");
 		}

@@ -2395,6 +2395,8 @@ define([
 							return _.isEqual(self.model.get("status"), "UNAPPROVED");
 						case "country":
 							return _.isEqual(self.model.get("status"), "UNAPPROVED");
+						case "hasOnlineProfile":
+							return _.isEqual(self.model.get("status"), "UNAPPROVED");
 						case "profileURL":
 							return _.isEqual(self.model.get("status"), "UNAPPROVED") && self.model.get("hasOnlineProfile");
 						case "profileFile":
@@ -2913,12 +2915,14 @@ define([
 								required: "input[name=hasOnlineProfile]:not(:checked)",
 								url: true
 							},
+							country : "required",
 							rank: "required",
 							subject: "required"
 						},
 						messages: {
 							institution: $.i18n.prop('validation_institution'),
 							profileURL: $.i18n.prop('validation_profileURL'),
+							country: $.i18n.prop('validation_country'),
 							rank: $.i18n.prop('validation_rank'),
 							subject: $.i18n.prop('validation_subject')
 						}
