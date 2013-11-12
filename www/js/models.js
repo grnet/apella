@@ -666,7 +666,18 @@ define([
 			"verificationAuthorityName": undefined,
 			"institution": undefined,
 			"department": {
-				id : undefined
+				"id": undefined,
+				"name": undefined,
+				"school": {
+					id: undefined,
+					name: undefined,
+					institution: {
+						id: undefined,
+						name: undefined,
+						category: undefined,
+						registrationType: undefined
+					}
+				}
 			},
 			"hasOnlineProfile": undefined,
 			"profileURL": undefined,

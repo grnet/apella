@@ -1,6 +1,6 @@
 <% _.each(roles, function(role) { %>
 <% if (role.discriminator === "PROFESSOR_DOMESTIC") { %>
-<%= $.i18n.prop('PROFESSOR_DOMESTIC') %>,<br/><%= _.templates.department(role.department) %>
+<%= $.i18n.prop('PROFESSOR_DOMESTIC') %>,<br/><%= $.i18n.prop('Institution') %>: <%= _.isObject(role.institution)? role.institution.name : "" %>
 <% } %>
 <% if (role.discriminator === "PROFESSOR_FOREIGN") { %>
 <%= $.i18n.prop('PROFESSOR_FOREIGN') %>,<br/><%= $.i18n.prop('Institution') %>: <%= role.institution %>
@@ -19,6 +19,9 @@
 <% } %>
 <% if (role.discriminator === "CANDIDATE") { %>
 <%= $.i18n.prop('CANDIDATE') %>
+<% } %>
+<% if (role.discriminator === "ADMINISTRATOR") { %>
+<%= $.i18n.prop('ADMINISTRATOR') %>
 <% } %>
 <br />
 <% }); %>

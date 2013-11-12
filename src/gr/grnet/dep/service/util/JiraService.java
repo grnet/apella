@@ -50,7 +50,7 @@ public class JiraService {
 
 	private static final String username = "apella";
 
-	private static final String password = "!@#$%^&*()";
+	private static final String password = "!@#$%^&*()"; // Production Pk%81:$/IES/
 
 	private static final String sesRootURL = "https://staging.tts.grnet.gr/jira/rest/api/2";
 

@@ -1,6 +1,5 @@
 /*global define */
-define([
-	"jquery", "underscore", "backbone", "application", "models",
+define([ "jquery", "underscore", "backbone", "application", "models",
 	"text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file.html", "text!tpl/file-edit.html", "text!tpl/file-list.html", "text!tpl/file-list-edit.html",
 	"text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html",
 	"text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html",
@@ -30,7 +29,8 @@ define([
 
 	var Views = {};
 
-	// Add some precompiled templates in _. so that they are accesible inside other templates
+	// Add some precompiled templates in _. so that they are accesible inside
+	// other templates
 	_.extend(_, {
 		templates: {
 			department: _.template(tpl_department)
@@ -1006,7 +1006,7 @@ define([
 
 		initialize: function (options) {
 			this._super('initialize', [ options ]);
-			_.bindAll(this, "submit", "selectInstitution");
+			_.bindAll(this, "changeInstitution", "submit", "selectInstitution");
 			this.template = _.template(tpl_user_registration);
 			this.model.bind('change', this.render);
 		},
@@ -1017,10 +1017,17 @@ define([
 					event.preventDefault();
 					return;
 				}
-				this.$("form#userForm").submit();
+				$("form#userForm", this.el).submit();
 			},
-			"click a#selectInstitution": "selectInstitution",
-			"submit form#userForm": "submit"
+			"click a#selectInstitution": function (event) {
+				if ($(event.currentTarget).attr("disabled")) {
+					event.preventDefault();
+					return;
+				}
+				this.selectInstitution(event);
+			},
+			"submit form#userForm": "submit",
+			"change select[name=institution]": "changeInstitution"
 		},
 
 		render: function (event) {
@@ -1045,19 +1052,14 @@ define([
 					reset: true,
 					success: function (collection, resp) {
 						self.$("select[name='institution']").empty();
+						self.$("select[name='institution']").append("<option value=\"\">" + $.i18n.prop("PleaseSelectInstitution") + "</option>");
 						self.$("select[name='institution']").append("<optgroup data-category=\"INSTITUTION\" label=\"" + $.i18n.prop("InstitutionCategory_INSTITUTION") + "\">");
 						self.$("select[name='institution']").append("<optgroup data-category=\"RESEARCH_CENTER\" label=\"" + $.i18n.prop("InstitutionCategory_RESEARCH_CENTER") + "\">");
-						_.each(collection.filter(function (institution) {
-							return _.isEqual(institution.get("registrationType"), "REGISTRATION_FORM");
-						}), function (institution) {
+						collection.each(function (institution) {
 							if (_.isObject(role.institution) && _.isEqual(institution.id, role.institution.id)) {
-								self.$("select[name='institution']")
-									.find("optgroup[data-category=" + institution.get("category") + "]")
-									.append("<option value='" + institution.get("id") + "' selected>" + institution.get("name") + "</option>");
+								self.$("select[name='institution']").find("optgroup[data-category=" + institution.get("category") + "]").append("<option value='" + institution.get("id") + "' selected>" + institution.get("name") + "</option>");
 							} else {
-								self.$("select[name='institution']")
-									.find("optgroup[data-category=" + institution.get("category") + "]")
-									.append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
+								self.$("select[name='institution']").find("optgroup[data-category=" + institution.get("category") + "]").append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
 							}
 						});
 						self.$("select[name='institution']").trigger("change", {
@@ -1097,6 +1099,8 @@ define([
 					cache: true,
 					reset: true,
 					success: function (collection, resp) {
+						self.$("select[name='institution']").empty();
+						self.$("select[name='institution']").append("<option value=\"\">" + $.i18n.prop("PleaseSelectInstitution") + "</option>");
 						_.each(collection.filter(function (institution) {
 							return _.isEqual(institution.get("category"), "INSTITUTION");
 						}), function (institution) {
@@ -1260,12 +1264,13 @@ define([
 			return self;
 		},
 
-		change: function (event, data) {
+		changeInstitution: function (event, data) {
 			var self = this;
-			if ((data && _.isEqual(data.triggeredBy, "application")) || $(event.currentTarget).attr('type') === 'hidden') {
-				return;
+			if (_.isEqual(self.$("select[name=institution]").val(), "")) {
+				self.$("a#selectInstitution").attr("disabled", true);
+			} else {
+				self.$("a#selectInstitution").removeAttr("disabled");
 			}
-			self.$("a#save").removeAttr("disabled");
 		},
 
 		submit: function (event) {
@@ -2065,7 +2070,7 @@ define([
 							item = model.toJSON();
 							item.cid = model.cid;
 							item.roleInfo = self.roleInfoTemplate({
-								roles: item.roles
+								roles: [ model.getRole(model.get("primaryRole")) ]
 							});
 							result.push(item);
 						}
@@ -2380,9 +2385,8 @@ define([
 						case "fekCheckbox":
 							return _.isEqual(self.model.get("status"), "UNAPPROVED");
 						case "fekSubject":
-							return _.isEqual(self.model.get("status"), "UNAPPROVED") &&
-								(_.isObject(self.model.get("fekSubject")) || (_.isUndefined(self.model.get("fekSubject")) &&
-									_.isUndefined(self.model.get("subject"))));
+							return _.isEqual(self.model.get("status"),
+								"UNAPPROVED") && (_.isObject(self.model.get("fekSubject")) || (_.isUndefined(self.model.get("fekSubject")) && _.isUndefined(self.model.get("subject"))));
 						case "subject":
 							return _.isEqual(self.model.get("status"), "UNAPPROVED") && !self.isEditable("fekSubject");
 						default:
@@ -2657,8 +2661,8 @@ define([
 						reset: true,
 						success: function (collection, resp) {
 							self.$("select[name='rank']").empty();
-
-							_.each(collection.filter(function(rank) {
+							$("select[name='rank']", self.$el).append("<option value=\"\">--</option>");
+							_.each(collection.filter(function (rank) {
 								switch (self.model.get("institution").category) {
 									case "INSTITUTION":
 										return _.isEqual(rank.get("category"), "PROFESSOR");
@@ -2776,15 +2780,15 @@ define([
 							var rank = App.ranks.get(self.$("select[name=rank]").val()) || new Models.Rank();
 							var department = App.departments.get(self.$("input[name=department]").val());
 							if (!_.isEqual(rank.get("category"), previousRank.get("category"))) {
-								// If rank.category changes, close edit and re-render table with new Institution categories
+								// If rank.category changes, close edit and
+								// re-render table with new Institution
+								// categories
 								departmentSelectView.render();
 								// If necessary clear selection
 								if (department) {
-									if (_.isEqual(rank.get("category"), "PROFESSOR") &&
-										_.isEqual(department.get("school").institution.category, "RESEARCH_CENTER")) {
+									if (_.isEqual(rank.get("category"), "PROFESSOR") && _.isEqual(department.get("school").institution.category, "RESEARCH_CENTER")) {
 										departmentSelectView.select(undefined);
-									} else if (_.isEqual(rank.get("category"), "RESEARCHER") &&
-										_.isEqual(department.get("school").institution.category, "INSTITUTION")) {
+									} else if (_.isEqual(rank.get("category"), "RESEARCHER") && _.isEqual(department.get("school").institution.category, "INSTITUTION")) {
 										departmentSelectView.select(undefined);
 									}
 								}
@@ -2913,7 +2917,7 @@ define([
 								required: "input[name=hasOnlineProfile]:not(:checked)",
 								url: true
 							},
-							country : "required",
+							country: "required",
 							rank: "required",
 							subject: "required"
 						},
@@ -4214,15 +4218,17 @@ define([
 						create: false,
 						hideSelected: true,
 						sortField: 'name',
-						searchField: ['name'],
+						searchField: [ 'name' ],
 						options: _.filter(collection.toJSON(), function (department) {
 							return App.loggedOnUser.isAssociatedWithDepartment(department);
 						}),
 						render: {
-							item: function (item, escape) { //Shows when selected
+							item: function (item, escape) { // Shows when
+								// selected
 								return _.templates.department(item);
 							},
-							option: function (item, escape) { //Shows in dropddown
+							option: function (item, escape) { // Shows in
+								// dropddown
 								return _.templates.department(item);
 							}
 						}
@@ -7983,10 +7989,8 @@ define([
 				unhighlight: function (element, errorClass, validClass) {
 					$(element).parent(".controls").parent(".control-group").removeClass("error");
 				},
-				rules: {
-				},
-				messages: {
-				}
+				rules: {},
+				messages: {}
 			});
 			// Set isEnabled to buttons
 			self.$("a.btn").each(function (index) {
@@ -8028,29 +8032,13 @@ define([
 						sortField: 'professor.user.basicInfo.firstname',
 						options: collection.toJSON(),
 						render: {
-							item: function (item, escape) { //Shows when selected
-								return '<div>' +
-									'<strong>' + escape(item.professor.user.basicInfo.firstname) + " " + escape(item.professor.user.basicInfo.lastname) + '</strong><br/>' +
-									$.i18n.prop(item.professor.discriminator) + '<br/>' +
-									(item.professor.discriminator === "PROFESSOR_DOMESTIC" ?
-										($.i18n.prop('Institution') + ': ' + escape(item.professor.department.institution.name) + "<br/>" +
-											$.i18n.prop('Department') + ": " + escape(item.professor.department.department))
-										:
-										($.i18n.prop('Institution') + ': ' + escape(item.professor.institution) + '<br/>')
-										) +
-									'</div>';
+							item: function (item, escape) { // Shows when
+								// selected
+								return '<div>' + '<strong>' + escape(item.professor.user.basicInfo.firstname) + " " + escape(item.professor.user.basicInfo.lastname) + '</strong><br/>' + $.i18n.prop(item.professor.discriminator) + '<br/>' + (item.professor.discriminator === "PROFESSOR_DOMESTIC" ? ($.i18n.prop('Institution') + ': ' + escape(item.professor.department.institution.name) + "<br/>" + $.i18n.prop('Department') + ": " + escape(item.professor.department.department)) : ($.i18n.prop('Institution') + ': ' + escape(item.professor.institution) + '<br/>')) + '</div>';
 							},
-							option: function (item, escape) { //Shows in dropddown
-								return '<div>' +
-									'<strong>' + escape(item.professor.user.basicInfo.firstname) + " " + escape(item.professor.user.basicInfo.lastname) + '</strong><br/>' +
-									$.i18n.prop(item.professor.discriminator) + '<br/>' +
-									(item.professor.discriminator === "PROFESSOR_DOMESTIC" ?
-										($.i18n.prop('Institution') + ': ' + escape(item.professor.department.institution.name) + "<br/>" +
-											$.i18n.prop('Department') + ": " + escape(item.professor.department.department))
-										:
-										($.i18n.prop('Institution') + ': ' + escape(item.professor.institution) + '<br/>')
-										) +
-									'</div>';
+							option: function (item, escape) { // Shows in
+								// dropddown
+								return '<div>' + '<strong>' + escape(item.professor.user.basicInfo.firstname) + " " + escape(item.professor.user.basicInfo.lastname) + '</strong><br/>' + $.i18n.prop(item.professor.discriminator) + '<br/>' + (item.professor.discriminator === "PROFESSOR_DOMESTIC" ? ($.i18n.prop('Institution') + ': ' + escape(item.professor.department.institution.name) + "<br/>" + $.i18n.prop('Department') + ": " + escape(item.professor.department.department)) : ($.i18n.prop('Institution') + ': ' + escape(item.professor.institution) + '<br/>')) + '</div>';
 							}
 						},
 						score: function (search) {
@@ -8063,9 +8051,7 @@ define([
 					});
 					// Set Value
 					_.each(self.model.get("proposedEvaluators"), function (evaluator, index) {
-						self.$("select[name=evaluator_" + index + "]")[0]
-							.selectize
-							.setValue(evaluator.registerMember.id);
+						self.$("select[name=evaluator_" + index + "]")[0].selectize.setValue(evaluator.registerMember.id);
 					});
 					// Enable/Disable
 				},
