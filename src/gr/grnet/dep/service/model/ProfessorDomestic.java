@@ -27,6 +27,9 @@ public class ProfessorDomestic extends Professor {
 	private Logger logger;
 
 	@ManyToOne
+	private Institution institution;
+
+	@ManyToOne
 	private Department department;
 
 	@ManyToOne
@@ -67,6 +70,14 @@ public class ProfessorDomestic extends Professor {
 
 	public void setFek(String fek) {
 		this.fek = fek;
+	}
+
+	public Institution getInstitution() {
+		return institution;
+	}
+
+	public void setInstitution(Institution institution) {
+		this.institution = institution;
 	}
 
 	public Department getDepartment() {

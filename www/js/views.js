@@ -2643,19 +2643,7 @@ define([
 						collection: App.departments,
 						editable: self.isEditable("department"),
 						filter: function (departmentModel) {
-							var rank = App.ranks.get(self.$("select[name=rank]").val());
-							var institutionCategory = departmentModel.get("school").institution.category;
-							if (!rank) {
-								return true;
-							}
-							switch (rank.get("category")) {
-								case "PROFESSOR" :
-									return _.isEqual(institutionCategory, "INSTITUTION");
-								case "RESEARCHER" :
-									return _.isEqual(institutionCategory, "RESEARCH_CENTER");
-								default :
-									return true;
-							}
+							return _.isEqual(departmentModel.get("school").institution.id, self.model.get("institution").id);
 						}
 					});
 					// Fetch Extra data
@@ -2668,13 +2656,23 @@ define([
 						cache: true,
 						reset: true,
 						success: function (collection, resp) {
-							collection.each(function (rank) {
+							self.$("select[name='rank']").empty();
+
+							_.each(collection.filter(function(rank) {
+								switch (self.model.get("institution").category) {
+									case "INSTITUTION":
+										return _.isEqual(rank.get("category"), "PROFESSOR");
+									case "RESEARCH_CENTER":
+										return _.isEqual(rank.get("category"), "RESEARCHER");
+								}
+							}), function (rank) {
 								if (_.isObject(self.model.get("rank")) && _.isEqual(rank.id, self.model.get("rank").id)) {
 									$("select[name='rank']", self.$el).append("<option value='" + rank.get("id") + "' selected>" + rank.get("name") + "</option>");
 								} else {
 									$("select[name='rank']", self.$el).append("<option value='" + rank.get("id") + "'>" + rank.get("name") + "</option>");
 								}
 							});
+
 							self.$("select[name='rank']").trigger("change", {
 								triggeredBy: "application"
 							});
