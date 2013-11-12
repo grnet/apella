@@ -21,6 +21,8 @@
 	<div class="span6">
 		<h3><%= $.i18n.prop('PositionMain') %>: <%= name %></h3>
 		<dl class="dl-glossary">
+			<dt><%= $.i18n.prop('PositionID') %></dt>
+			<dd><%= App.utils.formatPositionID(id) %></dd>
 			<dt><%= $.i18n.prop('Title') %></dt>
 			<dd><%= name %></dd>
 			<dt><%= $.i18n.prop('Department') %></dt>

@@ -216,11 +216,16 @@ public class CandidacyRESTService extends RESTService {
 			if (!position.getPhase().getStatus().equals(PositionStatus.ANOIXTI)) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
+			if (candidacy.getProposedEvaluators().size() > 0 &&
+				(position.getPhase().getCommittee() == null || position.getPhase().getCommittee().getMembers().isEmpty())) {
+				throw new RestException(Status.CONFLICT, "committee.not.defined");
+			}
 			if (candidacy.getProposedEvaluators().size() > CandidacyEvaluator.MAX_MEMBERS) {
 				throw new RestException(Status.CONFLICT, "max.evaluators.exceeded");
 			}
 			// Check files and candidate status
 			validateCandidacy(existingCandidacy, candidate, isNew);
+
 			//Check changes of Evaluators
 			Set<Long> newRegisterMemberIds = new HashSet<Long>();
 			Map<Long, CandidacyEvaluator> existingRegisterMembersAsMap = new HashMap<Long, CandidacyEvaluator>();
@@ -245,6 +250,7 @@ public class CandidacyRESTService extends RESTService {
 				newRegisterMembers.addAll(query.getResultList());
 			}
 			Collection<CandidacyEvaluator> addedEvaluators = new ArrayList<CandidacyEvaluator>();
+
 			// Update
 			if (isNew) {
 				// Fetch from Profile

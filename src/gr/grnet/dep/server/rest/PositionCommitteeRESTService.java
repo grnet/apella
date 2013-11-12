@@ -2,7 +2,6 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
-import gr.grnet.dep.service.model.CandidacyEvaluator;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.PositionCommittee;
@@ -284,14 +283,6 @@ public class PositionCommitteeRESTService extends RESTService {
 				throw new RestException(Status.CONFLICT, "member.is.evaluator");
 			}
 		}
-		// Check if a member is Candidacy Evaluator
-		for (Candidacy candidacy : existingPosition.getPhase().getCandidacies().getCandidacies()) {
-			for (CandidacyEvaluator evaluator : candidacy.getProposedEvaluators()) {
-				if (newCommitteeMemberAsMap.containsKey(evaluator.getRegisterMember().getId())) {
-					throw new RestException(Status.CONFLICT, "member.is.candidacy.evaluator");
-				}
-			}
-		}
 
 		// Check committee structure
 		int countRegular = 0;
@@ -299,7 +290,9 @@ public class PositionCommitteeRESTService extends RESTService {
 		int countInternalRegular = 0;
 		int countInternalSubstitute = 0;
 		int countExternalRegular = 0;
+		int countExternalRegularForeign = 0;
 		int countExternalSubstitute = 0;
+		int countExternalSubstituteForeign = 0;
 		for (RegisterMember newRegisterMember : newRegisterMembers) {
 			MemberType type = newCommitteeMemberAsMap.get(newRegisterMember.getId());
 			switch (type) {
@@ -307,6 +300,9 @@ public class PositionCommitteeRESTService extends RESTService {
 					countRegular++;
 					if (newRegisterMember.isExternal()) {
 						countExternalRegular++;
+						if (newRegisterMember.getProfessor().getUser().hasActiveRole(RoleDiscriminator.PROFESSOR_FOREIGN)) {
+							countExternalRegularForeign++;
+						}
 					} else {
 						countInternalRegular++;
 					}
@@ -315,6 +311,9 @@ public class PositionCommitteeRESTService extends RESTService {
 					countSubstitute++;
 					if (newRegisterMember.isExternal()) {
 						countExternalSubstitute++;
+						if (newRegisterMember.getProfessor().getUser().hasActiveRole(RoleDiscriminator.PROFESSOR_FOREIGN)) {
+							countExternalSubstituteForeign++;
+						}
 					} else {
 						countInternalSubstitute++;
 					}
@@ -336,8 +335,14 @@ public class PositionCommitteeRESTService extends RESTService {
 		if (countExternalRegular < PositionCommitteeMember.MIN_EXTERNAL) {
 			throw new RestException(Status.CONFLICT, "min.external.regular.members.failed");
 		}
+		if (countExternalRegularForeign == 0) {
+			throw new RestException(Status.CONFLICT, "min.external.regular.foreign.members.failed");
+		}
 		if (countExternalSubstitute < PositionCommitteeMember.MIN_EXTERNAL) {
 			throw new RestException(Status.CONFLICT, "min.external.substitute.members.failed");
+		}
+		if (countExternalSubstituteForeign == 0) {
+			throw new RestException(Status.CONFLICT, "min.external.substitute.foreign.members.failed");
 		}
 
 		// Keep these to send mails

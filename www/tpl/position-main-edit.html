@@ -2,6 +2,12 @@
 	<fieldset>
 		<legend><%= $.i18n.prop('PositionMain') %></legend>
 		<div class="control-group">
+			<label class="control-label" for="name"><%= $.i18n.prop('PositionID') %>:</label>
+			<div class="controls">
+				<span class="input-xlarge uneditable-input"><%= App.utils.formatPositionID(id) %></span>
+			</div>
+		</div>
+		<div class="control-group">
 			<label class="control-label" for="name"><%= $.i18n.prop('PositionName') %>:</label>
 			<div class="controls">
 				<input class="input-xlarge" type="text" name="name" value="<%= name %>" />
