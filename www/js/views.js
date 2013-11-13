@@ -5322,6 +5322,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var self = this;
 			var values = {
 				committeeMeetingDate: self.$("input[name=committeeMeetingDate]").val(),
+				candidacyEvalutionsDueDate: self.$("input[name=candidacyEvalutionsDueDate]").val(),
 				members: self.model.get("members")
 			};
 			self.model.save(values, {

@@ -71,7 +71,7 @@ import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
-@Produces({MediaType.APPLICATION_JSON})
+@Produces(MediaType.APPLICATION_JSON + "; charset=UTF-8")
 @Consumes({MediaType.APPLICATION_JSON})
 public class RESTService {
 
@@ -529,12 +529,16 @@ public class RESTService {
 	public String toJSON(Object object, Class<?> view) {
 		try {
 			ContextResolver<ObjectMapper> resolver = providers.getContextResolver(ObjectMapper.class, MediaType.APPLICATION_JSON_TYPE);
+			logger.info(resolver.getClass().toString());
 			ObjectMapper mapper = resolver.getContext(object.getClass());
+			String result = null;
 			if (view == null) {
-				return mapper.writeValueAsString(object);
+				result = mapper.writeValueAsString(object);
 			} else {
-				return mapper.writerWithView(view).writeValueAsString(object);
+				result = mapper.writerWithView(view).writeValueAsString(object);
 			}
+
+			return result;
 		} catch (JsonGenerationException e) {
 			logger.log(Level.SEVERE, "", e);
 		} catch (JsonMappingException e) {

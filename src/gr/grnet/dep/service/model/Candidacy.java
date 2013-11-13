@@ -4,6 +4,7 @@ import gr.grnet.dep.service.model.PositionCandidacies.DetailedPositionCandidacie
 import gr.grnet.dep.service.model.file.CandidacyFile;
 import gr.grnet.dep.service.model.file.CandidateFile;
 import gr.grnet.dep.service.model.file.FileBody;
+import gr.grnet.dep.service.util.DateUtil;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -310,6 +311,14 @@ public class Candidacy {
 	}
 
 	// /////////////////////////////////////////////////////////////
+
+	@JsonView({DetailedCandidacyView.class})
+	public boolean getCanAddEvaluators() {
+		PositionCommittee committee = this.candidacies.getPosition().getPhase().getCommittee();
+		return committee != null &&
+			committee.getMembers().size() > 0 &&
+			DateUtil.compareDates(new Date(), committee.getCandidacyEvalutionsDueDate()) < 0;
+	}
 
 	@XmlTransient
 	@JsonIgnore

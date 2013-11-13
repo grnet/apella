@@ -52,6 +52,9 @@ public class PositionCommittee {
 	private Set<PositionPhase> phases = new HashSet<PositionPhase>();
 
 	@Temporal(TemporalType.DATE)
+	private Date candidacyEvalutionsDueDate; // Καταληκτική Ημερομηνία Δήλωσης Αξιολογητών από Υποψηφίους
+
+	@Temporal(TemporalType.DATE)
 	private Date committeeMeetingDate; // Ημερομηνία Συνεδρίασης επιτροπής
 
 	@OneToMany(mappedBy = "committee", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
@@ -91,6 +94,16 @@ public class PositionCommittee {
 
 	public void setPhases(Set<PositionPhase> phases) {
 		this.phases = phases;
+	}
+
+	@JsonSerialize(using = SimpleDateSerializer.class)
+	public Date getCandidacyEvalutionsDueDate() {
+		return candidacyEvalutionsDueDate;
+	}
+
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
+	public void setCandidacyEvalutionsDueDate(Date candidacyEvalutionsDueDate) {
+		this.candidacyEvalutionsDueDate = candidacyEvalutionsDueDate;
 	}
 
 	@JsonSerialize(using = SimpleDateSerializer.class)

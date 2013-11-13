@@ -7,8 +7,10 @@ import gr.grnet.dep.service.model.Candidacy.MediumCandidacyView;
 import gr.grnet.dep.service.model.CandidacyEvaluator;
 import gr.grnet.dep.service.model.CandidacyEvaluator.DetailedCandidacyEvaluatorView;
 import gr.grnet.dep.service.model.Candidate;
+import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
+import gr.grnet.dep.service.model.PositionCommittee;
 import gr.grnet.dep.service.model.PositionCommitteeMember;
 import gr.grnet.dep.service.model.PositionEvaluator;
 import gr.grnet.dep.service.model.RegisterMember;
@@ -216,7 +218,13 @@ public class CandidacyRESTService extends RESTService {
 			if (!position.getPhase().getStatus().equals(PositionStatus.ANOIXTI)) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
-			if (candidacy.getProposedEvaluators().size() > 0 &&
+			Set<Long> newRegisterMemberIds = new HashSet<Long>();
+			for (CandidacyEvaluator newEvaluator : candidacy.getProposedEvaluators()) {
+				if (newEvaluator.getId() != null) {
+					newRegisterMemberIds.add(newEvaluator.getRegisterMember().getId());
+				}
+			}
+			if (newRegisterMemberIds.size() > 0 &&
 				(position.getPhase().getCommittee() == null || position.getPhase().getCommittee().getMembers().isEmpty())) {
 				throw new RestException(Status.CONFLICT, "committee.not.defined");
 			}
@@ -227,13 +235,9 @@ public class CandidacyRESTService extends RESTService {
 			validateCandidacy(existingCandidacy, candidate, isNew);
 
 			//Check changes of Evaluators
-			Set<Long> newRegisterMemberIds = new HashSet<Long>();
 			Map<Long, CandidacyEvaluator> existingRegisterMembersAsMap = new HashMap<Long, CandidacyEvaluator>();
 			for (CandidacyEvaluator existingEvaluator : existingCandidacy.getProposedEvaluators()) {
 				existingRegisterMembersAsMap.put(existingEvaluator.getRegisterMember().getId(), existingEvaluator);
-			}
-			for (CandidacyEvaluator newEvaluator : candidacy.getProposedEvaluators()) {
-				newRegisterMemberIds.add(newEvaluator.getRegisterMember().getId());
 			}
 			List<RegisterMember> newRegisterMembers = new ArrayList<RegisterMember>();
 			if (!newRegisterMemberIds.isEmpty()) {
@@ -535,17 +539,36 @@ public class CandidacyRESTService extends RESTService {
 		if (existingCandidacy == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 		}
-		// Prepare Query
+		// Return empty response while committee is not defined
+		if (!existingCandidacy.getCanAddEvaluators()) {
+			return new ArrayList<RegisterMember>();
+		}
+		// Prepare Data for Query
+		Institution institution = existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution();
+		Set<Long> committeeMemberIds = new HashSet<Long>();
+		PositionCommittee committee = existingCandidacy.getCandidacies().getPosition().getPhase().getCommittee();
+		for (PositionCommitteeMember member : committee.getMembers()) {
+			committeeMemberIds.add(member.getRegisterMember().getId());
+		}
+		if (committeeMemberIds.isEmpty()) {
+			// This will not happen, but just to avoid exceptions in case it does
+			return new ArrayList<RegisterMember>();
+		}
+		// Run Query
+		@SuppressWarnings("unchecked")
 		List<RegisterMember> registerMembers = em.createQuery(
 			"select distinct m from Register r " +
 				"join r.members m " +
 				"where r.permanent = true " +
 				"and r.institution.id = :institutionId " +
-				"and m.professor.status = :status ")
-			.setParameter("institutionId", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getId())
+				"and m.professor.status = :status " +
+				"and m.id not in (:committeeMemberIds)")
+			.setParameter("institutionId", institution.getId())
 			.setParameter("status", RoleStatus.ACTIVE)
+			.setParameter("committeeMemberIds", committeeMemberIds)
 			.getResultList();
 
+		// Return result
 		return registerMembers;
 	}
 

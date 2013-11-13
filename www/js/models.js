@@ -1009,7 +1009,8 @@ define([
 				},
 				committee: {
 					id: undefined,
-					committeeMeetingDate: undefined
+					committeeMeetingDate: undefined,
+					candidacyEvalutionsDueDate : undefined
 				},
 				evaluation: {
 					id: undefined
@@ -1182,6 +1183,7 @@ define([
 				id: undefined
 			},
 			committeeMeetingDate: undefined,
+			candidacyEvalutionsDueDate : undefined,
 			members: [],
 			canUpdateMembers: undefined
 		}

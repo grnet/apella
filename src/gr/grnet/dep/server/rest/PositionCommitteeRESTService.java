@@ -272,6 +272,11 @@ public class PositionCommitteeRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.member.id");
 		}
 		// Validate New Committee
+		if (newCommittee.getMembers().size() > 0 &&
+			newCommittee.getCandidacyEvalutionsDueDate() == null) {
+			throw new RestException(Status.CONFLICT, "committee.missing.candidacyEvalutions.dueDate");
+		}
+
 		// Να μην είναι δυνατή η συμπλήρωση της Επιτροπής εάν δεν έχει συμπληρωθεί το πεδίο "Απόφαση Σύστασης Επιτροπής".
 		if (newCommittee.getMembers().size() > 0 &&
 			FileHeader.filter(existingCommittee.getFiles(), FileType.APOFASI_SYSTASIS_EPITROPIS).isEmpty()) {
