@@ -7,6 +7,7 @@ import gr.grnet.dep.service.model.PositionPhase;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
+import gr.grnet.dep.service.util.DateUtil;
 import gr.grnet.dep.service.util.MailService;
 
 import java.io.File;
@@ -219,8 +220,8 @@ public class QuartzService {
 				"and p.phase.candidacies.closingDate <= :toDate " +
 				"and p.phase.candidacies.closingDate > :fromDate")
 			.setParameter("status", PositionStatus.ANOIXTI)
-			.setParameter("fromDate", fromDate)
-			.setParameter("toDate", toDate)
+			.setParameter("fromDate", DateUtil.removeTime(fromDate))
+			.setParameter("toDate", DateUtil.removeTime(fromDate))
 			.getResultList();
 
 		for (final Position position : positions) {

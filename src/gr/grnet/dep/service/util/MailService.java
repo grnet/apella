@@ -160,6 +160,7 @@ public class MailService {
 		logger.log(Level.INFO, "Sending email to " + aToEmailAddr + " " + aSubject + "\n" + aBody);
 		try {
 			MimeMessage message = new MimeMessage(mailSession);
+			message.setFrom(new InternetAddress("apella@grnet.gr"));
 			message.addRecipient(Message.RecipientType.TO, new InternetAddress(aToEmailAddr));
 			message.setSubject(aSubject, "UTF-8");
 

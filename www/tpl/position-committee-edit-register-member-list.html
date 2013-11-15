@@ -31,10 +31,10 @@
 			<td><%= member.professor.user.basicInfo.lastname%></td>
 			<td><%= $.i18n.prop(member.professor.discriminator) %></td>
 			<td>
-				<% if (!_.isUndefined(member.professor.institution)) { %>
-					<%= member.professor.institution %>
-				<% } else if (_.isObject(member.professor.department)) { %>
-					<%= _.templates.department(member.professor.department) %>
+				<% if (_.isEqual(member.professor.discriminator, 'PROFESSOR_FOREIGN')) { %>
+				<%= member.professor.institution %>
+				<% } else { %>
+				<%= _.templates.department(member.professor.department) %>
 				<% } %>
 			</td>
 			<td><%= member.professor.committeesCount %></td>
@@ -43,7 +43,7 @@
 	</tbody>
 	<tfoot>
 		<tr>
-			<td colspan="9">
+			<td colspan="8">
 				<div class="btn-toolbar pull-right" id="details">
 					<a id="addMembers" class="btn btn-success"><%= $.i18n.prop('btn_addAll') %></a>
 				</div>

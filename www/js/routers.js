@@ -1,11 +1,5 @@
 /*global define */
-define([
-	"jquery",
-	"underscore",
-	"backbone",
-	"application",
-	"models", "views",
-	"text!tpl/user-registration-success.html"
+define([ "jquery", "underscore", "backbone", "application", "models", "views", "text!tpl/user-registration-success.html"
 ], function ($, _, Backbone, App, Models, Views, tpl_user_registration_success) {
 	"use strict";
 
@@ -14,12 +8,17 @@ define([
 	Routers.RegistrationRouter = Backbone.Router.extend({
 
 		initialize: function () {
+			var languageView;
+
 			_.extend(this, Backbone.Events);
 			_.bindAll(this, "showRegisterView", "showVerificationView", "showRegisterSelectView", "showRegisterSuccessView");
 			$(document).ajaxStart(App.blockUI);
 			$(document).ajaxStop(App.unblockUI);
 
 			App.institutions = new Models.Institutions();
+
+			languageView = new Views.LanguageView({});
+			languageView.render();
 
 			Backbone.history.start();
 		},
@@ -294,7 +293,8 @@ define([
 			accountView = new Views.ShibbolethAccountView({
 				model: App.loggedOnUser
 			});
-			// When sync completes user will have completed with shibboleth account
+			// When sync completes user will have completed with shibboleth
+			// account
 			self.listenToOnce(App.loggedOnUser, "sync", function () {
 				self.navigate("", {
 					trigger: true
@@ -1057,15 +1057,15 @@ define([
 				cache: false,
 				wait: true,
 				success: function (model, response, options) {
-					self.refreshBreadcrumb([ $.i18n.prop('menu_candidacy'), (model.get("snapshot").basicInfo.firstname + " " + model.get("snapshot").basicInfo.lastname)]);
+					self.refreshBreadcrumb([ $.i18n.prop('menu_candidacy'), (model.get("snapshot").basicInfo.firstname + " " + model.get("snapshot").basicInfo.lastname) ]);
 				}
 			});
 			self.currentView = candidacyView;
 		},
 
-		/***************************
-		 *** ADMIN ONLY VIEWS ******
-		 ***************************/
+		/***********************************************************************
+		 * ** ADMIN ONLY VIEWS ******
+		 **********************************************************************/
 
 		showAdminUserSearchView: function (query) {
 			var self = this;
@@ -1101,5 +1101,4 @@ define([
 	});
 
 	return Routers;
-})
-;
+});

@@ -25,9 +25,9 @@
 		<td><%= evaluator.registerMember.professor.user.basicInfo.lastname%></td>
 		<td><%= $.i18n.prop(evaluator.registerMember.professor.discriminator) %></td>
 		<td>
-			<% if (!_.isUndefined(evaluator.registerMember.professor.institution)) { %>
+			<% if (_.isEqual(evaluator.registerMember.professor.discriminator, 'PROFESSOR_FOREIGN')) { %>
 			<%= evaluator.registerMember.professor.institution %>
-			<% } else if (_.isObject(evaluator.registerMember.professor.department)) { %>
+			<% } else { %>
 			<%= _.templates.department(evaluator.registerMember.professor.department) %>
 			<% } %>
 		</td>

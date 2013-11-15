@@ -1193,8 +1193,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					phone: {
 						required: _.isEqual(role.discriminator, "INSTITUTION_MANAGER"),
 						number: true,
-						minlength: 10,
-						maxlength: 10
+						minlength: 10
 					}
 				},
 				messages: {
@@ -1244,8 +1243,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					phone: {
 						required: $.i18n.prop('validation_phone'),
 						number: $.i18n.prop('validation_number'),
-						minlength: $.i18n.prop('validation_phone'),
-						maxlength: $.i18n.prop('validation_phone')
+						minlength: $.i18n.prop('validation_phone')
 					}
 				}
 			});
@@ -1657,10 +1655,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						minlength: 10
 					},
 					phone: {
-						required: (self.model.hasRoleWithStatus("INSTITUTION_MANAGER") || self.model.hasRoleWithStatus("INSTITUTION_ASSISTANT")),
+						required: (self.model.hasRole("INSTITUTION_MANAGER") || self.model.hasRole("INSTITUTION_ASSISTANT")),
 						number: true,
-						minlength: 10,
-						maxlength: 10
+						minlength: 10
 					},
 					email: {
 						required: true,
@@ -1710,8 +1707,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					phone: {
 						required: $.i18n.prop('validation_phone'),
 						number: $.i18n.prop('validation_number'),
-						minlength: $.i18n.prop('validation_phone'),
-						maxlength: $.i18n.prop('validation_phone')
+						minlength: $.i18n.prop('validation_phone')
 					},
 					email: {
 						required: $.i18n.prop('validation_email'),
@@ -2404,7 +2400,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						case "profileURL":
 							return _.isEqual(self.model.get("status"), "UNAPPROVED") && self.model.get("hasOnlineProfile");
 						case "profileFile":
-							return true;
+							return _.isEqual(self.model.get("status"), "UNAPPROVED");
 						case "rank":
 							return _.isEqual(self.model.get("status"), "UNAPPROVED");
 						case "subject":
@@ -3979,6 +3975,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 		createInstitutionAssistant: function (event) {
 			var institutions = App.loggedOnUser.getAssociatedInstitutions();
 			var user = new Models.User({
+				"registrationType": "REGISTRATION_FORM",
 				"roles": [
 					{
 						"discriminator": "INSTITUTION_ASSISTANT",
@@ -4075,6 +4072,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		createMinistryAssistant: function (event) {
 			var user = new Models.User({
+				"registrationType": "REGISTRATION_FORM",
 				"roles": [
 					{
 						"discriminator": "MINISTRY_ASSISTANT"
@@ -4770,9 +4768,13 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				case "fekSentDate":
 					return _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
 				case "openingDate":
-					return !self.model.get("permanent");
+					// TODO: Uncomment this
+					// return !self.model.get("permanent");
+					return _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
 				case "closingDate":
-					return !self.model.get("permanent");
+					// TODO: Uncomment this
+					// return !self.model.get("permanent");
+					return _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
 				default:
 					break;
 			}
@@ -7547,8 +7549,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 		renderDepartments: function (departments) {
 			var self = this;
 			var treeData = departments.reduce(function (memo, department) {
+				var node;
 				var institution = department.get("school").institution;
-				var node = _.find(memo, function (item) {
+				if (institution.category === 'RESEARCH_CENTER') {
+					//Skip research centers
+					return memo;
+				}
+				// Create/Find Node
+				node = _.find(memo, function (item) {
 					return item.key === institution.id;
 				});
 				if (!node) {
@@ -7563,12 +7571,13 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					memo.push(node);
 				}
 				node.children.push({
-					title: department.get("name"),
+					title: "<b>" + $.i18n.prop("School") + ": </b>" + department.get("school").name + ", <b>" + $.i18n.prop("Department") + ": </b>" + department.get("name"),
 					key: department.get("id"),
 					select: _.any(self.model.get("departments"), function (selectedDepartment) {
 						return _.isEqual(selectedDepartment.id, department.get("id"));
 					})
 				});
+				// Return memo
 				return memo;
 			}, []);
 
@@ -7889,14 +7898,13 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				case "openToOtherCandidates":
 					return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
 				case "evaluator_0":
-					return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
+					return self.model.get("canAddEvaluators");
 				case "evaluator_1":
-					return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
+					return self.model.get("canAddEvaluators");
 				case "ekthesiAutoaksiologisisFile":
 					return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
 				case "sympliromatikaEggrafaFileList":
-					return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI") || _.isEqual(self.model.get("candidacies").position.phase.status,
-						"EPILOGI");
+					return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI") || _.isEqual(self.model.get("candidacies").position.phase.status, "EPILOGI");
 				default:
 					break;
 			}

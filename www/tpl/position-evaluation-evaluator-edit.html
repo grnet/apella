@@ -28,9 +28,9 @@
 	<tr>
 		<th><%= $.i18n.prop("Institution") %></th>
 		<td>
-			<% if (!_.isUndefined(registerMember.professor.institution)) { %>
+			<% if (_.isEqual(registerMember.professor.discriminator, 'PROFESSOR_FOREIGN')) { %>
 			<%= registerMember.professor.institution %>
-			<% } else if (_.isObject(registerMember.professor.department)) { %>
+			<% } else { %>
 			<%= _.templates.department(registerMember.professor.department) %>
 			<% } %>
 		</td>
