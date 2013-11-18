@@ -466,6 +466,11 @@ public class UserRESTService extends RESTService {
 			String headerName = headers.nextElement();
 			result = result.concat("Header:\t\t" + headerName + " = " + request.getHeader(headerName) + "\n");
 		}
+		Enumeration<String> attributes = request.getAttributeNames();
+		while (attributes.hasMoreElements()) {
+			String attributeName = attributes.nextElement();
+			result = result.concat("Attribute:\t" + attributeName + " = " + request.getAttribute(attributeName) + "\n");
+		}
 		return Response.status(200)
 			.entity(result)
 			.build();

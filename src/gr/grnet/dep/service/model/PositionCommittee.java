@@ -164,6 +164,7 @@ public class PositionCommittee {
 
 	public void copyFrom(PositionCommittee other) {
 		this.setCommitteeMeetingDate(other.getCommitteeMeetingDate());
+		this.setCandidacyEvalutionsDueDate(other.getCandidacyEvalutionsDueDate());
 		this.setUpdatedAt(new Date());
 	}
 

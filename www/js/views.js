@@ -402,9 +402,16 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		render: function (eventName) {
 			var self = this;
+			var tpl_data;
 			self.$el.empty();
 			self.addTitle();
-			self.$el.append(self.template(self.model.toJSON()));
+
+			tpl_data = _.extend({
+				registrationRoles: App.allowedRoles
+			}, self.model.toJSON());
+
+			self.$el.append(self.template(tpl_data));
+
 			self.$("#resetPasswordForm").hide();
 			self.$("#resendVerificationEmailForm").hide();
 
