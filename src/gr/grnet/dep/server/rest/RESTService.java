@@ -4,6 +4,7 @@ import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Department;
+import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.ProfessorForeign;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
@@ -48,6 +49,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
@@ -638,6 +640,20 @@ public class RESTService {
 				"where s.id in (:sectorIds)")
 			.setParameter("sectorIds", sectorIds)
 			.getResultList();
+	}
+
+	protected Institution findInstitutionBySchacHomeOrganization(String schacHomeOrganization) {
+		try {
+			return (Institution) em.createQuery(
+				"from Institution i " +
+					"where i.schacHomeOrganization = :schacHomeOrganization ")
+				.setParameter("schacHomeOrganization", schacHomeOrganization)
+				.getSingleResult();
+		} catch (NoResultException e) {
+			return null;
+		} catch (NonUniqueResultException e) {
+			return null;
+		}
 	}
 
 }

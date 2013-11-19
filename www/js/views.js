@@ -1798,6 +1798,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}, {
 				wait: true,
 				success: function (model, resp) {
+					self.model.trigger("sync:save");
 					var popup = new Views.PopupView({
 						type: "success",
 						message: $.i18n.prop("Success")
@@ -1880,6 +1881,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 	Views.ShibbolethAccountView = Views.AccountView.extend({
 		initialize: function (options) {
 			this._super('initialize', [ options ]);
+
+			// When sync completes user will have completed with shibboleth
+			// account
+			this.listenToOnce(App.loggedOnUser, "sync:save", function () {
+				App.router.navigate("", {
+					trigger: true
+				});
+			});
 		},
 
 		applyRules: function () {
@@ -1909,7 +1918,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 		},
 
 		render: function (eventName) {
-			return this._super('render', [ eventName ]);
+			var self = this;
+
+			self._super('render', [ eventName ]);
+			return self;
 		}
 	});
 
@@ -8050,11 +8062,23 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						render: {
 							item: function (item, escape) { // Shows when
 								// selected
-								return '<div>' + '<strong>' + escape(item.professor.user.basicInfo.firstname) + " " + escape(item.professor.user.basicInfo.lastname) + '</strong><br/>' + $.i18n.prop(item.professor.discriminator) + '<br/>' + (item.professor.discriminator === "PROFESSOR_DOMESTIC" ? ($.i18n.prop('Institution') + ': ' + escape(item.professor.department.institution.name) + "<br/>" + $.i18n.prop('Department') + ": " + escape(item.professor.department.department)) : ($.i18n.prop('Institution') + ': ' + escape(item.professor.institution) + '<br/>')) + '</div>';
+								return '<div>' +
+									'<strong>' + escape(item.professor.user.basicInfo.firstname) + " " + escape(item.professor.user.basicInfo.lastname) + '</strong><br/>' +
+									$.i18n.prop(item.professor.discriminator) + '<br/>' +
+									(item.professor.discriminator === "PROFESSOR_DOMESTIC" ?
+										($.i18n.prop('Institution') + ': ' + escape(item.professor.department.school.institution.name) + "<br/>" + $.i18n.prop('School') + ': ' + escape(item.professor.department.school.name) + "<br/>" + $.i18n.prop('Department') + ": " + escape(item.professor.department.name)) :
+										($.i18n.prop('Institution') + ': ' + escape(item.professor.institution) + '<br/>')) +
+									'</div>';
 							},
 							option: function (item, escape) { // Shows in
 								// dropddown
-								return '<div>' + '<strong>' + escape(item.professor.user.basicInfo.firstname) + " " + escape(item.professor.user.basicInfo.lastname) + '</strong><br/>' + $.i18n.prop(item.professor.discriminator) + '<br/>' + (item.professor.discriminator === "PROFESSOR_DOMESTIC" ? ($.i18n.prop('Institution') + ': ' + escape(item.professor.department.institution.name) + "<br/>" + $.i18n.prop('Department') + ": " + escape(item.professor.department.department)) : ($.i18n.prop('Institution') + ': ' + escape(item.professor.institution) + '<br/>')) + '</div>';
+								return '<div>' +
+									'<strong>' + escape(item.professor.user.basicInfo.firstname) + " " + escape(item.professor.user.basicInfo.lastname) + '</strong><br/>' +
+									$.i18n.prop(item.professor.discriminator) + '<br/>' +
+									(item.professor.discriminator === "PROFESSOR_DOMESTIC" ?
+										($.i18n.prop('Institution') + ': ' + escape(item.professor.department.school.institution.name) + "<br/>" + $.i18n.prop('School') + ': ' + escape(item.professor.department.school.name) + "<br/>" + $.i18n.prop('Department') + ": " + escape(item.professor.department.name)) :
+										($.i18n.prop('Institution') + ': ' + escape(item.professor.institution) + '<br/>')) +
+									'</div>';
 							}
 						},
 						score: function (search) {

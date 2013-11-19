@@ -1,9 +1,24 @@
 /*global define */
-define([ "jquery", "underscore", "backbone", "application", "models", "views", "text!tpl/user-registration-success.html"
-], function ($, _, Backbone, App, Models, Views, tpl_user_registration_success) {
+define([ "jquery", "underscore", "backbone", "application", "models", "views", "text!tpl/landing-page.html", "text!tpl/user-registration-success.html"
+], function ($, _, Backbone, App, Models, Views, tpl_landing_page, tpl_user_registration_success) {
 	"use strict";
 
 	var Routers = {};
+
+	Routers.Router = Backbone.Router.extend({
+
+		initialize: function () {
+			var languageView;
+			_.extend(this, Backbone.Events);
+			$(document).ajaxStart(App.blockUI);
+			$(document).ajaxStop(App.unblockUI);
+
+			languageView = new Views.LanguageView({});
+			languageView.render();
+
+			$("#content").html(_.template(tpl_landing_page));
+		}
+	});
 
 	Routers.RegistrationRouter = Backbone.Router.extend({
 
@@ -107,9 +122,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 	});
 
 	/***************************************************************************
-	 * ************ Routers.Router ***************************
+	 * ************ Routers.ApellaRouter ***************************************
 	 **************************************************************************/
-	Routers.Router = Backbone.Router.extend({
+	Routers.ApellaRouter = Backbone.Router.extend({
 		initialize: function () {
 			var self = this;
 			var languageView;
@@ -117,7 +132,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			_.extend(self, Backbone.Events);
 			_.bindAll(self, "setTitle", "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showUserView", "showInstitutionAssistantsView",
 				"showMinistryAssistantsView", "showPositionView", "showPositionsView", "showRegistersView", "showProfessorCommitteesView", "showProfessorEvaluationsView",
-				"showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "showCandidacyView", "start", "showAdminUserSearchView");
+				"showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "showCandidacyView", "showAdminUserSearchView", "showShibbolethAccountView", "start");
 
 			self.on("route", function (routefn) {
 				self.setTitle(routefn);
@@ -293,14 +308,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			accountView = new Views.ShibbolethAccountView({
 				model: App.loggedOnUser
 			});
-			// When sync completes user will have completed with shibboleth
-			// account
-			self.listenToOnce(App.loggedOnUser, "sync", function () {
-				self.navigate("", {
-					trigger: true
-				});
-			});
-
 			this.refreshBreadcrumb([ $.i18n.prop('menu_shibolethAccount') ]);
 			$("#content").append(accountView.render().el);
 

@@ -12,28 +12,26 @@ public class ShibbolethInformation {
 
 	private static Logger logger = Logger.getLogger(ShibbolethInformation.class.getName());
 
-	private String eduPersonTargetedID;
+	private String remoteUser;
 
-	// givenName, HTTP_GIVENNAME
+	// givenName
 	private String givenName;
 
-	//sn, HTTP_SN
+	//sn
 	private String sn;
 
-	//schacHomeOrganization
+	//schac-home-organization
 	private String schacHomeOrganization;
 
-	//eduPersonAffiliation -> unscoped_affiliation, HTTP_UNSCOPED_AFFILIATION
-	//eduPersonPrimaryAffiliation -> primary_affiliation, HTTP_PRIMARY_AFFILIATION
-	//eduPersonScopedAffiliation -> affiliation, HTTP_AFFILIATION
-	private String eduPersonAffiliation;
+	//unscoped_affiliation || primary_affiliation || affiliation
+	private String affiliation;
 
-	public String getEduPersonTargetedID() {
-		return eduPersonTargetedID;
+	public String getRemoteUser() {
+		return remoteUser;
 	}
 
-	public void setEduPersonTargetedID(String eduPersonTargetedID) {
-		this.eduPersonTargetedID = eduPersonTargetedID;
+	public void setRemoteUser(String remoteUser) {
+		this.remoteUser = remoteUser;
 	}
 
 	public String getGivenName() {
@@ -60,19 +58,19 @@ public class ShibbolethInformation {
 		this.schacHomeOrganization = schacHomeOrganization;
 	}
 
-	public String getEduPersonAffiliation() {
-		return eduPersonAffiliation;
+	public String getAffiliation() {
+		return affiliation;
 	}
 
-	public void setEduPersonAffiliation(String eduPersonAffiliation) {
-		this.eduPersonAffiliation = eduPersonAffiliation;
+	public void setAffiliation(String affiliation) {
+		this.affiliation = affiliation;
 	}
 
 	////////////////
 
 	public boolean isMissingRequiredFields() {
-		return this.eduPersonAffiliation == null ||
-			this.eduPersonTargetedID == null ||
+		return this.affiliation == null ||
+			this.remoteUser == null ||
 			this.givenName == null ||
 			this.sn == null ||
 			this.schacHomeOrganization == null;
@@ -83,47 +81,33 @@ public class ShibbolethInformation {
 	public static ShibbolethInformation readShibbolethFields(HttpServletRequest request) {
 		ShibbolethInformation result = new ShibbolethInformation();
 
-		result.setGivenName(readShibbolethField(request, "HTTP_GIVENNAME", "givenName"));
-		result.setSn(readShibbolethField(request, "HTTP_SN", "sn"));
-		result.setSchacHomeOrganization(readShibbolethField(request, "HTTP_HOME_ORGANIZATION", "homeOrganization"));
+		result.setGivenName(readShibbolethField(request, "givenName"));
+		result.setSn(readShibbolethField(request, "sn"));
+		result.setSchacHomeOrganization(readShibbolethField(request, "schac-home-organization"));
+		result.setRemoteUser(readShibbolethField(request, "REMOTE_USER"));
 
-		String personTargetedId = readShibbolethField(request, "HTTP_PERSON_TARGETED_ID", "personTargetedID");
-		if (personTargetedId == null || personTargetedId.trim().isEmpty()) {
-			personTargetedId = readShibbolethField(request, "HTTP_TARGETED_ID", "targeted-id");
+		String affiliation = null;
+		affiliation = readShibbolethField(request, "unscoped-affiliation");
+		if (affiliation == null) {
+			affiliation = readShibbolethField(request, "primary-affiliation");
 		}
-		if (personTargetedId == null || personTargetedId.trim().isEmpty()) {
-			personTargetedId = readShibbolethField(request, "HTTP_PERSISTENT_ID", "persistent-id");
+		if (affiliation == null) {
+			affiliation = readShibbolethField(request, "affiliation");
 		}
-		result.setEduPersonTargetedID(personTargetedId);
-
-		String eduPersonAffiliation = null;
-		eduPersonAffiliation = readShibbolethField(request, "HTTP_UNSCOPED_AFFILIATION", "unscoped_affiliation");
-		if (eduPersonAffiliation == null) {
-			eduPersonAffiliation = readShibbolethField(request, "HTTP_PRIMARY_AFFILIATION", "primary_affiliation");
+		if (affiliation != null && affiliation.contains("faculty")) {
+			affiliation = "faculty";
 		}
-		if (eduPersonAffiliation == null) {
-			eduPersonAffiliation = readShibbolethField(request, "HTTP_AFFILIATION", "affiliation");
-		}
-		if (eduPersonAffiliation != null && eduPersonAffiliation.contains("faculty")) {
-			eduPersonAffiliation = "faculty";
-		}
-		result.setEduPersonAffiliation(eduPersonAffiliation);
+		result.setAffiliation(affiliation);
 
 		return result;
 	}
 
-	private static String readShibbolethField(HttpServletRequest request, String attributeName, String headerName) {
+	private static String readShibbolethField(HttpServletRequest request, String headerName) {
 		try {
-			Object value = request.getAttribute(attributeName);
+			Object value = request.getHeader(headerName);
 			String field = null;
-			if (value == null || value.toString().isEmpty()) {
-				value = request.getHeader(headerName);
-			}
 			if (value != null && !value.toString().isEmpty()) {
 				field = new String(value.toString().getBytes("ISO-8859-1"), "UTF-8");
-				if (field.indexOf(";") != -1) {
-					field = field.substring(0, field.indexOf(";"));
-				}
 			}
 			return field;
 		} catch (UnsupportedEncodingException e) {
@@ -134,8 +118,8 @@ public class ShibbolethInformation {
 
 	@Override
 	public String toString() {
-		return "EduPersonAffiliation=" + getEduPersonAffiliation() +
-			" EduPersonTargetedID=" + getEduPersonTargetedID() +
+		return "EduPersonAffiliation=" + getAffiliation() +
+			" REMOTE_USER=" + getRemoteUser() +
 			" GivenName=" + getGivenName() +
 			" SchacHomeOrganization=" + getSchacHomeOrganization() +
 			" Sn=" + getSn();

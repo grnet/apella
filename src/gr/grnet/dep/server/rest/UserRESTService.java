@@ -2,6 +2,7 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidate;
+import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.InstitutionManager;
 import gr.grnet.dep.service.model.MinistryAssistant;
@@ -534,16 +535,21 @@ public class UserRESTService extends RESTService {
 		if (shibbolethInfo.isMissingRequiredFields()) {
 			throw new RestException(Status.BAD_REQUEST, "shibboleth.fields.error");
 		}
-		if (!shibbolethInfo.getEduPersonAffiliation().equals("faculty")) {
+		if (!shibbolethInfo.getAffiliation().equals("faculty")) {
 			throw new RestException(Status.UNAUTHORIZED, "wrong.affiliation");
+		}
+		// Find Institution from schacHomeOrganization
+		Institution institution = findInstitutionBySchacHomeOrganization(shibbolethInfo.getSchacHomeOrganization());
+		if (institution == null) {
+			throw new RestException(Status.UNAUTHORIZED, "wrong.home.organization");
 		}
 
 		// 3. Find User
 		User u = null;
 		try {
 			u = (User) em.createQuery("select u from User u " +
-				"where u.shibbolehtInfo.eduPersonTargetedID = :eduPersonTargetedID")
-				.setParameter("eduPersonTargetedID", shibbolethInfo.getEduPersonTargetedID())
+				"where u.shibbolethInfo.remoteUser = :remoteUser")
+				.setParameter("remoteUser", shibbolethInfo.getRemoteUser())
 				.getSingleResult();
 		} catch (NoResultException e) {
 			// Create User from Shibboleth Fields 
@@ -551,11 +557,17 @@ public class UserRESTService extends RESTService {
 			u.setRegistrationType(UserRegistrationType.SHIBBOLETH);
 			u.getBasicInfo().setFirstname(shibbolethInfo.getGivenName());
 			u.getBasicInfo().setLastname(shibbolethInfo.getSn());
+			u.getBasicInfo().setFathername("");
+			u.getBasicInfoLatin().setFirstname("");
+			u.getBasicInfoLatin().setLastname("");
+			u.getBasicInfoLatin().setFathername("");
+			u.getContactInfo().setEmail("");
 			u.setRegistrationDate(new Date());
 			u.setStatus(UserStatus.ACTIVE);
 			u.setStatusDate(new Date());
 
 			ProfessorDomestic pd = new ProfessorDomestic();
+			pd.setInstitution(institution);
 			pd.setStatus(RoleStatus.UNAPPROVED);
 			pd.setStatusDate(new Date());
 			u.addRole(pd);

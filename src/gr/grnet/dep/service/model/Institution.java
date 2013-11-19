@@ -20,6 +20,8 @@ public class Institution {
 	@NotEmpty
 	private String name;
 
+	private String schacHomeOrganization;
+
 	@NotNull
 	@Enumerated(EnumType.STRING)
 	private InstitutionCategory category;
@@ -58,6 +60,14 @@ public class Institution {
 
 	public void setRegistrationType(UserRegistrationType registrationType) {
 		this.registrationType = registrationType;
+	}
+
+	public String getSchacHomeOrganization() {
+		return schacHomeOrganization;
+	}
+
+	public void setSchacHomeOrganization(String schacHomeOrganization) {
+		this.schacHomeOrganization = schacHomeOrganization;
 	}
 
 }

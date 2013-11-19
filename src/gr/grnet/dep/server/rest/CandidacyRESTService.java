@@ -215,17 +215,17 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			Position position = existingCandidacy.getCandidacies().getPosition();
-			if (!position.getPhase().getStatus().equals(PositionStatus.ANOIXTI)) {
+			if (!position.getPhase().getStatus().equals(PositionStatus.ANOIXTI) &&
+				!position.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
 			Set<Long> newRegisterMemberIds = new HashSet<Long>();
 			for (CandidacyEvaluator newEvaluator : candidacy.getProposedEvaluators()) {
-				if (newEvaluator.getId() != null) {
+				if (newEvaluator.getRegisterMember() != null && newEvaluator.getRegisterMember().getId() != null) {
 					newRegisterMemberIds.add(newEvaluator.getRegisterMember().getId());
 				}
 			}
-			if (newRegisterMemberIds.size() > 0 &&
-				(position.getPhase().getCommittee() == null || position.getPhase().getCommittee().getMembers().isEmpty())) {
+			if (newRegisterMemberIds.size() > 0 && !existingCandidacy.getCanAddEvaluators()) {
 				throw new RestException(Status.CONFLICT, "committee.not.defined");
 			}
 			if (candidacy.getProposedEvaluators().size() > CandidacyEvaluator.MAX_MEMBERS) {
