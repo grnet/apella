@@ -82,30 +82,35 @@ public class UserRESTService extends RESTService {
 
 		// Prepare Query
 		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct u from User u " +
-			"left join fetch u.roles r " +
-			"where u.basicInfo.firstname like :firstname " +
-			"and u.basicInfo.lastname like :lastname ");
-
+		sb.append("select usr from User usr " +
+			"left join fetch usr.roles rls " +
+			"where usr.id in (" +
+			"	select distinct u.id from User u " +
+			"	join u.roles r " +
+			"	where u.basicInfo.firstname like :firstname " +
+			"	and u.basicInfo.lastname like :lastname ");
+		// Query Params
 		if (username != null && !username.isEmpty()) {
-			sb.append("and u.username like :username ");
+			sb.append("	and u.username like :username ");
 		}
 		if (status != null && !status.isEmpty()) {
-			sb.append("and u.status = :status ");
+			sb.append("	and u.status = :status ");
 		}
 		if (role != null && !role.isEmpty()) {
-			sb.append("and r.discriminator = :discriminator ");
+			sb.append("	and r.discriminator = :discriminator ");
 		}
 		if (roleStatus != null && !roleStatus.isEmpty()) {
-			sb.append("and r.status = :roleStatus ");
+			sb.append("	and r.status = :roleStatus ");
 		}
 		if (imId != null) {
-			sb.append("and (u.id in (select ia.user.id from InstitutionAssistant ia where ia.manager.id = :imId )) ");
+			sb.append("	and (u.id in (select ia.user.id from InstitutionAssistant ia where ia.manager.id = :imId )) ");
 		}
 		if (mmId != null) {
-			sb.append("and (u.id in (select ma.user.id from MinistryAssistant ma where ma.manager.id = :mmId )) ");
+			sb.append("	and (u.id in (select ma.user.id from MinistryAssistant ma where ma.manager.id = :mmId )) ");
 		}
-		sb.append("order by u.basicInfo.lastname, u.basicInfo.firstname");
+		// Query Sorting, grouping
+		sb.append(") ");
+		sb.append("order by usr.basicInfo.lastname, usr.basicInfo.firstname");
 
 		Query query = em.createQuery(sb.toString())
 			.setParameter("firstname", "%" + (firstname != null ? firstname : "") + "%")

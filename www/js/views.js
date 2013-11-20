@@ -3436,6 +3436,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					switch (field) {
 						case "tautotitaFile":
 							return true;
+						case "formaSymmetoxisFile":
+							return true;
 						case "status":
 							return true;
 						default:

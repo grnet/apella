@@ -4,6 +4,7 @@ import gr.grnet.dep.service.model.PositionCandidacies.DetailedPositionCandidacie
 import gr.grnet.dep.service.model.file.CandidacyFile;
 import gr.grnet.dep.service.model.file.CandidateFile;
 import gr.grnet.dep.service.model.file.FileBody;
+import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.util.DateUtil;
 
 import java.util.Date;
@@ -352,7 +353,7 @@ public class Candidacy {
 		snapshot.setBasicInfo(user.getBasicInfo());
 		snapshot.setBasicInfoLatin(user.getBasicInfoLatin());
 		snapshot.setContactInfo(user.getContactInfo());
-		for (CandidateFile cf : candidate.getFiles()) {
+		for (CandidateFile cf : FileHeader.filterDeleted(candidate.getFiles())) {
 			snapshot.addFile(cf.getCurrentBody());
 		}
 	}

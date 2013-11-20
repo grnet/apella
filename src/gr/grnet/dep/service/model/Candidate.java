@@ -1,6 +1,7 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.file.CandidateFile;
+import gr.grnet.dep.service.model.file.FileHeader;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -91,7 +92,7 @@ public class Candidate extends Role {
 	public boolean isMissingRequiredFields() {
 		boolean hasTAYTOTHTAFile = false;
 		boolean hasFORMA_SYMMETOXISFile = false;
-		for (CandidateFile file : files) {
+		for (CandidateFile file : FileHeader.filterDeleted(files)) {
 			switch (file.getType()) {
 				case TAYTOTHTA:
 					hasTAYTOTHTAFile = true;
