@@ -313,7 +313,8 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
+							put("firstname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+							put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 							put("position", cdFile.getComplementaryDocuments().getPosition().getName());
 							put("institution", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName());
 							put("department", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName());
@@ -328,7 +329,8 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("username", candidacy.getCandidate().getUser().getUsername());
+							put("firstname", candidacy.getCandidate().getUser().getBasicInfo().getFirstname());
+							put("lastname", candidacy.getCandidate().getUser().getBasicInfo().getLastname());
 							put("position", cdFile.getComplementaryDocuments().getPosition().getName());
 							put("institution", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName());
 							put("department", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName());
@@ -343,7 +345,8 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("username", evaluator.getRegisterMember().getProfessor().getUser().getUsername());
+							put("firstname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+							put("lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 							put("position", cdFile.getComplementaryDocuments().getPosition().getName());
 							put("institution", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName());
 							put("department", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName());

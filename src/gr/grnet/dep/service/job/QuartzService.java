@@ -233,7 +233,8 @@ public class QuartzService {
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("username", candidacy.getCandidate().getUser().getUsername());
+							put("firstname", candidacy.getCandidate().getUser().getBasicInfo().getFirstname());
+							put("lastname", candidacy.getCandidate().getUser().getBasicInfo().getLastname());
 							put("position", position.getName());
 							put("institution", position.getDepartment().getSchool().getInstitution().getName());
 							put("department", position.getDepartment().getName());

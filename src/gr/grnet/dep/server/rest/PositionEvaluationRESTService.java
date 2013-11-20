@@ -277,7 +277,8 @@ public class PositionEvaluationRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("username", evaluator.getRegisterMember().getProfessor().getUser().getUsername());
+								put("firstname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+								put("lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", existingEvaluation.getPosition().getName());
 								put("institution", existingEvaluation.getPosition().getDepartment().getSchool().getInstitution().getName());
 								put("department", existingEvaluation.getPosition().getDepartment().getName());
@@ -297,7 +298,8 @@ public class PositionEvaluationRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("username", removedEvaluator.getRegisterMember().getProfessor().getUser().getUsername());
+								put("firstname", removedEvaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+								put("lastname", removedEvaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", existingEvaluation.getPosition().getName());
 								put("institution", existingEvaluation.getPosition().getDepartment().getSchool().getInstitution().getName());
 								put("department", existingEvaluation.getPosition().getDepartment().getName());
@@ -315,7 +317,8 @@ public class PositionEvaluationRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
+								put("firstname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+								put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", existingEvaluation.getPosition().getName());
 								put("institution", existingEvaluation.getPosition().getDepartment().getSchool().getInstitution().getName());
 								put("department", existingEvaluation.getPosition().getDepartment().getName());
@@ -330,7 +333,8 @@ public class PositionEvaluationRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("username", candidacy.getCandidate().getUser().getUsername());
+								put("firstname", candidacy.getCandidate().getUser().getBasicInfo().getFirstname());
+								put("lastname", candidacy.getCandidate().getUser().getBasicInfo().getLastname());
 								put("position", existingEvaluation.getPosition().getName());
 								put("institution", existingEvaluation.getPosition().getDepartment().getSchool().getInstitution().getName());
 								put("department", existingEvaluation.getPosition().getDepartment().getName());
@@ -598,7 +602,8 @@ public class PositionEvaluationRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
+								put("firstname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+								put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", eFile.getEvaluator().getEvaluation().getPosition().getName());
 								put("institution", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getInstitution().getName());
 								put("department", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getName());
@@ -613,7 +618,8 @@ public class PositionEvaluationRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("username", evaluator.getRegisterMember().getProfessor().getUser().getUsername());
+								put("firstname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+								put("lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", eFile.getEvaluator().getEvaluation().getPosition().getName());
 								put("institution", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getInstitution().getName());
 								put("department", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getName());
@@ -629,7 +635,8 @@ public class PositionEvaluationRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
+								put("firstname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+								put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", eFile.getEvaluator().getEvaluation().getPosition().getName());
 								put("institution", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getInstitution().getName());
 								put("department", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getName());
@@ -644,7 +651,8 @@ public class PositionEvaluationRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("username", evaluator.getRegisterMember().getProfessor().getUser().getUsername());
+								put("firstname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+								put("lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", eFile.getEvaluator().getEvaluation().getPosition().getName());
 								put("institution", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getInstitution().getName());
 								put("department", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getName());

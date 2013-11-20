@@ -287,7 +287,8 @@ public class CandidacyRESTService extends RESTService {
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("username", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getUsername());
+							put("firstname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getFirstname());
+							put("lastname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getLastname());
 							put("position", existingCandidacy.getCandidacies().getPosition().getName());
 							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
 							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName());
@@ -300,7 +301,8 @@ public class CandidacyRESTService extends RESTService {
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("username", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getUsername());
+							put("firstname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getFirstname());
+							put("lastname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getLastname());
 							put("position", existingCandidacy.getCandidacies().getPosition().getName());
 							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
 							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName());
@@ -338,7 +340,8 @@ public class CandidacyRESTService extends RESTService {
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("username", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getUsername());
+							put("firstname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getFirstname());
+							put("lastname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getLastname());
 							put("position", existingCandidacy.getCandidacies().getPosition().getName());
 							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
 							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName());
@@ -425,7 +428,8 @@ public class CandidacyRESTService extends RESTService {
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("username", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getUsername());
+							put("firstname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getFirstname());
+							put("lastname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getLastname());
 							put("position", existingCandidacy.getCandidacies().getPosition().getName());
 							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
 							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName());
@@ -438,7 +442,8 @@ public class CandidacyRESTService extends RESTService {
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("username", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getUsername());
+							put("firstname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getFirstname());
+							put("lastname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getLastname());
 							put("position", existingCandidacy.getCandidacies().getPosition().getName());
 							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
 							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName());
@@ -453,7 +458,8 @@ public class CandidacyRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
-									put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
+									put("firstname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+									put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 									put("position", existingCandidacy.getCandidacies().getPosition().getName());
 									put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
 									put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName());
@@ -470,7 +476,8 @@ public class CandidacyRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
-									put("username", evaluator.getRegisterMember().getProfessor().getUser().getUsername());
+									put("firstname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+									put("lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 									put("position", existingCandidacy.getCandidacies().getPosition().getName());
 									put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
 									put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName());
@@ -487,7 +494,8 @@ public class CandidacyRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
-									put("username", candidacy.getCandidate().getUser().getUsername());
+									put("firstname", candidacy.getCandidate().getUser().getBasicInfo().getFirstname());
+									put("lastname", candidacy.getCandidate().getUser().getBasicInfo().getLastname());
 									put("position", existingCandidacy.getCandidacies().getPosition().getName());
 									put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
 									put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName());

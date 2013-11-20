@@ -300,7 +300,8 @@ public class RegisterRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("username", savedMember.getProfessor().getUser().getUsername());
+								put("firstname", savedMember.getProfessor().getUser().getBasicInfo().getFirstname());
+								put("lastname", savedMember.getProfessor().getUser().getBasicInfo().getLastname());
 								put("institution", savedMember.getRegister().getInstitution().getName());
 							}
 						}));
@@ -312,7 +313,8 @@ public class RegisterRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("username", savedMember.getProfessor().getUser().getUsername());
+								put("firstname", savedMember.getProfessor().getUser().getBasicInfo().getFirstname());
+								put("lastname", savedMember.getProfessor().getUser().getBasicInfo().getLastname());
 								put("institution", savedMember.getRegister().getInstitution().getName());
 							}
 						}));
@@ -329,7 +331,8 @@ public class RegisterRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("username", removedMember.getProfessor().getUser().getUsername());
+								put("firstname", removedMember.getProfessor().getUser().getBasicInfo().getFirstname());
+								put("lastname", removedMember.getProfessor().getUser().getBasicInfo().getLastname());
 								put("institution", removedMember.getRegister().getInstitution().getName());
 							}
 						}));
@@ -341,7 +344,8 @@ public class RegisterRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("username", removedMember.getProfessor().getUser().getUsername());
+								put("firstname", removedMember.getProfessor().getUser().getBasicInfo().getFirstname());
+								put("lastname", removedMember.getProfessor().getUser().getBasicInfo().getLastname());
 								put("institution", removedMember.getRegister().getInstitution().getName());
 							}
 						}));

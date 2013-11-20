@@ -428,7 +428,8 @@ public class PositionCandidaciesRESTService extends RESTService {
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("username", existingEvaluator.getCandidacy().getCandidate().getUser().getUsername());
+							put("firstname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getFirstname());
+							put("lastname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getLastname());
 							put("evaluator_firstname", existingEvaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
 							put("evaluator_lastname", existingEvaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 						}
@@ -458,7 +459,8 @@ public class PositionCandidaciesRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
+								put("firstname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+								put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("candidate_firstname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getFirstname());
 								put("candidate_lastname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getLastname());
 								put("position", existingEvaluator.getCandidacy().getCandidacies().getPosition().getName());
@@ -475,7 +477,8 @@ public class PositionCandidaciesRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("username", evaluator.getRegisterMember().getProfessor().getUser().getUsername());
+								put("firstname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+								put("lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("candidate_firstname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getFirstname());
 								put("candidate_lastname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getLastname());
 								put("position", existingEvaluator.getCandidacy().getCandidacies().getPosition().getName());
@@ -493,7 +496,8 @@ public class PositionCandidaciesRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("username", member.getRegisterMember().getProfessor().getUser().getUsername());
+								put("firstname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+								put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", pcFile.getCandidacies().getPosition().getName());
 								put("institution", pcFile.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
 								put("department", pcFile.getCandidacies().getPosition().getDepartment().getName());
@@ -508,7 +512,8 @@ public class PositionCandidaciesRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("username", candidacy.getCandidate().getUser().getUsername());
+								put("firstname", candidacy.getCandidate().getUser().getBasicInfo().getFirstname());
+								put("lastname", candidacy.getCandidate().getUser().getBasicInfo().getLastname());
 								put("position", pcFile.getCandidacies().getPosition().getName());
 								put("institution", pcFile.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
 								put("department", pcFile.getCandidacies().getPosition().getDepartment().getName());
@@ -523,7 +528,8 @@ public class PositionCandidaciesRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("username", evaluator.getRegisterMember().getProfessor().getUser().getUsername());
+								put("firstname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+								put("lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", pcFile.getCandidacies().getPosition().getName());
 								put("institution", pcFile.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
 								put("department", pcFile.getCandidacies().getPosition().getDepartment().getName());
