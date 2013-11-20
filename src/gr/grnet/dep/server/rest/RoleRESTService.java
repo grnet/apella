@@ -424,9 +424,9 @@ public class RoleRESTService extends RESTService {
 				existingRole.getUser().getRegistrationType().equals(UserRegistrationType.SHIBBOLETH) &&
 				!existingRole.isMissingRequiredFields()) {
 
-				// At this point all fields are filled, so we activate the Role						
-				existingRole.setStatus(RoleStatus.ACTIVE);
-				existingRole.setStatusDate(new Date());
+				// At this point all fields are filled, 
+				// so we activate the Role (this is the primary, only primary roles have Shibboleth)
+				Role.updateStatus(existingRole, RoleStatus.ACTIVE);
 			}
 
 			// Check open candidacies
@@ -1125,21 +1125,7 @@ public class RoleRESTService extends RESTService {
 
 		// Update
 		try {
-			primaryRole.setStatus(requestRole.getStatus());
-			primaryRole.setStatusDate(new Date());
-			if (requestRole.equals(RoleStatus.INACTIVE)) {
-				primaryRole.setStatusEndDate(new Date());
-			}
-			// Update all other roles of user (applicable for Professor->Candidate
-			for (Role otherRole : primaryRole.getUser().getRoles()) {
-				if (otherRole != primaryRole && otherRole.getStatus() != RoleStatus.INACTIVE) {
-					otherRole.setStatus(requestRole.getStatus());
-					otherRole.setStatusDate(new Date());
-					if (requestRole.equals(RoleStatus.INACTIVE)) {
-						otherRole.setStatusEndDate(new Date());
-					}
-				}
-			}
+			Role.updateStatus(primaryRole, requestRole.getStatus());
 
 			// Post to Jira
 			switch (primaryRole.getStatus()) {

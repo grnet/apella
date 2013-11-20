@@ -84,9 +84,12 @@ public class UserRESTService extends RESTService {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct u from User u " +
 			"left join fetch u.roles r " +
-			"where u.username like :username " +
-			"and u.basicInfo.firstname like :firstname " +
+			"where u.basicInfo.firstname like :firstname " +
 			"and u.basicInfo.lastname like :lastname ");
+
+		if (username != null && !username.isEmpty()) {
+			sb.append("and u.username like :username ");
+		}
 		if (status != null && !status.isEmpty()) {
 			sb.append("and u.status = :status ");
 		}
@@ -105,9 +108,12 @@ public class UserRESTService extends RESTService {
 		sb.append("order by u.basicInfo.lastname, u.basicInfo.firstname");
 
 		Query query = em.createQuery(sb.toString())
-			.setParameter("username", "%" + (username != null ? username : "") + "%")
 			.setParameter("firstname", "%" + (firstname != null ? firstname : "") + "%")
 			.setParameter("lastname", "%" + (lastname != null ? lastname : "") + "%");
+
+		if (username != null && !username.isEmpty()) {
+			query.setParameter("username", "%" + username + "%");
+		}
 		if (status != null && !status.isEmpty()) {
 			query = query.setParameter("status", UserStatus.valueOf(status));
 		}

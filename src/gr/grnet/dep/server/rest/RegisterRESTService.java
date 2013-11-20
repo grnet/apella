@@ -98,9 +98,8 @@ public class RegisterRESTService extends RESTService {
 	private void addCanBeDeletedInfo(Register register) {
 		// TODO: One query, avoid laizy initialization
 		for (RegisterMember member : register.getMembers()) {
-			member.setCanBeDeleted(!member.getCommittees().isEmpty() ||
-				!member.getEvaluations().isEmpty() ||
-				!member.getCandidacyEvaluations().isEmpty());
+			boolean canBeDeleted = member.getCommittees().isEmpty() && member.getEvaluations().isEmpty() && member.getCandidacyEvaluations().isEmpty();
+			member.setCanBeDeleted(canBeDeleted);
 		}
 	}
 

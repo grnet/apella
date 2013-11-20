@@ -158,4 +158,22 @@ public abstract class Role implements Serializable {
 
 	public abstract boolean compareCriticalFields(Role other);
 
+	public static void updateStatus(Role primaryRole, RoleStatus newStatus) {
+		primaryRole.setStatus(newStatus);
+		primaryRole.setStatusDate(new Date());
+		if (newStatus.equals(RoleStatus.INACTIVE)) {
+			primaryRole.setStatusEndDate(new Date());
+		}
+		// Update all other roles of user (applicable for Professor->Candidate
+		for (Role otherRole : primaryRole.getUser().getRoles()) {
+			if (otherRole != primaryRole && otherRole.getStatus() != RoleStatus.INACTIVE) {
+				otherRole.setStatus(newStatus);
+				otherRole.setStatusDate(new Date());
+				if (newStatus.equals(RoleStatus.INACTIVE)) {
+					otherRole.setStatusEndDate(new Date());
+				}
+			}
+		}
+	}
+
 }
