@@ -2021,6 +2021,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				$('form input[name=username]', this.el).val(self.options.query.username);
 				$('form input[name=firstname]', this.el).val(self.options.query.firstname);
 				$('form input[name=lastname]', this.el).val(self.options.query.lastname);
+				$('form input[name=mobile]', this.el).val(self.options.query.mobile);
+				$('form input[name=email]', this.el).val(self.options.query.email);
 				$('form select[name=status]', this.el).val(self.options.query.status);
 				$('form select[name=role]', this.el).val(self.options.query.role);
 				$('form select[name=roleStatus]', this.el).val(self.options.query.roleStatus);
@@ -2035,6 +2037,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				username: self.$('form input[name=username]').val(),
 				firstname: self.$('form input[name=firstname]').val(),
 				lastname: self.$('form input[name=lastname]').val(),
+				mobile: self.$('form input[name=mobile]').val(),
+				email: self.$('form input[name=email]').val(),
 				status: self.$('form select[name=status]').val(),
 				role: self.$('form select[name=role]').val(),
 				roleStatus: $('form select[name=roleStatus]').val()

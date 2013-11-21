@@ -72,6 +72,8 @@ public class UserRESTService extends RESTService {
 		@QueryParam("username") String username,
 		@QueryParam("firstname") String firstname,
 		@QueryParam("lastname") String lastname,
+		@QueryParam("mobile") String mobile,
+		@QueryParam("email") String email,
 		@QueryParam("status") String status,
 		@QueryParam("role") String role,
 		@QueryParam("roleStatus") String roleStatus,
@@ -92,6 +94,12 @@ public class UserRESTService extends RESTService {
 		// Query Params
 		if (username != null && !username.isEmpty()) {
 			sb.append("	and u.username like :username ");
+		}
+		if (mobile != null && !mobile.isEmpty()) {
+			sb.append("	and u.contactInfo.mobile = :mobile ");
+		}
+		if (email != null && !email.isEmpty()) {
+			sb.append("	and u.contactInfo.email = :email ");
 		}
 		if (status != null && !status.isEmpty()) {
 			sb.append("	and u.status = :status ");
@@ -118,6 +126,12 @@ public class UserRESTService extends RESTService {
 
 		if (username != null && !username.isEmpty()) {
 			query.setParameter("username", "%" + username + "%");
+		}
+		if (mobile != null && !mobile.isEmpty()) {
+			query.setParameter("mobile", mobile);
+		}
+		if (email != null && !email.isEmpty()) {
+			query.setParameter("email", email);
 		}
 		if (status != null && !status.isEmpty()) {
 			query = query.setParameter("status", UserStatus.valueOf(status));

@@ -301,8 +301,8 @@ public class CandidacyRESTService extends RESTService {
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("firstname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getFirstname());
-							put("lastname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getLastname());
+							put("firstname", existingCandidacy.getCandidate().getUser().getBasicInfo().getFirstname());
+							put("lastname", existingCandidacy.getCandidate().getUser().getBasicInfo().getLastname());
 							put("position", existingCandidacy.getCandidacies().getPosition().getName());
 							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
 							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName());
@@ -442,8 +442,8 @@ public class CandidacyRESTService extends RESTService {
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("firstname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getFirstname());
-							put("lastname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getLastname());
+							put("firstname", existingCandidacy.getCandidate().getUser().getBasicInfo().getFirstname());
+							put("lastname", existingCandidacy.getCandidate().getUser().getBasicInfo().getLastname());
 							put("position", existingCandidacy.getCandidacies().getPosition().getName());
 							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
 							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName());

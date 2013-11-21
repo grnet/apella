@@ -213,13 +213,13 @@ public class QuartzService {
 	///////////////////////////////////////////////////
 
 	public int notifyOnClosedPositions() {
-		Date toDate = new Date();
+		Date toDate = DateUtil.removeTime(new Date());
 		@SuppressWarnings("unchecked")
 		List<Position> positions = em.createQuery(
 			"from Position p where " +
 				"p.permanent is true " +
 				"and p.phase.status = :status " +
-				"and p.phase.candidacies.closingDate <= :toDate " +
+				"and p.phase.candidacies.closingDate < :toDate " +
 				"and p.id not in ( " +
 				"	select n.referredEntityId " +
 				"	from Notification n " +
