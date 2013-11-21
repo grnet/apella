@@ -371,6 +371,17 @@ public class UserRESTService extends RESTService {
 		if (!canUpdate) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+		// Contact mail availability
+		try {
+			em.createQuery("select u from User u " +
+				"where u.id != :id " +
+				"and u.contactInfo.email = :email")
+				.setParameter("id", user.getId())
+				.setParameter("email", user.getContactInfo().getEmail())
+				.getSingleResult();
+			throw new RestException(Status.FORBIDDEN, "contact.email.not.available");
+		} catch (NoResultException e) {
+		}
 		// Identification availability
 		try {
 			em.createQuery("select identification from User u " +
