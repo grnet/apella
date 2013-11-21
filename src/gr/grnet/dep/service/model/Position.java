@@ -86,9 +86,6 @@ public class Position {
 	@Temporal(TemporalType.DATE)
 	private Date fekSentDate;
 
-	@Transient
-	private Boolean canSubmitCandidacy = Boolean.TRUE;
-
 	@ManyToOne(cascade = CascadeType.ALL)
 	private PositionPhase phase;
 
@@ -98,6 +95,9 @@ public class Position {
 
 	@ManyToOne
 	private User createdBy;
+
+	@Transient
+	private Boolean canSubmitCandidacy = Boolean.TRUE;
 
 	public Long getId() {
 		return id;

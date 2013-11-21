@@ -6,6 +6,7 @@ import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.PositionPhase;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
+import gr.grnet.dep.service.model.system.Notification;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 import gr.grnet.dep.service.util.DateUtil;
 import gr.grnet.dep.service.util.MailService;
@@ -211,17 +212,21 @@ public class QuartzService {
 
 	///////////////////////////////////////////////////
 
-	public int notifyOnClosedPositions(Date fromDate, Date toDate) {
+	public int notifyOnClosedPositions() {
+		Date toDate = new Date();
 		@SuppressWarnings("unchecked")
 		List<Position> positions = em.createQuery(
 			"from Position p where " +
 				"p.permanent is true " +
 				"and p.phase.status = :status " +
 				"and p.phase.candidacies.closingDate <= :toDate " +
-				"and p.phase.candidacies.closingDate > :fromDate")
+				"and p.id not in ( " +
+				"	select n.referredEntityId " +
+				"	from Notification n " +
+				"	where n.type = 'position.closed' " +
+				") ")
 			.setParameter("status", PositionStatus.ANOIXTI)
-			.setParameter("fromDate", DateUtil.removeTime(fromDate))
-			.setParameter("toDate", DateUtil.removeTime(fromDate))
+			.setParameter("toDate", DateUtil.removeTime(toDate))
 			.getResultList();
 
 		for (final Position position : positions) {
@@ -241,6 +246,12 @@ public class QuartzService {
 						}
 					}));
 			}
+			Notification notification = new Notification();
+			notification.setDate(toDate);
+			notification.setReferredEntityId(position.getId());
+			notification.setStatus("SENT");
+			notification.setType("position.closed");
+			em.persist(notification);
 		}
 
 		return positions.size();

@@ -1,6 +1,5 @@
 package gr.grnet.dep.service.job;
 
-import java.util.Date;
 import java.util.logging.Logger;
 
 import javax.ejb.EJBException;
@@ -31,15 +30,9 @@ public class NotifyOnClosedPositionsJob implements Job {
 
 	@Override
 	public void execute(JobExecutionContext ctx) throws JobExecutionException {
-		Date fireTime = ctx.getFireTime();
-		Date previousFireTime = ctx.getPreviousFireTime();
-		if (previousFireTime == null) {
-			//First time this is null, we do nothing.
-			return;
-		}
 		long duration = System.currentTimeMillis();
 		log.info("NotifyOnClosedPositionsJob: Sending emails.");
-		int notifications = service().notifyOnClosedPositions(previousFireTime, fireTime);
+		int notifications = service().notifyOnClosedPositions();
 		duration = System.currentTimeMillis() - duration;
 		log.info("NotifyOnClosedPositionsJob: Sent email for " + notifications + " positions in " + duration + " msec");
 	}

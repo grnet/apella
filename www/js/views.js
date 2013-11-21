@@ -7570,30 +7570,55 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 		renderDepartments: function (departments) {
 			var self = this;
 			var treeData = departments.reduce(function (memo, department) {
-				var node;
-				var institution = department.get("school").institution;
+				var institution_node, school_node, department_node;
+				var school = department.get("school");
+				var institution = school.institution;
 				if (institution.category === 'RESEARCH_CENTER') {
 					//Skip research centers
 					return memo;
 				}
-				// Create/Find Node
-				node = _.find(memo, function (item) {
+				// 1. Create/Find InstitutionNode
+				institution_node = _.find(memo, function (item) {
 					return item.key === institution.id;
 				});
-				if (!node) {
-					node = {
+				if (!institution_node) {
+					institution_node = {
+						type: 'institution',
 						title: institution.name,
 						key: institution.id,
+						tooltip: $.i18n.prop("Institution"),
 						expand: false,
 						isFolder: true,
 						unselectable: false,
 						children: []
 					};
-					memo.push(node);
+					memo.push(institution_node);
 				}
-				node.children.push({
-					title: "<b>" + $.i18n.prop("School") + ": </b>" + department.get("school").name + ", <b>" + $.i18n.prop("Department") + ": </b>" + department.get("name"),
+				// 2. Create/Find SchoolNode in InstitutionNode's children
+				school_node = _.find(institution_node.children, function (item) {
+					return item.key === school.id;
+				});
+				if (!school_node) {
+					school_node = {
+						type: 'school',
+						title: school.name,
+						key: school.id,
+						tooltip: $.i18n.prop("School"),
+						expand: false,
+						isFolder: true,
+						unselectable: false,
+						hideCheckbox: (school.name === '-'),
+						children: []
+					};
+					institution_node.children.push(school_node);
+				}
+				// 3. Create DepartmentNode in SchoolNode's Children
+				school_node.children.push({
+					type: 'department',
+					title: department.get("name"),
 					key: department.get("id"),
+					tooltip: $.i18n.prop("Department"),
+					hideCheckbox: (department.get("name") === '-'),
 					select: _.any(self.model.get("departments"), function (selectedDepartment) {
 						return _.isEqual(selectedDepartment.id, department.get("id"));
 					})
@@ -7609,7 +7634,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				onSelect: function (flag, node) {
 					var selectedNodes = node.tree.getSelectedNodes();
 					var count = _.countBy(selectedNodes, function (selectedNode) {
-						return selectedNode.data.isFolder ? 'institution' : 'department';
+						return selectedNode.data.type;
 					});
 					self.change($.Event(), {
 						triggredBy: "user"
@@ -7619,7 +7644,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				onPostInit: function (isReloading, isError) {
 					var selectedNodes = this.getSelectedNodes();
 					var count = _.countBy(selectedNodes, function (selectedNode) {
-						return selectedNode.data.isFolder ? 'institution' : 'department';
+						return selectedNode.data.type;
 					});
 					self.$("label[for=departmentsTree] span").html(count.department || 0);
 				}
@@ -7691,7 +7716,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var self = this;
 			var values = {
 				departments: _.map(_.filter(self.$("#departmentsTree").dynatree("getTree").getSelectedNodes(), function (node) {
-					return !node.data.isFolder;
+					return node.data.type === 'department';
 				}), function (node) {
 					return {
 						id: node.data.key
