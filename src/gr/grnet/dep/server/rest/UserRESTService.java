@@ -592,10 +592,6 @@ public class UserRESTService extends RESTService {
 			u.getBasicInfo().setFirstname(shibbolethInfo.getGivenName());
 			u.getBasicInfo().setLastname(shibbolethInfo.getSn());
 			u.getBasicInfo().setFathername("");
-			u.getBasicInfoLatin().setFirstname("");
-			u.getBasicInfoLatin().setLastname("");
-			u.getBasicInfoLatin().setFathername("");
-			u.getContactInfo().setEmail("");
 			u.setRegistrationDate(new Date());
 			u.setStatus(UserStatus.ACTIVE);
 			u.setStatusDate(new Date());

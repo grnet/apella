@@ -34,7 +34,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Version;
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -76,6 +75,7 @@ public class User implements Serializable {
 	@Enumerated(EnumType.STRING)
 	private UserRegistrationType registrationType;
 
+	@Valid
 	@Embedded
 	private ShibbolethInformation shibbolethInfo = new ShibbolethInformation();
 
@@ -86,17 +86,14 @@ public class User implements Serializable {
 
 	@Valid
 	@Embedded
-	@NotNull
 	private BasicInformation basicInfo = new BasicInformation();
 
 	@Valid
 	@Embedded
-	@NotNull
 	private BasicInformation basicInfoLatin = new BasicInformation();
 
 	@Valid
 	@Embedded
-	@NotNull
 	private ContactInformation contactInfo = new ContactInformation();
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.EAGER)
