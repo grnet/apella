@@ -48,7 +48,6 @@ public class EmailLogin extends BaseHttpServlet {
 
 			// Send Response - Redirect to application
 			Cookie cookie = new Cookie("_dep_a", u.getAuthToken());
-			cookie.setDomain(request.getServerName());
 			cookie.setPath("/");
 			response.addCookie(cookie);
 			response.addHeader(WebConstants.AUTHENTICATION_TOKEN_HEADER, u.getAuthToken());

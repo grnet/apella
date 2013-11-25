@@ -1,8 +1,13 @@
 package gr.grnet.dep.service.util;
 
+import gr.grnet.dep.service.model.ProfessorDomesticData;
+import gr.grnet.dep.service.model.User;
+
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
+import javax.ejb.EJB;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -21,6 +26,9 @@ public class ManagementService {
 	@PersistenceContext(unitName = "apelladb")
 	protected EntityManager em;
 
+	@EJB
+	AuthenticationService authenticationService;
+
 	@Inject
 	protected Logger logger;
 
@@ -34,7 +42,14 @@ public class ManagementService {
 	}
 
 	public void massCreateProfessorDomesticAccounts() {
+		List<ProfessorDomesticData> pdData = em.createQuery(
+			"select pdd from ProfessorDomesticData pdd")
+			.getResultList();
 
+		for (ProfessorDomesticData data : pdData) {
+			User u = authenticationService.createProfessorDomesticAccount(data);
+			logger.info("CREATED PROFESSOR DOMESTIC: " + u.getId() + " " + u.getPrimaryRole() + " " + u.getRoles().size());
+		}
 	}
 
 }

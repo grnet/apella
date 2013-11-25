@@ -4,8 +4,10 @@ import gr.grnet.dep.service.exceptions.ServiceException;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.ProfessorDomestic;
+import gr.grnet.dep.service.model.ProfessorDomesticData;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.ShibbolethInformation;
+import gr.grnet.dep.service.model.Subject;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.UserRegistrationType;
@@ -69,6 +71,123 @@ public class AuthenticationService {
 		}
 	}
 
+	public User createProfessorDomesticAccount(ShibbolethInformation shibbolethInfo) {
+		User u = null;
+		try {
+			u = (User) em.createQuery(
+				"select u from User u " +
+					"where u.shibbolethInfo.remoteUser = :remoteUser")
+				.setParameter("remoteUser", shibbolethInfo.getRemoteUser())
+				.getSingleResult();
+		} catch (NoResultException e) {
+			// Create User from Shibboleth Fields 
+			u = new User();
+			u.setRegistrationType(UserRegistrationType.SHIBBOLETH);
+
+			u.getBasicInfo().setFirstname(shibbolethInfo.getGivenName());
+			u.getBasicInfo().setLastname(shibbolethInfo.getSn());
+			u.getBasicInfo().setFathername("");
+
+			u.setRegistrationDate(new Date());
+
+			u.setStatus(UserStatus.ACTIVE);
+			u.setStatusDate(new Date());
+
+			// Add Primary Role
+			ProfessorDomestic pd = new ProfessorDomestic();
+			pd.setInstitution(findInstitutionBySchacHomeOrganization(shibbolethInfo.getSchacHomeOrganization()));
+			pd.setStatus(RoleStatus.UNAPPROVED);
+			pd.setStatusDate(new Date());
+			u.addRole(pd);
+
+			// Add Second Role : CANDIDATE
+			Candidate secondRole = new Candidate();
+			secondRole.setStatus(RoleStatus.UNAPPROVED);
+			secondRole.setStatusDate(new Date());
+			u.addRole(secondRole);
+
+			u = em.merge(u);
+		}
+
+		return u;
+	}
+
+	public User createProfessorDomesticAccount(ProfessorDomesticData data) {
+		User u;
+
+		try {
+			u = (User) em.createQuery(
+				"select u from User u " +
+					"where u.contactInfo.email = :email")
+				.setParameter("email", data.getEmail())
+				.getSingleResult();
+
+		} catch (NoResultException e) {
+			// Create User from Data 
+			u = new User();
+			u.setRegistrationType(UserRegistrationType.INVITATION);
+
+			u.getBasicInfo().setFirstname(data.getFirstname());
+			u.getBasicInfo().setLastname(data.getLastname());
+			u.getBasicInfo().setFathername(data.getFathername());
+			u.getContactInfo().setEmail(data.getEmail());
+
+			u.setRegistrationDate(new Date());
+			u.setStatus(UserStatus.ACTIVE);
+			u.setStatusDate(new Date());
+
+			// Add Primary Role
+			ProfessorDomestic pd = new ProfessorDomestic();
+			pd.setInstitution(data.getDepartment().getSchool().getInstitution());
+			pd.setDepartment(data.getDepartment());
+			pd.setRank(data.getRank());
+			pd.setFek(data.getFek());
+			Subject fekSubject = new Subject();
+			fekSubject.setName(data.getFekSubject());
+			pd.setFekSubject(supplementSubject(fekSubject));
+
+			pd.setStatus(RoleStatus.UNAPPROVED);
+			pd.setStatusDate(new Date());
+			u.addRole(pd);
+
+			// Add Second Role : CANDIDATE
+			Candidate secondRole = new Candidate();
+			secondRole.setStatus(RoleStatus.UNAPPROVED);
+			secondRole.setStatusDate(new Date());
+			u.addRole(secondRole);
+
+			// Save to get ID
+			u = em.merge(u);
+			em.flush();
+
+			// Now Add permanentAuthToken
+			u.setPermanentAuthToken(generatePermanentAuthenticationToken(u.getId(), u.getContactInfo().getEmail()));
+			u = em.merge(u);
+		}
+
+		return u;
+	}
+
+	private Subject supplementSubject(Subject subject) {
+		if (subject == null || subject.getName() == null || subject.getName().trim().isEmpty()) {
+			return null;
+		} else {
+			try {
+				Subject existingSubject = (Subject) em.createQuery(
+					"select s from Subject s " +
+						"where s.name = :name ")
+					.setParameter("name", subject.getName())
+					.getSingleResult();
+				return existingSubject;
+			} catch (NoResultException e) {
+				Subject newSubject = new Subject();
+				newSubject.setName(subject.getName());
+				em.persist(newSubject);
+				return newSubject;
+			}
+		}
+	}
+
 	/////////////////////////////////////////////////////////////////
 
 	public User doShibbolethLogin(ShibbolethInformation shibbolethInfo) throws ServiceException {
@@ -86,40 +205,11 @@ public class AuthenticationService {
 			throw new ServiceException("wrong.home.organization");
 		}
 		// 2. Find/Create User
-		User u = null;
-		try {
-			u = (User) em.createQuery("select u from User u " +
-				"where u.shibbolethInfo.remoteUser = :remoteUser")
-				.setParameter("remoteUser", shibbolethInfo.getRemoteUser())
-				.getSingleResult();
-		} catch (NoResultException e) {
-			// Create User from Shibboleth Fields 
-			u = new User();
-			u.setRegistrationType(UserRegistrationType.SHIBBOLETH);
-			u.getBasicInfo().setFirstname(shibbolethInfo.getGivenName());
-			u.getBasicInfo().setLastname(shibbolethInfo.getSn());
-			u.getBasicInfo().setFathername("");
-			u.setRegistrationDate(new Date());
-			u.setStatus(UserStatus.ACTIVE);
-			u.setStatusDate(new Date());
-			// Add Primary Role
-			ProfessorDomestic pd = new ProfessorDomestic();
-			pd.setInstitution(findInstitutionBySchacHomeOrganization(shibbolethInfo.getSchacHomeOrganization()));
-			pd.setStatus(RoleStatus.UNAPPROVED);
-			pd.setStatusDate(new Date());
-			u.addRole(pd);
-			// Add Second Role : CANDIDATE
-			Candidate secondRole = new Candidate();
-			secondRole.setStatus(RoleStatus.UNAPPROVED);
-			secondRole.setStatusDate(new Date());
-			u.addRole(secondRole);
-		}
-
+		User u = createProfessorDomesticAccount(shibbolethInfo);
 		// Check Status
 		if (!u.getStatus().equals(UserStatus.ACTIVE)) {
 			throw new ServiceException("login.account.status." + u.getStatus().toString().toLowerCase());
 		}
-
 		// 3. Persist User
 		try {
 			// Update login and shibboleth fields
@@ -289,13 +379,14 @@ public class AuthenticationService {
 			Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
 			sha256_HMAC.init(secretKey);
 			byte[] hash = sha256_HMAC.doFinal(unencoded.getBytes());
-			String token = Base64.encodeBase64String(hash);
+			String token = new String(Base64.encodeBase64(hash), "ISO-8859-1");
 			return token;
 		} catch (NoSuchAlgorithmException e) {
 			throw new EJBException(e);
 		} catch (InvalidKeyException e) {
 			throw new EJBException(e);
+		} catch (UnsupportedEncodingException e) {
+			throw new EJBException(e);
 		}
 	}
-
 }

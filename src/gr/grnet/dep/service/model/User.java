@@ -262,6 +262,16 @@ public class User implements Serializable {
 
 	@XmlTransient
 	@JsonIgnore
+	public String getPermanentAuthToken() {
+		return permanentAuthToken;
+	}
+
+	public void setPermanentAuthToken(String permanentAuthToken) {
+		this.permanentAuthToken = permanentAuthToken;
+	}
+
+	@XmlTransient
+	@JsonIgnore
 	public String getAuthToken() {
 		return authToken;
 	}
