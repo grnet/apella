@@ -1,10 +1,10 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Department;
-import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.ProfessorForeign;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
@@ -17,7 +17,6 @@ import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
-import gr.grnet.dep.service.util.DEPConfigurationFactory;
 import gr.grnet.dep.service.util.JiraService;
 import gr.grnet.dep.service.util.MailService;
 
@@ -49,7 +48,6 @@ import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
@@ -62,8 +60,6 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Providers;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -94,37 +90,6 @@ public class RESTService {
 
 	@EJB
 	JiraService jiraService;
-
-	protected static Configuration conf;
-
-	static {
-		try {
-			conf = DEPConfigurationFactory.getServerConfiguration();
-		} catch (ConfigurationException e) {
-		}
-	}
-
-	/**
-	 * The default MIME type for files without an explicit one.
-	 */
-	private static final String DEFAULT_MIME_TYPE = "application/octet-stream";
-
-	protected static final String TOKEN_HEADER = "X-Auth-Token";
-
-	protected static final String ERROR_CODE_HEADER = "X-Error-Code";
-
-	private static Logger staticLogger = Logger.getLogger(RESTService.class.getName());
-
-	static String savePath;
-
-	static {
-		try {
-			savePath = DEPConfigurationFactory.getServerConfiguration().getString("files.path");
-			new File(savePath).mkdirs();
-		} catch (ConfigurationException e) {
-			staticLogger.log(Level.SEVERE, "RESTService init: ", e);
-		}
-	}
 
 	/**
 	 * Check FileType to upload agrees with max number and direct caller.
@@ -308,7 +273,7 @@ public class RESTService {
 
 					String filename = fileItem.getName();
 					String newFilename = suggestFilename(body.getId(), "upl", filename);
-					file = new File(savePath + newFilename);
+					file = new File(WebConstants.FILES_PATH + newFilename);
 
 					String mimeType = fileItem.getContentType();
 					if (StringUtils.isEmpty(mimeType) || "application/octet-stream".equals(mimeType)
@@ -364,7 +329,7 @@ public class RESTService {
 		} catch (NoResultException e) {
 		}
 		// Reference physical file
-		String fullPath = savePath + File.separator + fb.getStoredFilePath();
+		String fullPath = WebConstants.FILES_PATH + File.separator + fb.getStoredFilePath();
 		File file = new File(fullPath);
 		// Delete
 		fh.getBodies().remove(size - 1);
@@ -420,7 +385,7 @@ public class RESTService {
 
 	protected Response sendFileBody(FileBody fb) {
 		try {
-			String fullPath = savePath + File.separator + fb.getStoredFilePath();
+			String fullPath = WebConstants.FILES_PATH + File.separator + fb.getStoredFilePath();
 			return Response.ok(new FileInputStream(new File(fullPath)))
 				.type(MediaType.APPLICATION_OCTET_STREAM)
 				.header("charset", "UTF-8")
@@ -439,8 +404,8 @@ public class RESTService {
 		InputStream in = null;
 		OutputStream out = null;
 		try {
-			File sourceFile = new File(savePath + sourceFilename);
-			File targetFile = new File(savePath + targetFilename);
+			File sourceFile = new File(WebConstants.FILES_PATH + sourceFilename);
+			File targetFile = new File(WebConstants.FILES_PATH + targetFilename);
 			in = new FileInputStream(sourceFile);
 			out = new FileOutputStream(targetFile);
 			byte[] buf = new byte[1024];
@@ -488,7 +453,7 @@ public class RESTService {
 				return "image/bmp";
 		}
 		// when all else fails assign the default mime type
-		return DEFAULT_MIME_TYPE;
+		return WebConstants.DEFAULT_MIME_TYPE;
 	}
 
 	private String getSubdirForId(Long id) {
@@ -504,7 +469,7 @@ public class RESTService {
 		}
 		String subPath = getSubdirForId(id);
 		// Create if it does not exist
-		new File(savePath + File.separator + subPath).mkdirs();
+		new File(WebConstants.FILES_PATH + File.separator + subPath).mkdirs();
 
 		return subPath + File.separator + prefix + "-" + id + extension;
 	}
@@ -640,20 +605,6 @@ public class RESTService {
 				"where s.id in (:sectorIds)")
 			.setParameter("sectorIds", sectorIds)
 			.getResultList();
-	}
-
-	protected Institution findInstitutionBySchacHomeOrganization(String schacHomeOrganization) {
-		try {
-			return (Institution) em.createQuery(
-				"from Institution i " +
-					"where i.schacHomeOrganization = :schacHomeOrganization ")
-				.setParameter("schacHomeOrganization", schacHomeOrganization)
-				.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		} catch (NonUniqueResultException e) {
-			return null;
-		}
 	}
 
 }

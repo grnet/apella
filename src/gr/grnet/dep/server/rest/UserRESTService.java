@@ -1,36 +1,35 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.exceptions.ServiceException;
 import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.InstitutionManager;
 import gr.grnet.dep.service.model.MinistryAssistant;
 import gr.grnet.dep.service.model.MinistryManager;
-import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
-import gr.grnet.dep.service.model.ShibbolethInformation;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.DetailedUserView;
 import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.UserRegistrationType;
+import gr.grnet.dep.service.util.AuthenticationService;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Arrays;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
@@ -47,7 +46,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -64,11 +62,14 @@ public class UserRESTService extends RESTService {
 	@Inject
 	private Logger log;
 
+	@EJB
+	AuthenticationService authenticationService;
+
 	@GET
 	@JsonView({DetailedUserView.class})
 	@SuppressWarnings("unchecked")
 	public Collection<User> getAll(
-		@HeaderParam(TOKEN_HEADER) String authToken,
+		@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken,
 		@QueryParam("username") String username,
 		@QueryParam("firstname") String firstname,
 		@QueryParam("lastname") String lastname,
@@ -171,7 +172,7 @@ public class UserRESTService extends RESTService {
 	@Path("/loggedon")
 	@JsonView({DetailedUserView.class})
 	public Response getLoggedOn(@Context HttpServletRequest request) {
-		String authToken = request.getHeader(TOKEN_HEADER);
+		String authToken = request.getHeader(WebConstants.AUTHENTICATION_TOKEN_HEADER);
 		if (authToken == null && request.getCookies() != null) {
 			for (Cookie c : request.getCookies()) {
 				if (c.getName().equals("_dep_a")) {
@@ -182,7 +183,7 @@ public class UserRESTService extends RESTService {
 		}
 		User u = super.getLoggedOn(authToken);
 		return Response.status(200)
-			.header(TOKEN_HEADER, u.getAuthToken())
+			.header(WebConstants.AUTHENTICATION_TOKEN_HEADER, u.getAuthToken())
 			.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, NewCookie.DEFAULT_MAX_AGE, false))
 			.entity(u)
 			.build();
@@ -191,7 +192,7 @@ public class UserRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedUserView.class})
-	public User get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id) throws RestException {
+	public User get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id) throws RestException {
 		getLoggedOn(authToken);
 		try {
 			User u = (User) em.createQuery(
@@ -208,7 +209,7 @@ public class UserRESTService extends RESTService {
 
 	@POST
 	@JsonView({DetailedUserView.class})
-	public User create(@HeaderParam(TOKEN_HEADER) String authToken, User newUser) {
+	public User create(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, User newUser) {
 		try {
 			//1. Validate
 			// Has one role
@@ -248,11 +249,11 @@ public class UserRESTService extends RESTService {
 
 			newUser.setRegistrationType(UserRegistrationType.REGISTRATION_FORM);
 			newUser.setRegistrationDate(new Date());
-			newUser.setPasswordSalt(User.generatePasswordSalt());
-			newUser.setPassword(User.encodePassword(newUser.getPassword(), newUser.getPasswordSalt()));
+			newUser.setPasswordSalt(authenticationService.generatePasswordSalt());
+			newUser.setPassword(authenticationService.encodePassword(newUser.getPassword(), newUser.getPasswordSalt()));
 			newUser.setStatus(UserStatus.UNVERIFIED);
 			newUser.setStatusDate(new Date());
-			newUser.setVerificationNumber(newUser.generateVerificationNumber());
+			newUser.setVerificationNumber(generateVerificationNumber());
 			newUser.addRole(firstRole);
 
 			User loggedOn = null;
@@ -328,7 +329,7 @@ public class UserRESTService extends RESTService {
 
 						{
 							put("username", savedUser.getUsername());
-							put("verificationLink", conf.getString("home.url") + "/registration.html?#email=" + savedUser.getUsername() + "&verification=" + savedUser.getVerificationNumber());
+							put("verificationLink", WebConstants.conf.getString("home.url") + "/registration.html?#email=" + savedUser.getUsername() + "&verification=" + savedUser.getVerificationNumber());
 						}
 					}));
 			}
@@ -361,10 +362,19 @@ public class UserRESTService extends RESTService {
 		}
 	}
 
+	private Long generateVerificationNumber() {
+		try {
+			SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
+			return sr.nextLong();
+		} catch (NoSuchAlgorithmException nsae) {
+			throw new EJBException(nsae);
+		}
+	}
+
 	@PUT
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedUserView.class})
-	public User update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, User user) {
+	public User update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id, User user) {
 		User loggedOn = getLoggedOn(authToken);
 		User existingUser = em.find(User.class, id);
 		if (existingUser == null) {
@@ -413,8 +423,8 @@ public class UserRESTService extends RESTService {
 			// Copy User Fields
 			existingUser.setIdentification(user.getIdentification());
 			if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-				existingUser.setPasswordSalt(User.generatePasswordSalt());
-				existingUser.setPassword(User.encodePassword(user.getPassword(), existingUser.getPasswordSalt()));
+				existingUser.setPasswordSalt(authenticationService.generatePasswordSalt());
+				existingUser.setPassword(authenticationService.encodePassword(user.getPassword(), existingUser.getPasswordSalt()));
 			}
 			existingUser.setBasicInfo(user.getBasicInfo());
 			existingUser.setBasicInfoLatin(user.getBasicInfoLatin());
@@ -432,7 +442,7 @@ public class UserRESTService extends RESTService {
 
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}")
-	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
+	public void delete(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
 		User loggedOn = getLoggedOn(authToken);
 		User existingUser = em.find(User.class, id);
 		if (existingUser == null) {
@@ -458,171 +468,18 @@ public class UserRESTService extends RESTService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@JsonView({DetailedUserView.class})
 	public Response login(@FormParam("username") String username, @FormParam("password") String password) {
+
 		try {
-			User u = (User) em.createQuery(
-				"from User u " +
-					"left join fetch u.roles " +
-					"where u.username = :username")
-				.setParameter("username", username)
-				.getSingleResult();
-
-			switch (u.getStatus()) {
-				case ACTIVE:
-					if (u.getPassword().equals(User.encodePassword(password, u.getPasswordSalt()))) {
-						u.setAuthToken(u.generateAuthenticationToken());
-						u = em.merge(u);
-						return Response.status(200)
-							.header(TOKEN_HEADER, u.getAuthToken())
-							.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, NewCookie.DEFAULT_MAX_AGE, false))
-							.entity(u)
-							.build();
-					} else {
-						throw new RestException(Status.UNAUTHORIZED, "login.wrong.password");
-					}
-				default:
-					throw new RestException(Status.UNAUTHORIZED, "login.account.status." + u.getStatus().toString().toLowerCase());
-			}
-		} catch (NoResultException e) {
-			throw new RestException(Status.UNAUTHORIZED, "login.wrong.username");
-		}
-	}
-
-	@GET
-	@Path("/shibboleth/test")
-	@Produces("text/plain")
-	public Response shibbolethTest(@Context HttpServletRequest request) {
-		String result = "";
-		Map<String, String[]> parameters = request.getParameterMap();
-		for (String paramName : parameters.keySet()) {
-			result = result.concat("Parameter:\t" + paramName + " = " + Arrays.toString(parameters.get(paramName)) + "\n");
-		}
-		Enumeration<String> headers = request.getHeaderNames();
-		while (headers.hasMoreElements()) {
-			String headerName = headers.nextElement();
-			result = result.concat("Header:\t\t" + headerName + " = " + request.getHeader(headerName) + "\n");
-		}
-		Enumeration<String> attributes = request.getAttributeNames();
-		while (attributes.hasMoreElements()) {
-			String attributeName = attributes.nextElement();
-			result = result.concat("Attribute:\t" + attributeName + " = " + request.getAttribute(attributeName) + "\n");
-		}
-		return Response.status(200)
-			.entity(result)
-			.build();
-	}
-
-	@GET
-	@Path("/shibboleth/testLogin")
-	@Produces("text/html")
-	public Response shibbolethTestLogin(@Context HttpServletRequest request) {
-		// 1. Read Attributes from request:
-		Long userId;
-		URI nextURL;
-		try {
-			nextURL = new URI(request.getParameter("nextURL") == null ? "" : request.getParameter("nextURL"));
-		} catch (URISyntaxException e1) {
-			throw new RestException(Status.BAD_REQUEST, "malformed.next.url");
-		}
-		try {
-			userId = Long.valueOf(request.getParameter("user") == null ? "" : request.getParameter("user"));
-		} catch (NumberFormatException e) {
-			throw new RestException(Status.BAD_REQUEST, "malformed.user.id");
+			User u = authenticationService.doUsernameLogin(username, password);
+			return Response.status(200)
+				.header(WebConstants.AUTHENTICATION_TOKEN_HEADER, u.getAuthToken())
+				.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, NewCookie.DEFAULT_MAX_AGE, false))
+				.entity(u)
+				.build();
+		} catch (ServiceException e) {
+			throw new RestException(Status.UNAUTHORIZED, e.getErrorKey());
 		}
 
-		// 3. Find User
-		User u = (User) em.find(User.class, userId);
-		if (u == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.user.id");
-		}
-		try {
-			u.setAuthToken(u.generateAuthenticationToken());
-			// 4. Persist User
-			u = em.merge(u);
-			em.flush();
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
-		}
-
-		return Response.temporaryRedirect(nextURL)
-			.header(TOKEN_HEADER, u.getAuthToken())
-			.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, NewCookie.DEFAULT_MAX_AGE, false))
-			.build();
-	}
-
-	@GET
-	@Path("/shibboleth/login")
-	@Produces("text/html")
-	public Response shibbolethLogin(@Context HttpServletRequest request) {
-		// 1. Read Attributes from request:
-		ShibbolethInformation shibbolethInfo = ShibbolethInformation.readShibbolethFields(request);
-		URI nextURL;
-		try {
-			nextURL = new URI(request.getParameter("nextURL") == null ? "" : request.getParameter("nextURL"));
-		} catch (URISyntaxException e1) {
-			throw new RestException(Status.BAD_REQUEST, "malformed.next.url");
-		}
-
-		// 2. Validate
-		logger.info("Read shibboleth: " + shibbolethInfo.toString());
-		if (shibbolethInfo.isMissingRequiredFields()) {
-			throw new RestException(Status.BAD_REQUEST, "shibboleth.fields.error");
-		}
-		if (!shibbolethInfo.getAffiliation().equals("faculty")) {
-			throw new RestException(Status.UNAUTHORIZED, "wrong.affiliation");
-		}
-		// Find Institution from schacHomeOrganization
-		Institution institution = findInstitutionBySchacHomeOrganization(shibbolethInfo.getSchacHomeOrganization());
-		if (institution == null) {
-			throw new RestException(Status.UNAUTHORIZED, "wrong.home.organization");
-		}
-
-		// 3. Find User
-		User u = null;
-		try {
-			u = (User) em.createQuery("select u from User u " +
-				"where u.shibbolethInfo.remoteUser = :remoteUser")
-				.setParameter("remoteUser", shibbolethInfo.getRemoteUser())
-				.getSingleResult();
-		} catch (NoResultException e) {
-			// Create User from Shibboleth Fields 
-			u = new User();
-			u.setRegistrationType(UserRegistrationType.SHIBBOLETH);
-			u.getBasicInfo().setFirstname(shibbolethInfo.getGivenName());
-			u.getBasicInfo().setLastname(shibbolethInfo.getSn());
-			u.getBasicInfo().setFathername("");
-			u.setRegistrationDate(new Date());
-			u.setStatus(UserStatus.ACTIVE);
-			u.setStatusDate(new Date());
-
-			ProfessorDomestic pd = new ProfessorDomestic();
-			pd.setInstitution(institution);
-			pd.setStatus(RoleStatus.UNAPPROVED);
-			pd.setStatusDate(new Date());
-			u.addRole(pd);
-			// Add Second Role : CANDIDATE
-			Candidate secondRole = new Candidate();
-			secondRole.setStatus(RoleStatus.UNAPPROVED);
-			secondRole.setStatusDate(new Date());
-			u.addRole(secondRole);
-		}
-		u.setShibbolethInfo(shibbolethInfo);
-		u.setAuthToken(u.generateAuthenticationToken());
-		// 4. Persist User
-		try {
-			u = em.merge(u);
-			em.flush();
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
-		}
-
-		return Response.temporaryRedirect(nextURL)
-			.header(TOKEN_HEADER, u.getAuthToken())
-			.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, NewCookie.DEFAULT_MAX_AGE, false))
-			.build();
 	}
 
 	@PUT
@@ -641,9 +498,9 @@ public class UserRESTService extends RESTService {
 				throw new RestException(Status.NOT_FOUND, "login.wrong.registration.type");
 			}
 			// Reset password
-			final String newPassword = User.generatePassword();
-			u.setPasswordSalt(User.generatePasswordSalt());
-			u.setPassword(User.encodePassword(newPassword, u.getPasswordSalt()));
+			final String newPassword = authenticationService.generatePassword();
+			u.setPasswordSalt(authenticationService.generatePasswordSalt());
+			u.setPassword(authenticationService.encodePassword(newPassword, u.getPasswordSalt()));
 
 			// Send email
 			mailService.postEmail(u.getContactInfo().getEmail(),
@@ -689,7 +546,7 @@ public class UserRESTService extends RESTService {
 
 							{
 								put("username", u.getUsername());
-								put("verificationLink", conf.getString("home.url") + "/registration.html?#email=" + u.getUsername() + "&verification=" + u.getVerificationNumber());
+								put("verificationLink", WebConstants.conf.getString("home.url") + "/registration.html?#email=" + u.getUsername() + "&verification=" + u.getVerificationNumber());
 							}
 						}), true);
 
@@ -756,7 +613,7 @@ public class UserRESTService extends RESTService {
 	@PUT
 	@Path("/{id:[0-9][0-9]*}/status")
 	@JsonView({DetailedUserView.class})
-	public User updateStatus(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, User requestUser) {
+	public User updateStatus(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, User requestUser) {
 		final User loggedOn = getLoggedOn(authToken);
 		User existingUser = em.find(User.class, id);
 		if (existingUser == null) {

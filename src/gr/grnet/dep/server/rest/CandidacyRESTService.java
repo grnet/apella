@@ -1,5 +1,6 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
@@ -82,7 +83,7 @@ public class CandidacyRESTService extends RESTService {
 	 */
 	@GET
 	@Path("/{id:[0-9]+}")
-	public String get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+	public String get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Candidacy candidacy = (Candidacy) em.createQuery(
@@ -128,7 +129,7 @@ public class CandidacyRESTService extends RESTService {
 	 */
 	@POST
 	@JsonView({DetailedCandidacyView.class})
-	public Candidacy create(@HeaderParam(TOKEN_HEADER) String authToken, Candidacy candidacy) {
+	public Candidacy create(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, Candidacy candidacy) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			// Validate
@@ -201,7 +202,7 @@ public class CandidacyRESTService extends RESTService {
 	@PUT
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedCandidacyView.class})
-	public Candidacy update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Candidacy candidacy) {
+	public Candidacy update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, Candidacy candidacy) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			// Validate
@@ -396,7 +397,7 @@ public class CandidacyRESTService extends RESTService {
 	 */
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}")
-	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+	public void delete(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			// Validate
@@ -541,7 +542,7 @@ public class CandidacyRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9]+}/register")
 	@JsonView({DetailedCandidacyEvaluatorView.class})
-	public Collection<RegisterMember> getCandidacyRegisterMembers(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("id") Long candidacyId) {
+	public Collection<RegisterMember> getCandidacyRegisterMembers(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("id") Long candidacyId) {
 		getLoggedOn(authToken);
 		final Candidacy existingCandidacy = em.find(Candidacy.class, candidacyId);
 		if (existingCandidacy == null) {
@@ -597,7 +598,7 @@ public class CandidacyRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9][0-9]*}/snapshot/file")
 	@JsonView({SimpleFileHeaderView.class})
-	public Collection<CandidateFile> getSnapshotFiles(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId) {
+	public Collection<CandidateFile> getSnapshotFiles(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId) {
 		User loggedOn = getLoggedOn(authToken);
 		Candidacy candidacy = em.find(Candidacy.class, candidacyId);
 		// Validate:
@@ -635,7 +636,7 @@ public class CandidacyRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9]+}/snapshot/file/{fileId:[0-9]+}")
 	@JsonView({SimpleFileHeaderView.class})
-	public CandidateFile getSnapshotFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId) {
+	public CandidateFile getSnapshotFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		Candidacy candidacy = em.find(Candidacy.class, candidacyId);
 		// Validate:
@@ -678,7 +679,7 @@ public class CandidacyRESTService extends RESTService {
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/{id:[0-9]+}/snapshot/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
-	public Response getSnapshotFileBody(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
+	public Response getSnapshotFileBody(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
 		User loggedOn = getLoggedOn(authToken);
 		Candidacy candidacy = em.find(Candidacy.class, candidacyId);
 		// Validate:
@@ -722,7 +723,7 @@ public class CandidacyRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9][0-9]*}/file")
 	@JsonView({SimpleFileHeaderView.class})
-	public Collection<CandidacyFile> getFiles(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId) {
+	public Collection<CandidacyFile> getFiles(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId) {
 		User loggedOn = getLoggedOn(authToken);
 		Candidacy candidacy = em.find(Candidacy.class, candidacyId);
 		// Validate:
@@ -759,7 +760,7 @@ public class CandidacyRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}")
 	@JsonView({SimpleFileHeaderView.class})
-	public CandidacyFile getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId) {
+	public CandidacyFile getFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		Candidacy candidacy = em.find(Candidacy.class, candidacyId);
 		// Validate:
@@ -802,7 +803,7 @@ public class CandidacyRESTService extends RESTService {
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
-	public Response getFileBody(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
+	public Response getFileBody(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
 		User loggedOn = getLoggedOn(authToken);
 		Candidacy candidacy = em.find(Candidacy.class, candidacyId);
 		// Validate:
@@ -852,7 +853,7 @@ public class CandidacyRESTService extends RESTService {
 	@Path("/{id:[0-9][0-9]*}/file")
 	@Consumes("multipart/form-data")
 	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
-	public String createFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	public String createFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		Candidacy candidacy = em.find(Candidacy.class, candidacyId);
 		// Validate:
@@ -921,7 +922,7 @@ public class CandidacyRESTService extends RESTService {
 	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}")
 	@Consumes("multipart/form-data")
 	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
-	public String updateFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	public String updateFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		Candidacy candidacy = em.find(Candidacy.class, candidacyId);
 		// Validate:
@@ -982,7 +983,7 @@ public class CandidacyRESTService extends RESTService {
 	@DELETE
 	@Path("/{id:[0-9]+}/file/{fileId:([0-9]+)?}")
 	@JsonView({SimpleFileHeaderView.class})
-	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long candidacyId, @PathParam("fileId") Long fileId) {
+	public Response deleteFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long candidacyId, @PathParam("fileId") Long fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		Candidacy candidacy = em.find(Candidacy.class, candidacyId);
 		// Validate:

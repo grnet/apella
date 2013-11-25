@@ -1,5 +1,6 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.Position.PositionStatus;
@@ -57,7 +58,7 @@ public class RegisterRESTService extends RESTService {
 	 */
 	@GET
 	@JsonView({RegisterView.class})
-	public Collection<Register> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
+	public Collection<Register> getAll(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
 		getLoggedOn(authToken);
 		@SuppressWarnings("unchecked")
 		Collection<Register> registers = (Collection<Register>) em.createQuery(
@@ -78,7 +79,7 @@ public class RegisterRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedRegisterView.class})
-	public Register get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+	public Register get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		getLoggedOn(authToken);
 		try {
 			Register r = (Register) em.createQuery(
@@ -115,7 +116,7 @@ public class RegisterRESTService extends RESTService {
 	 */
 	@POST
 	@JsonView({DetailedRegisterView.class})
-	public Register create(@HeaderParam(TOKEN_HEADER) String authToken, Register newRegister) {
+	public Register create(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, Register newRegister) {
 		User loggedOn = getLoggedOn(authToken);
 		Institution institution = em.find(Institution.class, newRegister.getInstitution().getId());
 		// Validate
@@ -166,7 +167,7 @@ public class RegisterRESTService extends RESTService {
 	@PUT
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedRegisterView.class})
-	public Register update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Register register) {
+	public Register update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, Register register) {
 		User loggedOn = getLoggedOn(authToken);
 		Register existingRegister = em.find(Register.class, id);
 		// Validate:
@@ -373,7 +374,7 @@ public class RegisterRESTService extends RESTService {
 	 */
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}")
-	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+	public void delete(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		User loggedOn = getLoggedOn(authToken);
 		Register register = em.find(Register.class, id);
 		// Validate:
@@ -408,7 +409,7 @@ public class RegisterRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9]+}/members")
 	@JsonView({DetailedRegisterMemberView.class})
-	public Collection<RegisterMember> getRegisterMembers(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId) {
+	public Collection<RegisterMember> getRegisterMembers(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long registerId) {
 		getLoggedOn(authToken);
 		Register register = em.find(Register.class, registerId);
 		// Validate:
@@ -431,7 +432,7 @@ public class RegisterRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9]+}/members/{memberId:[0-9]+}")
 	@JsonView({DetailedRegisterMemberView.class})
-	public RegisterMember getRegisterMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId, @PathParam("memberId") Long memberId) {
+	public RegisterMember getRegisterMember(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long registerId, @PathParam("memberId") Long memberId) {
 		getLoggedOn(authToken);
 		Register register = em.find(Register.class, registerId);
 		// Validate:
@@ -458,7 +459,7 @@ public class RegisterRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9]+}/professor")
 	@JsonView({DetailedRegisterMemberView.class})
-	public Collection<Role> getRegisterProfessors(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long registerId) {
+	public Collection<Role> getRegisterProfessors(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long registerId) {
 		User loggedOn = getLoggedOn(authToken);
 		Register existingRegister = em.find(Register.class, registerId);
 		// Validate:

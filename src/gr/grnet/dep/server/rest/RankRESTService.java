@@ -1,5 +1,6 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Rank;
 
@@ -26,7 +27,7 @@ public class RankRESTService extends RESTService {
 	 */
 	@GET
 	@SuppressWarnings("unchecked")
-	public Collection<Rank> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
+	public Collection<Rank> getAll(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
 		getLoggedOn(authToken);
 		return (List<Rank>) em.createQuery(
 			"select distinct r from Rank r ")
@@ -42,7 +43,7 @@ public class RankRESTService extends RESTService {
 	 */
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
-	public Rank get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+	public Rank get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		getLoggedOn(authToken);
 		try {
 			return (Rank) em.createQuery(

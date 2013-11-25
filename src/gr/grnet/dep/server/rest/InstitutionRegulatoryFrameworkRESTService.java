@@ -1,5 +1,6 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.InstitutionRegulatoryFramework;
@@ -77,7 +78,7 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 	 * @HTTP 409 X-Error-Code: institutionrf.already.exists
 	 */
 	@POST
-	public InstitutionRegulatoryFramework create(@HeaderParam(TOKEN_HEADER) String authToken, InstitutionRegulatoryFramework newIRF) {
+	public InstitutionRegulatoryFramework create(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, InstitutionRegulatoryFramework newIRF) {
 		User loggedOn = getLoggedOn(authToken);
 		Institution institution = em.find(Institution.class, newIRF.getInstitution().getId());
 		if (institution == null) {
@@ -125,7 +126,7 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 	 */
 	@PUT
 	@Path("/{id:[0-9]+}")
-	public InstitutionRegulatoryFramework update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, InstitutionRegulatoryFramework newIRF) {
+	public InstitutionRegulatoryFramework update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id, InstitutionRegulatoryFramework newIRF) {
 		User loggedOn = getLoggedOn(authToken);
 		InstitutionRegulatoryFramework existing = em.find(InstitutionRegulatoryFramework.class, id);
 		if (existing == null) {
@@ -159,7 +160,7 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 	 */
 	@DELETE
 	@Path("/{id:[0-9]+}")
-	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
+	public void delete(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
 		User loggedOn = getLoggedOn(authToken);
 		InstitutionRegulatoryFramework existing = em.find(InstitutionRegulatoryFramework.class, id);
 		if (existing == null) {

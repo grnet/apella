@@ -1,5 +1,6 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.PositionCommitteeMember;
 import gr.grnet.dep.service.model.PositionCommitteeMember.PositionCommitteeMemberView;
@@ -42,7 +43,7 @@ public class ProfessorRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9]+}/committees")
 	@JsonView({PositionCommitteeMemberView.class})
-	public Collection<PositionCommitteeMember> getCommittees(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long professorId) {
+	public Collection<PositionCommitteeMember> getCommittees(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long professorId) {
 		User loggedOn = getLoggedOn(authToken);
 		Professor professor = em.find(Professor.class, professorId);
 		if (professor == null) {
@@ -72,7 +73,7 @@ public class ProfessorRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9]+}/evaluations")
 	@JsonView({PositionEvaluatorView.class})
-	public Collection<PositionEvaluator> getEvaluations(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long professorId) {
+	public Collection<PositionEvaluator> getEvaluations(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long professorId) {
 		User loggedOn = getLoggedOn(authToken);
 		Professor professor = em.find(Professor.class, professorId);
 		if (professor == null) {

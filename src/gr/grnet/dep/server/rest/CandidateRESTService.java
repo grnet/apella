@@ -1,5 +1,6 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
@@ -44,7 +45,7 @@ public class CandidateRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9]+}/candidacies")
 	@JsonView({DetailedCandidacyView.class})
-	public Collection<Candidacy> getCandidacies(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long candidateId, @QueryParam("open") String open) {
+	public Collection<Candidacy> getCandidacies(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidateId, @QueryParam("open") String open) {
 		User loggedOn = getLoggedOn(authToken);
 		Candidate candidate = em.find(Candidate.class, candidateId);
 		if (candidate == null) {

@@ -7,10 +7,6 @@ import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.util.IdentificationDeserializer;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -20,7 +16,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.ejb.EJBException;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -37,7 +32,6 @@ import javax.validation.Valid;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-import org.apache.commons.codec.binary.Base64;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonView;
@@ -67,23 +61,6 @@ public class User implements Serializable {
 	@Version
 	private int version;
 
-	@Column(unique = true)
-	private String username;
-
-	private String identification;
-
-	@Enumerated(EnumType.STRING)
-	private UserRegistrationType registrationType;
-
-	@Valid
-	@Embedded
-	private ShibbolethInformation shibbolethInfo = new ShibbolethInformation();
-
-	@Enumerated(EnumType.STRING)
-	private UserStatus status;
-
-	private Date statusDate;
-
 	@Valid
 	@Embedded
 	private BasicInformation basicInfo = new BasicInformation();
@@ -96,23 +73,47 @@ public class User implements Serializable {
 	@Embedded
 	private ContactInformation contactInfo = new ContactInformation();
 
+	private String identification;
+
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.EAGER)
 	private Set<Role> roles = new HashSet<Role>();
 
-	private String password;
+	// Registration Fields
 
-	private String passwordSalt;
+	@Enumerated(EnumType.STRING)
+	private UserRegistrationType registrationType;
 
 	private Date registrationDate;
 
 	private Long verificationNumber;
 
-	private String jiraIssueKey;
+	// Authentication Fields
 
-	private Date lastLoginDate;
+	@Column(unique = true)
+	private String username;
+
+	private String password;
+
+	private String passwordSalt;
+
+	@Valid
+	@Embedded
+	private ShibbolethInformation shibbolethInfo = new ShibbolethInformation();
+
+	@Column(unique = true)
+	private String permanentAuthToken;
 
 	@Column(unique = true)
 	private String authToken;
+
+	// Status Fields
+
+	@Enumerated(EnumType.STRING)
+	private UserStatus status;
+
+	private Date statusDate;
+
+	///////////////////////////////////////////////////////////////////////////////////////
 
 	public Long getId() {
 		return id;
@@ -259,22 +260,6 @@ public class User implements Serializable {
 		this.verificationNumber = verificationNumber;
 	}
 
-	public String getJiraIssueKey() {
-		return jiraIssueKey;
-	}
-
-	public void setJiraIssueKey(String jiraIssueKey) {
-		this.jiraIssueKey = jiraIssueKey;
-	}
-
-	public Date getLastLoginDate() {
-		return lastLoginDate;
-	}
-
-	public void setLastLoginDate(Date lastLoginDate) {
-		this.lastLoginDate = lastLoginDate;
-	}
-
 	@XmlTransient
 	@JsonIgnore
 	public String getAuthToken() {
@@ -290,7 +275,6 @@ public class User implements Serializable {
 	public boolean isMissingRequiredFields() {
 		return (this.basicInfo == null || this.basicInfo.isMissingRequiredFields()) ||
 			(this.contactInfo == null || this.contactInfo.isMissingRequiredFields()) ||
-			(this.registrationType.equals(UserRegistrationType.SHIBBOLETH) && (this.shibbolethInfo == null || this.shibbolethInfo.isMissingRequiredFields())) ||
 			this.identification == null;
 	}
 
@@ -405,80 +389,6 @@ public class User implements Serializable {
 			}
 		}
 		return false;
-	}
-
-	/**
-	 * Static Functions
-	 */
-
-	private static final String letters = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789+@";
-
-	private static final int PASSWORD_LENGTH = 8;
-
-	public static String generatePassword() {
-		try {
-			SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
-			String pw = "";
-			for (int i = 0; i < PASSWORD_LENGTH; i++) {
-				int index = (int) (sr.nextDouble() * letters.length());
-				pw += letters.substring(index, index + 1);
-			}
-			return pw;
-		} catch (NoSuchAlgorithmException nsae) {
-			throw new EJBException(nsae);
-		}
-	}
-
-	public static String generatePasswordSalt() {
-		try {
-			SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
-			byte[] salt = new byte[10];
-			sr.nextBytes(salt);
-			return new String(Base64.encodeBase64(salt), "ISO-8859-1");
-		} catch (NoSuchAlgorithmException nsae) {
-			throw new EJBException(nsae);
-		} catch (UnsupportedEncodingException uee) {
-			throw new EJBException(uee);
-		}
-	}
-
-	public static String encodePassword(String password, String salt) {
-		try {
-			MessageDigest md = MessageDigest.getInstance("SHA");
-			byte[] hash = md.digest(password.concat(salt).getBytes("ISO-8859-1"));
-			return new String(Base64.encodeBase64(hash), "ISO-8859-1");
-		} catch (NoSuchAlgorithmException nsae) {
-			throw new EJBException(nsae);
-		} catch (UnsupportedEncodingException uee) {
-			throw new EJBException(uee);
-		}
-	}
-
-	public Long generateVerificationNumber() {
-		try {
-			SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
-			return sr.nextLong();
-		} catch (NoSuchAlgorithmException nsae) {
-			throw new EJBException(nsae);
-		}
-	}
-
-	public String generateAuthenticationToken() {
-		try {
-			MessageDigest md = MessageDigest.getInstance("SHA");
-			byte[] hash = md.digest((this.getUsername() + System.currentTimeMillis()).getBytes("ISO-8859-1"));
-			return new String(Base64.encodeBase64(hash), "ISO-8859-1");
-		} catch (NoSuchAlgorithmException nsae) {
-			throw new EJBException(nsae);
-		} catch (UnsupportedEncodingException uee) {
-			throw new EJBException(uee);
-		}
-	}
-
-	public static void main(String[] args) {
-		String password = "anglen";
-		String salt = User.generatePasswordSalt();
-		System.out.println(password + ": " + encodePassword(password, salt));
 	}
 
 }

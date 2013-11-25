@@ -1,5 +1,6 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.CandidacyEvaluator;
@@ -79,7 +80,7 @@ public class PositionEvaluationRESTService extends RESTService {
 	@GET
 	@Path("/{evaluationId:[0-9]+}")
 	@JsonView({DetailedPositionEvaluationView.class})
-	public PositionEvaluation getPositionEvaluation(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId) {
+	public PositionEvaluation getPositionEvaluation(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionEvaluation existingEvaluation = em.find(PositionEvaluation.class, evaluationId);
 		if (existingEvaluation == null) {
@@ -120,7 +121,7 @@ public class PositionEvaluationRESTService extends RESTService {
 	@GET
 	@Path("/{evaluationId:[0-9]+}/evaluator/{evaluatorId:[0-9]+}")
 	@JsonView({DetailedPositionEvaluatorView.class})
-	public PositionEvaluator getPositionEvaluator(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("evaluatorId") Long evaluatorId) {
+	public PositionEvaluator getPositionEvaluator(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("evaluatorId") Long evaluatorId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionEvaluation existingEvaluation = em.find(PositionEvaluation.class, evaluationId);
 		if (existingEvaluation == null) {
@@ -175,7 +176,7 @@ public class PositionEvaluationRESTService extends RESTService {
 	@PUT
 	@Path("/{evaluationId:[0-9]+}")
 	@JsonView({DetailedPositionEvaluationView.class})
-	public PositionEvaluation updatePositionEvaluation(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, PositionEvaluation newEvaluation) {
+	public PositionEvaluation updatePositionEvaluation(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, PositionEvaluation newEvaluation) {
 		User loggedOn = getLoggedOn(authToken);
 		final PositionEvaluation existingEvaluation = em.find(PositionEvaluation.class, evaluationId);
 		if (existingEvaluation == null) {
@@ -375,7 +376,7 @@ public class PositionEvaluationRESTService extends RESTService {
 	@GET
 	@Path("/{evaluationId:[0-9]+}/evaluator/{evaluatorId:[0-9]+}/file")
 	@JsonView({SimpleFileHeaderView.class})
-	public Collection<PositionEvaluatorFile> getFiles(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("evaluatorId") Long evaluatorId) {
+	public Collection<PositionEvaluatorFile> getFiles(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("evaluatorId") Long evaluatorId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionEvaluator existingEvaluator = em.find(PositionEvaluator.class, evaluatorId);
 		if (existingEvaluator == null) {
@@ -421,7 +422,7 @@ public class PositionEvaluationRESTService extends RESTService {
 	@GET
 	@Path("/{evaluationId:[0-9]+}/evaluator/{evaluatorId:[0-9]+}/file/{fileId:[0-9]+}")
 	@JsonView({SimpleFileHeaderView.class})
-	public FileHeader getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("evaluatorId") Long evaluatorId, @PathParam("fileId") Long fileId) {
+	public FileHeader getFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("evaluatorId") Long evaluatorId, @PathParam("fileId") Long fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionEvaluator existingEvaluator = em.find(PositionEvaluator.class, evaluatorId);
 		if (existingEvaluator == null) {
@@ -473,7 +474,7 @@ public class PositionEvaluationRESTService extends RESTService {
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/{evaluationId:[0-9]+}/evaluator/{evaluatorId:[0-9]+}/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
-	public Response getFileBody(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("evaluatorId") Long evaluatorId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
+	public Response getFileBody(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("evaluatorId") Long evaluatorId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionEvaluator existingEvaluator = em.find(PositionEvaluator.class, evaluatorId);
 		if (existingEvaluator == null) {
@@ -536,7 +537,7 @@ public class PositionEvaluationRESTService extends RESTService {
 	@Path("/{evaluationId:[0-9]+}/evaluator/{evaluatorId:[0-9]+}/file")
 	@Consumes("multipart/form-data")
 	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
-	public String createFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("evaluatorId") Long evaluatorId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	public String createFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("evaluatorId") Long evaluatorId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		PositionEvaluator existingEvaluator = em.find(PositionEvaluator.class, evaluatorId);
 		if (existingEvaluator == null) {
@@ -696,7 +697,7 @@ public class PositionEvaluationRESTService extends RESTService {
 	@Path("/{evaluationId:[0-9]+}/evaluator/{evaluatorId:[0-9]+}/file/{fileId:[0-9]+}")
 	@Consumes("multipart/form-data")
 	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
-	public String updateFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("evaluatorId") Long evaluatorId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	public String updateFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("evaluatorId") Long evaluatorId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		PositionEvaluator existingEvaluator = em.find(PositionEvaluator.class, evaluatorId);
 		if (existingEvaluator == null) {
@@ -777,7 +778,7 @@ public class PositionEvaluationRESTService extends RESTService {
 	@DELETE
 	@Path("/{evaluationId:[0-9]+}/evaluator/{evaluatorId:[0-9]+}/file/{fileId:[0-9]+}")
 	@JsonView({SimpleFileHeaderView.class})
-	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("evaluatorId") Long evaluatorId, @PathParam("fileId") Long fileId) throws FileUploadException, IOException {
+	public Response deleteFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("evaluatorId") Long evaluatorId, @PathParam("fileId") Long fileId) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		PositionEvaluator existingEvaluator = em.find(PositionEvaluator.class, evaluatorId);
 		if (existingEvaluator == null) {
@@ -839,7 +840,7 @@ public class PositionEvaluationRESTService extends RESTService {
 	@GET
 	@Path("/{evaluationId:[0-9]+}/register")
 	@JsonView({DetailedRegisterMemberView.class})
-	public Collection<RegisterMember> getPositionEvaluationRegisterMembers(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId) {
+	public Collection<RegisterMember> getPositionEvaluationRegisterMembers(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionEvaluation existingEvaluation = em.find(PositionEvaluation.class, evaluationId);
 		if (existingEvaluation == null) {

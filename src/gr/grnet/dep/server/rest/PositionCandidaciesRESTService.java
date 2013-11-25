@@ -1,5 +1,6 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidacy.CandidacyView;
@@ -76,7 +77,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 	 */
 	@GET
 	@JsonView({CandidacyView.class})
-	public Set<Candidacy> getPositionCandidacies(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
+	public Set<Candidacy> getPositionCandidacies(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
 		User loggedOn = getLoggedOn(authToken);
 		Position position = em.find(Position.class, positionId);
 		if (position == null) {
@@ -121,7 +122,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 	@GET
 	@Path("/{candidaciesId:[0-9]+}")
 	@JsonView({DetailedPositionCandidaciesView.class})
-	public String get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("candidaciesId") Long candidaciesId) {
+	public String get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("candidaciesId") Long candidaciesId) {
 		User loggedOn = getLoggedOn(authToken);
 
 		Session session = em.unwrap(Session.class);
@@ -187,7 +188,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 	@GET
 	@Path("/{candidaciesId:[0-9]+}/file")
 	@JsonView({SimpleFileHeaderView.class})
-	public Collection<PositionCandidaciesFile> getFiles(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("candidaciesId") Long candidaciesId) {
+	public Collection<PositionCandidaciesFile> getFiles(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("candidaciesId") Long candidaciesId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCandidacies existingCandidacies = em.find(PositionCandidacies.class, candidaciesId);
 		if (existingCandidacies == null) {
@@ -244,7 +245,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 	@GET
 	@Path("/{candidaciesId:[0-9]+}/file/{fileId:[0-9]+}")
 	@JsonView({SimpleFileHeaderView.class})
-	public PositionCandidaciesFile getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("candidaciesId") Long candidaciesId, @PathParam("fileId") Long fileId) {
+	public PositionCandidaciesFile getFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("candidaciesId") Long candidaciesId, @PathParam("fileId") Long fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCandidacies existingCandidacies = em.find(PositionCandidacies.class, candidaciesId);
 		if (existingCandidacies == null) {
@@ -297,7 +298,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/{candidaciesId:[0-9]+}/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
-	public Response getFileBody(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("candidaciesId") Long candidaciesId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
+	public Response getFileBody(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("candidaciesId") Long candidaciesId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCandidacies existingCandidacies = em.find(PositionCandidacies.class, candidaciesId);
 		if (existingCandidacies == null) {
@@ -360,7 +361,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 	@Path("/{candidaciesId:[0-9]+}/file")
 	@Consumes("multipart/form-data")
 	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
-	public String createFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("candidaciesId") Long candidaciesId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	public String createFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("candidaciesId") Long candidaciesId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCandidacies existingCandidacies = em.find(PositionCandidacies.class, candidaciesId);
 		if (existingCandidacies == null) {
@@ -575,7 +576,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 	@Path("/{candidaciesId:[0-9]+}/file/{fileId:[0-9]+}")
 	@Consumes("multipart/form-data")
 	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
-	public String updateFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("candidaciesId") Long candidaciesId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	public String updateFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("candidaciesId") Long candidaciesId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCandidacies existingCandidacies = em.find(PositionCandidacies.class, candidaciesId);
 		if (existingCandidacies == null) {
@@ -660,7 +661,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 	@DELETE
 	@Path("/{candidaciesId:[0-9]+}/file/{fileId:[0-9]+}")
 	@JsonView({SimpleFileHeaderView.class})
-	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("candidaciesId") Long candidaciesId, @PathParam("id") long positionId, @PathParam("fileId") Long fileId) {
+	public Response deleteFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("candidaciesId") Long candidaciesId, @PathParam("id") long positionId, @PathParam("fileId") Long fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCandidacies existingCandidacies = em.find(PositionCandidacies.class, candidaciesId);
 		if (existingCandidacies == null) {

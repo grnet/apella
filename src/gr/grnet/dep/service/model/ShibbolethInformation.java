@@ -1,11 +1,8 @@
 package gr.grnet.dep.service.model;
 
-import java.io.UnsupportedEncodingException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.persistence.Embeddable;
-import javax.servlet.http.HttpServletRequest;
 
 @Embeddable
 public class ShibbolethInformation {
@@ -74,46 +71,6 @@ public class ShibbolethInformation {
 			this.givenName == null ||
 			this.sn == null ||
 			this.schacHomeOrganization == null;
-	}
-
-	////////////////
-
-	public static ShibbolethInformation readShibbolethFields(HttpServletRequest request) {
-		ShibbolethInformation result = new ShibbolethInformation();
-
-		result.setGivenName(readShibbolethField(request, "givenName"));
-		result.setSn(readShibbolethField(request, "sn"));
-		result.setSchacHomeOrganization(readShibbolethField(request, "schac-home-organization"));
-		result.setRemoteUser(readShibbolethField(request, "REMOTE_USER"));
-
-		String affiliation = null;
-		affiliation = readShibbolethField(request, "unscoped-affiliation");
-		if (affiliation == null) {
-			affiliation = readShibbolethField(request, "primary-affiliation");
-		}
-		if (affiliation == null) {
-			affiliation = readShibbolethField(request, "affiliation");
-		}
-		if (affiliation != null && affiliation.toLowerCase().contains("faculty")) {
-			affiliation = "faculty";
-		}
-		result.setAffiliation(affiliation);
-
-		return result;
-	}
-
-	private static String readShibbolethField(HttpServletRequest request, String headerName) {
-		try {
-			Object value = request.getHeader(headerName);
-			String field = null;
-			if (value != null && !value.toString().isEmpty()) {
-				field = new String(value.toString().getBytes("ISO-8859-1"), "UTF-8");
-			}
-			return field;
-		} catch (UnsupportedEncodingException e) {
-			logger.log(Level.WARNING, "decodeAttribute: ", e);
-			return null;
-		}
 	}
 
 	@Override

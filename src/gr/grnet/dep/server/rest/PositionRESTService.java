@@ -1,5 +1,6 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Department;
@@ -74,7 +75,7 @@ public class PositionRESTService extends RESTService {
 	 */
 	@GET
 	@JsonView({PublicPositionView.class})
-	public Collection<Position> getAll(@HeaderParam(TOKEN_HEADER) String authToken) {
+	public Collection<Position> getAll(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
 		User loggedOnUser = getLoggedOn(authToken);
 		if (loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) ||
 			loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
@@ -143,7 +144,7 @@ public class PositionRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	@Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-	public String get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @QueryParam("order") Integer order) {
+	public String get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @QueryParam("order") Integer order) {
 		User loggedOn = getLoggedOn(authToken);
 		Position p = getAndCheckPosition(loggedOn, positionId);
 
@@ -189,7 +190,7 @@ public class PositionRESTService extends RESTService {
 	 */
 	@POST
 	@JsonView({DetailedPositionView.class})
-	public Position create(@HeaderParam(TOKEN_HEADER) String authToken, Position position) {
+	public Position create(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, Position position) {
 		try {
 			Department department = em.find(Department.class, position.getDepartment().getId());
 			if (department == null) {
@@ -242,7 +243,7 @@ public class PositionRESTService extends RESTService {
 	@PUT
 	@Path("/{id:[0-9]+}")
 	@JsonView({DetailedPositionView.class})
-	public Position update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Position position) {
+	public Position update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, Position position) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Position existingPosition = getAndCheckPosition(loggedOn, id);
@@ -336,7 +337,7 @@ public class PositionRESTService extends RESTService {
 	 */
 	@DELETE
 	@Path("/{id:[0-9][0-9]*}")
-	public void delete(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+	public void delete(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Position position = getAndCheckPosition(loggedOn, id);
@@ -376,7 +377,7 @@ public class PositionRESTService extends RESTService {
 	@PUT
 	@Path("/{id:[0-9][0-9]*}/phase")
 	@JsonView({DetailedPositionView.class})
-	public Position addPhase(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long positionId, Position position) {
+	public Position addPhase(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long positionId, Position position) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			PositionStatus newStatus = position.getPhase().getStatus();

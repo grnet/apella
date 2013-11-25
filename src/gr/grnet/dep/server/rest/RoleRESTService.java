@@ -1,5 +1,6 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.InstitutionAssistant;
@@ -178,7 +179,7 @@ public class RoleRESTService extends RESTService {
 	 */
 	@GET
 	@JsonView({DetailedRoleView.class})
-	public Collection<Role> getAll(@HeaderParam(TOKEN_HEADER) String authToken, @QueryParam("user") Long userID, @QueryParam("discriminator") String discriminators, @QueryParam("status") String statuses) {
+	public Collection<Role> getAll(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @QueryParam("user") Long userID, @QueryParam("discriminator") String discriminators, @QueryParam("status") String statuses) {
 		getLoggedOn(authToken);
 		// Prepare Query
 		StringBuilder sb = new StringBuilder();
@@ -260,7 +261,7 @@ public class RoleRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedRoleView.class})
-	public Role get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+	public Role get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		User loggedOn = getLoggedOn(authToken);
 		boolean roleBelongsToUser = false;
 		for (Role r : loggedOn.getRoles()) {
@@ -294,7 +295,7 @@ public class RoleRESTService extends RESTService {
 	 */
 	@POST
 	@JsonView({DetailedRoleView.class})
-	public Role create(@HeaderParam(TOKEN_HEADER) String authToken, Role newRole) {
+	public Role create(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, Role newRole) {
 		User loggedOn = getLoggedOn(authToken);
 
 		// Validate
@@ -355,7 +356,7 @@ public class RoleRESTService extends RESTService {
 	@PUT
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedRoleView.class})
-	public Role update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @QueryParam("updateCandidacies") Boolean updateCandidacies, Role role) {
+	public Role update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, @QueryParam("updateCandidacies") Boolean updateCandidacies, Role role) {
 		User loggedOn = getLoggedOn(authToken);
 		Role existingRole = em.find(Role.class, id);
 		// Validate:
@@ -489,7 +490,7 @@ public class RoleRESTService extends RESTService {
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/{id:[0-9]+}/documents/{fileName}")
-	public Response getDocument(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("fileName") DocumentDiscriminator fileName) {
+	public Response getDocument(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("fileName") DocumentDiscriminator fileName) {
 		Role role = em.find(Role.class, id);
 		// Validate:
 		if (role == null) {
@@ -548,7 +549,7 @@ public class RoleRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9][0-9]*}/file")
 	@JsonView({SimpleFileHeaderView.class})
-	public Response getFiles(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
+	public Response getFiles(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
 		// Validate:
@@ -590,7 +591,7 @@ public class RoleRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}")
 	@JsonView({SimpleFileHeaderView.class})
-	public FileHeader getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("fileId") Long fileId) {
+	public FileHeader getFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("fileId") Long fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
 		// Validate:
@@ -639,7 +640,7 @@ public class RoleRESTService extends RESTService {
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
-	public Response getFileBody(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
+	public Response getFileBody(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
 		// Validate:
@@ -701,7 +702,7 @@ public class RoleRESTService extends RESTService {
 	@Path("/{id:[0-9][0-9]*}/file")
 	@Consumes("multipart/form-data")
 	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
-	public String createFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	public String createFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
 		// Validate:
@@ -828,7 +829,7 @@ public class RoleRESTService extends RESTService {
 	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}")
 	@Consumes("multipart/form-data")
 	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
-	public String updateFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	public String updateFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
 		// Validate:
@@ -953,7 +954,7 @@ public class RoleRESTService extends RESTService {
 	@DELETE
 	@Path("/{id:[0-9]+}/file/{fileId:([0-9]+)?}")
 	@JsonView({SimpleFileHeaderView.class})
-	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("fileId") Long fileId, @QueryParam("updateCandidacies") Boolean updateCandidacies) {
+	public Response deleteFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("fileId") Long fileId, @QueryParam("updateCandidacies") Boolean updateCandidacies) {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
 		if (role == null) {
@@ -1061,7 +1062,7 @@ public class RoleRESTService extends RESTService {
 	@PUT
 	@Path("/{id:[0-9][0-9]*}/status")
 	@JsonView({DetailedRoleView.class})
-	public Role updateStatus(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long id, Role requestRole) {
+	public Role updateStatus(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, Role requestRole) {
 		final User loggedOn = getLoggedOn(authToken);
 		Role primaryRole = em.find(Role.class, id);
 		// Validate

@@ -1,5 +1,6 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Position;
@@ -70,7 +71,7 @@ public class PositionNominationRESTService extends RESTService {
 	@GET
 	@Path("/{nominationId:[0-9][0-9]*}")
 	@JsonView({DetailedPositionNominationView.class})
-	public PositionNomination get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("nominationId") Long nominationId) {
+	public PositionNomination get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("nominationId") Long nominationId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionNomination existingNomination = em.find(PositionNomination.class, nominationId);
 		if (existingNomination == null) {
@@ -113,7 +114,7 @@ public class PositionNominationRESTService extends RESTService {
 	@PUT
 	@Path("/{nominationId:[0-9][0-9]*}")
 	@JsonView({DetailedPositionNominationView.class})
-	public PositionNomination update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long positionId, @PathParam("nominationId") long nominationId, PositionNomination newNomination) {
+	public PositionNomination update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long positionId, @PathParam("nominationId") long nominationId, PositionNomination newNomination) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			final PositionNomination existingNomination = em.find(PositionNomination.class, nominationId);
@@ -298,7 +299,7 @@ public class PositionNominationRESTService extends RESTService {
 	@GET
 	@Path("/{nominationId:[0-9]+}/file")
 	@JsonView({SimpleFileHeaderView.class})
-	public Collection<PositionNominationFile> getFiles(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("nominationId") Long nominationId) {
+	public Collection<PositionNominationFile> getFiles(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("nominationId") Long nominationId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionNomination existingNomination = em.find(PositionNomination.class, nominationId);
 		if (existingNomination == null) {
@@ -339,7 +340,7 @@ public class PositionNominationRESTService extends RESTService {
 	@GET
 	@Path("/{nominationId:[0-9]+}/file/{fileId:[0-9]+}")
 	@JsonView({SimpleFileHeaderView.class})
-	public PositionNominationFile getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("nominationId") Long nominationId, @PathParam("fileId") Long fileId) {
+	public PositionNominationFile getFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("nominationId") Long nominationId, @PathParam("fileId") Long fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionNomination existingNomination = em.find(PositionNomination.class, nominationId);
 		if (existingNomination == null) {
@@ -387,7 +388,7 @@ public class PositionNominationRESTService extends RESTService {
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/{nominationId:[0-9]+}/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
-	public Response getFileBody(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("nominationId") Long nominationId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
+	public Response getFileBody(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("nominationId") Long nominationId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionNomination existingNomination = em.find(PositionNomination.class, nominationId);
 		if (existingNomination == null) {
@@ -444,7 +445,7 @@ public class PositionNominationRESTService extends RESTService {
 	@Path("/{nominationId:[0-9]+}/file")
 	@Consumes("multipart/form-data")
 	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
-	public String createFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("nominationId") Long nominationId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	public String createFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("nominationId") Long nominationId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		PositionNomination existingNomination = em.find(PositionNomination.class, nominationId);
 		if (existingNomination == null) {
@@ -638,7 +639,7 @@ public class PositionNominationRESTService extends RESTService {
 	@Path("/{nominationId:[0-9]+}/file/{fileId:[0-9]+}")
 	@Consumes("multipart/form-data")
 	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
-	public String updateFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("nominationId") Long nominationId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	public String updateFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("nominationId") Long nominationId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		PositionNomination existingNomination = em.find(PositionNomination.class, nominationId);
 		if (existingNomination == null) {
@@ -714,7 +715,7 @@ public class PositionNominationRESTService extends RESTService {
 	@DELETE
 	@Path("/{nominationId:[0-9]+}/file/{fileId:([0-9]+)?}")
 	@JsonView({SimpleFileHeaderView.class})
-	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") long positionId, @PathParam("nominationId") Long nominationId, @PathParam("fileId") Long fileId) {
+	public Response deleteFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long positionId, @PathParam("nominationId") Long nominationId, @PathParam("fileId") Long fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionNomination existingNomination = em.find(PositionNomination.class, nominationId);
 		if (existingNomination == null) {

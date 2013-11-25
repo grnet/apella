@@ -1,5 +1,6 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Position;
@@ -68,7 +69,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 	@GET
 	@Path("/{cdId:[0-9]+}")
 	@JsonView({DetailedPositionComplementaryDocumentsView.class})
-	public PositionComplementaryDocuments get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cdId") Long cdId) {
+	public PositionComplementaryDocuments get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cdId") Long cdId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionComplementaryDocuments existingComDocs = em.find(PositionComplementaryDocuments.class, cdId);
 		if (existingComDocs == null) {
@@ -109,7 +110,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 	@GET
 	@Path("/{cdId:[0-9]+}/file")
 	@JsonView({SimpleFileHeaderView.class})
-	public Collection<ComplementaryDocumentsFile> getFiles(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cdId") Long cdId) {
+	public Collection<ComplementaryDocumentsFile> getFiles(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cdId") Long cdId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionComplementaryDocuments existingComDocs = em.find(PositionComplementaryDocuments.class, cdId);
 		if (existingComDocs == null) {
@@ -150,7 +151,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 	@GET
 	@Path("/{cdId:[0-9]+}/file/{fileId:[0-9]+}")
 	@JsonView({SimpleFileHeaderView.class})
-	public ComplementaryDocumentsFile getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cdId") Long cdId, @PathParam("fileId") Long fileId) {
+	public ComplementaryDocumentsFile getFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cdId") Long cdId, @PathParam("fileId") Long fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionComplementaryDocuments existingComDocs = em.find(PositionComplementaryDocuments.class, cdId);
 		if (existingComDocs == null) {
@@ -197,7 +198,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/{cdId:[0-9]+}/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
-	public Response getFileBody(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cdId") Long cdId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
+	public Response getFileBody(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cdId") Long cdId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionComplementaryDocuments existingComDocs = em.find(PositionComplementaryDocuments.class, cdId);
 		if (existingComDocs == null) {
@@ -254,7 +255,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 	@Path("/{cdId:[0-9]+}/file")
 	@Consumes("multipart/form-data")
 	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
-	public String createFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cdId") Long cdId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	public String createFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cdId") Long cdId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		PositionComplementaryDocuments existingComDocs = em.find(PositionComplementaryDocuments.class, cdId);
 		if (existingComDocs == null) {
@@ -388,7 +389,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 	@Path("/{cdId:[0-9]+}/file/{fileId:[0-9]+}")
 	@Consumes("multipart/form-data")
 	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
-	public String updateFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cdId") Long cdId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	public String updateFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cdId") Long cdId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		PositionComplementaryDocuments existingComDocs = em.find(PositionComplementaryDocuments.class, cdId);
 		if (existingComDocs == null) {
@@ -464,7 +465,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 	@DELETE
 	@Path("/{cdId:[0-9]+}/file/{fileId:([0-9]+)?}")
 	@JsonView({SimpleFileHeaderView.class})
-	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("cdId") Long cdId, @PathParam("id") long positionId, @PathParam("fileId") Long fileId) {
+	public Response deleteFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("cdId") Long cdId, @PathParam("id") long positionId, @PathParam("fileId") Long fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionComplementaryDocuments existingComDocs = em.find(PositionComplementaryDocuments.class, cdId);
 		if (existingComDocs == null) {

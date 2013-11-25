@@ -31,7 +31,7 @@ import org.codehaus.jackson.node.ObjectNode;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
 
-@Stateless
+@Stateless(name = "jiraService")
 public class JiraService {
 
 	private static final Logger logger = Logger.getLogger(MailService.class.getName());

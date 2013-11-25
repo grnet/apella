@@ -1,5 +1,6 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidate;
@@ -54,7 +55,7 @@ public class PositionSearchRESTService extends RESTService {
 	@GET
 	@Path("/search")
 	@JsonView({PublicPositionView.class})
-	public Collection<Position> search(@HeaderParam(TOKEN_HEADER) String authToken, @QueryParam("criteria") String criteriaString) {
+	public Collection<Position> search(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @QueryParam("criteria") String criteriaString) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
@@ -131,7 +132,7 @@ public class PositionSearchRESTService extends RESTService {
 	 */
 	@GET
 	@JsonView({PositionSearchCriteriaView.class})
-	public PositionSearchCriteria get(@HeaderParam(TOKEN_HEADER) String authToken) {
+	public PositionSearchCriteria get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
 		User loggedOnUser = getLoggedOn(authToken);
 		if (!loggedOnUser.hasActiveRole(RoleDiscriminator.CANDIDATE)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -162,7 +163,7 @@ public class PositionSearchRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9]+}")
 	@JsonView({PositionSearchCriteriaView.class})
-	public PositionSearchCriteria get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
+	public PositionSearchCriteria get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
 		User loggedOnUser = getLoggedOn(authToken);
 		// Validate
 		PositionSearchCriteria criteria = em.find(PositionSearchCriteria.class, id);
@@ -187,7 +188,7 @@ public class PositionSearchRESTService extends RESTService {
 	 */
 	@POST
 	@JsonView({PositionSearchCriteriaView.class})
-	public PositionSearchCriteria create(@HeaderParam(TOKEN_HEADER) String authToken, PositionSearchCriteria newCriteria) {
+	public PositionSearchCriteria create(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, PositionSearchCriteria newCriteria) {
 		User loggedOnUser = getLoggedOn(authToken);
 		// Validate
 		if (!loggedOnUser.hasActiveRole(RoleDiscriminator.CANDIDATE)) {
@@ -230,7 +231,7 @@ public class PositionSearchRESTService extends RESTService {
 	@PUT
 	@Path("/{id:[0-9]+}")
 	@JsonView({PositionSearchCriteriaView.class})
-	public PositionSearchCriteria update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long id, PositionSearchCriteria newCriteria) {
+	public PositionSearchCriteria update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id, PositionSearchCriteria newCriteria) {
 		User loggedOnUser = getLoggedOn(authToken);
 		// Validate
 		PositionSearchCriteria criteria = em.find(PositionSearchCriteria.class, id);

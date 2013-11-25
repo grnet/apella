@@ -1,5 +1,6 @@
 package gr.grnet.dep.server.rest;
 
+import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Position;
@@ -84,7 +85,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	@GET
 	@Path("/{committeeId:[0-9]+}/register")
 	@JsonView({DetailedPositionCommitteeMemberView.class})
-	public Collection<RegisterMember> getPositionCommiteeRegisterMembers(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId) {
+	public Collection<RegisterMember> getPositionCommiteeRegisterMembers(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCommittee existingCommittee = em.find(PositionCommittee.class, committeeId);
 		if (existingCommittee == null) {
@@ -135,7 +136,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	@GET
 	@Path("/{committeeId:[0-9]+}")
 	@JsonView({DetailedPositionCommitteeView.class})
-	public PositionCommittee get(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId) {
+	public PositionCommittee get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCommittee existingCommittee = em.find(PositionCommittee.class, committeeId);
 		if (existingCommittee == null) {
@@ -173,7 +174,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	@GET
 	@Path("/{committeeId:[0-9]+}/member/{cmId:[0-9]+}")
 	@JsonView({DetailedPositionCommitteeMemberView.class})
-	public PositionCommitteeMember getPositionCommitteeMember(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId, @PathParam("cmId") Long cmId) {
+	public PositionCommitteeMember getPositionCommitteeMember(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId, @PathParam("cmId") Long cmId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCommittee existingCommittee = em.find(PositionCommittee.class, committeeId);
 		if (existingCommittee == null) {
@@ -223,7 +224,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	@PUT
 	@Path("/{committeeId:[0-9]+}")
 	@JsonView({DetailedPositionCommitteeView.class})
-	public PositionCommittee update(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId, PositionCommittee newCommittee) {
+	public PositionCommittee update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId, PositionCommittee newCommittee) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCommittee existingCommittee = em.find(PositionCommittee.class, committeeId);
 		if (existingCommittee == null) {
@@ -586,7 +587,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	@GET
 	@Path("/{committeeId:[0-9]+}/file")
 	@JsonView({SimpleFileHeaderView.class})
-	public Collection<PositionCommitteeFile> getFiles(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId) {
+	public Collection<PositionCommitteeFile> getFiles(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCommittee existingCommittee = em.find(PositionCommittee.class, committeeId);
 		if (existingCommittee == null) {
@@ -627,7 +628,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	@GET
 	@Path("/{committeeId:[0-9]+}/file/{fileId:[0-9]+}")
 	@JsonView({SimpleFileHeaderView.class})
-	public PositionCommitteeFile getFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId, @PathParam("fileId") Long fileId) {
+	public PositionCommitteeFile getFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId, @PathParam("fileId") Long fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCommittee existingCommittee = em.find(PositionCommittee.class, committeeId);
 		if (existingCommittee == null) {
@@ -675,7 +676,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/{committeeId:[0-9]+}/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
-	public Response getFileBody(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
+	public Response getFileBody(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCommittee existingCommittee = em.find(PositionCommittee.class, committeeId);
 		if (existingCommittee == null) {
@@ -733,7 +734,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	@Path("/{committeeId:[0-9]+}/file")
 	@Consumes("multipart/form-data")
 	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
-	public String createFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	public String createFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCommittee existingCommittee = em.find(PositionCommittee.class, committeeId);
 		if (existingCommittee == null) {
@@ -871,7 +872,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	@Path("/{committeeId:[0-9]+}/file/{fileId:[0-9]+}")
 	@Consumes("multipart/form-data")
 	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
-	public String updateFile(@QueryParam(TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
+	public String updateFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCommittee existingCommittee = em.find(PositionCommittee.class, committeeId);
 		if (existingCommittee == null) {
@@ -946,7 +947,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	@DELETE
 	@Path("/{committeeId:[0-9]+}/file/{fileId:[0-9]+}")
 	@JsonView({SimpleFileHeaderView.class})
-	public Response deleteFile(@HeaderParam(TOKEN_HEADER) String authToken, @PathParam("committeeId") Long committeeId, @PathParam("id") long positionId, @PathParam("fileId") Long fileId) {
+	public Response deleteFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("committeeId") Long committeeId, @PathParam("id") long positionId, @PathParam("fileId") Long fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCommittee existingCommittee = em.find(PositionCommittee.class, committeeId);
 		if (existingCommittee == null) {
