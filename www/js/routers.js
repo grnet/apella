@@ -69,7 +69,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			var userRegistration;
 			var userRegistrationView;
 			this.clear();
-			if (_.indexOf(App.allowedRoles, role) >= 0) {
+			if (_.indexOf(App.usernameRegistrationRoles, role) >= 0) {
 				userRegistration = new Models.User({
 					"roles": [
 						{
@@ -132,7 +132,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			_.extend(self, Backbone.Events);
 			_.bindAll(self, "setTitle", "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showUserView", "showInstitutionAssistantsView",
 				"showMinistryAssistantsView", "showPositionView", "showPositionsView", "showRegistersView", "showProfessorCommitteesView", "showProfessorEvaluationsView",
-				"showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "showCandidacyView", "showAdminUserSearchView", "showShibbolethAccountView", "start");
+				"showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "showCandidacyView", "showAdminUserSearchView", "start");
 
 			self.on("route", function (routefn) {
 				self.setTitle(routefn);
@@ -161,7 +161,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 		routes: {
 			"": "showHomeView",
-			"shibbolethAccount": "showShibbolethAccountView",
+			"completeAccount": "showIncompleteAccountView",
 			"account": "showAccountView",
 			"profile": "showProfileView",
 			"profile/:roleId": "showProfileView",
@@ -215,8 +215,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 			// Start Routing
 			Backbone.history.start();
-			if (App.loggedOnUser.isShibbolethRegistrationIncomplete()) {
-				self.navigate("shibbolethAccount", {
+			if (App.loggedOnUser.isAccountIncomplete()) {
+				self.navigate("completeAccount", {
 					trigger: true
 				});
 			}
@@ -301,14 +301,20 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			self.currentView = accountView;
 		},
 
-		showShibbolethAccountView: function () {
+		showIncompleteAccountView: function () {
 			var self = this;
 			var accountView;
 			self.clear();
-			accountView = new Views.ShibbolethAccountView({
+			accountView = new Views.AccountView({
 				model: App.loggedOnUser
 			});
-			this.refreshBreadcrumb([ $.i18n.prop('menu_shibolethAccount') ]);
+			// When sync completes user will have completed the account
+			self.listenToOnce(App.loggedOnUser, "sync:save", function () {
+				App.router.navigate("", {
+					trigger: true
+				});
+			});
+			self.refreshBreadcrumb([ $.i18n.prop('menu_shibolethAccount') ]);
 			$("#content").append(accountView.render().el);
 
 			self.currentView = accountView;
@@ -397,6 +403,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 							if (App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
 								roleView = new Views.AdminRoleEditView({
 									className: "row-fluid",
+									collection : collection,
 									model: collection.find(function (role) {
 										return role.isPrimary();
 									})

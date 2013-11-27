@@ -2,9 +2,9 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.ManagementService;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
-import gr.grnet.dep.service.util.ManagementService;
 
 import java.util.logging.Logger;
 

@@ -1,4 +1,4 @@
-package gr.grnet.dep.service.util;
+package gr.grnet.dep.service;
 
 import gr.grnet.dep.service.model.MailRecord;
 

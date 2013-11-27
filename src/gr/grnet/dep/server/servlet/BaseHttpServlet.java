@@ -1,9 +1,9 @@
 package gr.grnet.dep.server.servlet;
 
-import gr.grnet.dep.service.util.AuthenticationService;
+import gr.grnet.dep.service.AuthenticationService;
+import gr.grnet.dep.service.JiraService;
+import gr.grnet.dep.service.MailService;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
-import gr.grnet.dep.service.util.JiraService;
-import gr.grnet.dep.service.util.MailService;
 
 import java.io.IOException;
 import java.util.logging.Level;

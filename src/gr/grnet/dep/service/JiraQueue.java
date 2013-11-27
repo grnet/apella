@@ -1,4 +1,4 @@
-package gr.grnet.dep.service.util;
+package gr.grnet.dep.service;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

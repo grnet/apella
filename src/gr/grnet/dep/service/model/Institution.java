@@ -26,9 +26,8 @@ public class Institution {
 	@Enumerated(EnumType.STRING)
 	private InstitutionCategory category;
 
-	@NotNull
 	@Enumerated(EnumType.STRING)
-	private UserRegistrationType registrationType;
+	private AuthenticationType authenticationType;
 
 	public Long getId() {
 		return id;
@@ -54,12 +53,12 @@ public class Institution {
 		this.name = name;
 	}
 
-	public UserRegistrationType getRegistrationType() {
-		return registrationType;
+	public AuthenticationType getAuthenticationType() {
+		return authenticationType;
 	}
 
-	public void setRegistrationType(UserRegistrationType registrationType) {
-		this.registrationType = registrationType;
+	public void setAuthenticationType(AuthenticationType authenticationType) {
+		this.authenticationType = authenticationType;
 	}
 
 	public String getSchacHomeOrganization() {

@@ -195,7 +195,7 @@ define([ "jquery",
 		})(Backbone);
 
 		window.App = {
-			allowedRoles: [ "PROFESSOR_DOMESTIC", "PROFESSOR_FOREIGN", "CANDIDATE", "INSTITUTION_MANAGER" ],
+			usernameRegistrationRoles: ["PROFESSOR_FOREIGN", "CANDIDATE", "INSTITUTION_MANAGER" ],
 
 			blockUI: function () {
 				$.blockUI({

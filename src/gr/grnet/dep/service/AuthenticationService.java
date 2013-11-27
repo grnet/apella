@@ -1,8 +1,10 @@
-package gr.grnet.dep.service.util;
+package gr.grnet.dep.service;
 
 import gr.grnet.dep.service.exceptions.ServiceException;
+import gr.grnet.dep.service.model.AuthenticationType;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Institution;
+import gr.grnet.dep.service.model.InstitutionCategory;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.ProfessorDomesticData;
 import gr.grnet.dep.service.model.Role.RoleStatus;
@@ -10,7 +12,7 @@ import gr.grnet.dep.service.model.ShibbolethInformation;
 import gr.grnet.dep.service.model.Subject;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.UserStatus;
-import gr.grnet.dep.service.model.UserRegistrationType;
+import gr.grnet.dep.service.util.DEPConfigurationFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
@@ -71,99 +73,104 @@ public class AuthenticationService {
 		}
 	}
 
-	public User createProfessorDomesticAccount(ShibbolethInformation shibbolethInfo) {
-		User u = null;
+	public User findProfessorDomesticAccount(ShibbolethInformation shibbolethInfo) {
 		try {
-			u = (User) em.createQuery(
+			return (User) em.createQuery(
 				"select u from User u " +
 					"where u.shibbolethInfo.remoteUser = :remoteUser")
 				.setParameter("remoteUser", shibbolethInfo.getRemoteUser())
 				.getSingleResult();
 		} catch (NoResultException e) {
-			// Create User from Shibboleth Fields 
-			u = new User();
-			u.setRegistrationType(UserRegistrationType.SHIBBOLETH);
-
-			u.getBasicInfo().setFirstname(shibbolethInfo.getGivenName());
-			u.getBasicInfo().setLastname(shibbolethInfo.getSn());
-			u.getBasicInfo().setFathername("");
-
-			u.setRegistrationDate(new Date());
-
-			u.setStatus(UserStatus.ACTIVE);
-			u.setStatusDate(new Date());
-
-			// Add Primary Role
-			ProfessorDomestic pd = new ProfessorDomestic();
-			pd.setInstitution(findInstitutionBySchacHomeOrganization(shibbolethInfo.getSchacHomeOrganization()));
-			pd.setStatus(RoleStatus.UNAPPROVED);
-			pd.setStatusDate(new Date());
-			u.addRole(pd);
-
-			// Add Second Role : CANDIDATE
-			Candidate secondRole = new Candidate();
-			secondRole.setStatus(RoleStatus.UNAPPROVED);
-			secondRole.setStatusDate(new Date());
-			u.addRole(secondRole);
-
-			u = em.merge(u);
+			return null;
 		}
+	}
+
+	public User createProfessorDomesticAccount(ShibbolethInformation shibbolethInfo) {
+		// Create User from Shibboleth Fields 
+		User u = new User();
+		u.setAuthenticationType(AuthenticationType.SHIBBOLETH);
+
+		u.getBasicInfo().setFirstname(shibbolethInfo.getGivenName());
+		u.getBasicInfo().setLastname(shibbolethInfo.getSn());
+		u.getBasicInfo().setFathername("");
+
+		u.setCreationDate(new Date());
+
+		u.setStatus(UserStatus.ACTIVE);
+		u.setStatusDate(new Date());
+
+		// Add Primary Role
+		ProfessorDomestic pd = new ProfessorDomestic();
+		pd.setInstitution(findInstitutionBySchacHomeOrganization(shibbolethInfo.getSchacHomeOrganization()));
+		pd.setStatus(RoleStatus.UNAPPROVED);
+		pd.setStatusDate(new Date());
+		u.addRole(pd);
+
+		// Add Second Role : CANDIDATE
+		Candidate secondRole = new Candidate();
+		secondRole.setStatus(RoleStatus.UNAPPROVED);
+		secondRole.setStatusDate(new Date());
+		u.addRole(secondRole);
+
+		u = em.merge(u);
 
 		return u;
 	}
 
-	public User createProfessorDomesticAccount(ProfessorDomesticData data) {
-		User u;
-
+	public User findProfessorDomesticAccount(ProfessorDomesticData data) {
 		try {
-			u = (User) em.createQuery(
+			User u = (User) em.createQuery(
 				"select u from User u " +
 					"where u.contactInfo.email = :email")
 				.setParameter("email", data.getEmail())
 				.getSingleResult();
-
+			return u;
 		} catch (NoResultException e) {
-			// Create User from Data 
-			u = new User();
-			u.setRegistrationType(UserRegistrationType.INVITATION);
-
-			u.getBasicInfo().setFirstname(data.getFirstname());
-			u.getBasicInfo().setLastname(data.getLastname());
-			u.getBasicInfo().setFathername(data.getFathername());
-			u.getContactInfo().setEmail(data.getEmail());
-
-			u.setRegistrationDate(new Date());
-			u.setStatus(UserStatus.ACTIVE);
-			u.setStatusDate(new Date());
-
-			// Add Primary Role
-			ProfessorDomestic pd = new ProfessorDomestic();
-			pd.setInstitution(data.getDepartment().getSchool().getInstitution());
-			pd.setDepartment(data.getDepartment());
-			pd.setRank(data.getRank());
-			pd.setFek(data.getFek());
-			Subject fekSubject = new Subject();
-			fekSubject.setName(data.getFekSubject());
-			pd.setFekSubject(supplementSubject(fekSubject));
-
-			pd.setStatus(RoleStatus.UNAPPROVED);
-			pd.setStatusDate(new Date());
-			u.addRole(pd);
-
-			// Add Second Role : CANDIDATE
-			Candidate secondRole = new Candidate();
-			secondRole.setStatus(RoleStatus.UNAPPROVED);
-			secondRole.setStatusDate(new Date());
-			u.addRole(secondRole);
-
-			// Save to get ID
-			u = em.merge(u);
-			em.flush();
-
-			// Now Add permanentAuthToken
-			u.setPermanentAuthToken(generatePermanentAuthenticationToken(u.getId(), u.getContactInfo().getEmail()));
-			u = em.merge(u);
+			return null;
 		}
+	}
+
+	public User createProfessorDomesticAccount(ProfessorDomesticData data) {
+		// Create User from Data 
+		User u = new User();
+		u.setAuthenticationType(AuthenticationType.EMAIL);
+
+		u.getBasicInfo().setFirstname(data.getFirstname());
+		u.getBasicInfo().setLastname(data.getLastname());
+		u.getBasicInfo().setFathername(data.getFathername());
+		u.getContactInfo().setEmail(data.getEmail());
+
+		u.setCreationDate(new Date());
+		u.setStatus(UserStatus.ACTIVE);
+		u.setStatusDate(new Date());
+
+		// Add Primary Role
+		ProfessorDomestic pd = new ProfessorDomestic();
+		pd.setInstitution(data.getDepartment().getSchool().getInstitution());
+		pd.setDepartment(data.getDepartment());
+		pd.setRank(data.getRank());
+		pd.setFek(data.getFek());
+		Subject fekSubject = new Subject();
+		fekSubject.setName(data.getFekSubject());
+		pd.setFekSubject(supplementSubject(fekSubject));
+
+		pd.setStatus(RoleStatus.UNAPPROVED);
+		pd.setStatusDate(new Date());
+		u.addRole(pd);
+
+		// Add Second Role : CANDIDATE
+		Candidate secondRole = new Candidate();
+		secondRole.setStatus(RoleStatus.UNAPPROVED);
+		secondRole.setStatusDate(new Date());
+		u.addRole(secondRole);
+
+		// Save to get ID
+		u = em.merge(u);
+		em.flush();
+
+		// Now Add permanentAuthToken
+		u.setPermanentAuthToken(generatePermanentAuthenticationToken(u.getId(), u.getContactInfo().getEmail()));
+		u = em.merge(u);
 
 		return u;
 	}
@@ -205,7 +212,15 @@ public class AuthenticationService {
 			throw new ServiceException("wrong.home.organization");
 		}
 		// 2. Find/Create User
-		User u = createProfessorDomesticAccount(shibbolethInfo);
+		User u = findProfessorDomesticAccount(shibbolethInfo);
+		if (u == null && institution.getCategory().equals(InstitutionCategory.INSTITUTION)) {
+			// Do not create account for INSTITUTION
+			throw new ServiceException("email.login.required");
+		}
+		if (u == null && institution.getCategory().equals(InstitutionCategory.RESEARCH_CENTER)) {
+			// Create research account
+			u = createProfessorDomesticAccount(shibbolethInfo);
+		}
 		// Check Status
 		if (!u.getStatus().equals(UserStatus.ACTIVE)) {
 			throw new ServiceException("login.account.status." + u.getStatus().toString().toLowerCase());

@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.util;
 
+import gr.grnet.dep.service.MailService;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.InstitutionManager;
 

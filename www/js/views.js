@@ -202,7 +202,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.addTitle();
 
 			// Shibboleth Login
-			if (self.model.isShibbolethRegistrationIncomplete()) {
+			if (self.model.isAccountIncomplete()) {
 				return; // Do not add any menu-items
 			}
 
@@ -339,8 +339,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.$el.empty();
 			self.$el.append("<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\"> <i class=\"icon-user\"></i> " + displayname + "<span class=\"caret\"></span></a>");
 			self.$el.append("<ul class=\"dropdown-menu\">");
-			// Shibboleth Login
-			if (!self.model.isShibbolethRegistrationIncomplete()) {
+			// Incomplete Account
+			if (!self.model.isAccountIncomplete()) {
 				self.$el.find("ul").append("<li><a href=\"#account\">" + $.i18n.prop('menu_account') + "</a>");
 			}
 			// Add Logout
@@ -403,13 +403,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 		render: function (eventName) {
 			var self = this;
 			var tpl_data;
+
 			self.$el.empty();
 			self.addTitle();
 
-			tpl_data = _.extend({
-				registrationRoles: App.allowedRoles
-			}, self.model.toJSON());
-
+			tpl_data = self.model.toJSON();
 			self.$el.append(self.template(tpl_data));
 
 			self.$("#resetPasswordForm").hide();
@@ -914,6 +912,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 			self.$("div#departments-table_wrapper").hide();
 
+			self.select(self.$input.val());
 			// Return result
 			return self;
 		},
@@ -991,7 +990,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.$el.empty();
 			self.addTitle();
 			self.$el.append(this.template({
-				roles: App.allowedRoles
+				roles: App.usernameRegistrationRoles
 			}));
 			return this;
 		},
@@ -1048,10 +1047,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 			if (role.discriminator === "PROFESSOR_DOMESTIC") {
 				// Especially for PROFESSOR_DOMESTIC there
-				// is a demand to select
-				// institution first in case their institution supports
-				// Shibboleth
-				// Login
+				// is a demand to select institution first in case their institution supports Shibboleth Login
 				// Add institutions in selector:
 				App.institutions = App.institutions || new Models.Institutions();
 				App.institutions.fetch({
@@ -1082,11 +1078,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					}
 				});
 				// Set UI components
-				if (role.institution && (role.institution.registrationType === "REGISTRATION_FORM")) {
+				if (role.institution && (role.institution.authenticationType === "USERNAME")) {
 					self.$("#shibbolethLoginInstructions").hide();
 					self.$("form#institutionForm").hide();
 					self.$("form#userForm").show();
-				} else if (role.institution && (role.institution.registrationType === "SHIBBOLETH")) {
+				} else if (role.institution && (role.institution.authenticationType === "SHIBBOLETH")) {
 					self.$("#shibbolethLoginInstructions").show();
 					self.$("form#institutionForm").hide();
 					self.$("form#userForm").hide();
@@ -1573,6 +1569,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.$("a#status").addClass("disabled");
 			// Fields:
 			if (self.model.isNew()) {
+				// Creating a user (e.g. new Institution Assistant)
 				self.$("input[name=username]").removeAttr("disabled");
 				self.$("input[name=firstname]").removeAttr("disabled");
 				self.$("input[name=lastname]").removeAttr("disabled");
@@ -1581,7 +1578,39 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				self.$("input[name=lastnamelatin]").removeAttr("disabled");
 				self.$("input[name=fathernamelatin]").removeAttr("disabled");
 				self.$("input[name=identification]").removeAttr("disabled");
-			} else if (_.isEqual(self.model.get("status"), "UNAPPROVED")) {
+			} else if (self.model.get("authenticationType") !== 'EMAIL' && self.model.isAccountIncomplete()) {
+				// Incomplete Account created manually
+				self.$("input[name=username]").attr("disabled", true);
+				if (self.model.get("basicInfo").firstname) {
+					self.$("input[name=firstname]").attr("disabled", true); // Completed by helpdesk
+				} else {
+					self.$("input[name=firstname]").removeAttr("disabled");
+				}
+				if (self.model.get("basicInfo").lastname) {
+					self.$("input[name=lastname]").attr("disabled", true);  // Completed by helpdesk
+				} else {
+					self.$("input[name=lastname]").removeAttr("disabled");
+				}
+				if (self.model.get("basicInfo").fathername) {
+					self.$("input[name=fathername]").attr("disabled", true);  // Completed by helpdesk
+				} else {
+					self.$("input[name=fathername]").removeAttr("disabled");
+				}
+				self.$("input[name=firstnamelatin]").removeAttr("disabled");
+				self.$("input[name=lastnamelatin]").removeAttr("disabled");
+				self.$("input[name=fathernamelatin]").removeAttr("disabled");
+				self.$("input[name=identification]").removeAttr("disabled");
+			} else if (self.model.get("authenticationType") !== 'SHIBBOLETH' && self.model.isAccountIncomplete()) {
+				// Incomplete Account created by Shibboleth
+				self.$("input[name=username]").removeAttr("disabled");
+				self.$("input[name=firstname]").removeAttr("disabled");
+				self.$("input[name=lastname]").removeAttr("disabled");
+				self.$("input[name=fathername]").removeAttr("disabled");
+				self.$("input[name=firstnamelatin]").removeAttr("disabled");
+				self.$("input[name=lastnamelatin]").removeAttr("disabled");
+				self.$("input[name=fathernamelatin]").removeAttr("disabled");
+				self.$("input[name=identification]").removeAttr("disabled");
+			} else if (self.model.get("authenticationType") === 'USERNAME' && self.model.get("status") === "UNAPPROVED") {
 				self.$("input[name=username]").attr("disabled", true);
 				self.$("input[name=firstname]").removeAttr("disabled");
 				self.$("input[name=lastname]").removeAttr("disabled");
@@ -1591,6 +1620,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				self.$("input[name=fathernamelatin]").removeAttr("disabled");
 				self.$("input[name=identification]").removeAttr("disabled");
 			} else {
+				// Nothing is missing and account is ACTIVE
 				self.$("input[name=username]").attr("disabled", true);
 				self.$("input[name=firstname]").attr("disabled", true);
 				self.$("input[name=lastname]").attr("disabled", true);
@@ -1876,19 +1906,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 	});
 
 	/***************************************************************************
-	 * ShibbolethAccountView ***************************************************
+	 * IncompleteAccountView ***************************************************
 	 **************************************************************************/
-	Views.ShibbolethAccountView = Views.AccountView.extend({
+	Views.IncompleteAccountView = Views.AccountView.extend({
 		initialize: function (options) {
 			this._super('initialize', [ options ]);
-
-			// When sync completes user will have completed with shibboleth
-			// account
-			this.listenToOnce(App.loggedOnUser, "sync:save", function () {
-				App.router.navigate("", {
-					trigger: true
-				});
-			});
 		},
 
 		applyRules: function () {
@@ -2388,26 +2410,33 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				case "PROFESSOR_DOMESTIC":
 					switch (field) {
 						case "department":
-							return _.isEqual(self.model.get("status"), "UNAPPROVED");
+							return _.isEqual(self.model.get("status"), "UNAPPROVED") && !(_.isEqual(self.model.get("user").authenticationType,
+								"EMAIL") && !_.isUndefined(self.model.get("department").id)); // Not Completed from Manual Insertion
+						case "rank":
+							return _.isEqual(self.model.get("status"), "UNAPPROVED") && !(_.isEqual(self.model.get("user").authenticationType,
+								"EMAIL") && !_.isUndefined(self.model.get("rank").id)); // Not Completed from Manual Insertion
+						case "fek":
+							return _.isEqual(self.model.get("status"), "UNAPPROVED") && !(_.isEqual(self.model.get("user").authenticationType,
+								"EMAIL") && !_.isUndefined(self.model.get("fek"))); // Not Completed from Manual Insertion
+						case "fekCheckbox":
+							return _.isEqual(self.model.get("status"), "UNAPPROVED") && !(_.isEqual(self.model.get("user").authenticationType,
+								"EMAIL") && !_.isUndefined(self.model.get("fekSubject"))); // Not Completed from Manual Insertion
+						case "fekSubject":
+							return _.isEqual(self.model.get("status"), "UNAPPROVED") && !(_.isEqual(self.model.get("user").authenticationType,
+								"EMAIL") && !_.isUndefined(self.model.get("fekSubject"))) && // Not Completed from Manual
+								(_.isObject(self.model.get("fekSubject")) || (_.isUndefined(self.model.get("fekSubject")) && _.isUndefined(self.model.get("subject"))));  // subject is not defined
+						case "subject":
+							return _.isEqual(self.model.get("status"), "UNAPPROVED") && !(_.isEqual(self.model.get("user").authenticationType,
+								"EMAIL") && !_.isUndefined(self.model.get("fekSubject"))) && !self.isEditable("fekSubject"); // fekSubject is not defined
 						case "hasOnlineProfile":
 							return _.isEqual(self.model.get("status"), "UNAPPROVED");
 						case "profileURL":
-							return _.isEqual(self.model.get("status"), "UNAPPROVED") && self.model.get("hasOnlineProfile");
+							return _.isEqual(self.model.get("status"), "UNAPPROVED") &&
+								self.model.get("hasOnlineProfile"); // has online profile is true
 						case "profileFile":
-							return _.isEqual(self.model.get("status"), "UNAPPROVED");
-						case "rank":
-							return _.isEqual(self.model.get("status"), "UNAPPROVED");
-						case "fek":
 							return _.isEqual(self.model.get("status"), "UNAPPROVED");
 						case "fekFile":
 							return _.isEqual(self.model.get("status"), "UNAPPROVED");
-						case "fekCheckbox":
-							return _.isEqual(self.model.get("status"), "UNAPPROVED");
-						case "fekSubject":
-							return _.isEqual(self.model.get("status"),
-								"UNAPPROVED") && (_.isObject(self.model.get("fekSubject")) || (_.isUndefined(self.model.get("fekSubject")) && _.isUndefined(self.model.get("subject"))));
-						case "subject":
-							return _.isEqual(self.model.get("status"), "UNAPPROVED") && !self.isEditable("fekSubject");
 						default:
 							break;
 					}
@@ -2427,6 +2456,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						case "rank":
 							return _.isEqual(self.model.get("status"), "UNAPPROVED");
 						case "subject":
+							return _.isEqual(self.model.get("status"), "UNAPPROVED");
+						case "speakingGreek":
 							return _.isEqual(self.model.get("status"), "UNAPPROVED");
 						default:
 							break;
@@ -2773,8 +2804,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							},
 							subject: {
 								"required": "input[name=fekCheckbox]:checked"
-							},
-							fekFile: "required"
+							}
 						},
 						messages: {
 							department: $.i18n.prop('validation_department'),
@@ -2785,8 +2815,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							rank: $.i18n.prop('validation_rank'),
 							subject: $.i18n.prop('validation_subject'),
 							fek: $.i18n.prop('validation_required'),
-							fekSubject: $.i18n.prop('validation_fekSubject'),
-							fekFile: $.i18n.prop('validation_file')
+							fekSubject: $.i18n.prop('validation_fekSubject')
 						}
 					});
 					// On Rank change need to update departmentSelector
@@ -2938,14 +2967,17 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							},
 							country: "required",
 							rank: "required",
-							subject: "required"
+							subject: "required",
+							speakingGreek : "required"
+
 						},
 						messages: {
 							institution: $.i18n.prop('validation_institution'),
 							profileURL: $.i18n.prop('validation_profileURL'),
 							country: $.i18n.prop('validation_country'),
 							rank: $.i18n.prop('validation_rank'),
-							subject: $.i18n.prop('validation_subject')
+							subject: $.i18n.prop('validation_subject'),
+							speakingGreek: $.i18n.prop('validation_speakingGreek')
 						}
 					});
 					// OnlineProfile XOR ProfileFile
@@ -3236,6 +3268,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						"id": self.model.has("subject") ? self.model.get("subject").id : undefined,
 						"name": self.$('form textarea[name=subject]').val()
 					};
+					values.speakingGreek = self.$('form select[name=speakingGreek]').val();
 					break;
 				case "INSTITUTION_MANAGER":
 					values.institution = {
@@ -3448,6 +3481,19 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							break;
 					}
 					break;
+				case "PROFESSOR_DOMESTIC":
+					switch (field) {
+						// All editable, these two fields need special treatment since they are mutually exclusive
+						case "fekSubject":
+							return (_.isObject(self.model.get("fekSubject")) || (_.isUndefined(self.model.get("fekSubject")) && _.isUndefined(self.model.get("subject"))));  // subject is not defined
+						case "subject":
+							return (!_.isUndefined(self.model.get("fekSubject"))) && !self.isEditable("fekSubject"); // fekSubject is not defined
+						default:
+							break;
+					}
+					return true;
+				case "PROFESSOR_FOREIGN":
+					return true;
 				case "INSTITUTION_ASSISTANT":
 					return false;
 				case "MINISTRY_ASSISTANT":
@@ -3470,7 +3516,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			if (self.isEditable("status")) {
 				self.$("a#status").removeClass("disabled");
 			}
-			self.$("a#save").hide();
 			return self;
 		}
 	});
@@ -4000,7 +4045,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 		createInstitutionAssistant: function (event) {
 			var institutions = App.loggedOnUser.getAssociatedInstitutions();
 			var user = new Models.User({
-				"registrationType": "REGISTRATION_FORM",
+				"authenticationType": "USERNAME",
 				"roles": [
 					{
 						"discriminator": "INSTITUTION_ASSISTANT",
@@ -4097,7 +4142,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		createMinistryAssistant: function (event) {
 			var user = new Models.User({
-				"registrationType": "REGISTRATION_FORM",
+				"authenticationType": "USERNAME",
 				"roles": [
 					{
 						"discriminator": "MINISTRY_ASSISTANT"

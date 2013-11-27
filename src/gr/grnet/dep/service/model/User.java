@@ -49,10 +49,10 @@ public class User implements Serializable {
 	}
 
 	public static interface DetailedUserView {
-	};
+	}
 
 	public static interface DetailedWithPasswordUserView {
-	};
+	}
 
 	@Id
 	@GeneratedValue
@@ -81,11 +81,9 @@ public class User implements Serializable {
 	// Registration Fields
 
 	@Enumerated(EnumType.STRING)
-	private UserRegistrationType registrationType;
+	private AuthenticationType authenticationType;
 
-	private Date registrationDate;
-
-	private Long verificationNumber;
+	private Date creationDate;
 
 	// Authentication Fields
 
@@ -95,6 +93,8 @@ public class User implements Serializable {
 	private String password;
 
 	private String passwordSalt;
+
+	private Long verificationNumber;
 
 	@Valid
 	@Embedded
@@ -153,12 +153,12 @@ public class User implements Serializable {
 		}
 	}
 
-	public UserRegistrationType getRegistrationType() {
-		return registrationType;
+	public AuthenticationType getAuthenticationType() {
+		return authenticationType;
 	}
 
-	public void setRegistrationType(UserRegistrationType registrationType) {
-		this.registrationType = registrationType;
+	public void setAuthenticationType(AuthenticationType authenticationType) {
+		this.authenticationType = authenticationType;
 	}
 
 	public UserStatus getStatus() {
@@ -216,6 +216,15 @@ public class User implements Serializable {
 		}
 	}
 
+	@JsonView({DetailedUserView.class})
+	public Set<Role> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(Set<Role> roles) {
+		this.roles = roles;
+	}
+
 	@JsonView({DetailedWithPasswordUserView.class})
 	public String getPassword() {
 		return password;
@@ -235,23 +244,18 @@ public class User implements Serializable {
 		this.passwordSalt = passwordSalt;
 	}
 
-	@JsonView({DetailedUserView.class})
-	public Set<Role> getRoles() {
-		return roles;
+	@XmlTransient
+	@JsonIgnore
+	public Date creationDate() {
+		return creationDate;
 	}
 
-	public void setRoles(Set<Role> roles) {
-		this.roles = roles;
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
 	}
 
-	public Date getRegistrationDate() {
-		return registrationDate;
-	}
-
-	public void setRegistrationDate(Date registrationDate) {
-		this.registrationDate = registrationDate;
-	}
-
+	@XmlTransient
+	@JsonIgnore
 	public Long getVerificationNumber() {
 		return verificationNumber;
 	}

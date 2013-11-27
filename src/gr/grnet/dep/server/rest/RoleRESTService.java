@@ -2,6 +2,7 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.model.AuthenticationType;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.InstitutionManager;
@@ -14,7 +15,6 @@ import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
-import gr.grnet.dep.service.model.UserRegistrationType;
 import gr.grnet.dep.service.model.file.CandidateFile;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
@@ -412,6 +412,16 @@ public class RoleRESTService extends RESTService {
 					ProfessorDomestic professorDomestic = (ProfessorDomestic) existingRole;
 					professorDomestic.setSubject(supplementSubject(((ProfessorDomestic) role).getSubject()));
 					professorDomestic.setFekSubject(supplementSubject(((ProfessorDomestic) role).getFekSubject()));
+
+					// Activate if !misingRequiredFields and is not authenticated by username (needs helpdesk approval)
+					if (existingRole.getStatus().equals(RoleStatus.UNAPPROVED) &&
+						!existingRole.getUser().getAuthenticationType().equals(AuthenticationType.USERNAME) &&
+						!existingRole.isMissingRequiredFields()) {
+						// At this point all fields are filled, 
+						// so we activate the Role 
+						Role.updateStatus(professorDomestic, RoleStatus.ACTIVE);
+					}
+
 					break;
 				case PROFESSOR_FOREIGN:
 					ProfessorForeign professorForeign = (ProfessorForeign) existingRole;
@@ -419,15 +429,6 @@ public class RoleRESTService extends RESTService {
 					break;
 				default:
 					break;
-			}
-			// Activate if !misingRequiredFields and is registered by SHIBBOLETH
-			if (existingRole.getStatus().equals(RoleStatus.UNAPPROVED) &&
-				existingRole.getUser().getRegistrationType().equals(UserRegistrationType.SHIBBOLETH) &&
-				!existingRole.isMissingRequiredFields()) {
-
-				// At this point all fields are filled, 
-				// so we activate the Role (this is the primary, only primary roles have Shibboleth)
-				Role.updateStatus(existingRole, RoleStatus.ACTIVE);
 			}
 
 			// Check open candidacies

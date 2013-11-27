@@ -2,7 +2,9 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.AuthenticationService;
 import gr.grnet.dep.service.exceptions.ServiceException;
+import gr.grnet.dep.service.model.AuthenticationType;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.InstitutionManager;
@@ -14,8 +16,6 @@ import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.DetailedUserView;
 import gr.grnet.dep.service.model.User.UserStatus;
-import gr.grnet.dep.service.model.UserRegistrationType;
-import gr.grnet.dep.service.util.AuthenticationService;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -247,13 +247,14 @@ public class UserRESTService extends RESTService {
 			firstRole.setStatus(RoleStatus.UNAPPROVED);
 			firstRole.setStatusDate(new Date());
 
-			newUser.setRegistrationType(UserRegistrationType.REGISTRATION_FORM);
-			newUser.setRegistrationDate(new Date());
+			newUser.setAuthenticationType(AuthenticationType.USERNAME);
 			newUser.setPasswordSalt(authenticationService.generatePasswordSalt());
 			newUser.setPassword(authenticationService.encodePassword(newUser.getPassword(), newUser.getPasswordSalt()));
+			newUser.setVerificationNumber(generateVerificationNumber());
+
 			newUser.setStatus(UserStatus.UNVERIFIED);
 			newUser.setStatusDate(new Date());
-			newUser.setVerificationNumber(generateVerificationNumber());
+
 			newUser.addRole(firstRole);
 
 			User loggedOn = null;
@@ -494,7 +495,7 @@ public class UserRESTService extends RESTService {
 				.setParameter("email", email)
 				.getSingleResult();
 			// Validate:
-			if (u.getRegistrationType().equals(UserRegistrationType.SHIBBOLETH)) {
+			if (!u.getAuthenticationType().equals(AuthenticationType.USERNAME)) {
 				throw new RestException(Status.NOT_FOUND, "login.wrong.registration.type");
 			}
 			// Reset password
@@ -533,7 +534,7 @@ public class UserRESTService extends RESTService {
 				.getSingleResult();
 
 			// Validate
-			if (u.getRegistrationType().equals(UserRegistrationType.SHIBBOLETH)) {
+			if (!u.getAuthenticationType().equals(AuthenticationType.USERNAME)) {
 				throw new RestException(Status.NOT_FOUND, "login.wrong.registration.type");
 			}
 			switch (u.getStatus()) {
@@ -572,7 +573,7 @@ public class UserRESTService extends RESTService {
 				.setParameter("username", user.getUsername())
 				.getSingleResult();
 			// Validate
-			if (u.getRegistrationType().equals(UserRegistrationType.SHIBBOLETH)) {
+			if (!u.getAuthenticationType().equals(AuthenticationType.USERNAME)) {
 				throw new RestException(Status.NOT_FOUND, "login.wrong.registration.type");
 			}
 			switch (u.getStatus()) {

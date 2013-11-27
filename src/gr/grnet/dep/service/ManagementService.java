@@ -1,7 +1,8 @@
-package gr.grnet.dep.service.util;
+package gr.grnet.dep.service;
 
 import gr.grnet.dep.service.model.ProfessorDomesticData;
 import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.util.DEPConfigurationFactory;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -47,7 +48,10 @@ public class ManagementService {
 			.getResultList();
 
 		for (ProfessorDomesticData data : pdData) {
-			User u = authenticationService.createProfessorDomesticAccount(data);
+			User u = authenticationService.findProfessorDomesticAccount(data);
+			if (u == null) {
+				u = authenticationService.createProfessorDomesticAccount(data);
+			}
 			logger.info("CREATED PROFESSOR DOMESTIC: " + u.getId() + " " + u.getPrimaryRole() + " " + u.getRoles().size());
 		}
 	}

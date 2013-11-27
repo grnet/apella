@@ -16,7 +16,7 @@ define([
 			"id": undefined,
 			"username": undefined,
 			"identification": undefined,
-			"registrationType": undefined,
+			"authenticationType": undefined,
 			"missingRequiredFields": undefined,
 			"basicInfo": {
 				"firstname": undefined,
@@ -29,12 +29,13 @@ define([
 				"fathername": undefined
 			},
 			"contactInfo": {
-				"email": "",
-				"mobile": "",
-				"phone": ""
+				"email": undefined,
+				"mobile": undefined,
+				"phone": undefined
 			},
 			"shibbolethInfo": {},
-			"roles": []
+			"roles": [],
+			primaryRole : undefined
 		},
 
 		parse: function (resp, options) {
@@ -53,9 +54,9 @@ define([
 			return resp;
 		},
 
-		isShibbolethRegistrationIncomplete: function () {
+		isAccountIncomplete: function () {
 			var self = this;
-			return _.isEqual(self.get("registrationType"), "SHIBBOLETH") && self.get("missingRequiredFields");
+			return self.get("primaryRole") !== "ADMINISTRATOR" && self.get("missingRequiredFields");
 		},
 
 		getDisplayName: function () {
@@ -662,8 +663,7 @@ define([
 			"statusDate": undefined,
 			"user": undefined,
 			// Specific Fields
-			"verificationAuthority": undefined,
-			"verificationAuthorityName": undefined,
+			"acceptedTerms" : undefined,
 			"institution": undefined,
 			"department": {
 				"id": undefined,
@@ -675,16 +675,21 @@ define([
 						id: undefined,
 						name: undefined,
 						category: undefined,
-						registrationType: undefined
+						authenticationType: undefined
 					}
 				}
 			},
 			"hasOnlineProfile": undefined,
 			"profileURL": undefined,
-			"rank": undefined,
-			"subject": undefined,
+			"rank": {
+				"id": undefined
+			},
 			"fek": undefined,
 			"fekSubject": undefined,
+			"subject": undefined,
+			"speakingGreek" : undefined,
+			"verificationAuthority": undefined,
+			"verificationAuthorityName": undefined,
 			"manager": undefined,
 			"ministry": undefined,
 			"alternateBasicInfo": {},
@@ -826,7 +831,12 @@ define([
 			return "/dep/rest/role" + (this.user ? "?user=" + this.user : "");
 		},
 		comparator: function (role) {
-			return _.indexOf(App.allowedRoles, role.get('discriminator'), false);
+			return _.indexOf([
+				"PROFESSOR_DOMESTIC",
+				"PROFESSOR_FOREIGN",
+				"INSTITUTION_MANAGER",
+				"CANDIDATE"
+			], role.get('discriminator'), false);
 		}
 	});
 
@@ -870,7 +880,7 @@ define([
 			"id": undefined,
 			"name": undefined,
 			category: undefined,
-			registrationType: undefined
+			authenticationType: undefined
 		}
 	});
 
@@ -891,7 +901,7 @@ define([
 				id: undefined,
 				name: undefined,
 				category: undefined,
-				registrationType: undefined
+				authenticationType: undefined
 			}
 		},
 		getDescription: function () {
@@ -919,7 +929,7 @@ define([
 					id: undefined,
 					name: undefined,
 					category: undefined,
-					registrationType: undefined
+					authenticationType: undefined
 				}
 			}
 		},
@@ -1010,7 +1020,7 @@ define([
 				committee: {
 					id: undefined,
 					committeeMeetingDate: undefined,
-					candidacyEvalutionsDueDate : undefined
+					candidacyEvalutionsDueDate: undefined
 				},
 				evaluation: {
 					id: undefined
@@ -1183,7 +1193,7 @@ define([
 				id: undefined
 			},
 			committeeMeetingDate: undefined,
-			candidacyEvalutionsDueDate : undefined,
+			candidacyEvalutionsDueDate: undefined,
 			members: [],
 			canUpdateMembers: undefined
 		}

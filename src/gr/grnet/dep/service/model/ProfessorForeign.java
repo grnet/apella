@@ -34,6 +34,8 @@ public class ProfessorForeign extends Professor {
 	@ManyToOne(cascade = CascadeType.ALL)
 	private Subject subject;
 
+	private Boolean speakingGreek;
+
 	public ProfessorForeign() {
 		super();
 		setDiscriminator(RoleDiscriminator.PROFESSOR_FOREIGN);
@@ -71,6 +73,14 @@ public class ProfessorForeign extends Professor {
 		this.subject = subject;
 	}
 
+	public Boolean getSpeakingGreek() {
+		return speakingGreek;
+	}
+
+	public void setSpeakingGreek(Boolean speakingGreek) {
+		this.speakingGreek = speakingGreek;
+	}
+
 	@Override
 	public Role copyFrom(Role otherRole) {
 		super.copyFrom(otherRole);
@@ -78,6 +88,7 @@ public class ProfessorForeign extends Professor {
 		setCountry(pf.getCountry());
 		setInstitution(pf.getInstitution());
 		setRank(pf.getRank());
+		setSpeakingGreek(pf.getSpeakingGreek());
 		return this;
 	}
 
@@ -101,6 +112,9 @@ public class ProfessorForeign extends Professor {
 			return true;
 		}
 		if (this.subject == null) {
+			return true;
+		}
+		if (this.speakingGreek == null) {
 			return true;
 		}
 		return false;

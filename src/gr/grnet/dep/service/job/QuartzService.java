@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.job;
 
+import gr.grnet.dep.service.MailService;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
@@ -9,7 +10,6 @@ import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.system.Notification;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 import gr.grnet.dep.service.util.DateUtil;
-import gr.grnet.dep.service.util.MailService;
 
 import java.io.File;
 import java.io.FileNotFoundException;

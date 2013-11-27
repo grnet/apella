@@ -1,6 +1,7 @@
-package gr.grnet.dep.service.util;
+package gr.grnet.dep.service;
 
 import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.util.DEPConfigurationFactory;
 
 import java.util.Locale;
 import java.util.Map;
