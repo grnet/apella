@@ -679,6 +679,7 @@ define([
 					}
 				}
 			},
+			"hasAcceptedTerms" : undefined,
 			"hasOnlineProfile": undefined,
 			"profileURL": undefined,
 			"rank": {

@@ -82,6 +82,13 @@
 					<textarea class="input-xlarge" name="subject"><% if (!_.isUndefined(subject)) { %><%= subject.name %><% } %></textarea>
 				</div>
     		</div>
+			<div class="control-group">
+				<label class="control-label" for="hasAcceptedTerms"><%= $.i18n.prop('IAcceptTheTerms') %> :</label>
+				<div class="controls">
+					<input type="checkbox" name="hasAcceptedTerms" value="true" <%= hasAcceptedTerms? "checked" : "" %> />
+					<span class="help-block"><%= $.i18n.prop('ApellaTerms') %></span>
+				</div>
+			</div>
 			<div class="form-actions">
 				<a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
 				<span class="help-block"><%= $.i18n.prop('SaveInstructions') %></span>
@@ -163,6 +170,14 @@
 						<option	<%= (speakingGreek === true )? 'selected' : undefined %> value='true'><%= $.i18n.prop('ISpeakGreek') %></option>
 						<option	<%= (speakingGreek === false)? 'selected' : undefined %> value='false'><%= $.i18n.prop('IDoNotSpeakGreek') %></option>
 					</select>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="hasAcceptedTerms"><%= $.i18n.prop('IAcceptTheTerms') %> :</label>
+
+				<div class="controls">
+					<input type="checkbox" name="hasAcceptedTerms" value="true" <%= hasAcceptedTerms? "checked" : "" %> />
+					<span class="help-block"><%= $.i18n.prop('ApellaTerms') %></span>
 				</div>
 			</div>
 			<div class="form-actions">

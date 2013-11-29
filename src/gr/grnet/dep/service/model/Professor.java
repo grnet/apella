@@ -1,6 +1,7 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.file.ProfessorFile;
+import gr.grnet.dep.service.util.CompareUtil;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -36,12 +37,22 @@ public abstract class Professor extends Role {
 
 	public Boolean hasOnlineProfile = true;
 
+	public Boolean hasAcceptedTerms = true;
+
 	public boolean getHasOnlineProfile() {
 		return hasOnlineProfile;
 	}
 
 	public void setHasOnlineProfile(boolean hasOnlineProfile) {
 		this.hasOnlineProfile = hasOnlineProfile;
+	}
+
+	public Boolean getHasAcceptedTerms() {
+		return hasAcceptedTerms;
+	}
+
+	public void setHasAcceptedTerms(Boolean hasAcceptedTerms) {
+		this.hasAcceptedTerms = hasAcceptedTerms;
 	}
 
 	public String getProfileURL() {
@@ -100,6 +111,7 @@ public abstract class Professor extends Role {
 		Professor p = (Professor) otherRole;
 		setHasOnlineProfile(p.getHasOnlineProfile());
 		setProfileURL(p.getProfileURL());
+		setHasAcceptedTerms(p.getHasAcceptedTerms());
 		return this;
 	}
 
@@ -109,6 +121,15 @@ public abstract class Professor extends Role {
 			return false;
 		}
 		Professor other = (Professor) role;
+		if (!CompareUtil.equalsIgnoreNull(this.hasOnlineProfile, other.getHasOnlineProfile())) {
+			return false;
+		}
+		if (!CompareUtil.equalsIgnoreNull(this.profileURL, other.getProfileURL())) {
+			return false;
+		}
+		if (!CompareUtil.equalsIgnoreNull(this.hasAcceptedTerms, other.getHasAcceptedTerms())) {
+			return false;
+		}
 		return true;
 	}
 
@@ -116,6 +137,29 @@ public abstract class Professor extends Role {
 	@XmlTransient
 	@JsonIgnore
 	public boolean isMissingRequiredFields() {
+		if (this.hasOnlineProfile == null) {
+			return true;
+		}
+		if (this.hasOnlineProfile && this.profileURL == null) {
+			return true;
+		}
+		if (!this.hasOnlineProfile) {
+			boolean hasProfileFile = false;
+			for (ProfessorFile file : this.getFiles()) {
+				switch (file.getType()) {
+					case PROFILE:
+						hasProfileFile = true;
+						break;
+					default:
+				}
+			}
+			if (!hasProfileFile) {
+				return true;
+			}
+		}
+		if (this.hasAcceptedTerms == null) {
+			return true;
+		}
 		return false;
 	}
 

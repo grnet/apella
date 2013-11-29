@@ -394,6 +394,9 @@ public class RoleRESTService extends RESTService {
 				if (missingProfile) {
 					throw new RestException(Status.CONFLICT, "professor.missing.profile");
 				}
+				if (!newProfessorDomestic.getHasAcceptedTerms()) {
+					throw new RestException(Status.CONFLICT, "professor.has.not.accepted.terms");
+				}
 				break;
 			case PROFESSOR_FOREIGN:
 				ProfessorForeign newProfessorForeign = (ProfessorForeign) role;
@@ -402,6 +405,9 @@ public class RoleRESTService extends RESTService {
 				missingProfile = missingProfile && FileHeader.filter(existingProfessorForeign.getFiles(), FileType.PROFILE).isEmpty();
 				if (missingProfile) {
 					throw new RestException(Status.CONFLICT, "professor.missing.profile");
+				}
+				if (!newProfessorForeign.getHasAcceptedTerms()) {
+					throw new RestException(Status.CONFLICT, "professor.has.not.accepted.terms");
 				}
 				break;
 			default:

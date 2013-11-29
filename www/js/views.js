@@ -2394,6 +2394,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							return _.isEqual(self.model.get("status"), "UNAPPROVED");
 						case "fekFile":
 							return _.isEqual(self.model.get("status"), "UNAPPROVED");
+						case "hasAcceptedTerms":
+							return _.isEqual(self.model.get("status"), "UNAPPROVED");
 						default:
 							break;
 					}
@@ -2415,6 +2417,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						case "subject":
 							return _.isEqual(self.model.get("status"), "UNAPPROVED");
 						case "speakingGreek":
+							return _.isEqual(self.model.get("status"), "UNAPPROVED");
+						case "hasAcceptedTerms":
 							return _.isEqual(self.model.get("status"), "UNAPPROVED");
 						default:
 							break;
@@ -2761,7 +2765,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							},
 							subject: {
 								"required": "input[name=fekCheckbox]:checked"
-							}
+							},
+							"hasAcceptedTerms" : "required"
 						},
 						messages: {
 							department: $.i18n.prop('validation_department'),
@@ -2772,7 +2777,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							rank: $.i18n.prop('validation_rank'),
 							subject: $.i18n.prop('validation_subject'),
 							fek: $.i18n.prop('validation_required'),
-							fekSubject: $.i18n.prop('validation_fekSubject')
+							fekSubject: $.i18n.prop('validation_fekSubject'),
+							hasAcceptedTerms: $.i18n.prop('validation_hasAcceptedTerms')
 						}
 					});
 					// On Rank change need to update departmentSelector
@@ -2925,7 +2931,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							country: "required",
 							rank: "required",
 							subject: "required",
-							speakingGreek: "required"
+							speakingGreek: "required",
+							hasAcceptedTerms: "required"
 
 						},
 						messages: {
@@ -2934,7 +2941,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							country: $.i18n.prop('validation_country'),
 							rank: $.i18n.prop('validation_rank'),
 							subject: $.i18n.prop('validation_subject'),
-							speakingGreek: $.i18n.prop('validation_speakingGreek')
+							speakingGreek: $.i18n.prop('validation_speakingGreek'),
+							hasAcceptedTerms: $.i18n.prop('validation_hasAcceptedTerms')
 						}
 					});
 					// OnlineProfile XOR ProfileFile
@@ -3232,6 +3240,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						};
 						values.fekSubject = undefined;
 					}
+					values.hasAcceptedTerms = self.$('form input[name=hasAcceptedTerms]').is(':checked');
 					break;
 				case "PROFESSOR_FOREIGN":
 					values.institution = self.$('form input[name=institution]').val();
@@ -3248,6 +3257,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						"name": self.$('form textarea[name=subject]').val()
 					};
 					values.speakingGreek = self.$('form select[name=speakingGreek]').val();
+					values.hasAcceptedTerms = self.$('form input[name=hasAcceptedTerms]').is(':checked');
 					break;
 				case "INSTITUTION_MANAGER":
 					values.institution = {
