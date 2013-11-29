@@ -363,10 +363,13 @@ public class RoleRESTService extends RESTService {
 		if (existingRole == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.role.id");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !existingRole.getUser().getId().equals(loggedOn.getId())) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!existingRole.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!existingRole.getStatus().equals(RoleStatus.UNAPPROVED) && !existingRole.compareCriticalFields(role)) {
+		if (!existingRole.getStatus().equals(RoleStatus.UNAPPROVED) &&
+			!existingRole.compareCriticalFields(role) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.CONFLICT, "cannot.change.critical.fields");
 		}
 		if (updateCandidacies == null) {
@@ -414,7 +417,8 @@ public class RoleRESTService extends RESTService {
 					professorDomestic.setFekSubject(supplementSubject(((ProfessorDomestic) role).getFekSubject()));
 
 					// Activate if !misingRequiredFields and is not authenticated by username (needs helpdesk approval)
-					if (existingRole.getStatus().equals(RoleStatus.UNAPPROVED) &&
+					if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+						existingRole.getStatus().equals(RoleStatus.UNAPPROVED) &&
 						!existingRole.getUser().getAuthenticationType().equals(AuthenticationType.USERNAME) &&
 						!existingRole.isMissingRequiredFields()) {
 						// At this point all fields are filled, 

@@ -24,6 +24,9 @@ public class ProfessorDomesticData implements Serializable {
 	private String fathername;
 
 	@ManyToOne
+	private Institution institution;
+
+	@ManyToOne
 	private Department department;
 
 	@ManyToOne
@@ -63,6 +66,14 @@ public class ProfessorDomesticData implements Serializable {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public Institution getInstitution() {
+		return institution;
+	}
+
+	public void setInstitution(Institution institution) {
+		this.institution = institution;
 	}
 
 	public Department getDepartment() {

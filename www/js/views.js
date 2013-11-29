@@ -2968,7 +2968,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							country: "required",
 							rank: "required",
 							subject: "required",
-							speakingGreek : "required"
+							speakingGreek: "required"
 
 						},
 						messages: {
@@ -3225,6 +3225,28 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var candidate;
 			var openCandidacies;
 			var values = {};
+
+			function doSave(values, updateCandidacies) {
+				self.model.save(values, {
+					url: self.model.url() + (updateCandidacies ? "?updateCandidacies=true" : ""),
+					wait: true,
+					success: function (model, resp) {
+						var popup = new Views.PopupView({
+							type: "success",
+							message: $.i18n.prop("Success")
+						});
+						popup.show();
+					},
+					error: function (model, resp, options) {
+						var popup = new Views.PopupView({
+							type: "error",
+							message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+						});
+						popup.show();
+					}
+				});
+			}
+
 			// Read Input
 			switch (self.model.get("discriminator")) {
 				case "CANDIDATE":
@@ -3306,13 +3328,15 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				default:
 					break;
 			}
-			// Save to model
+
+			// Check if candidate
 			candidate = self.collection.find(function (role) {
 				return (role.get("discriminator") === "CANDIDATE" && role.get("status") === "ACTIVE");
 			});
 			if (candidate) {
+				// Check for open candidacies
 				openCandidacies = new Models.CandidateCandidacies({}, {
-					candidate: App.loggedOnUser.getRole("CANDIDATE").id
+					candidate: candidate.get("id")
 				});
 				openCandidacies.fetch({
 					data: {
@@ -3322,70 +3346,29 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					success: function (collection, resp) {
 						var candidacyUpdateConfirmView;
 						if (collection.length > 0) {
-							candidacyUpdateConfirmView = new Views.CandidacyUpdateConfirmView({
-								"collection": collection,
-								"answer": function (confirm) {
-									self.model.save(values, {
-										url: self.model.url() + "?updateCandidacies=" + confirm,
-										wait: true,
-										success: function (model, resp) {
-											var popup = new Views.PopupView({
-												type: "success",
-												message: $.i18n.prop("Success")
-											});
-											popup.show();
-										},
-										error: function (model, resp, options) {
-											var popup = new Views.PopupView({
-												type: "error",
-												message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-											});
-											popup.show();
-										}
-									});
-								}
-							});
-							candidacyUpdateConfirmView.show();
-
+							// Found Open Candidacies, show CandidacyUpdateConfirmView
+							if (App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
+								// Changes by helpdesk always update candidacies
+								doSave(values, true);
+							} else {
+								// Ask User if he wants to update candidacies
+								candidacyUpdateConfirmView = new Views.CandidacyUpdateConfirmView({
+									"collection": collection,
+									"answer": function (confirm) {
+										doSave(values, confirm);
+									}
+								});
+								candidacyUpdateConfirmView.show();
+							}
 						} else {
-							self.model.save(values, {
-								wait: true,
-								success: function (model, resp) {
-									var popup = new Views.PopupView({
-										type: "success",
-										message: $.i18n.prop("Success")
-									});
-									popup.show();
-								},
-								error: function (model, resp, options) {
-									var popup = new Views.PopupView({
-										type: "error",
-										message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-									});
-									popup.show();
-								}
-							});
+							// Did not find Open Candidacies
+							doSave(values);
 						}
 					}
 				});
 			} else {
-				self.model.save(values, {
-					wait: true,
-					success: function (model, resp) {
-						var popup = new Views.PopupView({
-							type: "success",
-							message: $.i18n.prop("Success")
-						});
-						popup.show();
-					},
-					error: function (model, resp, options) {
-						var popup = new Views.PopupView({
-							type: "error",
-							message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-						});
-						popup.show();
-					}
-				});
+				// Did not have candidate profile
+				doSave(values);
 			}
 			event.preventDefault();
 			return false;

@@ -1,6 +1,5 @@
 package gr.grnet.dep.service.model;
 
-import gr.grnet.dep.service.model.file.ProfessorFile;
 import gr.grnet.dep.service.util.CompareUtil;
 
 import java.util.logging.Logger;
@@ -150,18 +149,6 @@ public class ProfessorDomestic extends Professor {
 			return true;
 		}
 		if (this.fekSubject == null && this.subject == null) {
-			return true;
-		}
-		boolean hasFEKFile = false;
-		for (ProfessorFile file : this.getFiles()) {
-			switch (file.getType()) {
-				case FEK:
-					hasFEKFile = true;
-					break;
-				default:
-			}
-		}
-		if (!hasFEKFile) {
 			return true;
 		}
 		return false;

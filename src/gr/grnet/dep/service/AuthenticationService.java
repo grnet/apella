@@ -146,7 +146,7 @@ public class AuthenticationService {
 
 		// Add Primary Role
 		ProfessorDomestic pd = new ProfessorDomestic();
-		pd.setInstitution(data.getDepartment().getSchool().getInstitution());
+		pd.setInstitution(data.getInstitution());
 		pd.setDepartment(data.getDepartment());
 		pd.setRank(data.getRank());
 		pd.setFek(data.getFek());

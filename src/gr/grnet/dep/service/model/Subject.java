@@ -1,5 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.util.CompareUtil;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -41,4 +43,18 @@ public class Subject {
 		this.name = name;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
+		if (obj == this) {
+			return true;
+		}
+		if (!(obj instanceof Subject)) {
+			return false;
+		}
+		Subject that = (Subject) obj;
+		return CompareUtil.equalsIgnoreNull(this.getName(), that.getName());
+	}
 }
