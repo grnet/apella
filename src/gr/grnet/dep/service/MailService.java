@@ -114,7 +114,7 @@ public class MailService {
 			aBody = aBody.replaceAll("\\[" + key + "\\]", value);
 		}
 		// Replace login with link
-		aBody = aBody.replaceAll("\\[login\\]", "<a href=\"" + conf.getString("home.url") + "\">Είσοδο</a>");
+		aBody = aBody.replaceAll("\\[login\\]", "Είσοδο");
 
 		// Validate Email
 		Connection qConn = null;

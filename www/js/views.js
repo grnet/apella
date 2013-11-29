@@ -1046,56 +1046,13 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.$el.append(self.template(role));
 
 			if (role.discriminator === "PROFESSOR_DOMESTIC") {
-				// Especially for PROFESSOR_DOMESTIC there
-				// is a demand to select institution first in case their institution supports Shibboleth Login
-				// Add institutions in selector:
-				App.institutions = App.institutions || new Models.Institutions();
-				App.institutions.fetch({
-					cache: true,
-					reset: true,
-					success: function (collection, resp) {
-						self.$("select[name='institution']").empty();
-						self.$("select[name='institution']").append("<option value=\"\">" + $.i18n.prop("PleaseSelectInstitution") + "</option>");
-						self.$("select[name='institution']").append("<optgroup data-category=\"INSTITUTION\" label=\"" + $.i18n.prop("InstitutionCategory_INSTITUTION") + "\">");
-						self.$("select[name='institution']").append("<optgroup data-category=\"RESEARCH_CENTER\" label=\"" + $.i18n.prop("InstitutionCategory_RESEARCH_CENTER") + "\">");
-						collection.each(function (institution) {
-							if (_.isObject(role.institution) && _.isEqual(institution.id, role.institution.id)) {
-								self.$("select[name='institution']").find("optgroup[data-category=" + institution.get("category") + "]").append("<option value='" + institution.get("id") + "' selected>" + institution.get("name") + "</option>");
-							} else {
-								self.$("select[name='institution']").find("optgroup[data-category=" + institution.get("category") + "]").append("<option value='" + institution.get("id") + "'>" + institution.get("name") + "</option>");
-							}
-						});
-						self.$("select[name='institution']").trigger("change", {
-							triggeredBy: "application"
-						});
-					},
-					error: function (model, resp, options) {
-						var popup = new Views.PopupView({
-							type: "error",
-							message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-						});
-						popup.show();
-					}
-				});
-				// Set UI components
-				if (role.institution && (role.institution.authenticationType === "USERNAME")) {
-					self.$("#shibbolethLoginInstructions").hide();
-					self.$("form#institutionForm").hide();
-					self.$("form#userForm").show();
-				} else if (role.institution && (role.institution.authenticationType === "SHIBBOLETH")) {
-					self.$("#shibbolethLoginInstructions").show();
-					self.$("form#institutionForm").hide();
-					self.$("form#userForm").hide();
-				} else {
-					self.$("#shibbolethLoginInstructions").hide();
-					self.$("form#institutionForm").show();
-					self.$("form#userForm").hide();
-				}
+				// Set UI components, only shibboleth login is allowed
+				self.$("#shibbolethLoginInstructions").show();
+				self.$("form#institutionForm").hide();
+				self.$("form#userForm").hide();
 			} else if (role.discriminator === "INSTITUTION_MANAGER") {
-				// Especially for INSTITUTION_MANAGER there is a demand
-				// to
+				// Especially for INSTITUTION_MANAGER there is a demand to
 				// select institution first
-
 				// Add institutions in selector:
 				App.institutions = App.institutions || new Models.Institutions();
 				App.institutions.fetch({

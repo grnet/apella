@@ -5,12 +5,9 @@ import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommit
 import gr.grnet.dep.service.model.Register.DetailedRegisterView;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
-import gr.grnet.dep.service.util.DEPConfigurationFactory;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -22,7 +19,6 @@ import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-import org.apache.commons.configuration.ConfigurationException;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.map.annotate.JsonView;
 
@@ -41,18 +37,6 @@ public final class FileBody implements Serializable {
 
 	public static interface DetailedFileBodyView extends SimpleFileBodyView {
 	};
-
-	private static Logger staticLogger = Logger.getLogger(FileBody.class.getName());
-
-	static String baseURL;
-
-	static {
-		try {
-			baseURL = DEPConfigurationFactory.getServerConfiguration().getString("files.url");
-		} catch (ConfigurationException e) {
-			staticLogger.log(Level.SEVERE, "RESTService init: ", e);
-		}
-	}
 
 	/**
 	 * The persistence ID of the object.
@@ -176,11 +160,6 @@ public final class FileBody implements Serializable {
 
 	public void setDate(Date date) {
 		this.date = date;
-	}
-
-	@JsonView({SimpleFileHeaderView.class, SimpleFileBodyView.class, DetailedRoleView.class, DetailedRegisterView.class, DetailedPositionView.class, DetailedPositionCommitteeMemberView.class})
-	public String getURL() {
-		return baseURL + storedFilePath;
 	}
 
 }

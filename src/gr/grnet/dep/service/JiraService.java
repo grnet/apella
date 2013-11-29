@@ -40,29 +40,38 @@ public class JiraService {
 	@PersistenceContext(unitName = "apelladb")
 	protected EntityManager em;
 
+	/**
+	 * username: apella
+	 * password: Test "!@#$%^&*()" || Production: "Pk%81:$/IES/"
+	 */
+
+	private static String USERNAME;
+
+	private static String PASSWORD;
+
+	private static String REST_URL;
+
+	private static String PROJECT_KEY;
+
 	private static Configuration conf;
 
 	static {
 		try {
 			conf = DEPConfigurationFactory.getServerConfiguration();
+
+			PROJECT_KEY = conf.getString("jira.project.key");
+			REST_URL = conf.getString("jira.url");
+			USERNAME = conf.getString("jira.username");
+			PASSWORD = conf.getString("jira.password");
+
 		} catch (ConfigurationException e) {
 		}
 	}
 
-	private static final String username = "apella";
-
-	private static final String password = "!@#$%^&*()"; // Production Pk%81:$/IES/
-
-	private static final String sesRootURL = "https://staging.tts.grnet.gr/jira/rest/api/2";
-
-	private static final String userRootURL = "http://test.apella.grnet.gr#user/{userId}";
-
-	private static final String jiraProjectKey = "APELLA";
-
 	private static final ObjectMapper mapper = new ObjectMapper();
 
 	private static JsonNode doGet(String path) throws Exception {
-		ClientRequest request = new ClientRequest(sesRootURL + path);
+		ClientRequest request = new ClientRequest(REST_URL + path);
 		request.accept(MediaType.APPLICATION_JSON);
 		request.header("Authorization", "Basic " + authenticationString());
 		ClientResponse<String> response = request.get(String.class);
@@ -75,7 +84,7 @@ public class JiraService {
 	}
 
 	private static JsonNode doPost(String path, JsonNode data) throws Exception {
-		ClientRequest request = new ClientRequest(sesRootURL + path);
+		ClientRequest request = new ClientRequest(REST_URL + path);
 		request.accept(MediaType.APPLICATION_JSON);
 		request.header("Authorization", "Basic " + authenticationString());
 		request.body("application/json", data);
@@ -91,7 +100,7 @@ public class JiraService {
 	}
 
 	private static String authenticationString() {
-		byte[] enc = Base64.encodeBase64((username + ":" + password).getBytes());
+		byte[] enc = Base64.encodeBase64((USERNAME + ":" + PASSWORD).getBytes());
 		return new String(enc);
 	}
 
@@ -167,7 +176,7 @@ public class JiraService {
 		issuetype.put("name", "Συμβάν");
 		// Project
 		ObjectNode project = mapper.createObjectNode();
-		project.put("key", jiraProjectKey);
+		project.put("key", PROJECT_KEY);
 
 		// Fields
 		ObjectNode fields = mapper.createObjectNode();
@@ -180,19 +189,8 @@ public class JiraService {
 		// Send to Jira
 		try {
 			logger.info("updateIssue POST :\n" + issue.toString());
-			JsonNode response = doPost("/issue/", issue);
-			logger.info("updateIssue POST Result :\n" + response.toString());
-			// TODO: Change Status to Closed
-			/*
-			if (!status.equals("Open")) {
-				// Set Status
-				JsonNode statusNode = createUpdateStatusNode(status);
-				logger.info("updateIssue POST :\n" + statusNode.toString());
-				response = doPost("/issue/" + response.get("key").getTextValue() + "/transitions", statusNode);
-				logger.info("updateIssue POST :\n" + response.toString());
-			}
-			*/
-
+			//TODO: Enable this: JsonNode response = doPost("/issue/", issue);
+			//logger.info("updateIssue POST Result :\n" + response.toString());
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Error posting to Jira\n" + e.getMessage());
 		}
@@ -224,9 +222,7 @@ public class JiraService {
 			.replaceAll("\\{firstname\\}", user.getBasicInfo().getFirstname())
 			.replaceAll("\\{lastname\\}", user.getBasicInfo().getLastname())
 			.replaceAll("\\{email\\}", user.getContactInfo().getEmail())
-			.replaceAll("\\{mobile\\}", user.getContactInfo().getMobile())
-			.replaceAll("\\{link\\}", userRootURL.replaceAll("\\{userId\\}", user.getId().toString()));
-
+			.replaceAll("\\{mobile\\}", user.getContactInfo().getMobile());
 		return comment;
 	}
 
