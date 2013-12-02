@@ -1,5 +1,7 @@
 package gr.grnet.dep.service;
 
+import gr.grnet.dep.service.JiraService.IssueType;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,11 +29,11 @@ public class JiraQueue implements MessageListener {
 		MapMessage jiraMessage = (MapMessage) message;
 		try {
 			Long userId = jiraMessage.getLong("userId");
-			String status = jiraMessage.getString("status");
+			IssueType issueType = (IssueType) jiraMessage.getObject("issueType");
 			String summary = jiraMessage.getString("summary");
 			String description = jiraMessage.getString("description");
 
-			service.updateIssue(userId, status, summary, description);
+			service.openIssue(userId, issueType, summary, description);
 
 		} catch (JMSException e) {
 			logger.log(Level.WARNING, "", e);

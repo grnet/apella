@@ -2,6 +2,7 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.JiraService.IssueType;
 import gr.grnet.dep.service.model.AuthenticationType;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.InstitutionAssistant;
@@ -32,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -458,13 +458,7 @@ public class RoleRESTService extends RESTService {
 
 			// Post to Jira
 			if (!existingRole.isMissingRequiredFields()) {
-				final String username = existingRole.getUser().getUsername();
-				jiraService.postJira(existingRole.getUser().getId(), "Closed", "user.created.role.summary", "user.created.role.description", Collections.unmodifiableMap(new HashMap<String, String>() {
-
-					{
-						put("username", username);
-					}
-				}));
+				jiraService.queueJiraIssue(existingRole.getUser().getId(), IssueType.REGISTRATION, "user.created.role.summary", "user.created.role.description");
 			}
 
 			return existingRole;
@@ -1142,20 +1136,10 @@ public class RoleRESTService extends RESTService {
 			// Post to Jira
 			switch (primaryRole.getStatus()) {
 				case ACTIVE:
-					jiraService.postJira(primaryRole.getUser().getId(), "Closed", "helpdesk.activated.role.summary", "helpdesk.activated.role.description", Collections.unmodifiableMap(new HashMap<String, String>() {
-
-						{
-							put("admin", loggedOn.getUsername());
-						}
-					}));
+					jiraService.queueJiraIssue(primaryRole.getUser().getId(), IssueType.REGISTRATION, "helpdesk.activated.role.summary", "helpdesk.activated.role.description");
 					break;
 				case UNAPPROVED:
-					jiraService.postJira(primaryRole.getUser().getId(), "CLOSED", "heldesk.deactivated.role.summary", "heldesk.deactivated.role.description", Collections.unmodifiableMap(new HashMap<String, String>() {
-
-						{
-							put("admin", loggedOn.getUsername());
-						}
-					}));
+					jiraService.queueJiraIssue(primaryRole.getUser().getId(), IssueType.REGISTRATION, "heldesk.deactivated.role.summary", "heldesk.deactivated.role.description");
 					break;
 				default:
 					break;

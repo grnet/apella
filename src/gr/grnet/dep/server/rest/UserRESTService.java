@@ -3,6 +3,7 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.AuthenticationService;
+import gr.grnet.dep.service.JiraService.IssueType;
 import gr.grnet.dep.service.exceptions.ServiceException;
 import gr.grnet.dep.service.model.AuthenticationType;
 import gr.grnet.dep.service.model.Candidate;
@@ -337,21 +338,9 @@ public class UserRESTService extends RESTService {
 
 			//5. Post Issue:
 			if (firstRole.getDiscriminator().equals(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
-				jiraService.postJira(savedUser.getId(), "Closed", "institution.manager.created.assistant.summary", "institution.manager.created.assistant.description", Collections.unmodifiableMap(new HashMap<String, String>() {
-
-					{
-						put("username", savedUser.getUsername());
-						put("email", savedUser.getContactInfo().getEmail());
-					}
-				}));
+				jiraService.queueJiraIssue(savedUser.getId(), IssueType.REGISTRATION, "institution.manager.created.assistant.summary", "institution.manager.created.assistant.description");
 			} else {
-				jiraService.postJira(savedUser.getId(), "Closed", "user.created.account.summary", "user.created.account.description", Collections.unmodifiableMap(new HashMap<String, String>() {
-
-					{
-						put("username", savedUser.getUsername());
-						put("email", savedUser.getContactInfo().getEmail());
-					}
-				}));
+				jiraService.queueJiraIssue(savedUser.getId(), IssueType.REGISTRATION, "user.created.account.summary", "user.created.account.description");
 			}
 
 			//6. Return result
@@ -589,14 +578,7 @@ public class UserRESTService extends RESTService {
 					em.flush();
 
 					// Post to Jira
-					jiraService.postJira(u.getId(), "Closed", "user.verified.email.summary", "user.verified.email.description", Collections.unmodifiableMap(new HashMap<String, String>() {
-
-						{
-							put("username", u.getUsername());
-							put("email", u.getContactInfo().getEmail());
-						}
-					}));
-
+					jiraService.queueJiraIssue(u.getId(), IssueType.REGISTRATION, "user.verified.email.summary", "user.verified.email.description");
 					return u;
 				default:
 					throw new RestException(Status.FORBIDDEN, "verify.account.status." + u.getStatus().toString().toLowerCase());
@@ -645,14 +627,8 @@ public class UserRESTService extends RESTService {
 
 			// Post to Jira
 			if (u.getStatus().equals(UserStatus.BLOCKED)) {
-				jiraService.postJira(u.getId(), "Closed", "helpdesk.blocked.user.summary", "helpdesk.blocked.user.description", Collections.unmodifiableMap(new HashMap<String, String>() {
-
-					{
-						put("admin", loggedOn.getUsername());
-					}
-				}));
+				jiraService.queueJiraIssue(u.getId(), IssueType.REGISTRATION, "helpdesk.blocked.user.summary", "helpdesk.blocked.user.description");
 			}
-
 			return u;
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.user.id");

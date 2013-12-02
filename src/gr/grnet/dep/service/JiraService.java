@@ -1,11 +1,9 @@
 package gr.grnet.dep.service;
 
+import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 
-import java.util.Locale;
-import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,6 +53,16 @@ public class JiraService {
 
 	private static Configuration conf;
 
+	public enum IssueType {
+		REGISTRATION,
+		GENERAL_INFORMATION,
+		LOGIN,
+		ACCOUNT_MODIFICATION,
+		ERROR,
+		COMPLAINT;
+
+	}
+
 	static {
 		try {
 			conf = DEPConfigurationFactory.getServerConfiguration();
@@ -68,9 +76,71 @@ public class JiraService {
 		}
 	}
 
-	private static final ObjectMapper mapper = new ObjectMapper();
+	public String getIssueTypeString(IssueType issueType) {
+		String retv;
+		switch (issueType) {
+			case REGISTRATION:
+				retv = "Εγγραφή/Πιστοποίηση";
+				break;
+			case GENERAL_INFORMATION:
+				retv = "γενικές πληροφορίες";
+				break;
+			case LOGIN:
+				retv = "θέματα πρόσβασης";
+				break;
+			case ACCOUNT_MODIFICATION:
+				retv = "μεταβολή στοιχείων";
+				break;
+			case ERROR:
+				retv = "Πρόβλημα";
+				break;
+			case COMPLAINT:
+				retv = "Παράπονα";
+				break;
+			default:
+				retv = "ΑΛΛΟ";
+				break;
+		}
+		return retv;
+	}
 
-	private static JsonNode doGet(String path) throws Exception {
+	public String getRoleString(RoleDiscriminator role) {
+		String retv;
+		switch (role) {
+			case ADMINISTRATOR:
+				retv = "";
+				break;
+			case CANDIDATE:
+				retv = "υποψήφιος";
+				break;
+			case INSTITUTION_ASSISTANT:
+				retv = "βοηθός ιδρύματος";
+				break;
+			case INSTITUTION_MANAGER:
+				retv = "διαχειριστής ιδρύματος";
+				break;
+			case MINISTRY_ASSISTANT:
+				retv = "βοηθός υπουργείου";
+				break;
+			case MINISTRY_MANAGER:
+				retv = "διαχειριστής υπουργείου";
+				break;
+			case PROFESSOR_DOMESTIC:
+				retv = "καθηγητής/ερευνητής ημεδαπής";
+				break;
+			case PROFESSOR_FOREIGN:
+				retv = "καθηγητής/ερευνητής αλλοδαπής";
+				break;
+			default:
+				retv = "ΑΛΛΟ";
+				break;
+		}
+		return retv;
+	}
+
+	private final ObjectMapper mapper = new ObjectMapper();
+
+	private JsonNode doGet(String path) throws Exception {
 		ClientRequest request = new ClientRequest(REST_URL + path);
 		request.accept(MediaType.APPLICATION_JSON);
 		request.header("Authorization", "Basic " + authenticationString());
@@ -83,7 +153,7 @@ public class JiraService {
 		return jsonNode;
 	}
 
-	private static JsonNode doPost(String path, JsonNode data) throws Exception {
+	private JsonNode doPost(String path, JsonNode data) throws Exception {
 		ClientRequest request = new ClientRequest(REST_URL + path);
 		request.accept(MediaType.APPLICATION_JSON);
 		request.header("Authorization", "Basic " + authenticationString());
@@ -99,28 +169,16 @@ public class JiraService {
 		return jsonNode;
 	}
 
-	private static String authenticationString() {
+	private String authenticationString() {
 		byte[] enc = Base64.encodeBase64((USERNAME + ":" + PASSWORD).getBytes());
 		return new String(enc);
 	}
 
-	public static JsonNode getIssue(String issueKey) throws Exception {
+	public JsonNode getIssue(String issueKey) throws Exception {
 		return doGet("/issue/" + issueKey);
 	}
 
-	public void postJira(Long userId, String status, String summaryKey, String descriptionKey, Map<String, String> parameters) {
-		ResourceBundle resources = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-jira", new Locale("el"));
-		String summary = resources.getString(summaryKey);
-		String description = resources.getString(descriptionKey);
-		for (String key : parameters.keySet()) {
-			String value = parameters.get(key);
-			if (value == null || value.trim().isEmpty()) {
-				value = "-";
-			}
-			summary = summary.replaceAll("\\{" + key + "\\}", value);
-			description = description.replaceAll("\\{" + key + "\\}", value);
-		}
-
+	public void queueJiraIssue(Long userId, IssueType issueType, String summary, String description) {
 		Connection qConn = null;
 		javax.jms.Session session = null;
 		MessageProducer sender = null;
@@ -137,11 +195,11 @@ public class JiraService {
 			MapMessage jiraMessage = session.createMapMessage();
 			jiraMessage.setJMSCorrelationID("jira");
 			jiraMessage.setLong("userId", userId);
-			jiraMessage.setString("status", status);
+			jiraMessage.setObject("issueType", issueType);
 			jiraMessage.setString("summary", summary);
 			jiraMessage.setString("description", description);
 
-			logger.log(Level.INFO, "Posting Jira Message " + userId + " | " + status + " | " + summary + " | " + description);
+			logger.log(Level.INFO, "Posting Jira Message " + userId + " | " + issueType + " | " + summary + " | " + description);
 			sender.send(jiraMessage);
 		} catch (NamingException e) {
 			logger.log(Level.SEVERE, "Message not published: ", e);
@@ -161,69 +219,90 @@ public class JiraService {
 		}
 	}
 
-	public void updateIssue(Long userId, String status, String summary, String description) {
+	public JsonNode openIssue(Long userId, IssueType issueType, String summary, String description) {
 		User user = em.find(User.class, userId);
 		if (user == null) {
-			logger.info("Tried to POST Jira Issue to non existin user: " + userId + " " + status + " " + summary + " " + description);
-			return;
+			logger.info("Tried to POST Jira Issue to non existin user: " + userId + " " + issueType + " " + summary + " " + description);
+			return null;
 		}
-
 		// Prepare Data:
+		JsonNode issueData = prepareIssueData(user, issueType, summary, description);
+		// Send to Jira
+		try {
+			logger.info("updateIssue POST :\n" + issueData.toString());
+			JsonNode response = doPost("/issue/", issueData);
+			logger.info("updateIssue POST Result :\n" + response.toString());
+			return response;
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Error posting to Jira\n" + e.getMessage());
+			return null;
+		}
+	}
+
+	private JsonNode prepareIssueData(User user, IssueType issueType, String summary, String description) {
+		/* ISSUE TEMPLATE:
+		{
+			"id": "23580",
+			"key": "APELLA-52",
+			"fields": {
+				"project" : {
+					key: "APELLA"
+					name: "apella"
+				},
+		    	"summary": "Εγγραφή",
+				"issuetype": {
+					"name": "Εγγραφή/Πιστοποίηση",
+				},
+				"description": "Περιγραφή Εγγραφής",
+				"customfield_12650": {
+					"value": "καθηγητής/ερευνητής ημεδαπής",
+					"id": "10221"
+				},
+				"customfield_12651": {
+					"value": "εξερχόμενη",
+					"id": "10228"
+				},
+				"customfield_12652": "anglen"
+				"customfield_12653": "Angelos Lenis",
+				"customfield_12654": "69000001010",
+				"customfield_12655": "lenis.angelos@gmail.com",
+			}
+		}
+		*/
 
 		ObjectNode issue = mapper.createObjectNode();
-		// Type
-		ObjectNode issuetype = mapper.createObjectNode();
-		issuetype.put("name", "Συμβάν");
 		// Project
-		ObjectNode project = mapper.createObjectNode();
-		project.put("key", PROJECT_KEY);
 
 		// Fields
 		ObjectNode fields = mapper.createObjectNode();
+		issue.put("fields", fields);
+
+		ObjectNode project = mapper.createObjectNode();
 		fields.put("project", project);
-		fields.put("issuetype", issuetype);
+		project.put("key", PROJECT_KEY);
+
 		fields.put("summary", summary);
-		fields.put("description", description.concat("\n\n" + createUserInfo(user)));
-		issue.put("fields", fields);
 
-		// Send to Jira
-		try {
-			logger.info("updateIssue POST :\n" + issue.toString());
-			//TODO: Enable this: JsonNode response = doPost("/issue/", issue);
-			//logger.info("updateIssue POST Result :\n" + response.toString());
-		} catch (Exception e) {
-			logger.log(Level.WARNING, "Error posting to Jira\n" + e.getMessage());
-		}
-	}
+		ObjectNode issueTypeNode = mapper.createObjectNode();
+		issueTypeNode.put("name", getIssueTypeString(issueType));
+		fields.put("issuetype", issueTypeNode);
 
-	public JsonNode createUpdateStatusNode(String status) {
+		fields.put("description", description);
 
-		ObjectNode issue = mapper.createObjectNode();
+		ObjectNode roleNode = mapper.createObjectNode();
+		roleNode.put("value", getRoleString(user.getPrimaryRole()));
+		fields.put("customfield_12650", roleNode);
 
-		ObjectNode fields = mapper.createObjectNode();
+		ObjectNode callTypeNode = mapper.createObjectNode();
+		roleNode.put("value", "εισερχόμενη");
+		fields.put("customfield_12651", callTypeNode);
 
-		ObjectNode resolution = mapper.createObjectNode();
-		resolution.put("name", status);
-		fields.put("resolution", resolution);
-
-		issue.put("fields", fields);
-
-		ObjectNode transition = mapper.createObjectNode();
-		transition.put("id", 2);
-		issue.put("transition", transition);
+		fields.put("customfield_12652", user.getUsername() == null ? "-" : user.getUsername());
+		fields.put("customfield_12653", user.getBasicInfo().getFirstname() + " " + user.getBasicInfo().getLastname());
+		fields.put("customfield_12654", user.getContactInfo().getMobile());
+		fields.put("customfield_12655", user.getContactInfo().getEmail());
 
 		return issue;
-	}
 
-	private String createUserInfo(User user) {
-		ResourceBundle resources = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-jira", new Locale("el"));
-		String comment = resources.getString("user.info")
-			.replaceAll("\\{username\\}", user.getUsername())
-			.replaceAll("\\{firstname\\}", user.getBasicInfo().getFirstname())
-			.replaceAll("\\{lastname\\}", user.getBasicInfo().getLastname())
-			.replaceAll("\\{email\\}", user.getContactInfo().getEmail())
-			.replaceAll("\\{mobile\\}", user.getContactInfo().getMobile());
-		return comment;
 	}
-
 }
