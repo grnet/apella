@@ -364,9 +364,28 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 		showUserView: function (id) {
 			var self = this;
-			var user;
-			var userView;
-			var roles;
+			var user, roles;
+
+			function displayContent() {
+				var userView;
+				self.clear();
+				self.currentView = [];
+
+				if (App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
+					userView = new Views.UserHelpdeskView({
+						model: user,
+						collection: roles
+					});
+				} else {
+					// Simple View Mode
+					userView = new Views.UserView({
+						model: user,
+						collection: roles
+					});
+				}
+				$("#content").html(userView.render().el);
+				self.currentView.push(userView);
+			}
 
 			// Create Models
 			user = new Models.User({
@@ -374,52 +393,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			});
 			roles = new Models.Roles();
 			roles.user = id;
-
-			// Create Views, Add them to page
-			self.clear();
-			$("#content").html("<div class=\"row-fluid\"><div id=\"user\" class=\"span5\"></div><div id=\"roles\" class=\"span7\"></div></div>");
-			// Refresh Data
+			// Fetch Data
 			user.fetch({
 				cache: false,
 				success: function (model, resp) {
-					if (App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
-						userView = new Views.AdminAccountView({
-							className: "row-fluid",
-							model: user
-						});
-					} else {
-						userView = new Views.UserView({
-							className: "row-fluid",
-							model: user
-						});
-					}
-					self.currentView = [ userView ];
 					roles.fetch({
 						cache: false,
 						reset: true,
 						success: function (collection, response) {
-							var roleView;
-							$("#content div#user").append(userView.render().el);
-							if (App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
-								roleView = new Views.AdminRoleEditView({
-									className: "row-fluid",
-									collection : collection,
-									model: collection.find(function (role) {
-										return role.isPrimary();
-									})
-								});
-								$("#content div#roles").append(roleView.render().el);
-								self.currentView.push(roleView);
-							} else {
-								collection.each(function (role) {
-									roleView = new Views.RoleView({
-										className: "row-fluid",
-										model: role
-									});
-									$("#content div#roles").append(roleView.render().el);
-									self.currentView.push(roleView);
-								});
-							}
+							displayContent();
 						}
 					});
 					self.refreshBreadcrumb([ $.i18n.prop('menu_adminusers'), $.i18n.prop('menu_user'), user.getDisplayName() ]);

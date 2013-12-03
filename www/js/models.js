@@ -35,7 +35,7 @@ define([
 			},
 			"shibbolethInfo": {},
 			"roles": [],
-			primaryRole : undefined
+			primaryRole: undefined
 		},
 
 		parse: function (resp, options) {
@@ -663,7 +663,7 @@ define([
 			"statusDate": undefined,
 			"user": undefined,
 			// Specific Fields
-			"acceptedTerms" : undefined,
+			"acceptedTerms": undefined,
 			"institution": undefined,
 			"department": {
 				"id": undefined,
@@ -679,7 +679,7 @@ define([
 					}
 				}
 			},
-			"hasAcceptedTerms" : undefined,
+			"hasAcceptedTerms": undefined,
 			"hasOnlineProfile": undefined,
 			"profileURL": undefined,
 			"rank": {
@@ -688,7 +688,7 @@ define([
 			"fek": undefined,
 			"fekSubject": undefined,
 			"subject": undefined,
-			"speakingGreek" : undefined,
+			"speakingGreek": undefined,
 			"verificationAuthority": undefined,
 			"verificationAuthorityName": undefined,
 			"manager": undefined,
@@ -1435,6 +1435,20 @@ define([
 			return model.get("area") + model.get("category");
 		}
 
+	});
+
+	Models.JiraIssue = Backbone.Model.extend({
+		urlRoot: "/dep/rest/jira/",
+		url: function () {
+			return this.urlRoot + (this.attributes.key || "");
+		},
+		defaults: {
+			key: undefined,
+			userId: undefined,
+			type: undefined,
+			summary: undefined,
+			description: undefined
+		}
 	});
 
 	return Models;

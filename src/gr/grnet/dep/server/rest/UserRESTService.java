@@ -3,12 +3,13 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.AuthenticationService;
-import gr.grnet.dep.service.JiraService.IssueType;
 import gr.grnet.dep.service.exceptions.ServiceException;
 import gr.grnet.dep.service.model.AuthenticationType;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.InstitutionManager;
+import gr.grnet.dep.service.model.JiraIssue;
+import gr.grnet.dep.service.model.JiraIssue.IssueType;
 import gr.grnet.dep.service.model.MinistryAssistant;
 import gr.grnet.dep.service.model.MinistryManager;
 import gr.grnet.dep.service.model.Role;
@@ -331,16 +332,26 @@ public class UserRESTService extends RESTService {
 
 						{
 							put("username", savedUser.getUsername());
-							put("verificationLink", WebConstants.conf.getString("home.url") + "/registration.html?#email=" + savedUser.getUsername() + "&verification=" + savedUser.getVerificationNumber());
+							put("verificationLink", WebConstants.conf.getString("home.url") + "/registration.html?#username=" + savedUser.getUsername() + "&verification=" + savedUser.getVerificationNumber());
 						}
 					}));
 			}
 
 			//5. Post Issue:
 			if (firstRole.getDiscriminator().equals(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
-				jiraService.queueJiraIssue(savedUser.getId(), IssueType.REGISTRATION, "institution.manager.created.assistant.summary", "institution.manager.created.assistant.description");
+				JiraIssue issue = new JiraIssue(
+					IssueType.REGISTRATION,
+					savedUser.getId(),
+					jiraService.getResourceBundleString("institution.manager.created.assistant.summary"),
+					jiraService.getResourceBundleString("institution.manager.created.assistant.description"));
+				jiraService.queueOpenIssue(issue);
 			} else {
-				jiraService.queueJiraIssue(savedUser.getId(), IssueType.REGISTRATION, "user.created.account.summary", "user.created.account.description");
+				JiraIssue issue = new JiraIssue(
+					IssueType.REGISTRATION,
+					savedUser.getId(),
+					jiraService.getResourceBundleString("user.created.account.summary"),
+					jiraService.getResourceBundleString("user.created.account.description"));
+				jiraService.queueOpenIssue(issue);
 			}
 
 			//6. Return result
@@ -355,7 +366,7 @@ public class UserRESTService extends RESTService {
 	private Long generateVerificationNumber() {
 		try {
 			SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
-			return sr.nextLong();
+			return Math.abs(sr.nextLong());
 		} catch (NoSuchAlgorithmException nsae) {
 			throw new EJBException(nsae);
 		}
@@ -578,7 +589,12 @@ public class UserRESTService extends RESTService {
 					em.flush();
 
 					// Post to Jira
-					jiraService.queueJiraIssue(u.getId(), IssueType.REGISTRATION, "user.verified.email.summary", "user.verified.email.description");
+					JiraIssue issue = new JiraIssue(
+						IssueType.REGISTRATION,
+						u.getId(),
+						jiraService.getResourceBundleString("user.verified.email.summary"),
+						jiraService.getResourceBundleString("user.verified.email.description"));
+					jiraService.queueOpenIssue(issue);
 					return u;
 				default:
 					throw new RestException(Status.FORBIDDEN, "verify.account.status." + u.getStatus().toString().toLowerCase());
@@ -627,7 +643,12 @@ public class UserRESTService extends RESTService {
 
 			// Post to Jira
 			if (u.getStatus().equals(UserStatus.BLOCKED)) {
-				jiraService.queueJiraIssue(u.getId(), IssueType.REGISTRATION, "helpdesk.blocked.user.summary", "helpdesk.blocked.user.description");
+				JiraIssue issue = new JiraIssue(
+					IssueType.REGISTRATION,
+					u.getId(),
+					jiraService.getResourceBundleString("helpdesk.blocked.user.summary"),
+					jiraService.getResourceBundleString("helpdesk.blocked.user.description"));
+				jiraService.queueOpenIssue(issue);
 			}
 			return u;
 		} catch (NoResultException e) {

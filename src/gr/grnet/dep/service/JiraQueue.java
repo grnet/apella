@@ -1,6 +1,6 @@
 package gr.grnet.dep.service;
 
-import gr.grnet.dep.service.JiraService.IssueType;
+import gr.grnet.dep.service.model.JiraIssue;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -10,8 +10,8 @@ import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.MessageDriven;
 import javax.jms.JMSException;
-import javax.jms.MapMessage;
 import javax.jms.MessageListener;
+import javax.jms.ObjectMessage;
 
 @MessageDriven(activationConfig = {
 	@ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
@@ -26,15 +26,10 @@ public class JiraQueue implements MessageListener {
 
 	@Override
 	public void onMessage(javax.jms.Message message) {
-		MapMessage jiraMessage = (MapMessage) message;
+		ObjectMessage jiraMessage = (ObjectMessage) message;
 		try {
-			Long userId = jiraMessage.getLong("userId");
-			IssueType issueType = (IssueType) jiraMessage.getObject("issueType");
-			String summary = jiraMessage.getString("summary");
-			String description = jiraMessage.getString("description");
-
-			service.openIssue(userId, issueType, summary, description);
-
+			JiraIssue jiraIssue = (JiraIssue) jiraMessage.getObject();
+			service.openIssue(jiraIssue);
 		} catch (JMSException e) {
 			logger.log(Level.WARNING, "", e);
 			throw new EJBException(e);

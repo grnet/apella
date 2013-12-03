@@ -1,9 +1,13 @@
 package gr.grnet.dep.service;
 
+import gr.grnet.dep.service.model.JiraIssue;
+import gr.grnet.dep.service.model.JiraIssue.IssueType;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -11,13 +15,14 @@ import javax.ejb.Stateless;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
-import javax.jms.MapMessage;
 import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.jms.QueueConnectionFactory;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.ws.rs.core.MediaType;
 
@@ -38,6 +43,8 @@ public class JiraService {
 	@PersistenceContext(unitName = "apelladb")
 	protected EntityManager em;
 
+	private ResourceBundle jiraResourceBundle = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-jira", new Locale("el"));
+
 	/**
 	 * username: apella
 	 * password: Test "!@#$%^&*()" || Production: "Pk%81:$/IES/"
@@ -52,16 +59,6 @@ public class JiraService {
 	private static String PROJECT_KEY;
 
 	private static Configuration conf;
-
-	public enum IssueType {
-		REGISTRATION,
-		GENERAL_INFORMATION,
-		LOGIN,
-		ACCOUNT_MODIFICATION,
-		ERROR,
-		COMPLAINT;
-
-	}
 
 	static {
 		try {
@@ -138,6 +135,10 @@ public class JiraService {
 		return retv;
 	}
 
+	public String getResourceBundleString(String key) {
+		return jiraResourceBundle.getString(key);
+	}
+
 	private final ObjectMapper mapper = new ObjectMapper();
 
 	private JsonNode doGet(String path) throws Exception {
@@ -174,16 +175,11 @@ public class JiraService {
 		return new String(enc);
 	}
 
-	public JsonNode getIssue(String issueKey) throws Exception {
-		return doGet("/issue/" + issueKey);
-	}
-
-	public void queueJiraIssue(Long userId, IssueType issueType, String summary, String description) {
+	public void queueOpenIssue(JiraIssue issue) {
 		Connection qConn = null;
 		javax.jms.Session session = null;
 		MessageProducer sender = null;
 		try {
-
 			javax.naming.Context jndiCtx = new InitialContext();
 
 			ConnectionFactory factory = (QueueConnectionFactory) jndiCtx.lookup("/ConnectionFactory");
@@ -192,14 +188,10 @@ public class JiraService {
 			session = qConn.createSession(false, javax.jms.Session.AUTO_ACKNOWLEDGE);
 			sender = session.createProducer(queue);
 
-			MapMessage jiraMessage = session.createMapMessage();
+			ObjectMessage jiraMessage = session.createObjectMessage();
 			jiraMessage.setJMSCorrelationID("jira");
-			jiraMessage.setLong("userId", userId);
-			jiraMessage.setObject("issueType", issueType);
-			jiraMessage.setString("summary", summary);
-			jiraMessage.setString("description", description);
+			jiraMessage.setObject(issue);
 
-			logger.log(Level.INFO, "Posting Jira Message " + userId + " | " + issueType + " | " + summary + " | " + description);
 			sender.send(jiraMessage);
 		} catch (NamingException e) {
 			logger.log(Level.SEVERE, "Message not published: ", e);
@@ -219,56 +211,90 @@ public class JiraService {
 		}
 	}
 
-	public JsonNode openIssue(Long userId, IssueType issueType, String summary, String description) {
-		User user = em.find(User.class, userId);
-		if (user == null) {
-			logger.info("Tried to POST Jira Issue to non existin user: " + userId + " " + issueType + " " + summary + " " + description);
+	public JiraIssue getIssue(String issueKey) throws Exception {
+		JsonNode node = doGet("/issue/" + issueKey);
+		return fromJSON(node);
+	}
+
+	public JiraIssue openIssue(JiraIssue issue) {
+		// Prepare Data:
+		JsonNode issueData = toJSON(issue);
+		if (issueData == null) {
 			return null;
 		}
-		// Prepare Data:
-		JsonNode issueData = prepareIssueData(user, issueType, summary, description);
 		// Send to Jira
 		try {
 			logger.info("updateIssue POST :\n" + issueData.toString());
 			JsonNode response = doPost("/issue/", issueData);
 			logger.info("updateIssue POST Result :\n" + response.toString());
-			return response;
+			issue.setKey(response.get("key").asText());
+			return issue;
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Error posting to Jira\n" + e.getMessage());
 			return null;
 		}
 	}
 
-	private JsonNode prepareIssueData(User user, IssueType issueType, String summary, String description) {
-		/* ISSUE TEMPLATE:
-		{
-			"id": "23580",
-			"key": "APELLA-52",
-			"fields": {
-				"project" : {
-					key: "APELLA"
-					name: "apella"
-				},
-		    	"summary": "Εγγραφή",
-				"issuetype": {
-					"name": "Εγγραφή/Πιστοποίηση",
-				},
-				"description": "Περιγραφή Εγγραφής",
-				"customfield_12650": {
-					"value": "καθηγητής/ερευνητής ημεδαπής",
-					"id": "10221"
-				},
-				"customfield_12651": {
-					"value": "εξερχόμενη",
-					"id": "10228"
-				},
-				"customfield_12652": "anglen"
-				"customfield_12653": "Angelos Lenis",
-				"customfield_12654": "69000001010",
-				"customfield_12655": "lenis.angelos@gmail.com",
-			}
+	private JiraIssue fromJSON(JsonNode jiraIssue) {
+		try {
+			String key = jiraIssue.get("key").asText();
+			JsonNode fields = jiraIssue.get("fields");
+			String summary = fields.get("summary").asText();
+			IssueType type = IssueType.valueOf(fields.get("issuetype").get("name").asText());
+			String description = fields.get("description").asText();
+			String email = fields.get("customfield_12655").asText();
+
+			Long userId = (Long) em.createQuery(
+				"select u.id from User u where u.contactInfo.email = :email ")
+				.setParameter("email", email)
+				.getSingleResult();
+
+			JiraIssue issue = new JiraIssue(type, userId, summary, description);
+			issue.setKey(key);
+
+			return issue;
+
+		} catch (NoResultException e) {
+			return null;
 		}
-		*/
+	}
+
+	/* ISSUE TEMPLATE:
+	{
+		"id": "23580",
+		"key": "APELLA-52",
+		"fields": {
+			"project" : {
+				key: "APELLA"
+				name: "apella"
+			},
+	    	"summary": "Εγγραφή",
+			"issuetype": {
+				"name": "Εγγραφή/Πιστοποίηση",
+			},
+			"description": "Περιγραφή Εγγραφής",
+			"customfield_12650": {
+				"value": "καθηγητής/ερευνητής ημεδαπής",
+				"id": "10221"
+			},
+			"customfield_12651": {
+				"value": "εξερχόμενη",
+				"id": "10228"
+			},
+			"customfield_12652": "anglen"
+			"customfield_12653": "Angelos Lenis",
+			"customfield_12654": "69000001010",
+			"customfield_12655": "lenis.angelos@gmail.com",
+		}
+	}
+	*/
+
+	private JsonNode toJSON(JiraIssue jiraIssue) {
+		User user = em.find(User.class, jiraIssue.getUserId());
+		if (user == null) {
+			logger.info("Tried to POST Jira Issue to non existin user: " + jiraIssue.getUserId() + " " + jiraIssue.getType() + " " + jiraIssue.getSummary() + " " + jiraIssue.getDescription());
+			return null;
+		}
 
 		ObjectNode issue = mapper.createObjectNode();
 		// Project
@@ -281,20 +307,20 @@ public class JiraService {
 		fields.put("project", project);
 		project.put("key", PROJECT_KEY);
 
-		fields.put("summary", summary);
+		fields.put("summary", jiraIssue.getSummary());
 
 		ObjectNode issueTypeNode = mapper.createObjectNode();
-		issueTypeNode.put("name", getIssueTypeString(issueType));
+		issueTypeNode.put("id", jiraIssue.getType().getValue());
 		fields.put("issuetype", issueTypeNode);
 
-		fields.put("description", description);
+		fields.put("description", jiraIssue.getDescription());
 
 		ObjectNode roleNode = mapper.createObjectNode();
 		roleNode.put("value", getRoleString(user.getPrimaryRole()));
 		fields.put("customfield_12650", roleNode);
 
 		ObjectNode callTypeNode = mapper.createObjectNode();
-		roleNode.put("value", "εισερχόμενη");
+		callTypeNode.put("value", "εισερχόμενη");
 		fields.put("customfield_12651", callTypeNode);
 
 		fields.put("customfield_12652", user.getUsername() == null ? "-" : user.getUsername());

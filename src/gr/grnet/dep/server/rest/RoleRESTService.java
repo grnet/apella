@@ -2,11 +2,12 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.JiraService.IssueType;
 import gr.grnet.dep.service.model.AuthenticationType;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.InstitutionManager;
+import gr.grnet.dep.service.model.JiraIssue;
+import gr.grnet.dep.service.model.JiraIssue.IssueType;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.ProfessorDomestic;
@@ -458,7 +459,12 @@ public class RoleRESTService extends RESTService {
 
 			// Post to Jira
 			if (!existingRole.isMissingRequiredFields()) {
-				jiraService.queueJiraIssue(existingRole.getUser().getId(), IssueType.REGISTRATION, "user.created.role.summary", "user.created.role.description");
+				JiraIssue issue = new JiraIssue(
+					IssueType.REGISTRATION,
+					existingRole.getUser().getId(),
+					jiraService.getResourceBundleString("user.created.role.summary"),
+					jiraService.getResourceBundleString("user.created.role.description"));
+				jiraService.queueOpenIssue(issue);
 			}
 
 			return existingRole;
@@ -1134,12 +1140,23 @@ public class RoleRESTService extends RESTService {
 			Role.updateStatus(primaryRole, requestRole.getStatus());
 
 			// Post to Jira
+			JiraIssue issue = null;
 			switch (primaryRole.getStatus()) {
 				case ACTIVE:
-					jiraService.queueJiraIssue(primaryRole.getUser().getId(), IssueType.REGISTRATION, "helpdesk.activated.role.summary", "helpdesk.activated.role.description");
+					issue = new JiraIssue(
+						IssueType.REGISTRATION,
+						primaryRole.getUser().getId(),
+						jiraService.getResourceBundleString("helpdesk.activated.role.summary"),
+						jiraService.getResourceBundleString("helpdesk.activated.role.description"));
+					jiraService.queueOpenIssue(issue);
 					break;
 				case UNAPPROVED:
-					jiraService.queueJiraIssue(primaryRole.getUser().getId(), IssueType.REGISTRATION, "heldesk.deactivated.role.summary", "heldesk.deactivated.role.description");
+					issue = new JiraIssue(
+						IssueType.REGISTRATION,
+						primaryRole.getUser().getId(),
+						jiraService.getResourceBundleString("heldesk.deactivated.role.summary"),
+						jiraService.getResourceBundleString("heldesk.deactivated.role.description"));
+					jiraService.queueOpenIssue(issue);
 					break;
 				default:
 					break;

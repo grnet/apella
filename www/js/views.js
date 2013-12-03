@@ -13,7 +13,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 	"text!tpl/position-evaluation-edit-register-member-list.html", "text!tpl/position-evaluation-evaluator-edit.html", "text!tpl/position-edit.html", "text!tpl/position-list.html",
 	"text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-candidacies.html", "text!tpl/position-committee.html",
 	"text!tpl/position-evaluation.html", "text!tpl/position-nomination.html", "text!tpl/position-complementaryDocuments.html", "text!tpl/position-nomination-edit.html",
-	"text!tpl/position-complementaryDocuments-edit.html", "text!tpl/department-select.html", "text!tpl/department.html"
+	"text!tpl/position-complementaryDocuments-edit.html", "text!tpl/department-select.html", "text!tpl/department.html", "text!tpl/user-helpdesk.html"
 ], function ($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit, tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main,
 	tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select,
 	tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees,
@@ -22,7 +22,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 	tpl_register_members_edit, tpl_register_members_edit_professor_list, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit,
 	tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit,
 	tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation,
-	tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit, tpl_department_select, tpl_department) {
+	tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit, tpl_department_select, tpl_department,
+	tpl_user_helpdesk) {
 
 	"use strict";
 	/** ****************************************************************** */
@@ -1959,10 +1960,108 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		render: function (event) {
 			var self = this;
+			self.closeInnerViews();
 			self.$el.empty();
-			self.addTitle();
-			self.$el.append(self.template(self.model.toJSON()));
+			self.$el.html(self.template(self.model.toJSON()));
+
+			// Add Role Views
+			self.collection.each(function(role) {
+				var roleView = new Views.RoleView({
+					collection: self.collection,
+					model: role
+				});
+				self.$("#roles").append(roleView.render().el);
+				self.innerViews.push(roleView);
+			});
 			return self;
+		},
+
+		close: function () {
+			this.closeInnerViews();
+			$(this.el).unbind();
+			$(this.el).remove();
+		}
+	});
+
+	/***************************************************************************
+	 * UserHelpdeskView ********************************************************
+	 **************************************************************************/
+	Views.UserHelpdeskView = Views.BaseView.extend({
+		tagName: "div",
+
+		validator: undefined,
+
+		events: {
+			"click a#openIssue": function (event) {
+				if ($(event.currentTarget).attr("disabled")) {
+					event.preventDefault();
+					return;
+				}
+				$("form[name=jira]", this.el).submit();
+			},
+			"submit form[name=jira]": "openIssue"
+		},
+
+		initialize: function (options) {
+			this._super('initialize', [ options ]);
+			_.bindAll(this, "openIssue");
+			this.template = _.template(tpl_user_helpdesk);
+		},
+
+		render: function (eventName) {
+			var self = this;
+			var userView = new Views.AdminAccountView({
+				model: self.model
+			});
+			var roleView = new Views.AdminRoleEditView({
+				className: "row-fluid",
+				collection: self.collection,
+				model: self.collection.find(function (role) {
+					return role.isPrimary();
+				})
+			});
+
+			self.closeInnerViews();
+			self.$el.empty();
+			self.$el.html(self.template());
+
+			// Add User View
+			self.$("#user").html(userView.render().el);
+			self.innerViews.push(userView);
+			// Add Role View
+			self.$("#role").html(roleView.render().el);
+			self.innerViews.push(roleView);
+
+			return self;
+		},
+
+		openIssue: function () {
+			var self = this;
+			var jiraIssue = new Models.JiraIssue({
+				userId: self.model.get("id"),
+				type: self.$("form[name=jira] select[name=type]").val(),
+				summary: self.$("form[name=jira] input[name=summary]").val(),
+				description: self.$("form[name=jira] textarea[name=description]").val()
+			});
+
+			jiraIssue.save({}, {
+				wait: true,
+				success: function (model, resp) {
+					var popup;
+					popup = new Views.PopupView({
+						type: "success",
+						message: $.i18n.prop("Success")
+					});
+					popup.show();
+				},
+				error: function (model, resp, options) {
+					var popup = new Views.PopupView({
+						type: "error",
+						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
 		},
 
 		close: function () {
@@ -2766,7 +2865,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							subject: {
 								"required": "input[name=fekCheckbox]:checked"
 							},
-							"hasAcceptedTerms" : "required"
+							"hasAcceptedTerms": "required"
 						},
 						messages: {
 							department: $.i18n.prop('validation_department'),
