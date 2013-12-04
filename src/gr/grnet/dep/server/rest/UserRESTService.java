@@ -9,6 +9,7 @@ import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.InstitutionManager;
 import gr.grnet.dep.service.model.JiraIssue;
+import gr.grnet.dep.service.model.JiraIssue.IssueStatus;
 import gr.grnet.dep.service.model.JiraIssue.IssueType;
 import gr.grnet.dep.service.model.MinistryAssistant;
 import gr.grnet.dep.service.model.MinistryManager;
@@ -332,26 +333,34 @@ public class UserRESTService extends RESTService {
 
 						{
 							put("username", savedUser.getUsername());
-							put("verificationLink", WebConstants.conf.getString("home.url") + "/registration.html?#username=" + savedUser.getUsername() + "&verification=" + savedUser.getVerificationNumber());
+							put("verificationLink", WebConstants.conf.getString("home.url") + "/registration.html#username=" + savedUser.getUsername() + "&verification=" + savedUser.getVerificationNumber());
 						}
 					}));
 			}
 
 			//5. Post Issue:
 			if (firstRole.getDiscriminator().equals(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+				String summary = jiraService.getResourceBundleString("institution.manager.created.assistant.summary");
+				String description = jiraService.getResourceBundleString("institution.manager.created.assistant.description",
+					"user", savedUser.getFullName() + "( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + savedUser.getId() + " )");
 				JiraIssue issue = new JiraIssue(
+					IssueStatus.CLOSED,
 					IssueType.REGISTRATION,
 					savedUser.getId(),
-					jiraService.getResourceBundleString("institution.manager.created.assistant.summary"),
-					jiraService.getResourceBundleString("institution.manager.created.assistant.description"));
-				jiraService.queueOpenIssue(issue);
+					summary,
+					description);
+				jiraService.queueCreateIssue(issue);
 			} else {
+				String summary = jiraService.getResourceBundleString("user.created.account.summary");
+				String description = jiraService.getResourceBundleString("user.created.account.description",
+					"user", savedUser.getFullName() + "( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + savedUser.getId() + " )");
 				JiraIssue issue = new JiraIssue(
+					IssueStatus.CLOSED,
 					IssueType.REGISTRATION,
 					savedUser.getId(),
-					jiraService.getResourceBundleString("user.created.account.summary"),
-					jiraService.getResourceBundleString("user.created.account.description"));
-				jiraService.queueOpenIssue(issue);
+					summary,
+					description);
+				jiraService.queueCreateIssue(issue);
 			}
 
 			//6. Return result
@@ -547,7 +556,7 @@ public class UserRESTService extends RESTService {
 
 							{
 								put("username", u.getUsername());
-								put("verificationLink", WebConstants.conf.getString("home.url") + "/registration.html?#email=" + u.getUsername() + "&verification=" + u.getVerificationNumber());
+								put("verificationLink", WebConstants.conf.getString("home.url") + "/registration.html#username=" + u.getUsername() + "&verification=" + u.getVerificationNumber());
 							}
 						}), true);
 
@@ -589,12 +598,16 @@ public class UserRESTService extends RESTService {
 					em.flush();
 
 					// Post to Jira
+					String summary = jiraService.getResourceBundleString("user.verified.email.summary");
+					String description = jiraService.getResourceBundleString("user.verified.email.description",
+						"user", u.getFullName() + "( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + u.getId() + " )");
 					JiraIssue issue = new JiraIssue(
+						IssueStatus.CLOSED,
 						IssueType.REGISTRATION,
 						u.getId(),
-						jiraService.getResourceBundleString("user.verified.email.summary"),
-						jiraService.getResourceBundleString("user.verified.email.description"));
-					jiraService.queueOpenIssue(issue);
+						summary,
+						description);
+					jiraService.queueCreateIssue(issue);
 					return u;
 				default:
 					throw new RestException(Status.FORBIDDEN, "verify.account.status." + u.getStatus().toString().toLowerCase());
@@ -643,12 +656,17 @@ public class UserRESTService extends RESTService {
 
 			// Post to Jira
 			if (u.getStatus().equals(UserStatus.BLOCKED)) {
+				String summary = jiraService.getResourceBundleString("helpdesk.blocked.user.summary");
+				String description = jiraService.getResourceBundleString("helpdesk.blocked.user.description",
+					"user", u.getFullName() + "( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + u.getId() + " )",
+					"admin", loggedOn.getFullName());
 				JiraIssue issue = new JiraIssue(
+					IssueStatus.CLOSED,
 					IssueType.REGISTRATION,
 					u.getId(),
-					jiraService.getResourceBundleString("helpdesk.blocked.user.summary"),
-					jiraService.getResourceBundleString("helpdesk.blocked.user.description"));
-				jiraService.queueOpenIssue(issue);
+					summary,
+					description);
+				jiraService.queueCreateIssue(issue);
 			}
 			return u;
 		} catch (NoResultException e) {

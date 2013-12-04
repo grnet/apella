@@ -7,6 +7,7 @@ import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.InstitutionManager;
 import gr.grnet.dep.service.model.JiraIssue;
+import gr.grnet.dep.service.model.JiraIssue.IssueStatus;
 import gr.grnet.dep.service.model.JiraIssue.IssueType;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.Professor;
@@ -459,12 +460,16 @@ public class RoleRESTService extends RESTService {
 
 			// Post to Jira
 			if (!existingRole.isMissingRequiredFields()) {
+				String summary = jiraService.getResourceBundleString("user.created.role.summary");
+				String description = jiraService.getResourceBundleString("user.created.role.description",
+					"user", existingRole.getUser().getFullName() + "( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + existingRole.getUser().getId() + " )");
 				JiraIssue issue = new JiraIssue(
+					IssueStatus.CLOSED,
 					IssueType.REGISTRATION,
 					existingRole.getUser().getId(),
-					jiraService.getResourceBundleString("user.created.role.summary"),
-					jiraService.getResourceBundleString("user.created.role.description"));
-				jiraService.queueOpenIssue(issue);
+					summary,
+					description);
+				jiraService.queueCreateIssue(issue);
 			}
 
 			return existingRole;
@@ -1141,22 +1146,34 @@ public class RoleRESTService extends RESTService {
 
 			// Post to Jira
 			JiraIssue issue = null;
+			String summary;
+			String description;
 			switch (primaryRole.getStatus()) {
 				case ACTIVE:
+					summary = jiraService.getResourceBundleString("helpdesk.activated.role.summary");
+					description = jiraService.getResourceBundleString("helpdesk.activated.role.description",
+						"user", primaryRole.getUser().getFullName() + "( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + primaryRole.getUser().getId() + " )",
+						"admin", loggedOn.getFullName());
 					issue = new JiraIssue(
+						IssueStatus.CLOSED,
 						IssueType.REGISTRATION,
 						primaryRole.getUser().getId(),
-						jiraService.getResourceBundleString("helpdesk.activated.role.summary"),
-						jiraService.getResourceBundleString("helpdesk.activated.role.description"));
-					jiraService.queueOpenIssue(issue);
+						summary,
+						description);
+					jiraService.queueCreateIssue(issue);
 					break;
 				case UNAPPROVED:
+					summary = jiraService.getResourceBundleString("helpdesk.activated.role.summary");
+					description = jiraService.getResourceBundleString("helpdesk.activated.role.description",
+						"user", primaryRole.getUser().getFullName() + "( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + primaryRole.getUser().getId() + " )",
+						"admin", loggedOn.getFullName());
 					issue = new JiraIssue(
+						IssueStatus.CLOSED,
 						IssueType.REGISTRATION,
 						primaryRole.getUser().getId(),
-						jiraService.getResourceBundleString("heldesk.deactivated.role.summary"),
-						jiraService.getResourceBundleString("heldesk.deactivated.role.description"));
-					jiraService.queueOpenIssue(issue);
+						summary,
+						description);
+					jiraService.queueCreateIssue(issue);
 					break;
 				default:
 					break;

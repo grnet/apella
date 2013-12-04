@@ -39,7 +39,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 		},
 
 		routes: {
-			"email=:email&verification=:verificationNumber": "showVerificationView",
+			"username=:username&verification=:verificationNumber": "showVerificationView",
 			"": "showRegisterSelectView",
 			"profile=:role": "showRegisterView",
 			"success": "showRegisterSuccessView"
@@ -93,14 +93,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			$("#content").html(_.template(tpl_user_registration_success));
 		},
 
-		showVerificationView: function (email, verificationNumber) {
+		showVerificationView: function (username, verificationNumber) {
 			var self = this;
 			var userRegistration;
 
 			self.clear();
 
 			userRegistration = new Models.User({
-				"username": email,
+				"username": username,
 				"verificationNumber": verificationNumber
 			});
 
@@ -384,6 +384,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					});
 				}
 				$("#content").html(userView.render().el);
+				self.refreshBreadcrumb([ $.i18n.prop('menu_user'), user.getDisplayName() ]);
 				self.currentView.push(userView);
 			}
 
@@ -404,7 +405,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 							displayContent();
 						}
 					});
-					self.refreshBreadcrumb([ $.i18n.prop('menu_adminusers'), $.i18n.prop('menu_user'), user.getDisplayName() ]);
 				}
 			});
 		},

@@ -9,6 +9,33 @@ public class JiraIssue implements Serializable {
 
 	private static final long serialVersionUID = 1885653801140864606L;
 
+	public enum IssueStatus {
+		OPEN(1),
+		IN_PROGRESS(3),
+		REOPENED(4),
+		RESOLVED(5),
+		CLOSED(6);
+
+		private int id;
+
+		private IssueStatus(int id) {
+			this.id = id;
+		}
+
+		public int intValue() {
+			return this.id;
+		}
+
+		public static IssueStatus valueOf(int id) {
+			IssueStatus[] values = IssueStatus.values();
+			for (int i = 0; i < values.length; i++) {
+				if (values[i].intValue() == (id))
+					return values[i];
+			}
+			throw new IllegalArgumentException();
+		}
+	}
+
 	public enum IssueType {
 		COMPLAINT(11),
 		ERROR(14),
@@ -17,18 +44,57 @@ public class JiraIssue implements Serializable {
 		ACCOUNT_MODIFICATION(59),
 		REGISTRATION(60);
 
-		private int value;
+		private int id;
 
-		private IssueType(int value) {
-			this.value = value;
+		private IssueType(int id) {
+			this.id = id;
 		}
 
-		public int getValue() {
-			return value;
+		public int intValue() {
+			return this.id;
+		}
+
+		public static IssueType valueOf(int id) {
+			IssueType[] values = IssueType.values();
+			for (int i = 0; i < values.length; i++) {
+				if (values[i].intValue() == (id))
+					return values[i];
+			}
+			throw new IllegalArgumentException();
+		}
+	}
+
+	public enum IssueResolution {
+		FIXED(1),
+		WONT_FIX(2),
+		DUPLICATE(3),
+		INCOMPLETE(4),
+		CANNOT_REPRODUCE(5),
+		FIXED_WORKAROUND(6);
+
+		private int id;
+
+		private IssueResolution(int id) {
+			this.id = id;
+		}
+
+		public int intValue() {
+			return this.id;
+		}
+
+		public static IssueResolution valueOf(int id) {
+			IssueResolution[] values = IssueResolution.values();
+			for (int i = 0; i < values.length; i++) {
+				if (values[i].intValue() == (id))
+					return values[i];
+			}
+			throw new IllegalArgumentException();
 		}
 	}
 
 	private String key;
+
+	private IssueStatus status;
 
 	private IssueType type;
 
@@ -42,8 +108,9 @@ public class JiraIssue implements Serializable {
 		super();
 	}
 
-	public JiraIssue(IssueType type, Long userId, String summary, String description) {
+	public JiraIssue(IssueStatus status, IssueType type, Long userId, String summary, String description) {
 		super();
+		this.status = status;
 		this.type = type;
 		this.userId = userId;
 		this.summary = summary;
@@ -60,6 +127,14 @@ public class JiraIssue implements Serializable {
 
 	public IssueType getType() {
 		return type;
+	}
+
+	public IssueStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(IssueStatus status) {
+		this.status = status;
 	}
 
 	public void setType(IssueType type) {

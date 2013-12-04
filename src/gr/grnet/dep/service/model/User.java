@@ -286,6 +286,15 @@ public class User implements Serializable {
 
 	///////////////////////////////////////////////////////////////////////////////////////
 
+	@XmlTransient
+	@JsonIgnore
+	public String getFullName() {
+		if (this.basicInfo == null) {
+			return "- -";
+		}
+		return this.basicInfo.getFirstname() + " " + this.basicInfo.getLastname();
+	}
+
 	public boolean isMissingRequiredFields() {
 		return (this.basicInfo == null || this.basicInfo.isMissingRequiredFields()) ||
 			(this.contactInfo == null || this.contactInfo.isMissingRequiredFields()) ||

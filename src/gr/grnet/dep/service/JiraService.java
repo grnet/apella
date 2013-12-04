@@ -1,6 +1,8 @@
 package gr.grnet.dep.service;
 
 import gr.grnet.dep.service.model.JiraIssue;
+import gr.grnet.dep.service.model.JiraIssue.IssueResolution;
+import gr.grnet.dep.service.model.JiraIssue.IssueStatus;
 import gr.grnet.dep.service.model.JiraIssue.IssueType;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
@@ -31,6 +33,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
@@ -73,34 +76,6 @@ public class JiraService {
 		}
 	}
 
-	public String getIssueTypeString(IssueType issueType) {
-		String retv;
-		switch (issueType) {
-			case REGISTRATION:
-				retv = "Εγγραφή/Πιστοποίηση";
-				break;
-			case GENERAL_INFORMATION:
-				retv = "γενικές πληροφορίες";
-				break;
-			case LOGIN:
-				retv = "θέματα πρόσβασης";
-				break;
-			case ACCOUNT_MODIFICATION:
-				retv = "μεταβολή στοιχείων";
-				break;
-			case ERROR:
-				retv = "Πρόβλημα";
-				break;
-			case COMPLAINT:
-				retv = "Παράπονα";
-				break;
-			default:
-				retv = "ΑΛΛΟ";
-				break;
-		}
-		return retv;
-	}
-
 	public String getRoleString(RoleDiscriminator role) {
 		String retv;
 		switch (role) {
@@ -135,8 +110,16 @@ public class JiraService {
 		return retv;
 	}
 
-	public String getResourceBundleString(String key) {
-		return jiraResourceBundle.getString(key);
+	public String getResourceBundleString(String key, String... args) {
+		String result = jiraResourceBundle.getString(key);
+		if (args != null && (args.length % 2 == 0)) {
+			for (int i = 0; i < args.length - 1; i += 2) {
+				String name = args[i];
+				String value = args[i + 1];
+				result = result.replaceAll("\\{" + name + "\\}", value);
+			}
+		}
+		return result;
 	}
 
 	private final ObjectMapper mapper = new ObjectMapper();
@@ -145,12 +128,14 @@ public class JiraService {
 		ClientRequest request = new ClientRequest(REST_URL + path);
 		request.accept(MediaType.APPLICATION_JSON);
 		request.header("Authorization", "Basic " + authenticationString());
+		logger.info("GET REQUEST: " + path);
 		ClientResponse<String> response = request.get(String.class);
 		if (response.getStatus() < 200 || response.getStatus() > 299) {
 			throw new Exception("Error Code " + response.getStatus());
 		}
 		String json = response.getEntity();
 		JsonNode jsonNode = mapper.readTree(json);
+		logger.info("GET RESPONSE: " + path + " " + jsonNode.toString());
 		return jsonNode;
 	}
 
@@ -159,7 +144,25 @@ public class JiraService {
 		request.accept(MediaType.APPLICATION_JSON);
 		request.header("Authorization", "Basic " + authenticationString());
 		request.body("application/json", data);
+		logger.info("POST REQUEST: " + path + " " + data.toString());
 		ClientResponse<String> response = request.post(String.class);
+		if (response.getStatus() < 200 || response.getStatus() > 299) {
+			throw new Exception("Response Error post " + path + " : " + response.getStatus() + " " + response.getEntity());
+		}
+		String json = response.getEntity();
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode jsonNode = mapper.readTree(json);
+		logger.info("POST RESPONSE: " + path + " " + jsonNode.toString());
+		return jsonNode;
+	}
+
+	private JsonNode doPut(String path, JsonNode data) throws Exception {
+		ClientRequest request = new ClientRequest(REST_URL + path);
+		request.accept(MediaType.APPLICATION_JSON);
+		request.header("Authorization", "Basic " + authenticationString());
+		request.body("application/json", data);
+		logger.info("PUT REQUEST: " + path + " " + data.toString());
+		ClientResponse<String> response = request.put(String.class);
 		if (response.getStatus() < 200 || response.getStatus() > 299) {
 			throw new Exception("Response Error post " + path + " : " + response.getStatus() + " " + response.getEntity());
 		}
@@ -167,6 +170,7 @@ public class JiraService {
 		String json = response.getEntity();
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode jsonNode = mapper.readTree(json);
+		logger.info("PUT RESPONSE: " + path + " " + jsonNode.toString());
 		return jsonNode;
 	}
 
@@ -175,7 +179,7 @@ public class JiraService {
 		return new String(enc);
 	}
 
-	public void queueOpenIssue(JiraIssue issue) {
+	public void queueCreateIssue(JiraIssue issue) {
 		Connection qConn = null;
 		javax.jms.Session session = null;
 		MessageProducer sender = null;
@@ -216,7 +220,7 @@ public class JiraService {
 		return fromJSON(node);
 	}
 
-	public JiraIssue openIssue(JiraIssue issue) {
+	public JiraIssue createIssue(JiraIssue issue) {
 		// Prepare Data:
 		JsonNode issueData = toJSON(issue);
 		if (issueData == null) {
@@ -224,13 +228,15 @@ public class JiraService {
 		}
 		// Send to Jira
 		try {
-			logger.info("updateIssue POST :\n" + issueData.toString());
 			JsonNode response = doPost("/issue/", issueData);
-			logger.info("updateIssue POST Result :\n" + response.toString());
 			issue.setKey(response.get("key").asText());
+			if (!issue.getStatus().equals(IssueStatus.OPEN)) {
+				JsonNode updateStatusData = toTransitionJSON(issue);
+				response = doPost("/issue/" + issue.getKey() + "/transitions", updateStatusData);
+			}
 			return issue;
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Error posting to Jira\n" + e.getMessage());
+			logger.log(Level.WARNING, "Error posting to Jira:\n" + e.getMessage());
 			return null;
 		}
 	}
@@ -238,9 +244,11 @@ public class JiraService {
 	private JiraIssue fromJSON(JsonNode jiraIssue) {
 		try {
 			String key = jiraIssue.get("key").asText();
+
 			JsonNode fields = jiraIssue.get("fields");
+			IssueType type = IssueType.valueOf(fields.get("issuetype").get("id").asInt());
+			IssueStatus status = IssueStatus.valueOf(fields.get("status").get("id").asInt());
 			String summary = fields.get("summary").asText();
-			IssueType type = IssueType.valueOf(fields.get("issuetype").get("name").asText());
 			String description = fields.get("description").asText();
 			String email = fields.get("customfield_12655").asText();
 
@@ -249,7 +257,7 @@ public class JiraService {
 				.setParameter("email", email)
 				.getSingleResult();
 
-			JiraIssue issue = new JiraIssue(type, userId, summary, description);
+			JiraIssue issue = new JiraIssue(status, type, userId, summary, description);
 			issue.setKey(key);
 
 			return issue;
@@ -271,7 +279,12 @@ public class JiraService {
 	    	"summary": "Εγγραφή",
 			"issuetype": {
 				"name": "Εγγραφή/Πιστοποίηση",
+				id: "60"
 			},
+			status: {
+				name: "Open"
+				id: "1"
+			}
 			"description": "Περιγραφή Εγγραφής",
 			"customfield_12650": {
 				"value": "καθηγητής/ερευνητής ημεδαπής",
@@ -310,7 +323,7 @@ public class JiraService {
 		fields.put("summary", jiraIssue.getSummary());
 
 		ObjectNode issueTypeNode = mapper.createObjectNode();
-		issueTypeNode.put("id", jiraIssue.getType().getValue());
+		issueTypeNode.put("id", jiraIssue.getType().intValue());
 		fields.put("issuetype", issueTypeNode);
 
 		fields.put("description", jiraIssue.getDescription());
@@ -327,6 +340,61 @@ public class JiraService {
 		fields.put("customfield_12653", user.getBasicInfo().getFirstname() + " " + user.getBasicInfo().getLastname());
 		fields.put("customfield_12654", user.getContactInfo().getMobile());
 		fields.put("customfield_12655", user.getContactInfo().getEmail());
+
+		return issue;
+
+	}
+
+	/*
+	 {
+	 	"update": {
+	    	"comment": [
+	        	{
+	            	"add": {
+	                	"body": "Bug has been fixed."
+	            	}
+	        	}
+	    	]
+		},
+		"fields": {
+	    	"assignee": {
+	        	"name": "bob"
+	    	},
+	    	"resolution": {
+	        	"name": "Fixed"
+	    	}
+		},
+		"transition": {
+	    	"id": "5"
+		}
+	}
+	*/
+
+	private JsonNode toTransitionJSON(JiraIssue jiraIssue) {
+		ObjectNode issue = mapper.createObjectNode();
+
+		// Transition
+		ObjectNode update = mapper.createObjectNode();
+		issue.put("update", update);
+		ArrayNode comments = mapper.createArrayNode();
+		update.put("comment", comments);
+
+		ObjectNode comment = mapper.createObjectNode();
+		comments.add(comment);
+		ObjectNode add = mapper.createObjectNode();
+		comment.put("add", add);
+		add.put("body", "Automatically Closed");
+
+		ObjectNode fields = mapper.createObjectNode();
+		issue.put("fields", fields);
+
+		ObjectNode resolution = mapper.createObjectNode();
+		fields.put("resolution", resolution);
+		resolution.put("name", IssueResolution.FIXED_WORKAROUND.intValue());
+
+		ObjectNode transistionNode = mapper.createObjectNode();
+		transistionNode.put("id", jiraIssue.getStatus().intValue());
+		issue.put("transition", transistionNode);
 
 		return issue;
 

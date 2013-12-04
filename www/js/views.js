@@ -1339,7 +1339,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 	Views.HomeView = Views.BaseView.extend({
 		tagName: "div",
 
-		className: "span12 hero-unit",
+		className: "hero-unit",
 
 		initialize: function (options) {
 			this._super('initialize', [ options ]);
@@ -1965,7 +1965,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.$el.html(self.template(self.model.toJSON()));
 
 			// Add Role Views
-			self.collection.each(function(role) {
+			self.collection.each(function (role) {
 				var roleView = new Views.RoleView({
 					collection: self.collection,
 					model: role

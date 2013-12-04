@@ -13,7 +13,7 @@
 			<div class="span4">
 				<form name="jira" onsubmit="return false">
 					<fieldset>
-						<legend><%= $.i18n.prop('Jira') %></legend>
+						<legend><%= $.i18n.prop('OpenIssue') %></legend>
 						<select name="type" class="input-large">
 							<option value="REGISTRATION">Εγγραφή/Πιστοποίηση</option>
 							<option value="GENERAL_INFORMATION">γενικές πληροφορίες</option>
@@ -25,7 +25,7 @@
 						<input type="text" name="summary" class="input-large" placeholder="Summary"/><br/>
 						<textarea name="description" class="input-large" placeholder="Description"></textarea><br/>
 					</fieldset>
-					<a id="openIssue" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_openIssue') %></a>
+					<a id="openIssue" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_create') %></a>
 				</form>
 			</div>
 			<div class="span4">

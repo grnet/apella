@@ -29,7 +29,7 @@ public class JiraQueue implements MessageListener {
 		ObjectMessage jiraMessage = (ObjectMessage) message;
 		try {
 			JiraIssue jiraIssue = (JiraIssue) jiraMessage.getObject();
-			service.openIssue(jiraIssue);
+			service.createIssue(jiraIssue);
 		} catch (JMSException e) {
 			logger.log(Level.WARNING, "", e);
 			throw new EJBException(e);

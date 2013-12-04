@@ -1,12 +1,10 @@
 <div class="hero-unit">
 	<div class="row-fluid">
-		<div class="span3">
+		<div class="span2">
 			<img src="./css/images/apella_logo.png"/>
 		</div>
-		<div class="span9">
-			<h1><%= $.i18n.prop('RegistrationForm') %> </h1>
-			<h2><%= $.i18n.prop(discriminator) %></h2>
-			<br/>
+		<div class="span10">
+			<h2><%= $.i18n.prop('RegistrationForm') %> - <%= $.i18n.prop(discriminator) %></h2>
 			<div id="shibbolethLoginInstructions">
 				<form class="form-signin" id="shibbolethloginForm" onsubmit="return false">
 					<div class="control-group">
@@ -14,7 +12,7 @@
 						<span class="help-block"><%= $.i18n.prop('Instructions_ShibbolethRegistration') %></span>
 
 						<div class="controls">
-							<a href="/dep/rest/user/shibboleth/login?nextURL=/" class="btn btn-success"><%= $.i18n.prop('btn_shibbolethLogin') %></a>
+							<a href="/dep/shibboleth/login?nextURL=/" class="btn btn-success"><%= $.i18n.prop('btn_shibbolethLogin') %></a>
 						</div>
 					</div>
 				</form>
