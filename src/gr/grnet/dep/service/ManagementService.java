@@ -30,6 +30,9 @@ public class ManagementService {
 	@EJB
 	AuthenticationService authenticationService;
 
+	@EJB
+	MailService mailService;
+
 	@Inject
 	protected Logger logger;
 
@@ -43,6 +46,7 @@ public class ManagementService {
 	}
 
 	public void massCreateProfessorDomesticAccounts() {
+		@SuppressWarnings("unchecked")
 		List<ProfessorDomesticData> pdData = em.createQuery(
 			"select pdd from ProfessorDomesticData pdd")
 			.getResultList();
@@ -56,4 +60,15 @@ public class ManagementService {
 		}
 	}
 
+	public void massSendLoginEmails() {
+		@SuppressWarnings("unchecked")
+		List<User> users = em.createQuery(
+			"select u from User u " +
+				"where u.permanentAuthToken is not null")
+			.getResultList();
+		for (User u : users) {
+			mailService.sendLoginEmail(u);
+		}
+
+	}
 }

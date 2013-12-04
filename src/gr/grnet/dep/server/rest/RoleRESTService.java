@@ -462,7 +462,7 @@ public class RoleRESTService extends RESTService {
 			if (!existingRole.isMissingRequiredFields()) {
 				String summary = jiraService.getResourceBundleString("user.created.role.summary");
 				String description = jiraService.getResourceBundleString("user.created.role.description",
-					"user", existingRole.getUser().getFullName() + "( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + existingRole.getUser().getId() + " )");
+					"user", existingRole.getUser().getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + existingRole.getUser().getId() + " )");
 				JiraIssue issue = new JiraIssue(
 					IssueStatus.CLOSED,
 					IssueType.REGISTRATION,
@@ -1152,7 +1152,7 @@ public class RoleRESTService extends RESTService {
 				case ACTIVE:
 					summary = jiraService.getResourceBundleString("helpdesk.activated.role.summary");
 					description = jiraService.getResourceBundleString("helpdesk.activated.role.description",
-						"user", primaryRole.getUser().getFullName() + "( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + primaryRole.getUser().getId() + " )",
+						"user", primaryRole.getUser().getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + primaryRole.getUser().getId() + " )",
 						"admin", loggedOn.getFullName());
 					issue = new JiraIssue(
 						IssueStatus.CLOSED,
@@ -1165,7 +1165,7 @@ public class RoleRESTService extends RESTService {
 				case UNAPPROVED:
 					summary = jiraService.getResourceBundleString("helpdesk.activated.role.summary");
 					description = jiraService.getResourceBundleString("helpdesk.activated.role.description",
-						"user", primaryRole.getUser().getFullName() + "( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + primaryRole.getUser().getId() + " )",
+						"user", primaryRole.getUser().getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + primaryRole.getUser().getId() + " )",
 						"admin", loggedOn.getFullName());
 					issue = new JiraIssue(
 						IssueStatus.CLOSED,

@@ -1,8 +1,12 @@
 package gr.grnet.dep.service;
 
+import gr.grnet.dep.service.model.AuthenticationType;
 import gr.grnet.dep.service.model.MailRecord;
+import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -54,6 +58,8 @@ public class MailService {
 		}
 	}
 
+	private ResourceBundle resources = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-mail", new Locale("el"));
+
 	private static final Logger logger = Logger.getLogger(MailService.class.getName());
 
 	public void pushEmail(String aToEmailAddr, String aSubject, String aBody) {
@@ -93,6 +99,14 @@ public class MailService {
 			sendEmail(mail);
 			mail = popEmail();
 			i += 1;
+
+			if (i % 10 == 0) {
+				try {
+					Thread.sleep(200);
+				} catch (InterruptedException e) {
+					logger.log(Level.SEVERE, "Mail sent error: ", e.getMessage());
+				}
+			}
 		}
 
 		return i;
@@ -103,7 +117,7 @@ public class MailService {
 	}
 
 	public void postEmail(String aToEmailAddr, String aSubjectKey, String aBodyKey, Map<String, String> parameters, boolean sendNow) {
-		ResourceBundle resources = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-mail", new Locale("el"));
+
 		String aSubject = resources.getString(aSubjectKey);
 		String aBody = resources.getString(aBodyKey);
 		for (String key : parameters.keySet()) {
@@ -173,7 +187,7 @@ public class MailService {
 
 			Transport.send(message);
 		} catch (MessagingException e) {
-			logger.log(Level.SEVERE, "Failed to send email to " + aToEmailAddr + " " + aSubject + "\n" + aBody, e);
+			logger.log(Level.SEVERE, "Failed to send email to " + aToEmailAddr + " " + aSubject + "\n" + aBody + ": " + e.getMessage());
 		}
 	}
 
@@ -181,4 +195,28 @@ public class MailService {
 		sendEmail(mail.getToEmailAddr(), mail.getSubject(), mail.getBody());
 	}
 
+	public void sendLoginEmail(User u) {
+		try {
+			if (u.getAuthenticationType().equals(AuthenticationType.EMAIL) && u.getPermanentAuthToken() != null) {
+				String aToEmailAddr = u.getContactInfo().getEmail();
+				String aSubject = resources.getString("login.email.subject");
+				String aBody = resources.getString("login.email.body")
+					.replaceAll("\\[firstname\\]", u.getBasicInfo().getFirstname())
+					.replaceAll("\\[lastname\\]", u.getBasicInfo().getLastname())
+					.replaceAll("\\[loginLink\\]", "<a href=\"" + getloginLink(u.getPermanentAuthToken()) + "\">Είσοδο</a>");
+				pushEmail(aToEmailAddr, aSubject, aBody);
+				logger.log(Level.INFO, "Sent login email to user with id " + u.getId() + " " + getloginLink(u.getPermanentAuthToken()));
+			} else {
+				logger.log(Level.INFO, "Skipped login email for user with id " + u.getId());
+			}
+		} catch (UnsupportedEncodingException e) {
+			logger.log(Level.WARNING, "Failed to send login email", e.getMessage());
+		}
+	}
+
+	private String getloginLink(String token) throws UnsupportedEncodingException {
+		return conf.getString("rest.url") +
+			"/email/login?nextURL=" + conf.getString("home.url") + "/apella.html" +
+			"&user=" + URLEncoder.encode(token, "UTF-8");
+	}
 }

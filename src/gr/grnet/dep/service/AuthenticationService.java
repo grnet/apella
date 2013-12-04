@@ -89,23 +89,15 @@ public class AuthenticationService {
 		// Create User from Shibboleth Fields 
 		User u = new User();
 		u.setAuthenticationType(AuthenticationType.SHIBBOLETH);
-
-		u.getBasicInfo().setFirstname(shibbolethInfo.getGivenName());
-		u.getBasicInfo().setLastname(shibbolethInfo.getSn());
-		u.getBasicInfo().setFathername("");
-
 		u.setCreationDate(new Date());
-
 		u.setStatus(UserStatus.ACTIVE);
 		u.setStatusDate(new Date());
-
 		// Add Primary Role
 		ProfessorDomestic pd = new ProfessorDomestic();
 		pd.setInstitution(findInstitutionBySchacHomeOrganization(shibbolethInfo.getSchacHomeOrganization()));
 		pd.setStatus(RoleStatus.UNAPPROVED);
 		pd.setStatusDate(new Date());
 		u.addRole(pd);
-
 		// Add Second Role : CANDIDATE
 		Candidate secondRole = new Candidate();
 		secondRole.setStatus(RoleStatus.UNAPPROVED);

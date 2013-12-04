@@ -41,4 +41,16 @@ public class ManagementRESTService extends RESTService {
 
 		return "OK";
 	}
+
+	@GET
+	@Produces(MediaType.TEXT_PLAIN)
+	@Path("/massSendLoginEmails")
+	public String massSendLoginEmails(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
+		User loggedOn = getLoggedOn(authToken);
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		mgmtService.massSendLoginEmails();
+		return "OK";
+	}
 }

@@ -342,7 +342,7 @@ public class UserRESTService extends RESTService {
 			if (firstRole.getDiscriminator().equals(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
 				String summary = jiraService.getResourceBundleString("institution.manager.created.assistant.summary");
 				String description = jiraService.getResourceBundleString("institution.manager.created.assistant.description",
-					"user", savedUser.getFullName() + "( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + savedUser.getId() + " )");
+					"user", savedUser.getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + savedUser.getId() + " )");
 				JiraIssue issue = new JiraIssue(
 					IssueStatus.CLOSED,
 					IssueType.REGISTRATION,
@@ -353,7 +353,7 @@ public class UserRESTService extends RESTService {
 			} else {
 				String summary = jiraService.getResourceBundleString("user.created.account.summary");
 				String description = jiraService.getResourceBundleString("user.created.account.description",
-					"user", savedUser.getFullName() + "( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + savedUser.getId() + " )");
+					"user", savedUser.getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + savedUser.getId() + " )");
 				JiraIssue issue = new JiraIssue(
 					IssueStatus.CLOSED,
 					IssueType.REGISTRATION,
@@ -571,6 +571,33 @@ public class UserRESTService extends RESTService {
 	}
 
 	@PUT
+	@Path("/{id:[0-9][0-9]*}/sendLoginEmail")
+	public Response sendLoginEmail(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+		User loggedOn = getLoggedOn(authToken);
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		try {
+			final User u = (User) em.createQuery(
+				"from User u " +
+					"left join fetch u.roles " +
+					"where u.id = :id")
+				.setParameter("id", id)
+				.getSingleResult();
+
+			// Validate
+			if (!u.getAuthenticationType().equals(AuthenticationType.EMAIL)) {
+				throw new RestException(Status.NOT_FOUND, "login.wrong.registration.type");
+			}
+			mailService.sendLoginEmail(u);
+
+			return Response.noContent().build();
+		} catch (NoResultException e) {
+			throw new RestException(Status.NOT_FOUND, "login.wrong.email");
+		}
+	}
+
+	@PUT
 	@Path("/verify")
 	@JsonView({DetailedUserView.class})
 	public User verify(User user) {
@@ -600,7 +627,7 @@ public class UserRESTService extends RESTService {
 					// Post to Jira
 					String summary = jiraService.getResourceBundleString("user.verified.email.summary");
 					String description = jiraService.getResourceBundleString("user.verified.email.description",
-						"user", u.getFullName() + "( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + u.getId() + " )");
+						"user", u.getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + u.getId() + " )");
 					JiraIssue issue = new JiraIssue(
 						IssueStatus.CLOSED,
 						IssueType.REGISTRATION,
@@ -658,7 +685,7 @@ public class UserRESTService extends RESTService {
 			if (u.getStatus().equals(UserStatus.BLOCKED)) {
 				String summary = jiraService.getResourceBundleString("helpdesk.blocked.user.summary");
 				String description = jiraService.getResourceBundleString("helpdesk.blocked.user.description",
-					"user", u.getFullName() + "( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + u.getId() + " )",
+					"user", u.getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + u.getId() + " )",
 					"admin", loggedOn.getFullName());
 				JiraIssue issue = new JiraIssue(
 					IssueStatus.CLOSED,

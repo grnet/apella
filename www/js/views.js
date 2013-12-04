@@ -1999,12 +1999,13 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				}
 				$("form[name=jira]", this.el).submit();
 			},
-			"submit form[name=jira]": "openIssue"
+			"submit form[name=jira]": "openIssue",
+			"click #resendLoginEmail": "resendLoginEmail"
 		},
 
 		initialize: function (options) {
 			this._super('initialize', [ options ]);
-			_.bindAll(this, "openIssue");
+			_.bindAll(this, "openIssue", "resendLoginEmail");
 			this.template = _.template(tpl_user_helpdesk);
 		},
 
@@ -2045,6 +2046,28 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			});
 
 			jiraIssue.save({}, {
+				wait: true,
+				success: function (model, resp) {
+					var popup;
+					popup = new Views.PopupView({
+						type: "success",
+						message: $.i18n.prop("Success")
+					});
+					popup.show();
+				},
+				error: function (model, resp, options) {
+					var popup = new Views.PopupView({
+						type: "error",
+						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+		},
+
+		resendLoginEmail: function () {
+			var self = this;
+			self.model.resendLoginEmail({}, {
 				wait: true,
 				success: function (model, resp) {
 					var popup;
