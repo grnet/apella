@@ -254,8 +254,7 @@ public class User implements Serializable {
 		this.creationDate = creationDate;
 	}
 
-	@XmlTransient
-	@JsonIgnore
+	@JsonView({DetailedUserView.class})
 	public Long getVerificationNumber() {
 		return verificationNumber;
 	}

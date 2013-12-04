@@ -114,7 +114,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					self.currentView = userVerificationView;
 				},
 				error: function (model, resp, options) {
-					$("#content").html($.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code")));
+					$("#content").html("<h2>" + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code")) + "</h2>");
 					self.currentView = undefined;
 				}
 			});

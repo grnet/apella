@@ -1,5 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import java.util.Locale;
+
 import javax.persistence.Embeddable;
 
 @Embeddable
@@ -74,4 +76,28 @@ public class BasicInformation {
 		return true;
 	}
 
+	public void toUppercase(Locale locale) {
+		if (this.firstname != null && !this.firstname.isEmpty()) {
+			this.firstname = toUppercaseNoTones(firstname, locale);
+		}
+		if (this.lastname != null && !this.lastname.isEmpty()) {
+			this.lastname = toUppercaseNoTones(lastname, locale);
+		}
+		if (this.fathername != null && !this.fathername.isEmpty()) {
+			this.fathername = toUppercaseNoTones(lastname, locale);
+		}
+	}
+
+	private String toUppercaseNoTones(String s, Locale locale) {
+		//FIRST CHARACTER KEEPS TONE
+		return s.substring(0, 1).toUpperCase(locale) +
+			s.substring(1).toUpperCase(locale)
+				.replaceAll("Ά", "Α")
+				.replaceAll("Έ", "Ε")
+				.replaceAll("Ή", "Η")
+				.replaceAll("Ί", "Ι")
+				.replaceAll("Ύ", "Υ")
+				.replaceAll("Ό", "Ο")
+				.replaceAll("Ώ", "Ω");
+	}
 }

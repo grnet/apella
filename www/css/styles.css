@@ -38,6 +38,7 @@ h4, h5, h6 {
 }
 
 .hero-unit {
+    font-size: 14px;
     padding: 20px 60px 10px 60px;
     background-color: inherit;
     border: 2px solid #0a3542;
@@ -93,7 +94,6 @@ a.help:hover {
 /* Forms
 -------------------------------------------------- */
 form {
-    font-size: 14px; /* Needed for forms inside hero-units (like registration) */
 }
 
 .form-actions {

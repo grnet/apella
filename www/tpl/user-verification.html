@@ -1,33 +1,49 @@
-<div class="row-fluid">
-	<div class="span2">
-		<img src="./css/images/apella_logo.png"/>
-	</div>
-	<div class="span10">
-		<h2><%= $.i18n.prop('VerificationForm') %></h2>
+<div class="hero-unit">
+	<div class="row-fluid">
+		<div class="span2">
+			<img src="./css/images/apella_logo.png"/>
+		</div>
+		<div class="span10">
+			<h2><%= $.i18n.prop('VerificationForm') %></h2>
 
-		<p><%= $.i18n.prop('Instructions_VerificationSuccess') %></p>
+			<p><%= $.i18n.prop('Instructions_VerificationSuccess') %></p>
 
-		<h3><%= $.i18n.prop('Account') %></h3>
-		<dl class="dl-table">
-			<dt><%= $.i18n.prop('Username') %></dt>
-			<dd><%= username %></dd>
-			<dt><%= $.i18n.prop('Name') %></dt>
-			<dd><%= basicInfo.firstname %></dd>
-			<dt><%= $.i18n.prop('Surname') %></dt>
-			<dd><%= basicInfo.lastname %></dd>
-			<dt><%= $.i18n.prop('NameLatin') %></dt>
-			<dd><%= basicInfoLatin.firstname %></dd>
-			<dt><%= $.i18n.prop('SurnameLatin') %></dt>
-			<dd><%= basicInfoLatin.lastname %></dd>
-		</dl>
-		<h3><%= $.i18n.prop('ContactInformation') %></h3>
-		<dl class="dl-table">
-			<dt><%= $.i18n.prop('Email') %></dt>
-			<dd><%= contactInfo.email %></dd>
-			<dt><%= $.i18n.prop('Mobile') %></dt>
-			<dd><%= contactInfo.mobile %></dd>
-		</dl>
-		<h3><a href="index.html"><%= $.i18n.prop('Login') %></a></h3>
+			<h3><%= $.i18n.prop('Account') %></h3>
+			<table>
+				<tr>
+					<td><%= $.i18n.prop('Username') %></td>
+					<td><%= username %></td>
+				</tr>
+				<tr>
+					<td><%= $.i18n.prop('Name') %></td>
+					<td><%= basicInfo.firstname %></td>
+				</tr>
+				<tr>
+					<td><%= $.i18n.prop('Surname') %></td>
+					<td><%= basicInfo.lastname %></td>
+				</tr>
+				<tr>
+					<td><%= $.i18n.prop('NameLatin') %></td>
+					<td><%= basicInfoLatin.firstname %></td>
+				</tr>
+				<tr>
+					<td><%= $.i18n.prop('SurnameLatin') %></td>
+					<td><%= basicInfoLatin.lastname %></td>
+				</tr>
+			</table>
+			<h3><%= $.i18n.prop('ContactInformation') %></h3>
+			<table>
+				<tr>
+					<td><%= $.i18n.prop('Email') %></td>
+					<td><%= contactInfo.email %></td>
+				</tr>
+				<tr>
+					<td><%= $.i18n.prop('Mobile') %></td>
+					<td><%= contactInfo.mobile %></td>
+				</tr>
+			</table>
+
+			<a href="apella.html" class="btn btn-success"><%= $.i18n.prop('Login') %></a>
+		</div>
 	</div>
 </div>
-

@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -320,6 +321,10 @@ public class UserRESTService extends RESTService {
 				case ADMINISTRATOR:
 					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
+
+			// Capitalize names
+			newUser.getBasicInfo().toUppercase(new Locale("el"));
+			newUser.getBasicInfoLatin().toUppercase(Locale.ENGLISH);
 			//3. Update
 			final User savedUser = em.merge(newUser);
 			em.flush(); //To catch the exception
@@ -439,7 +444,9 @@ public class UserRESTService extends RESTService {
 			existingUser.setBasicInfo(user.getBasicInfo());
 			existingUser.setBasicInfoLatin(user.getBasicInfoLatin());
 			existingUser.setContactInfo(user.getContactInfo());
-
+			// Capitalize names
+			existingUser.getBasicInfo().toUppercase(new Locale("el"));
+			existingUser.getBasicInfoLatin().toUppercase(Locale.ENGLISH);
 			em.flush();
 
 			return existingUser;
