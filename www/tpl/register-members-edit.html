@@ -3,9 +3,9 @@
 	<td>
 		<a id="viewMember" href="#user/<%= professor.user.id %>"><%= professor.user.id %> </a>
 	</td>
-	<td><%= professor.user.basicInfo.firstname %></td>
-	<td><%= professor.user.basicInfo.lastname%></td>
+	<td><%= professor.user.basicInfo.firstname %> <%= professor.user.basicInfo.lastname%></td>
 	<td><%= $.i18n.prop(professor.discriminator) %></td>
+	<td><%= professor.rank ? professor.rank.name : "" %></td>
 	<td>
 		<% if (_.isEqual(professor.discriminator, 'PROFESSOR_FOREIGN')) { %>
 		<%= professor.institution %>

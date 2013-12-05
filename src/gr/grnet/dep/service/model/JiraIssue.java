@@ -11,10 +11,10 @@ public class JiraIssue implements Serializable {
 
 	public enum IssueStatus {
 		OPEN(1),
+		CLOSED(2),
 		IN_PROGRESS(3),
 		REOPENED(4),
-		RESOLVED(5),
-		CLOSED(6);
+		RESOLVED(5);
 
 		private int id;
 

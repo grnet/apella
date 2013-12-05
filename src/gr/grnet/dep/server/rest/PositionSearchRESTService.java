@@ -97,7 +97,7 @@ public class PositionSearchRESTService extends RESTService {
 			@SuppressWarnings("unchecked")
 			List<Position> positions = (List<Position>) query.getResultList();
 
-			// Calculate CanSubmitCandidacy
+			// Calculate CanSubmitCandidacy => set false if already submitted
 			if (loggedOn.hasActiveRole(RoleDiscriminator.CANDIDATE)) {
 				Candidate candidate = (Candidate) loggedOn.getActiveRole(RoleDiscriminator.CANDIDATE);
 				for (Candidacy candidacy : candidate.getCandidacies()) {

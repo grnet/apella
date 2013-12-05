@@ -173,6 +173,7 @@ public class Position {
 		this.fekSentDate = fekSentDate;
 	}
 
+	@JsonView({PublicPositionView.class})
 	public Boolean getCanSubmitCandidacy() {
 		return canSubmitCandidacy;
 	}

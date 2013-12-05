@@ -134,7 +134,7 @@ public class JiraService {
 			throw new Exception("Error Code " + response.getStatus());
 		}
 		String json = response.getEntity();
-		JsonNode jsonNode = mapper.readTree(json);
+		JsonNode jsonNode = (json == null) ? mapper.createObjectNode() : mapper.readTree(json);
 		logger.info("GET RESPONSE: " + path + " " + jsonNode.toString());
 		return jsonNode;
 	}
@@ -151,7 +151,7 @@ public class JiraService {
 		}
 		String json = response.getEntity();
 		ObjectMapper mapper = new ObjectMapper();
-		JsonNode jsonNode = mapper.readTree(json);
+		JsonNode jsonNode = (json == null) ? mapper.createObjectNode() : mapper.readTree(json);
 		logger.info("POST RESPONSE: " + path + " " + jsonNode.toString());
 		return jsonNode;
 	}
@@ -169,7 +169,7 @@ public class JiraService {
 
 		String json = response.getEntity();
 		ObjectMapper mapper = new ObjectMapper();
-		JsonNode jsonNode = mapper.readTree(json);
+		JsonNode jsonNode = (json == null) ? mapper.createObjectNode() : mapper.readTree(json);
 		logger.info("PUT RESPONSE: " + path + " " + jsonNode.toString());
 		return jsonNode;
 	}
@@ -390,10 +390,10 @@ public class JiraService {
 
 		ObjectNode resolution = mapper.createObjectNode();
 		fields.put("resolution", resolution);
-		resolution.put("name", IssueResolution.FIXED_WORKAROUND.intValue());
+		resolution.put("id", "" + IssueResolution.FIXED_WORKAROUND.intValue());
 
 		ObjectNode transistionNode = mapper.createObjectNode();
-		transistionNode.put("id", jiraIssue.getStatus().intValue());
+		transistionNode.put("id", "" + jiraIssue.getStatus().intValue());
 		issue.put("transition", transistionNode);
 
 		return issue;

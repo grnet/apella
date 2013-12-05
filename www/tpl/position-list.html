@@ -3,7 +3,7 @@
 		<tr>
 			<th><%= $.i18n.prop("PositionID") %></th>
 			<th><%= $.i18n.prop("PositionName") %></th>
-			<th><%= $.i18n.prop("Department") %></th>
+			<th><%= $.i18n.prop("Institution") %></th>
 			<th><%= $.i18n.prop("PositionStatus") %></th>
 			<th width="96px"></th>
 		</tr>
@@ -13,7 +13,7 @@
 		<tr>
 			<td><%= App.utils.formatPositionID(position.id) %></td>
 			<td><%= position.name %></td>
-			<td><% if (!_.isUndefined(position.department)) { %><%= position.department.name %><% } %></td>
+			<td><%= position.department ? _.templates.department(position.department) : "" %></td>
 			<td><%= $.i18n.prop('PositionStatus_' + position.phase.clientStatus) %></td>
 			<td width="96px">
 				<p align="center">

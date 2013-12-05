@@ -314,6 +314,14 @@ public class Candidacy {
 	// /////////////////////////////////////////////////////////////
 
 	@JsonView({DetailedCandidacyView.class})
+	public boolean getCommitteeConverged() {
+		PositionCommittee committee = this.candidacies.getPosition().getPhase().getCommittee();
+		return committee != null &&
+			committee.getCommitteeMeetingDate() != null &&
+			DateUtil.compareDates(new Date(), committee.getCommitteeMeetingDate()) >= 0;
+	}
+
+	@JsonView({DetailedCandidacyView.class})
 	public boolean getCanAddEvaluators() {
 		PositionCommittee committee = this.candidacies.getPosition().getPhase().getCommittee();
 		return committee != null &&

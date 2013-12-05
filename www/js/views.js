@@ -8063,15 +8063,13 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var self = this;
 			switch (field) {
 				case "openToOtherCandidates":
-					return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
-				case "evaluator_0":
-					return self.model.get("canAddEvaluators");
-				case "evaluator_1":
-					return self.model.get("canAddEvaluators");
+					return _.isEqual(self.model.get("candidacies").position.phase.clientStatus, "ANOIXTI");
 				case "ekthesiAutoaksiologisisFile":
-					return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
+					return _.isEqual(self.model.get("candidacies").position.phase.clientStatus, "ANOIXTI");
+				case "evaluator":
+					return self.model.get("canAddEvaluators");
 				case "sympliromatikaEggrafaFileList":
-					return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI") || _.isEqual(self.model.get("candidacies").position.phase.status, "EPILOGI");
+					return self.model.get("committeeCoverged");
 				default:
 					break;
 			}
@@ -8084,8 +8082,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				case "save":
 					return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI");
 				case "remove":
-					return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI") || _.isEqual(self.model.get("candidacies").position.phase.status,
-						"EPILOGI");
+					return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI") ||
+						_.isEqual(self.model.get("candidacies").position.phase.status, "EPILOGI");
 				default:
 					break;
 			}
@@ -8200,6 +8198,12 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					_.each(self.$selectize, function (element) {
 						element.selectize.destroy();
 					});
+					// Collection can be empty depending on CanAddEvaluators, add selected evaluators if this is the case
+					if (collection.length === 0 && self.model.get("proposedEvaluators").length > 0) {
+						collection.add(_.map(self.model.get("proposedEvaluators"), function(candidacyEvalutor) {
+							return candidacyEvalutor.registerMember;
+						}));
+					}
 					self.$selectize = self.$("select[name^=evaluator_]").selectize({
 						valueField: 'id',
 						diacritics: true,
@@ -8242,6 +8246,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						self.$("select[name=evaluator_" + index + "]")[0].selectize.setValue(evaluator.registerMember.id);
 					});
 					// Enable/Disable
+					if (!self.isEditable("evaluator")) {
+						_.each(self.$selectize, function (element) {
+							element.selectize.disable();
+						});
+					}
 				},
 				error: function (model, resp, options) {
 					var popup = new Views.PopupView({
