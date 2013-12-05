@@ -715,7 +715,7 @@ define([
 					params = {
 						type: 'PUT',
 						dataType: 'json',
-						contentType: 'application/json',
+						contentType: 'application/json'
 						// data: "{}"
 					};
 					// Ensure that we have a URL.

@@ -7,6 +7,7 @@ import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.InstitutionManager;
 import gr.grnet.dep.service.model.JiraIssue;
+import gr.grnet.dep.service.model.JiraIssue.IssueCall;
 import gr.grnet.dep.service.model.JiraIssue.IssueStatus;
 import gr.grnet.dep.service.model.JiraIssue.IssueType;
 import gr.grnet.dep.service.model.Position.PositionStatus;
@@ -466,6 +467,7 @@ public class RoleRESTService extends RESTService {
 				JiraIssue issue = new JiraIssue(
 					IssueStatus.CLOSED,
 					IssueType.REGISTRATION,
+					IssueCall.INCOMING,
 					existingRole.getUser().getId(),
 					summary,
 					description);
@@ -1157,6 +1159,7 @@ public class RoleRESTService extends RESTService {
 					issue = new JiraIssue(
 						IssueStatus.CLOSED,
 						IssueType.REGISTRATION,
+						IssueCall.INCOMING,
 						primaryRole.getUser().getId(),
 						summary,
 						description);
@@ -1170,6 +1173,7 @@ public class RoleRESTService extends RESTService {
 					issue = new JiraIssue(
 						IssueStatus.CLOSED,
 						IssueType.REGISTRATION,
+						IssueCall.INCOMING,
 						primaryRole.getUser().getId(),
 						summary,
 						description);

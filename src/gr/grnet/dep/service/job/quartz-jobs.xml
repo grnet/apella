@@ -47,10 +47,10 @@
 				<group>EUDOXUS_TRIGGERS</group>
 				<job-name>OpenPositionsJob</job-name>
 				<job-group>APELLA_JOBS</job-group>
-				<!-- trigger at 04:00 in the morning -->
-				<!-- <cron-expression>0 0 4 * * ?</cron-expression> -->
+				<!-- trigger at 02:00 in the morning -->
+				<cron-expression>0 0 2 * * ?</cron-expression>
 				<!-- trigger every 5 min for testing -->
-				<cron-expression>0 0/5 * * * ?</cron-expression>
+				<!-- <cron-expression>0 0/5 * * * ?</cron-expression> -->
 			</cron>
 		</trigger>
 		
@@ -60,10 +60,10 @@
 				<group>EUDOXUS_TRIGGERS</group>
 				<job-name>SendEmailsJob</job-name>
 				<job-group>APELLA_JOBS</job-group>
-				<!-- trigger at 04:00 in the morning -->
-				<!-- <cron-expression>0 0 4 * * ?</cron-expression> -->
+				<!-- trigger every two hours -->
+				<cron-expression>0 0 0/2 * * ?</cron-expression>
 				<!-- trigger every 15 sec for testing -->
-				<cron-expression>0/15 * * * * ?</cron-expression>
+				<!-- <cron-expression>0/15 * * * * ?</cron-expression> -->
 			</cron>
 		</trigger>
 		
@@ -74,9 +74,9 @@
 				<job-name>NotifyOnClosedPositionsJob</job-name>
 				<job-group>APELLA_JOBS</job-group>
 				<!-- trigger at 04:00 in the morning -->
-				<!-- <cron-expression>0 0 4 * * ?</cron-expression> -->
+				<cron-expression>0 0 4 * * ?</cron-expression>
 				<!-- trigger every 5 min for testing -->
-				<cron-expression>0 0/5 * * * ?</cron-expression>
+				<!-- <cron-expression>0 0/5 * * * ?</cron-expression> -->
 			</cron>
 		</trigger>
 

@@ -9,6 +9,7 @@ import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.InstitutionManager;
 import gr.grnet.dep.service.model.JiraIssue;
+import gr.grnet.dep.service.model.JiraIssue.IssueCall;
 import gr.grnet.dep.service.model.JiraIssue.IssueStatus;
 import gr.grnet.dep.service.model.JiraIssue.IssueType;
 import gr.grnet.dep.service.model.MinistryAssistant;
@@ -351,6 +352,7 @@ public class UserRESTService extends RESTService {
 				JiraIssue issue = new JiraIssue(
 					IssueStatus.CLOSED,
 					IssueType.REGISTRATION,
+					IssueCall.INCOMING,
 					savedUser.getId(),
 					summary,
 					description);
@@ -362,6 +364,7 @@ public class UserRESTService extends RESTService {
 				JiraIssue issue = new JiraIssue(
 					IssueStatus.CLOSED,
 					IssueType.REGISTRATION,
+					IssueCall.INCOMING,
 					savedUser.getId(),
 					summary,
 					description);
@@ -638,6 +641,7 @@ public class UserRESTService extends RESTService {
 					JiraIssue issue = new JiraIssue(
 						IssueStatus.CLOSED,
 						IssueType.REGISTRATION,
+						IssueCall.INCOMING,
 						u.getId(),
 						summary,
 						description);
@@ -697,6 +701,7 @@ public class UserRESTService extends RESTService {
 				JiraIssue issue = new JiraIssue(
 					IssueStatus.CLOSED,
 					IssueType.REGISTRATION,
+					IssueCall.INCOMING,
 					u.getId(),
 					summary,
 					description);

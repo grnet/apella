@@ -9,6 +9,30 @@ public class JiraIssue implements Serializable {
 
 	private static final long serialVersionUID = 1885653801140864606L;
 
+	public enum IssueCall {
+		INCOMING(10227),
+		OUTGOING(10228);
+
+		private int id;
+
+		private IssueCall(int id) {
+			this.id = id;
+		}
+
+		public int intValue() {
+			return this.id;
+		}
+
+		public static IssueCall valueOf(int id) {
+			IssueCall[] values = IssueCall.values();
+			for (int i = 0; i < values.length; i++) {
+				if (values[i].intValue() == (id))
+					return values[i];
+			}
+			throw new IllegalArgumentException();
+		}
+	}
+
 	public enum IssueStatus {
 		OPEN(1),
 		CLOSED(2),
@@ -94,9 +118,11 @@ public class JiraIssue implements Serializable {
 
 	private String key;
 
-	private IssueStatus status;
+	private IssueStatus status = IssueStatus.OPEN;
 
-	private IssueType type;
+	private IssueType type = IssueType.GENERAL_INFORMATION;
+
+	private IssueCall call = IssueCall.INCOMING;
 
 	private Long userId;
 
@@ -108,10 +134,11 @@ public class JiraIssue implements Serializable {
 		super();
 	}
 
-	public JiraIssue(IssueStatus status, IssueType type, Long userId, String summary, String description) {
+	public JiraIssue(IssueStatus status, IssueType type, IssueCall call, Long userId, String summary, String description) {
 		super();
 		this.status = status;
 		this.type = type;
+		this.call = call;
 		this.userId = userId;
 		this.summary = summary;
 		this.description = description;
@@ -139,6 +166,14 @@ public class JiraIssue implements Serializable {
 
 	public void setType(IssueType type) {
 		this.type = type;
+	}
+
+	public IssueCall getCall() {
+		return call;
+	}
+
+	public void setCall(IssueCall call) {
+		this.call = call;
 	}
 
 	public Long getUserId() {

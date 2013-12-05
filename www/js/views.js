@@ -2040,7 +2040,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var self = this;
 			var jiraIssue = new Models.JiraIssue({
 				userId: self.model.get("id"),
+				status : "OPEN",
 				type: self.$("form[name=jira] select[name=type]").val(),
+				call: self.$("form[name=jira] select[name=call]").val(),
 				summary: self.$("form[name=jira] input[name=summary]").val(),
 				description: self.$("form[name=jira] textarea[name=description]").val()
 			});

@@ -1,6 +1,7 @@
 package gr.grnet.dep.service;
 
 import gr.grnet.dep.service.model.JiraIssue;
+import gr.grnet.dep.service.model.JiraIssue.IssueCall;
 import gr.grnet.dep.service.model.JiraIssue.IssueResolution;
 import gr.grnet.dep.service.model.JiraIssue.IssueStatus;
 import gr.grnet.dep.service.model.JiraIssue.IssueType;
@@ -248,6 +249,7 @@ public class JiraService {
 			JsonNode fields = jiraIssue.get("fields");
 			IssueType type = IssueType.valueOf(fields.get("issuetype").get("id").asInt());
 			IssueStatus status = IssueStatus.valueOf(fields.get("status").get("id").asInt());
+			IssueCall call = IssueCall.valueOf(fields.get("customfield_12651").get("id").asInt());
 			String summary = fields.get("summary").asText();
 			String description = fields.get("description").asText();
 			String email = fields.get("customfield_12655").asText();
@@ -257,7 +259,7 @@ public class JiraService {
 				.setParameter("email", email)
 				.getSingleResult();
 
-			JiraIssue issue = new JiraIssue(status, type, userId, summary, description);
+			JiraIssue issue = new JiraIssue(status, type, call, userId, summary, description);
 			issue.setKey(key);
 
 			return issue;
@@ -333,7 +335,7 @@ public class JiraService {
 		fields.put("customfield_12650", roleNode);
 
 		ObjectNode callTypeNode = mapper.createObjectNode();
-		callTypeNode.put("value", "εισερχόμενη");
+		callTypeNode.put("id", "" + jiraIssue.getCall().intValue());
 		fields.put("customfield_12651", callTypeNode);
 
 		fields.put("customfield_12652", user.getUsername() == null ? "-" : user.getUsername());
