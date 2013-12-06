@@ -1499,7 +1499,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		initialize: function (options) {
 			this._super('initialize', [ options ]);
-			_.bindAll(this, "change", "submit", "remove", "status", "cancel", "applyRules");
+			_.bindAll(this, "change", "submit", "remove", "status", "cancel", "applyRules", "validatorRules");
 			this.template = _.template(tpl_user_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
@@ -1590,18 +1590,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 		},
 
-		render: function (eventName) {
+		validatorRules: function () {
 			var self = this;
-			var propName;
-			self.closeInnerViews();
-			// 1. Render
-			self.$el.empty();
-			self.addTitle();
-			self.$el.append(this.template(self.model.toJSON()));
-			// 2. Check State to enable/disable fields
-			self.applyRules();
-			// 3. Add Validator
-			self.validator = self.$("form").validate({
+			return {
 				errorElement: "span",
 				errorClass: "help-inline",
 				highlight: function (element, errorClass, validClass) {
@@ -1710,7 +1701,21 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						minlength: $.i18n.prop('validation_minlength', 2)
 					}
 				}
-			});
+			};
+		},
+
+		render: function (eventName) {
+			var self = this;
+			var propName;
+			self.closeInnerViews();
+			// 1. Render
+			self.$el.empty();
+			self.addTitle();
+			self.$el.append(this.template(self.model.toJSON()));
+			// 2. Check State to enable/disable fields
+			self.applyRules();
+			// 3. Add Validator
+			self.validator = self.$("form").validate(self.validatorRules());
 			// Highlight Required
 			if (self.validator) {
 				for (propName in self.validator.settings.rules) {
@@ -1861,7 +1866,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
-	});
+	})
+	;
 
 	/***************************************************************************
 	 * IncompleteAccountView ***************************************************
@@ -1935,6 +1941,96 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				self.$("a#save").show();
 				self.$("a#remove").hide();
 			}
+		},
+
+		validatorRules: function () {
+			var self = this;
+			return {
+				errorElement: "span",
+				errorClass: "help-inline",
+				highlight: function (element, errorClass, validClass) {
+					$(element).parent(".controls").parent(".control-group").addClass("error");
+				},
+				unhighlight: function (element, errorClass, validClass) {
+					$(element).parent(".controls").parent(".control-group").removeClass("error");
+				},
+				rules: {
+					username: {
+						minlength: 5,
+						onlyLatin: true
+					},
+					firstnamelatin: {
+						onlyLatin: true
+					},
+					lastnamelatin: {
+						onlyLatin: true
+					},
+					fathernamelatin: {
+						onlyLatin: true
+					},
+					identification: {
+					},
+					password: {
+						required: self.model.isNew(),
+						pwd: true,
+						minlength: 5
+					},
+					confirm_password: {
+						required: self.model.isNew(),
+						minlength: 5,
+						equalTo: "form input[name=password]"
+					},
+					mobile: {
+						number: true,
+						minlength: 10
+					},
+					phone: {
+						number: true,
+						minlength: 10
+					},
+					email: {
+						email: true,
+						minlength: 2
+					}
+				},
+				messages: {
+					username: {
+						minlength: $.i18n.prop('validation_minlegth', 5),
+						onlyLatin: $.i18n.prop('validation_latin')
+					},
+					firstnamelatin: {
+						onlyLatin: $.i18n.prop('validation_latin')
+					},
+					lastnamelatin: {
+						onlyLatin: $.i18n.prop('validation_latin')
+					},
+					fathernamelatin: {
+						onlyLatin: $.i18n.prop('validation_latin')
+					},
+					password: {
+						required: $.i18n.prop('validation_required'),
+						pwd: $.i18n.prop('validation_password'),
+						minlength: $.i18n.prop('validation_minlength', 5)
+					},
+					confirm_password: {
+						required: $.i18n.prop('validation_required'),
+						minlength: $.i18n.prop('validation_minlength', 5),
+						equalTo: $.i18n.prop('validation_confirmpassword')
+					},
+					mobile: {
+						number: $.i18n.prop('validation_number'),
+						minlength: $.i18n.prop('validation_minlength', 10)
+					},
+					phone: {
+						number: $.i18n.prop('validation_number'),
+						minlength: $.i18n.prop('validation_phone')
+					},
+					email: {
+						email: $.i18n.prop('validation_email'),
+						minlength: $.i18n.prop('validation_minlength', 2)
+					}
+				}
+			};
 		},
 
 		render: function (eventName) {
@@ -2040,7 +2136,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var self = this;
 			var jiraIssue = new Models.JiraIssue({
 				userId: self.model.get("id"),
-				status : "OPEN",
+				status: "OPEN",
 				type: self.$("form[name=jira] select[name=type]").val(),
 				call: self.$("form[name=jira] select[name=call]").val(),
 				summary: self.$("form[name=jira] input[name=summary]").val(),
@@ -2445,7 +2541,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		initialize: function (options) {
 			this._super('initialize', [ options ]);
-			_.bindAll(this, "change", "isEditable", "beforeUpload", "beforeDelete", "submit", "cancel");
+			_.bindAll(this, "change", "isEditable", "validationRules", "beforeUpload", "beforeDelete", "submit", "cancel");
 			this.template = _.template(tpl_role_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
@@ -2602,6 +2698,222 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return false;
 		},
 
+		validationRules: function () {
+			var self = this;
+			switch (self.model.get("discriminator")) {
+				case "CANDIDATE":
+					return {
+						errorElement: "span",
+						errorClass: "help-inline",
+						highlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").addClass("error");
+						},
+						unhighlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").removeClass("error");
+						},
+						rules: {
+							tautotitaFile: "required",
+							formaSymmetoxisFile: "required"
+						},
+						messages: {
+							tautotitaFile: $.i18n.prop('validation_file'),
+							formaSymmetoxisFile: $.i18n.prop('validation_file')
+						}
+					};
+				case "PROFESSOR_DOMESTIC":
+					return {
+						errorElement: "span",
+						errorClass: "help-inline",
+						highlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").addClass("error");
+						},
+						unhighlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").removeClass("error");
+						},
+						rules: {
+							department: "required",
+							profileURL: {
+								required: "input[name=hasOnlineProfile]:not(:checked)",
+								url: true
+							},
+							rank: "required",
+							fek: "required",
+							fekSubject: {
+								"required": "input[name=fekCheckbox]:not(:checked)"
+							},
+							subject: {
+								"required": "input[name=fekCheckbox]:checked"
+							},
+							"hasAcceptedTerms": "required"
+						},
+						messages: {
+							department: $.i18n.prop('validation_department'),
+							profileURL: {
+								required: $.i18n.prop('validation_required'),
+								url: $.i18n.prop('validation_profileURL')
+							},
+							rank: $.i18n.prop('validation_rank'),
+							subject: $.i18n.prop('validation_subject'),
+							fek: $.i18n.prop('validation_required'),
+							fekSubject: $.i18n.prop('validation_fekSubject'),
+							hasAcceptedTerms: $.i18n.prop('validation_hasAcceptedTerms')
+						}
+					};
+				case "PROFESSOR_FOREIGN":
+					return {
+						errorElement: "span",
+						errorClass: "help-inline",
+						highlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").addClass("error");
+						},
+						unhighlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").removeClass("error");
+						},
+						rules: {
+							institution: "required",
+							profileURL: {
+								required: "input[name=hasOnlineProfile]:not(:checked)",
+								url: true
+							},
+							country: "required",
+							rank: "required",
+							subject: "required",
+							speakingGreek: "required",
+							hasAcceptedTerms: "required"
+
+						},
+						messages: {
+							institution: $.i18n.prop('validation_institution'),
+							profileURL: $.i18n.prop('validation_profileURL'),
+							country: $.i18n.prop('validation_country'),
+							rank: $.i18n.prop('validation_rank'),
+							subject: $.i18n.prop('validation_subject'),
+							speakingGreek: $.i18n.prop('validation_speakingGreek'),
+							hasAcceptedTerms: $.i18n.prop('validation_hasAcceptedTerms')
+						}
+					};
+				case "INSTITUTION_MANAGER":
+					return {
+						errorElement: "span",
+						errorClass: "help-inline",
+						highlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").addClass("error");
+						},
+						unhighlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").removeClass("error");
+						},
+						rules: {
+							institution: "required",
+							verificationAuthority: "required",
+							verificationAuthorityName: "required",
+							alternatefirstname: "required",
+							alternatelastname: "required",
+							alternatefathername: "required",
+							alternatefirstnamelatin: {
+								required: true,
+								onlyLatin: true
+							},
+							alternatelastnamelatin: {
+								required: true,
+								onlyLatin: true
+							},
+							alternatefathernamelatin: {
+								required: true,
+								onlyLatin: true
+							},
+							alternateemail: {
+								required: true,
+								email: true,
+								minlength: 2
+							},
+							alternatemobile: {
+								required: true,
+								number: true,
+								minlength: 10
+							},
+							alternatephone: {
+								required: true,
+								number: true,
+								minlength: 10
+							}
+						},
+						messages: {
+							institution: $.i18n.prop('validation_institution'),
+							verificationAuthority: $.i18n.prop('validation_verificationAuthority'),
+							verificationAuthorityName: $.i18n.prop('validation_verificationAuthorityName'),
+							alternatefirstname: $.i18n.prop('validation_firstname'),
+							alternatelastname: $.i18n.prop('validation_lastname'),
+							alternatefathername: $.i18n.prop('validation_fathername'),
+							alternatefirstnamelatin: {
+								requiredIfOtherGreek: "form input[name=alternatefirstname]",
+								onlyLatin: $.i18n.prop('validation_latin')
+							},
+							alternatelastnamelatin: {
+								requiredIfOtherGreek: "form input[name=alternatelastname]",
+								onlyLatin: $.i18n.prop('validation_latin')
+							},
+							alternatefathernamelatin: {
+								requiredIfOtherGreek: "form input[name=alternatefathername]",
+								onlyLatin: $.i18n.prop('validation_latin')
+							},
+							alternatemobile: {
+								required: $.i18n.prop('validation_mobile'),
+								number: $.i18n.prop('validation_number'),
+								minlength: $.i18n.prop('validation_minlength', 10)
+							},
+							alternatephone: {
+								required: $.i18n.prop('validation_phone'),
+								number: $.i18n.prop('validation_number'),
+								minlength: $.i18n.prop('validation_minlength', 10)
+							},
+							alternateemail: {
+								required: $.i18n.prop('validation_email'),
+								email: $.i18n.prop('validation_email'),
+								minlength: $.i18n.prop('validation_minlength', 2)
+							}
+						}
+					};
+				case "INSTITUTION_ASSISTANT":
+					return {
+						errorElement: "span",
+						errorClass: "help-inline",
+						highlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").addClass("error");
+						},
+						unhighlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").removeClass("error");
+						},
+						rules: {
+							institution: "required"
+						},
+						messages: {
+							institution: $.i18n.prop('validation_institution')
+						}
+					};
+				case "MINISTRY_MANAGER":
+					return {
+						errorElement: "span",
+						errorClass: "help-inline",
+						highlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").addClass("error");
+						},
+						unhighlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").removeClass("error");
+						},
+						rules: {
+							ministry: "required"
+						},
+						messages: {
+							ministry: $.i18n.prop('validation_ministry')
+						}
+					};
+				case "MINISTRY_ASSISTANT":
+					return {};
+				default:
+					return {};
+			}
+		},
+
 		beforeUpload: function (data, upload) {
 			var self = this;
 			var candidate = self.collection.find(function (role) {
@@ -2753,24 +3065,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						self.$("#ptyxioFileList").html($.i18n.prop("PressSave"));
 						self.$("#dimosieusiFileList").html($.i18n.prop("PressSave"));
 					}
-					self.validator = $("form", this.el).validate({
-						errorElement: "span",
-						errorClass: "help-inline",
-						highlight: function (element, errorClass, validClass) {
-							$(element).parent(".controls").parent(".control-group").addClass("error");
-						},
-						unhighlight: function (element, errorClass, validClass) {
-							$(element).parent(".controls").parent(".control-group").removeClass("error");
-						},
-						rules: {
-							tautotitaFile: "required",
-							formaSymmetoxisFile: "required"
-						},
-						messages: {
-							tautotitaFile: $.i18n.prop('validation_file'),
-							formaSymmetoxisFile: $.i18n.prop('validation_file')
-						}
-					});
+					self.validator = $("form", this.el).validate(self.validationRules());
 					break;
 				case "PROFESSOR_DOMESTIC":
 					App.departments = App.departments || new Models.Departments();
@@ -2867,44 +3162,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						}
 					});
 
-					self.validator = $("form", this.el).validate({
-						errorElement: "span",
-						errorClass: "help-inline",
-						highlight: function (element, errorClass, validClass) {
-							$(element).parent(".controls").parent(".control-group").addClass("error");
-						},
-						unhighlight: function (element, errorClass, validClass) {
-							$(element).parent(".controls").parent(".control-group").removeClass("error");
-						},
-						rules: {
-							department: "required",
-							profileURL: {
-								required: "input[name=hasOnlineProfile]:not(:checked)",
-								url: true
-							},
-							rank: "required",
-							fek: "required",
-							fekSubject: {
-								"required": "input[name=fekCheckbox]:not(:checked)"
-							},
-							subject: {
-								"required": "input[name=fekCheckbox]:checked"
-							},
-							"hasAcceptedTerms": "required"
-						},
-						messages: {
-							department: $.i18n.prop('validation_department'),
-							profileURL: {
-								required: $.i18n.prop('validation_required'),
-								url: $.i18n.prop('validation_profileURL')
-							},
-							rank: $.i18n.prop('validation_rank'),
-							subject: $.i18n.prop('validation_subject'),
-							fek: $.i18n.prop('validation_required'),
-							fekSubject: $.i18n.prop('validation_fekSubject'),
-							hasAcceptedTerms: $.i18n.prop('validation_hasAcceptedTerms')
-						}
-					});
+					self.validator = $("form", this.el).validate(self.validationRules());
+
 					// On Rank change need to update departmentSelector
 					self.$("select[name='rank']").on("change", (function () {
 						// Keep previous values in this closure
@@ -3037,38 +3296,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						self.$("#profileFile").html($.i18n.prop("PressSave"));
 					}
 
-					self.validator = $("form", this.el).validate({
-						errorElement: "span",
-						errorClass: "help-inline",
-						highlight: function (element, errorClass, validClass) {
-							$(element).parent(".controls").parent(".control-group").addClass("error");
-						},
-						unhighlight: function (element, errorClass, validClass) {
-							$(element).parent(".controls").parent(".control-group").removeClass("error");
-						},
-						rules: {
-							institution: "required",
-							profileURL: {
-								required: "input[name=hasOnlineProfile]:not(:checked)",
-								url: true
-							},
-							country: "required",
-							rank: "required",
-							subject: "required",
-							speakingGreek: "required",
-							hasAcceptedTerms: "required"
+					self.validator = $("form", this.el).validate(self.validationRules());
 
-						},
-						messages: {
-							institution: $.i18n.prop('validation_institution'),
-							profileURL: $.i18n.prop('validation_profileURL'),
-							country: $.i18n.prop('validation_country'),
-							rank: $.i18n.prop('validation_rank'),
-							subject: $.i18n.prop('validation_subject'),
-							speakingGreek: $.i18n.prop('validation_speakingGreek'),
-							hasAcceptedTerms: $.i18n.prop('validation_hasAcceptedTerms')
-						}
-					});
 					// OnlineProfile XOR ProfileFile
 					self.$("input[name=hasOnlineProfile]").change(function (event, data) {
 						if ($(this).is(":checked")) {
@@ -3117,86 +3346,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							popup.show();
 						}
 					});
-					self.validator = $("form", this.el).validate({
-						errorElement: "span",
-						errorClass: "help-inline",
-						highlight: function (element, errorClass, validClass) {
-							$(element).parent(".controls").parent(".control-group").addClass("error");
-						},
-						unhighlight: function (element, errorClass, validClass) {
-							$(element).parent(".controls").parent(".control-group").removeClass("error");
-						},
-						rules: {
-							institution: "required",
-							verificationAuthority: "required",
-							verificationAuthorityName: "required",
-							alternatefirstname: "required",
-							alternatelastname: "required",
-							alternatefathername: "required",
-							alternatefirstnamelatin: {
-								required: true,
-								onlyLatin: true
-							},
-							alternatelastnamelatin: {
-								required: true,
-								onlyLatin: true
-							},
-							alternatefathernamelatin: {
-								required: true,
-								onlyLatin: true
-							},
-							alternateemail: {
-								required: true,
-								email: true,
-								minlength: 2
-							},
-							alternatemobile: {
-								required: true,
-								number: true,
-								minlength: 10
-							},
-							alternatephone: {
-								required: true,
-								number: true,
-								minlength: 10
-							}
-						},
-						messages: {
-							institution: $.i18n.prop('validation_institution'),
-							verificationAuthority: $.i18n.prop('validation_verificationAuthority'),
-							verificationAuthorityName: $.i18n.prop('validation_verificationAuthorityName'),
-							alternatefirstname: $.i18n.prop('validation_firstname'),
-							alternatelastname: $.i18n.prop('validation_lastname'),
-							alternatefathername: $.i18n.prop('validation_fathername'),
-							alternatefirstnamelatin: {
-								requiredIfOtherGreek: "form input[name=alternatefirstname]",
-								onlyLatin: $.i18n.prop('validation_latin')
-							},
-							alternatelastnamelatin: {
-								requiredIfOtherGreek: "form input[name=alternatelastname]",
-								onlyLatin: $.i18n.prop('validation_latin')
-							},
-							alternatefathernamelatin: {
-								requiredIfOtherGreek: "form input[name=alternatefathername]",
-								onlyLatin: $.i18n.prop('validation_latin')
-							},
-							alternatemobile: {
-								required: $.i18n.prop('validation_mobile'),
-								number: $.i18n.prop('validation_number'),
-								minlength: $.i18n.prop('validation_minlength', 10)
-							},
-							alternatephone: {
-								required: $.i18n.prop('validation_phone'),
-								number: $.i18n.prop('validation_number'),
-								minlength: $.i18n.prop('validation_minlength', 10)
-							},
-							alternateemail: {
-								required: $.i18n.prop('validation_email'),
-								email: $.i18n.prop('validation_email'),
-								minlength: $.i18n.prop('validation_minlength', 2)
-							}
-						}
-					});
+
+					self.validator = $("form", this.el).validate(self.validationRules());
+
 					self.$("select[name='verificationAuthority']").trigger("change", {
 						triggeredBy: "application"
 					});
@@ -3233,41 +3385,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							popup.show();
 						}
 					});
-					self.validator = $("form", this.el).validate({
-						errorElement: "span",
-						errorClass: "help-inline",
-						highlight: function (element, errorClass, validClass) {
-							$(element).parent(".controls").parent(".control-group").addClass("error");
-						},
-						unhighlight: function (element, errorClass, validClass) {
-							$(element).parent(".controls").parent(".control-group").removeClass("error");
-						},
-						rules: {
-							institution: "required"
-						},
-						messages: {
-							institution: $.i18n.prop('validation_institution')
-						}
-					});
+
+					self.validator = $("form", this.el).validate(self.validationRules());
+
 					break;
 
 				case "MINISTRY_MANAGER":
-					self.validator = $("form", this.el).validate({
-						errorElement: "span",
-						errorClass: "help-inline",
-						highlight: function (element, errorClass, validClass) {
-							$(element).parent(".controls").parent(".control-group").addClass("error");
-						},
-						unhighlight: function (element, errorClass, validClass) {
-							$(element).parent(".controls").parent(".control-group").removeClass("error");
-						},
-						rules: {
-							ministry: "required"
-						},
-						messages: {
-							ministry: $.i18n.prop('validation_ministry')
-						}
-					});
+
+					self.validator = $("form", this.el).validate(self.validationRules());
 					break;
 				case "MINISTRY_ASSISTANT":
 					break;
@@ -3582,6 +3707,158 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					break;
 			}
 			return false;
+		},
+
+		validationRules: function () {
+			var self = this;
+			switch (self.model.get("discriminator")) {
+				case "CANDIDATE":
+					return {
+						errorElement: "span",
+						errorClass: "help-inline",
+						highlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").addClass("error");
+						},
+						unhighlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").removeClass("error");
+						},
+						rules: {
+						},
+						messages: {
+						}
+					};
+				case "PROFESSOR_DOMESTIC":
+					return {
+						errorElement: "span",
+						errorClass: "help-inline",
+						highlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").addClass("error");
+						},
+						unhighlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").removeClass("error");
+						},
+						rules: {
+							profileURL: {
+								url: true
+							}
+						},
+						messages: {
+							profileURL: {
+								required: $.i18n.prop('validation_required')
+							}
+						}
+					};
+				case "PROFESSOR_FOREIGN":
+					return {
+						errorElement: "span",
+						errorClass: "help-inline",
+						highlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").addClass("error");
+						},
+						unhighlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").removeClass("error");
+						},
+						rules: {
+							profileURL: {
+								url: true
+							}
+						},
+						messages: {
+							profileURL: $.i18n.prop('validation_profileURL')
+						}
+					};
+				case "INSTITUTION_MANAGER":
+					return {
+						errorElement: "span",
+						errorClass: "help-inline",
+						highlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").addClass("error");
+						},
+						unhighlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").removeClass("error");
+						},
+						rules: {
+							alternatefirstnamelatin: {
+								onlyLatin: true
+							},
+							alternatelastnamelatin: {
+								onlyLatin: true
+							},
+							alternatefathernamelatin: {
+								onlyLatin: true
+							},
+							alternateemail: {
+								email: true,
+								minlength: 2
+							},
+							alternatemobile: {
+								number: true,
+								minlength: 10
+							},
+							alternatephone: {
+								number: true,
+								minlength: 10
+							}
+						},
+						messages: {
+							alternatefirstnamelatin: {
+								onlyLatin: $.i18n.prop('validation_latin')
+							},
+							alternatelastnamelatin: {
+								onlyLatin: $.i18n.prop('validation_latin')
+							},
+							alternatefathernamelatin: {
+								onlyLatin: $.i18n.prop('validation_latin')
+							},
+							alternatemobile: {
+								number: $.i18n.prop('validation_number'),
+								minlength: $.i18n.prop('validation_minlength', 10)
+							},
+							alternatephone: {
+								number: $.i18n.prop('validation_number'),
+								minlength: $.i18n.prop('validation_minlength', 10)
+							},
+							alternateemail: {
+								email: $.i18n.prop('validation_email'),
+								minlength: $.i18n.prop('validation_minlength', 2)
+							}
+						}
+					};
+				case "INSTITUTION_ASSISTANT":
+					return {
+						errorElement: "span",
+						errorClass: "help-inline",
+						highlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").addClass("error");
+						},
+						unhighlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").removeClass("error");
+						},
+						rules: {
+						},
+						messages: {
+						}
+					};
+				case "MINISTRY_MANAGER":
+					return {
+						errorElement: "span",
+						errorClass: "help-inline",
+						highlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").addClass("error");
+						},
+						unhighlight: function (element, errorClass, validClass) {
+							$(element).parent(".controls").parent(".control-group").removeClass("error");
+						},
+						rules: {
+						},
+						messages: {
+						}
+					};
+				case "MINISTRY_ASSISTANT":
+					return {};
+				default:
+					return {};
+			}
 		},
 
 		render: function (eventName) {
@@ -8071,7 +8348,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				case "evaluator":
 					return self.model.get("canAddEvaluators");
 				case "sympliromatikaEggrafaFileList":
-					return self.model.get("committeeCoverged");
+					return self.model.get("committeeConverged");
 				default:
 					break;
 			}
@@ -8202,7 +8479,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					});
 					// Collection can be empty depending on CanAddEvaluators, add selected evaluators if this is the case
 					if (collection.length === 0 && self.model.get("proposedEvaluators").length > 0) {
-						collection.add(_.map(self.model.get("proposedEvaluators"), function(candidacyEvalutor) {
+						collection.add(_.map(self.model.get("proposedEvaluators"), function (candidacyEvalutor) {
 							return candidacyEvalutor.registerMember;
 						}));
 					}
@@ -8478,4 +8755,5 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 	});
 
 	return Views;
-});
+})
+;

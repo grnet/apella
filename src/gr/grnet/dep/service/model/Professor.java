@@ -37,7 +37,7 @@ public abstract class Professor extends Role {
 
 	public Boolean hasOnlineProfile = true;
 
-	public Boolean hasAcceptedTerms = true;
+	public Boolean hasAcceptedTerms = false;
 
 	public boolean getHasOnlineProfile() {
 		return hasOnlineProfile;

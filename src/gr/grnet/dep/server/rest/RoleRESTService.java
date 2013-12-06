@@ -370,54 +370,55 @@ public class RoleRESTService extends RESTService {
 			!existingRole.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!existingRole.getStatus().equals(RoleStatus.UNAPPROVED) &&
-			!existingRole.compareCriticalFields(role) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
-			throw new RestException(Status.CONFLICT, "cannot.change.critical.fields");
+		// Validate data if loggedOn is not admin we trust admin(!!!)
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+
+			if (!existingRole.getStatus().equals(RoleStatus.UNAPPROVED) &&
+				!existingRole.compareCriticalFields(role)) {
+				throw new RestException(Status.CONFLICT, "cannot.change.critical.fields");
+			}
+			Long managerInstitutionId;
+			Long institutionId;
+			boolean missingProfile;
+			switch (existingRole.getDiscriminator()) {
+				case INSTITUTION_ASSISTANT:
+					managerInstitutionId = ((InstitutionAssistant) existingRole).getManager().getInstitution().getId();
+					institutionId = ((InstitutionAssistant) role).getInstitution().getId();
+					if (!managerInstitutionId.equals(institutionId)) {
+						throw new RestException(Status.CONFLICT, "manager.institution.mismatch");
+					}
+					break;
+				case PROFESSOR_DOMESTIC:
+					ProfessorDomestic newProfessorDomestic = (ProfessorDomestic) role;
+					ProfessorDomestic existingProfessorDomestic = (ProfessorDomestic) existingRole;
+					missingProfile = newProfessorDomestic.getProfileURL() == null || newProfessorDomestic.getProfileURL().isEmpty();
+					missingProfile = missingProfile && FileHeader.filter(existingProfessorDomestic.getFiles(), FileType.PROFILE).isEmpty();
+					if (missingProfile) {
+						throw new RestException(Status.CONFLICT, "professor.missing.profile");
+					}
+					if (!newProfessorDomestic.getHasAcceptedTerms()) {
+						throw new RestException(Status.CONFLICT, "professor.has.not.accepted.terms");
+					}
+					break;
+				case PROFESSOR_FOREIGN:
+					ProfessorForeign newProfessorForeign = (ProfessorForeign) role;
+					ProfessorForeign existingProfessorForeign = (ProfessorForeign) existingRole;
+					missingProfile = newProfessorForeign.getProfileURL() == null || newProfessorForeign.getProfileURL().isEmpty();
+					missingProfile = missingProfile && FileHeader.filter(existingProfessorForeign.getFiles(), FileType.PROFILE).isEmpty();
+					if (missingProfile) {
+						throw new RestException(Status.CONFLICT, "professor.missing.profile");
+					}
+					if (!newProfessorForeign.getHasAcceptedTerms()) {
+						throw new RestException(Status.CONFLICT, "professor.has.not.accepted.terms");
+					}
+					break;
+				default:
+					break;
+			}
 		}
-		if (updateCandidacies == null) {
-			updateCandidacies = false;
-		}
-		Long managerInstitutionId;
-		Long institutionId;
-		boolean missingProfile;
-		switch (existingRole.getDiscriminator()) {
-			case INSTITUTION_ASSISTANT:
-				managerInstitutionId = ((InstitutionAssistant) existingRole).getManager().getInstitution().getId();
-				institutionId = ((InstitutionAssistant) role).getInstitution().getId();
-				if (!managerInstitutionId.equals(institutionId)) {
-					throw new RestException(Status.CONFLICT, "manager.institution.mismatch");
-				}
-				break;
-			case PROFESSOR_DOMESTIC:
-				ProfessorDomestic newProfessorDomestic = (ProfessorDomestic) role;
-				ProfessorDomestic existingProfessorDomestic = (ProfessorDomestic) existingRole;
-				missingProfile = newProfessorDomestic.getProfileURL() == null || newProfessorDomestic.getProfileURL().isEmpty();
-				missingProfile = missingProfile && FileHeader.filter(existingProfessorDomestic.getFiles(), FileType.PROFILE).isEmpty();
-				if (missingProfile) {
-					throw new RestException(Status.CONFLICT, "professor.missing.profile");
-				}
-				if (!newProfessorDomestic.getHasAcceptedTerms()) {
-					throw new RestException(Status.CONFLICT, "professor.has.not.accepted.terms");
-				}
-				break;
-			case PROFESSOR_FOREIGN:
-				ProfessorForeign newProfessorForeign = (ProfessorForeign) role;
-				ProfessorForeign existingProfessorForeign = (ProfessorForeign) existingRole;
-				missingProfile = newProfessorForeign.getProfileURL() == null || newProfessorForeign.getProfileURL().isEmpty();
-				missingProfile = missingProfile && FileHeader.filter(existingProfessorForeign.getFiles(), FileType.PROFILE).isEmpty();
-				if (missingProfile) {
-					throw new RestException(Status.CONFLICT, "professor.missing.profile");
-				}
-				if (!newProfessorForeign.getHasAcceptedTerms()) {
-					throw new RestException(Status.CONFLICT, "professor.has.not.accepted.terms");
-				}
-				break;
-			default:
-				break;
-		}
+
+		// Update
 		try {
-			// Update
 			existingRole = existingRole.copyFrom(role);
 			switch (existingRole.getDiscriminator()) {
 				case PROFESSOR_DOMESTIC:
@@ -445,6 +446,7 @@ public class RoleRESTService extends RESTService {
 			}
 
 			// Check open candidacies
+			updateCandidacies = (updateCandidacies == null) ? false : updateCandidacies; // Default to false if null
 			if (updateCandidacies && existingRole.getUser().hasActiveRole(RoleDiscriminator.CANDIDATE)) {
 				try {
 					Candidate candidate = (Candidate) existingRole.getUser().getActiveRole(RoleDiscriminator.CANDIDATE);
