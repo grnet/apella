@@ -2,6 +2,7 @@ package gr.grnet.dep.service;
 
 import gr.grnet.dep.service.model.JiraIssue;
 import gr.grnet.dep.service.model.JiraIssue.IssueCall;
+import gr.grnet.dep.service.model.JiraIssue.IssueCustomField;
 import gr.grnet.dep.service.model.JiraIssue.IssueResolution;
 import gr.grnet.dep.service.model.JiraIssue.IssueStatus;
 import gr.grnet.dep.service.model.JiraIssue.IssueType;
@@ -54,13 +55,15 @@ public class JiraService {
 	 * password: Test "!@#$%^&*()" || Production: "Pk%81:$/IES/"
 	 */
 
+	private static String PROJECT_KEY;
+
+	private static String REST_URL;
+
 	private static String USERNAME;
 
 	private static String PASSWORD;
 
-	private static String REST_URL;
-
-	private static String PROJECT_KEY;
+	private static String CONFIGURATION;
 
 	private static Configuration conf;
 
@@ -72,6 +75,7 @@ public class JiraService {
 			REST_URL = conf.getString("jira.url");
 			USERNAME = conf.getString("jira.username");
 			PASSWORD = conf.getString("jira.password");
+			CONFIGURATION = conf.getString("jira.configuration", "PRODUCTION");
 
 		} catch (ConfigurationException e) {
 		}
@@ -243,16 +247,20 @@ public class JiraService {
 	}
 
 	private JiraIssue fromJSON(JsonNode jiraIssue) {
+		JiraConfiguration jiraConfiguration = getJiraConfiguration(CONFIGURATION);
 		try {
 			String key = jiraIssue.get("key").asText();
 
 			JsonNode fields = jiraIssue.get("fields");
-			IssueType type = IssueType.valueOf(fields.get("issuetype").get("id").asInt());
-			IssueStatus status = IssueStatus.valueOf(fields.get("status").get("id").asInt());
-			IssueCall call = IssueCall.valueOf(fields.get("customfield_12651").get("id").asInt());
+
+			IssueType type = jiraConfiguration.getIssueType(fields.get("issuetype").get("id").asInt());
+			IssueStatus status = jiraConfiguration.getIssueStatus(fields.get("status").get("id").asText());
+
+			IssueCall call = jiraConfiguration.getIssueCall(fields.get(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.CALL_TYPE)).get("id").asText());
+
 			String summary = fields.get("summary").asText();
 			String description = fields.get("description").asText();
-			String email = fields.get("customfield_12655").asText();
+			String email = fields.get(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.EMAIL)).asText();
 
 			Long userId = (Long) em.createQuery(
 				"select u.id from User u where u.contactInfo.email = :email ")
@@ -305,6 +313,8 @@ public class JiraService {
 	*/
 
 	private JsonNode toJSON(JiraIssue jiraIssue) {
+		JiraConfiguration jiraConfiguration = getJiraConfiguration(CONFIGURATION);
+
 		User user = em.find(User.class, jiraIssue.getUserId());
 		if (user == null) {
 			logger.info("Tried to POST Jira Issue to non existin user: " + jiraIssue.getUserId() + " " + jiraIssue.getType() + " " + jiraIssue.getSummary() + " " + jiraIssue.getDescription());
@@ -319,29 +329,27 @@ public class JiraService {
 		issue.put("fields", fields);
 
 		ObjectNode project = mapper.createObjectNode();
-		fields.put("project", project);
 		project.put("key", PROJECT_KEY);
 
-		fields.put("summary", jiraIssue.getSummary());
-
 		ObjectNode issueTypeNode = mapper.createObjectNode();
-		issueTypeNode.put("id", jiraIssue.getType().intValue());
-		fields.put("issuetype", issueTypeNode);
-
-		fields.put("description", jiraIssue.getDescription());
+		issueTypeNode.put("id", jiraConfiguration.getIssueTypeId(jiraIssue.getType()));
 
 		ObjectNode roleNode = mapper.createObjectNode();
 		roleNode.put("value", getRoleString(user.getPrimaryRole()));
-		fields.put("customfield_12650", roleNode);
 
 		ObjectNode callTypeNode = mapper.createObjectNode();
-		callTypeNode.put("id", "" + jiraIssue.getCall().intValue());
-		fields.put("customfield_12651", callTypeNode);
+		callTypeNode.put("id", jiraConfiguration.getIssueCallId(jiraIssue.getCall()));
 
-		fields.put("customfield_12652", user.getUsername() == null ? "-" : user.getUsername());
-		fields.put("customfield_12653", user.getBasicInfo().getFirstname() + " " + user.getBasicInfo().getLastname());
-		fields.put("customfield_12654", user.getContactInfo().getMobile());
-		fields.put("customfield_12655", user.getContactInfo().getEmail());
+		fields.put("project", project);
+		fields.put("summary", jiraIssue.getSummary());
+		fields.put("description", jiraIssue.getDescription());
+		fields.put("issuetype", issueTypeNode);
+		fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.ROLE), roleNode);
+		fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.CALL_TYPE), callTypeNode);
+		fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.USERNAME), user.getUsername() == null ? "-" : user.getUsername());
+		fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.FULLNAME), user.getBasicInfo().getFirstname() + " " + user.getBasicInfo().getLastname());
+		fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.MOBILE), user.getContactInfo().getMobile());
+		fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.EMAIL), user.getContactInfo().getEmail());
 
 		return issue;
 
@@ -373,6 +381,8 @@ public class JiraService {
 	*/
 
 	private JsonNode toTransitionJSON(JiraIssue jiraIssue) {
+		JiraConfiguration jiraConfiguration = getJiraConfiguration(CONFIGURATION);
+
 		ObjectNode issue = mapper.createObjectNode();
 
 		// Transition
@@ -392,13 +402,332 @@ public class JiraService {
 
 		ObjectNode resolution = mapper.createObjectNode();
 		fields.put("resolution", resolution);
-		resolution.put("id", "" + IssueResolution.FIXED_WORKAROUND.intValue());
+		resolution.put("id", jiraConfiguration.getIssueResolutionId(IssueResolution.FIXED_WORKAROUND));
 
 		ObjectNode transistionNode = mapper.createObjectNode();
-		transistionNode.put("id", "" + jiraIssue.getStatus().intValue());
+		transistionNode.put("id", jiraConfiguration.getIssueStatusId(jiraIssue.getStatus()));
 		issue.put("transition", transistionNode);
 
 		return issue;
+
+	}
+
+	private JiraConfiguration getJiraConfiguration(String jiraConfiguration) {
+		if (jiraConfiguration.equals("STAGING")) {
+			return new StagingJiraConfigurationImpl();
+		} else {
+			return new ProductionJiraConfigurationImpl();
+		}
+	}
+
+	private interface JiraConfiguration {
+
+		public String getIssueCallId(IssueCall call);
+
+		public IssueCall getIssueCall(String id);
+
+		public String getIssueStatusId(IssueStatus status);
+
+		public IssueStatus getIssueStatus(String id);
+
+		public int getIssueTypeId(IssueType type);
+
+		public IssueType getIssueType(int id);
+
+		public String getIssueResolutionId(IssueResolution type);
+
+		public IssueResolution getIssueResolution(String id);
+
+		public String getIssueCustomFieldId(IssueCustomField type);
+
+		public IssueCustomField getIssueCustomField(String id);
+	}
+
+	private class ProductionJiraConfigurationImpl implements JiraConfiguration {
+
+		@Override
+		public String getIssueCallId(IssueCall call) {
+			switch (call) {
+				case INCOMING:
+					return "10220";
+				case OUTGOING:
+					return "10221";
+				default:
+					throw new IllegalArgumentException();
+			}
+		}
+
+		@Override
+		public String getIssueStatusId(IssueStatus status) {
+			switch (status) {
+				case OPEN:
+					return "1";
+				case CLOSED:
+					return "2";
+				case IN_PROGRESS:
+					return "3";
+				case REOPENED:
+					return "4";
+				case RESOLVED:
+					return "5";
+				default:
+					throw new IllegalArgumentException();
+			}
+		}
+
+		@Override
+		public int getIssueTypeId(IssueType type) {
+			switch (type) {
+				case COMPLAINT:
+					return 11;
+				case ERROR:
+					return 14;
+				case LOGIN:
+					return 79;
+				case GENERAL_INFORMATION:
+					return 78;
+				case ACCOUNT_MODIFICATION:
+					return 80;
+				case REGISTRATION:
+					return 77;
+				default:
+					throw new IllegalArgumentException();
+			}
+		}
+
+		@Override
+		public String getIssueResolutionId(IssueResolution type) {
+			switch (type) {
+				case FIXED:
+					return "1";
+				case WONT_FIX:
+					return "2";
+				case DUPLICATE:
+					return "3";
+				case INCOMPLETE:
+					return "4";
+				case CANNOT_REPRODUCE:
+					return "5";
+				case FIXED_WORKAROUND:
+					return "7";
+				default:
+					throw new IllegalArgumentException();
+			}
+		}
+
+		@Override
+		public String getIssueCustomFieldId(IssueCustomField type) {
+			switch (type) {
+				case ROLE:
+					return "customfield_12652";
+				case CALL_TYPE:
+					return "customfield_12551";
+				case USERNAME:
+					return "customfield_12552";
+				case FULLNAME:
+					return "customfield_12350";
+				case MOBILE:
+					return "customfield_12553";
+				case EMAIL:
+					return "customfield_12550";
+				default:
+					throw new IllegalArgumentException();
+			}
+		}
+
+		@Override
+		public IssueCall getIssueCall(String id) {
+			for (IssueCall value : IssueCall.values()) {
+				if (getIssueCallId(value).equals(id)) {
+					return value;
+				}
+			}
+			throw new IllegalArgumentException();
+		}
+
+		@Override
+		public IssueStatus getIssueStatus(String id) {
+			for (IssueStatus value : IssueStatus.values()) {
+				if (getIssueStatusId(value).equals(id)) {
+					return value;
+				}
+			}
+			throw new IllegalArgumentException();
+		}
+
+		@Override
+		public IssueType getIssueType(int id) {
+			for (IssueType value : IssueType.values()) {
+				if (getIssueTypeId(value) == id) {
+					return value;
+				}
+			}
+			throw new IllegalArgumentException();
+		}
+
+		@Override
+		public IssueResolution getIssueResolution(String id) {
+			for (IssueResolution value : IssueResolution.values()) {
+				if (getIssueResolutionId(value).equals(id)) {
+					return value;
+				}
+			}
+			throw new IllegalArgumentException();
+		}
+
+		@Override
+		public IssueCustomField getIssueCustomField(String id) {
+			for (IssueCustomField value : IssueCustomField.values()) {
+				if (getIssueCustomFieldId(value).equals(id)) {
+					return value;
+				}
+			}
+			throw new IllegalArgumentException();
+		}
+
+	}
+
+	private class StagingJiraConfigurationImpl implements JiraConfiguration {
+
+		@Override
+		public String getIssueCallId(IssueCall call) {
+			switch (call) {
+				case INCOMING:
+					return "10227";
+				case OUTGOING:
+					return "10228";
+				default:
+					throw new IllegalArgumentException();
+			}
+		}
+
+		@Override
+		public String getIssueStatusId(IssueStatus status) {
+			switch (status) {
+				case OPEN:
+					return "1";
+				case CLOSED:
+					return "2";
+				case IN_PROGRESS:
+					return "3";
+				case REOPENED:
+					return "4";
+				case RESOLVED:
+					return "5";
+				default:
+					throw new IllegalArgumentException();
+			}
+		}
+
+		@Override
+		public int getIssueTypeId(IssueType type) {
+			switch (type) {
+				case COMPLAINT:
+					return 11;
+				case ERROR:
+					return 14;
+				case LOGIN:
+					return 56;
+				case GENERAL_INFORMATION:
+					return 57;
+				case ACCOUNT_MODIFICATION:
+					return 59;
+				case REGISTRATION:
+					return 60;
+				default:
+					throw new IllegalArgumentException();
+			}
+		}
+
+		@Override
+		public String getIssueResolutionId(IssueResolution type) {
+			switch (type) {
+				case FIXED:
+					return "1";
+				case WONT_FIX:
+					return "2";
+				case DUPLICATE:
+					return "3";
+				case INCOMPLETE:
+					return "4";
+				case CANNOT_REPRODUCE:
+					return "5";
+				case FIXED_WORKAROUND:
+					return "6";
+				default:
+					throw new IllegalArgumentException();
+			}
+		}
+
+		@Override
+		public String getIssueCustomFieldId(IssueCustomField type) {
+			switch (type) {
+				case ROLE:
+					return "customfield_12650";
+				case CALL_TYPE:
+					return "customfield_12651";
+				case USERNAME:
+					return "customfield_12652";
+				case FULLNAME:
+					return "customfield_12653";
+				case MOBILE:
+					return "customfield_12654";
+				case EMAIL:
+					return "customfield_12655";
+				default:
+					throw new IllegalArgumentException();
+			}
+		}
+
+		@Override
+		public IssueCall getIssueCall(String id) {
+			for (IssueCall value : IssueCall.values()) {
+				if (getIssueCallId(value).equals(id)) {
+					return value;
+				}
+			}
+			throw new IllegalArgumentException();
+		}
+
+		@Override
+		public IssueStatus getIssueStatus(String id) {
+			for (IssueStatus value : IssueStatus.values()) {
+				if (getIssueStatusId(value).equals(id)) {
+					return value;
+				}
+			}
+			throw new IllegalArgumentException();
+		}
+
+		@Override
+		public IssueType getIssueType(int id) {
+			for (IssueType value : IssueType.values()) {
+				if (getIssueTypeId(value) == id) {
+					return value;
+				}
+			}
+			throw new IllegalArgumentException();
+		}
+
+		@Override
+		public IssueResolution getIssueResolution(String id) {
+			for (IssueResolution value : IssueResolution.values()) {
+				if (getIssueResolutionId(value).equals(id)) {
+					return value;
+				}
+			}
+			throw new IllegalArgumentException();
+		}
+
+		@Override
+		public IssueCustomField getIssueCustomField(String id) {
+			for (IssueCustomField value : IssueCustomField.values()) {
+				if (getIssueCustomFieldId(value).equals(id)) {
+					return value;
+				}
+			}
+			throw new IllegalArgumentException();
+		}
 
 	}
 }

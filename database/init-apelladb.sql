@@ -1,11 +1,41 @@
-﻿INSERT INTO users (id, authtoken, basicinfo_fathername, basicinfo_firstname, basicinfo_lastname, basicinfolatin_fathername, basicinfolatin_firstname, basicinfolatin_lastname, contactinfo_email, contactinfo_mobile, identification, lastlogindate, password, passwordsalt, registrationdate, authenticationtype, status, statusdate, username, verificationnumber, version) VALUES (1, 'l5jbeD4HO6xtI26631uELZ3jCDg=', 'ΌνομαΠατρός', 'Ονομα', 'Επώνυμο', 'Fathername', 'Firstname', 'Lastname', 'admin@apella.gr', '6900000000', NULL, NULL, 'hNOCXEZfAxgjvRQMGlk7tuXfMk0=', 'QLYo0saNqlODWg==', '2012-07-04 15:49:29.109', 'SHIBBOLETH', 'ACTIVE', '2012-07-04 15:49:29.109', 'admin', NULL, 94);
-INSERT INTO users (id, authtoken, basicinfo_fathername, basicinfo_firstname, basicinfo_lastname, basicinfolatin_fathername, basicinfolatin_firstname, basicinfolatin_lastname, contactinfo_email, contactinfo_mobile, identification, lastlogindate, password, passwordsalt, registrationdate, authenticationtype, status, statusdate, username, verificationnumber, version) VALUES (2, 'UjL6ATVA4gQawidNJY4ytQu5T6Q=', 'ΌνομαΠατρός', 'Ονομα', 'Επώνυμο', 'Fathername', 'Firstname', 'Lastname', 'ministry@apella.gr', '6900000000', NULL, NULL, 'hNOCXEZfAxgjvRQMGlk7tuXfMk0=', 'QLYo0saNqlODWg==', '2012-07-04 15:49:29.109', 'SHIBBOLETH', 'ACTIVE', '2012-11-06 13:23:48.271', 'ministry', NULL, 65);
+﻿INSERT INTO users(
+	id, authtoken, authenticationtype, basicinfo_fathername, basicinfo_firstname, 
+	basicinfo_lastname, basicinfolatin_fathername, basicinfolatin_firstname, 
+	basicinfolatin_lastname, contactinfo_email, contactinfo_mobile, 
+	contactinfo_phone, creationdate, identification, password, passwordsalt, 
+	permanentauthtoken, shibbolethinfo_affiliation, shibbolethinfo_givenname, 
+	shibbolethinfo_remoteuser, shibbolethinfo_schachomeorganization, 
+	shibbolethinfo_sn, status, statusdate, username, verificationnumber, version)
+VALUES (1, 'l5jbeD4HO6xtI26631uELZ3jCDg=', 'USERNAME', 'Σωτήριος', 'Άγγελος',
+	'Λένης', 'Sotirios', 'Angelos', 
+	'Lenis', 'anglen@ebs.gr', '6951666072', 
+	NULL, '2012-07-04 15:49:29.109', '', 'hNOCXEZfAxgjvRQMGlk7tuXfMk0=', 'QLYo0saNqlODWg==',
+	NULL, NULL, NULL, 
+	NULL, NULL, 
+	NULL, 'ACTIVE', '2012-07-04 15:49:29.109', 'anglen', NULL, 1);
+
+INSERT INTO users(
+	id, authtoken, authenticationtype, basicinfo_fathername, basicinfo_firstname, 
+	basicinfo_lastname, basicinfolatin_fathername, basicinfolatin_firstname, 
+	basicinfolatin_lastname, contactinfo_email, contactinfo_mobile, 
+	contactinfo_phone, creationdate, identification, password, passwordsalt, 
+	permanentauthtoken, shibbolethinfo_affiliation, shibbolethinfo_givenname, 
+	shibbolethinfo_remoteuser, shibbolethinfo_schachomeorganization, 
+	shibbolethinfo_sn, status, statusdate, username, verificationnumber, 
+	version)
+VALUES (2, 'l5jbeD4HO6xtI26631uELZ3jCEg=', 'USERNAME', '-', 'Χρήστης',
+	'Υπουργείου', '-', 'User', 
+	'Ministry', 'lenis.angelos@gmail.com', '6951666072', 
+	NULL, '2012-07-04 15:49:29.109', '', 'hNOCXEZfAxgjvRQMGlk7tuXfMk0=', 'QLYo0saNqlODWg==',
+	NULL, NULL, NULL, 
+	NULL, NULL, 
+	NULL, 'ACTIVE', '2012-07-04 15:49:29.109', 'ministry', NULL, 
+	1);
 
 INSERT INTO roles (id, discriminator, status, statusdate, statusenddate, version, user_id) VALUES (1, 'ADMINISTRATOR', 'ACTIVE', '2012-09-05 13:29:18.221', NULL, 0, 1);
 INSERT INTO roles (id, discriminator, status, statusdate, statusenddate, version, user_id) VALUES (2, 'MINISTRY_MANAGER', 'ACTIVE', '2012-11-06 13:23:12.182', NULL, 6, 2);
 
 INSERT INTO administrator (id) VALUES (1);
-
 INSERT INTO ministrymanager (ministry, id) VALUES ('Παιδείας',2);
 
 INSERT INTO rank (id, category, name, version) VALUES (1, 'PROFESSOR', 'Καθηγητής', 0);

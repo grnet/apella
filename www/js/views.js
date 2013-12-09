@@ -5189,13 +5189,13 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				case "fekSentDate":
 					return _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
 				case "openingDate":
-					// TODO: Uncomment this
-					// return !self.model.get("permanent");
-					return _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
+					return !self.model.get("permanent");
+				// Uncomment this for testing
+				// return _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
 				case "closingDate":
-					// TODO: Uncomment this
-					// return !self.model.get("permanent");
-					return _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
+					return !self.model.get("permanent");
+				// Uncomment this for testing
+				// return _.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI");
 				default:
 					break;
 			}

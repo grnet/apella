@@ -10,110 +10,43 @@ public class JiraIssue implements Serializable {
 	private static final long serialVersionUID = 1885653801140864606L;
 
 	public enum IssueCall {
-		INCOMING(10227),
-		OUTGOING(10228);
-
-		private int id;
-
-		private IssueCall(int id) {
-			this.id = id;
-		}
-
-		public int intValue() {
-			return this.id;
-		}
-
-		public static IssueCall valueOf(int id) {
-			IssueCall[] values = IssueCall.values();
-			for (int i = 0; i < values.length; i++) {
-				if (values[i].intValue() == (id))
-					return values[i];
-			}
-			throw new IllegalArgumentException();
-		}
+		INCOMING,
+		OUTGOING
 	}
 
 	public enum IssueStatus {
-		OPEN(1),
-		CLOSED(2),
-		IN_PROGRESS(3),
-		REOPENED(4),
-		RESOLVED(5);
-
-		private int id;
-
-		private IssueStatus(int id) {
-			this.id = id;
-		}
-
-		public int intValue() {
-			return this.id;
-		}
-
-		public static IssueStatus valueOf(int id) {
-			IssueStatus[] values = IssueStatus.values();
-			for (int i = 0; i < values.length; i++) {
-				if (values[i].intValue() == (id))
-					return values[i];
-			}
-			throw new IllegalArgumentException();
-		}
+		OPEN,
+		CLOSED,
+		IN_PROGRESS,
+		REOPENED,
+		RESOLVED
 	}
 
 	public enum IssueType {
-		COMPLAINT(11),
-		ERROR(14),
-		LOGIN(56),
-		GENERAL_INFORMATION(57),
-		ACCOUNT_MODIFICATION(59),
-		REGISTRATION(60);
-
-		private int id;
-
-		private IssueType(int id) {
-			this.id = id;
-		}
-
-		public int intValue() {
-			return this.id;
-		}
-
-		public static IssueType valueOf(int id) {
-			IssueType[] values = IssueType.values();
-			for (int i = 0; i < values.length; i++) {
-				if (values[i].intValue() == (id))
-					return values[i];
-			}
-			throw new IllegalArgumentException();
-		}
+		COMPLAINT,
+		ERROR,
+		LOGIN,
+		GENERAL_INFORMATION,
+		ACCOUNT_MODIFICATION,
+		REGISTRATION
 	}
 
 	public enum IssueResolution {
-		FIXED(1),
-		WONT_FIX(2),
-		DUPLICATE(3),
-		INCOMPLETE(4),
-		CANNOT_REPRODUCE(5),
-		FIXED_WORKAROUND(6);
+		FIXED,
+		WONT_FIX,
+		DUPLICATE,
+		INCOMPLETE,
+		CANNOT_REPRODUCE,
+		FIXED_WORKAROUND
+	}
 
-		private int id;
-
-		private IssueResolution(int id) {
-			this.id = id;
-		}
-
-		public int intValue() {
-			return this.id;
-		}
-
-		public static IssueResolution valueOf(int id) {
-			IssueResolution[] values = IssueResolution.values();
-			for (int i = 0; i < values.length; i++) {
-				if (values[i].intValue() == (id))
-					return values[i];
-			}
-			throw new IllegalArgumentException();
-		}
+	public enum IssueCustomField {
+		ROLE,
+		CALL_TYPE,
+		USERNAME,
+		FULLNAME,
+		MOBILE,
+		EMAIL
 	}
 
 	private String key;

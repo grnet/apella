@@ -341,7 +341,7 @@ public class UserRESTService extends RESTService {
 							put("username", savedUser.getUsername());
 							put("verificationLink", WebConstants.conf.getString("home.url") + "/registration.html#username=" + savedUser.getUsername() + "&verification=" + savedUser.getVerificationNumber());
 						}
-					}));
+					}), true);
 			}
 
 			//5. Post Issue:
