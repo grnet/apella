@@ -599,7 +599,7 @@ public class UserRESTService extends RESTService {
 			if (!u.getAuthenticationType().equals(AuthenticationType.EMAIL)) {
 				throw new RestException(Status.NOT_FOUND, "login.wrong.registration.type");
 			}
-			mailService.sendLoginEmail(u);
+			mailService.sendLoginEmail(u, true);
 
 			return Response.noContent().build();
 		} catch (NoResultException e) {

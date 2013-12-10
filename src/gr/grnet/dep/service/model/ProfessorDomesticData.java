@@ -2,6 +2,7 @@ package gr.grnet.dep.service.model;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
@@ -34,6 +35,7 @@ public class ProfessorDomesticData implements Serializable {
 
 	private String fek;
 
+	@Column(length = 2048)
 	private String fekSubject;
 
 	public String getFirstname() {

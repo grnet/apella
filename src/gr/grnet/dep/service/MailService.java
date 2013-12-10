@@ -195,7 +195,7 @@ public class MailService {
 		sendEmail(mail.getToEmailAddr(), mail.getSubject(), mail.getBody());
 	}
 
-	public void sendLoginEmail(User u) {
+	public void sendLoginEmail(User u, boolean sendNow) {
 		try {
 			if (u.getAuthenticationType().equals(AuthenticationType.EMAIL) && u.getPermanentAuthToken() != null) {
 				String aToEmailAddr = u.getContactInfo().getEmail();
@@ -204,7 +204,11 @@ public class MailService {
 					.replaceAll("\\[firstname\\]", u.getBasicInfo().getFirstname())
 					.replaceAll("\\[lastname\\]", u.getBasicInfo().getLastname())
 					.replaceAll("\\[loginLink\\]", "<a href=\"" + getloginLink(u.getPermanentAuthToken()) + "\">Είσοδο</a>");
-				pushEmail(aToEmailAddr, aSubject, aBody);
+				if (sendNow) {
+					sendEmail(aToEmailAddr, aSubject, aBody);
+				} else {
+					pushEmail(aToEmailAddr, aSubject, aBody);
+				}
 				logger.log(Level.INFO, "Sent login email to user with id " + u.getId() + " " + getloginLink(u.getPermanentAuthToken()));
 			} else {
 				logger.log(Level.INFO, "Skipped login email for user with id " + u.getId());

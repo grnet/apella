@@ -67,7 +67,7 @@ public class ManagementService {
 				"where u.permanentAuthToken is not null")
 			.getResultList();
 		for (User u : users) {
-			mailService.sendLoginEmail(u);
+			mailService.sendLoginEmail(u, false);
 		}
 
 	}

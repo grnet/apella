@@ -20,7 +20,7 @@ public class Subject {
 	@Version
 	private int version;
 
-	@Column(unique = true, nullable = false)
+	@Column(unique = true, nullable = false, length = 2048)
 	private String name;
 
 	public Subject() {

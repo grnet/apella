@@ -43,7 +43,7 @@ import org.jboss.resteasy.client.ClientResponse;
 @Stateless(name = "jiraService")
 public class JiraService {
 
-	private static final Logger logger = Logger.getLogger(MailService.class.getName());
+	private static final Logger logger = Logger.getLogger(JiraService.class.getName());
 
 	@PersistenceContext(unitName = "apelladb")
 	protected EntityManager em;
