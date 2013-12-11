@@ -8348,7 +8348,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				case "evaluator":
 					return self.model.get("canAddEvaluators");
 				case "sympliromatikaEggrafaFileList":
-					return self.model.get("committeeConverged");
+					return !self.model.get("committeeConverged");
 				default:
 					break;
 			}

@@ -11,7 +11,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 
 import javax.servlet.ServletException;
@@ -26,6 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 public class ShibbolethLogin extends BaseHttpServlet {
 
 	private static final long serialVersionUID = -8201973038949627229L;
+
+	private ResourceBundle resources = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-login", new Locale("el"));
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String path = getRelativePath(request);
@@ -85,7 +89,8 @@ public class ShibbolethLogin extends BaseHttpServlet {
 		} catch (IOException e) {
 			sendErrorPage(request, response, e.getMessage());
 		} catch (ServiceException e1) {
-			sendErrorPage(request, response, e1.getErrorKey());
+			String message = resources.getString("error." + e1.getErrorKey());
+			sendErrorPage(request, response, message);
 		}
 	}
 
