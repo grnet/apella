@@ -712,11 +712,16 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		initialize: function (options) {
 			this._super('initialize', [ options ]);
-			_.bindAll(this, "show");
+			_.bindAll(this, "show", "handleKeyUp", "stopTimer", "startTimer");
 			this.template = _.template(tpl_popup);
+
+			$('body').on("keyup", this.handleKeyUp);
 		},
 
-		events: {},
+		events: {
+			"mouseenter" : "stopTimer",
+			"mouseleave" : "startTimer"
+		},
 
 		render: function (eventName) {
 			var self = this;
@@ -749,12 +754,47 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var self = this;
 			self.render();
 			$('div#alerts').append(self.el);
+			// Start timer:
+			self.startTimer();
+		},
+
+		handleKeyUp: function (event) {
+			var self = this;
+			if (event.keyCode === 27) {
+				// On escape close
+				self.$el.fadeTo(500, 0).slideUp(500, function () {
+					self.close();
+				});
+			}
+		},
+
+		stopTimer: function () {
+			var self = this;
+			// Stop timer:
+			if (self.timer) {
+				window.clearTimeout(self.timer);
+				self.timer = undefined;
+			}
+		},
+
+		startTimer: function () {
+			var self = this;
+			// Restart timer:
+			self.stopTimer();
+			self.timer = window.setTimeout(function () {
+				self.$el.fadeTo(500, 0).slideUp(500, function () {
+					self.close();
+				});
+			}, 5000);
+
 		},
 
 		close: function () {
+			this.stopTimer();
 			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
+			$('body').off("keyup", this.handleKeyUp);
 		}
 	});
 
@@ -1866,8 +1906,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			$(this.el).unbind();
 			$(this.el).remove();
 		}
-	})
-	;
+	});
 
 	/***************************************************************************
 	 * IncompleteAccountView ***************************************************
@@ -1968,8 +2007,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					fathernamelatin: {
 						onlyLatin: true
 					},
-					identification: {
-					},
+					identification: {},
 					password: {
 						required: self.model.isNew(),
 						pwd: true,
@@ -3722,10 +3760,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						unhighlight: function (element, errorClass, validClass) {
 							$(element).parent(".controls").parent(".control-group").removeClass("error");
 						},
-						rules: {
-						},
-						messages: {
-						}
+						rules: {},
+						messages: {}
 					};
 				case "PROFESSOR_DOMESTIC":
 					return {
@@ -3834,10 +3870,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						unhighlight: function (element, errorClass, validClass) {
 							$(element).parent(".controls").parent(".control-group").removeClass("error");
 						},
-						rules: {
-						},
-						messages: {
-						}
+						rules: {},
+						messages: {}
 					};
 				case "MINISTRY_MANAGER":
 					return {
@@ -3849,10 +3883,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						unhighlight: function (element, errorClass, validClass) {
 							$(element).parent(".controls").parent(".control-group").removeClass("error");
 						},
-						rules: {
-						},
-						messages: {
-						}
+						rules: {},
+						messages: {}
 					};
 				case "MINISTRY_ASSISTANT":
 					return {};
@@ -7974,7 +8006,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				var school = department.get("school");
 				var institution = school.institution;
 				if (institution.category === 'RESEARCH_CENTER') {
-					//Skip research centers
+					// Skip research centers
 					return memo;
 				}
 				// 1. Create/Find InstitutionNode
@@ -8755,5 +8787,4 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 	});
 
 	return Views;
-})
-;
+});
