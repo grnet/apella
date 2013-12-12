@@ -25,36 +25,3 @@
 <% }); %>
 	</tbody>
 </table>
-<% if (showEvaluators) { %>
-<div class="row-fluid">
-	<div class="span12">
-		<h3><%= $.i18n.prop('EisigisiDEPYpopsifiouFileList') %>:</h3>
-		<ul>
-		<% _.each(candidacies, function(candidacy) { %>
-			<li>
-				<strong><%= candidacy.snapshot.basicInfo.firstname %> (<%= candidacy.snapshot.basicInfoLatin.firstname %>) <%= candidacy.snapshot.basicInfo.lastname %> (<%= candidacy.snapshot.basicInfoLatin.lastname %>), <%= candidacy.snapshot.basicInfo.fathername %> (<%= candidacy.snapshot.basicInfoLatin.fathername %>)</strong>
-				<ul class="unstyled">
-					<% _.each(candidacy.proposedEvaluators, function(proposedEvaluator, index) { %>
-					<li>
-						<i><%= $.i18n.prop("ProposedEvaluator") %> <%= index + 1 %>: </i>
-						<ul class="unstyled">
-							<li><%= proposedEvaluator.registerMember.professor.user.basicInfo.firstname %> <%=
-								proposedEvaluator.registerMember.professor.user.basicInfo.lastname%>
-							</li>
-							<li><%= $.i18n.prop(proposedEvaluator.registerMember.professor.discriminator) %></li>
-							<% if (proposedEvaluator.registerMember.professor.discriminator === "PROFESSOR_DOMESTIC") { %>
-							<li><%= $.i18n.prop('Department') %>: <%= _.templates.department(proposedEvaluator.registerMember.professor.department) %></li>
-							<% } else { %>
-							<li><%= $.i18n.prop('Institution') %>: <%= proposedEvaluator.registerMember.professor.institution %></li>
-							<% } %>
-						</ul>
-						<div id="eisigisiDepYpopsifiouFileList" data-candidacy-evaluator-id="<%= proposedEvaluator.id %>"></div>
-					</li>
-					<% }); %>
-				</ul>
-			</li>
-		<% }); %>
-		</ul>
-	</div>
-</div>
-<% } %>

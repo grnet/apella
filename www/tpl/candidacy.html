@@ -70,6 +70,7 @@
 		</dl>
 	</div>
 </div>
+
 <div class="row-fluid">
 	<div class="span12">
 		<h3><%= $.i18n.prop('ProposedEvaluators') %></h3>
@@ -90,6 +91,12 @@
 				</ul>
 				<% } %>
 			</dd>
+			<% if (proposedEvaluators[0]) { %>
+			<dt><%= $.i18n.prop('EisigisiDEPYpopsifiouFileList') %> 1</dt>
+			<dd>
+				<div id="eisigisiDepYpopsifiouFileList" data-candidacy-evaluator-id='<%= proposedEvaluators[0].id %>'></div>
+			</dd>
+			<% } %>
 			<dt><%= $.i18n.prop('ProposedEvaluator') %> 2</dt>
 			<dd>
 				<% if (proposedEvaluators[1]) { %>
@@ -106,6 +113,12 @@
 				</ul>
 				<% } %>
 			</dd>
+			<% if (proposedEvaluators[1]) { %>
+			<dt><%= $.i18n.prop('EisigisiDEPYpopsifiouFileList') %> 2</dt>
+			<dd>
+				<div id="eisigisiDepYpopsifiouFileList" data-candidacy-evaluator-id='<%= proposedEvaluators[1].id %>'></div>
+			</dd>
+			<% } %>
 			<dt><%= $.i18n.prop('EkthesiAutoaksiologisisFile') %></dt>
 			<dd>
 				<div id="ekthesiAutoaksiologisisFile"></div>

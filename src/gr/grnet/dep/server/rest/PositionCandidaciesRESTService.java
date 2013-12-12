@@ -9,7 +9,6 @@ import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.PositionCandidacies;
 import gr.grnet.dep.service.model.PositionCandidacies.DetailedPositionCandidaciesView;
-import gr.grnet.dep.service.model.PositionCandidacies.PositionCandidaciesView;
 import gr.grnet.dep.service.model.PositionCommitteeMember;
 import gr.grnet.dep.service.model.PositionEvaluator;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
@@ -122,7 +121,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 	@GET
 	@Path("/{candidaciesId:[0-9]+}")
 	@JsonView({DetailedPositionCandidaciesView.class})
-	public String get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("candidaciesId") Long candidaciesId) {
+	public PositionCandidacies get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("candidaciesId") Long candidaciesId) {
 		User loggedOn = getLoggedOn(authToken);
 
 		Session session = em.unwrap(Session.class);
@@ -146,27 +145,17 @@ public class PositionCandidaciesRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		for (Candidacy candidacy : existingCandidacies.getCandidacies()) {
-			if (!candidacy.isOpenToOtherCandidates() && !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId()) && existingCandidacies.containsCandidate(loggedOn)) {
+			if (!candidacy.isOpenToOtherCandidates() &&
+				!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId()) &&
+				existingCandidacies.containsCandidate(loggedOn)) {
 				candidacy.setAllowedToSee(Boolean.FALSE);
 			} else {
 				// all other cases: owner, admin, mm, ma, im, ia, committee, evaluator
 				candidacy.setAllowedToSee(Boolean.TRUE);
 			}
 		}
-		String result = null;
-		if (loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) ||
-			loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) ||
-			loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) ||
-			loggedOn.isDepartmentUser(existingPosition.getDepartment()) ||
-			(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) ||
-			(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn))) {
-			result = toJSON(existingCandidacies, DetailedPositionCandidaciesView.class);
-		} else {
-			//Is a Candidate, Evaluators are filtered
-			result = toJSON(existingCandidacies, PositionCandidaciesView.class);
-		}
 
-		return result;
+		return existingCandidacies;
 	}
 
 	/**********************

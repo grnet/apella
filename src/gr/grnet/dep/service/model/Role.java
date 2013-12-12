@@ -1,6 +1,6 @@
 package gr.grnet.dep.service.model;
 
-import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
+import gr.grnet.dep.service.model.Candidacy.MediumCandidacyView;
 import gr.grnet.dep.service.model.CandidacyEvaluator.DetailedCandidacyEvaluatorView;
 import gr.grnet.dep.service.model.PositionCandidacies.DetailedPositionCandidaciesView;
 import gr.grnet.dep.service.model.PositionCommittee.DetailedPositionCommitteeView;
@@ -141,7 +141,7 @@ public abstract class Role implements Serializable {
 		this.statusEndDate = statusEndDate;
 	}
 
-	@JsonView({DetailedRoleView.class, DetailedPositionCommitteeMemberView.class, DetailedPositionCandidaciesView.class, DetailedCandidacyView.class, DetailedRegisterView.class, DetailedRegisterMemberView.class, DetailedPositionEvaluatorView.class, DetailedPositionEvaluationView.class, DetailedPositionCommitteeView.class, DetailedCandidacyEvaluatorView.class})
+	@JsonView({DetailedRoleView.class, DetailedPositionCommitteeMemberView.class, DetailedPositionCandidaciesView.class, MediumCandidacyView.class, DetailedRegisterView.class, DetailedRegisterMemberView.class, DetailedPositionEvaluatorView.class, DetailedPositionEvaluationView.class, DetailedPositionCommitteeView.class, DetailedCandidacyEvaluatorView.class})
 	public User getUser() {
 		return user;
 	}

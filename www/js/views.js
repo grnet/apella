@@ -5532,7 +5532,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			tpl_data.members = _.sortBy(tpl_data.members, function (committeeMember) {
 				return committeeMember.type + (committeeMember.registerMember.external ? "1" : "0") + committeeMember.registerMember.id;
 			});
-			if (App.loggedOnUser.isAssociatedWithDepartment(self.model.get("position").department) || App.loggedOnUser.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE")) {
+			if (App.loggedOnUser.isAssociatedWithDepartment(self.model.get("position").department) ||
+				App.loggedOnUser.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE") ||
+				App.loggedOnUser.hasRoleWithStatus("MINISTRY_ASSISTANT", "ACTIVE")) {
 				_.each(tpl_data.members, function (member) {
 					member.access = "READ_FULL";
 				});
@@ -5934,7 +5936,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var tpl_data;
 			self.closeInnerViews();
 			tpl_data = self.model.toJSON();
-			if (App.loggedOnUser.isAssociatedWithDepartment(self.model.get("position").department) || App.loggedOnUser.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE")) {
+			if (App.loggedOnUser.isAssociatedWithDepartment(self.model.get("position").department) ||
+				App.loggedOnUser.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE") ||
+				App.loggedOnUser.hasRoleWithStatus("MINISTRY_ASSISTANT", "ACTIVE")) {
 				_.each(tpl_data.evaluators, function (evaluator) {
 					evaluator.access = "READ_FULL";
 				});
@@ -6306,28 +6310,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.$el.empty();
 			self.addTitle();
 			self.$el.append(self.template(tpl_data));
-			// Add files
-			if (self.model.has("id") && tpl_data.showEvaluators) {
-				files = new Models.Files();
-				files.url = self.model.url() + "/file";
-				files.fetch({
-					cache: false,
-					success: function (collection, response) {
-						_.each(self.model.get("candidacies"), function (candidacy) {
-							_.each(candidacy.proposedEvaluators, function (proposedEvaluator) {
-								var filteredFiles = new Models.Files(collection.filter(function (file) {
-									return file.get("evaluator").id === proposedEvaluator.id;
-								}));
-								filteredFiles.url = collection.url;
-								self.addFileList(filteredFiles, "EISIGISI_DEP_YPOPSIFIOU",
-									self.$("div#eisigisiDepYpopsifiouFileList[data-candidacy-evaluator-id=" + proposedEvaluator.id + "]"), {
-										withMetadata: true
-									});
-							});
-						});
-					}
-				});
-			}
 
 			return self;
 		},
@@ -6734,7 +6716,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		isEditable: function (element) {
 			var self = this;
-			return _.indexOf([ "EPILOGI", "STELEXOMENI", "ANAPOMPI" ], self.model.get("position").phase.status) >= 0;
+			return _.indexOf([ "ENTAGMENI", "ANOIXTI", "EPILOGI", "STELEXOMENI", "ANAPOMPI" ], self.model.get("position").phase.status) >= 0;
 		},
 
 		render: function (event) {
@@ -6986,10 +6968,25 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		render: function (eventName) {
 			var self = this;
+			var tpl_data;
 			self.$el.empty();
 			self.addTitle();
-			self.$el.append(self.template(self.model.toJSON()));
 
+			// Prepare tpl_data
+			tpl_data = self.model.toJSON();
+			if (App.loggedOnUser.isAssociatedWithDepartment(self.model.get("position").department) ||
+				App.loggedOnUser.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE") ||
+				App.loggedOnUser.hasRoleWithStatus("MINISTRY_ASSISTANT", "ACTIVE") ||
+				App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
+				_.each(tpl_data.members, function (member) {
+					member.access = "READ_FULL";
+				});
+			}
+
+			// Add to element
+			self.$el.append(self.template(tpl_data));
+
+			// Init jQuery.widgets
 			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 				self.$("table").dataTable({
 					"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
@@ -8428,7 +8425,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				case "evaluator":
 					return self.model.get("canAddEvaluators");
 				case "sympliromatikaEggrafaFileList":
-					return !self.model.get("committeeConverged");
+					return !self.model.get("nominationCommitteeConverged");
 				default:
 					break;
 			}
@@ -8738,6 +8735,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var self = this;
 			var files;
 			var sfiles;
+			var efiles;
 			self.closeInnerViews();
 			self.$el.empty();
 			self.addTitle();
@@ -8774,6 +8772,31 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					});
 				}
 			});
+
+			// Evaluation Files (only if proposed Evaluators is defined and not empty)
+			if (self.model.has("proposedEvaluators") && self.model.get("proposedEvaluators").length > 0) {
+				efiles = new Models.Files();
+				efiles.url = self.model.url() + "/evaluation/file";
+				efiles.fetch({
+					cache: false,
+					success: function (collection, response) {
+						_.each(self.model.get("candidacies"), function (candidacy) {
+							_.each(candidacy.proposedEvaluators, function (proposedEvaluator) {
+								var filteredFiles = new Models.Files(collection.filter(function (file) {
+									return file.get("evaluator").id === proposedEvaluator.id;
+								}));
+								filteredFiles.url = collection.url;
+								self.addFileList(filteredFiles, "EISIGISI_DEP_YPOPSIFIOU",
+									self.$("div#eisigisiDepYpopsifiouFileList[data-candidacy-evaluator-id=" + proposedEvaluator.id + "]"), {
+										withMetadata: true
+									});
+							});
+						});
+					}
+				});
+			}
+
+
 			return self;
 		},
 

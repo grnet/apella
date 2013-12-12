@@ -215,7 +215,11 @@ public class PositionRESTService extends RESTService {
 			position.getPhase().getCandidacies().setCreatedAt(now);
 			position.getPhase().getCandidacies().setUpdatedAt(now);
 			position.getPhase().setCommittee(null);
-			position.getPhase().setComplementaryDocuments(null);
+			position.getPhase().setComplementaryDocuments(new PositionComplementaryDocuments());
+			position.getPhase().getComplementaryDocuments().setPosition(position);
+			position.getPhase().getComplementaryDocuments().setCreatedAt(now);
+			position.getPhase().getComplementaryDocuments().setUpdatedAt(now);
+
 			position.getPhase().setNomination(null);
 
 			position = em.merge(position);
@@ -398,6 +402,7 @@ public class PositionRESTService extends RESTService {
 							newPhase = new PositionPhase();
 							newPhase.setStatus(PositionStatus.ANOIXTI);
 							newPhase.setCandidacies(existingPhase.getCandidacies());
+							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
 							// Add to Position
 							existingPosition.addPhase(newPhase);
 							break;
@@ -423,14 +428,13 @@ public class PositionRESTService extends RESTService {
 							newPhase = new PositionPhase();
 							newPhase.setStatus(PositionStatus.EPILOGI);
 							newPhase.setCandidacies(existingPhase.getCandidacies());
+							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
 							newPhase.setCommittee(new PositionCommittee());
 							newPhase.getCommittee().setPosition(existingPosition);
 							newPhase.setEvaluation(new PositionEvaluation());
 							newPhase.getEvaluation().setPosition(existingPosition);
 							newPhase.setNomination(new PositionNomination());
 							newPhase.getNomination().setPosition(existingPosition);
-							newPhase.setComplementaryDocuments(new PositionComplementaryDocuments());
-							newPhase.getComplementaryDocuments().setPosition(existingPosition);
 							// Add to Position
 							existingPosition.addPhase(newPhase);
 							break;
@@ -455,9 +459,9 @@ public class PositionRESTService extends RESTService {
 							newPhase = new PositionPhase();
 							newPhase.setStatus(PositionStatus.ANAPOMPI);
 							newPhase.setCandidacies(existingPhase.getCandidacies());
+							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
 							newPhase.setCommittee(existingPhase.getCommittee());
 							newPhase.setEvaluation(existingPhase.getEvaluation());
-							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
 							newPhase.setNomination(existingPhase.getNomination());
 							// Add to Position
 							existingPosition.addPhase(newPhase);
@@ -474,9 +478,9 @@ public class PositionRESTService extends RESTService {
 							newPhase = new PositionPhase();
 							newPhase.setStatus(PositionStatus.STELEXOMENI);
 							newPhase.setCandidacies(existingPhase.getCandidacies());
+							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
 							newPhase.setCommittee(existingPhase.getCommittee());
 							newPhase.setEvaluation(existingPhase.getEvaluation());
-							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
 							newPhase.setNomination(existingPhase.getNomination());
 							// Add to Position
 							existingPosition.addPhase(newPhase);
@@ -486,9 +490,9 @@ public class PositionRESTService extends RESTService {
 							newPhase = new PositionPhase();
 							newPhase.setStatus(PositionStatus.CANCELLED);
 							newPhase.setCandidacies(existingPhase.getCandidacies());
+							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
 							newPhase.setCommittee(existingPhase.getCommittee());
 							newPhase.setEvaluation(existingPhase.getEvaluation());
-							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
 							newPhase.setNomination(existingPhase.getNomination());
 							// Add to Position
 							existingPosition.addPhase(newPhase);
@@ -508,9 +512,9 @@ public class PositionRESTService extends RESTService {
 							newPhase = new PositionPhase();
 							newPhase.setStatus(PositionStatus.CANCELLED);
 							newPhase.setCandidacies(existingPhase.getCandidacies());
+							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
 							newPhase.setCommittee(existingPhase.getCommittee());
 							newPhase.setEvaluation(existingPhase.getEvaluation());
-							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
 							newPhase.setNomination(existingPhase.getNomination());
 							// Add to Position
 							existingPosition.addPhase(newPhase);
@@ -526,14 +530,13 @@ public class PositionRESTService extends RESTService {
 							newPhase = new PositionPhase();
 							newPhase.setStatus(PositionStatus.EPILOGI);
 							newPhase.setCandidacies(existingPhase.getCandidacies());
+							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
 							newPhase.setCommittee(new PositionCommittee());
 							newPhase.getCommittee().setPosition(existingPosition);
 							newPhase.setEvaluation(new PositionEvaluation());
 							newPhase.getEvaluation().setPosition(existingPosition);
 							newPhase.setNomination(new PositionNomination());
 							newPhase.getNomination().setPosition(existingPosition);
-							newPhase.setComplementaryDocuments(new PositionComplementaryDocuments());
-							newPhase.getComplementaryDocuments().setPosition(existingPosition);
 							// Add to Position
 							existingPosition.addPhase(newPhase);
 							break;
@@ -555,14 +558,13 @@ public class PositionRESTService extends RESTService {
 							newPhase = new PositionPhase();
 							newPhase.setStatus(PositionStatus.EPILOGI);
 							newPhase.setCandidacies(existingPhase.getCandidacies());
+							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
 							newPhase.setCommittee(new PositionCommittee());
 							newPhase.getCommittee().setPosition(existingPosition);
 							newPhase.setEvaluation(new PositionEvaluation());
 							newPhase.getEvaluation().setPosition(existingPosition);
 							newPhase.setNomination(new PositionNomination());
 							newPhase.getNomination().setPosition(existingPosition);
-							newPhase.setComplementaryDocuments(new PositionComplementaryDocuments());
-							newPhase.getComplementaryDocuments().setPosition(existingPosition);
 							// Add to Position
 							existingPosition.addPhase(newPhase);
 							break;

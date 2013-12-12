@@ -97,7 +97,7 @@ public class PositionCandidacies {
 		this.phases = phases;
 	}
 
-	@JsonView({PositionCandidaciesView.class})
+	@JsonView({DetailedPositionCandidaciesView.class})
 	public Set<Candidacy> getCandidacies() {
 		return candidacies;
 	}
