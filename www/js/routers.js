@@ -558,7 +558,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				position.fetch({
 					cache: false,
 					success: function () {
-						// Select Edit or Simple View based on loggedOnUser
+						// Select Edit, Helpdesk or Simple View based on loggedOnUser
 						if (App.loggedOnUser.isAssociatedWithDepartment(position.get("department"))) {
 							positionView = new Views.PositionEditView({
 								tab: tab || "main",
@@ -566,6 +566,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 							});
 							// Update history
 							App.router.navigate("positions/" + position.id + "/" + (tab || "main"), {
+								trigger: false
+							});
+						} else if (App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
+							positionView = new Views.PositionHelpdeskView({
+								model: position
+							});
+							// Update history
+							App.router.navigate("positions/" + position.id, {
 								trigger: false
 							});
 						} else {
@@ -635,12 +643,19 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 		showPositionView: function (positionId, order) {
 			var self = this;
+			var positionView;
 			var position = new Models.Position({
 				id: positionId
 			});
-			var positionView = new Views.PositionView({
-				model: position
-			});
+			if (App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
+				positionView = new Views.PositionHelpdeskView({
+					model: position
+				});
+			} else {
+				positionView = new Views.PositionView({
+					model: position
+				});
+			}
 			// Add to UI
 			self.clear();
 			$("#content").unbind();

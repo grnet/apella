@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.file.ProfessorFile;
 import gr.grnet.dep.service.util.CompareUtil;
 
@@ -163,18 +164,26 @@ public abstract class Professor extends Role {
 		return false;
 	}
 
-	public static int countCommittees(Professor p) {
+	public static int countActiveCommittees(Professor p) {
 		int count = 0;
 		for (RegisterMember professorMembership : p.getRegisterMemberships()) {
-			count += professorMembership.getCommittees().size();
+			for (PositionCommitteeMember member : professorMembership.getCommittees()) {
+				if (member.getCommittee().getPosition().getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
+					count++;
+				}
+			}
 		}
 		return count;
 	}
 
-	public static int countEvaluations(Professor p) {
+	public static int countActiveEvaluations(Professor p) {
 		int count = 0;
 		for (RegisterMember professorMembership : p.getRegisterMemberships()) {
-			count += professorMembership.getEvaluations().size();
+			for (PositionEvaluator evaluator : professorMembership.getEvaluations()) {
+				if (evaluator.getEvaluation().getPosition().getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
+					count++;
+				}
+			}
 		}
 		return count;
 	}

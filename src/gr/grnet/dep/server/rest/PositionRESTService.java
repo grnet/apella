@@ -257,15 +257,11 @@ public class PositionRESTService extends RESTService {
 			if (sector == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.sector.id");
 			}
-			// Cannot change positionCandidacies dates if permanent, just ignore changes no need for an error
-			// TODO: Re-add this
-			/*
-			if (existingPosition.isPermanent()) {
+			// Only admin can change positionCandidacies dates if permanent, just ignore changes otherwise
+			if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && existingPosition.isPermanent()) {
 				position.getPhase().getCandidacies().setOpeningDate(existingPosition.getPhase().getCandidacies().getOpeningDate());
 				position.getPhase().getCandidacies().setClosingDate(existingPosition.getPhase().getCandidacies().getClosingDate());
 			}
-			*/
-
 			// Update
 			existingPosition.copyFrom(position);
 			existingPosition.setSector(sector);

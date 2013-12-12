@@ -113,7 +113,8 @@ public class PositionCommitteeRESTService extends RESTService {
 		// Execute
 		for (RegisterMember r : registerMembers) {
 			Professor p = (Professor) r.getProfessor();
-			p.setCommitteesCount(Professor.countCommittees(p));
+			p.setCommitteesCount(Professor.countActiveCommittees(p));
+			p.setEvaluationsCount(Professor.countActiveEvaluations(p));
 		}
 		return registerMembers;
 	}
