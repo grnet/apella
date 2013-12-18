@@ -272,8 +272,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 			!loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!(existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI) ||
-			existingPosition.getPhase().getStatus().equals(PositionStatus.ANAPOMPI) || existingPosition.getPhase().getStatus().equals(PositionStatus.STELEXOMENI))) {
+		if (existingPosition.getPhase().getStatus().equals(PositionStatus.CANCELLED)) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		// Parse Request
@@ -307,20 +306,22 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 
 			// Send E-Mails
 			// position.upload@committee
-			for (final PositionCommitteeMember member : cdFile.getComplementaryDocuments().getPosition().getPhase().getCommittee().getMembers()) {
-				mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
-					"default.subject",
-					"position.upload@committee",
-					Collections.unmodifiableMap(new HashMap<String, String>() {
+			if (cdFile.getComplementaryDocuments().getPosition().getPhase().getCommittee() != null) {
+				for (final PositionCommitteeMember member : cdFile.getComplementaryDocuments().getPosition().getPhase().getCommittee().getMembers()) {
+					mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"position.upload@committee",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
 
-						{
-							put("firstname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
-							put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
-							put("position", cdFile.getComplementaryDocuments().getPosition().getName());
-							put("institution", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName());
-							put("department", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName());
-						}
-					}));
+							{
+								put("firstname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+								put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
+								put("position", cdFile.getComplementaryDocuments().getPosition().getName());
+								put("institution", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("department", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName());
+							}
+						}));
+				}
 			}
 			// position.upload@candidates
 			for (final Candidacy candidacy : cdFile.getComplementaryDocuments().getPosition().getPhase().getCandidacies().getCandidacies()) {
@@ -339,20 +340,22 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 					}));
 			}
 			// position.upload@evaluators
-			for (final PositionEvaluator evaluator : cdFile.getComplementaryDocuments().getPosition().getPhase().getEvaluation().getEvaluators()) {
-				mailService.postEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
-					"default.subject",
-					"position.upload@evaluators",
-					Collections.unmodifiableMap(new HashMap<String, String>() {
+			if (cdFile.getComplementaryDocuments().getPosition().getPhase().getEvaluation() != null) {
+				for (final PositionEvaluator evaluator : cdFile.getComplementaryDocuments().getPosition().getPhase().getEvaluation().getEvaluators()) {
+					mailService.postEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"position.upload@evaluators",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
 
-						{
-							put("firstname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
-							put("lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
-							put("position", cdFile.getComplementaryDocuments().getPosition().getName());
-							put("institution", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName());
-							put("department", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName());
-						}
-					}));
+							{
+								put("firstname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+								put("lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
+								put("position", cdFile.getComplementaryDocuments().getPosition().getName());
+								put("institution", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("department", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName());
+							}
+						}));
+				}
 			}
 			// End: Send E-Mails
 
@@ -406,8 +409,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 			!loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!(existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI) ||
-			existingPosition.getPhase().getStatus().equals(PositionStatus.ANAPOMPI) || existingPosition.getPhase().getStatus().equals(PositionStatus.STELEXOMENI))) {
+		if (existingPosition.getPhase().getStatus().equals(PositionStatus.CANCELLED)) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		// Parse Request
@@ -482,8 +484,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 			!loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		if (!(existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI) ||
-			existingPosition.getPhase().getStatus().equals(PositionStatus.ANAPOMPI) || existingPosition.getPhase().getStatus().equals(PositionStatus.STELEXOMENI))) {
+		if (existingPosition.getPhase().getStatus().equals(PositionStatus.CANCELLED)) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		try {

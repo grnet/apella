@@ -713,10 +713,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		initialize: function (options) {
 			this._super('initialize', [ options ]);
-			_.bindAll(this, "show", "handleKeyUp", "stopTimer", "startTimer");
+			_.bindAll(this, "show", "handleKeyUp", "handleHistoryChange", "stopTimer", "startTimer");
 			this.template = _.template(tpl_popup);
 
 			$('body').on("keyup", this.handleKeyUp);
+			App.router.on("all", this.handleHistoryChange);
 		},
 
 		events: {
@@ -769,6 +770,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 		},
 
+		handleHistoryChange: function () {
+			var self = this;
+			// On escape close
+			self.$el.fadeTo(500, 0).slideUp(500, function () {
+				self.close();
+			});
+		},
+
 		stopTimer: function () {
 			var self = this;
 			// Stop timer:
@@ -796,6 +805,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			$(this.el).unbind();
 			$(this.el).remove();
 			$('body').off("keyup", this.handleKeyUp);
+			App.router.off("all", this.handleHistoryChange);
 		}
 	});
 
@@ -825,7 +835,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 		render: function (eventName) {
 			var self = this;
 			self.$el.empty();
-			self.addTitle();
 			self.$el.append(self.template({
 				title: self.options.title,
 				message: self.options.message
@@ -1225,7 +1234,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					password: {
 						required: $.i18n.prop('validation_required'),
 						pwd: $.i18n.prop('validation_password'),
-						minlength: $.i18n.prop('validation_latin', 5)
+						minlength: $.i18n.prop('validation_minlength', 5)
 					},
 					confirm_password: {
 						required: $.i18n.prop('validation_required'),
@@ -4968,7 +4977,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				self.$("#positionTabs a[data-target=committee]").parent("li").addClass("disabled");
 				self.$("#positionTabs a[data-target=evaluation]").parent("li").addClass("disabled");
 				self.$("#positionTabs a[data-target=nomination]").parent("li").addClass("disabled");
-				self.$("#positionTabs a[data-target=complementaryDocuments]").parent("li").addClass("disabled");
 			}
 
 			// Show Tab:
@@ -6974,7 +6982,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 			// Prepare tpl_data
 			tpl_data = self.model.toJSON();
-			if (App.loggedOnUser.isAssociatedWithDepartment(self.model.get("position").department) ||
+			if (App.loggedOnUser.isAssociatedWithInstitution(self.model.get("institution")) ||
 				App.loggedOnUser.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE") ||
 				App.loggedOnUser.hasRoleWithStatus("MINISTRY_ASSISTANT", "ACTIVE") ||
 				App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
@@ -8795,7 +8803,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					}
 				});
 			}
-
 
 			return self;
 		},
