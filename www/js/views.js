@@ -2335,8 +2335,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						if (model.has("id")) {
 							item = model.toJSON();
 							item.cid = model.cid;
+							item.primaryRole = model.getRole(model.get("primaryRole"));
 							item.roleInfo = self.roleInfoTemplate({
-								roles: [ model.getRole(model.get("primaryRole")) ]
+								roles :[item.primaryRole]
 							});
 							result.push(item);
 						}
@@ -6349,7 +6350,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		isEditable: function (element) {
 			var self = this;
-			return self.model.get("position").phase.status === "EPILOGI";
+			if (element === 'eisigisiDepYpopsifiouFileList') {
+				// The nominationCommitteeConverged is equal for all candidacies no need to search in array
+				return self.model.get("candidacies").length > 0 ? !self.model.get("candidacies")[0].nominationCommitteeConverged : false;
+			}
+			return self.model.get("position").phase.status === 'EPILOGI';
 		},
 
 		render: function (eventName) {

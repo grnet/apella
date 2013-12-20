@@ -150,6 +150,7 @@ public class PdfUtil {
 				im.getUser().getContactInfo().getPhone() +
 				" και όνομα χρήστη " +
 				im.getUser().getUsername()
+				+ "."
 				, normalFont);
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
@@ -165,7 +166,8 @@ public class PdfUtil {
 				" με e-mail " +
 				im.getAlternateContactInfo().getEmail() +
 				", τηλέφωνο " +
-				im.getAlternateContactInfo().getPhone(),
+				im.getAlternateContactInfo().getPhone()
+				+ ".",
 				normalFont);
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
@@ -326,13 +328,13 @@ public class PdfUtil {
 
 			p = new Paragraph("Βεβαιώνεται ότι ο " +
 				candidate.getUser().getBasicInfo().getFirstname() +
-				" ( " +
+				" (" +
 				candidate.getUser().getBasicInfoLatin().getFirstname() +
-				" )" +
+				") " +
 				candidate.getUser().getBasicInfo().getLastname() +
-				" ( " +
+				" (" +
 				candidate.getUser().getBasicInfoLatin().getLastname() +
-				" )" +
+				") " +
 				" με Α.Δ.Τ. "
 				+ candidate.getUser().getIdentification() +
 				", e-mail "
@@ -340,7 +342,8 @@ public class PdfUtil {
 				" και τηλέφωνο " +
 				candidate.getUser().getContactInfo().getMobile() +
 				" συμμετέχει στο πρόγραμμα \"Απέλλα - Σύστημα Εκλογής και Εξέλιξης Μελών ΔΕΠ\" με το Όνομα Χρήστη "
-				+ candidate.getUser().getUsername(),
+				+ candidate.getUser().getUsername()
+				+ ".",
 				normalFont);
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
@@ -350,7 +353,7 @@ public class PdfUtil {
 			doc.add(p);
 
 			p = new Paragraph("O συμμετέχων δηλώνει υπεύθυνα ότι αποδέχεται τους όρους και τις προϋποθέσεις του προγράμματος " +
-				"\"Απέλλα - Σύστημα Εκλογής και Εξέλιξης Μελών ΔΕΠ\", όπως κάθε φορά ισχύουν", normalFont);
+				"\"Απέλλα - Σύστημα Εκλογής και Εξέλιξης Μελών ΔΕΠ\", όπως κάθε φορά ισχύουν.", normalFont);
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
@@ -426,6 +429,8 @@ public class PdfUtil {
 	private static PdfPTable createLogoTable() throws MalformedURLException, IOException, DocumentException {
 		// Load resources
 		Font normalFont = FontFactory.getFont("Arial", BaseFont.IDENTITY_H, BASE_FONT_SIZE);
+		Image logoMinedu = Image.getInstance(loadImage("logo_minedu.png"));
+		logoMinedu.scaleToFit(1200, 36);
 		Image logoGRnet = Image.getInstance(loadImage("logo_grnet.png"));
 		logoGRnet.scaleToFit(1200, 36);
 		Image logoEU = Image.getInstance(loadImage("logo_eu.jpg"));
@@ -435,16 +440,17 @@ public class PdfUtil {
 		Image logoDM = Image.getInstance(loadImage("logo_ep.jpg"));
 		logoDM.scaleToFit(1200, 36);
 		// Create table
-		PdfPTable logoTable = new PdfPTable(4);
+		PdfPTable logoTable = new PdfPTable(5);
 		logoTable.setHorizontalAlignment(Element.ALIGN_CENTER);
-		logoTable.setWidths(new float[] {25, 25, 25, 25});
+		logoTable.setWidths(new float[] {27, 28, 12, 15, 18});
 
+		logoTable.addCell(createImageCell(logoMinedu, Element.ALIGN_CENTER, 0));
 		logoTable.addCell(createImageCell(logoGRnet, Element.ALIGN_CENTER, 0));
 		logoTable.addCell(createImageCell(logoEU, Element.ALIGN_CENTER, 0));
 		logoTable.addCell(createImageCell(logoDM, Element.ALIGN_CENTER, 0));
 		logoTable.addCell(createImageCell(logoEspa, Element.ALIGN_CENTER, 0));
 		PdfPCell cell = createCell(new Phrase("Με τη συγχρηματοδότηση της Ελλάδας και της Ευρωπαϊκής Ένωσης", normalFont), Element.ALIGN_CENTER, 0);
-		cell.setColspan(4);
+		cell.setColspan(5);
 		logoTable.addCell(cell);
 
 		return logoTable;

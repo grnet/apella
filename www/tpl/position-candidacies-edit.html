@@ -30,14 +30,16 @@
 <div class="row-fluid">
 	<div class="span12">
 		<legend><%= $.i18n.prop('EisigisiDEPYpopsifiouFileList') %>:</legend>
-		<ul>
+		<table class="table table-striped table-bordered">
 		<% _.each(candidacies, function(candidacy) { %>
-			<li>
-				<strong><%= candidacy.snapshot.basicInfo.firstname %> (<%= candidacy.snapshot.basicInfoLatin.firstname %>) <%= candidacy.snapshot.basicInfo.lastname %> (<%= candidacy.snapshot.basicInfoLatin.lastname %>), <%= candidacy.snapshot.basicInfo.fathername %> (<%= candidacy.snapshot.basicInfoLatin.fathername %>)</strong>
-				<ul class="unstyled">
-					<% _.each(candidacy.proposedEvaluators, function(proposedEvaluator, index) { %>
-					<li>
-						<i><%= $.i18n.prop("ProposedEvaluator") %> <%= index + 1 %>: </i>
+			<% if (candidacy.proposedEvaluators.length > 0) { %>
+				<% _.each(candidacy.proposedEvaluators, function(proposedEvaluator, index) { %>
+				<tr>
+					<td width="15%">
+						<%= $.i18n.prop("ProposedEvaluator") %> <%= index + 1 %> :<br/>
+						<i>(<%= candidacy.snapshot.basicInfo.firstname %> <%= candidacy.snapshot.basicInfo.lastname %>)</i>
+					</td>
+					<td width="25%">
 						<ul class="unstyled">
 							<li><%= proposedEvaluator.registerMember.professor.user.basicInfo.firstname %> <%= proposedEvaluator.registerMember.professor.user.basicInfo.lastname%></li>
 							<li><%= $.i18n.prop(proposedEvaluator.registerMember.professor.discriminator) %></li>
@@ -47,12 +49,14 @@
 							<li><%= $.i18n.prop('Institution') %>: <%= proposedEvaluator.registerMember.professor.institution %></li>
 							<% } %>
 						</ul>
+					</td>
+					<td>
 						<input type="hidden" name="eisigisiDepYpopsifiouFileList" data-candidacy-evaluator-id="<%= proposedEvaluator.id %>"/>
-					</li>
-					<% }); %>
-				</ul>
-			</li>
+					</td>
+				</tr>
+				<% }); %>
+			<% } %>
 		<% }); %>
-		</ul>
+		</table>
 	</div>
 </div>

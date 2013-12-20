@@ -20,6 +20,7 @@ import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.DetailedUserView;
 import gr.grnet.dep.service.model.User.UserStatus;
+import gr.grnet.dep.service.util.StringUtil;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -127,8 +128,8 @@ public class UserRESTService extends RESTService {
 		sb.append("order by usr.basicInfo.lastname, usr.basicInfo.firstname");
 
 		Query query = em.createQuery(sb.toString())
-			.setParameter("firstname", "%" + (firstname != null ? firstname : "") + "%")
-			.setParameter("lastname", "%" + (lastname != null ? lastname : "") + "%");
+			.setParameter("firstname", "%" + (firstname != null ? StringUtil.toUppercaseNoTones(firstname, new Locale("el")) : "") + "%")
+			.setParameter("lastname", "%" + (lastname != null ? StringUtil.toUppercaseNoTones(lastname, new Locale("el")) : "") + "%");
 
 		if (username != null && !username.isEmpty()) {
 			query.setParameter("username", "%" + username + "%");

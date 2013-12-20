@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.PositionCandidacies.DetailedPositionCandidaciesView;
 import gr.grnet.dep.service.model.file.CandidacyFile;
 import gr.grnet.dep.service.model.file.CandidateFile;
 import gr.grnet.dep.service.model.file.FileBody;
@@ -265,7 +266,7 @@ public class Candidacy {
 		this.candidacies = candidacies;
 	}
 
-	@JsonView({MediumCandidacyView.class})
+	@JsonView({DetailedPositionCandidaciesView.class, MediumCandidacyView.class})
 	public Set<CandidacyEvaluator> getProposedEvaluators() {
 		return proposedEvaluators;
 	}
@@ -312,7 +313,7 @@ public class Candidacy {
 
 	// /////////////////////////////////////////////////////////////
 
-	@JsonView({DetailedCandidacyView.class})
+	@JsonView({DetailedPositionCandidaciesView.class, DetailedCandidacyView.class})
 	public boolean getNominationCommitteeConverged() {
 		PositionNomination nomination = this.candidacies.getPosition().getPhase().getNomination();
 		return nomination != null &&
