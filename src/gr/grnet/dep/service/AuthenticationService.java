@@ -30,6 +30,8 @@ import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -122,6 +124,7 @@ public class AuthenticationService {
 		}
 	}
 
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public User createProfessorDomesticAccount(ProfessorDomesticData data) {
 		// Create User from Data 
 		User u = new User();
@@ -162,6 +165,7 @@ public class AuthenticationService {
 
 		// Now Add permanentAuthToken
 		u.setPermanentAuthToken(generatePermanentAuthenticationToken(u.getId(), u.getContactInfo().getEmail()));
+		u.setLoginEmailSent(Boolean.FALSE);
 		u = em.merge(u);
 
 		return u;

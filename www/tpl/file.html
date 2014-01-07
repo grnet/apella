@@ -19,13 +19,13 @@
 			<a href='<%= file.currentBody.url %>' target="viewfile"><%= file.name %>, (<%= file.currentBody.originalFilename %>)</a>
 <% } else { %>
 			<a href='<%= file.currentBody.url %>' target="viewfile"><%= file.currentBody.originalFilename %></a>
-<% } %>	
+<% } %>
 <% } %>
 		</td>
 		<td>
 <% if (!_.isUndefined(file.id)) { %>
 			<%= App.utils.formatFileSize(file.currentBody.fileSize) %>
-<% } %>			
+<% } %>
 		</td>
 		<td>
 <% if (!_.isUndefined(file.id)) { %>

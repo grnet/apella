@@ -87,6 +87,7 @@ public class User implements Serializable {
 
 	// Authentication Fields
 
+	// A. USERNAME
 	@Column(unique = true)
 	private String username;
 
@@ -96,12 +97,16 @@ public class User implements Serializable {
 
 	private Long verificationNumber;
 
+	// B. SHIBBOLETH
 	@Valid
 	@Embedded
 	private ShibbolethInformation shibbolethInfo = new ShibbolethInformation();
 
+	// C. EMAIL
 	@Column(unique = true)
 	private String permanentAuthToken;
+
+	private Boolean loginEmailSent = Boolean.FALSE;
 
 	@Column(unique = true)
 	private String authToken;
@@ -271,6 +276,16 @@ public class User implements Serializable {
 
 	public void setPermanentAuthToken(String permanentAuthToken) {
 		this.permanentAuthToken = permanentAuthToken;
+	}
+
+	@XmlTransient
+	@JsonIgnore
+	public Boolean getLoginEmailSent() {
+		return loginEmailSent;
+	}
+
+	public void setLoginEmailSent(Boolean loginEmailSent) {
+		this.loginEmailSent = loginEmailSent;
 	}
 
 	@XmlTransient

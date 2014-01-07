@@ -308,9 +308,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			accountView = new Views.AccountView({
 				model: App.loggedOnUser
 			});
-			// When sync completes user will have completed the account
+			// When sync completes user will have completed the account, direct to profile
 			self.listenToOnce(App.loggedOnUser, "sync:save", function () {
-				App.router.navigate("", {
+				App.router.navigate("profile", {
 					trigger: true
 				});
 			});

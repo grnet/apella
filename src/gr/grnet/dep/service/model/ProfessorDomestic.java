@@ -5,7 +5,6 @@ import gr.grnet.dep.service.util.CompareUtil;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
-import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
@@ -34,12 +33,12 @@ public class ProfessorDomestic extends Professor {
 	@ManyToOne
 	private Rank rank;
 
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne
 	private Subject subject;
 
 	private String fek;
 
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne
 	private Subject fekSubject;
 
 	public ProfessorDomestic() {

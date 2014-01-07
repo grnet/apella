@@ -7,6 +7,7 @@
 			<th><%= $.i18n.prop("Profile") %></th>
 			<th><%= $.i18n.prop("Rank") %></th>
 			<th><%= $.i18n.prop("Institution") %></th>
+			<th><%= $.i18n.prop("Subject") %></th>
 		</tr>
 	</thead>
 	<tbody>
@@ -30,12 +31,22 @@
 				<%= _.templates.department(professor.department) %>
 				<% } %>
 			</td>
+			<td>
+				<ul>
+					<% if (_.isObject(professor.subject)) { %>
+					<li><%= professor.subject.name %></li>
+					<% } %>
+					<% if (_.isObject(professor.fekSubject)) { %>
+					<li><%= professor.fekSubject.name %></li>
+					<% } %>
+				</ul>
+			</td>
 		</tr>
 		<% }); %>
 	</tbody>
 	<tfoot>
 		<tr>
-			<td colspan="6">
+			<td colspan="7">
 				<div class="btn-toolbar pull-right" id="details">
 					<a id="addMembers" class="btn btn-success"><%= $.i18n.prop('btn_addAll') %></a>
 				</div>

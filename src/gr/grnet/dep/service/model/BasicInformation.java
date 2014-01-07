@@ -86,7 +86,7 @@ public class BasicInformation {
 			this.lastname = StringUtil.toUppercaseNoTones(lastname, locale);
 		}
 		if (this.fathername != null && !this.fathername.isEmpty()) {
-			this.fathername = StringUtil.toUppercaseNoTones(lastname, locale);
+			this.fathername = StringUtil.toUppercaseNoTones(fathername, locale);
 		}
 	}
 }

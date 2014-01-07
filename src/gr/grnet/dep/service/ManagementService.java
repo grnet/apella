@@ -1,5 +1,6 @@
 package gr.grnet.dep.service;
 
+import gr.grnet.dep.service.model.AuthenticationType;
 import gr.grnet.dep.service.model.ProfessorDomesticData;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
@@ -11,6 +12,8 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -45,29 +48,43 @@ public class ManagementService {
 		}
 	}
 
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	public void massCreateProfessorDomesticAccounts() {
 		@SuppressWarnings("unchecked")
 		List<ProfessorDomesticData> pdData = em.createQuery(
-			"select pdd from ProfessorDomesticData pdd")
+			"select pdd from ProfessorDomesticData pdd " +
+				"where NOT EXISTS ( " +
+				"	select u.id from User u where u.contactInfo.email = pdd.email " +
+				") " +
+				"order by pdd.email ")
 			.getResultList();
 
+		logger.info("CREATING " + pdData.size() + " PROFESSOR DOMESTIC ACCOUNTS");
 		for (ProfessorDomesticData data : pdData) {
 			User u = authenticationService.findProfessorDomesticAccount(data);
 			if (u == null) {
+				logger.info("CREATING PROFESSOR DOMESTIC: " + data.getEmail());
 				u = authenticationService.createProfessorDomesticAccount(data);
+				logger.info("CREATING PROFESSOR DOMESTIC: " + u.getId() + " " + u.getPrimaryRole() + " " + u.getRoles().size());
+			} else {
+				logger.info("SKIPPING PROFESSOR DOMESTIC: " + data.getEmail());
 			}
-			logger.info("CREATED PROFESSOR DOMESTIC: " + u.getId() + " " + u.getPrimaryRole() + " " + u.getRoles().size());
 		}
 	}
 
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	public void massSendLoginEmails() {
 		@SuppressWarnings("unchecked")
 		List<User> users = em.createQuery(
 			"select u from User u " +
-				"where u.permanentAuthToken is not null")
+				"where u.authenticationType = :authenticationType " +
+				"and u.permanentAuthToken is not null " +
+				"and u.loginEmailSent = false ")
+			.setParameter("authenticationType", AuthenticationType.EMAIL)
 			.getResultList();
 		for (User u : users) {
 			mailService.sendLoginEmail(u, false);
+			u.setLoginEmailSent(Boolean.TRUE);
 		}
 
 	}

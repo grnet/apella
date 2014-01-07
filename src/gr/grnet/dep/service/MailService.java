@@ -197,13 +197,17 @@ public class MailService {
 
 	public void sendLoginEmail(User u, boolean sendNow) {
 		try {
-			if (u.getAuthenticationType().equals(AuthenticationType.EMAIL) && u.getPermanentAuthToken() != null) {
+			// Double Check here:
+			if (u.getAuthenticationType().equals(AuthenticationType.EMAIL) &&
+				u.getPermanentAuthToken() != null &&
+				!u.getLoginEmailSent()) {
+
 				String aToEmailAddr = u.getContactInfo().getEmail();
 				String aSubject = resources.getString("login.email.subject");
 				String aBody = resources.getString("login.email.body")
 					.replaceAll("\\[firstname\\]", u.getBasicInfo().getFirstname())
 					.replaceAll("\\[lastname\\]", u.getBasicInfo().getLastname())
-					.replaceAll("\\[loginLink\\]", "<a href=\"" + getloginLink(u.getPermanentAuthToken()) + "\">Είσοδο</a>");
+					.replaceAll("\\[loginLink\\]", "<a href=\"" + getloginLink(u.getPermanentAuthToken()) + "\">Είσοδος</a>");
 				if (sendNow) {
 					sendEmail(aToEmailAddr, aSubject, aBody);
 				} else {
