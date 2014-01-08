@@ -356,7 +356,8 @@ public class UserRESTService extends RESTService {
 					IssueCall.INCOMING,
 					savedUser.getId(),
 					summary,
-					description);
+					description,
+					loggedOn.getUsername());
 				jiraService.queueCreateIssue(issue);
 			} else {
 				String summary = jiraService.getResourceBundleString("user.created.account.summary");
@@ -368,7 +369,8 @@ public class UserRESTService extends RESTService {
 					IssueCall.INCOMING,
 					savedUser.getId(),
 					summary,
-					description);
+					description,
+					loggedOn.getUsername());
 				jiraService.queueCreateIssue(issue);
 			}
 
@@ -645,7 +647,8 @@ public class UserRESTService extends RESTService {
 						IssueCall.INCOMING,
 						u.getId(),
 						summary,
-						description);
+						description,
+						"-");
 					jiraService.queueCreateIssue(issue);
 					return u;
 				default:
@@ -705,7 +708,8 @@ public class UserRESTService extends RESTService {
 					IssueCall.INCOMING,
 					u.getId(),
 					summary,
-					description);
+					description,
+					loggedOn.getUsername());
 				jiraService.queueCreateIssue(issue);
 			}
 			return u;

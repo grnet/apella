@@ -473,7 +473,8 @@ public class RoleRESTService extends RESTService {
 					IssueCall.INCOMING,
 					existingRole.getUser().getId(),
 					summary,
-					description);
+					description,
+					loggedOn.getUsername());
 				jiraService.queueCreateIssue(issue);
 			}
 
@@ -1166,7 +1167,8 @@ public class RoleRESTService extends RESTService {
 						IssueCall.INCOMING,
 						primaryRole.getUser().getId(),
 						summary,
-						description);
+						description,
+						loggedOn.getUsername());
 					jiraService.queueCreateIssue(issue);
 
 					// Send also an email to user:
@@ -1193,7 +1195,8 @@ public class RoleRESTService extends RESTService {
 						IssueCall.INCOMING,
 						primaryRole.getUser().getId(),
 						summary,
-						description);
+						description,
+						loggedOn.getUsername());
 					jiraService.queueCreateIssue(issue);
 					break;
 				default:

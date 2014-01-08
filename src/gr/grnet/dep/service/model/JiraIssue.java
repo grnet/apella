@@ -46,7 +46,8 @@ public class JiraIssue implements Serializable {
 		USERNAME,
 		FULLNAME,
 		MOBILE,
-		EMAIL
+		EMAIL,
+		REPORTER
 	}
 
 	private String key;
@@ -63,11 +64,13 @@ public class JiraIssue implements Serializable {
 
 	private String description;
 
+	private String reporter;
+
 	public JiraIssue() {
 		super();
 	}
 
-	public JiraIssue(IssueStatus status, IssueType type, IssueCall call, Long userId, String summary, String description) {
+	public JiraIssue(IssueStatus status, IssueType type, IssueCall call, Long userId, String summary, String description, String reporter) {
 		super();
 		this.status = status;
 		this.type = type;
@@ -75,6 +78,7 @@ public class JiraIssue implements Serializable {
 		this.userId = userId;
 		this.summary = summary;
 		this.description = description;
+		this.reporter = reporter;
 	}
 
 	public String getKey() {
@@ -131,6 +135,14 @@ public class JiraIssue implements Serializable {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getReporter() {
+		return reporter;
+	}
+
+	public void setReporter(String reporter) {
+		this.reporter = reporter;
 	}
 
 }

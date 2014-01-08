@@ -261,13 +261,17 @@ public class JiraService {
 			String summary = fields.get("summary").asText();
 			String description = fields.get("description").asText();
 			String email = fields.get(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.EMAIL)).asText();
+			String reporter = "";
+			if (jiraConfiguration.getIssueCustomFieldId(IssueCustomField.REPORTER).length() > 0) {
+				reporter = fields.get(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.REPORTER)).asText();
+			}
 
 			Long userId = (Long) em.createQuery(
 				"select u.id from User u where u.contactInfo.email = :email ")
 				.setParameter("email", email)
 				.getSingleResult();
 
-			JiraIssue issue = new JiraIssue(status, type, call, userId, summary, description);
+			JiraIssue issue = new JiraIssue(status, type, call, userId, summary, description, reporter);
 			issue.setKey(key);
 
 			return issue;
@@ -308,6 +312,7 @@ public class JiraService {
 			"customfield_12653": "Angelos Lenis",
 			"customfield_12654": "69000001010",
 			"customfield_12655": "lenis.angelos@gmail.com",
+			"customfield_12751": "reporter-user"
 		}
 	}
 	*/
@@ -350,6 +355,9 @@ public class JiraService {
 		fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.FULLNAME), user.getBasicInfo().getFirstname() + " " + user.getBasicInfo().getLastname());
 		fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.MOBILE), user.getContactInfo().getMobile());
 		fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.EMAIL), user.getContactInfo().getEmail());
+		if (jiraConfiguration.getIssueCustomFieldId(IssueCustomField.REPORTER).length() > 0) {
+			fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.REPORTER), jiraIssue.getReporter());
+		}
 
 		return issue;
 
@@ -530,6 +538,8 @@ public class JiraService {
 					return "customfield_12553";
 				case EMAIL:
 					return "customfield_12550";
+				case REPORTER:
+					return "customfield_12751";
 				default:
 					throw new IllegalArgumentException();
 			}
@@ -674,6 +684,8 @@ public class JiraService {
 					return "customfield_12654";
 				case EMAIL:
 					return "customfield_12655";
+				case REPORTER:
+					return "";
 				default:
 					throw new IllegalArgumentException();
 			}
