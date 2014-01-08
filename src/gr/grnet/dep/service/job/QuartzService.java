@@ -242,6 +242,7 @@ public class QuartzService {
 							put("lastname", candidacy.getCandidate().getUser().getBasicInfo().getLastname());
 							put("position", position.getName());
 							put("institution", position.getDepartment().getSchool().getInstitution().getName());
+							put("school", position.getDepartment().getSchool().getName());
 							put("department", position.getDepartment().getName());
 						}
 					}));

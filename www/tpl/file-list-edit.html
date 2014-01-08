@@ -34,8 +34,8 @@
 		<td><%= file.description %></td>
 	<% } %>
 	<% if (editable) { %>
-		<td width="1px">
-			<a id="delete" data-file-id="<%= file.id %>" class="btn btn-mini btn-danger pull-right"><i class="icon-trash icon-white"></i> <%=$.i18n.prop('btn_delete') %></a>
+		<td width="120px">
+			<a id="delete" data-file-id="<%= file.id %>" class="btn btn-block btn-mini btn-danger pull-right"><i class="icon-trash icon-white"></i> <%=$.i18n.prop('btn_delete') %></a>
 		</td>
 	</tr>
 	<% } %>
@@ -47,7 +47,7 @@
 	<tr>
 		<td colspan="<%= withMetadata ? 5 : 4%>"></td>
 		<td>
-			<a id="toggleUpload" class="btn btn-mini pull-right"><i class="icon-plus"></i> <%=$.i18n.prop('btn_add_file') %></a>
+			<a id="toggleUpload" class="btn btn-block btn-mini pull-right"><i class="icon-plus"></i> <%=$.i18n.prop('btn_add_file') %></a>
 		</td>
 	</tr>
 <% } %>

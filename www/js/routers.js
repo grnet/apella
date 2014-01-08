@@ -200,7 +200,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			// Add necessary data
 			App.roles = new Models.Roles();
 			App.roles.user = App.loggedOnUser.get("id");
-
+			App.roles.on("sync", function() {
+				// When user changes his profile, we re-fetch loggedOnUser ->
+				// triggers re-render on Menus and permissions
+				App.loggedOnUser.fetch({
+					url: "/dep/rest/user/loggedon",
+					wait: true,
+					cache: false
+				});
+			});
+			App.loggedOnUser.on("change", function() {
+				window.console.log("loggedOn:changed");
+			});
 			// Create Header, Menu, and other side content and
 			// bind them to the same loggedOnUser model
 			menuView = new Views.MenuView({
@@ -210,6 +221,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			usermenuView = new Views.UserMenuView({
 				model: App.loggedOnUser
 			});
+
 			usermenuView.render();
 			$("ul.breadcrumb").show();
 

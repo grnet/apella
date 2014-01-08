@@ -397,6 +397,7 @@ public class PositionCommitteeRESTService extends RESTService {
 									put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 									put("position", savedCommittee.getPosition().getName());
 									put("institution", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName());
+									put("school", savedCommittee.getPosition().getDepartment().getSchool().getName());
 									put("department", savedCommittee.getPosition().getDepartment().getName());
 								}
 							}));
@@ -412,6 +413,7 @@ public class PositionCommitteeRESTService extends RESTService {
 									put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 									put("position", savedCommittee.getPosition().getName());
 									put("institution", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName());
+									put("school", savedCommittee.getPosition().getDepartment().getSchool().getName());
 									put("department", savedCommittee.getPosition().getDepartment().getName());
 								}
 							}));
@@ -432,6 +434,7 @@ public class PositionCommitteeRESTService extends RESTService {
 								put("lastname", removedMember.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", savedCommittee.getPosition().getName());
 								put("institution", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("school", savedCommittee.getPosition().getDepartment().getSchool().getName());
 								put("department", savedCommittee.getPosition().getDepartment().getName());
 							}
 						}));
@@ -447,6 +450,7 @@ public class PositionCommitteeRESTService extends RESTService {
 								put("lastname", removedMember.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", savedCommittee.getPosition().getName());
 								put("institution", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("school", savedCommittee.getPosition().getDepartment().getSchool().getName());
 								put("department", savedCommittee.getPosition().getDepartment().getName());
 							}
 						}));
@@ -465,6 +469,7 @@ public class PositionCommitteeRESTService extends RESTService {
 								put("lastname", candidacy.getCandidate().getUser().getBasicInfo().getLastname());
 								put("position", savedCommittee.getPosition().getName());
 								put("institution", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("school", savedCommittee.getPosition().getDepartment().getSchool().getName());
 								put("department", savedCommittee.getPosition().getDepartment().getName());
 							}
 						}));
@@ -483,6 +488,7 @@ public class PositionCommitteeRESTService extends RESTService {
 								put("lastname", candidacy.getCandidate().getUser().getBasicInfo().getLastname());
 								put("position", savedCommittee.getPosition().getName());
 								put("institution", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("school", savedCommittee.getPosition().getDepartment().getSchool().getName());
 								put("department", savedCommittee.getPosition().getDepartment().getName());
 							}
 						}));
@@ -501,6 +507,7 @@ public class PositionCommitteeRESTService extends RESTService {
 									put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 									put("position", savedCommittee.getPosition().getName());
 									put("institution", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName());
+									put("school", savedCommittee.getPosition().getDepartment().getSchool().getName());
 									put("department", savedCommittee.getPosition().getDepartment().getName());
 								}
 							}));
@@ -518,6 +525,7 @@ public class PositionCommitteeRESTService extends RESTService {
 								put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", savedCommittee.getPosition().getName());
 								put("institution", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("school", savedCommittee.getPosition().getDepartment().getSchool().getName());
 								put("department", savedCommittee.getPosition().getDepartment().getName());
 							}
 						}));
@@ -537,6 +545,7 @@ public class PositionCommitteeRESTService extends RESTService {
 								put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", savedCommittee.getPosition().getName());
 								put("institution", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("school", savedCommittee.getPosition().getDepartment().getSchool().getName());
 								put("department", savedCommittee.getPosition().getDepartment().getName());
 							}
 						}));
@@ -553,6 +562,7 @@ public class PositionCommitteeRESTService extends RESTService {
 								put("lastname", candidacy.getCandidate().getUser().getBasicInfo().getLastname());
 								put("position", savedCommittee.getPosition().getName());
 								put("institution", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("school", savedCommittee.getPosition().getDepartment().getSchool().getName());
 								put("department", savedCommittee.getPosition().getDepartment().getName());
 							}
 						}));
@@ -803,6 +813,7 @@ public class PositionCommitteeRESTService extends RESTService {
 							put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 							put("position", pcFile.getCommittee().getPosition().getName());
 							put("institution", pcFile.getCommittee().getPosition().getDepartment().getSchool().getInstitution().getName());
+							put("school", pcFile.getCommittee().getPosition().getDepartment().getSchool().getName());
 							put("department", pcFile.getCommittee().getPosition().getDepartment().getName());
 						}
 					}));
@@ -819,6 +830,7 @@ public class PositionCommitteeRESTService extends RESTService {
 							put("lastname", candidacy.getCandidate().getUser().getBasicInfo().getLastname());
 							put("position", pcFile.getCommittee().getPosition().getName());
 							put("institution", pcFile.getCommittee().getPosition().getDepartment().getSchool().getInstitution().getName());
+							put("school", pcFile.getCommittee().getPosition().getDepartment().getSchool().getName());
 							put("department", pcFile.getCommittee().getPosition().getDepartment().getName());
 						}
 					}));
@@ -835,6 +847,7 @@ public class PositionCommitteeRESTService extends RESTService {
 							put("lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 							put("position", pcFile.getCommittee().getPosition().getName());
 							put("institution", pcFile.getCommittee().getPosition().getDepartment().getSchool().getInstitution().getName());
+							put("school", pcFile.getCommittee().getPosition().getDepartment().getSchool().getName());
 							put("department", pcFile.getCommittee().getPosition().getDepartment().getName());
 						}
 					}));

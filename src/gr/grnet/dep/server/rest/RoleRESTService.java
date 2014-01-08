@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -1084,7 +1085,7 @@ public class RoleRESTService extends RESTService {
 	@JsonView({DetailedRoleView.class})
 	public Role updateStatus(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, Role requestRole) {
 		final User loggedOn = getLoggedOn(authToken);
-		Role primaryRole = em.find(Role.class, id);
+		final Role primaryRole = em.find(Role.class, id);
 		// Validate
 		if (primaryRole == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.role.id");
@@ -1154,6 +1155,7 @@ public class RoleRESTService extends RESTService {
 			String description;
 			switch (primaryRole.getStatus()) {
 				case ACTIVE:
+					// Update Issue
 					summary = jiraService.getResourceBundleString("helpdesk.activated.role.summary");
 					description = jiraService.getResourceBundleString("helpdesk.activated.role.description",
 						"user", primaryRole.getUser().getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + primaryRole.getUser().getId() + " )",
@@ -1166,6 +1168,19 @@ public class RoleRESTService extends RESTService {
 						summary,
 						description);
 					jiraService.queueCreateIssue(issue);
+
+					// Send also an email to user:
+					mailService.postEmail(primaryRole.getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"profile.activated@user",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("firstname", primaryRole.getUser().getBasicInfo().getFirstname());
+								put("lastname", primaryRole.getUser().getBasicInfo().getLastname());
+							}
+						}));
+
 					break;
 				case UNAPPROVED:
 					summary = jiraService.getResourceBundleString("helpdesk.activated.role.summary");

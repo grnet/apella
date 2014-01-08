@@ -130,6 +130,10 @@ public class MailService {
 		// Replace login with link
 		aBody = aBody.replaceAll("\\[login\\]", "Είσοδο");
 
+		// Add footer
+		String aFooter = resources.getString("default.footer");
+		aBody = aBody.concat("<br/><br/>").concat(aFooter);
+
 		// Validate Email
 		Connection qConn = null;
 		javax.jms.Session session = null;

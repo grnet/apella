@@ -199,6 +199,7 @@ public class PositionNominationRESTService extends RESTService {
 								put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", existingNomination.getPosition().getPhase().getPosition().getName());
 								put("institution", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("school", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName());
 								put("department", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName());
 							}
 						}));
@@ -215,6 +216,7 @@ public class PositionNominationRESTService extends RESTService {
 								put("lastname", candidacy.getCandidate().getUser().getBasicInfo().getLastname());
 								put("position", existingNomination.getPosition().getName());
 								put("institution", existingNomination.getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("school", existingNomination.getPosition().getDepartment().getSchool().getName());
 								put("department", existingNomination.getPosition().getDepartment().getName());
 							}
 						}));
@@ -231,6 +233,7 @@ public class PositionNominationRESTService extends RESTService {
 								put("lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", existingNomination.getPosition().getName());
 								put("institution", existingNomination.getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("school", existingNomination.getPosition().getDepartment().getSchool().getName());
 								put("department", existingNomination.getPosition().getDepartment().getName());
 							}
 						}));
@@ -249,6 +252,7 @@ public class PositionNominationRESTService extends RESTService {
 							put("lastname", existingNomination.getNominatedCandidacy().getCandidate().getUser().getBasicInfo().getLastname());
 							put("position", existingNomination.getPosition().getName());
 							put("institution", existingNomination.getPosition().getDepartment().getSchool().getInstitution().getName());
+							put("school", existingNomination.getPosition().getDepartment().getSchool().getName());
 							put("department", existingNomination.getPosition().getDepartment().getName());
 						}
 					}));
@@ -265,6 +269,7 @@ public class PositionNominationRESTService extends RESTService {
 							put("lastname", existingNomination.getSecondNominatedCandidacy().getCandidate().getUser().getBasicInfo().getLastname());
 							put("position", existingNomination.getPosition().getName());
 							put("institution", existingNomination.getPosition().getDepartment().getSchool().getInstitution().getName());
+							put("school", existingNomination.getPosition().getDepartment().getSchool().getName());
 							put("department", existingNomination.getPosition().getDepartment().getName());
 						}
 					}));
@@ -519,6 +524,7 @@ public class PositionNominationRESTService extends RESTService {
 								put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", nominationFile.getNomination().getPosition().getName());
 								put("institution", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("school", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName());
 								put("department", nominationFile.getNomination().getPosition().getDepartment().getName());
 							}
 						}));
@@ -535,6 +541,7 @@ public class PositionNominationRESTService extends RESTService {
 								put("lastname", candidacy.getCandidate().getUser().getBasicInfo().getLastname());
 								put("position", nominationFile.getNomination().getPosition().getName());
 								put("institution", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("school", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName());
 								put("department", nominationFile.getNomination().getPosition().getDepartment().getName());
 							}
 						}));
@@ -568,6 +575,7 @@ public class PositionNominationRESTService extends RESTService {
 								put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", nominationFile.getNomination().getPosition().getName());
 								put("institution", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("school", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName());
 								put("department", nominationFile.getNomination().getPosition().getDepartment().getName());
 							}
 						}));
@@ -584,6 +592,7 @@ public class PositionNominationRESTService extends RESTService {
 								put("lastname", candidacy.getCandidate().getUser().getBasicInfo().getLastname());
 								put("position", nominationFile.getNomination().getPosition().getName());
 								put("institution", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("school", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName());
 								put("department", nominationFile.getNomination().getPosition().getDepartment().getName());
 							}
 						}));
@@ -600,6 +609,7 @@ public class PositionNominationRESTService extends RESTService {
 								put("lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", nominationFile.getNomination().getPosition().getName());
 								put("institution", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName());
+								put("school", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName());
 								put("department", nominationFile.getNomination().getPosition().getDepartment().getName());
 							}
 						}));
