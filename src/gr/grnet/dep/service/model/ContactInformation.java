@@ -4,7 +4,6 @@ import gr.grnet.dep.service.util.CompareUtil;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
-import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.Email;
 
@@ -15,7 +14,6 @@ public class ContactInformation {
 	@Column(unique = true)
 	private String email;
 
-	@Size(min = 10)
 	private String mobile;
 
 	private String phone;
@@ -45,10 +43,10 @@ public class ContactInformation {
 	}
 
 	public boolean isMissingRequiredFields() {
-		if (this.email == null) {
+		if (this.email == null || this.email.isEmpty()) {
 			return true;
 		}
-		if (this.mobile == null) {
+		if (this.mobile == null || this.mobile.isEmpty()) {
 			return true;
 		}
 		return false;
