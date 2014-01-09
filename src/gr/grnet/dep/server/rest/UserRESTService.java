@@ -602,7 +602,7 @@ public class UserRESTService extends RESTService {
 			if (!u.getAuthenticationType().equals(AuthenticationType.EMAIL)) {
 				throw new RestException(Status.NOT_FOUND, "login.wrong.registration.type");
 			}
-			mailService.sendLoginEmail(u, true);
+			mailService.sendLoginEmail(u.getId(), true);
 
 			return Response.noContent().build();
 		} catch (NoResultException e) {

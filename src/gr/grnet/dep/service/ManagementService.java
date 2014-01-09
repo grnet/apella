@@ -75,16 +75,16 @@ public class ManagementService {
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	public void massSendLoginEmails() {
 		@SuppressWarnings("unchecked")
-		List<User> users = em.createQuery(
-			"select u from User u " +
+		List<Long> users = em.createQuery(
+			"select u.id from User u " +
 				"where u.authenticationType = :authenticationType " +
 				"and u.permanentAuthToken is not null " +
 				"and u.loginEmailSent = false ")
 			.setParameter("authenticationType", AuthenticationType.EMAIL)
 			.getResultList();
-		for (User u : users) {
-			mailService.sendLoginEmail(u, false);
-			u.setLoginEmailSent(Boolean.TRUE);
+
+		for (Long userId : users) {
+			mailService.sendLoginEmail(userId, false);
 		}
 
 	}

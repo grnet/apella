@@ -14,7 +14,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
@@ -35,7 +38,6 @@ import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceException;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -48,6 +50,9 @@ public class MailService {
 
 	@PersistenceContext(unitName = "apelladb")
 	protected EntityManager em;
+
+	@EJB
+	MailService mailService;
 
 	protected static Configuration conf;
 
@@ -68,14 +73,21 @@ public class MailService {
 		mail.setSubject(aSubject);
 		mail.setBody(aBody);
 		try {
+			em.createQuery("select mr.id from MailRecord mr " +
+				"where mr.toEmailAddr = :toEmailAddr " +
+				"and mr.subject = :subject " +
+				"and mr.body = :body")
+				.setParameter("toEmailAddr", mail.getToEmailAddr())
+				.setParameter("subject", mail.getSubject())
+				.setParameter("body", mail.getBody())
+				.getSingleResult();
+		} catch (NoResultException e) {
+			// Email does not exist
 			em.persist(mail);
-			em.flush();
-		} catch (PersistenceException e) {
-			// Same email, already added to list
 		}
-
 	}
 
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public MailRecord popEmail() {
 		try {
 			MailRecord mail = (MailRecord) em.createQuery(
@@ -91,13 +103,14 @@ public class MailService {
 		}
 	}
 
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	public int sendPendingEmails() {
 		int i = 0;
 
-		MailRecord mail = popEmail();
+		MailRecord mail = mailService.popEmail();
 		while (mail != null) {
-			sendEmail(mail);
-			mail = popEmail();
+			mailService.sendEmail(mail);
+			mail = mailService.popEmail();
 			i += 1;
 
 			if (i % 10 == 0) {
@@ -199,7 +212,13 @@ public class MailService {
 		sendEmail(mail.getToEmailAddr(), mail.getSubject(), mail.getBody());
 	}
 
-	public void sendLoginEmail(User u, boolean sendNow) {
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	public void sendLoginEmail(Long userId, boolean sendNow) {
+		User u = em.find(User.class, userId);
+		if (u == null) {
+			logger.log(Level.WARNING, "Failed to send login email user with id " + userId + " not found");
+			return;
+		}
 		try {
 			// Double Check here:
 			if (u.getAuthenticationType().equals(AuthenticationType.EMAIL) &&
@@ -217,6 +236,7 @@ public class MailService {
 				} else {
 					pushEmail(aToEmailAddr, aSubject, aBody);
 				}
+				u.setLoginEmailSent(Boolean.TRUE);
 				logger.log(Level.INFO, "Sent login email to user with id " + u.getId() + " " + getloginLink(u.getPermanentAuthToken()));
 			} else {
 				logger.log(Level.INFO, "Skipped login email for user with id " + u.getId());

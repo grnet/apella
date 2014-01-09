@@ -191,7 +191,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		initialize: function (options) {
 			this._super('initialize', [ options ]);
+			_.bindAll(this, "highlightCurrent");
 			this.model.bind('change', this.render);
+
+			Backbone.history.on("route", this.highlightCurrent);
 		},
 
 		events: {},
@@ -266,10 +269,22 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return this;
 		},
 
+		highlightCurrent : function() {
+			var self = this;
+			var menuItem = window.location.hash.split("/")[0]; // Only first part until '/'
+			if (menuItem.length === 0 ) {
+				menuItem = '#';
+			}
+			self.$("li.active").removeClass("active");
+			self.$("a[href=" + menuItem + "]").parent("li").addClass("active");
+		},
+
 		close: function () {
+			Backbone.history.off("route", this.highlightCurrent);
 			this.closeInnerViews();
 			$(this.el).unbind();
 			$(this.el).remove();
+
 		}
 
 	});

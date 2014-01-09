@@ -28,6 +28,7 @@ public class JiraRESTService extends RESTService {
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+		issue.setReporter(loggedOn.getUsername());
 		JiraIssue createdIssue = jiraService.createIssue(issue);
 		if (createdIssue == null) {
 			throw new RestException(Status.BAD_REQUEST, "bad.request");
