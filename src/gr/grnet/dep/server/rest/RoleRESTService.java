@@ -7,9 +7,6 @@ import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.InstitutionManager;
 import gr.grnet.dep.service.model.JiraIssue;
-import gr.grnet.dep.service.model.JiraIssue.IssueCall;
-import gr.grnet.dep.service.model.JiraIssue.IssueStatus;
-import gr.grnet.dep.service.model.JiraIssue.IssueType;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.ProfessorDomestic;
@@ -467,14 +464,8 @@ public class RoleRESTService extends RESTService {
 				String summary = jiraService.getResourceBundleString("user.created.role.summary");
 				String description = jiraService.getResourceBundleString("user.created.role.description",
 					"user", existingRole.getUser().getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + existingRole.getUser().getId() + " )");
-				JiraIssue issue = new JiraIssue(
-					IssueStatus.CLOSED,
-					IssueType.REGISTRATION,
-					IssueCall.INCOMING,
-					existingRole.getUser().getId(),
-					summary,
-					description,
-					loggedOn.getUsername());
+				//TODO: 
+				JiraIssue issue = new JiraIssue();
 				jiraService.queueCreateIssue(issue);
 			}
 
@@ -1161,14 +1152,8 @@ public class RoleRESTService extends RESTService {
 					description = jiraService.getResourceBundleString("helpdesk.activated.role.description",
 						"user", primaryRole.getUser().getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + primaryRole.getUser().getId() + " )",
 						"admin", loggedOn.getFullName());
-					issue = new JiraIssue(
-						IssueStatus.CLOSED,
-						IssueType.REGISTRATION,
-						IssueCall.INCOMING,
-						primaryRole.getUser().getId(),
-						summary,
-						description,
-						loggedOn.getUsername());
+					//TODO: 
+					issue = new JiraIssue();
 					jiraService.queueCreateIssue(issue);
 
 					// Send also an email to user:
@@ -1189,14 +1174,8 @@ public class RoleRESTService extends RESTService {
 					description = jiraService.getResourceBundleString("helpdesk.activated.role.description",
 						"user", primaryRole.getUser().getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + primaryRole.getUser().getId() + " )",
 						"admin", loggedOn.getFullName());
-					issue = new JiraIssue(
-						IssueStatus.CLOSED,
-						IssueType.REGISTRATION,
-						IssueCall.INCOMING,
-						primaryRole.getUser().getId(),
-						summary,
-						description,
-						loggedOn.getUsername());
+					//TODO: 
+					issue = new JiraIssue();
 					jiraService.queueCreateIssue(issue);
 					break;
 				default:

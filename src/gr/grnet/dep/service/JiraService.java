@@ -271,7 +271,8 @@ public class JiraService {
 				.setParameter("email", email)
 				.getSingleResult();
 
-			JiraIssue issue = new JiraIssue(status, type, call, userId, summary, description, reporter);
+			//TODO:
+			JiraIssue issue = new JiraIssue();
 			issue.setKey(key);
 
 			return issue;
@@ -320,9 +321,10 @@ public class JiraService {
 	private JsonNode toJSON(JiraIssue jiraIssue) {
 		JiraConfiguration jiraConfiguration = getJiraConfiguration(CONFIGURATION);
 
-		User user = em.find(User.class, jiraIssue.getUserId());
+		//TODO:
+		User user = jiraIssue.getUser();
 		if (user == null) {
-			logger.info("Tried to POST Jira Issue to non existin user: " + jiraIssue.getUserId() + " " + jiraIssue.getType() + " " + jiraIssue.getSummary() + " " + jiraIssue.getDescription());
+			logger.info("Tried to POST Jira Issue to non existin user: " + jiraIssue.getFullname() + " " + jiraIssue.getType() + " " + jiraIssue.getSummary() + " " + jiraIssue.getDescription());
 			return null;
 		}
 
