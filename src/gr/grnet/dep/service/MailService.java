@@ -222,8 +222,7 @@ public class MailService {
 		try {
 			// Double Check here:
 			if (u.getAuthenticationType().equals(AuthenticationType.EMAIL) &&
-				u.getPermanentAuthToken() != null &&
-				!u.getLoginEmailSent()) {
+				u.getPermanentAuthToken() != null) {
 
 				String aToEmailAddr = u.getContactInfo().getEmail();
 				String aSubject = resources.getString("login.email.subject");
