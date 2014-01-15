@@ -132,7 +132,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			_.extend(self, Backbone.Events);
 			_.bindAll(self, "setTitle", "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showUserView", "showInstitutionAssistantsView",
 				"showMinistryAssistantsView", "showPositionView", "showPositionsView", "showRegistersView", "showProfessorCommitteesView", "showProfessorEvaluationsView",
-				"showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "showCandidacyView", "showAdminUserSearchView", "start");
+				"showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "showCandidacyView", "showAdminUserSearchView", "showIssueListView", "start");
 
 			self.on("route", function (routefn) {
 				self.setTitle(routefn);
@@ -185,6 +185,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			"candidateCandidacies": "showCandidateCandidacyView",
 			"candidateCandidacies/:candidacyId": "showCandidateCandidacyView",
 			"candidacy/:candidacyId": "showCandidacyView",
+			"issues": "showIssueListView",
+
 			// ADMIN ROUTES
 			"adminusers": "showAdminUserSearchView",
 			"adminusers/:query": "showAdminUserSearchView"
@@ -1084,6 +1086,32 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				}
 			});
 			self.currentView = candidacyView;
+		},
+
+		showIssueListView: function () {
+			var self = this;
+			var issues = new Models.JiraIssues();
+			var issueListView = new Views.JiraIssueListView({
+				collection: issues
+			});
+			self.clear();
+			self.refreshBreadcrumb([ $.i18n.prop('menu_issues') ]);
+			$("#content").html(issueListView.el);
+			// Refresh registries from server
+			issues.url = issues.url + "/user/" + App.loggedOnUser.get("id") + "/issue";
+			issues.fetch({
+				cache: false,
+				reset: true,
+				error: function (model, resp, options) {
+					var popup = new Views.PopupView({
+						type: "error",
+						message: $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+
+			this.currentView = issueListView;
 		},
 
 		/***********************************************************************

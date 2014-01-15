@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.job;
 
+import gr.grnet.dep.service.JiraService;
 import gr.grnet.dep.service.MailService;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Position;
@@ -31,6 +32,8 @@ import javax.ejb.EJB;
 import javax.ejb.SessionContext;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -58,6 +61,9 @@ public class QuartzService {
 
 	@EJB
 	MailService mailService;
+
+	@EJB
+	JiraService jiraService;
 
 	private static final String jndiName = "Quartz";
 
@@ -256,6 +262,17 @@ public class QuartzService {
 		}
 
 		return positions.size();
+	}
+
+	///////////////////////////////////////////////////
+
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+	public void synchronizeJiraIssuesJob() {
+		try {
+			jiraService.synchronizeIssues();
+		} catch (Exception e) {
+			staticLog.log(Level.SEVERE, "synchronizeJiraIssuesJob Failed", e);
+		}
 	}
 
 	///////////////////////////////////////////////////

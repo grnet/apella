@@ -691,4 +691,5 @@ public class UserRESTService extends RESTService {
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
+
 }

@@ -10,34 +10,14 @@
 	</div>
 	<div class="tab-pane" id="helpdesk">
 		<div class="row-fluid">
-			<div class="span4">
-				<form name="jira" onsubmit="return false">
-					<fieldset>
-						<legend><%= $.i18n.prop('OpenIssue') %></legend>
-						<select name="type" class="input-large">
-							<option value="REGISTRATION">Εγγραφή/Πιστοποίηση</option>
-							<option value="GENERAL_INFORMATION">γενικές πληροφορίες</option>
-							<option value="LOGIN">θέματα πρόσβασης</option>
-							<option value="ACCOUNT_MODIFICATION">μεταβολή στοιχείων</option>
-							<option value="ERROR">Πρόβλημα</option>
-							<option value="COMPLAINT">Παράπονα</option>
-						</select><br/>
-						<select name="call" class="input-large">
-							<option value="INCOMING">Εισερχόμενη</option>
-							<option value="OUTGOING">Εξερχόμενη</option>
-						</select><br/>
-						<input type="text" name="summary" class="input-large" placeholder="Summary"/><br/>
-						<textarea name="description" class="input-large" placeholder="Description"></textarea><br/>
-					</fieldset>
-					<a id="openIssue" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_create') %></a>
-				</form>
+			<div class="span9" id="issue">
 			</div>
-			<div class="span4">
+			<div class="span3">
 				<form name="loginEmail" onsubmit="return false">
 					<fieldset>
 						<legend><%= $.i18n.prop('LoginEmail') %></legend>
 					</fieldset>
-					<a id="resendLoginEmail" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_resend') %></a>
+					<a id="resendLoginEmail" class="btn btn-primary"><i class="icon-envelope icon-white"></i> <%= $.i18n.prop('btn_resendLoginEmail') %></a>
 				</form>
 			</div>
 		</div>

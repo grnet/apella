@@ -3,11 +3,19 @@ package gr.grnet.dep.service.model;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
 
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+
+@Entity
 @XmlRootElement
 public class JiraIssue implements Serializable {
 
@@ -15,10 +23,11 @@ public class JiraIssue implements Serializable {
 
 	public enum IssueStatus {
 		OPEN,
-		CLOSED,
+		CLOSE,
 		IN_PROGRESS,
 		REOPENED,
-		RESOLVED
+		RESOLVED,
+		CLOSED,
 	}
 
 	public enum IssueType {
@@ -46,7 +55,10 @@ public class JiraIssue implements Serializable {
 		FULLNAME,
 		MOBILE,
 		EMAIL,
-		REPORTER
+		REPORTER,
+		COMMENT,
+		CREATED,
+		UPDATED
 	}
 
 	public enum IssueCall {
@@ -54,19 +66,29 @@ public class JiraIssue implements Serializable {
 		OUTGOING
 	}
 
+	@Id
+	private Long id;
+
 	private String key;
 
-	private User user;
-
-	//	Είδος Χρήστη / User Type
-	private RoleDiscriminator role;
-
-	private IssueStatus status = IssueStatus.OPEN;
+	@Enumerated(EnumType.STRING)
+	private IssueStatus status;
 
 	//	Είδος Αναφοράς / Issue Type
-	private IssueType type = IssueType.GENERAL_INFORMATION;
+	@Enumerated(EnumType.STRING)
+	private IssueType type;
 
-	private IssueCall call = IssueCall.INCOMING;
+	@Enumerated(EnumType.STRING)
+	private IssueCall call;
+
+	private IssueResolution resolution;
+
+	//	Είδος Χρήστη / User Type
+	@Enumerated(EnumType.STRING)
+	private RoleDiscriminator role;
+
+	//	Όνομα Χρήστη / Username
+	private String username;
 
 	//	Ονοματεπώνυμο / Full name
 	private String fullname;
@@ -83,10 +105,26 @@ public class JiraIssue implements Serializable {
 	//	Περιγραφή / Description
 	private String description;
 
+	// Σχόλιο που βλέπει ο χρήστης
+	private String comment;
+
 	// Καταγραφή από
 	private String reporter;
 
-	private List<JiraComment> comments = new ArrayList<JiraComment>();
+	private Date created;
+
+	private Date updated;
+
+	@ManyToOne
+	private User user;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public String getKey() {
 		return key;
@@ -94,22 +132,6 @@ public class JiraIssue implements Serializable {
 
 	public void setKey(String key) {
 		this.key = key;
-	}
-
-	public User getUser() {
-		return user;
-	}
-
-	public void setUser(User user) {
-		this.user = user;
-	}
-
-	public RoleDiscriminator getRole() {
-		return role;
-	}
-
-	public void setRole(RoleDiscriminator role) {
-		this.role = role;
 	}
 
 	public IssueStatus getStatus() {
@@ -134,6 +156,40 @@ public class JiraIssue implements Serializable {
 
 	public void setCall(IssueCall call) {
 		this.call = call;
+	}
+
+	public IssueResolution getResolution() {
+		return resolution;
+	}
+
+	public void setResolution(IssueResolution resolution) {
+		this.resolution = resolution;
+	}
+
+	@XmlTransient
+	@JsonIgnore
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	public RoleDiscriminator getRole() {
+		return role;
+	}
+
+	public void setRole(RoleDiscriminator role) {
+		this.role = role;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
 	public String getFullname() {
@@ -176,6 +232,14 @@ public class JiraIssue implements Serializable {
 		this.description = description;
 	}
 
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
+
 	public String getReporter() {
 		return reporter;
 	}
@@ -184,12 +248,20 @@ public class JiraIssue implements Serializable {
 		this.reporter = reporter;
 	}
 
-	public List<JiraComment> getComments() {
-		return comments;
+	public Date getCreated() {
+		return created;
 	}
 
-	public void setComments(List<JiraComment> comments) {
-		this.comments = comments;
+	public void setCreated(Date created) {
+		this.created = created;
+	}
+
+	public Date getUpdated() {
+		return updated;
+	}
+
+	public void setUpdated(Date updated) {
+		this.updated = updated;
 	}
 
 }

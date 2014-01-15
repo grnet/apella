@@ -59,6 +59,16 @@ define([
 			return self.get("primaryRole") !== "ADMINISTRATOR" && self.get("missingRequiredFields");
 		},
 
+		getFullName: function () {
+			var self = this;
+			var fullname = ""
+				.concat(self.get("basicInfo").firstname || "-")
+				.concat(" ")
+				.concat(self.get("basicInfo").lastname || "-");
+
+			return fullname;
+		},
+
 		getDisplayName: function () {
 			var self = this;
 			var displayName = ""
@@ -1544,16 +1554,30 @@ define([
 
 	Models.JiraIssue = Backbone.Model.extend({
 		urlRoot: "/dep/rest/jira/",
-		url: function () {
-			return this.urlRoot + (this.attributes.key || "");
-		},
 		defaults: {
+			id: undefined,
 			key: undefined,
-			userId: undefined,
+			status: undefined,
 			type: undefined,
+			call: undefined,
+			resolution: undefined,
+			role: undefined,
+			username: undefined,
+			fullname: undefined,
+			mobile: undefined,
+			email: undefined,
 			summary: undefined,
-			description: undefined
+			description: undefined,
+			comment: undefined,
+			reporter: undefined,
+			created: undefined,
+			updated: undefined
 		}
+	});
+
+	Models.JiraIssues = Backbone.Collection.extend({
+		model: Models.JiraIssue,
+		url: "/dep/rest/jira"
 	});
 
 	return Models;
