@@ -332,8 +332,8 @@ public class CandidacyRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("evaluator_firstname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
-								put("evaluator_lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
+								put("firstname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+								put("lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", existingCandidacy.getCandidacies().getPosition().getName());
 								put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName());
 								put("school", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName());
@@ -1089,7 +1089,8 @@ public class CandidacyRESTService extends RESTService {
 	 * 
 	 * @param authToken The Authentication Token
 	 * @param candidacyId
-	 * @return Array of gr.grnet.dep.service.model.file.CandidateFile Array
+	 * @return Array of gr.grnet.dep.service.model.file.PositionCandidaciesFile
+	 *         Array
 	 * @HTTP 403 X-Error-Code: insufficient.privileges
 	 * @HTTP 404 X-Error-Code: wrong.candidacy.id
 	 */
@@ -1122,8 +1123,19 @@ public class CandidacyRESTService extends RESTService {
 			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+
+		// Search
+		@SuppressWarnings("unchecked")
+		List<PositionCandidaciesFile> result = em.createQuery(
+			"select pcf from PositionCandidaciesFile pcf " +
+				"where pcf.deleted = false " +
+				"and pcf.candidacies.id = :pcId " +
+				"and pcf.evaluator.candidacy.id = :cid ")
+			.setParameter("pcId", existingCandidacies.getId())
+			.setParameter("cid", candidacy.getId())
+			.getResultList();
+
 		// Return Result
-		Set<PositionCandidaciesFile> result = FileHeader.filterDeleted(existingCandidacies.getFiles());
 		return result;
 	}
 

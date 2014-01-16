@@ -1,25 +1,33 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+
 import java.io.Serializable;
+import java.util.Date;
 
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+
+@Entity
 @XmlRootElement
 public class JiraIssue implements Serializable {
 
 	private static final long serialVersionUID = 1885653801140864606L;
 
-	public enum IssueCall {
-		INCOMING,
-		OUTGOING
-	}
-
 	public enum IssueStatus {
 		OPEN,
-		CLOSED,
+		CLOSE,
 		IN_PROGRESS,
 		REOPENED,
-		RESOLVED
+		RESOLVED,
+		CLOSED,
 	}
 
 	public enum IssueType {
@@ -47,38 +55,75 @@ public class JiraIssue implements Serializable {
 		FULLNAME,
 		MOBILE,
 		EMAIL,
-		REPORTER
+		REPORTER,
+		COMMENT,
+		CREATED,
+		UPDATED
 	}
+
+	public enum IssueCall {
+		INCOMING,
+		OUTGOING
+	}
+
+	@Id
+	private Long id;
 
 	private String key;
 
-	private IssueStatus status = IssueStatus.OPEN;
+	@Enumerated(EnumType.STRING)
+	private IssueStatus status;
 
-	private IssueType type = IssueType.GENERAL_INFORMATION;
+	//	Είδος Αναφοράς / Issue Type
+	@Enumerated(EnumType.STRING)
+	private IssueType type;
 
-	private IssueCall call = IssueCall.INCOMING;
+	@Enumerated(EnumType.STRING)
+	private IssueCall call;
 
-	private Long userId;
+	private IssueResolution resolution;
 
+	//	Είδος Χρήστη / User Type
+	@Enumerated(EnumType.STRING)
+	private RoleDiscriminator role;
+
+	//	Όνομα Χρήστη / Username
+	private String username;
+
+	//	Ονοματεπώνυμο / Full name
+	private String fullname;
+
+	//	Τηλέφωνο / Telephone number
+	private String mobile;
+
+	//	Δ/νση E-mail / E-mail address
+	private String email;
+
+	//	Θέμα / Subject
 	private String summary;
 
+	//	Περιγραφή / Description
 	private String description;
 
+	// Σχόλιο που βλέπει ο χρήστης
+	private String comment;
+
+	// Καταγραφή από
 	private String reporter;
 
-	public JiraIssue() {
-		super();
+	private Date created;
+
+	private Date updated;
+
+	@ManyToOne
+	private User user;
+
+	public Long getId() {
+		return id;
 	}
 
-	public JiraIssue(IssueStatus status, IssueType type, IssueCall call, Long userId, String summary, String description, String reporter) {
-		super();
-		this.status = status;
-		this.type = type;
-		this.call = call;
-		this.userId = userId;
-		this.summary = summary;
-		this.description = description;
-		this.reporter = reporter;
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public String getKey() {
@@ -89,16 +134,16 @@ public class JiraIssue implements Serializable {
 		this.key = key;
 	}
 
-	public IssueType getType() {
-		return type;
-	}
-
 	public IssueStatus getStatus() {
 		return status;
 	}
 
 	public void setStatus(IssueStatus status) {
 		this.status = status;
+	}
+
+	public IssueType getType() {
+		return type;
 	}
 
 	public void setType(IssueType type) {
@@ -113,12 +158,62 @@ public class JiraIssue implements Serializable {
 		this.call = call;
 	}
 
-	public Long getUserId() {
-		return userId;
+	public IssueResolution getResolution() {
+		return resolution;
 	}
 
-	public void setUserId(Long userId) {
-		this.userId = userId;
+	public void setResolution(IssueResolution resolution) {
+		this.resolution = resolution;
+	}
+
+	@XmlTransient
+	@JsonIgnore
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	public RoleDiscriminator getRole() {
+		return role;
+	}
+
+	public void setRole(RoleDiscriminator role) {
+		this.role = role;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getFullname() {
+		return fullname;
+	}
+
+	public void setFullname(String fullname) {
+		this.fullname = fullname;
+	}
+
+	public String getMobile() {
+		return mobile;
+	}
+
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 	public String getSummary() {
@@ -137,6 +232,14 @@ public class JiraIssue implements Serializable {
 		this.description = description;
 	}
 
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
+
 	public String getReporter() {
 		return reporter;
 	}
@@ -145,4 +248,41 @@ public class JiraIssue implements Serializable {
 		this.reporter = reporter;
 	}
 
+	public Date getCreated() {
+		return created;
+	}
+
+	public void setCreated(Date created) {
+		this.created = created;
+	}
+
+	public Date getUpdated() {
+		return updated;
+	}
+
+	public void setUpdated(Date updated) {
+		this.updated = updated;
+	}
+
+	////////////////////////////////////////////
+
+	public static JiraIssue createRegistrationIssue(User user, String summary, String description) {
+		JiraIssue issue = new JiraIssue();
+
+		issue.setStatus(IssueStatus.CLOSE);
+		issue.setType(IssueType.REGISTRATION);
+		issue.setCall(IssueCall.INCOMING);
+
+		issue.setSummary(summary);
+		issue.setDescription(description);
+		issue.setReporter("apella");
+
+		issue.setFullname(user.getFullName());
+		issue.setRole(user.getPrimaryRole());
+		issue.setEmail(user.getContactInfo().getEmail());
+		issue.setMobile(user.getContactInfo().getMobile());
+		issue.setResolution(IssueResolution.FIXED);
+
+		return issue;
+	}
 }

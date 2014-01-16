@@ -20,6 +20,16 @@ public class ServiceException extends Exception {
 		this.errorKey = errorKey;
 	}
 
+	public ServiceException(String errorKey, String message) {
+		super(message);
+		this.errorKey = errorKey;
+	}
+
+	public ServiceException(String errorKey, String message, Throwable e) {
+		super(message, e);
+		this.errorKey = errorKey;
+	}
+
 	public String getErrorKey() {
 		return errorKey;
 	}

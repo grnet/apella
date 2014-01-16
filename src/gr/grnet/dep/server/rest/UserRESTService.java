@@ -9,9 +9,6 @@ import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.InstitutionManager;
 import gr.grnet.dep.service.model.JiraIssue;
-import gr.grnet.dep.service.model.JiraIssue.IssueCall;
-import gr.grnet.dep.service.model.JiraIssue.IssueStatus;
-import gr.grnet.dep.service.model.JiraIssue.IssueType;
 import gr.grnet.dep.service.model.MinistryAssistant;
 import gr.grnet.dep.service.model.MinistryManager;
 import gr.grnet.dep.service.model.Role;
@@ -76,6 +73,7 @@ public class UserRESTService extends RESTService {
 	@SuppressWarnings("unchecked")
 	public Collection<User> getAll(
 		@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken,
+		@QueryParam("user") Long userId,
 		@QueryParam("username") String username,
 		@QueryParam("firstname") String firstname,
 		@QueryParam("lastname") String lastname,
@@ -99,6 +97,9 @@ public class UserRESTService extends RESTService {
 			"	where u.basicInfo.firstname like :firstname " +
 			"	and u.basicInfo.lastname like :lastname ");
 		// Query Params
+		if (userId != null) {
+			sb.append("	and u.id = :userId ");
+		}
 		if (username != null && !username.isEmpty()) {
 			sb.append("	and u.username like :username ");
 		}
@@ -131,6 +132,9 @@ public class UserRESTService extends RESTService {
 			.setParameter("firstname", "%" + (firstname != null ? StringUtil.toUppercaseNoTones(firstname, new Locale("el")) : "") + "%")
 			.setParameter("lastname", "%" + (lastname != null ? StringUtil.toUppercaseNoTones(lastname, new Locale("el")) : "") + "%");
 
+		if (userId != null) {
+			query.setParameter("userId", userId);
+		}
 		if (username != null && !username.isEmpty()) {
 			query.setParameter("username", "%" + username + "%");
 		}
@@ -350,27 +354,13 @@ public class UserRESTService extends RESTService {
 				String summary = jiraService.getResourceBundleString("institution.manager.created.assistant.summary");
 				String description = jiraService.getResourceBundleString("institution.manager.created.assistant.description",
 					"user", savedUser.getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + savedUser.getId() + " )");
-				JiraIssue issue = new JiraIssue(
-					IssueStatus.CLOSED,
-					IssueType.REGISTRATION,
-					IssueCall.INCOMING,
-					savedUser.getId(),
-					summary,
-					description,
-					loggedOn.getUsername());
+				JiraIssue issue = JiraIssue.createRegistrationIssue(savedUser, summary, description);
 				jiraService.queueCreateIssue(issue);
 			} else {
 				String summary = jiraService.getResourceBundleString("user.created.account.summary");
 				String description = jiraService.getResourceBundleString("user.created.account.description",
 					"user", savedUser.getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + savedUser.getId() + " )");
-				JiraIssue issue = new JiraIssue(
-					IssueStatus.CLOSED,
-					IssueType.REGISTRATION,
-					IssueCall.INCOMING,
-					savedUser.getId(),
-					summary,
-					description,
-					loggedOn.getUsername());
+				JiraIssue issue = JiraIssue.createRegistrationIssue(savedUser, summary, description);
 				jiraService.queueCreateIssue(issue);
 			}
 
@@ -641,14 +631,7 @@ public class UserRESTService extends RESTService {
 					String summary = jiraService.getResourceBundleString("user.verified.email.summary");
 					String description = jiraService.getResourceBundleString("user.verified.email.description",
 						"user", u.getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + u.getId() + " )");
-					JiraIssue issue = new JiraIssue(
-						IssueStatus.CLOSED,
-						IssueType.REGISTRATION,
-						IssueCall.INCOMING,
-						u.getId(),
-						summary,
-						description,
-						"-");
+					JiraIssue issue = JiraIssue.createRegistrationIssue(u, summary, description);
 					jiraService.queueCreateIssue(issue);
 					return u;
 				default:
@@ -702,14 +685,7 @@ public class UserRESTService extends RESTService {
 				String description = jiraService.getResourceBundleString("helpdesk.blocked.user.description",
 					"user", u.getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + u.getId() + " )",
 					"admin", loggedOn.getFullName());
-				JiraIssue issue = new JiraIssue(
-					IssueStatus.CLOSED,
-					IssueType.REGISTRATION,
-					IssueCall.INCOMING,
-					u.getId(),
-					summary,
-					description,
-					loggedOn.getUsername());
+				JiraIssue issue = JiraIssue.createRegistrationIssue(u, summary, description);
 				jiraService.queueCreateIssue(issue);
 			}
 			return u;
@@ -721,4 +697,5 @@ public class UserRESTService extends RESTService {
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
 	}
+
 }

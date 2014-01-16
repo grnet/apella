@@ -38,7 +38,7 @@ import org.hibernate.annotations.FilterDef;
 
 @Entity
 @XmlRootElement
-@FilterDef(name = "filterPermanent", defaultCondition = "permanent")
+@FilterDef(name = "filterPermanent", defaultCondition = "permanent = 'true'")
 public class Candidacy {
 
 	public static interface CandidacyView {

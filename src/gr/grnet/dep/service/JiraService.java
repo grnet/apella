@@ -1,5 +1,6 @@
 package gr.grnet.dep.service;
 
+import gr.grnet.dep.service.exceptions.ServiceException;
 import gr.grnet.dep.service.model.JiraIssue;
 import gr.grnet.dep.service.model.JiraIssue.IssueCall;
 import gr.grnet.dep.service.model.JiraIssue.IssueCustomField;
@@ -10,12 +11,22 @@ import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 
+import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
@@ -26,8 +37,8 @@ import javax.jms.QueueConnectionFactory;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.codec.binary.Base64;
@@ -47,6 +58,9 @@ public class JiraService {
 
 	@PersistenceContext(unitName = "apelladb")
 	protected EntityManager em;
+
+	@EJB
+	JiraService jiraService;
 
 	private ResourceBundle jiraResourceBundle = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-jira", new Locale("el"));
 
@@ -81,40 +95,6 @@ public class JiraService {
 		}
 	}
 
-	public String getRoleString(RoleDiscriminator role) {
-		String retv;
-		switch (role) {
-			case ADMINISTRATOR:
-				retv = "";
-				break;
-			case CANDIDATE:
-				retv = "υποψήφιος";
-				break;
-			case INSTITUTION_ASSISTANT:
-				retv = "βοηθός ιδρύματος";
-				break;
-			case INSTITUTION_MANAGER:
-				retv = "διαχειριστής ιδρύματος";
-				break;
-			case MINISTRY_ASSISTANT:
-				retv = "βοηθός υπουργείου";
-				break;
-			case MINISTRY_MANAGER:
-				retv = "διαχειριστής υπουργείου";
-				break;
-			case PROFESSOR_DOMESTIC:
-				retv = "καθηγητής/ερευνητής ημεδαπής";
-				break;
-			case PROFESSOR_FOREIGN:
-				retv = "καθηγητής/ερευνητής αλλοδαπής";
-				break;
-			default:
-				retv = "ΑΛΛΟ";
-				break;
-		}
-		return retv;
-	}
-
 	public String getResourceBundleString(String key, String... args) {
 		String result = jiraResourceBundle.getString(key);
 		if (args != null && (args.length % 2 == 0)) {
@@ -136,7 +116,7 @@ public class JiraService {
 		logger.info("GET REQUEST: " + path);
 		ClientResponse<String> response = request.get(String.class);
 		if (response.getStatus() < 200 || response.getStatus() > 299) {
-			throw new Exception("Error Code " + response.getStatus());
+			throw new WebApplicationException(response.getStatus());
 		}
 		String json = response.getEntity();
 		JsonNode jsonNode = (json == null) ? mapper.createObjectNode() : mapper.readTree(json);
@@ -152,30 +132,12 @@ public class JiraService {
 		logger.info("POST REQUEST: " + path + " " + data.toString());
 		ClientResponse<String> response = request.post(String.class);
 		if (response.getStatus() < 200 || response.getStatus() > 299) {
-			throw new Exception("Response Error post " + path + " : " + response.getStatus() + " " + response.getEntity());
+			throw new WebApplicationException(response.getStatus());
 		}
 		String json = response.getEntity();
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode jsonNode = (json == null) ? mapper.createObjectNode() : mapper.readTree(json);
 		logger.info("POST RESPONSE: " + path + " " + jsonNode.toString());
-		return jsonNode;
-	}
-
-	private JsonNode doPut(String path, JsonNode data) throws Exception {
-		ClientRequest request = new ClientRequest(REST_URL + path);
-		request.accept(MediaType.APPLICATION_JSON);
-		request.header("Authorization", "Basic " + authenticationString());
-		request.body("application/json", data);
-		logger.info("PUT REQUEST: " + path + " " + data.toString());
-		ClientResponse<String> response = request.put(String.class);
-		if (response.getStatus() < 200 || response.getStatus() > 299) {
-			throw new Exception("Response Error post " + path + " : " + response.getStatus() + " " + response.getEntity());
-		}
-
-		String json = response.getEntity();
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode jsonNode = (json == null) ? mapper.createObjectNode() : mapper.readTree(json);
-		logger.info("PUT RESPONSE: " + path + " " + jsonNode.toString());
 		return jsonNode;
 	}
 
@@ -220,99 +182,210 @@ public class JiraService {
 		}
 	}
 
-	public JiraIssue getIssue(String issueKey) throws Exception {
+	public JiraIssue getRemoteIssue(String issueKey) throws Exception {
 		JsonNode node = doGet("/issue/" + issueKey);
 		return fromJSON(node);
 	}
 
-	public JiraIssue createIssue(JiraIssue issue) {
-		// Prepare Data:
-		JsonNode issueData = toJSON(issue);
-		if (issueData == null) {
-			return null;
+	public List<JiraIssue> getRemoteIssues(List<Long> issueIds) throws Exception {
+		if (issueIds.isEmpty()) {
+			return new ArrayList<JiraIssue>();
 		}
-		// Send to Jira
+		// Comma separated values
+		String ids = "";
+		for (Long id : issueIds) {
+			ids = ids.concat("," + id);
+		}
+		ids = ids.substring(1);
+		// Search query
+		String jql = "id in (" + ids + ")";
+
+		/*
+		{
+		    "expand": "names,schema",
+		    "startAt": 0,
+		    "maxResults": 50,
+		    "total": 1,
+		    "issues": [
+		        {
+		            "expand": "",
+		            "id": "10001",
+		            "self": "http://www.example.com/jira/rest/api/2/issue/10001",
+		            "key": "HSP-1"
+		        }
+		    ]
+		}
+		*/
+		JsonNode searchNode = doGet("/search?jql=" + URLEncoder.encode(jql, "UTF-8") + "&maxResults=" + issueIds.size());
+		List<JiraIssue> issues = new ArrayList<JiraIssue>();
+		Iterator<JsonNode> issuesIterator = searchNode.get("issues").iterator();
+		while (issuesIterator.hasNext()) {
+			JsonNode issueNode = issuesIterator.next();
+			issues.add(fromJSON(issueNode));
+		}
+		return issues;
+	}
+
+	public JiraIssue createRemoteIssue(JiraIssue issue) throws ServiceException {
+		// Read and validate data
+		IssueStatus status = issue.getStatus();
+		IssueResolution resolution = issue.getResolution();
+		if (!status.equals(IssueStatus.OPEN) && resolution == null) {
+			throw new ServiceException("jira.missing.resolution");
+		}
 		try {
+			// 1. Create Issue
+			issue.setStatus(null);
+			issue.setResolution(null);
+			JsonNode issueData = toJSON(issue);
 			JsonNode response = doPost("/issue/", issueData);
+			// Response sends only id and key
+			issue.setId(response.get("id").asLong());
 			issue.setKey(response.get("key").asText());
-			if (!issue.getStatus().equals(IssueStatus.OPEN)) {
-				JsonNode updateStatusData = toTransitionJSON(issue);
+			// 2. Update with a transition to status if not OPEN
+			if (!status.equals(IssueStatus.OPEN)) {
+				JsonNode updateStatusData = toTransitionJSON(status, resolution, "Automatic transition");
 				response = doPost("/issue/" + issue.getKey() + "/transitions", updateStatusData);
+				// Response is empty if transition succeeds
+				issue.setStatus(status);
+				issue.setResolution(resolution);
 			}
+			// 3. Set Date (will be updated when quartz job refreshes all issues)
+			Date now = new Date();
+			issue.setCreated(now);
+			issue.setUpdated(now);
 			return issue;
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Error posting to Jira:\n" + e.getMessage());
-			return null;
+			logger.log(Level.WARNING, "", e);
+			throw new ServiceException("jira.communication.problem", e);
 		}
+
 	}
 
-	private JiraIssue fromJSON(JsonNode jiraIssue) {
-		JiraConfiguration jiraConfiguration = getJiraConfiguration(CONFIGURATION);
+	public JiraIssue getIssue(Long issueId) throws ServiceException {
+		JiraIssue issue = em.find(JiraIssue.class, issueId);
+		if (issue == null) {
+			throw new ServiceException("issue.not.found");
+		}
+		return issue;
+	}
+
+	public List<JiraIssue> getUserIssues(Long userId) {
+		@SuppressWarnings("unchecked")
+		List<JiraIssue> issues = em.createQuery(
+			"from JiraIssue issue " +
+				"where issue.user.id = :userId")
+			.setParameter("userId", userId)
+			.getResultList();
+
+		return issues;
+	}
+
+	public JiraIssue createIssue(JiraIssue issue) throws ServiceException {
+		// Validate data
+		if (issue.getUser() == null || issue.getUser().getId() == null) {
+			throw new ServiceException("missing.user");
+		}
+		User user = em.find(User.class, issue.getUser().getId());
+		if (user == null) {
+			throw new ServiceException("user.not.found");
+		}
 		try {
-			String key = jiraIssue.get("key").asText();
+			// Send to Jira
+			JiraIssue createdIssue = createRemoteIssue(issue);
+			// Save to Database
+			createdIssue.setUser(user);
+			createdIssue = em.merge(createdIssue);
 
-			JsonNode fields = jiraIssue.get("fields");
+			return createdIssue;
 
-			IssueType type = jiraConfiguration.getIssueType(fields.get("issuetype").get("id").asInt());
-			IssueStatus status = jiraConfiguration.getIssueStatus(fields.get("status").get("id").asText());
-
-			IssueCall call = jiraConfiguration.getIssueCall(fields.get(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.CALL_TYPE)).get("id").asText());
-
-			String summary = fields.get("summary").asText();
-			String description = fields.get("description").asText();
-			String email = fields.get(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.EMAIL)).asText();
-			String reporter = "";
-			if (jiraConfiguration.getIssueCustomFieldId(IssueCustomField.REPORTER).length() > 0) {
-				reporter = fields.get(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.REPORTER)).asText();
-			}
-
-			Long userId = (Long) em.createQuery(
-				"select u.id from User u where u.contactInfo.email = :email ")
-				.setParameter("email", email)
-				.getSingleResult();
-
-			JiraIssue issue = new JiraIssue(status, type, call, userId, summary, description, reporter);
-			issue.setKey(key);
-
-			return issue;
-
-		} catch (NoResultException e) {
-			return null;
+		} catch (Exception e) {
+			throw new ServiceException("jira.communication.problem", e);
 		}
 	}
+
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	public JiraIssue updateIssue(JiraIssue issue) throws ServiceException {
+		JiraIssue existingIssue = getIssue(issue.getId());
+		// Validate data
+		issue.setUser(existingIssue.getUser());
+		// Update (no need to copy to existingIssue, since ids are not auto-generated and we want to override all fields)
+		issue = em.merge(issue);
+		// Return result
+		return issue;
+	}
+
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+	public int synchronizeIssues() throws Exception {
+		List<Long> localIssueIds = em.createQuery("select i.id from JiraIssue i").getResultList();
+		List<JiraIssue> remoteIssues = getRemoteIssues(localIssueIds);
+		for (JiraIssue issue : remoteIssues) {
+			jiraService.updateIssue(issue);
+		}
+		return remoteIssues.size();
+	}
+
+	//////////////////////////////////////////
+	// Parsers, formatters
 
 	/* ISSUE TEMPLATE:
 	{
-		"id": "23580",
-		"key": "APELLA-52",
+		"id": "25655",
+		"key": "APELLA-1251",
 		"fields": {
-			"project" : {
-				key: "APELLA"
-				name: "apella"
+			"project": {
+		  		"id": "11241",
+		  		"key": "APELLA",
+		  		"name": "Apella"
 			},
-	    	"summary": "Εγγραφή",
 			"issuetype": {
-				"name": "Εγγραφή/Πιστοποίηση",
-				id: "60"
+		  		"id": "14",
+		  		"description": "Αφορά σε πρόβλημα της υπηρεσίας",
+		    	"name": "Πρόβλημα",
 			},
-			status: {
-				name: "Open"
-				id: "1"
+			"resolution": {
+		  		"id": "1",
+		  		"description": "A fix for this issue is checked into the tree and tested.",
+		  		"name": "Fixed"
+			},
+			"created": "2014-01-13T10:28:18.000+0200",
+			"updated": "2014-01-13T11:35:33.000+0200",
+			
+			summary": "Αλλαγή ονόματος πατρός",
+			"description": "Το όνομα του πατέρα μου είναι ΑΧΙΛΛΕΑΣ.\r\nΠαρακαλώ να αντικατασταθεί το Ιωάννης που αναγράφεται στα στοιχεία μου με το Αχιλλέας.\r\n\r\nΕυχαριστώ\n\n*Reporter*: Φαρμάκη Βασιλική Καθηγήτρια Τμήμα Μαθηματικών ΕΚΠΑ\n*E-mail*: [mailto:vfarmaki@math.uoa.gr]",
+			
+			"status": {
+		  		"description": "The issue is considered finished, the resolution is correct. Issues which are closed can be reopened.",
+		  		"name": "Closed",
+		  		"id": "6"
+			},
+			"customfield_12352": null,
+			"customfield_12351": null,
+			"customfield_12350": null,
+			"customfield_10350": null,
+			"customfield_12751": null,
+			"customfield_11850": null,
+			"customfield_12550": null,
+			"customfield_12551": null,
+			"customfield_12552": null,
+			"customfield_12553": "6974676161",
+			"customfield_12653": null,
+			"customfield_12652": null,
+			"customfield_11551": null,
+			
+			"comment": {
+		  		"startAt": 0,
+		  		"maxResults": 1,
+		  		"total": 1,
+		  		"comments": [
+		  			{
+		      			"id": "37246",
+		      			"body": "The issue has just been emailed to:  *vfarmaki@math.uoa.gr*,  \\\\\r\nwith subject: *(APELLA-1251) Αλλαγή ονόματος πατρός * \\\\\r\n \\\\ \r\nand content:\\\\\r\n----\r\nΗ αλλαγή στα στοιχεία του λογαριασμού σας έχει πραγματοποιηθεί.\r\n\r\nΣτη διάθεσή σας, \r\nΓραφείο Αρωγής Χρηστών ΑΠΕΛΛΑ\r\n\r\nΠΡΟΣΟΧΗ:\r\nΠαρακαλούμε MHN απαντήσετε σε αυτό το e-mail. \r\nΓια οποιαδήποτε απορία ή διευκρίνιση μπορείτε να επικοινωνήσετε με το [Γραφείο Αρωγής Χρηστών|https://apella.minedu.gov.gr/contact].",
+		      			"created": "2014-01-13T11:35:27.000+0200",
+		      			"updated": "2014-01-13T11:35:27.000+0200"
+		      		}
+		  		]
 			}
-			"description": "Περιγραφή Εγγραφής",
-			"customfield_12650": {
-				"value": "καθηγητής/ερευνητής ημεδαπής",
-				"id": "10221"
-			},
-			"customfield_12651": {
-				"value": "εξερχόμενη",
-				"id": "10228"
-			},
-			"customfield_12652": "anglen"
-			"customfield_12653": "Angelos Lenis",
-			"customfield_12654": "69000001010",
-			"customfield_12655": "lenis.angelos@gmail.com",
-			"customfield_12751": "reporter-user"
 		}
 	}
 	*/
@@ -320,14 +393,15 @@ public class JiraService {
 	private JsonNode toJSON(JiraIssue jiraIssue) {
 		JiraConfiguration jiraConfiguration = getJiraConfiguration(CONFIGURATION);
 
-		User user = em.find(User.class, jiraIssue.getUserId());
-		if (user == null) {
-			logger.info("Tried to POST Jira Issue to non existin user: " + jiraIssue.getUserId() + " " + jiraIssue.getType() + " " + jiraIssue.getSummary() + " " + jiraIssue.getDescription());
-			return null;
+		ObjectNode issue = mapper.createObjectNode();
+
+		if (jiraIssue.getId() != null) {
+			issue.put("id", jiraIssue.getId());
 		}
 
-		ObjectNode issue = mapper.createObjectNode();
-		// Project
+		if (jiraIssue.getKey() != null) {
+			issue.put("key", jiraIssue.getKey());
+		}
 
 		// Fields
 		ObjectNode fields = mapper.createObjectNode();
@@ -335,32 +409,157 @@ public class JiraService {
 
 		ObjectNode project = mapper.createObjectNode();
 		project.put("key", PROJECT_KEY);
-
-		ObjectNode issueTypeNode = mapper.createObjectNode();
-		issueTypeNode.put("id", jiraConfiguration.getIssueTypeId(jiraIssue.getType()));
-
-		ObjectNode roleNode = mapper.createObjectNode();
-		roleNode.put("value", getRoleString(user.getPrimaryRole()));
-
-		ObjectNode callTypeNode = mapper.createObjectNode();
-		callTypeNode.put("id", jiraConfiguration.getIssueCallId(jiraIssue.getCall()));
-
 		fields.put("project", project);
-		fields.put("summary", jiraIssue.getSummary());
-		fields.put("description", jiraIssue.getDescription());
-		fields.put("issuetype", issueTypeNode);
-		fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.ROLE), roleNode);
-		fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.CALL_TYPE), callTypeNode);
-		fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.USERNAME), user.getUsername() == null ? "-" : user.getUsername());
-		fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.FULLNAME), user.getBasicInfo().getFirstname() + " " + user.getBasicInfo().getLastname());
-		fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.MOBILE), user.getContactInfo().getMobile());
-		fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.EMAIL), user.getContactInfo().getEmail());
-		if (jiraConfiguration.getIssueCustomFieldId(IssueCustomField.REPORTER).length() > 0) {
+
+		if (jiraIssue.getResolution() != null) {
+			ObjectNode resolutionNode = mapper.createObjectNode();
+			resolutionNode.put("id", jiraConfiguration.getIssueResolutionId(jiraIssue.getResolution()));
+			fields.put("resolution", resolutionNode);
+		}
+
+		if (jiraIssue.getStatus() != null) {
+			ObjectNode statusNode = mapper.createObjectNode();
+			statusNode.put("id", jiraConfiguration.getIssueStatusId(jiraIssue.getStatus()));
+			fields.put("status", statusNode);
+		}
+
+		if (jiraIssue.getSummary() != null) {
+			fields.put("summary", jiraIssue.getSummary());
+		}
+
+		if (jiraIssue.getDescription() != null) {
+			fields.put("description", jiraIssue.getDescription());
+		}
+
+		if (jiraIssue.getType() != null) {
+			ObjectNode issueTypeNode = mapper.createObjectNode();
+			issueTypeNode.put("id", jiraConfiguration.getIssueTypeId(jiraIssue.getType()));
+			fields.put("issuetype", issueTypeNode);
+		}
+
+		if (jiraIssue.getCall() != null) {
+			ObjectNode callTypeNode = mapper.createObjectNode();
+			callTypeNode.put("id", jiraConfiguration.getIssueCallId(jiraIssue.getCall()));
+			fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.CALL_TYPE), callTypeNode);
+		}
+
+		if (jiraIssue.getRole() != null) {
+			ObjectNode roleNode = mapper.createObjectNode();
+			roleNode.put("value", jiraConfiguration.getRoleValue(jiraIssue.getRole()));
+			fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.ROLE), roleNode);
+		}
+
+		if (jiraIssue.getUsername() != null) {
+			fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.USERNAME), jiraIssue.getUsername());
+		}
+
+		if (jiraIssue.getFullname() != null) {
+			fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.FULLNAME), jiraIssue.getFullname());
+		}
+
+		if (jiraIssue.getMobile() != null) {
+			fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.MOBILE), jiraIssue.getMobile());
+		}
+
+		if (jiraIssue.getEmail() != null) {
+			fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.EMAIL), jiraIssue.getEmail());
+		}
+
+		if (jiraConfiguration.getIssueCustomFieldId(IssueCustomField.REPORTER).length() > 0 &&
+			jiraIssue.getReporter() != null) {
 			fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.REPORTER), jiraIssue.getReporter());
 		}
 
 		return issue;
 
+	}
+
+	private JiraIssue fromJSON(JsonNode issueNode) {
+		JiraConfiguration jiraConfiguration = getJiraConfiguration(CONFIGURATION);
+
+		JiraIssue issue = new JiraIssue();
+
+		// Read parameters
+		if (issueNode.has("id")) {
+			Long id = issueNode.get("id").asLong();
+			issue.setId(id);
+		}
+
+		if (issueNode.has("id")) {
+			String key = issueNode.get("key").asText();
+			issue.setKey(key);
+		}
+		// Fields
+		JsonNode fieldsNode = issueNode.get("fields");
+
+		if (fieldsNode.has("resolution") && !fieldsNode.get("resolution").isNull()) {
+			IssueResolution resolution = jiraConfiguration.getIssueResolution(fieldsNode.get("resolution").get("id").asText());
+			issue.setResolution(resolution);
+		}
+		if (fieldsNode.has("status")) {
+			IssueStatus status = jiraConfiguration.getIssueStatus(fieldsNode.get("status").get("id").asText());
+			issue.setStatus(status);
+		}
+		if (fieldsNode.has("summary")) {
+			String summary = fieldsNode.get("summary").asText();
+			issue.setSummary(summary);
+		}
+		if (fieldsNode.has("description")) {
+			String description = fieldsNode.get("description").asText();
+			issue.setDescription(description);
+		}
+		if (fieldsNode.has("issuetype")) {
+			IssueType type = jiraConfiguration.getIssueType(fieldsNode.get("issuetype").get("id").asInt());
+			issue.setType(type);
+		}
+		if (fieldsNode.has(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.CALL_TYPE))) {
+			IssueCall call = jiraConfiguration.getIssueCall(fieldsNode.get(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.CALL_TYPE)).get("id").asText());
+			issue.setCall(call);
+		}
+		if (fieldsNode.has(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.ROLE))) {
+			RoleDiscriminator role = jiraConfiguration.getIssueRole(fieldsNode.get(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.ROLE)).get("value").asText());
+			issue.setRole(role);
+		}
+		if (fieldsNode.has(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.USERNAME))) {
+			String username = fieldsNode.get(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.USERNAME)).asText();
+			issue.setUsername(username);
+		}
+		if (fieldsNode.has(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.FULLNAME))) {
+			String fullname = fieldsNode.get(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.FULLNAME)).asText();
+			issue.setFullname(fullname);
+		}
+		if (fieldsNode.has(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.MOBILE))) {
+			String mobile = fieldsNode.get(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.MOBILE)).asText();
+			issue.setMobile(mobile);
+		}
+		if (fieldsNode.has(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.EMAIL))) {
+			String email = fieldsNode.get(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.EMAIL)).asText();
+			issue.setEmail(email);
+		}
+		if (fieldsNode.has(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.REPORTER))) {
+			String reporter = fieldsNode.get(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.REPORTER)).asText();
+			issue.setReporter(reporter);
+		}
+		if (fieldsNode.has(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.COMMENT))) {
+			String comment = fieldsNode.get(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.COMMENT)).asText();
+			issue.setComment(comment);
+		}
+		if (fieldsNode.has("updated")) {
+			try {
+				Date updated = jiraConfiguration.getDateFormat().parse(fieldsNode.get("updated").asText());
+				issue.setUpdated(updated);
+			} catch (ParseException e) {
+			}
+
+		}
+		if (fieldsNode.has("created")) {
+			try {
+				Date created = jiraConfiguration.getDateFormat().parse(fieldsNode.get("created").asText());
+				issue.setCreated(created);
+			} catch (ParseException e) {
+			}
+		}
+		return issue;
 	}
 
 	/*
@@ -375,9 +574,6 @@ public class JiraService {
 	    	]
 		},
 		"fields": {
-	    	"assignee": {
-	        	"name": "bob"
-	    	},
 	    	"resolution": {
 	        	"name": "Fixed"
 	    	}
@@ -388,37 +584,41 @@ public class JiraService {
 	}
 	*/
 
-	private JsonNode toTransitionJSON(JiraIssue jiraIssue) {
+	private JsonNode toTransitionJSON(IssueStatus status, IssueResolution resolution, String comment) {
 		JiraConfiguration jiraConfiguration = getJiraConfiguration(CONFIGURATION);
 
 		ObjectNode issue = mapper.createObjectNode();
 
 		// Transition
-		ObjectNode update = mapper.createObjectNode();
-		issue.put("update", update);
-		ArrayNode comments = mapper.createArrayNode();
-		update.put("comment", comments);
+		ObjectNode updateNode = mapper.createObjectNode();
+		issue.put("update", updateNode);
 
-		ObjectNode comment = mapper.createObjectNode();
-		comments.add(comment);
-		ObjectNode add = mapper.createObjectNode();
-		comment.put("add", add);
-		add.put("body", "Automatically Closed");
+		ArrayNode commentsArrayNode = mapper.createArrayNode();
+		updateNode.put("comment", commentsArrayNode);
 
-		ObjectNode fields = mapper.createObjectNode();
-		issue.put("fields", fields);
+		ObjectNode commentNode = mapper.createObjectNode();
+		commentsArrayNode.add(commentNode);
+		ObjectNode addCommentNode = mapper.createObjectNode();
+		commentNode.put("add", addCommentNode);
+		addCommentNode.put("body", comment);
 
-		ObjectNode resolution = mapper.createObjectNode();
-		fields.put("resolution", resolution);
-		resolution.put("id", jiraConfiguration.getIssueResolutionId(IssueResolution.FIXED_WORKAROUND));
+		ObjectNode fieldsNode = mapper.createObjectNode();
+		issue.put("fields", fieldsNode);
+
+		ObjectNode resolutionNode = mapper.createObjectNode();
+		resolutionNode.put("id", jiraConfiguration.getIssueResolutionId(resolution));
+		fieldsNode.put("resolution", resolutionNode);
 
 		ObjectNode transistionNode = mapper.createObjectNode();
-		transistionNode.put("id", jiraConfiguration.getIssueStatusId(jiraIssue.getStatus()));
+		transistionNode.put("id", jiraConfiguration.getIssueStatusId(status));
 		issue.put("transition", transistionNode);
 
 		return issue;
 
 	}
+
+	//////////////////////////////////////////////////
+	// Configurations
 
 	private JiraConfiguration getJiraConfiguration(String jiraConfiguration) {
 		if (jiraConfiguration.equals("STAGING")) {
@@ -429,6 +629,8 @@ public class JiraService {
 	}
 
 	private interface JiraConfiguration {
+
+		public SimpleDateFormat getDateFormat();
 
 		public String getIssueCallId(IssueCall call);
 
@@ -449,9 +651,19 @@ public class JiraService {
 		public String getIssueCustomFieldId(IssueCustomField type);
 
 		public IssueCustomField getIssueCustomField(String id);
+
+		public String getRoleValue(RoleDiscriminator role);
+
+		public RoleDiscriminator getIssueRole(String value);
 	}
 
 	private class ProductionJiraConfigurationImpl implements JiraConfiguration {
+
+		private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+
+		public SimpleDateFormat getDateFormat() {
+			return sdf;
+		}
 
 		@Override
 		public String getIssueCallId(IssueCall call) {
@@ -470,7 +682,7 @@ public class JiraService {
 			switch (status) {
 				case OPEN:
 					return "1";
-				case CLOSED:
+				case CLOSE:
 					return "2";
 				case IN_PROGRESS:
 					return "3";
@@ -478,6 +690,8 @@ public class JiraService {
 					return "4";
 				case RESOLVED:
 					return "5";
+				case CLOSED:
+					return "6";
 				default:
 					throw new IllegalArgumentException();
 			}
@@ -540,9 +754,46 @@ public class JiraService {
 					return "customfield_12550";
 				case REPORTER:
 					return "customfield_12751";
+				case COMMENT:
+					return "";
 				default:
 					throw new IllegalArgumentException();
 			}
+		}
+
+		@Override
+		public String getRoleValue(RoleDiscriminator role) {
+			String retv;
+			switch (role) {
+				case ADMINISTRATOR:
+					retv = "";
+					break;
+				case CANDIDATE:
+					retv = "υποψήφιος";
+					break;
+				case INSTITUTION_ASSISTANT:
+					retv = "βοηθός ιδρύματος";
+					break;
+				case INSTITUTION_MANAGER:
+					retv = "διαχειριστής ιδρύματος";
+					break;
+				case MINISTRY_ASSISTANT:
+					retv = "βοηθός υπουργείου";
+					break;
+				case MINISTRY_MANAGER:
+					retv = "διαχειριστής υπουργείου";
+					break;
+				case PROFESSOR_DOMESTIC:
+					retv = "καθηγητής/ερευνητής ημεδαπής";
+					break;
+				case PROFESSOR_FOREIGN:
+					retv = "καθηγητής/ερευνητής αλλοδαπής";
+					break;
+				default:
+					retv = "ΑΛΛΟ";
+					break;
+			}
+			return retv;
 		}
 
 		@Override
@@ -595,9 +846,25 @@ public class JiraService {
 			throw new IllegalArgumentException();
 		}
 
+		@Override
+		public RoleDiscriminator getIssueRole(String value) {
+			for (RoleDiscriminator role : RoleDiscriminator.values()) {
+				if (getRoleValue(role).equals(value)) {
+					return role;
+				}
+			}
+			throw new IllegalArgumentException();
+		}
+
 	}
 
 	private class StagingJiraConfigurationImpl implements JiraConfiguration {
+
+		private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+
+		public SimpleDateFormat getDateFormat() {
+			return sdf;
+		}
 
 		@Override
 		public String getIssueCallId(IssueCall call) {
@@ -616,7 +883,7 @@ public class JiraService {
 			switch (status) {
 				case OPEN:
 					return "1";
-				case CLOSED:
+				case CLOSE:
 					return "2";
 				case IN_PROGRESS:
 					return "3";
@@ -624,6 +891,8 @@ public class JiraService {
 					return "4";
 				case RESOLVED:
 					return "5";
+				case CLOSED:
+					return "6";
 				default:
 					throw new IllegalArgumentException();
 			}
@@ -686,9 +955,46 @@ public class JiraService {
 					return "customfield_12655";
 				case REPORTER:
 					return "";
+				case COMMENT:
+					return "";
 				default:
 					throw new IllegalArgumentException();
 			}
+		}
+
+		@Override
+		public String getRoleValue(RoleDiscriminator role) {
+			String retv;
+			switch (role) {
+				case ADMINISTRATOR:
+					retv = "";
+					break;
+				case CANDIDATE:
+					retv = "υποψήφιος";
+					break;
+				case INSTITUTION_ASSISTANT:
+					retv = "βοηθός ιδρύματος";
+					break;
+				case INSTITUTION_MANAGER:
+					retv = "διαχειριστής ιδρύματος";
+					break;
+				case MINISTRY_ASSISTANT:
+					retv = "βοηθός υπουργείου";
+					break;
+				case MINISTRY_MANAGER:
+					retv = "διαχειριστής υπουργείου";
+					break;
+				case PROFESSOR_DOMESTIC:
+					retv = "καθηγητής/ερευνητής ημεδαπής";
+					break;
+				case PROFESSOR_FOREIGN:
+					retv = "καθηγητής/ερευνητής αλλοδαπής";
+					break;
+				default:
+					retv = "ΑΛΛΟ";
+					break;
+			}
+			return retv;
 		}
 
 		@Override
@@ -741,5 +1047,16 @@ public class JiraService {
 			throw new IllegalArgumentException();
 		}
 
+		@Override
+		public RoleDiscriminator getIssueRole(String value) {
+			for (RoleDiscriminator role : RoleDiscriminator.values()) {
+				if (getRoleValue(role).equals(value)) {
+					return role;
+				}
+			}
+			throw new IllegalArgumentException();
+		}
+
 	}
+
 }
