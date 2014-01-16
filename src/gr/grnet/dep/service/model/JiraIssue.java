@@ -264,4 +264,25 @@ public class JiraIssue implements Serializable {
 		this.updated = updated;
 	}
 
+	////////////////////////////////////////////
+
+	public static JiraIssue createRegistrationIssue(User user, String summary, String description) {
+		JiraIssue issue = new JiraIssue();
+
+		issue.setStatus(IssueStatus.CLOSE);
+		issue.setType(IssueType.REGISTRATION);
+		issue.setCall(IssueCall.INCOMING);
+
+		issue.setSummary(summary);
+		issue.setDescription(description);
+		issue.setReporter("apella");
+
+		issue.setFullname(user.getFullName());
+		issue.setRole(user.getPrimaryRole());
+		issue.setEmail(user.getContactInfo().getEmail());
+		issue.setMobile(user.getContactInfo().getMobile());
+		issue.setResolution(IssueResolution.FIXED);
+
+		return issue;
+	}
 }

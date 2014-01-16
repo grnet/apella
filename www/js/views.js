@@ -2288,12 +2288,13 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		initialize: function (options) {
 			this._super('initialize', [ options ]);
-			_.bindAll(this, "search");
+			_.bindAll(this, "search", "handleKeyUp");
 			this.template = _.template(tpl_user_search);
 		},
 
 		events: {
-			"click a#search": "search"
+			"click a#search": "search",
+			"keyup form": "handleKeyUp"
 		},
 
 		render: function (eventName) {
@@ -2302,7 +2303,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.$el.empty();
 			self.addTitle();
 			self.$el.append(self.template({}));
+
 			if (self.options.query) {
+				$('form input[name=user]', this.el).val(self.options.query.user);
 				$('form input[name=username]', this.el).val(self.options.query.username);
 				$('form input[name=firstname]', this.el).val(self.options.query.firstname);
 				$('form input[name=lastname]', this.el).val(self.options.query.lastname);
@@ -2316,6 +2319,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 			return self;
 		},
+
 		search: function () {
 			var self = this;
 			var searchData = {
@@ -2328,6 +2332,12 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				role: self.$('form select[name=role]').val(),
 				roleStatus: $('form select[name=roleStatus]').val()
 			};
+			var user = self.$('form input[name=user]').val();
+			if (/^\d+$/.test(user)) {
+				searchData.user = user;
+			} else {
+				self.$('form input[name=user]').val("");
+			}
 			App.router.navigate("adminusers/" + JSON.stringify(searchData), {
 				trigger: false
 			});
@@ -2336,6 +2346,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				reset: true,
 				data: searchData
 			});
+		},
+
+		handleKeyUp: function (event) {
+			var self = this;
+			if (event.keyCode === 13) {
+				// On enter submit
+				self.search();
+			}
 		},
 
 		close: function () {
@@ -8829,17 +8847,15 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				efiles.fetch({
 					cache: false,
 					success: function (collection, response) {
-						_.each(self.model.get("candidacies"), function (candidacy) {
-							_.each(candidacy.proposedEvaluators, function (proposedEvaluator) {
-								var filteredFiles = new Models.Files(collection.filter(function (file) {
-									return file.get("evaluator").id === proposedEvaluator.id;
-								}));
-								filteredFiles.url = collection.url;
-								self.addFileList(filteredFiles, "EISIGISI_DEP_YPOPSIFIOU",
-									self.$("div#eisigisiDepYpopsifiouFileList[data-candidacy-evaluator-id=" + proposedEvaluator.id + "]"), {
-										withMetadata: true
-									});
-							});
+						_.each(self.model.get("proposedEvaluators"), function (proposedEvaluator) {
+							var filteredFiles = new Models.Files(collection.filter(function (file) {
+								return file.get("evaluator").id === proposedEvaluator.id;
+							}));
+							filteredFiles.url = collection.url;
+							self.addFileList(filteredFiles, "EISIGISI_DEP_YPOPSIFIOU",
+								self.$("div#eisigisiDepYpopsifiouFileList[data-candidacy-evaluator-id=" + proposedEvaluator.id + "]"), {
+									withMetadata: true
+								});
 						});
 					}
 				});

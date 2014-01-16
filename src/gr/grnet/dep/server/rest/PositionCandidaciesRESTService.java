@@ -32,6 +32,7 @@ import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -124,38 +125,46 @@ public class PositionCandidaciesRESTService extends RESTService {
 	public PositionCandidacies get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("candidaciesId") Long candidaciesId) {
 		User loggedOn = getLoggedOn(authToken);
 
-		Session session = em.unwrap(Session.class);
-		session.enableFilter("filterPermanent");
+		try {
+			Session session = em.unwrap(Session.class);
+			session.enableFilter("filterPermanent");
 
-		PositionCandidacies existingCandidacies = em.find(PositionCandidacies.class, candidaciesId);
-		if (existingCandidacies == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.position.candidacies.id");
-		}
-		Position existingPosition = existingCandidacies.getPosition();
-		if (!existingPosition.getId().equals(positionId)) {
-			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
-		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
-			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
-			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-			!existingCandidacies.containsCandidate(loggedOn)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		for (Candidacy candidacy : existingCandidacies.getCandidacies()) {
-			if (!candidacy.isOpenToOtherCandidates() &&
-				!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId()) &&
-				existingCandidacies.containsCandidate(loggedOn)) {
-				candidacy.setAllowedToSee(Boolean.FALSE);
-			} else {
-				// all other cases: owner, admin, mm, ma, im, ia, committee, evaluator
-				candidacy.setAllowedToSee(Boolean.TRUE);
+			PositionCandidacies existingCandidacies = (PositionCandidacies) em.createQuery(
+				"select pc from PositionCandidacies pc " +
+					"left join fetch pc.candidacies c " +
+					"where pc.id = :candidaciesId")
+				.setParameter("candidaciesId", candidaciesId)
+				.getSingleResult();
+
+			Position existingPosition = existingCandidacies.getPosition();
+			if (!existingPosition.getId().equals(positionId)) {
+				throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 			}
+			if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
+				!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
+				!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+				!existingCandidacies.containsCandidate(loggedOn)) {
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+			}
+			for (Candidacy candidacy : existingCandidacies.getCandidacies()) {
+				if (!candidacy.isOpenToOtherCandidates() &&
+					!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId()) &&
+					existingCandidacies.containsCandidate(loggedOn)) {
+					candidacy.setAllowedToSee(Boolean.FALSE);
+				} else {
+					// all other cases: owner, admin, mm, ma, im, ia, committee, evaluator
+					candidacy.setAllowedToSee(Boolean.TRUE);
+				}
+			}
+			return existingCandidacies;
+		} catch (NoResultException e) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.candidacies.id");
+
 		}
 
-		return existingCandidacies;
 	}
 
 	/**********************
@@ -431,8 +440,8 @@ public class PositionCandidaciesRESTService extends RESTService {
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("evaluator_firstname", existingEvaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
-							put("evaluator_lastname", existingEvaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
+							put("firstname", existingEvaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
+							put("lastname", existingEvaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 							put("candidate_firstname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getFirstname());
 							put("candidate_lastname", existingEvaluator.getCandidacy().getCandidate().getUser().getBasicInfo().getLastname());
 							put("position", existingEvaluator.getCandidacy().getCandidacies().getPosition().getName());

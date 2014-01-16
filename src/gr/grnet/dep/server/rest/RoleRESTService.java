@@ -464,8 +464,7 @@ public class RoleRESTService extends RESTService {
 				String summary = jiraService.getResourceBundleString("user.created.role.summary");
 				String description = jiraService.getResourceBundleString("user.created.role.description",
 					"user", existingRole.getUser().getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + existingRole.getUser().getId() + " )");
-				//TODO: 
-				JiraIssue issue = new JiraIssue();
+				JiraIssue issue = JiraIssue.createRegistrationIssue(existingRole.getUser(), summary, description);
 				jiraService.queueCreateIssue(issue);
 			}
 
@@ -1152,8 +1151,7 @@ public class RoleRESTService extends RESTService {
 					description = jiraService.getResourceBundleString("helpdesk.activated.role.description",
 						"user", primaryRole.getUser().getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + primaryRole.getUser().getId() + " )",
 						"admin", loggedOn.getFullName());
-					//TODO: 
-					issue = new JiraIssue();
+					issue = JiraIssue.createRegistrationIssue(primaryRole.getUser(), summary, description);
 					jiraService.queueCreateIssue(issue);
 
 					// Send also an email to user:
@@ -1174,8 +1172,7 @@ public class RoleRESTService extends RESTService {
 					description = jiraService.getResourceBundleString("helpdesk.activated.role.description",
 						"user", primaryRole.getUser().getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + primaryRole.getUser().getId() + " )",
 						"admin", loggedOn.getFullName());
-					//TODO: 
-					issue = new JiraIssue();
+					issue = JiraIssue.createRegistrationIssue(primaryRole.getUser(), summary, description);
 					jiraService.queueCreateIssue(issue);
 					break;
 				default:
