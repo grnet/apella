@@ -755,7 +755,7 @@ public class JiraService {
 				case REPORTER:
 					return "customfield_12751";
 				case COMMENT:
-					return "";
+					return "customfield_12754";
 				default:
 					throw new IllegalArgumentException();
 			}
