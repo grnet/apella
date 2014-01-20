@@ -575,7 +575,8 @@ public class UserRESTService extends RESTService {
 
 	@PUT
 	@Path("/{id:[0-9][0-9]*}/sendLoginEmail")
-	public Response sendLoginEmail(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response sendLoginEmail(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, @FormParam("createLoginLink") Boolean createLoginLink) {
 		User loggedOn = getLoggedOn(authToken);
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -591,6 +592,12 @@ public class UserRESTService extends RESTService {
 			// Validate
 			if (!u.getAuthenticationType().equals(AuthenticationType.EMAIL)) {
 				throw new RestException(Status.NOT_FOUND, "login.wrong.registration.type");
+			}
+
+			if (createLoginLink != null && createLoginLink.booleanValue()) {
+				// Create new AuthenticationToken
+				u.setPermanentAuthToken(authenticationService.generatePermanentAuthenticationToken(u.getId(), u.getContactInfo().getEmail()));
+				u.setLoginEmailSent(Boolean.FALSE);
 			}
 			mailService.sendLoginEmail(u.getId(), true);
 

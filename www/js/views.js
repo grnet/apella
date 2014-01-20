@@ -2190,12 +2190,12 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var userView = new Views.AdminAccountView({
 				model: self.model
 			});
-			var roleView = new Views.AdminRoleEditView({
-				className: "row-fluid",
-				collection: self.collection,
-				model: self.collection.find(function (role) {
-					return role.isPrimary();
-				})
+			var roleViews = self.collection.map(function (role) {
+				return new Views.AdminRoleEditView({
+					className: "row-fluid",
+					collection: self.collection,
+					model: role
+				});
 			});
 			var jiraIssueEditView = new Views.JiraIssueEditView({
 				model: self.issueModel
@@ -2206,14 +2206,21 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.$el.html(self.template());
 
 			// Add User View
-			self.$("#user").html(userView.render().el);
+			self.$("#userContent").html(userView.render().el);
 			self.innerViews.push(userView);
-			// Add Role View
-			self.$("#role").html(roleView.render().el);
-			self.innerViews.push(roleView);
+			// Add Role Views
+			_.each(roleViews, function (roleView) {
+				var discriminator = roleView.model.get("discriminator");
+				self.$("#optionsTab").append('<li><a href="#profile_' + discriminator + '" data-toggle="tab">' + $.i18n.prop(discriminator) + '</a></li>');
+				self.$("#optionsContent").append('<div class="tab-pane" id="profile_' + discriminator + '"></div>');
+				self.$("#profile_" + discriminator).html(roleView.render().el);
+				self.innerViews.push(roleView);
+			});
 			// Add JiraIssueEditView
 			self.resetIssue();
 			self.$("#issue").html(jiraIssueEditView.render().el);
+			self.$("#helpdeskTab").appendTo(self.$("#optionsTab")); // Move as last element in tabs
+			self.$("#helpdeskContent").appendTo(self.$("#optionsContent")); // Move as last element in content
 			self.innerViews.push(jiraIssueEditView);
 
 			return self;
@@ -2253,6 +2260,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var self = this;
 			self.model.resendLoginEmail({}, {
 				wait: true,
+				createLoginLink: self.$("input[name=createLoginLink]").is(':checked'),
 				success: function (model, resp) {
 					var popup;
 					popup = new Views.PopupView({

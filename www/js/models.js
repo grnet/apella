@@ -724,9 +724,11 @@ define([
 					});
 					params = {
 						type: 'PUT',
+						contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
 						dataType: 'json',
-						contentType: 'application/json'
-						// data: "{}"
+						data: {
+							createLoginLink: options.createLoginLink
+						}
 					};
 					// Ensure that we have a URL.
 					if (!options.url) {
