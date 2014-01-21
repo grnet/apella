@@ -94,9 +94,9 @@
 				<job-name>SynchronizeJiraIssuesJob</job-name>
 				<job-group>APELLA_JOBS</job-group>
 				<!-- trigger every two hours -->
-				<!-- <cron-expression>0 0 0/2 * * ?</cron-expression> -->
+				<cron-expression>0 0 0/2 * * ?</cron-expression>
 				<!-- trigger every 15 sec for testing -->
-				<cron-expression>0/15 * * * * ?</cron-expression>
+				<!--  <cron-expression>0/15 * * * * ?</cron-expression> -->
 			</cron>
 		</trigger>
 
