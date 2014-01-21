@@ -12,10 +12,17 @@
 			<td><%= register.title %></td>
 			<td><%= register.institution.name %></td>
 			<td width="100px">
-				<p align="center">
+				<% if (register.canEdit) { %>
+					<a id="select" data-register-cid="<%= register.cid %>" class="btn btn-primary btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_edit') %></a>
+				<% } else { %>
 					<a id="select" data-register-cid="<%= register.cid %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>
-				</p>
+				<% } %>
+				<% if (register.canExport) { %>
+					<a href="<%= register.exportUrl %>" target="export" class="btn btn-info btn-mini"><i class="icon-download"></i> <%= $.i18n.prop('btn_register_export') %></a>
+
+				<% } %>
 			</td>
+
 		</tr>
 		<% }); %>
 	</tbody>

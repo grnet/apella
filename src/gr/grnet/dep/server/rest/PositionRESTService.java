@@ -5,6 +5,8 @@ import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.Institution;
+import gr.grnet.dep.service.model.InstitutionAssistant;
+import gr.grnet.dep.service.model.InstitutionManager;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.CandidatePositionView;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
@@ -24,6 +26,9 @@ import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileType;
 
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -35,6 +40,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.PersistenceException;
@@ -48,6 +54,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.codehaus.jackson.map.annotate.JsonView;
@@ -587,6 +594,42 @@ public class PositionRESTService extends RESTService {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+		}
+	}
+
+	@GET
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	@Path("/export")
+	public Response getPositionsExport(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
+		User loggedOn = getLoggedOn(authToken);
+		// Authorize
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Generate Document
+		Long institutionId = null;
+		if (loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+			institutionId = ((InstitutionManager) loggedOn.getActiveRole(RoleDiscriminator.INSTITUTION_MANAGER)).getInstitution().getId();
+		}
+		if (institutionId == null &&
+			loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+			institutionId = ((InstitutionAssistant) loggedOn.getActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)).getInstitution().getId();
+		}
+		try {
+			InputStream is = reportService.createPositionsExportExcel(institutionId);
+			// Return response
+			return Response.ok(is)
+				.type(MediaType.APPLICATION_OCTET_STREAM)
+				.header("charset", "UTF-8")
+				.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode("positions.xls", "UTF-8") + "\"")
+				.build();
+		} catch (UnsupportedEncodingException e) {
+			logger.log(Level.SEVERE, "getDocument", e);
+			throw new EJBException(e);
 		}
 	}
 }

@@ -4691,7 +4691,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						}
 					});
 					return result;
-				}())
+				}()),
+				exportUrl : self.collection.url + "/export?X-Auth-Token=" + encodeURIComponent(App.authToken)
 			};
 			self.closeInnerViews();
 			self.$el.empty();
@@ -4724,7 +4725,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		renderActions: function () {
 			var self = this;
-			if (!App.loggedOnUser.hasRole("INSTITUTION_MANAGER") && !App.loggedOnUser.hasRole("INSTITUTION_ASSISTANT")) {
+			if (!App.loggedOnUser.hasRole("INSTITUTION_MANAGER") &&
+				!App.loggedOnUser.hasRole("INSTITUTION_ASSISTANT")) {
 				return;
 			}
 			self.$("#actions").html("<select class=\"input-xlarge pull-left\" name=\"department\"></select>");
@@ -6915,11 +6917,21 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var tpl_data = {
 				registries: (function () {
 					var result = [];
+					var gCanExport =
+						App.loggedOnUser.hasRole("MINISTRY_MANAGER") ||
+						App.loggedOnUser.hasRole("MINISTRY_ASSISTANT") ||
+						App.loggedOnUser.hasRole("ADMINISTRATOR");
+
 					self.collection.each(function (model) {
+						var canEdit = App.loggedOnUser.isAssociatedWithInstitution(model.get("institution"));
 						var item;
 						if (model.has("id")) {
 							item = model.toJSON();
 							item.cid = model.cid;
+							item.canExport = gCanExport || canEdit;
+							item.exportUrl = model.url() + "/export?X-Auth-Token=" + encodeURIComponent(App.authToken);
+							item.canEdit = canEdit;
+
 							result.push(item);
 						}
 					});

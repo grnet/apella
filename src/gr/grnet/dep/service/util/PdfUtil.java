@@ -1,6 +1,5 @@
 package gr.grnet.dep.service.util;
 
-import gr.grnet.dep.service.MailService;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.InstitutionManager;
 
@@ -33,7 +32,7 @@ import com.lowagie.text.pdf.PdfWriter;
 
 public class PdfUtil {
 
-	private static final Logger logger = Logger.getLogger(MailService.class.getName());
+	private static final Logger logger = Logger.getLogger(PdfUtil.class.getName());
 
 	private static final float BASE_FONT_SIZE = 10.0f;
 

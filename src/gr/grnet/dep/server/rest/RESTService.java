@@ -4,6 +4,7 @@ import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.JiraService;
 import gr.grnet.dep.service.MailService;
+import gr.grnet.dep.service.ReportService;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Department;
@@ -90,6 +91,9 @@ public class RESTService {
 
 	@EJB
 	JiraService jiraService;
+
+	@EJB
+	ReportService reportService;
 
 	/**
 	 * Check FileType to upload agrees with max number and direct caller.
