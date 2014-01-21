@@ -61,7 +61,7 @@ public class ManagementService {
 
 		logger.info("CREATING " + pdData.size() + " PROFESSOR DOMESTIC ACCOUNTS");
 		for (ProfessorDomesticData data : pdData) {
-			User u = authenticationService.findProfessorDomesticAccount(data);
+			User u = authenticationService.findAccountByProfessorDomesticData(data);
 			if (u == null) {
 				logger.info("CREATING PROFESSOR DOMESTIC: " + data.getEmail());
 				u = authenticationService.createProfessorDomesticAccount(data);

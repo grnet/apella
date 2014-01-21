@@ -36,6 +36,8 @@ public class ShibbolethLogin extends BaseHttpServlet {
 		// Dispatch Request
 		if (path.startsWith("/login")) {
 			doGetLogin(request, response);
+		} else if (path.startsWith("/connect")) {
+			doGetConnect(request, response);
 		} else if (path.startsWith("/test")) {
 			doGetTest(request, response);
 		} else {
@@ -80,6 +82,34 @@ public class ShibbolethLogin extends BaseHttpServlet {
 		try {
 			User u = authenticationService.doShibbolethLogin(shibbolethInfo);
 
+			// Send Response - Redirect to application
+			Cookie cookie = new Cookie("_dep_a", u.getAuthToken());
+			cookie.setPath("/");
+			response.addCookie(cookie);
+			response.addHeader(WebConstants.AUTHENTICATION_TOKEN_HEADER, u.getAuthToken());
+			response.sendRedirect(nextURL.toString());
+		} catch (IOException e) {
+			sendErrorPage(request, response, e.getMessage());
+		} catch (ServiceException e1) {
+			String message = resources.getString("error." + e1.getErrorKey());
+			sendErrorPage(request, response, message);
+		}
+	}
+
+	public void doGetConnect(HttpServletRequest request, HttpServletResponse response) {
+		// 1. Read Attributes from request:
+		ShibbolethInformation shibbolethInfo = readShibbolethFields(request);
+		String permanentAuthToken = request.getParameter("user") == null ? "" : request.getParameter("user");
+		URI nextURL;
+		try {
+			nextURL = new URI(request.getParameter("nextURL") == null ? "" : request.getParameter("nextURL"));
+		} catch (URISyntaxException e1) {
+			sendErrorPage(request, response, "malformed.next.url");
+			return;
+		}
+		// 2. Login User
+		try {
+			User u = authenticationService.connectEmailToShibbolethAccount(permanentAuthToken, shibbolethInfo);
 			// Send Response - Redirect to application
 			Cookie cookie = new Cookie("_dep_a", u.getAuthToken());
 			cookie.setPath("/");

@@ -75,13 +75,51 @@ public class AuthenticationService {
 		}
 	}
 
-	public User findProfessorDomesticAccount(ShibbolethInformation shibbolethInfo) {
+	public User findAccountByUsername(String username) {
+		try {
+			return (User) em.createQuery(
+				"from User u " +
+					"left join fetch u.roles " +
+					"where u.username = :username")
+				.setParameter("username", username)
+				.getSingleResult();
+		} catch (NoResultException e) {
+			return null;
+		}
+	}
+
+	public User findAccountByShibbolethInfo(ShibbolethInformation shibbolethInfo) {
 		try {
 			return (User) em.createQuery(
 				"select u from User u " +
 					"where u.shibbolethInfo.remoteUser = :remoteUser")
 				.setParameter("remoteUser", shibbolethInfo.getRemoteUser())
 				.getSingleResult();
+		} catch (NoResultException e) {
+			return null;
+		}
+	}
+
+	public User findAccountByPermanentAuthToken(String permanentAuthToken) {
+		try {
+			return (User) em.createQuery(
+				"select u from User u " +
+					"where u.permanentAuthToken = :permanentAuthToken")
+				.setParameter("permanentAuthToken", permanentAuthToken)
+				.getSingleResult();
+		} catch (NoResultException e) {
+			return null;
+		}
+	}
+
+	public User findAccountByProfessorDomesticData(ProfessorDomesticData data) {
+		try {
+			User u = (User) em.createQuery(
+				"select u from User u " +
+					"where u.contactInfo.email = :email")
+				.setParameter("email", data.getEmail())
+				.getSingleResult();
+			return u;
 		} catch (NoResultException e) {
 			return null;
 		}
@@ -109,19 +147,6 @@ public class AuthenticationService {
 		u = em.merge(u);
 
 		return u;
-	}
-
-	public User findProfessorDomesticAccount(ProfessorDomesticData data) {
-		try {
-			User u = (User) em.createQuery(
-				"select u from User u " +
-					"where u.contactInfo.email = :email")
-				.setParameter("email", data.getEmail())
-				.getSingleResult();
-			return u;
-		} catch (NoResultException e) {
-			return null;
-		}
 	}
 
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -208,18 +233,24 @@ public class AuthenticationService {
 			throw new ServiceException("wrong.home.organization");
 		}
 		// 2. Find/Create User
-		User u = findProfessorDomesticAccount(shibbolethInfo);
-		if (u == null && institution.getCategory().equals(InstitutionCategory.INSTITUTION)) {
-			// Do not create account for INSTITUTION
-			throw new ServiceException("email.login.required");
-		}
-		if (u == null && institution.getCategory().equals(InstitutionCategory.RESEARCH_CENTER)) {
-			// Create research account
-			u = createProfessorDomesticAccount(shibbolethInfo);
+		User u = findAccountByShibbolethInfo(shibbolethInfo);
+		// Create if necessary
+		if (u == null) {
+			if (institution.getCategory().equals(InstitutionCategory.INSTITUTION)) {
+				// Do not create account for INSTITUTION
+				throw new ServiceException("email.login.required");
+			}
+			if (institution.getCategory().equals(InstitutionCategory.RESEARCH_CENTER)) {
+				// Create research account
+				u = createProfessorDomesticAccount(shibbolethInfo);
+			}
 		}
 		// Check Status
 		if (!u.getStatus().equals(UserStatus.ACTIVE)) {
 			throw new ServiceException("login.account.status." + u.getStatus().toString().toLowerCase());
+		}
+		if (!u.getAuthenticationType().equals(AuthenticationType.SHIBBOLETH)) {
+			throw new ServiceException(u.getAuthenticationType().toString().toLowerCase() + ".login.required");
 		}
 		// 3. Persist User
 		try {
@@ -240,6 +271,119 @@ public class AuthenticationService {
 
 	}
 
+	public User connectEmailToShibbolethAccount(String permanentAuthToken, ShibbolethInformation shibbolethInfo) throws ServiceException {
+		//1. Validate Shibboleth Fields
+		logger.info("Read shibboleth: " + shibbolethInfo.toString());
+		if (shibbolethInfo.isMissingRequiredFields()) {
+			throw new ServiceException("shibboleth.fields.error");
+		}
+		if (!shibbolethInfo.getAffiliation().equals("faculty")) {
+			throw new ServiceException("wrong.affiliation");
+		}
+		// Find Institution from schacHomeOrganization
+		Institution institution = findInstitutionBySchacHomeOrganization(shibbolethInfo.getSchacHomeOrganization());
+		if (institution == null) {
+			throw new ServiceException("wrong.home.organization");
+		}
+		// Search for existing shibboleth user
+		if (findAccountByShibbolethInfo(shibbolethInfo) != null) {
+			throw new ServiceException("shibboleth.account.already.exists");
+		}
+		User emailAccount = findAccountByPermanentAuthToken(permanentAuthToken);
+		if (emailAccount == null) {
+			throw new ServiceException("wrong.authentication.token");
+		}
+		// Check Status
+		if (!emailAccount.getStatus().equals(UserStatus.ACTIVE)) {
+			throw new ServiceException("login.account.status." + emailAccount.getStatus().toString().toLowerCase());
+		}
+		if (!emailAccount.getAuthenticationType().equals(AuthenticationType.EMAIL)) {
+			throw new ServiceException(emailAccount.getAuthenticationType().toString().toLowerCase() + ".login.required");
+		}
+
+		try {
+			// 3. Connect email account to shibboleth
+			emailAccount.setAuthenticationType(AuthenticationType.SHIBBOLETH);
+			emailAccount.setShibbolethInfo(shibbolethInfo);
+			emailAccount.setAuthToken(generateAuthenticationToken(emailAccount.getId()));
+			emailAccount = em.merge(emailAccount);
+
+			em.flush();
+
+			// Return result
+			return emailAccount;
+		} catch (PersistenceException e) {
+			logger.log(Level.WARNING, e.getMessage(), e);
+			sc.setRollbackOnly();
+			throw new ServiceException("persistence.exception");
+		}
+
+	}
+
+	/////////////////////////////////////////////////////////////////
+
+	public User doEmailLogin(String permanentAuthToken) throws ServiceException {
+		//1. Find User
+		User u = findAccountByPermanentAuthToken(permanentAuthToken);
+		if (u == null) {
+			throw new ServiceException("wrong.authentication.token");
+		}
+		// 2. Check Status
+		if (!u.getStatus().equals(UserStatus.ACTIVE)) {
+			throw new ServiceException("login.account.status." + u.getStatus().toString().toLowerCase());
+		}
+		if (!u.getAuthenticationType().equals(AuthenticationType.EMAIL)) {
+			throw new ServiceException(u.getAuthenticationType().toString().toLowerCase() + ".login.required");
+		}
+
+		try {
+			// 3. Do Login
+			u.setAuthToken(generateAuthenticationToken(u.getId()));
+			u = em.merge(u);
+
+			// 4. Return Result
+			return u;
+		} catch (PersistenceException e) {
+			logger.log(Level.WARNING, e.getMessage(), e);
+			sc.setRollbackOnly();
+			throw new ServiceException("persistence.exception");
+		}
+	}
+
+	/////////////////////////////////////////////////////////////////
+
+	public User doUsernameLogin(String username, String password) throws ServiceException {
+		// Search User
+		User u = findAccountByUsername(username);
+		if (u == null) {
+			throw new ServiceException("login.wrong.username");
+		}
+		// Check Status
+		if (!u.getStatus().equals(UserStatus.ACTIVE)) {
+			throw new ServiceException("login.account.status." + u.getStatus().toString().toLowerCase());
+		}
+		if (!u.getAuthenticationType().equals(AuthenticationType.USERNAME)) {
+			throw new ServiceException(u.getAuthenticationType().toString().toLowerCase() + ".login.required");
+		}
+		// Check Password
+		if (!u.getPassword().equals(encodePassword(password, u.getPasswordSalt()))) {
+			throw new ServiceException("login.wrong.password");
+		}
+		try {
+			// Login
+			u.setAuthToken(generateAuthenticationToken(u.getId()));
+			u = em.merge(u);
+			// Return User
+			return u;
+		} catch (PersistenceException e) {
+			logger.log(Level.WARNING, e.getMessage(), e);
+			sc.setRollbackOnly();
+			throw new ServiceException("persistence.exception");
+		}
+	}
+
+	/////////////////////////////////////////////////////////////////
+
 	private Institution findInstitutionBySchacHomeOrganization(String schacHomeOrganization) {
 		try {
 			return (Institution) em.createQuery(
@@ -253,67 +397,6 @@ public class AuthenticationService {
 			return null;
 		}
 	}
-
-	/////////////////////////////////////////////////////////////////
-
-	public User doEmailLogin(String token) throws ServiceException {
-		try {
-			//1. Find User
-			User u = (User) em.createQuery("select u from User u " +
-				"where u.permanentAuthToken = :token")
-				.setParameter("token", token)
-				.getSingleResult();
-
-			// 2. Check Status
-			if (!u.getStatus().equals(UserStatus.ACTIVE)) {
-				throw new ServiceException("login.account.status." + u.getStatus().toString().toLowerCase());
-			}
-
-			// 3. Login
-			u.setAuthToken(generateAuthenticationToken(u.getId()));
-			u = em.merge(u);
-
-			// 4. Return Result
-			return u;
-		} catch (NoResultException e) {
-			throw new ServiceException("wrong.authentication.token");
-		} catch (PersistenceException e) {
-			logger.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new ServiceException("persistence.exception");
-		}
-	}
-
-	/////////////////////////////////////////////////////////////////
-
-	public User doUsernameLogin(String username, String password) throws ServiceException {
-		try {
-			// Search User
-			User u = (User) em.createQuery(
-				"from User u " +
-					"left join fetch u.roles " +
-					"where u.username = :username")
-				.setParameter("username", username)
-				.getSingleResult();
-			// Check Status
-			if (!u.getStatus().equals(UserStatus.ACTIVE)) {
-				throw new ServiceException("login.account.status." + u.getStatus().toString().toLowerCase());
-			}
-			// Check Password
-			if (!u.getPassword().equals(encodePassword(password, u.getPasswordSalt()))) {
-				throw new ServiceException("login.wrong.password");
-			}
-			// Login
-			u.setAuthToken(generateAuthenticationToken(u.getId()));
-			u = em.merge(u);
-			// Return User
-			return u;
-		} catch (NoResultException e) {
-			throw new ServiceException("login.wrong.username");
-		}
-	}
-
-	/////////////////////////////////////////////////////////////////
 
 	public String encodePassword(String password, String salt) {
 		try {

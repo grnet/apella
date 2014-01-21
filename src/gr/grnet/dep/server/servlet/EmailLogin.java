@@ -37,7 +37,7 @@ public class EmailLogin extends BaseHttpServlet {
 
 	public void doGetLogin(HttpServletRequest request, HttpServletResponse response) {
 		// 1. Read Parameters from request:
-		String emailLoginToken = request.getParameter("user") == null ? "" : request.getParameter("user");
+		String permanentAuthToken = request.getParameter("user") == null ? "" : request.getParameter("user");
 		URI nextURL;
 		try {
 			nextURL = new URI(request.getParameter("nextURL") == null ? "" : request.getParameter("nextURL"));
@@ -48,7 +48,7 @@ public class EmailLogin extends BaseHttpServlet {
 
 		// 2. Login User
 		try {
-			User u = authenticationService.doEmailLogin(emailLoginToken);
+			User u = authenticationService.doEmailLogin(permanentAuthToken);
 
 			// Send Response - Redirect to application
 			Cookie cookie = new Cookie("_dep_a", u.getAuthToken());
