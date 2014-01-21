@@ -9082,7 +9082,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				summary: summary,
 				description: description
 			}, {
-				url: self.model.urlRoot + "user/" + App.loggedOnUser.get("id") + "/issue",
 				wait: true,
 				success: function (model, resp) {
 					var popup = new Views.PopupView({
@@ -9178,6 +9177,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		showCreateIssue: function () {
 			var self = this;
+			var view;
 			var model = new Models.JiraIssue({
 				status: "OPEN",
 				role: App.loggedOnUser.get("primaryRole"),
@@ -9185,7 +9185,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				mobile: App.loggedOnUser.get("contactInfo").mobile,
 				email: App.loggedOnUser.get("contactInfo").email
 			});
-			var view = new Views.JiraIssueEditView({
+			model.url = model.urlRoot + "user/" + App.loggedOnUser.get("id") + "/issue";
+			view = new Views.JiraIssueEditView({
 				model: model
 			});
 			model.on("sync", function () {

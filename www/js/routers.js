@@ -1102,7 +1102,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			issues.fetch({
 				cache: false,
 				reset: true,
-				error: function (model, resp, options) {
+				error: function (collection, resp, options) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
