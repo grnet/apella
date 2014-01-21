@@ -1,7 +1,5 @@
 package gr.grnet.dep.service.model;
 
-import gr.grnet.dep.service.model.Position.PositionView;
-import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.util.IdentificationDeserializer;
@@ -48,10 +46,10 @@ public class User implements Serializable {
 		UNVERIFIED, ACTIVE, BLOCKED
 	}
 
-	public static interface DetailedUserView {
+	public static interface UserView {
 	}
 
-	public static interface DetailedWithPasswordUserView {
+	public static interface UserWithLoginDataView extends UserView {
 	}
 
 	@Id
@@ -221,7 +219,8 @@ public class User implements Serializable {
 		}
 	}
 
-	@JsonView({DetailedUserView.class})
+	@JsonView({UserView.class})
+	// This is for circular references when loading Roles
 	public Set<Role> getRoles() {
 		return roles;
 	}
@@ -230,7 +229,7 @@ public class User implements Serializable {
 		this.roles = roles;
 	}
 
-	@JsonView({DetailedWithPasswordUserView.class})
+	@JsonView({UserWithLoginDataView.class})
 	public String getPassword() {
 		return password;
 	}
@@ -259,7 +258,7 @@ public class User implements Serializable {
 		this.creationDate = creationDate;
 	}
 
-	@JsonView({DetailedUserView.class})
+	@JsonView({UserWithLoginDataView.class})
 	public Long getVerificationNumber() {
 		return verificationNumber;
 	}
@@ -268,8 +267,7 @@ public class User implements Serializable {
 		this.verificationNumber = verificationNumber;
 	}
 
-	@XmlTransient
-	@JsonIgnore
+	@JsonView({UserWithLoginDataView.class})
 	public String getPermanentAuthToken() {
 		return permanentAuthToken;
 	}
@@ -336,7 +334,6 @@ public class User implements Serializable {
 		RoleDiscriminator.ADMINISTRATOR
 	});
 
-	@JsonView({DetailedUserView.class, DetailedRoleView.class, PositionView.class})
 	public RoleDiscriminator getPrimaryRole() {
 		TreeSet<Role> sortedRoles = new TreeSet<Role>(new Comparator<Role>() {
 

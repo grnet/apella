@@ -1775,11 +1775,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 		render: function (eventName) {
 			var self = this;
 			var propName;
-			self.closeInnerViews();
+			var tpl_data = _.extend(self.model.toJSON(), {
+				canConnectToShibboleth: self.model.canConnectToShibboleth()
+			});
 			// 1. Render
+			self.closeInnerViews();
 			self.$el.empty();
 			self.addTitle();
-			self.$el.append(this.template(self.model.toJSON()));
+			self.$el.append(this.template(tpl_data));
 			// 2. Check State to enable/disable fields
 			self.applyRules();
 			// 3. Add Validator

@@ -7,6 +7,7 @@ import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.InstitutionCategory;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.ProfessorDomesticData;
+import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.ShibbolethInformation;
 import gr.grnet.dep.service.model.Subject;
@@ -247,7 +248,7 @@ public class AuthenticationService {
 		}
 		// Check Status
 		if (!u.getStatus().equals(UserStatus.ACTIVE)) {
-			throw new ServiceException("login.account.status." + u.getStatus().toString().toLowerCase());
+			throw new ServiceException("login.account.status." + u.getStatus());
 		}
 		if (!u.getAuthenticationType().equals(AuthenticationType.SHIBBOLETH)) {
 			throw new ServiceException(u.getAuthenticationType().toString().toLowerCase() + ".login.required");
@@ -272,7 +273,7 @@ public class AuthenticationService {
 	}
 
 	public User connectEmailToShibbolethAccount(String permanentAuthToken, ShibbolethInformation shibbolethInfo) throws ServiceException {
-		//1. Validate Shibboleth Fields
+		//1. Read and Validate Shibboleth Fields
 		logger.info("Read shibboleth: " + shibbolethInfo.toString());
 		if (shibbolethInfo.isMissingRequiredFields()) {
 			throw new ServiceException("shibboleth.fields.error");
@@ -281,28 +282,35 @@ public class AuthenticationService {
 			throw new ServiceException("wrong.affiliation");
 		}
 		// Find Institution from schacHomeOrganization
-		Institution institution = findInstitutionBySchacHomeOrganization(shibbolethInfo.getSchacHomeOrganization());
-		if (institution == null) {
+		Institution shibbolethInstitution = findInstitutionBySchacHomeOrganization(shibbolethInfo.getSchacHomeOrganization());
+		if (shibbolethInstitution == null) {
 			throw new ServiceException("wrong.home.organization");
 		}
-		// Search for existing shibboleth user
+
+		// 2. Search for existing shibboleth user
 		if (findAccountByShibbolethInfo(shibbolethInfo) != null) {
 			throw new ServiceException("shibboleth.account.already.exists");
 		}
+
+		// 3. Search for existing email user
 		User emailAccount = findAccountByPermanentAuthToken(permanentAuthToken);
 		if (emailAccount == null) {
 			throw new ServiceException("wrong.authentication.token");
 		}
-		// Check Status
 		if (!emailAccount.getStatus().equals(UserStatus.ACTIVE)) {
-			throw new ServiceException("login.account.status." + emailAccount.getStatus().toString().toLowerCase());
+			throw new ServiceException("login.account.status." + emailAccount.getStatus());
 		}
 		if (!emailAccount.getAuthenticationType().equals(AuthenticationType.EMAIL)) {
 			throw new ServiceException(emailAccount.getAuthenticationType().toString().toLowerCase() + ".login.required");
 		}
+		// 4. Compare email and shibboleth fields
+		Institution emailUserInstitution = ((ProfessorDomestic) emailAccount.getActiveRole(RoleDiscriminator.PROFESSOR_DOMESTIC)).getInstitution();
+		if (emailUserInstitution.getId().equals(shibbolethInstitution.getId())) {
+			throw new ServiceException("mismatch.home.organization");
+		}
 
 		try {
-			// 3. Connect email account to shibboleth
+			// 5. Connect email account to shibboleth
 			emailAccount.setAuthenticationType(AuthenticationType.SHIBBOLETH);
 			emailAccount.setShibbolethInfo(shibbolethInfo);
 			emailAccount.setAuthToken(generateAuthenticationToken(emailAccount.getId()));
@@ -310,7 +318,7 @@ public class AuthenticationService {
 
 			em.flush();
 
-			// Return result
+			// 6. Return result
 			return emailAccount;
 		} catch (PersistenceException e) {
 			logger.log(Level.WARNING, e.getMessage(), e);
@@ -330,7 +338,7 @@ public class AuthenticationService {
 		}
 		// 2. Check Status
 		if (!u.getStatus().equals(UserStatus.ACTIVE)) {
-			throw new ServiceException("login.account.status." + u.getStatus().toString().toLowerCase());
+			throw new ServiceException("login.account.status." + u.getStatus());
 		}
 		if (!u.getAuthenticationType().equals(AuthenticationType.EMAIL)) {
 			throw new ServiceException(u.getAuthenticationType().toString().toLowerCase() + ".login.required");
@@ -360,7 +368,7 @@ public class AuthenticationService {
 		}
 		// Check Status
 		if (!u.getStatus().equals(UserStatus.ACTIVE)) {
-			throw new ServiceException("login.account.status." + u.getStatus().toString().toLowerCase());
+			throw new ServiceException("login.account.status." + u.getStatus());
 		}
 		if (!u.getAuthenticationType().equals(AuthenticationType.USERNAME)) {
 			throw new ServiceException(u.getAuthenticationType().toString().toLowerCase() + ".login.required");

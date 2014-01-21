@@ -141,7 +141,17 @@ public abstract class Role implements Serializable {
 		this.statusEndDate = statusEndDate;
 	}
 
-	@JsonView({DetailedRoleView.class, DetailedPositionCommitteeMemberView.class, DetailedPositionCandidaciesView.class, MediumCandidacyView.class, DetailedRegisterView.class, DetailedRegisterMemberView.class, DetailedPositionEvaluatorView.class, DetailedPositionEvaluationView.class, DetailedPositionCommitteeView.class, DetailedCandidacyEvaluatorView.class})
+	@JsonView({
+		DetailedRoleView.class,
+		DetailedPositionCommitteeMemberView.class,
+		DetailedPositionCandidaciesView.class,
+		MediumCandidacyView.class,
+		DetailedRegisterView.class,
+		DetailedRegisterMemberView.class,
+		DetailedPositionEvaluatorView.class,
+		DetailedPositionEvaluationView.class,
+		DetailedPositionCommitteeView.class,
+		DetailedCandidacyEvaluatorView.class})
 	public User getUser() {
 		return user;
 	}

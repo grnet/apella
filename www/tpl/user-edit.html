@@ -16,38 +16,49 @@
 			</div>
 		</div>
 		<% if (_.isEqual(authenticationType, 'USERNAME')) { %>
-		<div class="control-group">
+		<div id='usernameInfo' class="control-group">
 			<label class="control-label" for="username"><%= $.i18n.prop('Username') %>:</label>
 
 			<div class="controls">
 				<input class="input-xlarge" type="text" name="username" value="<%= username %>"/>
 			</div>
 		</div>
-		<% } else { %>
-		<div class="control-group">
+		<% } %>
+		<% if (_.isEqual(authenticationType, 'SHIBBOLETH')) { %>
+		<div id='shibbolethInfo' class="control-group">
 			<label class="control-label"><%= $.i18n.prop('ShibbolethFields') %>:</label>
+
 			<div class="controls">
 				<table>
 					<tr>
-						<td><%= $.i18n.prop('ShibbolethGivenName') %>: </td>
+						<td><%= $.i18n.prop('ShibbolethGivenName') %>:</td>
 						<td><%= shibbolethInfo.givenName %></td>
 					</tr>
 					<tr>
-						<td><%= $.i18n.prop('ShibbolethSN') %>: </td>
+						<td><%= $.i18n.prop('ShibbolethSN') %>:</td>
 						<td><%= shibbolethInfo.sn %></td>
 					</tr>
 					<tr>
-						<td><%= $.i18n.prop('ShibbolethSchacHomeOrganization') %>: </td>
+						<td><%= $.i18n.prop('ShibbolethSchacHomeOrganization') %>:</td>
 						<td><%= shibbolethInfo.schacHomeOrganization %></td>
 					</tr>
 					<tr>
-						<td><%= $.i18n.prop('ShibbolethAffiliation') %>: </td>
+						<td><%= $.i18n.prop('ShibbolethAffiliation') %>:</td>
 						<td><%= shibbolethInfo.affiliation %></td>
 					</tr>
 				</table>
 			</div>
 		</div>
-		<% }  %>
+		<% } %>
+		<% if (_.isEqual(authenticationType, 'EMAIL') && canConnectToShibboleth) { %>
+		<div id='emailInfo' class="control-group">
+			<label class="control-label"><%= $.i18n.prop('ConnectToShibboleth') %></label>
+			<div class="controls">
+				<span class="help-block"><%= $.i18n.prop('ConnectToShibbolethInstructions') %></span>
+				<a href="/dep/shibboleth/connect?nextURL=<%= encodeURIComponent(window.location.href) %>&user=<%= encodeURIComponent(permanentAuthToken) %>"><%= $.i18n.prop('btn_shibbolethConnect') %></a>
+			</div>
+		</div>
+		<% } %>
 		<div class="control-group">
 			<label class="control-label" for="firstname"><%= $.i18n.prop('Name') %>:</label>
 			<div class="controls">

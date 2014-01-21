@@ -15,8 +15,9 @@ import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
-import gr.grnet.dep.service.model.User.DetailedUserView;
 import gr.grnet.dep.service.model.User.UserStatus;
+import gr.grnet.dep.service.model.User.UserView;
+import gr.grnet.dep.service.model.User.UserWithLoginDataView;
 import gr.grnet.dep.service.util.StringUtil;
 
 import java.security.NoSuchAlgorithmException;
@@ -69,8 +70,8 @@ public class UserRESTService extends RESTService {
 	AuthenticationService authenticationService;
 
 	@GET
-	@JsonView({DetailedUserView.class})
 	@SuppressWarnings("unchecked")
+	@JsonView({UserView.class})
 	public Collection<User> getAll(
 		@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken,
 		@QueryParam("user") Long userId,
@@ -180,7 +181,7 @@ public class UserRESTService extends RESTService {
 
 	@GET
 	@Path("/loggedon")
-	@JsonView({DetailedUserView.class})
+	@JsonView({UserWithLoginDataView.class})
 	public Response getLoggedOn(@Context HttpServletRequest request) {
 		String authToken = request.getHeader(WebConstants.AUTHENTICATION_TOKEN_HEADER);
 		if (authToken == null && request.getCookies() != null) {
@@ -201,16 +202,20 @@ public class UserRESTService extends RESTService {
 
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
-	@JsonView({DetailedUserView.class})
-	public User get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id) throws RestException {
-		getLoggedOn(authToken);
+	public String get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id) throws RestException {
+		User loggedOn = getLoggedOn(authToken);
 		try {
 			User u = (User) em.createQuery(
-				"from User u left join fetch u.roles " +
+				"from User u " +
+					"left join fetch u.roles " +
 					"where u.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
-			return u;
+			if (u.getId().equals(loggedOn.getId())) {
+				return toJSON(u, UserWithLoginDataView.class);
+			} else {
+				return toJSON(u, UserView.class);
+			}
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
@@ -218,7 +223,7 @@ public class UserRESTService extends RESTService {
 	}
 
 	@POST
-	@JsonView({DetailedUserView.class})
+	@JsonView({UserWithLoginDataView.class})
 	public User create(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, User newUser) {
 		try {
 			//1. Validate
@@ -228,7 +233,9 @@ public class UserRESTService extends RESTService {
 			}
 			// Identification availability
 			try {
-				em.createQuery("select identification from User u where u.identification = :identification")
+				em.createQuery(
+					"select identification from User u " +
+						"where u.identification = :identification")
 					.setParameter("identification", newUser.getIdentification())
 					.setMaxResults(1)
 					.getSingleResult();
@@ -237,7 +244,9 @@ public class UserRESTService extends RESTService {
 			}
 			// Username availability
 			try {
-				em.createQuery("select u from User u where u.username = :username")
+				em.createQuery(
+					"select u from User u" +
+						" where u.username = :username")
 					.setParameter("username", newUser.getUsername())
 					.getSingleResult();
 				throw new RestException(Status.FORBIDDEN, "username.not.available");
@@ -245,7 +254,9 @@ public class UserRESTService extends RESTService {
 			}
 			// Contact mail availability
 			try {
-				em.createQuery("select u from User u where u.contactInfo.email = :email")
+				em.createQuery(
+					"select u from User u " +
+						"where u.contactInfo.email = :email")
 					.setParameter("email", newUser.getContactInfo().getEmail())
 					.getSingleResult();
 				throw new RestException(Status.FORBIDDEN, "contact.email.not.available");
@@ -384,7 +395,7 @@ public class UserRESTService extends RESTService {
 
 	@PUT
 	@Path("/{id:[0-9][0-9]*}")
-	@JsonView({DetailedUserView.class})
+	@JsonView({UserWithLoginDataView.class})
 	public User update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id, User user) {
 		User loggedOn = getLoggedOn(authToken);
 		User existingUser = em.find(User.class, id);
@@ -479,7 +490,7 @@ public class UserRESTService extends RESTService {
 	@PUT
 	@Path("/login")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	@JsonView({DetailedUserView.class})
+	@JsonView({UserWithLoginDataView.class})
 	public Response login(@FormParam("username") String username, @FormParam("password") String password) {
 
 		try {
@@ -609,7 +620,7 @@ public class UserRESTService extends RESTService {
 
 	@PUT
 	@Path("/verify")
-	@JsonView({DetailedUserView.class})
+	@JsonView({UserWithLoginDataView.class})
 	public User verify(User user) {
 		try {
 			final User u = (User) em.createQuery(
@@ -656,7 +667,7 @@ public class UserRESTService extends RESTService {
 
 	@PUT
 	@Path("/{id:[0-9][0-9]*}/status")
-	@JsonView({DetailedUserView.class})
+	@JsonView({UserWithLoginDataView.class})
 	public User updateStatus(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, User requestUser) {
 		final User loggedOn = getLoggedOn(authToken);
 		User existingUser = em.find(User.class, id);

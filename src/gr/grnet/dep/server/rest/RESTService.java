@@ -151,7 +151,8 @@ public class RESTService {
 		}
 		try {
 			User user = (User) em.createQuery(
-				"from User u left join fetch u.roles " +
+				"from User u " +
+					"left join fetch u.roles " +
 					"where u.status = :status " +
 					"and u.authToken = :authToken")
 				.setParameter("status", UserStatus.ACTIVE)

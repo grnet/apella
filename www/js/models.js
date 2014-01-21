@@ -59,6 +59,13 @@ define([
 			return self.get("primaryRole") !== "ADMINISTRATOR" && self.get("missingRequiredFields");
 		},
 
+		canConnectToShibboleth: function () {
+			var self = this;
+			return self.get("id") === App.loggedOnUser.get("id") &&
+				self.get("authenticationType") === 'EMAIL' &&
+				!self.isAccountIncomplete();
+		},
+
 		getFullName: function () {
 			var self = this;
 			var fullname = ""

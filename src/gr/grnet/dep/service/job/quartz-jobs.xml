@@ -67,8 +67,8 @@
 				<group>EUDOXUS_TRIGGERS</group>
 				<job-name>SendEmailsJob</job-name>
 				<job-group>APELLA_JOBS</job-group>
-				<!-- trigger every two hours -->
-				<cron-expression>0 0 0/2 * * ?</cron-expression>
+				<!-- trigger every 30 minutes -->
+				<cron-expression>0 0/30 * * * ?</cron-expression>
 				<!-- trigger every 15 sec for testing -->
 				<!-- <cron-expression>0/15 * * * * ?</cron-expression> -->
 			</cron>
@@ -93,10 +93,10 @@
 				<group>EUDOXUS_TRIGGERS</group>
 				<job-name>SynchronizeJiraIssuesJob</job-name>
 				<job-group>APELLA_JOBS</job-group>
-				<!-- trigger every two hours -->
-				<!-- <cron-expression>0 0 0/2 * * ?</cron-expression> -->
+				<!-- trigger every 30 minutes -->
+				<cron-expression>0 0/30 * * * ?</cron-expression>
 				<!-- trigger every 15 sec for testing -->
-				<cron-expression>0/15 * * * * ?</cron-expression>
+				<!-- <cron-expression>0/15 * * * * ?</cron-expression> -->
 			</cron>
 		</trigger>
 
