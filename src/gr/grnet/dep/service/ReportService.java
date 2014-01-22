@@ -46,9 +46,9 @@ public class ReportService {
 		@SuppressWarnings("unchecked")
 		List<Object[]> data = em.createQuery(
 			"select rm, " +
-				"(select count(pcm.id) from PositionCommitteeMember pcm where pcm.registerMember.id = rm.id " +
+				"(select count(pcm.id) from PositionCommitteeMember pcm where pcm.registerMember.professor.id = rm.professor.id " +
 				"	and pcm.committee.position.phase.status = :statusEPILOGI), " +
-				"(select count(pcm.id) from PositionCommitteeMember pcm where pcm.registerMember.id = rm.id) " +
+				"(select count(pcm.id) from PositionCommitteeMember pcm where pcm.registerMember.professor.id = rm.professor.id) " +
 				"from RegisterMember rm " +
 				"where rm.register.id = :registerId ")
 			.setParameter("registerId", registerId)
