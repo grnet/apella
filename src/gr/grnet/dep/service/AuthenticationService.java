@@ -300,32 +300,26 @@ public class AuthenticationService {
 		if (!emailAccount.getStatus().equals(UserStatus.ACTIVE)) {
 			throw new ServiceException("login.account.status." + emailAccount.getStatus());
 		}
+		if (!emailAccount.getPrimaryRole().equals(RoleDiscriminator.PROFESSOR_DOMESTIC)) {
+			throw new ServiceException("login.account.profile." + emailAccount.getPrimaryRole());
+		}
 		if (!emailAccount.getAuthenticationType().equals(AuthenticationType.EMAIL)) {
 			throw new ServiceException(emailAccount.getAuthenticationType().toString().toLowerCase() + ".login.required");
 		}
 		// 4. Compare email and shibboleth fields
-		Institution emailUserInstitution = ((ProfessorDomestic) emailAccount.getActiveRole(RoleDiscriminator.PROFESSOR_DOMESTIC)).getInstitution();
-		if (emailUserInstitution.getId().equals(shibbolethInstitution.getId())) {
+		logger.info("Connecting: [" + emailAccount.getId() + "]" + emailAccount.getPrimaryRole() + " to " + shibbolethInfo.toString());
+		Institution emailUserInstitution = ((ProfessorDomestic) emailAccount.getRole(RoleDiscriminator.PROFESSOR_DOMESTIC)).getInstitution();
+		if (emailUserInstitution == null || !emailUserInstitution.getId().equals(shibbolethInstitution.getId())) {
 			throw new ServiceException("mismatch.home.organization");
 		}
 
-		try {
-			// 5. Connect email account to shibboleth
-			emailAccount.setAuthenticationType(AuthenticationType.SHIBBOLETH);
-			emailAccount.setShibbolethInfo(shibbolethInfo);
-			emailAccount.setAuthToken(generateAuthenticationToken(emailAccount.getId()));
-			emailAccount = em.merge(emailAccount);
-
-			em.flush();
-
-			// 6. Return result
-			return emailAccount;
-		} catch (PersistenceException e) {
-			logger.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new ServiceException("persistence.exception");
-		}
-
+		// 5. Connect email account to shibboleth
+		emailAccount.setAuthenticationType(AuthenticationType.SHIBBOLETH);
+		emailAccount.setShibbolethInfo(shibbolethInfo);
+		emailAccount.setAuthToken(generateAuthenticationToken(emailAccount.getId()));
+		emailAccount = em.merge(emailAccount);
+		// 6. Return result
+		return emailAccount;
 	}
 
 	/////////////////////////////////////////////////////////////////

@@ -349,9 +349,20 @@ public class User implements Serializable {
 
 	@XmlTransient
 	@JsonIgnore
+	public Role getRole(RoleDiscriminator discriminator) {
+		for (Role r : getRoles()) {
+			if (r.getDiscriminator().equals(discriminator)) {
+				return r;
+			}
+		}
+		return null;
+	}
+
+	@XmlTransient
+	@JsonIgnore
 	public Role getActiveRole(RoleDiscriminator discriminator) {
 		for (Role r : getRoles()) {
-			if (r.getDiscriminator() == discriminator && r.getStatus().equals(RoleStatus.ACTIVE)) {
+			if (r.getDiscriminator().equals(discriminator) && r.getStatus().equals(RoleStatus.ACTIVE)) {
 				return r;
 			}
 		}

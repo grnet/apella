@@ -112,6 +112,17 @@ public class PositionPhase {
 		return clientStatus;
 	}
 
+	public String getClientStatusInGreek() {
+		String clientStatus = null;
+		if (status.equals(PositionStatus.ANOIXTI)
+			&& DateUtil.compareDates(new Date(), this.candidacies.getClosingDate()) > 0) {
+			clientStatus = "Κλειστή";
+		} else {
+			clientStatus = status.toGreekString();
+		}
+		return clientStatus;
+	}
+
 	public Integer getOrder() {
 		return order;
 	}

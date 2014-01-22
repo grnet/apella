@@ -55,7 +55,25 @@ public class Position {
 		EPILOGI,
 		STELEXOMENI,
 		ANAPOMPI,
-		CANCELLED
+		CANCELLED;
+
+		public String toGreekString() {
+			switch (this) {
+				case ENTAGMENI:
+					return "Ενταγμένη";
+				case ANOIXTI:
+					return "Ανοιχτή";
+				case EPILOGI:
+					return "Επιλογή";
+				case STELEXOMENI:
+					return "Στελεχωμένη";
+				case ANAPOMPI:
+					return "Αναπομπή";
+				case CANCELLED:
+					return "Ακυρωθείσα";
+			}
+			return "";
+		}
 	}
 
 	@Id

@@ -3,7 +3,7 @@
 		<tr>
 			<th><%= $.i18n.prop("Title") %></th>
 			<th><%= $.i18n.prop("Institution") %></th>
-			<th width="100px"></th>
+			<th width="1px"></th>
 		</tr>
 	</thead>
 	<tbody>
@@ -11,16 +11,17 @@
 		<tr>
 			<td><%= register.title %></td>
 			<td><%= register.institution.name %></td>
-			<td width="100px">
+			<td width="1px">
+				<div class="btn-group">
 				<% if (register.canEdit) { %>
-					<a id="select" data-register-cid="<%= register.cid %>" class="btn btn-primary btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_edit') %></a>
+					<a id="select" data-register-cid="<%= register.cid %>" class="btn btn-success btn-small"><i class="icon-edit icon-white"></i> <%= $.i18n.prop('btn_edit') %></a>
 				<% } else { %>
-					<a id="select" data-register-cid="<%= register.cid %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>
+					<a id="select" data-register-cid="<%= register.cid %>" class="btn btn-primary btn-small"><i class="icon-eye-open icon-white"></i> <%= $.i18n.prop('btn_view') %></a>
 				<% } %>
 				<% if (register.canExport) { %>
-					<a href="<%= register.exportUrl %>" target="export" class="btn btn-info btn-mini"><i class="icon-download"></i> <%= $.i18n.prop('btn_register_export') %></a>
-
+					<a href="<%= register.exportUrl %>" target="export" class="btn btn-small"><i class="icon-download"></i> <%= $.i18n.prop('btn_register_export') %></a>
 				<% } %>
+				</div>
 			</td>
 
 		</tr>
