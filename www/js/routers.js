@@ -20,6 +20,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 		}
 	});
 
+	/**************************************************************************
+	 * ************ Routers.RegistrationRouter ********************************
+	 **************************************************************************/
 	Routers.RegistrationRouter = Backbone.Router.extend({
 
 		initialize: function () {
@@ -121,8 +124,52 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 		}
 	});
 
-	/***************************************************************************
-	 * ************ Routers.ApellaRouter ***************************************
+	/**************************************************************************
+	 * ************ Routers.HelpdeskRouter ************************************
+	 **************************************************************************/
+	Routers.HelpdeskRouter = Backbone.Router.extend({
+
+		initialize: function () {
+			var languageView;
+
+			_.extend(this, Backbone.Events);
+			_.bindAll(this, "showJiraIssueEditView");
+			$(document).ajaxStart(App.blockUI);
+			$(document).ajaxStop(App.unblockUI);
+
+			languageView = new Views.LanguageView({});
+			languageView.render();
+
+			Backbone.history.start();
+		},
+
+		routes: {
+			"": "showJiraIssueEditView"
+		},
+
+		showJiraIssueEditView: function () {
+			var self = this;
+			var issueEditView;
+			// 1. New Model
+			var model = new Models.JiraIssue({
+				status: "OPEN"
+			});
+			model.url = model.urlRoot + "public";
+			// 2. Init View
+			issueEditView = new Views.JiraIssueEditView({
+				model: model
+			});
+			//3. Add to page
+			$("#pageTitle").html($.i18n.prop('PublicJiraIssuesTitle'));
+			$("#content").html(issueEditView.render().el);
+			// 4. Set as currentView
+			self.currentView = issueEditView;
+		}
+
+	});
+
+	/**************************************************************************
+	 * ************ Routers.ApellaRouter **************************************
 	 **************************************************************************/
 	Routers.ApellaRouter = Backbone.Router.extend({
 		initialize: function () {
@@ -202,7 +249,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			// Add necessary data
 			App.roles = new Models.Roles();
 			App.roles.user = App.loggedOnUser.get("id");
-			App.roles.on("sync", function() {
+			App.roles.on("sync", function () {
 				// When user changes his profile, we re-fetch loggedOnUser ->
 				// triggers re-render on Menus and permissions
 				App.loggedOnUser.fetch({
@@ -211,7 +258,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					cache: false
 				});
 			});
-			App.loggedOnUser.on("change", function() {
+			App.loggedOnUser.on("change", function () {
 				window.console.log("loggedOn:changed");
 			});
 			// Create Header, Menu, and other side content and
