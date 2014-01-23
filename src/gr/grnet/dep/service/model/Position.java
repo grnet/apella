@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 
@@ -280,4 +281,25 @@ public class Position {
 		}
 	}
 
+	@XmlTransient
+	@JsonIgnore
+	public boolean isUserAllowedToEdit(User user) {
+		if (this.getDepartment() == null) {
+			return false;
+		}
+		if (user.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+			return true;
+		}
+		if (user.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
+			user.isAssociatedWithDepartment(this.getDepartment())) {
+			return true;
+		}
+		if (this.getId() == null) {
+			return user.isAssociatedWithDepartment(this.getDepartment());
+		}
+		if (this.createdBy.getId().equals(user.getId())) {
+			return true;
+		}
+		return false;
+	}
 }

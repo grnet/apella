@@ -93,7 +93,7 @@ public class PositionEvaluationRESTService extends RESTService {
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
+			!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
 			!existingPosition.getPhase().getCommittee().containsMember(loggedOn) &&
 			!existingEvaluation.containsEvaluator(loggedOn) &&
 			!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
@@ -134,7 +134,7 @@ public class PositionEvaluationRESTService extends RESTService {
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
+			!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
 			!existingPosition.getPhase().getCommittee().containsMember(loggedOn) &&
 			!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -190,7 +190,7 @@ public class PositionEvaluationRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "wrong.position.evaluation.phase");
 		}
 		// Validate:
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
+		if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (!existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
@@ -397,7 +397,7 @@ public class PositionEvaluationRESTService extends RESTService {
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
+			!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
 			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
 			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn))) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -443,7 +443,7 @@ public class PositionEvaluationRESTService extends RESTService {
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
+			!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
 			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
 			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn))) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -495,7 +495,7 @@ public class PositionEvaluationRESTService extends RESTService {
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
+			!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
 			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
 			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn))) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -558,7 +558,7 @@ public class PositionEvaluationRESTService extends RESTService {
 		if (!existingPosition.getPhase().getEvaluation().getId().equals(existingEvaluation.getId())) {
 			throw new RestException(Status.FORBIDDEN, "wrong.position.evaluation.phase");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
+		if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (!existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
@@ -722,7 +722,7 @@ public class PositionEvaluationRESTService extends RESTService {
 		if (!existingPosition.getPhase().getEvaluation().getId().equals(existingEvaluation.getId())) {
 			throw new RestException(Status.FORBIDDEN, "wrong.position.evaluation.phase");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
+		if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (!existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
@@ -803,7 +803,7 @@ public class PositionEvaluationRESTService extends RESTService {
 		if (!existingPosition.getPhase().getEvaluation().getId().equals(existingEvaluation.getId())) {
 			throw new RestException(Status.FORBIDDEN, "wrong.position.evaluation.phase");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
+		if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (!existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
@@ -858,11 +858,9 @@ public class PositionEvaluationRESTService extends RESTService {
 		if (!existingPosition.getId().equals(positionId)) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
+		if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-
 		// Prepare Query
 		@SuppressWarnings("unchecked")
 		List<RegisterMember> registerMembers = em.createQuery(

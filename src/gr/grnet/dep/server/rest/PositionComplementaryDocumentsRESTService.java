@@ -82,7 +82,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
+			!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
 			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
 			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
 			!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
@@ -123,7 +123,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
+			!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
 			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
 			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
 			!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
@@ -164,7 +164,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
+			!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
 			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
 			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
 			!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
@@ -211,7 +211,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
+			!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
 			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
 			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
 			!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
@@ -268,8 +268,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 		if (!existingPosition.getPhase().getComplementaryDocuments().getId().equals(cdId)) {
 			throw new RestException(Status.FORBIDDEN, "wrong.position.complentaryDocuments.phase");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
+		if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (existingPosition.getPhase().getStatus().equals(PositionStatus.CANCELLED)) {
@@ -408,8 +407,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 		if (!existingPosition.getPhase().getComplementaryDocuments().getId().equals(cdId)) {
 			throw new RestException(Status.FORBIDDEN, "wrong.position.complentaryDocuments.phase");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
+		if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (existingPosition.getPhase().getStatus().equals(PositionStatus.CANCELLED)) {
@@ -483,8 +481,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 		if (!existingPosition.getPhase().getComplementaryDocuments().getId().equals(cdId)) {
 			throw new RestException(Status.FORBIDDEN, "wrong.position.complentaryDocuments.phase");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
+		if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (existingPosition.getPhase().getStatus().equals(PositionStatus.CANCELLED)) {

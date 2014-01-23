@@ -397,7 +397,7 @@ public class User implements Serializable {
 
 	@XmlTransient
 	@JsonIgnore
-	public boolean isInstitutionUser(Institution institution) {
+	public boolean isAssociatedWithInstitution(Institution institution) {
 		for (Role r : getRoles()) {
 			if (r.getDiscriminator() == RoleDiscriminator.INSTITUTION_MANAGER) {
 				InstitutionManager im = (InstitutionManager) r;
@@ -417,7 +417,7 @@ public class User implements Serializable {
 
 	@XmlTransient
 	@JsonIgnore
-	public boolean isDepartmentUser(Department department) {
+	public boolean isAssociatedWithDepartment(Department department) {
 		Institution institution = department.getSchool().getInstitution();
 		for (Role r : getRoles()) {
 			if (r.getDiscriminator() == RoleDiscriminator.INSTITUTION_MANAGER) {
@@ -435,5 +435,4 @@ public class User implements Serializable {
 		}
 		return false;
 	}
-
 }

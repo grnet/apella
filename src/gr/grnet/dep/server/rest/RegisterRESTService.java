@@ -131,7 +131,7 @@ public class RegisterRESTService extends RESTService {
 		if (institution == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.department.id");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(institution)) {
+		if (!newRegister.isUserAllowedToEdit(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
@@ -182,7 +182,7 @@ public class RegisterRESTService extends RESTService {
 		if (existingRegister == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
+		if (!existingRegister.isUserAllowedToEdit(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (!existingRegister.getInstitution().getId().equals(register.getInstitution().getId())) {
@@ -389,7 +389,7 @@ public class RegisterRESTService extends RESTService {
 		if (register == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(register.getInstitution())) {
+		if (!register.isUserAllowedToEdit(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
@@ -474,7 +474,7 @@ public class RegisterRESTService extends RESTService {
 		if (existingRegister == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isInstitutionUser(existingRegister.getInstitution())) {
+		if (!existingRegister.isUserAllowedToEdit(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Prepare Query
@@ -505,7 +505,7 @@ public class RegisterRESTService extends RESTService {
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isInstitutionUser(register.getInstitution())) {
+			!loggedOn.isAssociatedWithInstitution(register.getInstitution())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Generate Document

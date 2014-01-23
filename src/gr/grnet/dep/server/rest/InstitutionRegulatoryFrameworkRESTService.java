@@ -85,7 +85,7 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.institution.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.isInstitutionUser(institution)) {
+			!loggedOn.isAssociatedWithInstitution(institution)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Validate
@@ -133,7 +133,7 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.institutionregulatoryframework.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.isInstitutionUser(existing.getInstitution())) {
+			!loggedOn.isAssociatedWithInstitution(existing.getInstitution())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
@@ -167,7 +167,7 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.institutionregulatoryframework.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.isInstitutionUser(existing.getInstitution())) {
+			!loggedOn.isAssociatedWithInstitution(existing.getInstitution())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
