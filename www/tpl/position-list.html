@@ -24,7 +24,11 @@
 				<td><%= $.i18n.prop('PositionStatus_' + position.phase.clientStatus) %></td>
 				<td width="96px">
 					<p align="center">
-						<a id="selectPosition" data-position-cid="<%= position.cid %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>
+						<% if (position.canEdit) { %>
+						<a id="selectPosition" data-position-cid="<%= position.cid %>" class="btn btn-primary btn-mini"><i class="icon-eye-open icon-white"></i> <%= $.i18n.prop('btn_edit') %></a>
+						<% } else { %>
+						<a id="selectPosition" data-position-cid="<%= position.cid %>" class="btn btn-mini"><i class="icon-edit"></i> <%= $.i18n.prop('btn_view') %></a>
+						<% } %>
 					</p>
 				</td>
 			</tr>

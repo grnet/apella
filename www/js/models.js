@@ -62,8 +62,7 @@ define([
 		canConnectToShibboleth: function () {
 			var self = this;
 			return self.get("id") === App.loggedOnUser.get("id") &&
-				self.get("authenticationType") === 'EMAIL' &&
-				!self.isAccountIncomplete();
+				self.get("authenticationType") === 'EMAIL' && !self.isAccountIncomplete();
 		},
 
 		getFullName: function () {
@@ -1287,6 +1286,22 @@ define([
 				default:
 					return (Backbone.sync).call(this, method, this, options);
 			}
+		},
+
+		isEditableBy: function (user) {
+			var position = this;
+			if (position.isNew()) {
+				return user.isAssociatedWithDepartment(position.get("department"));
+			}
+			return _.any(user.get("roles"), function (r) {
+				if (r.discriminator === "INSTITUTION_MANAGER") {
+					return r.institution.id === position.get("department").school.institution.id;
+				}
+				if (r.discriminator === "INSTITUTION_ASSISTANT") {
+					return position.get("createdBy").id === user.id;
+				}
+				return false;
+			});
 		}
 	});
 
@@ -1404,6 +1419,19 @@ define([
 			title: undefined,
 			institution: undefined,
 			members: []
+		},
+
+		isEditableBy: function (user) {
+			var self = this;
+			if (self.isNew()) {
+				return user.isAssociatedWithDepartment(self.get("department"));
+			}
+			return _.any(user.get("roles"), function (r) {
+				if (r.discriminator === "INSTITUTION_MANAGER") {
+					return r.institution.id === self.get("institution").id;
+				}
+				return false;
+			});
 		}
 	});
 

@@ -81,7 +81,7 @@ public class PositionRESTService extends RESTService {
 	 * @return A list of position
 	 */
 	@GET
-	@JsonView({PublicPositionView.class})
+	@JsonView({PositionView.class})
 	public Collection<Position> getAll(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
 		User loggedOnUser = getLoggedOn(authToken);
 		if (loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) ||
@@ -204,6 +204,7 @@ public class PositionRESTService extends RESTService {
 			if (department == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.department.id");
 			}
+			position.setDepartment(department);
 			if (!position.isUserAllowedToEdit(loggedOn)) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
@@ -258,11 +259,10 @@ public class PositionRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Position existingPosition = getAndCheckPosition(loggedOn, id);
-			if (!position.isUserAllowedToEdit(loggedOn)) {
+			if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			boolean isNew = !existingPosition.isPermanent();
-
 			// Validate
 			Sector sector = em.find(Sector.class, position.getSector().getId());
 			if (sector == null) {

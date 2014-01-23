@@ -618,9 +618,10 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				// Fetch
 				position.fetch({
 					cache: false,
+					wait: true,
 					success: function () {
 						// Select Edit, Helpdesk or Simple View based on loggedOnUser
-						if (App.loggedOnUser.isAssociatedWithDepartment(position.get("department"))) {
+						if (position.isEditableBy(App.loggedOnUser)) {
 							positionView = new Views.PositionEditView({
 								tab: tab || "main",
 								model: position
@@ -664,9 +665,11 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				cache: false,
 				reset: true,
 				success: function () {
+					var selectedPosition;
 					if (!_.isUndefined(positionId)) {
-						var selectedPosition = positions.get(positionId);
+						selectedPosition = positions.get(positionId);
 						if (!selectedPosition) {
+							// Not permanent, so fetch it
 							selectedPosition = new Models.Position({
 								id: positionId
 							});
@@ -745,7 +748,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					registerView.close();
 				}
 				// Select Edit or Simple View based on loggedOnUser
-				if (register.isNew() || App.loggedOnUser.isAssociatedWithInstitution(register.get("institution"))) {
+				if (register.isEditableBy(App.loggedOnUser)) {
 					registerView = new Views.RegisterEditView({
 						model: register
 					});

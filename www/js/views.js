@@ -4687,6 +4687,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						if (model.has("id")) {
 							item = model.toJSON();
 							item.cid = model.cid;
+							item.canEdit = model.isEditableBy(App.loggedOnUser);
 							result.push(item);
 						}
 					});
@@ -5021,11 +5022,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 		render: function (eventName) {
 			var self = this;
 			var tpl_data = self.model.toJSON();
-			// Remove CreatedBy if loggedOn===owner of Position
-			if (self.model.get("createdBy").id === App.loggedOnUser.get("id")) {
-				tpl_data.createdBy.id = undefined;
-			}
-
 			self.closeInnerViews();
 			self.$el.empty();
 			self.addTitle();
@@ -6923,12 +6919,13 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						App.loggedOnUser.hasRole("ADMINISTRATOR");
 
 					self.collection.each(function (model) {
-						var canEdit = App.loggedOnUser.isAssociatedWithInstitution(model.get("institution"));
+						var canEdit = model.isEditableBy(App.loggedOnUser);
+						var canExport = App.loggedOnUser.isAssociatedWithInstitution(model.get("institution"));
 						var item;
 						if (model.has("id")) {
 							item = model.toJSON();
 							item.cid = model.cid;
-							item.canExport = gCanExport || canEdit;
+							item.canExport = gCanExport || canExport;
 							item.exportUrl = model.url() + "/export?X-Auth-Token=" + encodeURIComponent(App.authToken);
 							item.canEdit = canEdit;
 

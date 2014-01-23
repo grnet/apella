@@ -259,6 +259,7 @@ public class Position {
 		position.setName(this.name);
 		position.setPermanent(this.permanent);
 		position.setSubject(this.subject);
+		position.setCreatedBy(this.createdBy);
 		// Add selected phase
 		for (PositionPhase phase : this.phases) {
 			if (phase.getOrder().equals(order)) {
@@ -297,7 +298,7 @@ public class Position {
 		if (this.getId() == null) {
 			return user.isAssociatedWithDepartment(this.getDepartment());
 		}
-		if (this.createdBy.getId().equals(user.getId())) {
+		if (this.getCreatedBy().getId().equals(user.getId())) {
 			return true;
 		}
 		return false;
