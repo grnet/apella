@@ -230,6 +230,25 @@ public class Position {
 
 	/////////////////////////////////////////////////////
 	@JsonView({PositionView.class})
+	public InstitutionManager getManager() {
+		if (this.createdBy == null) {
+			return null;
+		}
+		for (Role r : this.createdBy.getRoles()) {
+			if (r.getDiscriminator() == RoleDiscriminator.INSTITUTION_MANAGER) {
+				InstitutionManager im = (InstitutionManager) r;
+				return im;
+			}
+			if (r.getDiscriminator() == RoleDiscriminator.INSTITUTION_ASSISTANT) {
+				InstitutionAssistant ia = (InstitutionAssistant) r;
+				return ia.getManager();
+			}
+		}
+		// Won't happen
+		return null;
+	}
+
+	@JsonView({PositionView.class})
 	public Map<Integer, PositionStatus> getPhasesMap() {
 		Map<Integer, PositionStatus> phasesMap = new TreeMap<Integer, PositionStatus>();
 		for (PositionPhase phase : this.phases) {

@@ -2,6 +2,7 @@ package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.Candidacy.MediumCandidacyView;
 import gr.grnet.dep.service.model.CandidacyEvaluator.DetailedCandidacyEvaluatorView;
+import gr.grnet.dep.service.model.Position.PositionView;
 import gr.grnet.dep.service.model.PositionCandidacies.DetailedPositionCandidaciesView;
 import gr.grnet.dep.service.model.PositionCommittee.DetailedPositionCommitteeView;
 import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
@@ -142,6 +143,7 @@ public abstract class Role implements Serializable {
 	}
 
 	@JsonView({
+		PositionView.class,
 		DetailedRoleView.class,
 		DetailedPositionCommitteeMemberView.class,
 		DetailedPositionCandidaciesView.class,

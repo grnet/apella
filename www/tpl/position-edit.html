@@ -44,20 +44,25 @@
 	<div class="tab-pane active row-fluid" id="positionTabContent">
 	</div>
 </div>
-<% if (createdBy.id) { %>
+<% if (manager.id) { %>
 <div class="row-fluid" id="createdBy">
-	<div class="span6">
+	<div class="span12">
 		<p>
-			<b><%= $.i18n.prop('PositionCreatedBy') %></b><br/>
-			<%= createdBy.basicInfo.firstname %> <%= createdBy.basicInfo.lastname %> <%= createdBy.basicInfo.fathername %><br/> 
-			<%= _.isUndefined("createdBy.basicInfoLatin.firstname")? "" :  createdBy.basicInfoLatin.firstname %> <%= _.isUndefined("createdBy.basicInfoLatin.lastname")? "" :  createdBy.basicInfoLatin.lastname %> <%= _.isUndefined("createdBy.basicInfoLatin.fathername")? "" :  createdBy.basicInfoLatin.fathername %>
-		</p>
-	</div>
-	<div class="span6">
-		<p>
-			<b><%= $.i18n.prop('ContactInformation') %></b><br/>
-			<em><%= $.i18n.prop('Email') %>:</em> <%= createdBy.contactInfo.email %>,<br/>
-			<em><%= $.i18n.prop('Phone') %>:</em> <%= createdBy.contactInfo.phone %>
+			<b><%= $.i18n.prop('PositionCreatedBy') %></b>
+		<ul>
+			<li>
+				<b><%= manager.user.basicInfo.firstname %> <%= manager.user.basicInfo.lastname %></b> (<%= $.i18n.prop('INSTITUTION_MANAGER') %>)
+				<br/>
+				<%= $.i18n.prop('Email') %>: <%= manager.user.contactInfo.email %>,
+				<i><%= $.i18n.prop('Phone') %>:</i> <%= manager.user.contactInfo.phone %>
+			</li>
+			<li>
+				<b><%= manager.alternateBasicInfo.firstname %> <%= manager.alternateBasicInfo.lastname %></b> (<%= $.i18n.prop('AlternateInstitutionManager') %></b>)
+				<br/>
+				<i><%= $.i18n.prop('Email') %>:</i> <%= manager.alternateContactInfo.email %>,
+				<i><%= $.i18n.prop('Phone') %>:</i> <%= manager.alternateContactInfo.phone %>
+			</li>
+		</ul>
 		</p>
 	</div>
 </div>
