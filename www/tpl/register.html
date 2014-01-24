@@ -1,13 +1,7 @@
 <div class="row-fluid">
 	<div class="span12">
-		<dl class="dl-glossary">
-			<dt><%= $.i18n.prop('Register') %></dt>
-			<dd><%= title %></dd>
-			<dt><%= $.i18n.prop('Institution') %></dt>
-			<dd><%= institution.name %></dd>
-			<dt><%= $.i18n.prop('RegisterMembers') %></dt>
-			<dd></dd>
-		</dl>
+		<h3><%= $.i18n.prop('Register') %> : <%= institution.name %></h3>
+		<p><%= $.i18n.prop('RegisterMembers') %>: </p>
 		<div id="members">
 			<table class="table table-striped table-bordered">
 				<thead>

@@ -7199,11 +7199,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					$(element).parent(".controls").parent(".control-group").removeClass("error");
 				},
 				rules: {
-					"title": "required",
 					"institution": "required"
 				},
 				messages: {
-					"title": $.i18n.prop('validation_title'),
 					"institution": $.i18n.prop('validation_institution')
 				}
 			});
@@ -7325,7 +7323,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var self = this;
 			var values = {};
 			// Read Input
-			values.title = self.$('form input[name=title]').val();
 			values.institution = {
 				"id": self.$('form input[name=institution]').val()
 			};
