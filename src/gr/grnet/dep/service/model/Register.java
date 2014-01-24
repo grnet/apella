@@ -1,5 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -93,6 +95,24 @@ public class Register implements Serializable {
 	public Register copyFrom(Register register) {
 		setTitle(register.getTitle());
 		return this;
+	}
+
+	public boolean isUserAllowedToEdit(User user) {
+		if (this.getInstitution() == null) {
+			return false;
+		}
+		for (Role r : user.getRoles()) {
+			if (r.getDiscriminator() == RoleDiscriminator.ADMINISTRATOR) {
+				return true;
+			}
+			if (r.getDiscriminator() == RoleDiscriminator.INSTITUTION_MANAGER) {
+				InstitutionManager im = (InstitutionManager) r;
+				if (im.getInstitution().getId().equals(this.getInstitution().getId())) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 }

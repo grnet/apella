@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 
@@ -229,6 +230,25 @@ public class Position {
 
 	/////////////////////////////////////////////////////
 	@JsonView({PositionView.class})
+	public InstitutionManager getManager() {
+		if (this.createdBy == null) {
+			return null;
+		}
+		for (Role r : this.createdBy.getRoles()) {
+			if (r.getDiscriminator() == RoleDiscriminator.INSTITUTION_MANAGER) {
+				InstitutionManager im = (InstitutionManager) r;
+				return im;
+			}
+			if (r.getDiscriminator() == RoleDiscriminator.INSTITUTION_ASSISTANT) {
+				InstitutionAssistant ia = (InstitutionAssistant) r;
+				return ia.getManager();
+			}
+		}
+		// Won't happen
+		return null;
+	}
+
+	@JsonView({PositionView.class})
 	public Map<Integer, PositionStatus> getPhasesMap() {
 		Map<Integer, PositionStatus> phasesMap = new TreeMap<Integer, PositionStatus>();
 		for (PositionPhase phase : this.phases) {
@@ -258,6 +278,7 @@ public class Position {
 		position.setName(this.name);
 		position.setPermanent(this.permanent);
 		position.setSubject(this.subject);
+		position.setCreatedBy(this.createdBy);
 		// Add selected phase
 		for (PositionPhase phase : this.phases) {
 			if (phase.getOrder().equals(order)) {
@@ -280,4 +301,25 @@ public class Position {
 		}
 	}
 
+	@XmlTransient
+	@JsonIgnore
+	public boolean isUserAllowedToEdit(User user) {
+		if (this.getDepartment() == null) {
+			return false;
+		}
+		if (user.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+			return true;
+		}
+		if (user.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
+			user.isAssociatedWithDepartment(this.getDepartment())) {
+			return true;
+		}
+		if (this.getId() == null) {
+			return user.isAssociatedWithDepartment(this.getDepartment());
+		}
+		if (this.getCreatedBy().getId().equals(user.getId())) {
+			return true;
+		}
+		return false;
+	}
 }

@@ -81,7 +81,7 @@ public class PositionRESTService extends RESTService {
 	 * @return A list of position
 	 */
 	@GET
-	@JsonView({PublicPositionView.class})
+	@JsonView({PositionView.class})
 	public Collection<Position> getAll(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
 		User loggedOnUser = getLoggedOn(authToken);
 		if (loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) ||
@@ -159,7 +159,7 @@ public class PositionRESTService extends RESTService {
 		if (loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) ||
 			loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) ||
 			loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) ||
-			loggedOn.isDepartmentUser(p.getDepartment())) {
+			loggedOn.isAssociatedWithDepartment(p.getDepartment())) {
 			result = toJSON(order == null ? p : p.as(order), DetailedPositionView.class);
 		} else if (loggedOn.hasActiveRole(RoleDiscriminator.PROFESSOR_DOMESTIC) ||
 			loggedOn.hasActiveRole(RoleDiscriminator.PROFESSOR_FOREIGN)) {
@@ -198,13 +198,14 @@ public class PositionRESTService extends RESTService {
 	@POST
 	@JsonView({DetailedPositionView.class})
 	public Position create(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, Position position) {
+		User loggedOn = getLoggedOn(authToken);
 		try {
 			Department department = em.find(Department.class, position.getDepartment().getId());
 			if (department == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.department.id");
 			}
-			User loggedOn = getLoggedOn(authToken);
-			if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(department)) {
+			position.setDepartment(department);
+			if (!position.isUserAllowedToEdit(loggedOn)) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			Date now = new Date();
@@ -258,11 +259,10 @@ public class PositionRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Position existingPosition = getAndCheckPosition(loggedOn, id);
-			if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
+			if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			boolean isNew = !existingPosition.isPermanent();
-
 			// Validate
 			Sector sector = em.find(Sector.class, position.getSector().getId());
 			if (sector == null) {
@@ -349,7 +349,7 @@ public class PositionRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Position position = getAndCheckPosition(loggedOn, id);
-			if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(position.getDepartment())) {
+			if (!position.isUserAllowedToEdit(loggedOn)) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			if (!position.getPhase().getStatus().equals(PositionStatus.ENTAGMENI)) {
@@ -390,7 +390,7 @@ public class PositionRESTService extends RESTService {
 		try {
 			PositionStatus newStatus = position.getPhase().getStatus();
 			Position existingPosition = getAndCheckPosition(loggedOn, positionId);
-			if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
+			if (!position.isUserAllowedToEdit(loggedOn)) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			PositionPhase existingPhase = existingPosition.getPhase();

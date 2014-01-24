@@ -89,7 +89,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isDepartmentUser(position.getDepartment()) &&
+			!loggedOn.isAssociatedWithDepartment(position.getDepartment()) &&
 			!(position.getPhase().getCommittee() != null && position.getPhase().getCommittee().containsMember(loggedOn)) &&
 			!position.getPhase().getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -143,7 +143,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 			if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-				!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
+				!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
 				!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
 				!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
 				!existingCandidacies.containsCandidate(loggedOn)) {
@@ -200,7 +200,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
+			!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
 			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
 			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
 			!existingCandidacies.containsCandidate(loggedOn)) {
@@ -211,7 +211,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
+			!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
 			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
 			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn))) {
 			// Filter Files that do not belong to loggedOnUser
@@ -268,7 +268,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
+			!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
 			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
 			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
 			!existingFile.getEvaluator().getCandidacy().getCandidate().getUser().getId().equals(loggedOn.getId())) {
@@ -321,7 +321,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
 			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isDepartmentUser(existingPosition.getDepartment()) &&
+			!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
 			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
 			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
 			!existingFile.getEvaluator().getCandidacy().getCandidate().getUser().getId().equals(loggedOn.getId())) {
@@ -373,7 +373,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 			throw new RestException(Status.CONFLICT, "wrong.position.candidacies.phase");
 		}
 		// Validate:
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
+		if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (!existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
@@ -593,8 +593,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 		if (!existingPosition.getPhase().getCandidacies().getId().equals(candidaciesId)) {
 			throw new RestException(Status.FORBIDDEN, "wrong.position.candidacies.phase");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
+		if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (!existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
@@ -678,8 +677,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 		if (!existingPosition.getPhase().getCandidacies().getId().equals(candidaciesId)) {
 			throw new RestException(Status.CONFLICT, "wrong.position.candidacies.phase");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.isDepartmentUser(existingPosition.getDepartment())) {
+		if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (!existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
