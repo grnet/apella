@@ -37,8 +37,6 @@ public class Register implements Serializable {
 
 	private boolean permanent;
 
-	private String title;
-
 	@ManyToOne(optional = false)
 	private Institution institution;
 
@@ -59,14 +57,6 @@ public class Register implements Serializable {
 
 	public void setPermanent(boolean permanent) {
 		this.permanent = permanent;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
 	}
 
 	public Institution getInstitution() {
@@ -93,7 +83,6 @@ public class Register implements Serializable {
 	}
 
 	public Register copyFrom(Register register) {
-		setTitle(register.getTitle());
 		return this;
 	}
 

@@ -1416,7 +1416,6 @@ define([
 		defaults: {
 			id: undefined,
 			permanent: undefined,
-			title: undefined,
 			institution: undefined,
 			members: []
 		},
