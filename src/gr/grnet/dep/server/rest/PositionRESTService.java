@@ -612,7 +612,7 @@ public class PositionRESTService extends RESTService {
 		}
 		// Generate Document
 		Long institutionId = null;
-		if (loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+		if (loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER)) {
 			institutionId = ((InstitutionManager) loggedOn.getActiveRole(RoleDiscriminator.INSTITUTION_MANAGER)).getInstitution().getId();
 		}
 		if (institutionId == null &&

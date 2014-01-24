@@ -322,6 +322,10 @@ public class ReportService {
 		cell.setCellStyle(titleStyle);
 
 		cell = row.createCell(colNum++);
+		cell.setCellValue("Τίτλος Θέσης");
+		cell.setCellStyle(titleStyle);
+
+		cell = row.createCell(colNum++);
 		cell.setCellValue("Ίδρυμα/Ερευνητικό Κέντρο");
 		cell.setCellStyle(titleStyle);
 
@@ -399,6 +403,10 @@ public class ReportService {
 			cell.setCellStyle(textStyle);
 
 			cell = row.createCell(colNum++);
+			cell.setCellValue(position.getName());
+			cell.setCellStyle(textStyle);
+
+			cell = row.createCell(colNum++);
 			cell.setCellValue(position.getDepartment().getSchool().getInstitution().getName());
 			cell.setCellStyle(textStyle);
 
@@ -419,7 +427,7 @@ public class ReportService {
 			cell.setCellStyle(textStyle);
 
 			cell = row.createCell(colNum++);
-			cell.setCellValue(position.getSector().getArea());
+			cell.setCellValue(position.getSector().getCategory() + " / " + position.getSector().getArea());
 			cell.setCellStyle(textStyle);
 
 			cell = row.createCell(colNum++);

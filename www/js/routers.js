@@ -155,8 +155,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				status: "OPEN"
 			});
 			model.url = model.urlRoot + "public";
+			model.on("sync", function (model) {
+				// Reset Issue if users wants to create a new one
+				model.set(_.defaults({
+					status: "OPEN"
+				}, model.defaults));
+			});
+
 			// 2. Init View
-			issueEditView = new Views.JiraIssueEditView({
+			issueEditView = new Views.PublicJiraIssueEditView({
 				model: model
 			});
 			//3. Add to page

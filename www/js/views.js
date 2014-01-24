@@ -14,7 +14,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 	"text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-candidacies.html", "text!tpl/position-committee.html",
 	"text!tpl/position-evaluation.html", "text!tpl/position-nomination.html", "text!tpl/position-complementaryDocuments.html", "text!tpl/position-nomination-edit.html",
 	"text!tpl/position-complementaryDocuments-edit.html", "text!tpl/department-select.html", "text!tpl/department.html", "text!tpl/user-helpdesk.html",
-	"text!tpl/position-helpdesk.html", "text!tpl/user-search-list.html", "text!tpl/jira-issue-edit.html", "text!tpl/jira-issue-list.html", "text!tpl/jira-issue.html"
+	"text!tpl/position-helpdesk.html", "text!tpl/user-search-list.html", "text!tpl/jira-issue-edit.html", "text!tpl/jira-issue-list.html", "text!tpl/jira-issue.html",
+	"text!tpl/jira-issue-public-edit.html"
 ], function ($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit, tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main,
 	tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select,
 	tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees,
@@ -24,7 +25,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 	tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit,
 	tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation,
 	tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit, tpl_department_select, tpl_department,
-	tpl_user_helpdesk, tpl_position_helpdesk, tpl_user_search_list, tpl_jira_issue_edit, tpl_jira_issue_list, tpl_jira_issue) {
+	tpl_user_helpdesk, tpl_position_helpdesk, tpl_user_search_list, tpl_jira_issue_edit, tpl_jira_issue_list, tpl_jira_issue, tpl_jira_issue_public_edit) {
 
 	"use strict";
 	/** ****************************************************************** */
@@ -4692,7 +4693,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					});
 					return result;
 				}()),
-				exportUrl : self.collection.url + "/export?X-Auth-Token=" + encodeURIComponent(App.authToken)
+				exportUrl: self.collection.url + "/export?X-Auth-Token=" + encodeURIComponent(App.authToken)
 			};
 			self.closeInnerViews();
 			self.$el.empty();
@@ -4725,8 +4726,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		renderActions: function () {
 			var self = this;
-			if (!App.loggedOnUser.hasRole("INSTITUTION_MANAGER") &&
-				!App.loggedOnUser.hasRole("INSTITUTION_ASSISTANT")) {
+			if (!App.loggedOnUser.hasRole("INSTITUTION_MANAGER") && !App.loggedOnUser.hasRole("INSTITUTION_ASSISTANT")) {
 				return;
 			}
 			self.$("#actions").html("<select class=\"input-xlarge pull-left\" name=\"department\"></select>");
@@ -6919,8 +6919,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					var result = [];
 					var gCanExport =
 						App.loggedOnUser.hasRole("MINISTRY_MANAGER") ||
-						App.loggedOnUser.hasRole("MINISTRY_ASSISTANT") ||
-						App.loggedOnUser.hasRole("ADMINISTRATOR");
+							App.loggedOnUser.hasRole("MINISTRY_ASSISTANT") ||
+							App.loggedOnUser.hasRole("ADMINISTRATOR");
 
 					self.collection.each(function (model) {
 						var canEdit = App.loggedOnUser.isAssociatedWithInstitution(model.get("institution"));
@@ -9099,6 +9099,150 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					var popup = new Views.PopupView({
 						type: "success",
 						message: $.i18n.prop("Success")
+					});
+					popup.show();
+				},
+				error: function (model, resp, options) {
+					var popup = new Views.PopupView({
+						type: "error",
+						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+			return false;
+		},
+
+		close: function () {
+			this.closeInnerViews();
+			$(this.el).unbind();
+			$(this.el).remove();
+		}
+	});
+
+	/***************************************************************************
+	 * PublicJiraIssueEditView *************************************************
+	 **************************************************************************/
+	Views.PublicJiraIssueEditView = Views.BaseView.extend({
+
+		tagName: "div",
+
+		validator: undefined,
+
+		initialize: function (options) {
+			this._super('initialize', [ options ]);
+			_.bindAll(this, "submit");
+			this.template = _.template(tpl_jira_issue_public_edit);
+			this.model.bind('change', this.render, this);
+			this.model.bind("destroy", this.close, this);
+		},
+
+		events: {
+			"change select,input:not([type=file]),textarea": "change",
+			"click a#save": function (event) {
+				if ($(event.currentTarget).attr("disabled")) {
+					event.preventDefault();
+					return;
+				}
+				$("form", this.el).submit();
+			},
+			"submit form": "submit"
+		},
+
+		validatorRules: function () {
+			return {
+				errorElement: "span",
+				errorClass: "text-error",
+				rules: {
+					call: "required",
+					role: "required",
+					type: "required",
+					fullname: "required",
+					mobile: {
+						required: true,
+						number: true,
+						minlength: 10
+					},
+					email: {
+						required: true,
+						email: true,
+						minlength: 2
+					},
+					summary: "required",
+					description: "required"
+				},
+				messages: {
+					call: $.i18n.prop('validation_required'),
+					role: $.i18n.prop('validation_required'),
+					type: $.i18n.prop('validation_required'),
+					fullname: $.i18n.prop('validation_required'),
+					mobile: {
+						required: $.i18n.prop('validation_mobile'),
+						number: $.i18n.prop('validation_number'),
+						minlength: $.i18n.prop('validation_minlength', 10)
+					},
+					email: {
+						required: $.i18n.prop('validation_email'),
+						email: $.i18n.prop('validation_email'),
+						minlength: $.i18n.prop('validation_minlength', 2)
+					},
+					summary: $.i18n.prop('validation_required'),
+					description: $.i18n.prop('validation_required')
+				}
+			};
+		},
+
+		render: function (eventName) {
+			var self = this;
+			var propName;
+			self.closeInnerViews();
+			// 1. Render
+			self.$el.html(self.template(self.model.toJSON()));
+			// 2. Set values on select items
+			self.$("select[name=call]").val(self.model.get("call"));
+			self.$("select[name=role]").val(self.model.get("role"));
+			self.$("select[name=type]").val(self.model.get("type"));
+			// 3. Init plugins
+			self.validator = self.$("form").validate(self.validatorRules());
+			for (propName in self.validator.settings.rules) {
+				if (self.validator.settings.rules.hasOwnProperty(propName)) {
+					if (self.validator.settings.rules[propName].required) {
+						self.$("label[for=" + propName + "]").addClass("strong");
+					}
+				}
+			}
+			// 4. Return
+			return self;
+		},
+
+		submit: function (event) {
+			var self = this;
+			// Read Input
+			var call = self.$('form select[name=call]').val();
+			var role = self.$('form select[name=role]').val();
+			var type = self.$('form select[name=type]').val();
+			var fullname = self.$('form input[name=fullname]').val();
+			var mobile = self.$('form input[name=mobile]').val();
+			var email = self.$('form input[name=email]').val();
+			var summary = self.$('form input[name=summary]').val();
+			var description = self.$('form textarea[name=description]').val();
+
+			// Save to model
+			self.model.save({
+				call: call,
+				role: role,
+				type: type,
+				fullname: fullname,
+				mobile: mobile,
+				email: email,
+				summary: summary,
+				description: description
+			}, {
+				wait: true,
+				success: function (model, resp) {
+					var popup = new Views.PopupView({
+						type: "success",
+						message: $.i18n.prop('JiraIssueSubmitSuccess') + '<br/><br/>' + $.i18n.prop('GoToApellaPortalText')
 					});
 					popup.show();
 				},
