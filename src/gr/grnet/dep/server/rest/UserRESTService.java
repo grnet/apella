@@ -14,6 +14,7 @@ import gr.grnet.dep.service.model.MinistryManager;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
+import gr.grnet.dep.service.model.SearchData;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.User.UserView;
@@ -22,6 +23,7 @@ import gr.grnet.dep.service.util.StringUtil;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -716,4 +718,136 @@ public class UserRESTService extends RESTService {
 		}
 	}
 
+	@POST
+	@Path("/search")
+	@JsonView({UserView.class})
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public SearchData<User> search(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @Context HttpServletRequest request) {
+		User loggedOn = getLoggedOn(authToken);
+
+		// 1. Read parameters:
+		Long userId = request.getParameter("user").matches("\\d+") ? Long.valueOf(request.getParameter("user")) : null;
+		String username = request.getParameter("username");
+		String firstname = request.getParameter("firstname");
+		String lastname = request.getParameter("lastname");
+		String mobile = request.getParameter("mobile");
+		String email = request.getParameter("email");
+		String status = request.getParameter("status");
+		String role = request.getParameter("role");
+		String roleStatus = request.getParameter("roleStatus");
+		// Ordering
+		String orderNo = request.getParameter("iSortCol_0");
+		String orderField = request.getParameter("mDataProp_" + orderNo);
+		String orderDirection = request.getParameter("sSortDir_0");
+		// Pagination
+		int iDisplayStart = Integer.valueOf(request.getParameter("iDisplayStart"));
+		int iDisplayLength = Integer.valueOf(request.getParameter("iDisplayLength"));
+		// DataTables:
+		String sEcho = request.getParameter("sEcho");
+
+		// 2. Prepare Query
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct u.id, u.username, u.basicInfo.firstname, u.basicInfo.lastname, u.contactInfo.mobile, u.contactInfo.email, u.status, r.discriminator, r.status from User u " +
+			"join u.roles r " +
+			"where u.id != null ");
+		if (userId != null) {
+			sb.append("	and u.id = :userId ");
+		}
+		if (username != null && !username.isEmpty()) {
+			sb.append("	and u.username like :username ");
+		}
+		if (firstname != null && !firstname.isEmpty()) {
+			sb.append(" and u.basicInfo.firstname like :firstname ");
+		}
+		if (lastname != null && !lastname.isEmpty()) {
+			sb.append(" and u.basicInfo.lastname like :lastname ");
+		}
+		if (mobile != null && !mobile.isEmpty()) {
+			sb.append("	and u.contactInfo.mobile = :mobile ");
+		}
+		if (email != null && !email.isEmpty()) {
+			sb.append("	and u.contactInfo.email = :email ");
+		}
+		if (status != null && !status.isEmpty()) {
+			sb.append("	and u.status = :status ");
+		}
+		if (role != null && !role.isEmpty()) {
+			sb.append("	and r.discriminator = :discriminator ");
+		}
+		if (roleStatus != null && !roleStatus.isEmpty()) {
+			sb.append("	and r.status = :roleStatus ");
+		}
+		// Query Sorting, grouping
+		if (orderField != null && !orderField.isEmpty()) {
+			if (orderField.equals("firstname")) {
+				sb.append("order by u.basicInfo.firstname " + orderDirection + ", u.id ");
+			} else if (orderField.equals("username")) {
+				sb.append("order by u.username " + orderDirection + ", u.id ");
+			} else if (orderField.equals("status")) {
+				sb.append("order by u.status " + orderDirection + ", u.id ");
+			} else if (orderField.equals("role")) {
+				sb.append("order by r.discriminator " + orderDirection + ", usr.id ");
+			} else if (orderField.equals("roleStatus")) {
+				sb.append("order by r.status " + orderDirection + ", usr.id ");
+			} else if (orderField.equals("link")) {
+				sb.append("order by u.id " + orderDirection + " ");
+			} else {
+				// lastname is default
+				sb.append("order by u.basicInfo.lastname " + orderDirection + ", u.id ");
+			}
+		} else {
+			sb.append("order by u.basicInfo.lastname " + orderDirection + ", u.id ");
+		}
+
+		Query query = em.createQuery(sb.toString());
+		if (userId != null) {
+			query.setParameter("userId", userId);
+		}
+		if (firstname != null && !firstname.isEmpty()) {
+			query.setParameter("firstname", "%" + (firstname != null ? StringUtil.toUppercaseNoTones(firstname, new Locale("el")) : "") + "%");
+		}
+		if (lastname != null && !lastname.isEmpty()) {
+			query.setParameter("lastname", "%" + (lastname != null ? StringUtil.toUppercaseNoTones(lastname, new Locale("el")) : "") + "%");
+		}
+		if (username != null && !username.isEmpty()) {
+			query.setParameter("username", "%" + username + "%");
+		}
+		if (mobile != null && !mobile.isEmpty()) {
+			query.setParameter("mobile", mobile);
+		}
+		if (email != null && !email.isEmpty()) {
+			query.setParameter("email", email);
+		}
+		if (status != null && !status.isEmpty()) {
+			query = query.setParameter("status", UserStatus.valueOf(status));
+		}
+		if (role != null && !role.isEmpty()) {
+			query = query.setParameter("discriminator", RoleDiscriminator.valueOf(role));
+		}
+		if (roleStatus != null && !roleStatus.isEmpty()) {
+			query = query.setParameter("roleStatus", RoleStatus.valueOf(roleStatus));
+		}
+		// Get Result
+		List<Object[]> allUsers = query.getResultList();
+		// Filter results where role requested is not primary (how?)
+
+		// Fill result
+		SearchData<User> result = new SearchData<User>();
+		result.setiTotalRecords(allUsers.size());
+		result.setiTotalDisplayRecords(allUsers.size());
+		result.setsEcho(Integer.valueOf(sEcho));
+		List<Object[]> paginatedUsers = allUsers.subList(iDisplayStart, Math.min(allUsers.size(), iDisplayStart + iDisplayLength));
+		if (paginatedUsers.size() > 0) {
+			List<Long> ids = new ArrayList<Long>();
+			for (Object[] user : paginatedUsers) {
+				ids.add((Long) user[0]);
+			}
+			List<User> users = em.createQuery(
+				"select usr from User usr " +
+					"left join fetch usr.roles rls " +
+					"where usr.id in (:ids) ").setParameter("ids", ids).getResultList();
+			result.setRecords(users);
+		}
+		return result;
+	}
 }

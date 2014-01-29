@@ -2302,10 +2302,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			this._super('initialize', [ options ]);
 			_.bindAll(this, "search", "handleKeyUp");
 			this.template = _.template(tpl_user_search);
-
-			this.userListView = new Views.UserListView({
-				'collection': this.collection
-			});
 		},
 
 		events: {
@@ -2315,22 +2311,43 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		render: function (eventName) {
 			var self = this;
+
+			function fillFormValues(query) {
+				self.$('form input[name=user]').val(query.user);
+				self.$('form input[name=username]').val(query.username);
+				self.$('form input[name=firstname]').val(query.firstname);
+				self.$('form input[name=lastname]').val(query.lastname);
+				self.$('form input[name=mobile]').val(query.mobile);
+				self.$('form input[name=email]').val(query.email);
+				self.$('form select[name=status]').val(query.status);
+				self.$('form select[name=role]').val(query.role);
+				self.$('form select[name=roleStatus]').val(query.roleStatus);
+			}
+
 			self.closeInnerViews();
 			self.$el.empty();
 			self.addTitle();
-			self.$el.append(self.template({}));
-
+			self.$el.html(self.template({}));
+			self.$("table#usersTable").dataTable({
+				"sDom": "<'row-fluid'<'span6'l><'span6'>r>t<'row-fluid'<'span6'i><'span6'p>>",
+				"sPaginationType": "bootstrap",
+				"oLanguage": {
+					"sSearch": $.i18n.prop("dataTable_sSearch"),
+					"sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+					"sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+					"sInfo": $.i18n.prop("dataTable_sInfo"),
+					"sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+					"sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+					"oPaginate": {
+						sFirst: $.i18n.prop("dataTable_sFirst"),
+						sPrevious: $.i18n.prop("dataTable_sPrevious"),
+						sNext: $.i18n.prop("dataTable_sNext"),
+						sLast: $.i18n.prop("dataTable_sLast")
+					}
+				}
+			});
 			if (self.options.query) {
-				$('form input[name=user]', this.el).val(self.options.query.user);
-				$('form input[name=username]', this.el).val(self.options.query.username);
-				$('form input[name=firstname]', this.el).val(self.options.query.firstname);
-				$('form input[name=lastname]', this.el).val(self.options.query.lastname);
-				$('form input[name=mobile]', this.el).val(self.options.query.mobile);
-				$('form input[name=email]', this.el).val(self.options.query.email);
-				$('form select[name=status]', this.el).val(self.options.query.status);
-				$('form select[name=role]', this.el).val(self.options.query.role);
-				$('form select[name=roleStatus]', this.el).val(self.options.query.roleStatus);
-
+				fillFormValues(self.options.query);
 				self.search();
 			}
 			return self;
@@ -2338,29 +2355,108 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		search: function () {
 			var self = this;
-			var searchData = {
-				username: self.$('form input[name=username]').val(),
-				firstname: self.$('form input[name=firstname]').val(),
-				lastname: self.$('form input[name=lastname]').val(),
-				mobile: self.$('form input[name=mobile]').val(),
-				email: self.$('form input[name=email]').val(),
-				status: self.$('form select[name=status]').val(),
-				role: self.$('form select[name=role]').val(),
-				roleStatus: $('form select[name=roleStatus]').val()
-			};
-			var user = self.$('form input[name=user]').val();
-			if (/^\d+$/.test(user)) {
-				searchData.user = user;
-			} else {
-				self.$('form input[name=user]').val("");
+
+			function readFormValues() {
+				var formData = [
+					{
+						name: "username",
+						value: self.$('form input[name=username]').val()
+					},
+					{
+						name: "firstname",
+						value: self.$('form input[name=firstname]').val()
+					},
+					{
+						name: "lastname",
+						value: self.$('form input[name=lastname]').val()
+					},
+					{
+						name: "mobile",
+						value: self.$('form input[name=mobile]').val()
+					},
+					{
+						name: "email",
+						value: self.$('form input[name=email]').val()
+					},
+					{
+						name: "status",
+						value: self.$('form input[name=status]').val()
+					},
+					{
+						name: "role",
+						value: self.$('form input[name=role]').val()
+					},
+					{
+						name: "roleStatus",
+						value: self.$('form input[name=roleStatus]').val()
+					}
+				];
+				var user = self.$('form input[name=user]').val();
+				formData.push({
+					name: "user",
+					value: /^\d+$/.test(user) ? user : ""
+				});
+				return formData;
 			}
-			App.router.navigate("adminusers/" + JSON.stringify(searchData), {
-				trigger: false
-			});
-			self.collection.fetch({
-				cache: false,
-				reset: true,
-				data: searchData
+
+			var searchData = readFormValues();
+			// Init DataTables with a custom callback to get results
+			self.$("table#usersTable").dataTable().fnDestroy();
+			self.$("table#usersTable").dataTable({
+				"sDom": "<'row-fluid'<'span6'l><'span6'>r>t<'row-fluid'<'span6'i><'span6'p>>",
+				"sPaginationType": "bootstrap",
+				"oLanguage": {
+					"sSearch": $.i18n.prop("dataTable_sSearch"),
+					"sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+					"sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+					"sInfo": $.i18n.prop("dataTable_sInfo"),
+					"sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+					"sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+					"oPaginate": {
+						sFirst: $.i18n.prop("dataTable_sFirst"),
+						sPrevious: $.i18n.prop("dataTable_sPrevious"),
+						sNext: $.i18n.prop("dataTable_sNext"),
+						sLast: $.i18n.prop("dataTable_sLast")
+					}
+				},
+				"aoColumns": [
+					{ "mData": "firstname" },
+					{ "mData": "lastname" },
+					{ "mData": "username" },
+					{ "mData": "status" },
+					{ "mData": "role" },
+					{ "mData": "roleStatus" },
+					{ "mData": "link" }
+				],
+				"bProcessing": true,
+				"bServerSide": true,
+				"sAjaxSource": self.options.searchURL,
+				"fnServerData": function (sSource, aoData, fnCallback) {
+					/* Add some extra data to the sender */
+					$.ajax({
+						"dataType": 'json',
+						"type": "POST",
+						"url": sSource,
+						"data": aoData.concat(searchData),
+						"success": function (json) {
+							// Read Data
+							json.aaData = _.map(json.records, function(user) {
+								return {
+									"firstname" : user.basicInfo.firstname,
+									"lastname": user.basicInfo.lastname,
+									"username": user.username || "",
+									"status": $.i18n.prop('status' + user.status),
+									"role": $.i18n.prop(user.primaryRole),
+									"roleStatus": $.i18n.prop('status' + _.find(user.roles, function (r) {
+										return r.discriminator === user.primaryRole;
+									}).status),
+									"link": user.id
+								};
+							});
+							fnCallback(json);
+						}
+					});
+				}
 			});
 		},
 
@@ -9363,4 +9459,5 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 	});
 
 	return Views;
-});
+})
+;

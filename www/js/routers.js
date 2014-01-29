@@ -1177,19 +1177,17 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 		showAdminUserSearchView: function (query) {
 			var self = this;
-			var users;
 			var userSearchView;
 
 			self.clear();
-			users = new Models.Users();
 			userSearchView = new Views.UserSearchView({
 				'query': query ? JSON.parse(decodeURIComponent(query)) : undefined,
-				'collection': users
+				'searchURL' : (new Models.Users()).url + "/search"
 			});
 			self.refreshBreadcrumb([ $.i18n.prop('menu_adminusers') ]);
-			$("#content").append(userListView.render().el);
+			$("#content").html(userSearchView.render().el);
 
-			self.currentView = [ userSearchView, userListView ];
+			self.currentView = [ userSearchView ];
 		}
 
 	});
