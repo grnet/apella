@@ -262,7 +262,7 @@ public class ReportService {
 			"left join fetch ph.nomination no " +
 			"left join fetch ph.complementaryDocuments cd ";
 		if (institutionId != null) {
-			query = query.concat("where p.deparment.school.institution.id = :institutionId");
+			query = query.concat("where p.department.school.institution.id = :institutionId");
 		}
 
 		Query q = em.createQuery(query);

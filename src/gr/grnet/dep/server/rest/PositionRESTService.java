@@ -390,7 +390,7 @@ public class PositionRESTService extends RESTService {
 		try {
 			PositionStatus newStatus = position.getPhase().getStatus();
 			Position existingPosition = getAndCheckPosition(loggedOn, positionId);
-			if (!position.isUserAllowedToEdit(loggedOn)) {
+			if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			PositionPhase existingPhase = existingPosition.getPhase();
