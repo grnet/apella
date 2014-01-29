@@ -2302,6 +2302,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			this._super('initialize', [ options ]);
 			_.bindAll(this, "search", "handleKeyUp");
 			this.template = _.template(tpl_user_search);
+
+			this.userListView = new Views.UserListView({
+				'collection': this.collection
+			});
 		},
 
 		events: {

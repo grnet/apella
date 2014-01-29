@@ -1179,28 +1179,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			var self = this;
 			var users;
 			var userSearchView;
-			var userListView;
 
 			self.clear();
 			users = new Models.Users();
-			users.on("user:selected", function (user) {
-				if (user) {
-					self.showUserView(user.id, user);
-					self.navigate("user/" + user.id, {
-						trigger: false
-					});
-				}
-			}, this);
 			userSearchView = new Views.UserSearchView({
-				"query": query ? JSON.parse(decodeURI(query)) : undefined,
-				collection: users
+				'query': query ? JSON.parse(decodeURIComponent(query)) : undefined,
+				'collection': users
 			});
-			userListView = new Views.UserListView({
-				collection: users
-			});
-
 			self.refreshBreadcrumb([ $.i18n.prop('menu_adminusers') ]);
-			$("#featured").append(userSearchView.render().el);
 			$("#content").append(userListView.render().el);
 
 			self.currentView = [ userSearchView, userListView ];
