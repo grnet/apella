@@ -186,7 +186,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			_.extend(self, Backbone.Events);
 			_.bindAll(self, "setTitle", "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showUserView", "showInstitutionAssistantsView",
 				"showMinistryAssistantsView", "showPositionView", "showPositionsView", "showRegistersView", "showProfessorCommitteesView", "showProfessorEvaluationsView",
-				"showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "showCandidacyView", "showAdminUserSearchView", "showIssueListView", "start");
+				"showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "showCandidacyView", "showUserSearchView", "showIssueListView", "start");
 
 			self.on("route", function (routefn) {
 				self.setTitle(routefn);
@@ -240,10 +240,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			"candidateCandidacies/:candidacyId": "showCandidateCandidacyView",
 			"candidacy/:candidacyId": "showCandidacyView",
 			"issues": "showIssueListView",
-
-			// ADMIN ROUTES
-			"adminusers": "showAdminUserSearchView",
-			"adminusers/:query": "showAdminUserSearchView"
+			"searchusers": "showUserSearchView"
 		},
 
 		start: function (eventName, authToken) {
@@ -1171,20 +1168,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			this.currentView = issueListView;
 		},
 
-		/***********************************************************************
-		 * ** ADMIN ONLY VIEWS ******
-		 **********************************************************************/
-
-		showAdminUserSearchView: function (query) {
+		showUserSearchView: function () {
 			var self = this;
 			var userSearchView;
 
 			self.clear();
 			userSearchView = new Views.UserSearchView({
-				'query': query ? JSON.parse(decodeURIComponent(query)) : undefined,
 				'searchURL' : (new Models.Users()).url + "/search"
 			});
-			self.refreshBreadcrumb([ $.i18n.prop('menu_adminusers') ]);
+			self.refreshBreadcrumb([ $.i18n.prop('menu_searchusers') ]);
 			$("#content").html(userSearchView.render().el);
 
 			self.currentView = [ userSearchView ];

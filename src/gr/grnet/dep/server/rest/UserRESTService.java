@@ -23,7 +23,6 @@ import gr.grnet.dep.service.util.StringUtil;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -746,108 +745,141 @@ public class UserRESTService extends RESTService {
 		String sEcho = request.getParameter("sEcho");
 
 		// 2. Prepare Query
-		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct u.id, u.username, u.basicInfo.firstname, u.basicInfo.lastname, u.contactInfo.mobile, u.contactInfo.email, u.status, r.discriminator, r.status from User u " +
-			"join u.roles r " +
-			"where u.id != null ");
+		StringBuilder searchQueryString = new StringBuilder();
+		searchQueryString.append(
+			"select u.id from User u " +
+				"join u.roles r " +
+				"where u.id != null ");
 		if (userId != null) {
-			sb.append("	and u.id = :userId ");
+			searchQueryString.append(" and u.id = :userId ");
 		}
 		if (username != null && !username.isEmpty()) {
-			sb.append("	and u.username like :username ");
+			searchQueryString.append(" and u.username like :username ");
 		}
 		if (firstname != null && !firstname.isEmpty()) {
-			sb.append(" and u.basicInfo.firstname like :firstname ");
+			searchQueryString.append(" and u.basicInfo.firstname like :firstname ");
 		}
 		if (lastname != null && !lastname.isEmpty()) {
-			sb.append(" and u.basicInfo.lastname like :lastname ");
+			searchQueryString.append(" and u.basicInfo.lastname like :lastname ");
 		}
 		if (mobile != null && !mobile.isEmpty()) {
-			sb.append("	and u.contactInfo.mobile = :mobile ");
+			searchQueryString.append(" and u.contactInfo.mobile = :mobile ");
 		}
 		if (email != null && !email.isEmpty()) {
-			sb.append("	and u.contactInfo.email = :email ");
+			searchQueryString.append(" and u.contactInfo.email = :email ");
 		}
 		if (status != null && !status.isEmpty()) {
-			sb.append("	and u.status = :status ");
+			searchQueryString.append(" and u.status = :status ");
 		}
 		if (role != null && !role.isEmpty()) {
-			sb.append("	and r.discriminator = :discriminator ");
+			searchQueryString.append(" and r.discriminator = :discriminator ");
+			if (role.equals(RoleDiscriminator.CANDIDATE.toString())) {
+				// Skip Professors with Candidate role
+				searchQueryString.append(" and not exists (select sr.id from Role sr where sr.discriminator = :pdDiscriminator and sr.user.id = u.id) ");
+			}
 		}
 		if (roleStatus != null && !roleStatus.isEmpty()) {
-			sb.append("	and r.status = :roleStatus ");
+			searchQueryString.append("	and r.status = :roleStatus ");
 		}
-		// Query Sorting, grouping
+
+		// Query Sorting
+		String orderString = null;
 		if (orderField != null && !orderField.isEmpty()) {
 			if (orderField.equals("firstname")) {
-				sb.append("order by u.basicInfo.firstname " + orderDirection + ", u.id ");
+				orderString = "order by usr.basicInfo.firstname " + orderDirection + ", usr.id ";
+			} else if (orderField.equals("lastname")) {
+				orderString = "order by usr.basicInfo.lastname " + orderDirection + ", usr.id ";
 			} else if (orderField.equals("username")) {
-				sb.append("order by u.username " + orderDirection + ", u.id ");
+				orderString = "order by usr.username " + orderDirection + ", usr.id ";
 			} else if (orderField.equals("status")) {
-				sb.append("order by u.status " + orderDirection + ", u.id ");
+				orderString = "order by usr.status " + orderDirection + ", usr.id ";
 			} else if (orderField.equals("role")) {
-				sb.append("order by r.discriminator " + orderDirection + ", usr.id ");
+				orderString = "order by rls.discriminator " + orderDirection + ", usr.id ";
 			} else if (orderField.equals("roleStatus")) {
-				sb.append("order by r.status " + orderDirection + ", usr.id ");
-			} else if (orderField.equals("link")) {
-				sb.append("order by u.id " + orderDirection + " ");
+				orderString = "order by rls.status " + orderDirection + ", usr.id ";
 			} else {
-				// lastname is default
-				sb.append("order by u.basicInfo.lastname " + orderDirection + ", u.id ");
+				// id is default
+				orderString = "order by usr.id " + orderDirection + " ";
 			}
 		} else {
-			sb.append("order by u.basicInfo.lastname " + orderDirection + ", u.id ");
+			orderString = "order by usr.id " + orderDirection + " ";
 		}
 
-		Query query = em.createQuery(sb.toString());
+		Query countQuery = em.createQuery(
+			"select count(id) from User usr " +
+				"where usr.id in ( " +
+				searchQueryString.toString() +
+				" ) ");
+
+		Query searchQuery = em.createQuery(
+			"select usr from User usr " +
+				"left join usr.roles rls " +
+				"where usr.id in ( " +
+				searchQueryString.toString() +
+				" ) " +
+				orderString);
+
 		if (userId != null) {
-			query.setParameter("userId", userId);
+			searchQuery.setParameter("userId", userId);
+			countQuery.setParameter("userId", userId);
 		}
 		if (firstname != null && !firstname.isEmpty()) {
-			query.setParameter("firstname", "%" + (firstname != null ? StringUtil.toUppercaseNoTones(firstname, new Locale("el")) : "") + "%");
+			searchQuery.setParameter("firstname", "%" + (firstname != null ? StringUtil.toUppercaseNoTones(firstname, new Locale("el")) : "") + "%");
+			countQuery.setParameter("firstname", "%" + (firstname != null ? StringUtil.toUppercaseNoTones(firstname, new Locale("el")) : "") + "%");
 		}
 		if (lastname != null && !lastname.isEmpty()) {
-			query.setParameter("lastname", "%" + (lastname != null ? StringUtil.toUppercaseNoTones(lastname, new Locale("el")) : "") + "%");
+			searchQuery.setParameter("lastname", "%" + (lastname != null ? StringUtil.toUppercaseNoTones(lastname, new Locale("el")) : "") + "%");
+			countQuery.setParameter("lastname", "%" + (lastname != null ? StringUtil.toUppercaseNoTones(lastname, new Locale("el")) : "") + "%");
 		}
 		if (username != null && !username.isEmpty()) {
-			query.setParameter("username", "%" + username + "%");
+			searchQuery.setParameter("username", "%" + username + "%");
+			countQuery.setParameter("username", "%" + username + "%");
 		}
 		if (mobile != null && !mobile.isEmpty()) {
-			query.setParameter("mobile", mobile);
+			searchQuery.setParameter("mobile", mobile);
+			countQuery.setParameter("mobile", mobile);
 		}
 		if (email != null && !email.isEmpty()) {
-			query.setParameter("email", email);
+			searchQuery.setParameter("email", email);
+			countQuery.setParameter("email", email);
 		}
 		if (status != null && !status.isEmpty()) {
-			query = query.setParameter("status", UserStatus.valueOf(status));
+			searchQuery.setParameter("status", UserStatus.valueOf(status));
+			countQuery.setParameter("status", UserStatus.valueOf(status));
 		}
 		if (role != null && !role.isEmpty()) {
-			query = query.setParameter("discriminator", RoleDiscriminator.valueOf(role));
+			searchQuery.setParameter("discriminator", RoleDiscriminator.valueOf(role));
+			countQuery.setParameter("discriminator", RoleDiscriminator.valueOf(role));
+			if (role.equals(RoleDiscriminator.CANDIDATE.toString())) {
+				searchQuery.setParameter("pdDiscriminator", RoleDiscriminator.PROFESSOR_DOMESTIC);
+				countQuery.setParameter("pdDiscriminator", RoleDiscriminator.PROFESSOR_DOMESTIC);
+			}
 		}
 		if (roleStatus != null && !roleStatus.isEmpty()) {
-			query = query.setParameter("roleStatus", RoleStatus.valueOf(roleStatus));
+			searchQuery.setParameter("roleStatus", RoleStatus.valueOf(roleStatus));
+			countQuery.setParameter("roleStatus", RoleStatus.valueOf(roleStatus));
 		}
 		// Get Result
-		List<Object[]> allUsers = query.getResultList();
-		// Filter results where role requested is not primary (how?)
 
+		long now = System.currentTimeMillis();
+		logger.info("totalRecords " + 0);
+		Long totalRecords = (Long) countQuery.getSingleResult();
+		logger.info("totalRecords " + (System.currentTimeMillis() - now));
+		now = System.currentTimeMillis();
+		logger.info("paginatedUsers " + 0);
+		@SuppressWarnings("unchecked")
+		List<User> paginatedUsers = searchQuery
+			.setFirstResult(iDisplayStart)
+			.setMaxResults(iDisplayLength)
+			.getResultList();
+		logger.info("paginatedUsers " + (System.currentTimeMillis() - now));
 		// Fill result
 		SearchData<User> result = new SearchData<User>();
-		result.setiTotalRecords(allUsers.size());
-		result.setiTotalDisplayRecords(allUsers.size());
+		result.setiTotalRecords(totalRecords);
+		result.setiTotalDisplayRecords(totalRecords);
 		result.setsEcho(Integer.valueOf(sEcho));
-		List<Object[]> paginatedUsers = allUsers.subList(iDisplayStart, Math.min(allUsers.size(), iDisplayStart + iDisplayLength));
-		if (paginatedUsers.size() > 0) {
-			List<Long> ids = new ArrayList<Long>();
-			for (Object[] user : paginatedUsers) {
-				ids.add((Long) user[0]);
-			}
-			List<User> users = em.createQuery(
-				"select usr from User usr " +
-					"left join fetch usr.roles rls " +
-					"where usr.id in (:ids) ").setParameter("ids", ids).getResultList();
-			result.setRecords(users);
-		}
+		result.setRecords(paginatedUsers);
+
 		return result;
 	}
 }
