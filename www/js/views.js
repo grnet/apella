@@ -7737,10 +7737,12 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				institutionRFs: (function () {
 					var result = [];
 					self.collection.each(function (model) {
+						var canEdit = model.isEditableBy(App.loggedOnUser);
 						var item;
 						if (model.has("id")) {
 							item = model.toJSON();
 							item.cid = model.cid;
+							item.canEdit = canEdit;
 							result.push(item);
 						}
 					});

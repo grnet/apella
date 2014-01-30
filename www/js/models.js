@@ -1077,6 +1077,19 @@ define([
 			"institution": undefined,
 			"organismosURL": undefined,
 			"eswterikosKanonismosURL": undefined
+		},
+
+		isEditableBy: function (user) {
+			var self = this;
+			if (self.isNew()) {
+				return user.isAssociatedWithInstitution(self.get("institution"));
+			}
+			return _.any(user.get("roles"), function (r) {
+				if (r.discriminator === "INSTITUTION_MANAGER") {
+					return r.institution.id === self.get("institution").id;
+				}
+				return false;
+			});
 		}
 	});
 
@@ -1423,7 +1436,7 @@ define([
 		isEditableBy: function (user) {
 			var self = this;
 			if (self.isNew()) {
-				return user.isAssociatedWithDepartment(self.get("department"));
+				return user.isAssociatedWithInstitution(self.get("institution"));
 			}
 			return _.any(user.get("roles"), function (r) {
 				if (r.discriminator === "INSTITUTION_MANAGER") {

@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 
@@ -101,6 +102,26 @@ public class InstitutionRegulatoryFramework {
 	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setUpdatedAt(Date updatedAt) {
 		this.updatedAt = updatedAt;
+	}
+
+	////////////////////////////////////////////
+
+	public boolean isUserAllowedToEdit(User user) {
+		if (this.getInstitution() == null) {
+			return false;
+		}
+		for (Role r : user.getRoles()) {
+			if (r.getDiscriminator() == RoleDiscriminator.ADMINISTRATOR) {
+				return true;
+			}
+			if (r.getDiscriminator() == RoleDiscriminator.INSTITUTION_MANAGER) {
+				InstitutionManager im = (InstitutionManager) r;
+				if (im.getInstitution().getId().equals(this.getInstitution().getId())) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 }

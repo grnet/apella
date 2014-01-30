@@ -909,11 +909,15 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					institutionRegulatoryFrameworkView.close();
 				}
 				// Select Edit or Simple View based on loggedOnUser
-				institutionRegulatoryFrameworkView = App.loggedOnUser.isAssociatedWithInstitution(institutionRF.get("institution")) ? new Views.InstitutionRegulatoryFrameworkEditView({
-					model: institutionRF
-				}) : new Views.InstitutionRegulatoryFrameworkView({
-					model: institutionRF
-				});
+				if (institutionRF.isEditableBy(App.loggedOnUser)) {
+					institutionRegulatoryFrameworkView = new Views.InstitutionRegulatoryFrameworkEditView({
+						model: institutionRF
+					});
+				} else {
+					institutionRegulatoryFrameworkView = new Views.InstitutionRegulatoryFrameworkView({
+						model: institutionRF
+					});
+				}
 				self.refreshBreadcrumb([ $.i18n.prop('menu_regulatoryframeworks') ]);
 				$("#content").html(institutionRegulatoryFrameworkView.render().el);
 				// Update history

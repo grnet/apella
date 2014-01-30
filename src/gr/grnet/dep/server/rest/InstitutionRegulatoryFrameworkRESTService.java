@@ -4,7 +4,6 @@ import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.InstitutionRegulatoryFramework;
-import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
 import java.util.Collection;
@@ -84,8 +83,8 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 		if (institution == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.institution.id");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.isAssociatedWithInstitution(institution)) {
+		newIRF.setInstitution(institution);
+		if (!newIRF.isUserAllowedToEdit(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Validate
@@ -100,7 +99,6 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 		}
 		// Create
 		try {
-			newIRF.setInstitution(institution);
 			newIRF.setCreatedAt(new Date());
 			newIRF.setUpdatedAt(new Date());
 			newIRF.setPermanent(false);
@@ -132,8 +130,7 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 		if (existing == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.institutionregulatoryframework.id");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.isAssociatedWithInstitution(existing.getInstitution())) {
+		if (!existing.isUserAllowedToEdit(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
@@ -166,8 +163,7 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 		if (existing == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.institutionregulatoryframework.id");
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.isAssociatedWithInstitution(existing.getInstitution())) {
+		if (!existing.isUserAllowedToEdit(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
