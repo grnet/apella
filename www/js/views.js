@@ -14,7 +14,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 	"text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-candidacies.html", "text!tpl/position-committee.html",
 	"text!tpl/position-evaluation.html", "text!tpl/position-nomination.html", "text!tpl/position-complementaryDocuments.html", "text!tpl/position-nomination-edit.html",
 	"text!tpl/position-complementaryDocuments-edit.html", "text!tpl/department-select.html", "text!tpl/department.html", "text!tpl/user-helpdesk.html",
-	"text!tpl/position-helpdesk.html", "text!tpl/user-search-list.html", "text!tpl/jira-issue-edit.html", "text!tpl/jira-issue-list.html", "text!tpl/jira-issue.html",
+	"text!tpl/position-helpdesk.html", "text!tpl/jira-issue-edit.html", "text!tpl/jira-issue-list.html", "text!tpl/jira-issue.html",
 	"text!tpl/jira-issue-public-edit.html"
 ], function ($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit, tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main,
 	tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select,
@@ -25,7 +25,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 	tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit,
 	tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation,
 	tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit, tpl_department_select, tpl_department,
-	tpl_user_helpdesk, tpl_position_helpdesk, tpl_user_search_list, tpl_jira_issue_edit, tpl_jira_issue_list, tpl_jira_issue, tpl_jira_issue_public_edit) {
+	tpl_user_helpdesk, tpl_position_helpdesk, tpl_jira_issue_edit, tpl_jira_issue_list, tpl_jira_issue, tpl_jira_issue_public_edit) {
 
 	"use strict";
 	/** ****************************************************************** */
@@ -246,17 +246,19 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 			if (self.model.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE")) {
 				menuItems.push("massistants");
+				menuItems.push("searchusers");
 				menuItems.push("regulatoryframeworks");
 				menuItems.push("registers");
 				menuItems.push("positions");
 			}
 			if (self.model.hasRoleWithStatus("MINISTRY_ASSISTANT", "ACTIVE")) {
+				menuItems.push("searchusers");
 				menuItems.push("regulatoryframeworks");
 				menuItems.push("registers");
 				menuItems.push("positions");
 			}
 			if (self.model.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
-				menuItems.push("adminusers");
+				menuItems.push("searchusers");
 				menuItems.push("regulatoryframeworks");
 				menuItems.push("registers");
 				menuItems.push("positions");
@@ -1492,6 +1494,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					link: "massistants"
 				});
 				tiles.push({
+					link: "searchusers"
+				});
+				tiles.push({
 					link: "regulatoryframeworks"
 				});
 				tiles.push({
@@ -1502,6 +1507,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				});
 			}
 			if (self.model.hasRoleWithStatus("MINISTRY_ASSISTANT", "ACTIVE")) {
+				tiles.push({
+					link: "searchusers"
+				});
 				tiles.push({
 					link: "regulatoryframeworks"
 				});
@@ -1514,7 +1522,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 			if (self.model.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
 				tiles.push({
-					link: "adminusers"
+					link: "searchusers"
 				});
 				tiles.push({
 					link: "regulatoryframeworks"
@@ -2314,49 +2322,132 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.closeInnerViews();
 			self.$el.empty();
 			self.addTitle();
-			self.$el.append(self.template({}));
-
-			if (self.options.query) {
-				$('form input[name=user]', this.el).val(self.options.query.user);
-				$('form input[name=username]', this.el).val(self.options.query.username);
-				$('form input[name=firstname]', this.el).val(self.options.query.firstname);
-				$('form input[name=lastname]', this.el).val(self.options.query.lastname);
-				$('form input[name=mobile]', this.el).val(self.options.query.mobile);
-				$('form input[name=email]', this.el).val(self.options.query.email);
-				$('form select[name=status]', this.el).val(self.options.query.status);
-				$('form select[name=role]', this.el).val(self.options.query.role);
-				$('form select[name=roleStatus]', this.el).val(self.options.query.roleStatus);
-
-				self.search();
-			}
+			self.$el.html(self.template({}));
+			self.$("table#usersTable").dataTable({
+				"sDom": "<'row-fluid'<'span6'l><'span6'>r>t<'row-fluid'<'span6'i><'span6'p>>",
+				"sPaginationType": "bootstrap",
+				"oLanguage": {
+					"sSearch": $.i18n.prop("dataTable_sSearch"),
+					"sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+					"sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+					"sInfo": $.i18n.prop("dataTable_sInfo"),
+					"sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+					"sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+					"oPaginate": {
+						sFirst: $.i18n.prop("dataTable_sFirst"),
+						sPrevious: $.i18n.prop("dataTable_sPrevious"),
+						sNext: $.i18n.prop("dataTable_sNext"),
+						sLast: $.i18n.prop("dataTable_sLast")
+					}
+				}
+			});
 			return self;
 		},
 
 		search: function () {
 			var self = this;
-			var searchData = {
-				username: self.$('form input[name=username]').val(),
-				firstname: self.$('form input[name=firstname]').val(),
-				lastname: self.$('form input[name=lastname]').val(),
-				mobile: self.$('form input[name=mobile]').val(),
-				email: self.$('form input[name=email]').val(),
-				status: self.$('form select[name=status]').val(),
-				role: self.$('form select[name=role]').val(),
-				roleStatus: $('form select[name=roleStatus]').val()
-			};
-			var user = self.$('form input[name=user]').val();
-			if (/^\d+$/.test(user)) {
-				searchData.user = user;
-			} else {
-				self.$('form input[name=user]').val("");
+
+			function readFormValues() {
+				var formData = [
+					{
+						name: "username",
+						value: self.$('form input[name=username]').val()
+					},
+					{
+						name: "firstname",
+						value: self.$('form input[name=firstname]').val()
+					},
+					{
+						name: "lastname",
+						value: self.$('form input[name=lastname]').val()
+					},
+					{
+						name: "mobile",
+						value: self.$('form input[name=mobile]').val()
+					},
+					{
+						name: "email",
+						value: self.$('form input[name=email]').val()
+					},
+					{
+						name: "status",
+						value: self.$('form select[name=status]').val()
+					},
+					{
+						name: "role",
+						value: self.$('form select[name=role]').val()
+					},
+					{
+						name: "roleStatus",
+						value: self.$('form select[name=roleStatus]').val()
+					}
+				];
+				var user = self.$('form input[name=user]').val();
+				formData.push({
+					name: "user",
+					value: /^\d+$/.test(user) ? user : ""
+				});
+				return formData;
 			}
-			App.router.navigate("adminusers/" + JSON.stringify(searchData), {
-				trigger: false
-			});
-			self.collection.fetch({
-				cache: false,
-				reset: true,
-				data: searchData
+
+			var searchData = readFormValues();
+			// Init DataTables with a custom callback to get results
+			self.$("table#usersTable").dataTable().fnDestroy();
+			self.$("table#usersTable").dataTable({
+				"sDom": "<'row-fluid'<'span6'l><'span6'>r>t<'row-fluid'<'span6'i><'span6'p>>",
+				"sPaginationType": "bootstrap",
+				"oLanguage": {
+					"sSearch": $.i18n.prop("dataTable_sSearch"),
+					"sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+					"sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+					"sInfo": $.i18n.prop("dataTable_sInfo"),
+					"sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+					"sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+					"oPaginate": {
+						sFirst: $.i18n.prop("dataTable_sFirst"),
+						sPrevious: $.i18n.prop("dataTable_sPrevious"),
+						sNext: $.i18n.prop("dataTable_sNext"),
+						sLast: $.i18n.prop("dataTable_sLast")
+					}
+				},
+				"aoColumns": [
+					{ "mData": "id", 'sWidth': '1px' },
+					{ "mData": "firstname" },
+					{ "mData": "lastname" },
+					{ "mData": "username" },
+					{ "mData": "status" },
+					{ "mData": "role", 'sWidth': '25%'  },
+					{ "mData": "roleStatus" }
+				],
+				"bProcessing": true,
+				"bServerSide": true,
+				"sAjaxSource": self.options.searchURL,
+				"fnServerData": function (sSource, aoData, fnCallback) {
+					/* Add some extra data to the sender */
+					$.ajax({
+						"dataType": 'json',
+						"type": "POST",
+						"url": sSource,
+						"data": aoData.concat(searchData),
+						"success": function (json) {
+							// Read Data
+							json.aaData = _.map(json.records, function (user) {
+								return {
+									"id": '<a href="#user/' + user.id + '">' + user.id + '</a>',
+									"firstname": user.basicInfo.firstname,
+									"lastname": user.basicInfo.lastname,
+									"username": user.username || "",
+									"status": $.i18n.prop('status' + user.status),
+									"role": $.i18n.prop(user.primaryRole),
+									"roleStatus": $.i18n.prop('status' + _.find(user.roles,function (r) {
+										return r.discriminator === user.primaryRole;
+									}).status)
+								};
+							});
+							fnCallback(json);
+						}
+					});
+				}
 			});
 		},
 
@@ -2366,77 +2457,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				// On enter submit
 				self.search();
 			}
-		},
-
-		close: function () {
-			this.closeInnerViews();
-			$(this.el).unbind();
-			$(this.el).remove();
-		}
-	});
-
-	/***************************************************************************
-	 * UserListView ************************************************************
-	 **************************************************************************/
-	Views.UserListView = Views.BaseView.extend({
-		tagName: "div",
-
-		initialize: function (options) {
-			this._super('initialize', [ options ]);
-			this.template = _.template(tpl_user_search_list);
-			this.roleInfoTemplate = _.template(tpl_user_role_info);
-			this.collection.bind("change", this.render, this);
-			this.collection.bind("reset", this.render, this);
-		},
-
-		events: {
-		},
-
-		render: function (eventName) {
-			var self = this;
-			var tpl_data = {
-				users: (function () {
-					var result = [];
-					self.collection.each(function (model) {
-						var item;
-						if (model.has("id")) {
-							item = model.toJSON();
-							item.cid = model.cid;
-							item.primaryRole = model.getRole(model.get("primaryRole"));
-							item.roleInfo = self.roleInfoTemplate({
-								roles: [item.primaryRole]
-							});
-							result.push(item);
-						}
-					});
-					return result;
-				}())
-			};
-			self.closeInnerViews();
-			self.$el.empty();
-			self.addTitle();
-			self.$el.append(self.template(tpl_data));
-			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
-				self.$("table").dataTable({
-					"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
-					"sPaginationType": "bootstrap",
-					"oLanguage": {
-						"sSearch": $.i18n.prop("dataTable_sSearch"),
-						"sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
-						"sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
-						"sInfo": $.i18n.prop("dataTable_sInfo"),
-						"sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
-						"sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
-						"oPaginate": {
-							sFirst: $.i18n.prop("dataTable_sFirst"),
-							sPrevious: $.i18n.prop("dataTable_sPrevious"),
-							sNext: $.i18n.prop("dataTable_sNext"),
-							sLast: $.i18n.prop("dataTable_sLast")
-						}
-					}
-				});
-			}
-			return self;
 		},
 
 		close: function () {
@@ -9361,4 +9381,5 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 	});
 
 	return Views;
-});
+})
+;

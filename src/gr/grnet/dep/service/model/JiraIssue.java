@@ -5,6 +5,7 @@ import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -103,6 +104,7 @@ public class JiraIssue implements Serializable {
 	private String summary;
 
 	//	Περιγραφή / Description
+	@Column(length = 2048)
 	private String description;
 
 	// Σχόλιο που βλέπει ο χρήστης

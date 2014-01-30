@@ -1630,5 +1630,4 @@ define([
 	});
 
 	return Models;
-
 });
