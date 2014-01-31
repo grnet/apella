@@ -860,19 +860,12 @@ public class UserRESTService extends RESTService {
 			countQuery.setParameter("roleStatus", RoleStatus.valueOf(roleStatus));
 		}
 		// Get Result
-
-		long now = System.currentTimeMillis();
-		logger.info("totalRecords " + 0);
 		Long totalRecords = (Long) countQuery.getSingleResult();
-		logger.info("totalRecords " + (System.currentTimeMillis() - now));
-		now = System.currentTimeMillis();
-		logger.info("paginatedUsers " + 0);
 		@SuppressWarnings("unchecked")
 		List<User> paginatedUsers = searchQuery
 			.setFirstResult(iDisplayStart)
 			.setMaxResults(iDisplayLength)
 			.getResultList();
-		logger.info("paginatedUsers " + (System.currentTimeMillis() - now));
 		// Fill result
 		SearchData<User> result = new SearchData<User>();
 		result.setiTotalRecords(totalRecords);

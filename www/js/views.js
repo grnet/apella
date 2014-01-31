@@ -7190,13 +7190,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					collection: self.professors
 				});
 				self.$("div#register-professor-list").hide();
-				self.$("div#register-professor-list").html(self.professorListView.el);
+				self.$("div#register-professor-list").html(self.professorListView.render().el);
 				self.$("select").removeAttr("disabled");
 				self.$("a.btn").show();
-
-				self.professors.fetch({
-					reset: true
-				});
 			} else {
 				self.$("div#committee-professor-list").hide();
 				self.$("select").attr("disabled", true);
@@ -7308,8 +7304,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var self = this;
 			var popup, i;
 			if (_.any(self.model.get("members"), function (existingMember) {
-				return _.some(professors, function (professor) {
-					return _.isEqual(existingMember.professor.id, professor.id);
+				return professors.some(function (professor) {
+					return _.isEqual(existingMember.professor.id, professor.get("id"));
 				});
 			})) {
 				popup = new Views.PopupView({
@@ -7320,16 +7316,16 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				return;
 			}
 			// Add new members
-			for (i = 0; i < professors.length; i += 1) {
+			professors.each(function (professor) {
 				self.model.get("members").push({
 					"register": {
 						id: self.model.get("id")
 					},
-					"professor": professors[i].toJSON(),
+					"professor": professor.toJSON(),
 					internal: undefined,
 					canBeDeleted: true
 				});
-			}
+			});
 			self.model.trigger("change:members");
 			self.change($.Event("change"), {
 				triggeredBy: "user"
@@ -7450,8 +7446,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			_.bindAll(this, "selectProfessors");
 			this.template = _.template(tpl_register_edit_professor_list);
 			this.model.bind("change:members", this.render, this);
-			this.collection.bind("change", this.render, this);
-			this.collection.bind("reset", this.render, this);
 		},
 
 		events: {
@@ -7463,49 +7457,64 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.closeInnerViews();
 			self.addTitle();
 			self.$el.html(self.template());
-			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
-				self.$("table").dataTable({
-					"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
-					"sPaginationType": "bootstrap",
-					"oLanguage": {
-						"sSearch": $.i18n.prop("dataTable_sSearch"),
-						"sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
-						"sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
-						"sInfo": $.i18n.prop("dataTable_sInfo"),
-						"sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
-						"sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
-						"oPaginate": {
-							sFirst: $.i18n.prop("dataTable_sFirst"),
-							sPrevious: $.i18n.prop("dataTable_sPrevious"),
-							sNext: $.i18n.prop("dataTable_sNext"),
-							sLast: $.i18n.prop("dataTable_sLast")
+
+			self.$("table").dataTable({
+				"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+				"sPaginationType": "bootstrap",
+				"oLanguage": {
+					"sSearch": $.i18n.prop("dataTable_sSearch"),
+					"sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+					"sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+					"sInfo": $.i18n.prop("dataTable_sInfo"),
+					"sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+					"sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+					"oPaginate": {
+						sFirst: $.i18n.prop("dataTable_sFirst"),
+						sPrevious: $.i18n.prop("dataTable_sPrevious"),
+						sNext: $.i18n.prop("dataTable_sNext"),
+						sLast: $.i18n.prop("dataTable_sLast")
+					}
+				},
+				"aoColumns": [
+					{ "mData": "name" },
+					{ "mData": "id", "sType": "html"},
+					{ "mData": "profile" },
+					{ "mData": "rank", "bSortable": false },
+					{ "mData": "institution", "bSortable": false },
+					{ "mData": "subject", "bSortable": false },
+					{ "mData": "options", "sType": "html", "bSortable": false}
+				],
+				"bProcessing": true,
+				"bServerSide": true,
+				"sAjaxSource": self.collection.url,
+				"fnServerData": function (sSource, aoData, fnCallback) {
+					/* Add some extra data to the sender */
+					$.ajax({
+						"dataType": 'json',
+						"type": "POST",
+						"url": sSource,
+						"data": aoData,
+						"success": function (json) {
+							// Read Data
+							json.aaData = _.map(json.records, function (professor) {
+								return {
+									name: professor.user.basicInfo.firstname + ' ' + professor.user.basicInfo.lastname,
+									id: '<a href="#user/<%= professor.user.id %>">' + professor.user.id + '</a>',
+									profile: $.i18n.prop(professor.discriminator),
+									rank: professor.rank ? professor.rank.name : '',
+									institution: _.isEqual(professor.discriminator, 'PROFESSOR_FOREIGN') ? professor.institution : _.templates.department(professor.department),
+									subject: ((_.isObject(professor.subject) ? professor.subject.name : '') + ' ' + (_.isObject(professor.fekSubject) ? professor.fekSubject.name : '')).trim(),
+									options: _.some(self.model.get("members"), function (member) {
+										return _.isEqual(member.professor.id, professor.id);
+									}) ? '' : '<input type="checkbox" value="' + professor.id + '" data-model-id="' + professor.id + '"/>'
+								};
+							});
+							window.console.log("fnServerData:success ", json);
+							fnCallback(json);
 						}
-					},
-					"aoColumns": [
-						{ "mData": "name" },
-						{ "mData": "id", "sType": "html"},
-						{ "mData": "profile" },
-						{ "mData": "rank" },
-						{ "mData": "institution" },
-						{ "mData": "subject" },
-						{ "mData": "options", "sType": "html"}
-					],
-					"aaData": self.collection.map(function (model) {
-						var professor = model.toJSON();
-						return {
-							name: professor.user.basicInfo.firstname + ' ' + professor.user.basicInfo.lastname,
-							id: '<a href="#user/<%= professor.user.id %>">' + professor.user.id + '</a>',
-							profile: $.i18n.prop(professor.discriminator),
-							rank: professor.rank ? professor.rank.name : '',
-							institution: _.isEqual(professor.discriminator, 'PROFESSOR_FOREIGN') ? professor.institution : _.templates.department(professor.department),
-							subject: ((_.isObject(professor.subject) ? professor.subject.name : '') + ' ' + (_.isObject(professor.fekSubject) ? professor.fekSubject.name : '')).trim(),
-							options: _.some(self.model.get("members"), function (member) {
-								return _.isEqual(member.professor.id, professor.id);
-							}) ? '' : '<input type="checkbox" value="' + professor.id + '" data-model-id="' + professor.id + '"/>'
-						};
-					})
-				});
-			}
+					});
+				}
+			});
 			return self;
 		},
 
@@ -7521,10 +7530,23 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				if (!id) {
 					return;
 				}
-				professor = self.collection.get(id);
-				selectedProfessors.push(professor);
+				selectedProfessors.push(id);
 			});
-			self.collection.trigger("selected", selectedProfessors);
+			if (selectedProfessors.length > 0) {
+				self.collection.fetch({
+					cache: false,
+					reset: true,
+					wait: true,
+					data: {
+						"prof": selectedProfessors
+					},
+					processData: true,
+					success: function (collection) {
+						self.collection.trigger("selected", collection);
+					}
+				});
+			}
+
 		},
 
 		close: function () {

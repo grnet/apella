@@ -3,7 +3,6 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Institution;
-import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Register;
@@ -14,7 +13,9 @@ import gr.grnet.dep.service.model.RegisterMember.DetailedRegisterMemberView;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
+import gr.grnet.dep.service.model.SearchData;
 import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.util.StringUtil;
 
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -25,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -36,6 +38,8 @@ import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -45,6 +49,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -224,7 +229,6 @@ public class RegisterRESTService extends RESTService {
 					"where pcm.registerMember.register.id = :registerId " +
 					"and pcm.registerMember.professor.id in (:professorIds)")
 					.setParameter("registerId", existingRegister.getId())
-					.setParameter("status", PositionStatus.EPILOGI)
 					.setParameter("professorIds", removedProfessorIds)
 					.setMaxResults(1)
 					.getSingleResult();
@@ -236,7 +240,6 @@ public class RegisterRESTService extends RESTService {
 					"where e.registerMember.register.id = :registerId " +
 					"and e.registerMember.professor.id in (:professorIds)")
 					.setParameter("registerId", existingRegister.getId())
-					.setParameter("status", PositionStatus.EPILOGI)
 					.setParameter("professorIds", removedProfessorIds)
 					.setMaxResults(1)
 					.getSingleResult();
@@ -455,19 +458,10 @@ public class RegisterRESTService extends RESTService {
 		throw new RestException(Status.NOT_FOUND, "wrong.register.member.id");
 	}
 
-	/**
-	 * Returns a list of professors that can be added in this register
-	 * 
-	 * @param authToken
-	 * @param registerId
-	 * @return
-	 * @HTTP 403 X-Error-Code: insufficient.privileges
-	 * @HTTP 404 X-Error-Code: wrong.register.id
-	 */
 	@GET
 	@Path("/{id:[0-9]+}/professor")
 	@JsonView({DetailedRegisterMemberView.class})
-	public Collection<Role> getRegisterProfessors(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long registerId) {
+	public Collection<Role> getRegisterProfessors(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long registerId, @QueryParam("prof[]") List<Long> roleIds) {
 		User loggedOn = getLoggedOn(authToken);
 		Register existingRegister = em.find(Register.class, registerId);
 		// Validate:
@@ -482,17 +476,133 @@ public class RegisterRESTService extends RESTService {
 		discriminatorList.add(RoleDiscriminator.PROFESSOR_DOMESTIC);
 		discriminatorList.add(RoleDiscriminator.PROFESSOR_FOREIGN);
 
-		List<Role> professors = em.createQuery(
+		if (roleIds != null && !roleIds.isEmpty()) {
+			List<Role> professors = em.createQuery(
+				"select r from Role r " +
+					"where r.id in (:ids) " +
+					"and r.discriminator in (:discriminators) " +
+					"and r.status = :status")
+				.setParameter("discriminators", discriminatorList)
+				.setParameter("status", RoleStatus.ACTIVE)
+				.setParameter("ids", roleIds)
+				.getResultList();
+
+			return professors;
+		} else {
+			return new ArrayList<Role>();
+		}
+	}
+
+	/**
+	 * Returns a paginated list of professors that can be added in this register
+	 * 
+	 * @param authToken
+	 * @param registerId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.register.id
+	 */
+	@POST
+	@Path("/{id:[0-9]+}/professor")
+	@JsonView({DetailedRegisterMemberView.class})
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public SearchData<Role> searchRegisterProfessors(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long registerId, @Context HttpServletRequest request) {
+		User loggedOn = getLoggedOn(authToken);
+		Register existingRegister = em.find(Register.class, registerId);
+		// Validate:
+		if (existingRegister == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
+		}
+		if (!existingRegister.isUserAllowedToEdit(loggedOn)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// 1. Read parameters:
+		// Ordering
+		String orderNo = request.getParameter("iSortCol_0");
+		String orderField = request.getParameter("mDataProp_" + orderNo);
+		String orderDirection = request.getParameter("sSortDir_0");
+		// Pagination
+		int iDisplayStart = Integer.valueOf(request.getParameter("iDisplayStart"));
+		int iDisplayLength = Integer.valueOf(request.getParameter("iDisplayLength"));
+		// Filter
+		String filter = request.getParameter("sSearch");
+		// DataTables:
+		String sEcho = request.getParameter("sEcho");
+
+		// Prepare Query
+
+		StringBuilder searchQueryString = new StringBuilder(
+			"select rl.id from Role rl " +
+				"where rl.id is not null " +
+				"and rl.discriminator in (:discriminators) " +
+				"and rl.status = :status ");
+
+		if (filter != null && !filter.isEmpty()) {
+			searchQueryString.append("and (" +
+				"rl.user.basicInfo.firstname like :filter " +
+				"or rl.user.basicInfo.lastname like :filter" +
+				") ");
+		}
+		// Query Sorting
+		String orderString = null;
+		if (orderField != null && !orderField.isEmpty()) {
+			if (orderField.equals("id")) {
+				orderString = "order by r.user.id " + orderDirection;
+			} else if (orderField.equals("profile")) {
+				orderString = "order by r.discriminator " + orderDirection + ", r.user.id ";
+			} else {
+				// name is default
+				orderString = "order by r.user.basicInfo.firstname, r.user.basicInfo.lastname " + orderDirection + ", r.user.id ";
+			}
+		} else {
+			orderString = "order by r.user.basicInfo.firstname, r.user.basicInfo.lastname " + orderDirection + ", r.user.id ";
+		}
+
+		Query countQuery = em.createQuery(
+			"select count(id) from Role r " +
+				"where r.id in ( " +
+				searchQueryString.toString() +
+				" ) ");
+		Query searchQuery = em.createQuery(
 			"select r from Role r " +
-				"where r.id is not null " +
-				"and r.discriminator in (:discriminators) " +
-				"and r.status = :status")
-			.setParameter("discriminators", discriminatorList)
-			.setParameter("status", RoleStatus.ACTIVE)
-			.getResultList();
+				"left join r.user u " +
+				"where r.id in ( " +
+				searchQueryString.toString() +
+				" ) " +
+				orderString);
+
+		// Parameters:
+		List<RoleDiscriminator> discriminatorList = new ArrayList<Role.RoleDiscriminator>();
+		discriminatorList.add(RoleDiscriminator.PROFESSOR_DOMESTIC);
+		discriminatorList.add(RoleDiscriminator.PROFESSOR_FOREIGN);
+		searchQuery.setParameter("discriminators", discriminatorList);
+		countQuery.setParameter("discriminators", discriminatorList);
+
+		searchQuery.setParameter("status", RoleStatus.ACTIVE);
+		countQuery.setParameter("status", RoleStatus.ACTIVE);
+
+		if (filter != null && !filter.isEmpty()) {
+			filter = "%" + StringUtil.toUppercaseNoTones(filter, new Locale("el")) + "%";
+			searchQuery.setParameter("filter", filter);
+			countQuery.setParameter("filter", filter);
+		}
 
 		// Execute
-		return professors;
+		Long totalRecords = (Long) countQuery.getSingleResult();
+		@SuppressWarnings("unchecked")
+		List<Role> paginatedProfessors = searchQuery
+			.setFirstResult(iDisplayStart)
+			.setMaxResults(iDisplayLength)
+			.getResultList();
+
+		// Return Result
+		SearchData<Role> result = new SearchData<Role>();
+		result.setiTotalRecords(totalRecords);
+		result.setiTotalDisplayRecords(totalRecords);
+		result.setsEcho(Integer.valueOf(sEcho));
+		result.setRecords(paginatedProfessors);
+
+		return result;
 	}
 
 	@GET
