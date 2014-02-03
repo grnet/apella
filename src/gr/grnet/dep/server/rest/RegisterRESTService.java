@@ -621,11 +621,15 @@ public class RegisterRESTService extends RESTService {
 		// Generate Document
 		try {
 			InputStream is = reportService.createRegisterExportExcel(registerId);
+			String filename = "register_" +
+				(register.getInstitution().getSchacHomeOrganization() == null ? register.getInstitution().getId() : register.getInstitution().getSchacHomeOrganization()) +
+				".xls";
+
 			// Return response
 			return Response.ok(is)
 				.type(MediaType.APPLICATION_OCTET_STREAM)
 				.header("charset", "UTF-8")
-				.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode("register.xls", "UTF-8") + "\"")
+				.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(filename, "UTF-8") + "\"")
 				.build();
 		} catch (UnsupportedEncodingException e) {
 			logger.log(Level.SEVERE, "getDocument", e);

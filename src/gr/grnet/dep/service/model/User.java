@@ -310,7 +310,7 @@ public class User implements Serializable {
 	public boolean isMissingRequiredFields() {
 		return (this.basicInfo == null || this.basicInfo.isMissingRequiredFields()) ||
 			(this.contactInfo == null || this.contactInfo.isMissingRequiredFields()) ||
-			this.identification == null;
+			(this.identification == null && !this.getPrimaryRole().equals(RoleDiscriminator.PROFESSOR_DOMESTIC));
 	}
 
 	public void addRole(Role role) {

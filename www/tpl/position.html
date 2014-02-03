@@ -61,26 +61,44 @@
 </div>
 <div class="row-fluid" id="positionComplementaryDocuments">
 </div>
-<% if (manager.id) { %>
 <div class="row-fluid" id="createdBy">
-	<div class="span12">
+	<% if (createdBy.id) { %>
+	<div class="span6">
 		<p>
 			<b><%= $.i18n.prop('PositionCreatedBy') %></b>
-			<ul>
-				<li>
-					<b><%= manager.user.basicInfo.firstname %> <%= manager.user.basicInfo.lastname %></b> (<%= $.i18n.prop('INSTITUTION_MANAGER') %>)
-					<br/>
-					<%= $.i18n.prop('Email') %>: <%= manager.user.contactInfo.email %>,
-					<i><%= $.i18n.prop('Phone') %>:</i> <%= manager.user.contactInfo.phone %>
-				</li>
-				<li>
-					<b><%= manager.alternateBasicInfo.firstname %> <%= manager.alternateBasicInfo.lastname %></b> (<%= $.i18n.prop('AlternateInstitutionManager') %></b>)
-					<br/>
-					<i><%= $.i18n.prop('Email') %>:</i> <%= manager.alternateContactInfo.email %>,
-					<i><%= $.i18n.prop('Phone') %>:</i> <%= manager.alternateContactInfo.phone %>
-				</li>
-			</ul>
+		<ul>
+			<li>
+				<b><%= createdBy.basicInfo.firstname %> <%= createdBy.basicInfo.lastname %></b> (<%= $.i18n.prop(createdBy.primaryRole) %>)
+				<br/>
+				<%= $.i18n.prop('Email') %>: <%= createdBy.contactInfo.email %>,
+				<br/>
+				<i><%= $.i18n.prop('Phone') %>:</i> <%= createdBy.contactInfo.phone %>
+			</li>
+		</ul>
 		</p>
 	</div>
+	<% } %>
+	<% if (manager.id) { %>
+	<div class="span6">
+		<p>
+			<b><%= $.i18n.prop('PositionManager') %></b>
+		<ul>
+			<li>
+				<b><%= manager.user.basicInfo.firstname %> <%= manager.user.basicInfo.lastname %></b> (<%= $.i18n.prop('INSTITUTION_MANAGER') %>)
+				<br/>
+				<%= $.i18n.prop('Email') %>: <%= manager.user.contactInfo.email %>,
+				<br/>
+				<i><%= $.i18n.prop('Phone') %>:</i> <%= manager.user.contactInfo.phone %>
+			</li>
+			<li>
+				<b><%= manager.alternateBasicInfo.firstname %> <%= manager.alternateBasicInfo.lastname %></b> (<%= $.i18n.prop('AlternateInstitutionManager') %></b>)
+				<br/>
+				<i><%= $.i18n.prop('Email') %>:</i> <%= manager.alternateContactInfo.email %>,
+				<br/>
+				<i><%= $.i18n.prop('Phone') %>:</i> <%= manager.alternateContactInfo.phone %>
+			</li>
+		</ul>
+		</p>
+	</div>
+	<% } %>
 </div>
-<% } %>

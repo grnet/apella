@@ -1,5 +1,5 @@
 <h3>
-	<%= $.i18n.prop('Position') %> : <%= (name || "*") %> <br/> 
+	<%= $.i18n.prop('Position') %> : <%= (name || "*") %> <br/>
 	<%= $.i18n.prop('PositionID') %> : <%= (id ? App.utils.formatPositionID(id) : "") %>
 	<div class="btn-group">
 		<button class="btn btn-small btn-inverse"><%= $.i18n.prop('PositionStatus_' + phase.clientStatus) %></button>
@@ -18,52 +18,70 @@
 	</div>
 </h3>
 <ul class="nav nav-tabs" id="positionTabs">
-  <li><a id="selectTab" data-target="main"><%= $.i18n.prop('PositionMain') %></a></li>
-  <li><a id="selectTab" data-target="candidacies"><%= $.i18n.prop('PositionCandidacies') %></a></li>
-  <li><a id="selectTab" data-target="committee"><%= $.i18n.prop('PositionCommittee') %></a></li>
-  <li><a id="selectTab" data-target="evaluation"><%= $.i18n.prop('PositionEvaluations') %></a></li>
-  <li><a id="selectTab" data-target="nomination"><%= $.i18n.prop('PositionNomination') %></a></li>
-  <li><a id="selectTab" data-target="complementaryDocuments"><%= $.i18n.prop('PositionLoipaDioikitikaEggrafa') %></a></li>
-  <li class="dropdown">
-	<a class="dropdown-toggle" data-toggle="dropdown">
-		<%= $.i18n.prop('OtherPhases') %>
-		<span class="caret"></span>
-	</a>
-	<ul class="dropdown-menu">
-		<% _.each(phasesMap, function(value, key) { %>
+	<li><a id="selectTab" data-target="main"><%= $.i18n.prop('PositionMain') %></a></li>
+	<li><a id="selectTab" data-target="candidacies"><%= $.i18n.prop('PositionCandidacies') %></a></li>
+	<li><a id="selectTab" data-target="committee"><%= $.i18n.prop('PositionCommittee') %></a></li>
+	<li><a id="selectTab" data-target="evaluation"><%= $.i18n.prop('PositionEvaluations') %></a></li>
+	<li><a id="selectTab" data-target="nomination"><%= $.i18n.prop('PositionNomination') %></a></li>
+	<li><a id="selectTab" data-target="complementaryDocuments"><%= $.i18n.prop('PositionLoipaDioikitikaEggrafa') %></a></li>
+	<li class="dropdown">
+		<a class="dropdown-toggle" data-toggle="dropdown">
+			<%= $.i18n.prop('OtherPhases') %>
+			<span class="caret"></span>
+		</a>
+		<ul class="dropdown-menu">
+			<% _.each(phasesMap, function(value, key) { %>
 			<% if ("" + key === "" + phase.order) { %>
-				<li><a tabindex="-1"><i class="icon-eye-close"></i> <%= $.i18n.prop('PositionStatus_' + value) %></a></li>
+			<li><a tabindex="-1"><i class="icon-eye-close"></i> <%= $.i18n.prop('PositionStatus_' + value) %></a></li>
 			<% } else { %>
-				<li><a tabindex="-1" href="#position/<%= id %>/<%= key %>"><i class="icon-eye-open"></i> <%= $.i18n.prop('PositionStatus_' + value) %></a></li>				
+			<li><a tabindex="-1" href="#position/<%= id %>/<%= key %>"><i class="icon-eye-open"></i> <%= $.i18n.prop('PositionStatus_' + value) %></a></li>
 			<% } %>
-		<% }); %>
-	</ul>
-  </li>
+			<% }); %>
+		</ul>
+	</li>
 </ul>
 <div class="tab-content">
 	<div class="tab-pane active row-fluid" id="positionTabContent">
 	</div>
 </div>
-<% if (manager.id) { %>
 <div class="row-fluid" id="createdBy">
-	<div class="span12">
+	<% if (createdBy.id) { %>
+	<div class="span6">
 		<p>
 			<b><%= $.i18n.prop('PositionCreatedBy') %></b>
+		<ul>
+			<li>
+				<b><%= createdBy.basicInfo.firstname %> <%= createdBy.basicInfo.lastname %></b> (<%= $.i18n.prop(createdBy.primaryRole) %>)
+				<br/>
+				<%= $.i18n.prop('Email') %>: <%= createdBy.contactInfo.email %>,
+				<br/>
+				<i><%= $.i18n.prop('Phone') %>:</i> <%= createdBy.contactInfo.phone %>
+			</li>
+		</ul>
+		</p>
+	</div>
+	<% } %>
+	<% if (manager.id) { %>
+	<div class="span6">
+		<p>
+			<b><%= $.i18n.prop('PositionManager') %></b>
 		<ul>
 			<li>
 				<b><%= manager.user.basicInfo.firstname %> <%= manager.user.basicInfo.lastname %></b> (<%= $.i18n.prop('INSTITUTION_MANAGER') %>)
 				<br/>
 				<%= $.i18n.prop('Email') %>: <%= manager.user.contactInfo.email %>,
+				<br/>
 				<i><%= $.i18n.prop('Phone') %>:</i> <%= manager.user.contactInfo.phone %>
 			</li>
 			<li>
 				<b><%= manager.alternateBasicInfo.firstname %> <%= manager.alternateBasicInfo.lastname %></b> (<%= $.i18n.prop('AlternateInstitutionManager') %></b>)
 				<br/>
 				<i><%= $.i18n.prop('Email') %>:</i> <%= manager.alternateContactInfo.email %>,
+				<br/>
 				<i><%= $.i18n.prop('Phone') %>:</i> <%= manager.alternateContactInfo.phone %>
 			</li>
 		</ul>
 		</p>
 	</div>
+	<% } %>
 </div>
-<% } %>

@@ -793,10 +793,6 @@ public class UserRESTService extends RESTService {
 				orderString = "order by usr.username " + orderDirection + ", usr.id ";
 			} else if (orderField.equals("status")) {
 				orderString = "order by usr.status " + orderDirection + ", usr.id ";
-			} else if (orderField.equals("role")) {
-				orderString = "order by rls.discriminator " + orderDirection + ", usr.id ";
-			} else if (orderField.equals("roleStatus")) {
-				orderString = "order by rls.status " + orderDirection + ", usr.id ";
 			} else {
 				// id is default
 				orderString = "order by usr.id " + orderDirection + " ";
@@ -813,7 +809,6 @@ public class UserRESTService extends RESTService {
 
 		Query searchQuery = em.createQuery(
 			"select usr from User usr " +
-				"left join usr.roles rls " +
 				"where usr.id in ( " +
 				searchQueryString.toString() +
 				" ) " +

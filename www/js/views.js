@@ -1200,7 +1200,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						requiredIfOtherGreek: "form input[name=fathername]",
 						onlyLatin: true
 					},
-					identification: "required",
+					identification: {
+						required: (role.discriminator !== 'PROFESSOR_DOMESTIC')
+					},
 					password: {
 						required: true,
 						pwd: true,
@@ -1699,7 +1701,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						onlyLatin: true
 					},
 					identification: {
-						required: true
+						required: !self.model.hasRole('PROFESSOR_DOMESTIC')
 					},
 					password: {
 						required: self.model.isNew(),
@@ -1871,11 +1873,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}, {
 				wait: true,
 				success: function (model, resp) {
-					self.model.trigger("sync:save");
 					var popup = new Views.PopupView({
 						type: "success",
 						message: $.i18n.prop("Success")
 					});
+					self.model.trigger("sync:save");
 					popup.show();
 				},
 				error: function (model, resp, options) {
@@ -2415,8 +2417,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					{ "mData": "lastname" },
 					{ "mData": "username" },
 					{ "mData": "status" },
-					{ "mData": "role", 'sWidth': '25%'  },
-					{ "mData": "roleStatus" }
+					{ "mData": "role", 'sWidth': '25%', "bSortable": false  },
+					{ "mData": "roleStatus", "bSortable": false }
 				],
 				"bProcessing": true,
 				"bServerSide": true,
@@ -6901,8 +6903,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			$(this.el).unbind();
 			$(this.el).remove();
 
-			this.model.unbind('change', self.render, self);
-			this.model.unbind("destroy", self.close, self);
+			this.model.unbind('change', this.render, this);
+			this.model.unbind("destroy", this.close, this);
 		}
 	});
 
@@ -7269,7 +7271,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				"aaData": _.map(self.model.get("members"), function (member) {
 					return {
 						external: $.i18n.prop(member.external ? "Yes" : "No"),
-						id: '<a href="#user/<%= professor.user.id %>">' + member.professor.user.id + '</a>',
+						id: '<a href="#user/' + member.professor.user.id + '">' + member.professor.user.id + '</a>',
 						name: member.professor.user.basicInfo.firstname + ' ' + member.professor.user.basicInfo.lastname,
 						profile: $.i18n.prop(member.professor.discriminator),
 						rank: member.professor.rank ? member.professor.rank.name : '',

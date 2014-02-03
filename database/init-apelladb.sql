@@ -1,4 +1,5 @@
-﻿INSERT INTO users(
+﻿
+INSERT INTO users(
 	id, authtoken, authenticationtype, basicinfo_fathername, basicinfo_firstname, 
 	basicinfo_lastname, basicinfolatin_fathername, basicinfolatin_firstname, 
 	basicinfolatin_lastname, contactinfo_email, contactinfo_mobile, 
@@ -152,7 +153,6 @@ VALUES (7, 'ADMINISTRATOR', 'ACTIVE', '2012-09-05 13:29:18.221', NULL, 0, 7);
 INSERT INTO administrator (id) 
 VALUES (7);
 
-
 INSERT INTO users(
 	id, authtoken, authenticationtype, basicinfo_fathername, basicinfo_firstname, 
 	basicinfo_lastname, basicinfolatin_fathername, basicinfolatin_firstname, 
@@ -175,7 +175,27 @@ VALUES (8, 'ADMINISTRATOR', 'ACTIVE', '2012-09-05 13:29:18.221', NULL, 0, 8);
 INSERT INTO administrator (id) 
 VALUES (8);
 
+INSERT INTO users(
+	id, authtoken, authenticationtype, basicinfo_fathername, basicinfo_firstname, 
+	basicinfo_lastname, basicinfolatin_fathername, basicinfolatin_firstname, 
+	basicinfolatin_lastname, contactinfo_email, contactinfo_mobile, 
+	contactinfo_phone, creationdate, identification, password, passwordsalt, 
+	permanentauthtoken, shibbolethinfo_affiliation, shibbolethinfo_givenname, 
+	shibbolethinfo_remoteuser, shibbolethinfo_schachomeorganization, 
+	shibbolethinfo_sn, status, statusdate, username, verificationnumber, version)
+VALUES (9, '85jbeD4HO6xtI26631uELZ3jCDg=', 'USERNAME', '-', 'ΓΙΩΡΓΟΣ',
+	'ΨΑΡΡΟΣ', '-', 'GIORGOS', 
+	'PSARROS', 'psarros.georgios@gmail.com', '6900000000', 
+	NULL, '2012-07-04 15:49:29.109', '', 'hNOCXEZfAxgjvRQMGlk7tuXfMk0=', 'QLYo0saNqlODWg==',
+	NULL, NULL, NULL, 
+	NULL, NULL, 
+	NULL, 'ACTIVE', '2012-07-04 15:49:29.109', 'gpsarros', NULL, 1);
 
+INSERT INTO roles (id, discriminator, status, statusdate, statusenddate, version, user_id) 
+VALUES (9, 'ADMINISTRATOR', 'ACTIVE', '2012-09-05 13:29:18.221', NULL, 0, 9);
+
+INSERT INTO administrator (id) 
+VALUES (9);
 
 INSERT INTO users(
 	id, authtoken, authenticationtype, basicinfo_fathername, basicinfo_firstname, 
