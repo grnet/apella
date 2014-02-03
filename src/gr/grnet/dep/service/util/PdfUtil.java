@@ -119,7 +119,7 @@ public class PdfUtil {
 			institutionTable.setWidthPercentage(100);
 			institutionTable.setWidths(new float[] {30, 70});
 			institutionTable.addCell(createCell(new Phrase("ΙΔΡΥΜΑ", normalFont), Element.ALIGN_LEFT, 1));
-			institutionTable.addCell(createCell(new Phrase(im.getInstitution().getName(), normalFont), Element.ALIGN_LEFT, 1));
+			institutionTable.addCell(createCell(new Phrase(im.getInstitution().getName().get("el"), normalFont), Element.ALIGN_LEFT, 1));
 			switch (im.getVerificationAuthority()) {
 				case DEAN:
 					institutionTable.addCell(createCell(new Phrase("ΟΝ/ΜΟ ΠΡΥΤΑΝΗ", normalFont), Element.ALIGN_LEFT, 1));

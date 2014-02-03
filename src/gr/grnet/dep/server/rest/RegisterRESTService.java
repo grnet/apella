@@ -314,7 +314,7 @@ public class RegisterRESTService extends RESTService {
 							{
 								put("firstname", savedMember.getProfessor().getUser().getBasicInfo().getFirstname());
 								put("lastname", savedMember.getProfessor().getUser().getBasicInfo().getLastname());
-								put("institution", savedMember.getRegister().getInstitution().getName());
+								put("institution", savedMember.getRegister().getInstitution().getName().get("el"));
 							}
 						}));
 				} else {
@@ -327,7 +327,7 @@ public class RegisterRESTService extends RESTService {
 							{
 								put("firstname", savedMember.getProfessor().getUser().getBasicInfo().getFirstname());
 								put("lastname", savedMember.getProfessor().getUser().getBasicInfo().getLastname());
-								put("institution", savedMember.getRegister().getInstitution().getName());
+								put("institution", savedMember.getRegister().getInstitution().getName().get("el"));
 							}
 						}));
 				}
@@ -345,7 +345,7 @@ public class RegisterRESTService extends RESTService {
 							{
 								put("firstname", removedMember.getProfessor().getUser().getBasicInfo().getFirstname());
 								put("lastname", removedMember.getProfessor().getUser().getBasicInfo().getLastname());
-								put("institution", removedMember.getRegister().getInstitution().getName());
+								put("institution", removedMember.getRegister().getInstitution().getName().get("el"));
 							}
 						}));
 				} else {
@@ -358,7 +358,7 @@ public class RegisterRESTService extends RESTService {
 							{
 								put("firstname", removedMember.getProfessor().getUser().getBasicInfo().getFirstname());
 								put("lastname", removedMember.getProfessor().getUser().getBasicInfo().getLastname());
-								put("institution", removedMember.getRegister().getInstitution().getName());
+								put("institution", removedMember.getRegister().getInstitution().getName().get("el"));
 							}
 						}));
 				}

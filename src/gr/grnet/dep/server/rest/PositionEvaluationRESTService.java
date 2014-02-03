@@ -281,9 +281,9 @@ public class PositionEvaluationRESTService extends RESTService {
 								put("firstname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
 								put("lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", existingEvaluation.getPosition().getName());
-								put("institution", existingEvaluation.getPosition().getDepartment().getSchool().getInstitution().getName());
-								put("school", existingEvaluation.getPosition().getDepartment().getSchool().getName());
-								put("department", existingEvaluation.getPosition().getDepartment().getName());
+								put("institution", existingEvaluation.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school", existingEvaluation.getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department", existingEvaluation.getPosition().getDepartment().getName().get("el"));
 							}
 						}));
 				}
@@ -303,9 +303,9 @@ public class PositionEvaluationRESTService extends RESTService {
 								put("firstname", removedEvaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
 								put("lastname", removedEvaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", existingEvaluation.getPosition().getName());
-								put("institution", existingEvaluation.getPosition().getDepartment().getSchool().getInstitution().getName());
-								put("school", existingEvaluation.getPosition().getDepartment().getSchool().getName());
-								put("department", existingEvaluation.getPosition().getDepartment().getName());
+								put("institution", existingEvaluation.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school", existingEvaluation.getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department", existingEvaluation.getPosition().getDepartment().getName().get("el"));
 							}
 						}));
 				}
@@ -323,9 +323,9 @@ public class PositionEvaluationRESTService extends RESTService {
 								put("firstname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
 								put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", existingEvaluation.getPosition().getName());
-								put("institution", existingEvaluation.getPosition().getDepartment().getSchool().getInstitution().getName());
-								put("school", existingEvaluation.getPosition().getDepartment().getSchool().getName());
-								put("department", existingEvaluation.getPosition().getDepartment().getName());
+								put("institution", existingEvaluation.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school", existingEvaluation.getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department", existingEvaluation.getPosition().getDepartment().getName().get("el"));
 							}
 						}));
 				}
@@ -340,9 +340,9 @@ public class PositionEvaluationRESTService extends RESTService {
 								put("firstname", candidacy.getCandidate().getUser().getBasicInfo().getFirstname());
 								put("lastname", candidacy.getCandidate().getUser().getBasicInfo().getLastname());
 								put("position", existingEvaluation.getPosition().getName());
-								put("institution", existingEvaluation.getPosition().getDepartment().getSchool().getInstitution().getName());
-								put("school", existingEvaluation.getPosition().getDepartment().getSchool().getName());
-								put("department", existingEvaluation.getPosition().getDepartment().getName());
+								put("institution", existingEvaluation.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school", existingEvaluation.getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department", existingEvaluation.getPosition().getDepartment().getName().get("el"));
 							}
 						}));
 				}
@@ -610,9 +610,9 @@ public class PositionEvaluationRESTService extends RESTService {
 								put("firstname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
 								put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", eFile.getEvaluator().getEvaluation().getPosition().getName());
-								put("institution", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getInstitution().getName());
-								put("school", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getName());
-								put("department", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getName());
+								put("institution", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getName().get("el"));
 							}
 						}));
 				}
@@ -627,9 +627,9 @@ public class PositionEvaluationRESTService extends RESTService {
 								put("firstname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
 								put("lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", eFile.getEvaluator().getEvaluation().getPosition().getName());
-								put("institution", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getInstitution().getName());
-								put("school", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getName());
-								put("department", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getName());
+								put("institution", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getName().get("el"));
 							}
 						}));
 				}
@@ -645,9 +645,9 @@ public class PositionEvaluationRESTService extends RESTService {
 								put("firstname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
 								put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", eFile.getEvaluator().getEvaluation().getPosition().getName());
-								put("institution", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getInstitution().getName());
-								put("school", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getName());
-								put("department", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getName());
+								put("institution", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getName().get("el"));
 							}
 						}));
 				}
@@ -662,9 +662,9 @@ public class PositionEvaluationRESTService extends RESTService {
 								put("firstname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
 								put("lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", eFile.getEvaluator().getEvaluation().getPosition().getName());
-								put("institution", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getInstitution().getName());
-								put("school", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getName());
-								put("department", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getName());
+								put("institution", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getName().get("el"));
 							}
 						}));
 				}

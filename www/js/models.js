@@ -796,7 +796,7 @@ define([
 					name: undefined,
 					institution: {
 						id: undefined,
-						name: undefined,
+						name: {},
 						category: undefined,
 						authenticationType: undefined
 					}

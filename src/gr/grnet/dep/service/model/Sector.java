@@ -1,10 +1,13 @@
 package gr.grnet.dep.service.model;
 
-import javax.persistence.Column;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.Version;
+import javax.persistence.MapKeyColumn;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @Entity
@@ -12,17 +15,15 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Sector {
 
 	@Id
-	@GeneratedValue
 	private Long id;
 
-	@Version
-	private int version;
+	private Long areaId;
 
-	@Column(nullable = false)
-	private String area;
+	private Long subjectId;
 
-	@Column(nullable = false)
-	private String category;
+	@ElementCollection(fetch = FetchType.EAGER)
+	@MapKeyColumn(name = "locale")
+	private Map<String, SectorName> name = new HashMap<String, SectorName>();
 
 	public Long getId() {
 		return id;
@@ -32,20 +33,28 @@ public class Sector {
 		this.id = id;
 	}
 
-	public String getArea() {
-		return area;
+	public Long getAreaId() {
+		return areaId;
 	}
 
-	public void setArea(String area) {
-		this.area = area;
+	public void setAreaId(Long areaId) {
+		this.areaId = areaId;
 	}
 
-	public String getCategory() {
-		return category;
+	public Long getSubjectId() {
+		return subjectId;
 	}
 
-	public void setCategory(String category) {
-		this.category = category;
+	public void setSubjectId(Long subjectId) {
+		this.subjectId = subjectId;
+	}
+
+	public Map<String, SectorName> getName() {
+		return name;
+	}
+
+	public void setName(Map<String, SectorName> name) {
+		this.name = name;
 	}
 
 }

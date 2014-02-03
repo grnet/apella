@@ -316,9 +316,9 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 								put("firstname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
 								put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", cdFile.getComplementaryDocuments().getPosition().getName());
-								put("institution", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName());
-								put("school", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getName());
-								put("department", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName());
+								put("institution", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName().get("el"));
 							}
 						}));
 				}
@@ -334,9 +334,9 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 							put("firstname", candidacy.getCandidate().getUser().getBasicInfo().getFirstname());
 							put("lastname", candidacy.getCandidate().getUser().getBasicInfo().getLastname());
 							put("position", cdFile.getComplementaryDocuments().getPosition().getName());
-							put("institution", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName());
-							put("school", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getName());
-							put("department", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName());
+							put("institution", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+							put("school", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getName().get("el"));
+							put("department", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName().get("el"));
 						}
 					}));
 			}
@@ -352,9 +352,9 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 								put("firstname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
 								put("lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", cdFile.getComplementaryDocuments().getPosition().getName());
-								put("institution", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName());
-								put("school", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getName());
-								put("department", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName());
+								put("institution", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName().get("el"));
 							}
 						}));
 				}

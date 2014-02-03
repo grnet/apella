@@ -5,6 +5,7 @@ import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.ProfessorForeign;
 import gr.grnet.dep.service.model.RegisterMember;
+import gr.grnet.dep.service.model.SectorName;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -163,19 +164,19 @@ public class ReportService {
 					cell.setCellStyle(textStyle);
 
 					cell = row.createCell(colNum++);
-					cell.setCellValue(professorDomestic.getRank().getName());
+					cell.setCellValue(professorDomestic.getRank().getName().get("el"));
 					cell.setCellStyle(textStyle);
 
 					cell = row.createCell(colNum++);
-					cell.setCellValue(professorDomestic.getDepartment().getSchool().getInstitution().getName());
+					cell.setCellValue(professorDomestic.getDepartment().getSchool().getInstitution().getName().get("el"));
 					cell.setCellStyle(textStyle);
 
 					cell = row.createCell(colNum++);
-					cell.setCellValue(professorDomestic.getDepartment().getSchool().getName());
+					cell.setCellValue(professorDomestic.getDepartment().getSchool().getName().get("el"));
 					cell.setCellStyle(textStyle);
 
 					cell = row.createCell(colNum++);
-					cell.setCellValue(professorDomestic.getDepartment().getName());
+					cell.setCellValue(professorDomestic.getDepartment().getName().get("el"));
 					cell.setCellStyle(textStyle);
 
 					cell = row.createCell(colNum++);
@@ -200,7 +201,7 @@ public class ReportService {
 					cell.setCellStyle(textStyle);
 
 					cell = row.createCell(colNum++);
-					cell.setCellValue(professorForeign.getRank().getName());
+					cell.setCellValue(professorForeign.getRank().getName().get("el"));
 					cell.setCellStyle(textStyle);
 
 					cell = row.createCell(colNum++);
@@ -407,15 +408,15 @@ public class ReportService {
 			cell.setCellStyle(textStyle);
 
 			cell = row.createCell(colNum++);
-			cell.setCellValue(position.getDepartment().getSchool().getInstitution().getName());
+			cell.setCellValue(position.getDepartment().getSchool().getInstitution().getName().get("el"));
 			cell.setCellStyle(textStyle);
 
 			cell = row.createCell(colNum++);
-			cell.setCellValue(position.getDepartment().getSchool().getName());
+			cell.setCellValue(position.getDepartment().getSchool().getName().get("el"));
 			cell.setCellStyle(textStyle);
 
 			cell = row.createCell(colNum++);
-			cell.setCellValue(position.getDepartment().getName());
+			cell.setCellValue(position.getDepartment().getName().get("el"));
 			cell.setCellStyle(textStyle);
 
 			cell = row.createCell(colNum++);
@@ -426,8 +427,9 @@ public class ReportService {
 			cell.setCellValue(position.getSubject().getName());
 			cell.setCellStyle(textStyle);
 
+			SectorName sectorName = position.getSector().getName().get("el");
 			cell = row.createCell(colNum++);
-			cell.setCellValue(position.getSector().getCategory() + " / " + position.getSector().getArea());
+			cell.setCellValue(sectorName.getArea() + " / " + sectorName.getSubject());
 			cell.setCellStyle(textStyle);
 
 			cell = row.createCell(colNum++);

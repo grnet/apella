@@ -1,13 +1,17 @@
 package gr.grnet.dep.service.model;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.MapKeyColumn;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
-
-import org.hibernate.validator.constraints.NotEmpty;
 
 @Entity
 @XmlRootElement
@@ -16,9 +20,9 @@ public class Institution {
 	@Id
 	private Long id;
 
-	@NotNull
-	@NotEmpty
-	private String name;
+	@ElementCollection(fetch = FetchType.EAGER)
+	@MapKeyColumn(name = "locale")
+	private Map<String, String> name = new HashMap<String, String>();
 
 	private String schacHomeOrganization;
 
@@ -45,11 +49,11 @@ public class Institution {
 		this.category = category;
 	}
 
-	public String getName() {
+	public Map<String, String> getName() {
 		return name;
 	}
 
-	public void setName(String name) {
+	public void setName(Map<String, String> name) {
 		this.name = name;
 	}
 
