@@ -1002,9 +1002,16 @@ define([
 		urlRoot: "/dep/rest/institution",
 		defaults: {
 			"id": undefined,
-			"name": undefined,
+			"name": {},
 			category: undefined,
 			authenticationType: undefined
+		},
+
+		getName: function (locale) {
+			var name = this.get("name");
+			locale = locale || 'el';
+			return name[locale] || name.el;
+
 		}
 	});
 
@@ -1020,16 +1027,19 @@ define([
 		urlRoot: "/dep/rest/school",
 		defaults: {
 			id: undefined,
-			name: undefined,
+			name: {},
 			institution: {
 				id: undefined,
-				name: undefined,
+				name: {},
 				category: undefined,
 				authenticationType: undefined
 			}
 		},
-		getDescription: function () {
-			return this.get("instituion").name + ", " + this.get("name");
+		getName: function (locale) {
+			var name = this.get("name");
+			locale = locale || 'el';
+			return name[locale] || name.el;
+
 		}
 	});
 
@@ -1045,20 +1055,23 @@ define([
 		urlRoot: "/dep/rest/department",
 		defaults: {
 			"id": undefined,
-			"name": undefined,
+			"name": {},
 			"school": {
 				id: undefined,
-				name: undefined,
+				name: {},
 				institution: {
 					id: undefined,
-					name: undefined,
+					name: {},
 					category: undefined,
 					authenticationType: undefined
 				}
 			}
 		},
-		getDescription: function () {
-			return this.get("school").institution.name + ", " + this.get("school").name + ", " + this.get("name");
+		getName: function (locale) {
+			var name = this.get("name");
+			locale = locale || 'el';
+			return name[locale] || name.el;
+
 		}
 	});
 
@@ -1102,7 +1115,13 @@ define([
 		urlRoot: "/dep/rest/rank",
 		defaults: {
 			"id": undefined,
-			"name": undefined
+			"name": {}
+		},
+		getName: function (locale) {
+			var name = this.get("name");
+			locale = locale || 'el';
+			return name[locale] || name.el;
+
 		}
 	});
 
@@ -1587,8 +1606,14 @@ define([
 		urlRoot: "/dep/rest/sector/",
 		defaults: {
 			id: undefined,
-			area: undefined,
-			category: undefined
+			areaId: undefined,
+			subjectId: undefined,
+			name: {}
+		},
+		getName: function (locale) {
+			var name = this.get("name");
+			locale = locale || 'el';
+			return name[locale] || name.el;
 		}
 	});
 
@@ -1596,7 +1621,7 @@ define([
 		model: Models.Sector,
 		url: "/dep/rest/sector/",
 		comparator: function (model) {
-			return model.get("area") + model.get("category");
+			return model.get("areaId") + model.get("subjectId");
 		}
 
 	});
