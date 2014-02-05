@@ -1,6 +1,6 @@
 <form onsubmit="return false">
 	<fieldset>
-		<legend><b><%= $.i18n.prop('Register') %>:</b> <%= institution.name %></legend>
+		<legend><b><%= $.i18n.prop('Register') %>:</b> <%= institution.name[App.locale] %></legend>
 		<input type="hidden" name="institution" value="<%= institution.id %>"/>
 		<label class="control-label" for="registerMembers"><%= $.i18n.prop('RegisterMembers') %>:</label>
 		<br/>

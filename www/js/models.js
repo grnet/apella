@@ -1079,7 +1079,7 @@ define([
 		url: "/dep/rest/department",
 		model: Models.Department,
 		comparator: function (department) {
-			return department.getDescription();
+			return department.getName(App.locale);
 		}
 	});
 

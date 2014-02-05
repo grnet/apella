@@ -49,17 +49,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		fileViews: {},
 
-		locale: (function () {
-			// Cache locale to avoid reading the locale cookie every time
-			var locale = App.utils.getCookie("apella-lang") ? App.utils.getCookie("apella-lang") : "el";
-			return function() {
-				return locale;
-			};
-		}()),
-
 		initialize: function (options) {
 			var self = this;
-			_.bindAll(self, "render", "locale", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "addTitle", "close", "closeInnerViews");
+			_.bindAll(self, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "addTitle", "close", "closeInnerViews");
 			self.addTitle();
 		},
 
@@ -1144,9 +1136,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							return _.isEqual(institution.get("category"), "INSTITUTION");
 						}), function (institution) {
 							if (_.isObject(role.institution) && _.isEqual(institution.id, role.institution.id)) {
-								self.$("select[name='institution']").append("<option value='" + institution.get("id") + "' selected>" + institution.getName(self.locale()) + "</option>");
+								self.$("select[name='institution']").append("<option value='" + institution.get("id") + "' selected>" + institution.getName(App.locale) + "</option>");
 							} else {
-								self.$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.getName(self.locale()) + "</option>");
+								self.$("select[name='institution']",
+									self.$el).append("<option value='" + institution.get("id") + "'>" + institution.getName(App.locale) + "</option>");
 							}
 						});
 						self.$("select[name='institution']").trigger("change", {
@@ -3241,9 +3234,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 								}
 							}), function (rank) {
 								if (_.isObject(self.model.get("rank")) && _.isEqual(rank.id, self.model.get("rank").id)) {
-									$("select[name='rank']", self.$el).append("<option value='" + rank.get("id") + "' selected>" + rank.getName(self.locale()) + "</option>");
+									$("select[name='rank']", self.$el).append("<option value='" + rank.get("id") + "' selected>" + rank.getName(App.locale) + "</option>");
 								} else {
-									$("select[name='rank']", self.$el).append("<option value='" + rank.get("id") + "'>" + rank.getName(self.locale()) + "</option>");
+									$("select[name='rank']", self.$el).append("<option value='" + rank.get("id") + "'>" + rank.getName(App.locale) + "</option>");
 								}
 							});
 
@@ -3367,9 +3360,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						success: function (collection, resp) {
 							collection.each(function (rank) {
 								if (_.isObject(self.model.get("rank")) && _.isEqual(rank.id, self.model.get("rank").id)) {
-									$("select[name='rank']", self.$el).append("<option value='" + rank.get("id") + "' selected>" + rank.getName(self.locale()) + "</option>");
+									$("select[name='rank']", self.$el).append("<option value='" + rank.get("id") + "' selected>" + rank.getName(App.locale) + "</option>");
 								} else {
-									$("select[name='rank']", self.$el).append("<option value='" + rank.get("id") + "'>" + rank.getName(self.locale()) + "</option>");
+									$("select[name='rank']", self.$el).append("<option value='" + rank.get("id") + "'>" + rank.getName(App.locale) + "</option>");
 								}
 							});
 						},
@@ -3469,9 +3462,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							}), function (institution) {
 								if (_.isObject(self.model.get("institution")) && _.isEqual(institution.id, self.model.get("institution").id)) {
 									$("select[name='institution']",
-										self.$el).append("<option value='" + institution.get("id") + "' selected>" + institution.getName(self.locale()) + "</option>");
+										self.$el).append("<option value='" + institution.get("id") + "' selected>" + institution.getName(App.locale) + "</option>");
 								} else {
-									$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.getName(self.locale()) + "</option>");
+									$("select[name='institution']",
+										self.$el).append("<option value='" + institution.get("id") + "'>" + institution.getName(App.locale) + "</option>");
 								}
 							});
 							self.$("select[name='institution']").trigger("change", {
@@ -3508,9 +3502,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							}), function (institution) {
 								if (_.isObject(self.model.get("institution")) && _.isEqual(institution.id, self.model.get("institution").id)) {
 									$("select[name='institution']",
-										self.$el).append("<option value='" + institution.get("id") + "' selected>" + institution.getName(self.locale()) + "</option>");
+										self.$el).append("<option value='" + institution.get("id") + "' selected>" + institution.getName(App.locale) + "</option>");
 								} else {
-									$("select[name='institution']", self.$el).append("<option value='" + institution.get("id") + "'>" + institution.getName(self.locale()) + "</option>");
+									$("select[name='institution']",
+										self.$el).append("<option value='" + institution.get("id") + "'>" + institution.getName(App.locale) + "</option>");
 								}
 							});
 							self.$("select[name='institution']").trigger("change", {
@@ -5350,15 +5345,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				var selectedAreaId;
 				self.$("select[name='sector']").empty();
 				selectedAreaId = self.$("select[name='area']").val();
-
 				self.$("select[name='sector']").append("<option value=''>--</option>");
 				App.sectors.filter(function (sector) {
-					return sector.get('areaId') === selectedAreaId;
+					return sector.get('areaId') === +selectedAreaId;
 				}).forEach(function (sector) {
 						if (_.isObject(self.model.get("sector")) && _.isEqual(self.model.get("sector").id, sector.get("id"))) {
-							self.$("select[name='sector']").append("<option value='" + sector.get("id") + "' selected>" + sector.get("name")[self.locale()].subject + "</option>");
+							self.$("select[name='sector']").append("<option value='" + sector.get("id") + "' selected>" + sector.get("name")[App.locale].subject + "</option>");
 						} else {
-							self.$("select[name='sector']").append("<option value='" + sector.get("id") + "'>" + sector.get("name")[self.locale()].subject + "</option>");
+							self.$("select[name='sector']").append("<option value='" + sector.get("id") + "'>" + sector.get("name")[App.locale].subject + "</option>");
 						}
 					});
 				self.$("select[name='sector']").trigger("change", {
@@ -5371,11 +5365,13 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				success: function (collection, resp) {
 					var areas = collection.map(function (sector) {
 						return {
-							areaId : sector.get("areaId"),
-							name : sector.get("name")[self.locale()].area
+							areaId: sector.get("areaId"),
+							name: sector.get("name")[App.locale].area
 						};
 					});
-					areas = _.uniq(areas);
+					areas = _.uniq(areas, function(area) {
+						return area.areaId;
+					});
 					self.$("select[name='area']").append("<option value=''>--</option>");
 					_.each(areas, function (area) {
 						if (_.isObject(self.model.get("sector")) && _.isEqual(self.model.get("sector").areaId, area.areaId)) {
@@ -7285,7 +7281,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						id: '<a href="#user/' + member.professor.user.id + '">' + member.professor.user.id + '</a>',
 						name: member.professor.user.basicInfo.firstname + ' ' + member.professor.user.basicInfo.lastname,
 						profile: $.i18n.prop(member.professor.discriminator),
-						rank: member.professor.rank ? member.professor.rank.name[self.locale()] : '',
+						rank: member.professor.rank ? member.professor.rank.name[App.locale] : '',
 						institution: _.isEqual(member.professor.discriminator,
 							'PROFESSOR_FOREIGN') ? member.professor.institution : _.templates.department(member.professor.department),
 						subject: ((_.isObject(member.professor.subject) ? member.professor.subject.name : '') + ' ' + (_.isObject(member.professor.fekSubject) ? member.professor.fekSubject.name : '')).trim(),
@@ -7514,7 +7510,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 									name: professor.user.basicInfo.firstname + ' ' + professor.user.basicInfo.lastname,
 									id: '<a href="#user/<%= professor.user.id %>">' + professor.user.id + '</a>',
 									profile: $.i18n.prop(professor.discriminator),
-									rank: professor.rank ? professor.rank.name[self.locale()] : '',
+									rank: professor.rank ? professor.rank.name[App.locale] : '',
 									institution: _.isEqual(professor.discriminator, 'PROFESSOR_FOREIGN') ? professor.institution : _.templates.department(professor.department),
 									subject: ((_.isObject(professor.subject) ? professor.subject.name : '') + ' ' + (_.isObject(professor.fekSubject) ? professor.fekSubject.name : '')).trim(),
 									options: _.some(self.model.get("members"), function (member) {
@@ -8218,7 +8214,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				if (!institution_node) {
 					institution_node = {
 						type: 'institution',
-						title: institution.name,
+						title: institution.name[App.locale],
 						key: institution.id,
 						tooltip: $.i18n.prop("Institution"),
 						expand: false,
@@ -8235,13 +8231,13 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				if (!school_node) {
 					school_node = {
 						type: 'school',
-						title: school.name[self.locale()],
+						title: school.name[App.locale],
 						key: school.id,
 						tooltip: $.i18n.prop("School"),
 						expand: false,
 						isFolder: true,
 						unselectable: false,
-						hideCheckbox: (school.name[self.locale()] === '-'),
+						hideCheckbox: (school.name[App.locale] === '-'),
 						children: []
 					};
 					institution_node.children.push(school_node);
@@ -8249,10 +8245,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				// 3. Create DepartmentNode in SchoolNode's Children
 				school_node.children.push({
 					type: 'department',
-					title: department.getName(self.locale()),
+					title: department.getName(App.locale),
 					key: department.get("id"),
 					tooltip: $.i18n.prop("Department"),
-					hideCheckbox: (department.getName(self.locale()) === '-'),
+					hideCheckbox: (department.getName(App.locale) === '-'),
 					select: _.any(self.model.get("departments"), function (selectedDepartment) {
 						return _.isEqual(selectedDepartment.id, department.get("id"));
 					})
@@ -8290,9 +8286,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var treeData = sectors.reduce(function (memo, sector) {
 				var sectorId = sector.get("id");
 				var areaId = sector.get("areaId");
-				var areaName = sector.get("name")[self.locale()].area;
+				var areaName = sector.get("name")[App.locale].area;
 				var node = _.find(memo, function (item) {
-					return item.key === area;
+					return item.key === areaId;
 				});
 				if (!node) {
 					node = {
@@ -8306,7 +8302,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					memo.push(node);
 				}
 				node.children.push({
-					title: sector.get("name")[self.locale()].subject,
+					title: sector.get("name")[App.locale].subject,
 					key: sectorId,
 					select: _.any(self.model.get("sectors"), function (selectedSector) {
 						return _.isEqual(selectedSector.id, sectorId);
@@ -8732,7 +8728,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 									'<strong>' + escape(item.professor.user.basicInfo.firstname) + " " + escape(item.professor.user.basicInfo.lastname) + '</strong><br/>' +
 									$.i18n.prop(item.professor.discriminator) + '<br/>' +
 									(item.professor.discriminator === "PROFESSOR_DOMESTIC" ?
-										($.i18n.prop('Institution') + ': ' + escape(item.professor.department.school.institution.name[self.locale()]) + "<br/>" + $.i18n.prop('School') + ': ' + escape(item.professor.department.school.name[self.locale()]) + "<br/>" + $.i18n.prop('Department') + ": " + escape(item.professor.department.name[self.locale()])) :
+										($.i18n.prop('Institution') + ': ' + escape(item.professor.department.school.institution.name[App.locale]) + "<br/>" + $.i18n.prop('School') + ': ' + escape(item.professor.department.school.name[App.locale]) + "<br/>" + $.i18n.prop('Department') + ": " + escape(item.professor.department.name[App.locale])) :
 										($.i18n.prop('Institution') + ': ' + escape(item.professor.institution) + '<br/>')) +
 									'</div>';
 							},
@@ -8742,7 +8738,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 									'<strong>' + escape(item.professor.user.basicInfo.firstname) + " " + escape(item.professor.user.basicInfo.lastname) + '</strong><br/>' +
 									$.i18n.prop(item.professor.discriminator) + '<br/>' +
 									(item.professor.discriminator === "PROFESSOR_DOMESTIC" ?
-										($.i18n.prop('Institution') + ': ' + escape(item.professor.department.school.institution.name[self.locale()]) + "<br/>" + $.i18n.prop('School') + ': ' + escape(item.professor.department.school.name[self.locale()]) + "<br/>" + $.i18n.prop('Department') + ": " + escape(item.professor.department.name[self.locale()])) :
+										($.i18n.prop('Institution') + ': ' + escape(item.professor.department.school.institution.name[App.locale]) + "<br/>" + $.i18n.prop('School') + ': ' + escape(item.professor.department.school.name[App.locale]) + "<br/>" + $.i18n.prop('Department') + ": " + escape(item.professor.department.name[App.locale])) :
 										($.i18n.prop('Institution') + ': ' + escape(item.professor.institution) + '<br/>')) +
 									'</div>';
 							}

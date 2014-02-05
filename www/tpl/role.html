@@ -13,7 +13,7 @@
 			<div id="profileFile"></div>
 		</dd>
 		<dt><%= $.i18n.prop('Rank') %></dt>
-		<dd><% if (!_.isUndefined(rank)) { %><%= rank.name %><% } %></dd>
+		<dd><% if (!_.isUndefined(rank)) { %><%= rank.name[App.locale] %><% } %></dd>
 		<dt><%= $.i18n.prop('Subject') %></dt>
 		<dd><% if (!_.isUndefined(subject)) { %><%= subject.name %><% } %></dd>
 		<dt><%= $.i18n.prop('FEK') %></dt>
@@ -43,7 +43,7 @@
 			<div id="profileFile"></div>
 		</dd>
 		<dt><%= $.i18n.prop('Rank') %></dt>
-		<dd><% if (!_.isUndefined(rank)) { %><%= rank.name %><% } %></dd>
+		<dd><% if (!_.isUndefined(rank)) { %><%= rank.name[App.locale] %><% } %></dd>
 		<dt><%= $.i18n.prop('Subject') %></dt>
 		<dd><% if (!_.isUndefined(subject)) { %><%= subject.name %><% } %></dd>
 		<dt><%= $.i18n.prop('SpeakingGreek') %></dt>
@@ -55,7 +55,7 @@
 	<h3><%= $.i18n.prop('INSTITUTION_MANAGER') %></h3>
 	<dl class="dl-glossary">
 		<dt><%= $.i18n.prop('Institution') %></dt>
-		<dd><%= institution.name %></dd>
+		<dd><%= institution.name[App.locale] %></dd>
 	</dl>
 </div>
 <% } %> <% if (discriminator === "INSTITUTION_ASSISTANT") { %>
@@ -63,7 +63,7 @@
 	<h3><%= $.i18n.prop('INSTITUTION_ASSISTANT') %></h3>
 	<dl class="dl-glossary">
 		<dt><%= $.i18n.prop('Institution') %></dt>
-		<dd><%= institution.name %></dd>
+		<dd><%= institution.name[App.locale] %></dd>
 	</dl>
 </div>
 <% } %> <% if (discriminator === "MINISTRY_MANAGER") { %>

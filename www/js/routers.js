@@ -13,6 +13,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			$(document).ajaxStart(App.blockUI);
 			$(document).ajaxStop(App.unblockUI);
 
+			App.locale = App.utils.getLocale();
 			languageView = new Views.LanguageView({});
 			languageView.render();
 
@@ -33,6 +34,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			$(document).ajaxStart(App.blockUI);
 			$(document).ajaxStop(App.unblockUI);
 
+			App.locale = App.utils.getLocale();
 			App.institutions = new Models.Institutions();
 
 			languageView = new Views.LanguageView({});
@@ -137,6 +139,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			$(document).ajaxStart(App.blockUI);
 			$(document).ajaxStop(App.unblockUI);
 
+			App.locale = App.utils.getLocale();
+
 			languageView = new Views.LanguageView({});
 			languageView.render();
 
@@ -194,6 +198,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 			$(document).ajaxStart(App.blockUI);
 			$(document).ajaxStop(App.unblockUI);
+
+			App.locale = App.utils.getLocale();
 
 			languageView = new Views.LanguageView({});
 			languageView.render();
@@ -1178,7 +1184,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 			self.clear();
 			userSearchView = new Views.UserSearchView({
-				'searchURL' : (new Models.Users()).url + "/search"
+				'searchURL': (new Models.Users()).url + "/search"
 			});
 			self.refreshBreadcrumb([ $.i18n.prop('menu_searchusers') ]);
 			$("#content").html(userSearchView.render().el);

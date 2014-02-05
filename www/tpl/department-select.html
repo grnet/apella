@@ -23,9 +23,9 @@
 	<% _.each(departments, function(_department) { %>
 	<tr>
 		<td><%= $.i18n.prop('InstitutionCategory_' + _department.school.institution.category) %></td>
-		<td><%= _department.school.institution.name %></td>
-		<td><%= _department.school.name %></td>
-		<td><%= _department.name %></td>
+		<td><%= _department.school.institution.name[App.locale] %></td>
+		<td><%= _department.school.name[App.locale] %></td>
+		<td><%= _department.name[App.locale] %></td>
 		<td width="96px">
 			<p align="center">
 				<a id="selectDepartment" data-department-id="<%= _department.id %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_select') %></a>

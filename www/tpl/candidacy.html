@@ -41,7 +41,7 @@
 			<% } %>
 			<% if (snapshot.rank) { %>
 			<dt><%= $.i18n.prop('Rank') %></dt>
-			<dd><%= snapshot.rank.name %></dd>
+			<dd><%= snapshot.rank.name[App.locale] %></dd>
 			<% } %>
 			<% if (snapshot.subject) { %>
 			<dt><%= $.i18n.prop('Subject') %></dt>

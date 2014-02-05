@@ -8,7 +8,7 @@
 	<tbody>
 		<% _.each(registries, function(register) { %>
 		<tr>
-			<td><%= register.institution.name %></td>
+			<td><%= register.institution.name[App.locale] %></td>
 			<td width="1px">
 				<div class="btn-group btn-group-vertical">
 				<% if (register.canEdit) { %>

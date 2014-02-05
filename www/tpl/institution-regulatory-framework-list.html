@@ -8,7 +8,7 @@
 	<tbody>
 <% _.each(institutionRFs, function(institutionRF) { %>
 		<tr>
-			<td><%= institutionRF.institution.name %></td>
+			<td><%= institutionRF.institution.name[App.locale] %></td>
 			<td width="96px">
 				<p align="center">
 					<% if (institutionRF.canEdit) { %>

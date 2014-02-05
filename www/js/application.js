@@ -259,6 +259,10 @@ define([ "jquery",
 					return str;
 				},
 
+				getLocale : function() {
+					return window.App.utils.getCookie("apella-lang") || 'el';
+				},
+
 				// Cookies
 				addCookie: function (name, value, days) {
 					var date, expires;
@@ -288,7 +292,7 @@ define([ "jquery",
 				},
 
 				removeCookie: function (name) {
-					window.App.util.addCookie(name, "", -1);
+					window.App.utils.addCookie(name, "", -1);
 				}
 			}
 		};
