@@ -30,6 +30,11 @@
 			name: "apella",
 			include: [],
 			exclude: []
+		},
+		{
+			name: "helpdesk",
+			include: [],
+			exclude: []
 		}
 	]
 })
