@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.model;
 
+import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
 import gr.grnet.dep.service.model.Position.CandidatePositionView;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
 import gr.grnet.dep.service.model.Position.MemberPositionView;
@@ -140,7 +141,7 @@ public class PositionPhase {
 		this.candidacies = candidacies;
 	}
 
-	@JsonView({DetailedPositionView.class, MemberPositionView.class, CandidatePositionView.class})
+	@JsonView({DetailedPositionView.class, MemberPositionView.class, CandidatePositionView.class, DetailedCandidacyView.class})
 	public PositionCommittee getCommittee() {
 		return committee;
 	}

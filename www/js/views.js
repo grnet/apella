@@ -5369,7 +5369,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							name: sector.get("name")[App.locale].area
 						};
 					});
-					areas = _.uniq(areas, function(area) {
+					areas = _.uniq(areas, function (area) {
 						return area.areaId;
 					});
 					self.$("select[name='area']").append("<option value=''>--</option>");
@@ -8675,6 +8675,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				},
 				rules: {},
 				messages: {}
+			});
+			// Tooltips
+			self.$("i[rel=popover]").popover({
+				html: 'true',
+				trigger: 'hover'
 			});
 			// Set isEnabled to buttons
 			self.$("a.btn").each(function (index) {
