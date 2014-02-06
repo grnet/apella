@@ -7508,7 +7508,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							json.aaData = _.map(json.records, function (professor) {
 								return {
 									name: professor.user.basicInfo.firstname + ' ' + professor.user.basicInfo.lastname,
-									id: '<a href="#user/<%= professor.user.id %>">' + professor.user.id + '</a>',
+									id: '<a href="#user/' + professor.user.id + '">' + professor.user.id + '</a>',
 									profile: $.i18n.prop(professor.discriminator),
 									rank: professor.rank ? professor.rank.name[App.locale] : '',
 									institution: _.isEqual(professor.discriminator, 'PROFESSOR_FOREIGN') ? professor.institution : _.templates.department(professor.department),
