@@ -15,7 +15,6 @@ import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.SearchData;
 import gr.grnet.dep.service.model.User;
-import gr.grnet.dep.service.util.StringUtil;
 
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -26,7 +25,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -539,8 +537,29 @@ public class RegisterRESTService extends RESTService {
 
 		if (filter != null && !filter.isEmpty()) {
 			searchQueryString.append("and (" +
-				"rl.user.basicInfo.firstname like :filter " +
-				"or rl.user.basicInfo.lastname like :filter" +
+				"	rl.user.basicInfo.firstname like :filter " +
+				"	or rl.user.basicInfo.lastname like :filter" +
+				"	or exists (" +
+				"		select pd.id from ProfessorDomestic pd " +
+				"		join pd.department.name dname " +
+				"		join pd.department.school.name sname " +
+				"		join pd.department.school.institution.name iname " +
+				"		join pd.rank.name rname " +
+				"		where pd.id = rl.id " +
+				"		and ( dname like :filter " +
+				"			or sname like :filter " +
+				"			or iname like :filter " +
+				"			or rname like :filter " +
+				"		)" +
+				"	) " +
+				"	or exists (" +
+				"		select pf.id from ProfessorForeign pf " +
+				"		join pf.rank.name rname " +
+				"		where pf.id = rl.id " +
+				"		and ( pf.institution like :filter " +
+				"			or rname like :filter " +
+				"		) " +
+				"	) " +
 				") ");
 		}
 		// Query Sorting
@@ -565,7 +584,7 @@ public class RegisterRESTService extends RESTService {
 				" ) ");
 		Query searchQuery = em.createQuery(
 			"select r from Role r " +
-				"left join r.user u " +
+				"left join fetch r.user u " +
 				"where r.id in ( " +
 				searchQueryString.toString() +
 				" ) " +
@@ -582,7 +601,7 @@ public class RegisterRESTService extends RESTService {
 		countQuery.setParameter("status", RoleStatus.ACTIVE);
 
 		if (filter != null && !filter.isEmpty()) {
-			filter = "%" + StringUtil.toUppercaseNoTones(filter, new Locale("el")) + "%";
+			filter = "%" + filter + "%";
 			searchQuery.setParameter("filter", filter);
 			countQuery.setParameter("filter", filter);
 		}

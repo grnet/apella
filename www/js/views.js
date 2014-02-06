@@ -7523,7 +7523,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						}
 					});
 				}
-			});
+			}).fnSetFilteringDelay();
 			return self;
 		},
 
