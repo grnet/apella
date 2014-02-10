@@ -15,6 +15,7 @@ import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.SearchData;
 import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.util.StringUtil;
 
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -25,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -537,8 +539,8 @@ public class RegisterRESTService extends RESTService {
 
 		if (filter != null && !filter.isEmpty()) {
 			searchQueryString.append("and (" +
-				"	rl.user.basicInfo.firstname like :filter " +
-				"	or rl.user.basicInfo.lastname like :filter" +
+				"	rl.user.basicInfo.firstname like :filterUpper " +
+				"	or rl.user.basicInfo.lastname like :filterUpper" +
 				"	or exists (" +
 				"		select pd.id from ProfessorDomestic pd " +
 				"		join pd.department.name dname " +
@@ -568,13 +570,13 @@ public class RegisterRESTService extends RESTService {
 			if (orderField.equals("id")) {
 				orderString = "order by r.user.id " + orderDirection;
 			} else if (orderField.equals("profile")) {
-				orderString = "order by r.discriminator " + orderDirection + ", r.user.id ";
+				orderString = "order by r.discriminator " + orderDirection + ", r.user.id " + orderDirection;
 			} else {
 				// name is default
-				orderString = "order by r.user.basicInfo.firstname, r.user.basicInfo.lastname " + orderDirection + ", r.user.id ";
+				orderString = "order by r.user.basicInfo.firstname " + orderDirection + " , r.user.basicInfo.lastname " + orderDirection + ", r.user.id " + orderDirection;
 			}
 		} else {
-			orderString = "order by r.user.basicInfo.firstname, r.user.basicInfo.lastname " + orderDirection + ", r.user.id ";
+			orderString = "order by r.user.basicInfo.firstname " + orderDirection + " , r.user.basicInfo.lastname " + orderDirection + ", r.user.id " + orderDirection;
 		}
 
 		Query countQuery = em.createQuery(
@@ -604,6 +606,8 @@ public class RegisterRESTService extends RESTService {
 			filter = "%" + filter + "%";
 			searchQuery.setParameter("filter", filter);
 			countQuery.setParameter("filter", filter);
+			searchQuery.setParameter("filterUpper", StringUtil.toUppercaseNoTones(filter, new Locale("el")));
+			countQuery.setParameter("filterUpper", StringUtil.toUppercaseNoTones(filter, new Locale("el")));
 		}
 
 		// Execute

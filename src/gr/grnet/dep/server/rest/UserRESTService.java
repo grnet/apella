@@ -734,6 +734,7 @@ public class UserRESTService extends RESTService {
 		String status = request.getParameter("status");
 		String role = request.getParameter("role");
 		String roleStatus = request.getParameter("roleStatus");
+		Long institutionId = request.getParameter("institution").matches("\\d+") ? Long.valueOf(request.getParameter("institution")) : null;
 		// Ordering
 		String orderNo = request.getParameter("iSortCol_0");
 		String orderField = request.getParameter("mDataProp_" + orderNo);
@@ -780,6 +781,13 @@ public class UserRESTService extends RESTService {
 		}
 		if (roleStatus != null && !roleStatus.isEmpty()) {
 			searchQueryString.append("	and r.status = :roleStatus ");
+		}
+		if (institutionId != null) {
+			searchQueryString.append("	and exists (" +
+				"		select pd.id from ProfessorDomestic pd " +
+				"		where pd.id = r.id " +
+				"		and pd.institution.id = :institutionId " +
+				"	) ");
 		}
 
 		// Query Sorting
@@ -854,6 +862,11 @@ public class UserRESTService extends RESTService {
 			searchQuery.setParameter("roleStatus", RoleStatus.valueOf(roleStatus));
 			countQuery.setParameter("roleStatus", RoleStatus.valueOf(roleStatus));
 		}
+		if (institutionId != null) {
+			searchQuery.setParameter("institutionId", institutionId);
+			countQuery.setParameter("institutionId", institutionId);
+		}
+
 		// Get Result
 		Long totalRecords = (Long) countQuery.getSingleResult();
 		@SuppressWarnings("unchecked")

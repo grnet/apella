@@ -1019,7 +1019,7 @@ define([
 		url: "/dep/rest/institution",
 		model: Models.Institution,
 		comparator: function (institution) {
-			return institution.get('name');
+			return institution.get('category') + institution.getName(App.locale);
 		}
 	});
 

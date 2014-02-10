@@ -2312,6 +2312,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			this._super('initialize', [ options ]);
 			_.bindAll(this, "search", "handleKeyUp");
 			this.template = _.template(tpl_user_search);
+			this.templateRoleInfo = _.template(tpl_user_role_info);
 		},
 
 		events: {
@@ -2325,6 +2326,30 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.$el.empty();
 			self.addTitle();
 			self.$el.html(self.template({}));
+
+			// Fill Institutions
+			App.institutions = App.institutions || new Models.Institutions();
+			App.institutions.fetch({
+				cache: true,
+				reset: true,
+				success: function (collection, resp) {
+					var $select = self.$("select[name='institution']");
+
+					$select.append('<option value="">--</option>');
+					collection.each(function (institution) {
+						$select.append('<option value="' + institution.get("id") + '">' + institution.getName(App.locale) + '</option>');
+					});
+				},
+				error: function (model, resp, options) {
+					var popup = new Views.PopupView({
+						type: "error",
+						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+
+			// Initialize DataTable
 			self.$("table#usersTable").dataTable({
 				"sDom": "<'row-fluid'<'span6'l><'span6'>r>t<'row-fluid'<'span6'i><'span6'p>>",
 				"sPaginationType": "bootstrap",
@@ -2382,6 +2407,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					{
 						name: "roleStatus",
 						value: self.$('form select[name=roleStatus]').val()
+					},
+					{
+						name: "institution",
+						value : self.$("form select[name=institution]").val()
 					}
 				];
 				var user = self.$('form input[name=user]').val();
@@ -2440,7 +2469,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 									"lastname": user.basicInfo.lastname,
 									"username": user.username || "",
 									"status": $.i18n.prop('status' + user.status),
-									"role": $.i18n.prop(user.primaryRole),
+									"role": self.templateRoleInfo(user),
 									"roleStatus": $.i18n.prop('status' + _.find(user.roles,function (r) {
 										return r.discriminator === user.primaryRole;
 									}).status)

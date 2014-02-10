@@ -1,6 +1,6 @@
 <div class="row-fluid">
 	<form>
-		<div class="span4">
+		<div class="span3">
 			<label><%= $.i18n.prop("ID") %></label>
 			<input name="user" type="text" class="span10"/>
 			<label><%= $.i18n.prop("Email") %></label>
@@ -8,7 +8,7 @@
 			<label><%= $.i18n.prop("Mobile") %></label>
 			<input name="mobile" type="text" class="span10"/>
 		</div>
-		<div class="span4">
+		<div class="span3">
 			<label><%= $.i18n.prop("Username") %></label>
 			<input name="username" type="text" class="span10"/>
 			<label><%= $.i18n.prop("Name") %></label>
@@ -16,14 +16,7 @@
 			<label><%= $.i18n.prop("Surname") %></label>
 			<input name="lastname" type="text" class="span10"/>
 		</div>
-		<div class="span4">
-			<label><%= $.i18n.prop("UserStatus") %></label>
-			<select name="status" class="span10">
-				<option value="">--</option>
-				<option value="UNVERIFIED"><%= $.i18n.prop('statusUNVERIFIED') %></option>
-				<option value="ACTIVE"><%= $.i18n.prop('statusACTIVE') %></option>
-				<option value="BLOCKED"><%= $.i18n.prop('statusBLOCKED') %></option>
-			</select>
+		<div class="span3">
 			<label><%= $.i18n.prop("Profile") %></label>
 			<select name="role" class="span10">
 				<option value="">--</option>
@@ -34,6 +27,22 @@
 				<option value="INSTITUTION_ASSISTANT"><%= $.i18n.prop('INSTITUTION_ASSISTANT') %></option>
 				<option value="MINISTRY_MANAGER"><%= $.i18n.prop('MINISTRY_MANAGER') %></option>
 				<option value="MINISTRY_ASSISTANT"><%= $.i18n.prop('MINISTRY_ASSISTANT') %></option>
+			</select>
+			<label><%= $.i18n.prop("Institution") %></label>
+			<select name="institution" class="span10">
+				<optgroup label="<%= $.i18n.prop('btn_search') %>"></optgroup>
+				<optgroup label=""></optgroup>
+			</select>
+			<label>&nbsp;</label>
+			<a id="search" class="btn btn-success span10"><i class="icon-search"></i> <%= $.i18n.prop('btn_search') %></a>
+		</div>
+		<div class="span3">
+			<label><%= $.i18n.prop("UserStatus") %></label>
+			<select name="status" class="span10">
+				<option value="">--</option>
+				<option value="UNVERIFIED"><%= $.i18n.prop('statusUNVERIFIED') %></option>
+				<option value="ACTIVE"><%= $.i18n.prop('statusACTIVE') %></option>
+				<option value="BLOCKED"><%= $.i18n.prop('statusBLOCKED') %></option>
 			</select>
 			<label><%= $.i18n.prop("RoleStatus") %></label>
 			<select name="roleStatus" class="span10">
@@ -48,7 +57,7 @@
 </div>
 <div class="row-fluid">
 	<div class="span12">
-		<a id="search" class="btn btn-success"><i class="icon-search"></i> <%= $.i18n.prop('btn_search') %></a>
+
 	</div>
 </div>
 <hr/>
