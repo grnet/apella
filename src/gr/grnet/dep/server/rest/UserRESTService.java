@@ -620,6 +620,34 @@ public class UserRESTService extends RESTService {
 	}
 
 	@PUT
+	@Path("/{id:[0-9][0-9]*}/sendReminderLoginEmail")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response sendReminderLoginEmail(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, @FormParam("createLoginLink") Boolean createLoginLink) {
+		User loggedOn = getLoggedOn(authToken);
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		try {
+			final User u = (User) em.createQuery(
+				"from User u " +
+					"left join fetch u.roles " +
+					"where u.id = :id")
+				.setParameter("id", id)
+				.getSingleResult();
+
+			// Validate
+			if (!u.getAuthenticationType().equals(AuthenticationType.EMAIL)) {
+				throw new RestException(Status.NOT_FOUND, "login.wrong.registration.type");
+			}
+			mailService.sendReminderLoginEmail(u.getId(), true);
+
+			return Response.noContent().build();
+		} catch (NoResultException e) {
+			throw new RestException(Status.NOT_FOUND, "login.wrong.email");
+		}
+	}
+
+	@PUT
 	@Path("/verify")
 	@JsonView({UserWithLoginDataView.class})
 	public User verify(User user) {

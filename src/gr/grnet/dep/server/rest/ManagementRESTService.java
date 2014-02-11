@@ -53,4 +53,16 @@ public class ManagementRESTService extends RESTService {
 		mgmtService.massSendLoginEmails();
 		return "OK";
 	}
+
+	@GET
+	@Produces(MediaType.TEXT_PLAIN)
+	@Path("/massSendReminderLoginEmails")
+	public String massSendReminderLoginEmails(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
+		User loggedOn = getLoggedOn(authToken);
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		mgmtService.massSendReminderLoginEmails();
+		return "OK";
+	}
 }

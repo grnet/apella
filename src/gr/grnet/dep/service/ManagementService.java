@@ -2,6 +2,8 @@ package gr.grnet.dep.service;
 
 import gr.grnet.dep.service.model.AuthenticationType;
 import gr.grnet.dep.service.model.ProfessorDomesticData;
+import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 
@@ -85,6 +87,27 @@ public class ManagementService {
 
 		for (Long userId : users) {
 			mailService.sendLoginEmail(userId, false);
+		}
+
+	}
+
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+	public void massSendReminderLoginEmails() {
+		@SuppressWarnings("unchecked")
+		List<Long> users = em.createQuery(
+			"select u.id from User u " +
+				"join u.roles r " +
+				"where u.authenticationType = :authenticationType " +
+				"and u.permanentAuthToken is not null " +
+				"and u.loginEmailSent = true " +
+				"and (r.discriminator = :roleDiscriminator and r.status = :roleStatus) ")
+			.setParameter("authenticationType", AuthenticationType.EMAIL)
+			.setParameter("roleDiscriminator", RoleDiscriminator.PROFESSOR_DOMESTIC)
+			.setParameter("roleStatus", RoleStatus.UNAPPROVED)
+			.getResultList();
+
+		for (Long userId : users) {
+			mailService.sendReminderLoginEmail(userId, false);
 		}
 
 	}

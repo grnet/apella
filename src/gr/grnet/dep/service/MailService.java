@@ -245,6 +245,39 @@ public class MailService {
 		}
 	}
 
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	public void sendReminderLoginEmail(Long userId, boolean sendNow) {
+		User u = em.find(User.class, userId);
+		if (u == null) {
+			logger.log(Level.WARNING, "Failed to send login email user with id " + userId + " not found");
+			return;
+		}
+		try {
+			// Double Check here:
+			if (u.getAuthenticationType().equals(AuthenticationType.EMAIL) &&
+				u.getPermanentAuthToken() != null) {
+
+				String aToEmailAddr = u.getContactInfo().getEmail();
+				String aSubject = resources.getString("reminder.login.email.subject");
+				String aBody = resources.getString("reminder.login.email.body")
+					.replaceAll("\\[firstname\\]", u.getBasicInfo().getFirstname())
+					.replaceAll("\\[lastname\\]", u.getBasicInfo().getLastname())
+					.replaceAll("\\[loginLink\\]", "<a href=\"" + getloginLink(u.getPermanentAuthToken()) + "\">Είσοδος</a>");
+				if (sendNow) {
+					sendEmail(aToEmailAddr, aSubject, aBody);
+				} else {
+					pushEmail(aToEmailAddr, aSubject, aBody);
+				}
+				u.setLoginEmailSent(Boolean.TRUE);
+				logger.log(Level.INFO, "Sent login email to user with id " + u.getId() + " " + getloginLink(u.getPermanentAuthToken()));
+			} else {
+				logger.log(Level.INFO, "Skipped login email for user with id " + u.getId());
+			}
+		} catch (UnsupportedEncodingException e) {
+			logger.log(Level.WARNING, "Failed to send login email", e.getMessage());
+		}
+	}
+
 	private String getloginLink(String token) throws UnsupportedEncodingException {
 		return conf.getString("rest.url") +
 			"/email/login?nextURL=" + conf.getString("home.url") + "/apella.html" +

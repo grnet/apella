@@ -14,9 +14,14 @@
 					<fieldset>
 						<legend><%= $.i18n.prop('LoginEmail') %></legend>
 						<label><input type="checkbox" name="createLoginLink"/> <%= $.i18n.prop('CreateLoginLink') %> </label>
+						<a id="resendLoginEmail" class="btn btn-small btn-primary"><i class="icon-envelope icon-white"></i> <%= $.i18n.prop('btn_resendLoginEmail') %></a>
 					</fieldset>
-
-					<a id="resendLoginEmail" class="btn btn-primary"><i class="icon-envelope icon-white"></i> <%= $.i18n.prop('btn_resendLoginEmail') %></a>
+					<br/>
+					<br/>
+					<fieldset>
+						<legend><%= $.i18n.prop('ReminderLoginEmail') %></legend>
+						<a id="resendReminderLoginEmail" class="btn btn-small btn-primary"><i class="icon-envelope icon-white"></i> <%= $.i18n.prop('btn_resendReminderLoginEmail') %></a>
+					</fieldset>
 				</form>
 			</div>
 		</div>

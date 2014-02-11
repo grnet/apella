@@ -2172,7 +2172,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 		validator: undefined,
 
 		events: {
-			"click #resendLoginEmail": "resendLoginEmail"
+			"click #resendLoginEmail": "resendLoginEmail",
+			"click #resendReminderLoginEmail": "resendReminderLoginEmail"
 		},
 
 		initialize: function (options) {
@@ -2275,6 +2276,28 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.model.resendLoginEmail({}, {
 				wait: true,
 				createLoginLink: self.$("input[name=createLoginLink]").is(':checked'),
+				success: function (model, resp) {
+					var popup;
+					popup = new Views.PopupView({
+						type: "success",
+						message: $.i18n.prop("Success")
+					});
+					popup.show();
+				},
+				error: function (model, resp, options) {
+					var popup = new Views.PopupView({
+						type: "error",
+						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+		},
+
+		resendReminderLoginEmail: function () {
+			var self = this;
+			self.model.resendReminderLoginEmail({}, {
+				wait: true,
 				success: function (model, resp) {
 					var popup;
 					popup = new Views.PopupView({
