@@ -2433,7 +2433,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					},
 					{
 						name: "institution",
-						value : self.$("form select[name=institution]").val()
+						value: self.$("form select[name=institution]").val()
 					}
 				];
 				var user = self.$('form input[name=user]').val();
@@ -7220,7 +7220,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					event.preventDefault();
 					return;
 				}
-				$("form", this.el).submit();
+				this.$("form").submit();
 			},
 			"submit form": "submit",
 			"click a#toggleAddMember": "toggleAddMember",
@@ -7241,6 +7241,26 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 			// Existing Members
 			self.renderMembers();
+
+			// Widgets
+			self.validator = self.$("form[name=registerForm]").validate({
+				errorElement: "span",
+				errorClass: "help-inline",
+				highlight: function (element, errorClass, validClass) {
+					$(element).parent(".controls").parent(".control-group").addClass("error");
+				},
+				unhighlight: function (element, errorClass, validClass) {
+					$(element).parent(".controls").parent(".control-group").removeClass("error");
+				},
+				rules: {
+					"institution": "required"
+				},
+				messages: {
+					"institution": $.i18n.prop('validation_institution')
+				}
+			});
+
+			// Professors View
 			if (self.allowedToEdit()) {
 				// Inner View
 				if (self.professorListView) {
@@ -7259,24 +7279,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				self.$("select").attr("disabled", true);
 				self.$("a.btn").hide();
 			}
-
-			// Widgets
-			self.validator = $("form", this.el).validate({
-				errorElement: "span",
-				errorClass: "help-inline",
-				highlight: function (element, errorClass, validClass) {
-					$(element).parent(".controls").parent(".control-group").addClass("error");
-				},
-				unhighlight: function (element, errorClass, validClass) {
-					$(element).parent(".controls").parent(".control-group").removeClass("error");
-				},
-				rules: {
-					"institution": "required"
-				},
-				messages: {
-					"institution": $.i18n.prop('validation_institution')
-				}
-			});
 			// Highlight Required
 			if (self.validator) {
 				for (propName in self.validator.settings.rules) {
@@ -7504,13 +7506,15 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		initialize: function (options) {
 			this._super('initialize', [ options ]);
-			_.bindAll(this, "selectProfessors");
+			_.bindAll(this, "search", "selectProfessors", "handleKeyUp");
 			this.template = _.template(tpl_register_edit_professor_list);
 			this.model.bind("change:members", this.render, this);
 		},
 
 		events: {
-			"click a#select": "selectProfessors"
+			"click a#search": "search",
+			"click a#select": "selectProfessors",
+			"keyup #filter": "handleKeyUp"
 		},
 
 		render: function (eventName) {
@@ -7519,8 +7523,86 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.addTitle();
 			self.$el.html(self.template());
 
+			App.ranks = App.ranks || new Models.Ranks();
+			App.ranks.fetch({
+				cache: true,
+				reset: true,
+				success: function (collection, resp) {
+					self.$("select[name='rank']").empty();
+					self.$("select[name='rank']").append("<option value=''>--</option>");
+					collection.each(function (rank) {
+						self.$("select[name='rank']").append("<option value='" + rank.get("id") + "'>" + rank.getName(App.locale) + "</option>");
+					});
+				},
+				error: function (model, resp, options) {
+					var popup = new Views.PopupView({
+						type: "error",
+						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+					});
+					popup.show();
+				}
+			});
+
+			// Initialize DataTable
+			self.$("table#usersTable").dataTable({
+				"sDom": "<'row-fluid'<'span6'l><'span6'>r>t<'row-fluid'<'span6'i><'span6'p>>",
+				"sPaginationType": "bootstrap",
+				"oLanguage": {
+					"sSearch": $.i18n.prop("dataTable_sSearch"),
+					"sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+					"sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+					"sInfo": $.i18n.prop("dataTable_sInfo"),
+					"sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+					"sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+					"oPaginate": {
+						sFirst: $.i18n.prop("dataTable_sFirst"),
+						sPrevious: $.i18n.prop("dataTable_sPrevious"),
+						sNext: $.i18n.prop("dataTable_sNext"),
+						sLast: $.i18n.prop("dataTable_sLast")
+					}
+				}
+			});
+			return self;
+		},
+
+		search: function () {
+			var self = this;
+			function readFormValues() {
+				var formData = [
+					{
+						name: "name",
+						value: self.$('input[name=name]').val()
+					},
+					{
+						name: "role",
+						value: self.$('select[name=role]').val()
+					},
+					{
+						name: "rank",
+						value: self.$('select[name=rank]').val()
+					},
+					{
+						name: "institution",
+						value: self.$('input[name=institution]').val()
+					},
+					{
+						name: "subject",
+						value: self.$('input[name=subject]').val()
+					}
+				];
+				var user = self.$('input[name=user]').val();
+				formData.push({
+					name: "user",
+					value: /^\d+$/.test(user) ? user : ""
+				});
+				return formData;
+			}
+
+			var searchData = readFormValues();
+			// Init DataTables with a custom callback to get results
+			self.$("table").dataTable().fnDestroy();
 			self.$("table").dataTable({
-				"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+				"sDom": "<'row-fluid'<'span6'l><'span6'>r>t<'row-fluid'<'span6'i><'span6'p>>",
 				"sPaginationType": "bootstrap",
 				"oLanguage": {
 					"sSearch": $.i18n.prop("dataTable_sSearch"),
@@ -7554,7 +7636,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						"dataType": 'json',
 						"type": "POST",
 						"url": sSource,
-						"data": aoData,
+						"data": aoData.concat(searchData),
 						"success": function (json) {
 							// Read Data
 							json.aaData = _.map(json.records, function (professor) {
@@ -7575,13 +7657,13 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						}
 					});
 				}
-			}).fnSetFilteringDelay();
-			return self;
+			});
 		},
 
 		selectProfessors: function (event) {
 			var self = this;
 			var selectedProfessors = [];
+			event.preventDefault();
 			// Use dataTable to select elements, as pagination removes them from
 			// DOM
 			self.$("table").dataTable().$('input[type=checkbox]:checked').each(function () {
@@ -7608,6 +7690,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				});
 			}
 
+		},
+
+		handleKeyUp: function (event) {
+			var self = this;
+			if (event.keyCode === 13) {
+				// On enter submit
+				self.search();
+			}
 		},
 
 		close: function () {

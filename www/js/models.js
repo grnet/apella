@@ -1232,7 +1232,10 @@ define([
 
 	Models.Ranks = Backbone.Collection.extend({
 		url: "/dep/rest/rank",
-		model: Models.Rank
+		model: Models.Rank,
+		comparator: function (model) {
+			return model.get("id");
+		}
 	});
 
 	Models.Country = Backbone.Model.extend({

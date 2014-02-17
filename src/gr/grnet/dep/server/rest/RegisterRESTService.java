@@ -517,6 +517,13 @@ public class RegisterRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// 1. Read parameters:
+		Long userId = request.getParameter("user").matches("\\d+") ? Long.valueOf(request.getParameter("user")) : null;
+		String name = request.getParameter("name");
+		String role = request.getParameter("role");
+		Long rankId = request.getParameter("rank").matches("\\d+") ? Long.valueOf(request.getParameter("rank")) : null;
+		String institution = request.getParameter("institution");
+		String subject = request.getParameter("subject");
+
 		// Ordering
 		String orderNo = request.getParameter("iSortCol_0");
 		String orderField = request.getParameter("mDataProp_" + orderNo);
@@ -524,8 +531,6 @@ public class RegisterRESTService extends RESTService {
 		// Pagination
 		int iDisplayStart = Integer.valueOf(request.getParameter("iDisplayStart"));
 		int iDisplayLength = Integer.valueOf(request.getParameter("iDisplayLength"));
-		// Filter
-		String filter = request.getParameter("sSearch");
 		// DataTables:
 		String sEcho = request.getParameter("sEcho");
 
@@ -537,33 +542,64 @@ public class RegisterRESTService extends RESTService {
 				"and rl.discriminator in (:discriminators) " +
 				"and rl.status = :status ");
 
-		if (filter != null && !filter.isEmpty()) {
-			searchQueryString.append("and (" +
-				"	rl.user.basicInfo.firstname like :filterUpper " +
-				"	or rl.user.basicInfo.lastname like :filterUpper" +
+		if (userId != null) {
+			searchQueryString.append(" and rl.user.id = :userId ");
+		}
+		if (name != null && !name.isEmpty()) {
+			searchQueryString.append(" and (rl.user.basicInfo.firstname like :name or rl.user.basicInfo.lastname like :name )");
+		}
+		if (role != null && !role.isEmpty()) {
+			searchQueryString.append(" and rl.discriminator = :role ");
+		}
+		if (rankId != null) {
+			searchQueryString.append(" and ( " +
+				"	exists (" +
+				"		select pd.id from ProfessorDomestic pd " +
+				"		where pd.id = rl.id " +
+				"		and pd.rank.id = :rankId " +
+				"	) " +
 				"	or exists (" +
+				"		select pf.id from ProfessorForeign pf " +
+				"		where pf.id = rl.id " +
+				"		and pf.rank.id = :rankId " +
+				"	) " +
+				") ");
+		}
+		if (institution != null && !institution.isEmpty()) {
+			searchQueryString.append(" and (" +
+				"	exists (" +
 				"		select pd.id from ProfessorDomestic pd " +
 				"		join pd.department.name dname " +
 				"		join pd.department.school.name sname " +
 				"		join pd.department.school.institution.name iname " +
-				"		join pd.rank.name rname " +
 				"		where pd.id = rl.id " +
-				"		and ( dname like :filter " +
-				"			or sname like :filter " +
-				"			or iname like :filter " +
-				"			or rname like :filter " +
+				"		and ( dname like :institution " +
+				"			or sname like :institution " +
+				"			or iname like :institution " +
 				"		)" +
 				"	) " +
 				"	or exists (" +
 				"		select pf.id from ProfessorForeign pf " +
-				"		join pf.rank.name rname " +
 				"		where pf.id = rl.id " +
-				"		and ( pf.institution like :filter " +
-				"			or rname like :filter " +
-				"		) " +
+				"		and pf.institution like :institution " +
 				"	) " +
 				") ");
 		}
+		if (subject != null && !subject.isEmpty()) {
+			searchQueryString.append(" and (" +
+				"	exists (" +
+				"		select pd.id from ProfessorDomestic pd " +
+				"		where pd.id = rl.id " +
+				"		and ( pd.subject.name like :subject or pd.fekSubject.name like :subject )" +
+				"	) " +
+				"	or exists (" +
+				"		select pf.id from ProfessorForeign pf " +
+				"		where pf.id = rl.id " +
+				"		and pf.subject.name like :subject " +
+				"	) " +
+				") ");
+		}
+
 		// Query Sorting
 		String orderString = null;
 		if (orderField != null && !orderField.isEmpty()) {
@@ -602,14 +638,30 @@ public class RegisterRESTService extends RESTService {
 		searchQuery.setParameter("status", RoleStatus.ACTIVE);
 		countQuery.setParameter("status", RoleStatus.ACTIVE);
 
-		if (filter != null && !filter.isEmpty()) {
-			filter = "%" + filter + "%";
-			searchQuery.setParameter("filter", filter);
-			countQuery.setParameter("filter", filter);
-			searchQuery.setParameter("filterUpper", StringUtil.toUppercaseNoTones(filter, new Locale("el")));
-			countQuery.setParameter("filterUpper", StringUtil.toUppercaseNoTones(filter, new Locale("el")));
+		if (userId != null) {
+			searchQuery.setParameter("userId", userId);
+			countQuery.setParameter("userId", userId);
 		}
-
+		if (name != null && !name.isEmpty()) {
+			searchQuery.setParameter("name", "%" + StringUtil.toUppercaseNoTones(name, new Locale("el")) + "%");
+			countQuery.setParameter("name", "%" + StringUtil.toUppercaseNoTones(name, new Locale("el")) + "%");
+		}
+		if (role != null && !role.isEmpty()) {
+			searchQuery.setParameter("role", RoleDiscriminator.valueOf(role));
+			countQuery.setParameter("role", RoleDiscriminator.valueOf(role));
+		}
+		if (rankId != null) {
+			searchQuery.setParameter("rankId", rankId);
+			countQuery.setParameter("rankId", rankId);
+		}
+		if (institution != null && !institution.isEmpty()) {
+			searchQuery.setParameter("institution", "%" + institution + "%");
+			countQuery.setParameter("institution", "%" + institution + "%");
+		}
+		if (subject != null && !subject.isEmpty()) {
+			searchQuery.setParameter("subject", "%" + subject + "%");
+			countQuery.setParameter("subject", "%" + subject + "%");
+		}
 		// Execute
 		Long totalRecords = (Long) countQuery.getSingleResult();
 		@SuppressWarnings("unchecked")
