@@ -5,14 +5,18 @@ import gr.grnet.dep.service.util.StringUtil;
 import java.util.Locale;
 
 import javax.persistence.Embeddable;
+import javax.xml.bind.annotation.XmlElement;
 
 @Embeddable
 public class BasicInformation {
 
+	@XmlElement(nillable = true)
 	private String firstname;
 
+	@XmlElement(nillable = true)
 	private String lastname;
 
+	@XmlElement(nillable = true)
 	private String fathername;
 
 	public String getFirstname() {

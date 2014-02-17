@@ -181,42 +181,27 @@ public class User implements Serializable {
 	}
 
 	public BasicInformation getBasicInfo() {
-		return basicInfo;
+		return basicInfo == null ? new BasicInformation() : basicInfo;
 	}
 
 	public void setBasicInfo(BasicInformation basicInfo) {
-		// Hibernate hack for null fields in embeddable objects
-		if (basicInfo == null) {
-			this.basicInfo = new BasicInformation();
-		} else {
-			this.basicInfo = basicInfo;
-		}
+		this.basicInfo = basicInfo;
 	}
 
 	public BasicInformation getBasicInfoLatin() {
-		return basicInfoLatin;
+		return basicInfoLatin == null ? new BasicInformation() : basicInfoLatin;
 	}
 
 	public void setBasicInfoLatin(BasicInformation basicInfoLatin) {
-		// Hibernate hack for null fields in embeddable objects
-		if (basicInfoLatin == null) {
-			this.basicInfoLatin = new BasicInformation();
-		} else {
-			this.basicInfoLatin = basicInfoLatin;
-		}
+		this.basicInfoLatin = basicInfoLatin;
 	}
 
 	public ContactInformation getContactInfo() {
-		return contactInfo;
+		return contactInfo == null ? new ContactInformation() : contactInfo;
 	}
 
 	public void setContactInfo(ContactInformation contactInfo) {
-		// Hibernate hack for null fields in embeddable objects
-		if (contactInfo == null) {
-			this.contactInfo = new ContactInformation();
-		} else {
-			this.contactInfo = contactInfo;
-		}
+		this.contactInfo = contactInfo;
 	}
 
 	@JsonView({UserView.class})
