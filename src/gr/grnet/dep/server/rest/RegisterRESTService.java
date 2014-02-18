@@ -15,6 +15,7 @@ import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.SearchData;
 import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.util.CompareUtil;
 import gr.grnet.dep.service.util.StringUtil;
 
 import java.io.InputStream;
@@ -110,10 +111,21 @@ public class RegisterRESTService extends RESTService {
 	}
 
 	private void addCanBeDeletedInfo(Register register) {
-		// TODO: One query, avoid laizy initialization
+		@SuppressWarnings("unchecked")
+		List<Long> nonRemovableMemberIds = (List<Long>) em.createQuery(
+			"select rm.id from RegisterMember rm " +
+				"where rm.register.id = :registerId " +
+				"and (" +
+				"	exists (select pcm.id from PositionCommitteeMember pcm where pcm.registerMember.id = rm.id ) " +
+				"	or exists (select pe.id from PositionEvaluator pe where pe.registerMember.id = rm.id ) " +
+				"	or exists (select ce.id from CandidacyEvaluator ce where ce.registerMember.id = rm.id ) " +
+				")")
+			.setParameter("registerId", register.getId())
+			.getResultList();
+
 		for (RegisterMember member : register.getMembers()) {
-			boolean canBeDeleted = member.getCommittees().isEmpty() && member.getEvaluations().isEmpty() && member.getCandidacyEvaluations().isEmpty();
-			member.setCanBeDeleted(canBeDeleted);
+			boolean cannotBeDeleted = nonRemovableMemberIds.contains(member.getId());
+			member.setCanBeDeleted(!cannotBeDeleted);
 		}
 	}
 
@@ -192,6 +204,26 @@ public class RegisterRESTService extends RESTService {
 		}
 		if (!existingRegister.getInstitution().getId().equals(register.getInstitution().getId())) {
 			throw new RestException(Status.CONFLICT, "register.institution.change");
+		}
+		if (register.getSubject() == null || register.getSubject().getName() == null) {
+			throw new RestException(Status.BAD_REQUEST, "register.missing.subject");
+		}
+		if (!CompareUtil.equalsIgnoreNull(register.getSubject(), existingRegister.getSubject())) {
+			// Validate subject change
+			try {
+				em.createQuery(
+					"select r.id from Register r " +
+						"where r.subject.name = :name " +
+						"and r.institution.id = :institutionId " +
+						"and r.id != :registerId ")
+					.setParameter("institutionId", existingRegister.getInstitution().getId())
+					.setParameter("name", register.getSubject().getName())
+					.setParameter("registerId", existingRegister.getId())
+					.setMaxResults(1)
+					.getSingleResult();
+				throw new RestException(Status.CONFLICT, "register.subject.unavailable");
+			} catch (NoResultException e) {
+			}
 		}
 
 		// Retrieve existing Members
@@ -291,6 +323,7 @@ public class RegisterRESTService extends RESTService {
 		try {
 			// Update
 			existingRegister = existingRegister.copyFrom(register);
+			existingRegister.setSubject(supplementSubject(register.getSubject()));
 			existingRegister.getMembers().clear();
 			for (RegisterMember member : newMembersAsMap.values()) {
 				existingRegister.addMember(member);

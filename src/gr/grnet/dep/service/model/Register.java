@@ -40,6 +40,9 @@ public class Register implements Serializable {
 	@ManyToOne(optional = false)
 	private Institution institution;
 
+	@ManyToOne
+	private Subject subject;
+
 	@OneToMany(mappedBy = "register", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<RegisterMember> members = new HashSet<RegisterMember>();
 
@@ -65,6 +68,14 @@ public class Register implements Serializable {
 
 	public void setInstitution(Institution institution) {
 		this.institution = institution;
+	}
+
+	public Subject getSubject() {
+		return subject;
+	}
+
+	public void setSubject(Subject subject) {
+		this.subject = subject;
 	}
 
 	public Set<RegisterMember> getMembers() {
