@@ -573,15 +573,15 @@ public class RegisterRESTService extends RESTService {
 				"		join pd.department.school.name sname " +
 				"		join pd.department.school.institution.name iname " +
 				"		where pd.id = rl.id " +
-				"		and ( dname like :institution " +
-				"			or sname like :institution " +
-				"			or iname like :institution " +
+				"		and ( UPPER(dname) like :institution " +
+				"			or UPPER(sname) like :institution " +
+				"			or UPPER(iname) like :institution " +
 				"		)" +
 				"	) " +
 				"	or exists (" +
 				"		select pf.id from ProfessorForeign pf " +
 				"		where pf.id = rl.id " +
-				"		and pf.institution like :institution " +
+				"		and UPPER(pf.institution) like :institution " +
 				"	) " +
 				") ");
 		}
@@ -590,12 +590,12 @@ public class RegisterRESTService extends RESTService {
 				"	exists (" +
 				"		select pd.id from ProfessorDomestic pd " +
 				"		where pd.id = rl.id " +
-				"		and ( pd.subject.name like :subject or pd.fekSubject.name like :subject )" +
+				"		and ( UPPER(pd.subject.name) like :subject or UPPER(pd.fekSubject.name) like :subject )" +
 				"	) " +
 				"	or exists (" +
 				"		select pf.id from ProfessorForeign pf " +
 				"		where pf.id = rl.id " +
-				"		and pf.subject.name like :subject " +
+				"		and UPPER(pf.subject.name) like :subject " +
 				"	) " +
 				") ");
 		}
@@ -655,12 +655,12 @@ public class RegisterRESTService extends RESTService {
 			countQuery.setParameter("rankId", rankId);
 		}
 		if (institution != null && !institution.isEmpty()) {
-			searchQuery.setParameter("institution", "%" + institution + "%");
-			countQuery.setParameter("institution", "%" + institution + "%");
+			searchQuery.setParameter("institution", "%" + StringUtil.toUppercaseNoTones(institution, new Locale("el")) + "%");
+			countQuery.setParameter("institution", "%" + StringUtil.toUppercaseNoTones(institution, new Locale("el")) + "%");
 		}
 		if (subject != null && !subject.isEmpty()) {
-			searchQuery.setParameter("subject", "%" + subject + "%");
-			countQuery.setParameter("subject", "%" + subject + "%");
+			searchQuery.setParameter("subject", "%" + StringUtil.toUppercaseNoTones(subject, new Locale("el")) + "%");
+			countQuery.setParameter("subject", "%" + StringUtil.toUppercaseNoTones(subject, new Locale("el")) + "%");
 		}
 		// Execute
 		Long totalRecords = (Long) countQuery.getSingleResult();
