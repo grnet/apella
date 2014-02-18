@@ -1202,7 +1202,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						onlyLatin: true
 					},
 					identification: {
-						required: (role.discriminator !== 'PROFESSOR_DOMESTIC')
+						required: !(role.discriminator === 'PROFESSOR_DOMESTIC' || role.discriminator === 'PROFESSOR_FOREIGN')
 					},
 					password: {
 						required: true,
@@ -1702,7 +1702,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						onlyLatin: true
 					},
 					identification: {
-						required: !self.model.hasRole('PROFESSOR_DOMESTIC')
+						required: !(self.model.hasRole('PROFESSOR_DOMESTIC') || self.model.hasRole('PROFESSOR_FOREIGN'))
 					},
 					password: {
 						required: self.model.isNew(),
@@ -7567,6 +7567,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		search: function () {
 			var self = this;
+
 			function readFormValues() {
 				var formData = [
 					{

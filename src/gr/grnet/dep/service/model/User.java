@@ -295,7 +295,9 @@ public class User implements Serializable {
 	public boolean isMissingRequiredFields() {
 		return (this.basicInfo == null || this.basicInfo.isMissingRequiredFields()) ||
 			(this.contactInfo == null || this.contactInfo.isMissingRequiredFields()) ||
-			(this.identification == null && !this.getPrimaryRole().equals(RoleDiscriminator.PROFESSOR_DOMESTIC));
+			(this.identification == null && !(this.getPrimaryRole().equals(RoleDiscriminator.PROFESSOR_DOMESTIC) || this.getPrimaryRole().equals(RoleDiscriminator.PROFESSOR_FOREIGN)
+			));
+
 	}
 
 	public void addRole(Role role) {
