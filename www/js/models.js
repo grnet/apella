@@ -1557,6 +1557,7 @@ define([
 			id: undefined,
 			permanent: undefined,
 			institution: undefined,
+            subject : {},
 			members: []
 		},
 

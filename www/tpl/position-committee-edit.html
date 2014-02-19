@@ -24,7 +24,7 @@
 							<th><%= $.i18n.prop("Surname") %></th>
 							<th><%= $.i18n.prop("Profile") %></th>
 							<th><%= $.i18n.prop("Institution") %></th>
-							<th><%= $.i18n.prop("Department") %></th>
+							<th><%= $.i18n.prop("Register") %></th>
 							<th></th>
 						</tr>
 
@@ -33,7 +33,7 @@
 						</tbody>
 						<tfoot>
 						<tr>
-							<td colspan="10">
+							<td colspan="11">
 								<div class="btn-toolbar" id="actions">
 									<div class="btn-group">
 										<a id="toggleRegisterMembers" class="btn"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_register_members') %></a>
@@ -45,8 +45,7 @@
 					</table>
 				</div>
 			</div>
-			<div class="row-fluid">
-				<div id="committee-register-members" class="span12 well"></div>
+			<div class="row-fluid" id="committee-register-members">
 			</div>
 		</div>
 		<div class="control-group">

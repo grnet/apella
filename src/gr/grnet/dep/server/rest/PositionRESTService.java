@@ -393,6 +393,9 @@ public class PositionRESTService extends RESTService {
 			if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
+			if (!existingPosition.isPermanent()) {
+				throw new RestException(Status.CONFLICT, "wrong.position.status");
+			}
 			PositionPhase existingPhase = existingPosition.getPhase();
 			PositionPhase newPhase = null;
 			// Go through all transition scenarios,

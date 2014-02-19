@@ -4778,7 +4778,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.$el.append(this.template(tpl_data));
 			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 				self.$("table").dataTable({
-					"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+					"sDom": "<'row-fluid'<'span6'l><'span6'>r>t<'row-fluid'<'span6'i><'span6'p>>",
 					"sPaginationType": "bootstrap",
 					"oLanguage": {
 						"sSearch": $.i18n.prop("dataTable_sSearch"),
@@ -4795,6 +4795,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						}
 					}
 				});
+				self.$("table thead input").keyup(function () {
+					self.$("table").dataTable().fnFilter(this.value, self.$("table thead input").index(this));
+				});
 			}
 			// Actions
 			self.renderActions();
@@ -4806,8 +4809,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			if (!App.loggedOnUser.hasRole("INSTITUTION_MANAGER") && !App.loggedOnUser.hasRole("INSTITUTION_ASSISTANT")) {
 				return;
 			}
-			self.$("#actions").html("<select class=\"input-xlarge pull-left\" name=\"department\"></select>");
-			self.$("#actions").append("<a id=\"createPosition\" class=\"btn\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_position') + "</a>");
+			self.$("#actions").html('<select class="input-xxlarge pull-left" name="department"></select>');
+			self.$("#actions").append('<a id="createPosition" class="btn"><i class="icon-plus"></i> ' + $.i18n.prop('btn_create_position') + '</a>');
 
 			// Departments
 			App.departments = App.departments || new Models.Departments();
@@ -4823,10 +4826,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						diacritics: true,
 						create: false,
 						hideSelected: true,
-						sortField: 'name',
-						searchField: [ 'name' ],
-						options: _.filter(collection.toJSON(), function (department) {
+						sortField: 'lname',
+						searchField: [ 'lname' ],
+						options: _.map(collection.filter(function (department) {
 							return App.loggedOnUser.isAssociatedWithDepartment(department);
+						}), function (department) {
+							return _.extend(department.toJSON(), {
+								'lname': department.get('name')[App.locale]
+							});
 						}),
 						render: {
 							item: function (item, escape) { // Shows when
@@ -4863,11 +4870,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var newPosition;
 			// Validate:
 			var departmentId = self.$("select[name='department']").val();
-			if (_.isEqual(departmentId, "-1")) {
-				self.$("select[name='department']").addClass("inputError");
-				self.$("select[name='department']").on("focus", function (event) {
-					self.$("select[name='department']").removeClass("inputError");
-				});
+			if (!departmentId || _.isEqual(departmentId, "-1")) {
 				return;
 			}
 			// Create:
@@ -5746,7 +5749,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 			// Initialize Registers, no request is performed until render
 			self.registerMembers = new Models.PositionCommitteeRegisterMembers();
-			self.registerMembers.url = self.model.url() + "/register";
 			self.registerMembers.on("members:add", self.addMembers);
 		},
 
@@ -5822,15 +5824,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				self.registerMembersView = new Views.PositionCommitteeEditRegisterMembersView({
 					model: self.model,
 					collection: self.registerMembers
+
 				});
 				self.$("div#committee-register-members").hide();
 				self.$("div#committee-register-members").html(self.registerMembersView.el);
 				self.$("select").removeAttr("disabled");
 				self.$("a.btn").show();
 
-				self.registerMembers.fetch({
-					reset: true
-				});
+				self.registerMembersView.render();
 			} else {
 				self.$("div#committee-register-members").hide();
 				self.$("select").attr("disabled", true);
@@ -5977,61 +5978,135 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 	Views.PositionCommitteeEditRegisterMembersView = Views.BaseView.extend({
 		tagName: "div",
 
+		className: "span12 well",
+
 		initialize: function (options) {
 			this._super('initialize', [ options ]);
 			_.bindAll(this, "addMembers");
 			this.template = _.template(tpl_position_committee_edit_register_member_list);
-			this.collection.bind("change", this.render, this);
-			this.collection.bind("reset", this.render, this);
+
+			this.registries = new Models.Registries();
+			this.registries.url = this.model.url() + "/register";
+
 			this.model.bind("change:members", this.render, this);
 		},
 
 		events: {
+			"click a#selectRegister": "showRegisterMembers",
 			"click a#addMembers": "addMembers"
 		},
 
 		render: function (eventName) {
 			var self = this;
-			var tpl_data = {
-				members: (function () {
-					var result = [];
-					self.collection.each(function (model) {
-						var item = model.toJSON();
-						item.cid = model.cid;
-						item.isMember = _.some(self.model.get("members"), function (member) {
-							return _.isEqual(member.registerMember.id, item.id);
-						});
-						result.push(item);
-					});
-					return result;
-				}())
-			};
 			self.closeInnerViews();
 			self.$el.empty();
 			self.addTitle();
-			self.$el.append(self.template(tpl_data));
-
-			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
-				self.$("table").dataTable({
-					"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
-					"sPaginationType": "bootstrap",
-					"oLanguage": {
-						"sSearch": $.i18n.prop("dataTable_sSearch"),
-						"sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
-						"sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
-						"sInfo": $.i18n.prop("dataTable_sInfo"),
-						"sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
-						"sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
-						"oPaginate": {
-							sFirst: $.i18n.prop("dataTable_sFirst"),
-							sPrevious: $.i18n.prop("dataTable_sPrevious"),
-							sNext: $.i18n.prop("dataTable_sNext"),
-							sLast: $.i18n.prop("dataTable_sLast")
-						}
+			self.$el.append(self.template());
+			self.registries.fetch({
+				reset: true,
+				cache: false,
+				success: function (collection, resp, options) {
+					//TODO: Add in selector
+					var $select = self.$("select[name=register]");
+					$select.empty();
+					$select.append('<option value="">--</option>');
+					collection.each(function (register) {
+						$select.append('<option value="' + register.get('id') + '">' + register.get("subject").name + '</option>');
+					});
+				}
+			});
+			self.$("table#usersTable").dataTable({
+				"sDom": "<'row-fluid'<'span6'l><'span6'>r>t<'row-fluid'<'span6'i><'span6'p>>",
+				"sPaginationType": "bootstrap",
+				"oLanguage": {
+					"sSearch": $.i18n.prop("dataTable_sSearch"),
+					"sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+					"sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+					"sInfo": $.i18n.prop("dataTable_sInfo"),
+					"sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+					"sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+					"oPaginate": {
+						sFirst: $.i18n.prop("dataTable_sFirst"),
+						sPrevious: $.i18n.prop("dataTable_sPrevious"),
+						sNext: $.i18n.prop("dataTable_sNext"),
+						sLast: $.i18n.prop("dataTable_sLast")
 					}
-				});
-			}
+				}
+			});
 			return self;
+		},
+
+		showRegisterMembers: function (event) {
+			var self = this;
+			var registerId = self.$("select[name=register]").val();
+			if (!registerId) {
+				return;
+			}
+			self.$("table").dataTable().fnDestroy();
+			self.$("table").dataTable({
+				"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+				"sPaginationType": "bootstrap",
+				"oLanguage": {
+					"sSearch": $.i18n.prop("dataTable_sSearch"),
+					"sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+					"sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+					"sInfo": $.i18n.prop("dataTable_sInfo"),
+					"sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+					"sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+					"oPaginate": {
+						sFirst: $.i18n.prop("dataTable_sFirst"),
+						sPrevious: $.i18n.prop("dataTable_sPrevious"),
+						sNext: $.i18n.prop("dataTable_sNext"),
+						sLast: $.i18n.prop("dataTable_sLast")
+					}
+				},
+				"aoColumns": [
+					{ "mData": "select"},
+					{ "mData": "id"},
+					{ "mData": "external" },
+					{ "mData": "firstname" },
+					{ "mData": "lastname" },
+					{ "mData": "role"},
+					{ "mData": "institution"},
+					{ "mData": "committees"}
+				],
+				"bProcessing": true,
+				"sAjaxSource": self.model.url() + "/register/" + registerId + "/member",
+				"fnServerData": function (sSource, aoData, fnCallback) {
+					self.collection.url = sSource;
+					self.collection.fetch({
+						reset: true,
+						cache: true,
+						success: function (collection, response, options) {
+							var data = {
+								aaData: collection.map(function (registerMember) {
+									var isMember = _.some(self.model.get("members"), function (member) {
+										return _.isEqual(member.registerMember.professor.id, registerMember.get('professor').id);
+									});
+									return {
+										select: isMember ? '' :
+											'<select name="selectMember" class="input-small">' +
+												'<option value="NONE">----</option>' +
+												'<option value="REGULAR" data-model-id="' + registerMember.get('id') + '" data-type="REGULAR">' + $.i18n.prop('PositionCommitteeMemberTypeREGULAR') + '</option>' +
+												'<option value="SUBSTITUTE" data-model-id="' + registerMember.get('id') + '" data-type="SUBSTITUTE">' + $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") + '</option>' +
+												'</select>',
+										id: '<a href = "#user/' + registerMember.get('professor').user.id + '">' + registerMember.get('professor').user.id + '</a>',
+										external: registerMember.get('external') ? $.i18n.prop('RegisterMemberExternal') : $.i18n.prop('RegisterMemberInternal'),
+										firstname: registerMember.get('professor').user.basicInfo.firstname,
+										lastname: registerMember.get('professor').user.basicInfo.lastname,
+										role: $.i18n.prop(registerMember.get('professor').discriminator),
+										institution: registerMember.get('professor').discriminator === 'PROFESSOR_FOREIGN' ? registerMember.get('professor').institution : _.templates.department(registerMember.get('professor').department),
+										committees: registerMember.get('professor').committeesCount
+									}
+
+								})
+							};
+							fnCallback(data);
+						}
+					});
+				}
+
+			});
 		},
 
 		addMembers: function (event) {
@@ -6041,14 +6116,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			// Use dataTable to select elements, as pagination removes them from
 			// DOM
 			self.$("table").dataTable().$('select[name=selectMember] option:selected').each(function () {
-				var selectedOption, cid, type, model, committeeMember;
+				var selectedOption, id, type, model, committeeMember;
 				selectedOption = $(this);
-				cid = selectedOption.data('modelCid');
-				if (!cid) {
+				id = selectedOption.data('modelId');
+				if (!id) {
 					return;
 				}
 				type = selectedOption.data('type');
-				model = self.collection.get(cid);
+				model = self.collection.get(id);
 				committeeMember = {
 					type: type,
 					registerMember: model.toJSON()
@@ -7022,7 +7097,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 				self.$("table").dataTable({
-					"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+					"sDom": "<'row-fluid'<'span6'l><'span6'>r>t<'row-fluid'<'span6'i><'span6'p>>",
 					"sPaginationType": "bootstrap",
 					"oLanguage": {
 						"sSearch": $.i18n.prop("dataTable_sSearch"),
@@ -9577,5 +9652,5 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 	});
 
 	return Views;
-})
-;
+
+});

@@ -151,19 +151,10 @@ public class RegisterRESTService extends RESTService {
 		if (!newRegister.isUserAllowedToEdit(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		try {
-			em.createQuery("from Register r " +
-				"where r.institution.id = :institutionId " +
-				"and r.permanent = true ")
-				.setParameter("institutionId", institution.getId())
-				.setMaxResults(1)
-				.getSingleResult();
-			throw new RestException(Status.CONFLICT, "register.already.exists");
-		} catch (NoResultException e) {
-		}
 		// Update
 		try {
 			newRegister.setInstitution(institution);
+			newRegister.setSubject(null);
 			newRegister.setPermanent(false);
 			em.persist(newRegister);
 			em.flush();

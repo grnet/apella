@@ -94,7 +94,7 @@ public class Position {
 	@ManyToOne(optional = false)
 	private Department department;
 
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne
 	private Subject subject;
 
 	@ManyToOne

@@ -1,53 +1,46 @@
-<table class="table table-striped table-bordered">
-	<thead>
-		<tr>
-			<th></th>
-			<th><%= $.i18n.prop("ID") %></th>
-			<th><%= $.i18n.prop("RegisterMemberExternal") + "/" + $.i18n.prop("RegisterMemberInternal") %></th>
-			<th><%= $.i18n.prop("Name") %></th>
-			<th><%= $.i18n.prop("Surname") %></th>
-			<th><%= $.i18n.prop("Profile") %></th>
-			<th><%= $.i18n.prop("Institution") %></th>
-			<th><%= $.i18n.prop("Committees") %></th>
-		</tr>
-	</thead>
-	<tbody>
-		<% _.each(members, function(member) { %>
-		<tr>
-			<td>
-				<% if (!member.isMember) { %>
-				<select name="selectMember" class="input-small">
-					<option value="NONE">----</option>
-					<option value="REGULAR" data-model-cid="<%= member.cid %>" data-type="REGULAR"><%= $.i18n.prop("PositionCommitteeMemberTypeREGULAR") %></option>
-					<option value="SUBSTITUTE" data-model-cid="<%= member.cid %>" data-type="SUBSTITUTE"><%= $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") %></option>
-				</select>
-				<% } %>
-			</td>
-			<td>
-				<a id="view" data-model-cid="<%= member.cid %>" href="#user/<%= member.professor.user.id %>"><%= member.professor.user.id %></a>
-			</td>
-			<td><%= member.external ? $.i18n.prop("RegisterMemberExternal") : $.i18n.prop("RegisterMemberInternal") %></td>
-			<td><%= member.professor.user.basicInfo.firstname %></td>
-			<td><%= member.professor.user.basicInfo.lastname%></td>
-			<td><%= $.i18n.prop(member.professor.discriminator) %></td>
-			<td>
-				<% if (_.isEqual(member.professor.discriminator, 'PROFESSOR_FOREIGN')) { %>
-				<%= member.professor.institution %>
-				<% } else { %>
-				<%= _.templates.department(member.professor.department) %>
-				<% } %>
-			</td>
-			<td><%= member.professor.committeesCount %></td>
-		</tr>
-		<% }); %>
-	</tbody>
-	<tfoot>
-		<tr>
-			<td colspan="8">
-				<div class="btn-toolbar pull-right" id="details">
-					<a id="addMembers" class="btn btn-success"><%= $.i18n.prop('btn_addAll') %></a>
-				</div>
-			</td>
-		</tr>
-	</tfoot>
-</table>
+<div class="row-fluid">
+	<div class="span12">
+		<label><%= $.i18n.prop('Register') %>: </label>
+		<select name="register"></select><a id="selectRegister" class="btn btn-success"><%= $.i18n.prop('btn_select') %></a>
+	</div>
+</div>
+<hr/>
+<div class="row-fluid">
+	<div class="span12">
+		<table class="table table-striped table-bordered">
+			<thead>
+			<tr>
+				<th></th>
+				<th><%= $.i18n.prop("ID") %></th>
+				<th><%= $.i18n.prop("RegisterMemberExternal") + "/" + $.i18n.prop("RegisterMemberInternal") %></th>
+				<th><%= $.i18n.prop("Name") %></th>
+				<th><%= $.i18n.prop("Surname") %></th>
+				<th><%= $.i18n.prop("Profile") %></th>
+				<th><%= $.i18n.prop("Institution") %></th>
+				<th><%= $.i18n.prop("Committees") %></th>
+			</tr>
+			</thead>
+			<tbody>
+			<tr>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>
+			</tbody>
+			<tfoot>
+			<tr>
+				<td colspan="8">
+					<div class="btn-toolbar pull-right" id="details">
+						<a id="addMembers" class="btn btn-success"><%= $.i18n.prop('btn_addSelected') %></a>
+					</div>
+				</td>
+			</tr>
+			</tfoot>
+		</table>
+	</div>
+</div>
