@@ -1281,8 +1281,12 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					}
 				}
 			});
+			// Tooltips
+			self.$("i[rel=popover]").popover({
+				html: 'true',
+				trigger: 'hover'
+			});
 			// Highlight Required
-
 			if (self.validator) {
 				for (propName in self.validator.settings.rules) {
 					if (self.validator.settings.rules.hasOwnProperty(propName)) {
@@ -1808,6 +1812,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					}
 				}
 			}
+			// Tooltips
+			self.$("i[rel=popover]").popover({
+				html: 'true',
+				trigger: 'hover'
+			});
 			// Disable Save Button until user changes a field,
 			// user does not have permanent field
 			self.$("a#save").attr("disabled", true);
@@ -7484,7 +7493,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					}
 				},
 				"aoColumns": [
-					{ "mData": "name" },
+					{ "mData": "firstname" },
+					{ "mData": "lastname" },
 					{ "mData": "id", "sType": "html"},
 					{ "mData": "profile" },
 					{ "mData": "rank" },
@@ -7497,7 +7507,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					return {
 						external: $.i18n.prop(member.external ? "Yes" : "No"),
 						id: '<a href="#user/' + member.professor.user.id + '">' + member.professor.user.id + '</a>',
-						name: member.professor.user.basicInfo.firstname + ' ' + member.professor.user.basicInfo.lastname,
+						firstname: member.professor.user.basicInfo.firstname,
+						lastname: member.professor.user.basicInfo.lastname,
 						profile: $.i18n.prop(member.professor.discriminator),
 						rank: member.professor.rank ? member.professor.rank.name[App.locale] : '',
 						institution: _.isEqual(member.professor.discriminator,
@@ -7735,8 +7746,12 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			function readFormValues() {
 				var formData = [
 					{
-						name: "name",
-						value: self.$('input[name=name]').val()
+						name: "firstname",
+						value: self.$('input[name=firstname]').val()
+					},
+					{
+						name: "lastname",
+						value: self.$('input[name=lastname]').val()
 					},
 					{
 						name: "role",
@@ -7784,7 +7799,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					}
 				},
 				"aoColumns": [
-					{ "mData": "name" },
+					{ "mData": "firstname" },
+					{ "mData": "lastname" },
 					{ "mData": "id", "sType": "html"},
 					{ "mData": "profile" },
 					{ "mData": "rank", "bSortable": false },
@@ -7806,7 +7822,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							// Read Data
 							json.aaData = _.map(json.records, function (professor) {
 								return {
-									name: professor.user.basicInfo.firstname + ' ' + professor.user.basicInfo.lastname,
+									firstname: professor.user.basicInfo.firstname,
+									lastname: professor.user.basicInfo.lastname,
 									id: '<a href="#user/' + professor.user.id + '">' + professor.user.id + '</a>',
 									profile: $.i18n.prop(professor.discriminator),
 									rank: professor.rank ? professor.rank.name[App.locale] : '',
@@ -7817,7 +7834,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 									}) ? '' : '<input type="checkbox" value="' + professor.id + '" data-model-id="' + professor.id + '"/>'
 								};
 							});
-							window.console.log("fnServerData:success ", json);
 							fnCallback(json);
 						}
 					});
