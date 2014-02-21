@@ -518,7 +518,8 @@ public class RegisterRESTService extends RESTService {
 		}
 		// 1. Read parameters:
 		Long userId = request.getParameter("user").matches("\\d+") ? Long.valueOf(request.getParameter("user")) : null;
-		String name = request.getParameter("name");
+		String firstname = request.getParameter("firstname");
+		String lastname = request.getParameter("lastname");
 		String role = request.getParameter("role");
 		Long rankId = request.getParameter("rank").matches("\\d+") ? Long.valueOf(request.getParameter("rank")) : null;
 		String institution = request.getParameter("institution");
@@ -545,8 +546,11 @@ public class RegisterRESTService extends RESTService {
 		if (userId != null) {
 			searchQueryString.append(" and rl.user.id = :userId ");
 		}
-		if (name != null && !name.isEmpty()) {
-			searchQueryString.append(" and (rl.user.basicInfo.firstname like :name or rl.user.basicInfo.lastname like :name )");
+		if (firstname != null && !firstname.isEmpty()) {
+			searchQueryString.append(" and rl.user.basicInfo.firstname like :firstname");
+		}
+		if (lastname != null && !lastname.isEmpty()) {
+			searchQueryString.append(" and rl.user.basicInfo.lastname like :lastname");
 		}
 		if (role != null && !role.isEmpty()) {
 			searchQueryString.append(" and rl.discriminator = :role ");
@@ -607,12 +611,14 @@ public class RegisterRESTService extends RESTService {
 				orderString = "order by r.user.id " + orderDirection;
 			} else if (orderField.equals("profile")) {
 				orderString = "order by r.discriminator " + orderDirection + ", r.user.id " + orderDirection;
+			} else if (orderField.equals("firstname")) {
+				orderString = "order by r.user.basicInfo.firstname " + orderDirection + " , r.user.basicInfo.lastname, r.user.id ";
 			} else {
-				// name is default
-				orderString = "order by r.user.basicInfo.firstname " + orderDirection + " , r.user.basicInfo.lastname " + orderDirection + ", r.user.id " + orderDirection;
+				// lastname is default
+				orderString = "order by r.user.basicInfo.lastname " + orderDirection + " , r.user.basicInfo.firstname, r.user.id ";
 			}
 		} else {
-			orderString = "order by r.user.basicInfo.firstname " + orderDirection + " , r.user.basicInfo.lastname " + orderDirection + ", r.user.id " + orderDirection;
+			orderString = "order by r.user.basicInfo.lastname " + orderDirection + " , r.user.basicInfo.firstname, r.user.id ";
 		}
 
 		Query countQuery = em.createQuery(
@@ -642,9 +648,13 @@ public class RegisterRESTService extends RESTService {
 			searchQuery.setParameter("userId", userId);
 			countQuery.setParameter("userId", userId);
 		}
-		if (name != null && !name.isEmpty()) {
-			searchQuery.setParameter("name", "%" + StringUtil.toUppercaseNoTones(name, new Locale("el")) + "%");
-			countQuery.setParameter("name", "%" + StringUtil.toUppercaseNoTones(name, new Locale("el")) + "%");
+		if (firstname != null && !firstname.isEmpty()) {
+			searchQuery.setParameter("firstname", "%" + StringUtil.toUppercaseNoTones(firstname, new Locale("el")) + "%");
+			countQuery.setParameter("firstname", "%" + StringUtil.toUppercaseNoTones(firstname, new Locale("el")) + "%");
+		}
+		if (lastname != null && !lastname.isEmpty()) {
+			searchQuery.setParameter("lastname", "%" + StringUtil.toUppercaseNoTones(lastname, new Locale("el")) + "%");
+			countQuery.setParameter("lastname", "%" + StringUtil.toUppercaseNoTones(lastname, new Locale("el")) + "%");
 		}
 		if (role != null && !role.isEmpty()) {
 			searchQuery.setParameter("role", RoleDiscriminator.valueOf(role));
