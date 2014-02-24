@@ -232,18 +232,10 @@ public class UserRESTService extends RESTService {
 			if (newUser.getRoles().isEmpty() || newUser.getRoles().size() > 1) {
 				throw new RestException(Status.CONFLICT, "one.role.required");
 			}
-			// Identification availability
-			try {
-				em.createQuery(
-					"select identification from User u " +
-						"where u.identification = :identification")
-					.setParameter("identification", newUser.getIdentification())
-					.setMaxResults(1)
-					.getSingleResult();
-				throw new RestException(Status.CONFLICT, "existing.identification.number");
-			} catch (NoResultException e) {
-			}
 			// Username availability
+			if (newUser.getUsername() == null || newUser.getUsername().trim().isEmpty()) {
+				throw new RestException(Status.BAD_REQUEST, "registration.username.required");
+			}
 			try {
 				em.createQuery(
 					"select u from User u" +
@@ -254,6 +246,9 @@ public class UserRESTService extends RESTService {
 			} catch (NoResultException e) {
 			}
 			// Contact mail availability
+			if (newUser.getContactInfo().getEmail() == null || newUser.getContactInfo().getEmail().trim().isEmpty()) {
+				throw new RestException(Status.BAD_REQUEST, "registration.email.required");
+			}
 			try {
 				em.createQuery(
 					"select u from User u " +
@@ -261,6 +256,21 @@ public class UserRESTService extends RESTService {
 					.setParameter("email", newUser.getContactInfo().getEmail())
 					.getSingleResult();
 				throw new RestException(Status.FORBIDDEN, "contact.email.not.available");
+			} catch (NoResultException e) {
+			}
+
+			// Identification availability
+			if (newUser.getIdentification() == null || newUser.getIdentification().trim().isEmpty()) {
+				throw new RestException(Status.BAD_REQUEST, "registration.identification.required");
+			}
+			try {
+				em.createQuery(
+					"select identification from User u " +
+						"where u.identification = :identification")
+					.setParameter("identification", newUser.getIdentification())
+					.setMaxResults(1)
+					.getSingleResult();
+				throw new RestException(Status.CONFLICT, "existing.identification.number");
 			} catch (NoResultException e) {
 			}
 
