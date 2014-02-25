@@ -1306,7 +1306,15 @@ define([
 				"basicInfo": {},
 				"basicInfoLatin": {},
 				"contactInfo": {}
-			}
+			},
+			manager : {
+				"id": undefined,
+				"username": undefined,
+				"basicInfo": {},
+				"basicInfoLatin": {},
+				"contactInfo": {}
+			},
+			assistants : []
 		},
 
 		phase: function (key, val, options) {
@@ -1438,8 +1446,12 @@ define([
 					return r.institution.id === position.get("department").school.institution.id;
 				}
 				if (r.discriminator === "INSTITUTION_ASSISTANT") {
-					return position.get("createdBy").id === user.id;
+					return position.get("createdBy").id === user.id ||
+						_.any(position.get("assistants"), function (assistant) {
+							return assistant.id === user.id;
+						});
 				}
+
 				return false;
 			});
 		}

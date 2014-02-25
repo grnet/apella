@@ -70,6 +70,13 @@
 				<input class="input-xlarge" name="closingDate" type="text" data-input-type="date" value="<%= phase.candidacies.closingDate %>" />
 			</div>
 		</div>
+		<div class="control-group">
+			<label class="control-label" for=assistants><%= $.i18n.prop('PositionAssistants') %>:</label>
+
+			<div class="controls">
+				<select class="input-xlarge" name="assistants" multiple="true"></select>
+			</div>
+		</div>
 	</fieldset>
 	<fieldset>
 		<div class="form-actions">

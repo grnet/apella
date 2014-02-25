@@ -5342,6 +5342,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			this.template = _.template(tpl_position_main_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
+
+			App.sectors = App.sectors || new Models.Sectors();
+			this.assistants = new Models.Users();
+			this.assistants.url = this.model.url() + "/assistants";
 		},
 
 		events: {
@@ -5385,6 +5389,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					return App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE") || !self.model.get("permanent");
 				case "closingDate":
 					return App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE") || !self.model.get("permanent");
+				case "assistants":
+					return App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE") || !self.model.get("permanent");
 				default:
 					break;
 			}
@@ -5403,8 +5409,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.$("select[name='sector']").change(function (event) {
 				self.$("select[name='sector']").next(".help-block").html(self.$("select[name='area'] option:selected").text() + " / " + self.$("select[name='sector'] option:selected").text());
 			});
-			App.sectors = App.sectors || new Models.Sectors();
-			// ////////////////////
 			self.$("select[name='area']").change(function () {
 				var selectedAreaId;
 				self.$("select[name='sector']").empty();
@@ -5454,6 +5458,21 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
 					});
 					popup.show();
+				}
+			});
+			// Add Assistants:
+			self.assistants.fetch({
+				cache: true,
+				reset: true,
+				success: function (collection, resp, options) {
+					var $select = self.$('select[name=assistants]');
+					$select.empty();
+					collection.each(function (user) {
+						var selected = _.any(self.model.get('assistants'), function (assistant) {
+							return assistant.id === user.get('id');
+						}) ? 'selected = selected' : '';
+						$select.append('<option value="' + user.get('id') + '" ' + selected + '>' + user.getDisplayName() + '</option>');
+					});
 				}
 			});
 
@@ -5596,7 +5615,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			values.fekSentDate = self.$('form input[name=fekSentDate]').val();
 			values.phase.candidacies.openingDate = self.$('form input[name=openingDate]').val();
 			values.phase.candidacies.closingDate = self.$('form input[name=closingDate]').val();
-
+			values.assistants = _.map(self.$('form select[name=assistants]').val(), function (value) {
+				return  {
+					id: value
+				}
+			});
 			// Save to model
 			self.model.save(values, {
 				wait: true,
