@@ -7396,7 +7396,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var self = this;
 
 			this._super('initialize', [ options ]);
-			_.bindAll(this, "change", "renderMembers", "toggleAddMember", "submit", "remove", "cancel", "allowedToEdit", "addMembers", "removeMember");
+			_.bindAll(this, "change", "renderMembers", "toggleAddMember", "submit", "remove", "cancel", "addMembers", "removeMember");
 			self.template = _.template(tpl_register_edit);
 			self.model.bind('change', self.render, self);
 			self.model.bind("destroy", self.close, self);
@@ -7423,10 +7423,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a#removeMember": "removeMember"
 		},
 
-		allowedToEdit: function () {
-			return true;
-		},
-
 		render: function (eventName) {
 			var self = this;
 			var propName;
@@ -7449,32 +7445,42 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					$(element).parent(".controls").parent(".control-group").removeClass("error");
 				},
 				rules: {
-					"institution": "required"
+					'institution': 'required',
+					'subject': 'required'
 				},
 				messages: {
-					"institution": $.i18n.prop('validation_institution')
+					'institution': $.i18n.prop('validation_institution'),
+					'subject': $.i18n.prop('validation_required')
+				}
+			});
+			self.$('input[name=subject]').typeahead({
+				source: function (query, process) {
+					var subjects = new Models.Subjects();
+					subjects.fetch({
+						cache: false,
+						reset: true,
+						data: {
+							"query": query
+						},
+						success: function (collection, response, options) {
+							var data = collection.pluck("name");
+							process(data);
+						}
+					});
 				}
 			});
 
 			// Professors View
-			if (self.allowedToEdit()) {
-				// Inner View
-				if (self.professorListView) {
-					self.professorListView.close();
-				}
-				self.professorListView = new Views.RegisterEditProfessorListView({
-					model: self.model, // This is needed to allow disable button for existing members
-					collection: self.professors
-				});
-				self.$("div#register-professor-list").hide();
-				self.$("div#register-professor-list").html(self.professorListView.render().el);
-				self.$("select").removeAttr("disabled");
-				self.$("a.btn").show();
-			} else {
-				self.$("div#committee-professor-list").hide();
-				self.$("select").attr("disabled", true);
-				self.$("a.btn").hide();
+			if (self.professorListView) {
+				self.professorListView.close();
 			}
+			self.professorListView = new Views.RegisterEditProfessorListView({
+				model: self.model, // This is needed to allow disable button for existing members
+				collection: self.professors
+			});
+			self.$("div#register-professor-list").hide();
+			self.$("div#register-professor-list").html(self.professorListView.render().el);
+
 			// Highlight Required
 			if (self.validator) {
 				for (propName in self.validator.settings.rules) {
@@ -7621,6 +7627,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				"id": self.$('form input[name=institution]').val()
 			};
 			values.members = self.model.get("members");
+			values.subject = {
+				name: self.$('form input[name=subject]').val()
+			};
 			// Save to model
 			self.model.save(values, {
 				wait: true,
