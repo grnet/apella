@@ -7246,11 +7246,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			if (!App.loggedOnUser.hasRole("INSTITUTION_MANAGER") && !App.loggedOnUser.hasRole("INSTITUTION_ASSISTANT")) {
 				return;
 			}
-			if (self.collection.any(function (register) {
-				return App.loggedOnUser.isAssociatedWithInstitution(register.get("institution"));
-			})) {
-				return;
-			}
 			self.$("#actions").append("<div class=\"btn-group\"><input type=\"hidden\" name=\"institution\" /><a id=\"createRegister\" class=\"btn\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_register') + " </a></div>");
 			// Add institutions in selector:
 			App.institutions = App.institutions || new Models.Institutions();
