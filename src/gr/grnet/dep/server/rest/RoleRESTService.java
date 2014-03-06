@@ -370,7 +370,9 @@ public class RoleRESTService extends RESTService {
 		}
 		// Validate data if loggedOn is not admin we trust admin(!!!)
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
-
+			if (existingRole.getUser().isMissingRequiredFields()) {
+				throw new RestException(Status.CONFLICT, "user.missing.required.fields");
+			}
 			if (!existingRole.getStatus().equals(RoleStatus.UNAPPROVED) &&
 				!existingRole.compareCriticalFields(role)) {
 				throw new RestException(Status.CONFLICT, "cannot.change.critical.fields");
@@ -428,6 +430,7 @@ public class RoleRESTService extends RESTService {
 					if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
 						existingRole.getStatus().equals(RoleStatus.UNAPPROVED) &&
 						!existingRole.getUser().getAuthenticationType().equals(AuthenticationType.USERNAME) &&
+						!existingRole.getUser().isMissingRequiredFields() &&
 						!existingRole.isMissingRequiredFields()) {
 						// At this point all fields are filled, 
 						// so we activate the Role 
@@ -1090,6 +1093,9 @@ public class RoleRESTService extends RESTService {
 		//Validate Change
 		if (requestRole.getStatus().equals(RoleStatus.ACTIVE) && primaryRole.isMissingRequiredFields()) {
 			throw new RestException(Status.CONFLICT, "role.missing.required.fields");
+		}
+		if (requestRole.getStatus().equals(RoleStatus.ACTIVE) && primaryRole.getUser().isMissingRequiredFields()) {
+			throw new RestException(Status.CONFLICT, "user.missing.required.fields");
 		}
 		if (primaryRole instanceof InstitutionManager) {
 			if (requestRole.getStatus().equals(RoleStatus.ACTIVE)) {

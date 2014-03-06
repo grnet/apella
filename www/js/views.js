@@ -309,7 +309,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		render: function (eventName) {
 			var self = this;
-			var language = App.utils.getCookie("apella-lang");
+			var language = App.utils.getLocale();
 			self.closeInnerViews();
 			self.$el.empty();
 			self.addTitle();
