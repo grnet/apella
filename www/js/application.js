@@ -23,7 +23,7 @@ define([ "jquery",
 			ignore: []
 		});
 		$.validator.addMethod("onlyLatin", function (value, element) {
-			return this.optional(element) || /^[a-zA-Z0-9][a-zA-Z0-9_ \-]*[a-zA-Z0-9]$/.test(value);
+			return this.optional(element) || /^[a-zA-Z0-9][a-zA-Z0-9_ \-'"]*[a-zA-Z0-9]$/.test(value);
 		}, "Please type only latin characters");
 		$.validator.addMethod("requiredIfOtherGreek", function (value, element, param) {
 			var target = $(param);
@@ -32,7 +32,7 @@ define([ "jquery",
 					$(element).valid();
 				});
 			}
-			return (/^[a-zA-Z0-9]*$/.test(target.val())) || value;
+			return (/^[a-zA-Z0-9][a-zA-Z0-9_ \-'"]*[a-zA-Z0-9]$/.test(target.val())) || value;
 		}, "Required if other field is in greek characters");
 
 		$.validator.addMethod("pwd", function (value, element) {
@@ -294,7 +294,17 @@ define([ "jquery",
 				},
 
 				getLocale: function () {
-					return window.App.utils.getCookie("apella-lang") || 'el';
+					function browserLocale() {
+						var locale = $.i18n.browserLang();
+						if (/^en/.test(locale)) {
+							locale = 'en';
+						} else {
+							locale = 'el';
+						}
+						return locale;
+					}
+
+					return window.App.utils.getCookie("apella-lang") || browserLocale();
 				},
 
 				// Cookies

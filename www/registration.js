@@ -10,9 +10,7 @@ require([
 	], function ($, _, Backbone, App, Routers) {
 		// Loaded templates
 		$.i18n.properties({
-			language: (function () {
-				return App.utils.getCookie("apella-lang") ? App.utils.getCookie("apella-lang") : "el";
-			}()),
+			language: App.utils.getLocale(),
 			name: 'messages',
 			path: 'locale/',
 			mode: 'map',
