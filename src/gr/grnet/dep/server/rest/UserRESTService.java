@@ -259,21 +259,6 @@ public class UserRESTService extends RESTService {
 			} catch (NoResultException e) {
 			}
 
-			// Identification availability
-			if (newUser.getIdentification() == null || newUser.getIdentification().trim().isEmpty()) {
-				throw new RestException(Status.BAD_REQUEST, "registration.identification.required");
-			}
-			try {
-				em.createQuery(
-					"select identification from User u " +
-						"where u.identification = :identification")
-					.setParameter("identification", newUser.getIdentification())
-					.setMaxResults(1)
-					.getSingleResult();
-				throw new RestException(Status.CONFLICT, "existing.identification.number");
-			} catch (NoResultException e) {
-			}
-
 			//2. Set Fields
 			Role firstRole = newUser.getRoles().iterator().next();
 			firstRole.setStatus(RoleStatus.UNAPPROVED);
@@ -348,6 +333,26 @@ public class UserRESTService extends RESTService {
 					break;
 				case ADMINISTRATOR:
 					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+			}
+
+			// Identification Required
+			if (!(firstRole.equals(RoleDiscriminator.PROFESSOR_DOMESTIC) || firstRole.equals(RoleDiscriminator.PROFESSOR_FOREIGN)) &&
+				(newUser.getIdentification() == null || newUser.getIdentification().trim().isEmpty())) {
+
+				throw new RestException(Status.BAD_REQUEST, "registration.identification.required");
+			}
+			// Identification availability
+			if (newUser.getIdentification() != null && newUser.getIdentification().trim().length() > 0) {
+				try {
+					em.createQuery(
+						"select identification from User u " +
+							"where u.identification = :identification")
+						.setParameter("identification", newUser.getIdentification())
+						.setMaxResults(1)
+						.getSingleResult();
+					throw new RestException(Status.CONFLICT, "existing.identification.number");
+				} catch (NoResultException e) {
+				}
 			}
 
 			// Capitalize names
@@ -439,18 +444,26 @@ public class UserRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "contact.email.not.available");
 		} catch (NoResultException e) {
 		}
-		// Identification availability
-		try {
-			em.createQuery("select identification from User u " +
-				"where u.id != :id " +
-				"and u.identification = :identification")
-				.setParameter("id", user.getId())
-				.setParameter("identification", user.getIdentification())
-				.setMaxResults(1)
-				.getSingleResult();
-			throw new RestException(Status.CONFLICT, "existing.identification.number");
-		} catch (NoResultException e) {
+		// Identification Required
+		if (!(existingUser.getPrimaryRole().equals(RoleDiscriminator.PROFESSOR_DOMESTIC) || existingUser.getPrimaryRole().equals(RoleDiscriminator.PROFESSOR_FOREIGN)) &&
+			(user.getIdentification() == null || user.getIdentification().trim().isEmpty())) {
+			throw new RestException(Status.BAD_REQUEST, "registration.identification.required");
 		}
+		// Identification availability
+		if (user.getIdentification() != null && user.getIdentification().trim().length() > 0) {
+			try {
+				em.createQuery("select identification from User u " +
+					"where u.id != :id " +
+					"and u.identification = :identification")
+					.setParameter("id", user.getId())
+					.setParameter("identification", user.getIdentification())
+					.setMaxResults(1)
+					.getSingleResult();
+				throw new RestException(Status.CONFLICT, "existing.identification.number");
+			} catch (NoResultException e) {
+			}
+		}
+
 		try {
 
 			// Copy User Fields

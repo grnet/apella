@@ -234,12 +234,6 @@ public class PositionEvaluationRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.member.id");
 		}
 
-		// Check if a member is in Commitee
-		for (PositionCommitteeMember committeeMember : existingPosition.getPhase().getCommittee().getMembers()) {
-			if (newEvaluatorsRegisterMap.containsKey(committeeMember.getRegisterMember().getId())) {
-				throw new RestException(Status.CONFLICT, "member.in.committe");
-			}
-		}
 		// Check if a member is Candidacy Evaluator
 		for (Candidacy candidacy : existingPosition.getPhase().getCandidacies().getCandidacies()) {
 			for (CandidacyEvaluator evaluator : candidacy.getProposedEvaluators()) {
