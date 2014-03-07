@@ -7711,15 +7711,16 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		initialize: function (options) {
 			this._super('initialize', [ options ]);
-			_.bindAll(this, "search", "selectProfessors", "handleKeyUp");
+			_.bindAll(this, "search", "selectProfessors", "handleKeyUp", "displaySelected");
 			this.template = _.template(tpl_register_edit_professor_list);
 			this.model.bind("change:members", this.render, this);
 		},
 
 		events: {
 			"click a#search": "search",
-			"click a#select": "selectProfessors",
-			"keyup #filter": "handleKeyUp"
+			"click a#addSelected": "selectProfessors",
+			"keyup #filter": "handleKeyUp",
+			"click input[type='checkbox']" : "displaySelected"
 		},
 
 		render: function (eventName) {
@@ -7865,10 +7866,17 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 								};
 							});
 							fnCallback(json);
+							self.displaySelected();
 						}
 					});
 				}
 			});
+		},
+
+		displaySelected: function() {
+			var self = this;
+			var count = self.$("table input[type=checkbox]:checked").length;
+			self.$("#displaySelected").text('(' + count + ')');
 		},
 
 		selectProfessors: function (event) {
