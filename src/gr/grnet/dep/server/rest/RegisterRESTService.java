@@ -72,12 +72,24 @@ public class RegisterRESTService extends RESTService {
 	@GET
 	@JsonView({RegisterView.class})
 	public Collection<Register> getAll(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
-		getLoggedOn(authToken);
+		User loggedOn = getLoggedOn(authToken);
 		@SuppressWarnings("unchecked")
 		Collection<Register> registers = (Collection<Register>) em.createQuery(
 			"select r from Register r " +
 				"where r.permanent = true")
 			.getResultList();
+
+		@SuppressWarnings("unchecked")
+		Collection<Long> loggedOnRegisterIds = (Collection<Long>) em.createQuery(
+			"select distinct(rm.register.id) from RegisterMember rm " +
+				"where rm.professor.user.id = :userId")
+			.setParameter("userId", loggedOn.getId())
+			.getResultList();
+
+		for (Register r : registers) {
+			r.setAmMember(loggedOnRegisterIds.contains(r.getId()));
+		}
+
 		return registers;
 	}
 

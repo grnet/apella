@@ -2,6 +2,7 @@
 	<thead>
 		<tr>
 			<th><%= $.i18n.prop("Institution") %></th>
+			<th><%= $.i18n.prop("AmMember") %></th>
 			<th width="1px"></th>
 		</tr>
 	</thead>
@@ -9,6 +10,7 @@
 		<% _.each(registries, function(register) { %>
 		<tr>
 			<td><%= register.institution.name[App.locale] %></td>
+			<td><%= $.i18n.prop(register.amMember ? 'Yes' : 'No') %></td>
 			<td width="1px">
 				<div class="btn-group btn-group-vertical">
 				<% if (register.canEdit) { %>
