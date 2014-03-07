@@ -5389,6 +5389,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					return App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE") || !self.model.get("permanent");
 				case "closingDate":
 					return App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE") || !self.model.get("permanent");
+				case "assistant":
+					return App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE") || !self.model.get("permanent");
 				case "assistants":
 					return App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE") || !self.model.get("permanent");
 				default:
@@ -5465,14 +5467,21 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				cache: true,
 				reset: true,
 				success: function (collection, resp, options) {
-					var $select = self.$('select[name=assistants]');
+					var $select = self.$('div#assistants');
 					$select.empty();
 					collection.each(function (user) {
 						var selected = _.any(self.model.get('assistants'), function (assistant) {
 							return assistant.id === user.get('id');
-						}) ? 'selected = selected' : '';
-						$select.append('<option value="' + user.get('id') + '" ' + selected + '>' + user.getDisplayName() + '</option>');
+						}) ? 'checked' : '';
+						$select.append('<label class="checkbox">' +
+							'<input type = "checkbox" name="assistant" value="' + user.get('id') + '" ' + selected +'>' + user.getDisplayName() +
+							'</label >');
 					});
+					if (self.isEditable('assistant')) {
+						$select.find('input').removeAttr("disabled");
+					} else {
+						$select.find('input').attr("disabled", true);
+					}
 				}
 			});
 
@@ -5483,6 +5492,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					$(this).removeAttr("disabled");
 				} else {
 					$(this).attr("disabled", true);
+				}
+			});
+			self.$("div.multiple-select").each(function() {
+				var field = $(this).attr("id");
+				if (self.isEditable(field)) {
+					$(this).removeClass("uneditable-input");
+				} else {
+					$(this).addClass("uneditable-input");
 				}
 			});
 			// Set Buttons:
@@ -5615,11 +5632,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			values.fekSentDate = self.$('form input[name=fekSentDate]').val();
 			values.phase.candidacies.openingDate = self.$('form input[name=openingDate]').val();
 			values.phase.candidacies.closingDate = self.$('form input[name=closingDate]').val();
-			values.assistants = _.map(self.$('form select[name=assistants]').val(), function (value) {
+			values.assistants = self.$('form input[name=assistant]:checked').map(function () {
 				return  {
-					id: value
-				}
-			});
+					id: this.value
+				};
+			}).get();
 			// Save to model
 			self.model.save(values, {
 				wait: true,
