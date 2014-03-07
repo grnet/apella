@@ -7235,6 +7235,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						}
 					}
 				});
+				self.$("table thead input").keyup(function () {
+					self.$("table").dataTable().fnFilter(this.value, self.$("table thead input").index(this));
+				});
 			}
 			// Add Actions
 			self.renderActions();

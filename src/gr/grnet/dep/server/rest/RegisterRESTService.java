@@ -617,13 +617,16 @@ public class RegisterRESTService extends RESTService {
 			searchQueryString.append(" and (" +
 				"	exists (" +
 				"		select pd.id from ProfessorDomestic pd " +
+				"		left join pd.subject sub " +
+				"		left join pd.fekSubject fsub " +
 				"		where pd.id = rl.id " +
-				"		and ( UPPER(pd.subject.name) like :subject or UPPER(pd.fekSubject.name) like :subject )" +
+				"		and ( UPPER(fsub.name) like :subject or UPPER(fsub.name) like :subject) " +
 				"	) " +
 				"	or exists (" +
 				"		select pf.id from ProfessorForeign pf " +
+				"		left join pf.subject sub " +
 				"		where pf.id = rl.id " +
-				"		and UPPER(pf.subject.name) like :subject " +
+				"		and UPPER(sub.name) like :subject " +
 				"	) " +
 				") ");
 		}
@@ -645,6 +648,7 @@ public class RegisterRESTService extends RESTService {
 			orderString = "order by r.user.basicInfo.lastname " + orderDirection + " , r.user.basicInfo.firstname, r.user.id ";
 		}
 
+		logger.info(searchQueryString.toString());
 		Query countQuery = em.createQuery(
 			"select count(id) from Role r " +
 				"where r.id in ( " +
