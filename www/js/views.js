@@ -9253,7 +9253,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						minlength: 2
 					},
 					summary: "required",
-					description: "required"
+					description: {
+						required: true,
+						maxlength: 10000
+					}
 				},
 				messages: {
 					call: $.i18n.prop('validation_required'),
@@ -9271,7 +9274,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						minlength: $.i18n.prop('validation_minlength', 2)
 					},
 					summary: $.i18n.prop('validation_required'),
-					description: $.i18n.prop('validation_required')
+					description: {
+						required: $.i18n.prop('validation_required'),
+						maxlength: $.i18n.prop('validation_jira_description')
+					}
 				}
 			};
 		},

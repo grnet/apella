@@ -104,7 +104,7 @@ public class JiraIssue implements Serializable {
 	private String summary;
 
 	//	Περιγραφή / Description
-	@Column(length = 2048)
+	@Column(columnDefinition = "text")
 	private String description;
 
 	// Σχόλιο που βλέπει ο χρήστης

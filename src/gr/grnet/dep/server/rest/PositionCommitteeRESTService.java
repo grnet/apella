@@ -284,12 +284,6 @@ public class PositionCommitteeRESTService extends RESTService {
 			FileHeader.filter(existingCommittee.getFiles(), FileType.APOFASI_SYSTASIS_EPITROPIS).isEmpty()) {
 			throw new RestException(Status.CONFLICT, "committee.missing.apofasi.systasis.epitropis");
 		}
-		// Check if a member is Evaluator
-		for (PositionEvaluator evaluator : existingPosition.getPhase().getEvaluation().getEvaluators()) {
-			if (newCommitteeMemberAsMap.containsKey(evaluator.getRegisterMember().getId())) {
-				throw new RestException(Status.CONFLICT, "member.is.evaluator");
-			}
-		}
 
 		// Check committee structure
 		int countRegular = 0;
