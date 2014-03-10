@@ -336,7 +336,7 @@ public class UserRESTService extends RESTService {
 			}
 
 			// Identification Required
-			if (!(firstRole.equals(RoleDiscriminator.PROFESSOR_DOMESTIC) || firstRole.equals(RoleDiscriminator.PROFESSOR_FOREIGN)) &&
+			if (!(firstRole.getDiscriminator().equals(RoleDiscriminator.PROFESSOR_DOMESTIC) || firstRole.getDiscriminator().equals(RoleDiscriminator.PROFESSOR_FOREIGN)) &&
 				(newUser.getIdentification() == null || newUser.getIdentification().trim().isEmpty())) {
 
 				throw new RestException(Status.BAD_REQUEST, "registration.identification.required");
