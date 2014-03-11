@@ -7,11 +7,13 @@ import gr.grnet.dep.service.model.CandidacyEvaluator;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.PositionCommitteeMember;
+import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
 import gr.grnet.dep.service.model.PositionEvaluation;
 import gr.grnet.dep.service.model.PositionEvaluation.DetailedPositionEvaluationView;
 import gr.grnet.dep.service.model.PositionEvaluator;
 import gr.grnet.dep.service.model.PositionEvaluator.DetailedPositionEvaluatorView;
 import gr.grnet.dep.service.model.Professor;
+import gr.grnet.dep.service.model.Register;
 import gr.grnet.dep.service.model.RegisterMember;
 import gr.grnet.dep.service.model.RegisterMember.DetailedRegisterMemberView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
@@ -831,6 +833,46 @@ public class PositionEvaluationRESTService extends RESTService {
 	 ****************************/
 
 	/**
+	 * Returns the list of registries associated with specified position
+	 * committee
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param committeeId
+	 * @return A list of registerMember
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.committee.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 */
+	@GET
+	@Path("/{evaluationId:[0-9]+}/register")
+	@JsonView({DetailedPositionCommitteeMemberView.class})
+	public Collection<Register> getPositionEvaluationRegisters(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId) {
+		User loggedOn = getLoggedOn(authToken);
+		PositionEvaluation existingEvaluation = em.find(PositionEvaluation.class, evaluationId);
+		if (existingEvaluation == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.evaluation.id");
+		}
+		Position existingPosition = existingEvaluation.getPosition();
+		if (!existingPosition.getId().equals(positionId)) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
+		}
+		if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Prepare Query
+		@SuppressWarnings("unchecked")
+		List<Register> registers = em.createQuery(
+			"select r from Register r " +
+				"where r.permanent = true " +
+				"and r.institution.id = :institutionId ")
+			.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
+			.getResultList();
+
+		return registers;
+	}
+
+	/**
 	 * Returns a list of the register members participating in the evaluation of
 	 * the specififed position
 	 * 
@@ -840,9 +882,9 @@ public class PositionEvaluationRESTService extends RESTService {
 	 * @return
 	 */
 	@GET
-	@Path("/{evaluationId:[0-9]+}/register")
+	@Path("/{evaluationId:[0-9]+}/register/{registerId:[0-9]+}/member")
 	@JsonView({DetailedRegisterMemberView.class})
-	public Collection<RegisterMember> getPositionEvaluationRegisterMembers(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId) {
+	public Collection<RegisterMember> getPositionEvaluationRegisterMembers(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("registerId") Long registerId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionEvaluation existingEvaluation = em.find(PositionEvaluation.class, evaluationId);
 		if (existingEvaluation == null) {
@@ -858,20 +900,13 @@ public class PositionEvaluationRESTService extends RESTService {
 		// Prepare Query
 		@SuppressWarnings("unchecked")
 		List<RegisterMember> registerMembers = em.createQuery(
-			"select distinct m from Register r " +
-				"join r.members m " +
-				"where r.permanent = true " +
-				"and r.institution.id = :institutionId " +
-				"and m.professor.status = :status " +
-				"and m.external = true " +
-				"and m.id not in (" +
-				"	select rm.id from Position p " +
-				"	join p.phase.committee.members cm " +
-				"	join cm.registerMember rm " +
-				"	where p.id = :positionId " +
-				")")
+			"select distinct m from RegisterMember m " +
+				"where m.register.permanent = true " +
+				"and m.register.institution.id = :institutionId " +
+				"and m.register.id = :registerId " +
+				"and m.professor.status = :status ")
+			.setParameter("registerId", registerId)
 			.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
-			.setParameter("positionId", positionId)
 			.setParameter("status", RoleStatus.ACTIVE)
 			.getResultList();
 

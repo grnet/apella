@@ -12,6 +12,7 @@ import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommit
 import gr.grnet.dep.service.model.PositionCommitteeMember.MemberType;
 import gr.grnet.dep.service.model.PositionEvaluator;
 import gr.grnet.dep.service.model.Professor;
+import gr.grnet.dep.service.model.Register;
 import gr.grnet.dep.service.model.RegisterMember;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
@@ -71,7 +72,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	 *********************/
 
 	/**
-	 * Returns the list of register members associates with specified position
+	 * Returns the list of registries associated with specified position
 	 * committee
 	 * 
 	 * @param authToken
@@ -85,7 +86,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	@GET
 	@Path("/{committeeId:[0-9]+}/register")
 	@JsonView({DetailedPositionCommitteeMemberView.class})
-	public Collection<RegisterMember> getPositionCommiteeRegisterMembers(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId) {
+	public Collection<Register> getPositionCommiteeRegisters(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId) {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCommittee existingCommittee = em.find(PositionCommittee.class, committeeId);
 		if (existingCommittee == null) {
@@ -100,12 +101,55 @@ public class PositionCommitteeRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Prepare Query
-		List<RegisterMember> registerMembers = em.createQuery(
-			"select distinct m from Register r " +
-				"join r.members m " +
+		@SuppressWarnings("unchecked")
+		List<Register> registers = em.createQuery(
+			"select r from Register r " +
 				"where r.permanent = true " +
-				"and r.institution.id = :institutionId " +
+				"and r.institution.id = :institutionId ")
+			.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
+			.getResultList();
+
+		return registers;
+	}
+
+	/**
+	 * Returns the list of register members associates with specified position
+	 * committee
+	 * 
+	 * @param authToken
+	 * @param positionId
+	 * @param committeeId
+	 * @return A list of registerMember
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.position.committee.id
+	 * @HTTP 404 X-Error-Code: wrong.position.id
+	 */
+	@GET
+	@Path("/{committeeId:[0-9]+}/register/{registerId:[0-9]+}/member")
+	@JsonView({DetailedPositionCommitteeMemberView.class})
+	public Collection<RegisterMember> getPositionCommiteeRegisterMembers(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId, @PathParam("registerId") Long registerId) {
+		User loggedOn = getLoggedOn(authToken);
+		PositionCommittee existingCommittee = em.find(PositionCommittee.class, committeeId);
+		if (existingCommittee == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.committee.id");
+		}
+		Position existingPosition = existingCommittee.getPosition();
+		if (!existingPosition.getId().equals(positionId)) {
+			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
+		}
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)
+			&& !loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Prepare Query
+		@SuppressWarnings("unchecked")
+		List<RegisterMember> registerMembers = em.createQuery(
+			"select distinct m from RegisterMember m " +
+				"where m.register.permanent = true " +
+				"and m.register.institution.id = :institutionId " +
+				"and m.register.id = :registerId " +
 				"and m.professor.status = :status ")
+			.setParameter("registerId", registerId)
 			.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
 			.setParameter("status", RoleStatus.ACTIVE)
 			.getResultList();

@@ -21,8 +21,10 @@ import gr.grnet.dep.service.model.PositionEvaluation;
 import gr.grnet.dep.service.model.PositionNomination;
 import gr.grnet.dep.service.model.PositionPhase;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.Sector;
 import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileType;
 
@@ -36,7 +38,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -274,9 +278,40 @@ public class PositionRESTService extends RESTService {
 				position.getPhase().getCandidacies().setClosingDate(existingPosition.getPhase().getCandidacies().getClosingDate());
 			}
 			// Update
+
 			existingPosition.copyFrom(position);
 			existingPosition.setSector(sector);
 			existingPosition.setSubject(supplementSubject(position.getSubject()));
+			if (isNew) {
+				// Managers
+				Set<Long> managerIds = new HashSet<Long>();
+				for (User manager : position.getAssistants()) {
+					managerIds.add(manager.getId());
+				}
+				if (managerIds.isEmpty()) {
+					existingPosition.getAssistants().clear();
+				} else {
+					@SuppressWarnings("unchecked")
+					List<User> assistants = em.createQuery(
+						"select usr from User usr " +
+							"left join fetch usr.roles rls " +
+							"where usr.id in ( " +
+							"	select u.id from User u " +
+							"	join u.roles r " +
+							"	where u.id in (:managerIds) " +
+							"	and r.discriminator = :discriminator " +
+							"	and u.status = :userStatus " +
+							"	and r.status = :roleStatus " +
+							")")
+						.setParameter("managerIds", managerIds)
+						.setParameter("discriminator", RoleDiscriminator.INSTITUTION_ASSISTANT)
+						.setParameter("userStatus", UserStatus.ACTIVE)
+						.setParameter("roleStatus", RoleStatus.ACTIVE)
+						.getResultList();
+					existingPosition.getAssistants().clear();
+					existingPosition.getAssistants().addAll(assistants);
+				}
+			}
 			existingPosition.setPermanent(true);
 			em.flush();
 
@@ -364,6 +399,35 @@ public class PositionRESTService extends RESTService {
 		}
 	}
 
+	@GET
+	@Path("/{id:[0-9][0-9]*}/assistants")
+	@JsonView({DetailedPositionView.class})
+	public Collection<User> getPositionAssistants(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long positionId) {
+		User loggedOn = getLoggedOn(authToken);
+		Position existingPosition = getAndCheckPosition(loggedOn, positionId);
+		if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		@SuppressWarnings("unchecked")
+		List<User> managers = em.createQuery(
+			"select usr from User usr " +
+				"left join fetch usr.roles rls " +
+				"where usr.id in ( " +
+				"	select u.id from User u " +
+				"	join u.roles r " +
+				"	where r.discriminator = :discriminator " +
+				"	and u.status = :userStatus " +
+				"	and r.status = :roleStatus " +
+				"	and exists (select ia.id from InstitutionAssistant ia where ia.id = r.id and ia.institution.id = :institutionId ) " +
+				")")
+			.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
+			.setParameter("discriminator", RoleDiscriminator.INSTITUTION_ASSISTANT)
+			.setParameter("userStatus", UserStatus.ACTIVE)
+			.setParameter("roleStatus", RoleStatus.ACTIVE)
+			.getResultList();
+		return managers;
+	}
+
 	/**
 	 * Adds a new phase in the position
 	 * 
@@ -392,6 +456,9 @@ public class PositionRESTService extends RESTService {
 			Position existingPosition = getAndCheckPosition(loggedOn, positionId);
 			if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+			}
+			if (!existingPosition.isPermanent()) {
+				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
 			PositionPhase existingPhase = existingPosition.getPhase();
 			PositionPhase newPhase = null;

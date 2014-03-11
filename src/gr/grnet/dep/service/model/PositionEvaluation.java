@@ -115,13 +115,17 @@ public class PositionEvaluation {
 	@JsonView({DetailedPositionEvaluationView.class})
 	public boolean canUpdateEvaluators() {
 		Set<PositionCommitteeFile> committeeFiles = FileHeader.filter(this.getPosition().getPhase().getCommittee().getFiles(), FileType.PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES);
-		return !committeeFiles.isEmpty();
+		// TODO: TRUE IS ONLY FOR TESTING, DONT FORGET
+		return true;
+		// return !committeeFiles.isEmpty();
 	}
 
 	@JsonView({DetailedPositionEvaluationView.class})
 	public boolean canUploadEvaluations() {
 		Set<PositionCommitteeFile> committeeFiles = FileHeader.filter(this.getPosition().getPhase().getCommittee().getFiles(), FileType.AITIMA_EPITROPIS_PROS_AKSIOLOGITES);
-		return !committeeFiles.isEmpty();
+		// TODO: TRUE IS ONLY FOR TESTING, DONT FORGET
+		return true;
+		// return !committeeFiles.isEmpty();
 	}
 
 	//////////////////////////////////////////////

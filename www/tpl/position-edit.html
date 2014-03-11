@@ -45,43 +45,49 @@
 	</div>
 </div>
 <div class="row-fluid" id="createdBy">
-	<% if (createdBy.id) { %>
-	<div class="span6">
-		<p>
-			<b><%= $.i18n.prop('PositionCreatedBy') %></b>
+	<div class="span12">
+		<%= $.i18n.prop('PositionContactInfo') %>:
 		<ul>
+			<% if (manager.id) { %>
 			<li>
-				<b><%= createdBy.basicInfo.firstname %> <%= createdBy.basicInfo.lastname %></b> (<%= $.i18n.prop(createdBy.primaryRole) %>)
-				<br/>
-				<%= $.i18n.prop('Email') %>: <%= createdBy.contactInfo.email %>,
-				<br/>
-				<i><%= $.i18n.prop('Phone') %>:</i> <%= createdBy.contactInfo.phone %>
-			</li>
-		</ul>
-		</p>
-	</div>
-	<% } %>
-	<% if (manager.id) { %>
-	<div class="span6">
-		<p>
-			<b><%= $.i18n.prop('PositionManager') %></b>
-		<ul>
-			<li>
-				<b><%= manager.user.basicInfo.firstname %> <%= manager.user.basicInfo.lastname %></b> (<%= $.i18n.prop('INSTITUTION_MANAGER') %>)
-				<br/>
+				<b>
+					<%= manager.user.basicInfo.firstname %> <%= manager.user.basicInfo.lastname %>
+				</b>
+				(<%= $.i18n.prop('INSTITUTION_MANAGER') %>),
 				<%= $.i18n.prop('Email') %>: <%= manager.user.contactInfo.email %>,
-				<br/>
 				<i><%= $.i18n.prop('Phone') %>:</i> <%= manager.user.contactInfo.phone %>
 			</li>
 			<li>
-				<b><%= manager.alternateBasicInfo.firstname %> <%= manager.alternateBasicInfo.lastname %></b> (<%= $.i18n.prop('AlternateInstitutionManager') %></b>)
-				<br/>
+				<b>
+					<%= manager.alternateBasicInfo.firstname %> <%= manager.alternateBasicInfo.lastname %>
+				</b>
+				(<%= $.i18n.prop('AlternateInstitutionManager') %></b>),
 				<i><%= $.i18n.prop('Email') %>:</i> <%= manager.alternateContactInfo.email %>,
-				<br/>
 				<i><%= $.i18n.prop('Phone') %>:</i> <%= manager.alternateContactInfo.phone %>
 			</li>
+			</li>
+			<% } %>
+			<% console.log(createdBy.id, manager.user.id); %>
+			<% if (createdBy.id && !_.isEqual(createdBy.id, manager.user.id)) { %>
+			<li>
+				<b>
+					<%= createdBy.basicInfo.firstname %> <%= createdBy.basicInfo.lastname %>
+				</b>
+				(<%= $.i18n.prop(createdBy.primaryRole) %>),
+				<%= $.i18n.prop('Email') %>: <%= createdBy.contactInfo.email %>,
+				<i><%= $.i18n.prop('Phone') %>:</i> <%= createdBy.contactInfo.phone %>
+			</li>
+			<% } %>
+			<% _.each(assistants, function(assistant) { %>
+			<li>
+				<b>
+					<%= assistant.basicInfo.firstname %> <%= assistant.basicInfo.lastname %>
+				</b>
+				(<%= $.i18n.prop(assistant.primaryRole) %>)
+				<%= $.i18n.prop('Email') %>: <%= assistant.contactInfo.email %>,
+				<i><%= $.i18n.prop('Phone') %>:</i> <%= assistant.contactInfo.phone %>
+			</li>
+			<% }); %>
 		</ul>
-		</p>
 	</div>
-	<% } %>
 </div>

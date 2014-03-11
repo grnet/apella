@@ -20,6 +20,7 @@
 		<%= _.templates.department(registerMember.professor.department) %>
 		<% } %>
 	</td>
+	<td><%= registerMember.register.subject.name %></td>
 	<td>
 		<div class="btn-group">
 			<a id="removeMember" class="btn btn-small btn-danger" data-register-member-id="<%= registerMember.id %>" rel="tooltip" title="<%= $.i18n.prop('btn_remove_member') %>"><i class="icon-remove-circle icon-white"></i></a>
