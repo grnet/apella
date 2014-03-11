@@ -324,7 +324,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 		selectLanguage: function (event) {
 			var language = $(event.currentTarget).data('language');
 			// Set Language Cookie:
-			App.utils.addCookie('apella-lang', language);
+			App.utils.addCookie('apella-lang', language, 365);
 			// Trigger refresh
 			window.location.reload();
 		},
@@ -7000,6 +7000,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 		render: function (eventName) {
 			var self = this;
 			var tpl_data = {
+				showAmMember : App.loggedOnUser.hasRole("PROFESSOR_DOMESCTIC") || App.loggedOnUser.hasRole("PROFESSOR_FOREIGN"),
 				registries: (function () {
 					var result = [];
 					var gCanExport =
