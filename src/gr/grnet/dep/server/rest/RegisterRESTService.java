@@ -629,10 +629,10 @@ public class RegisterRESTService extends RESTService {
 			searchQueryString.append(" and (" +
 				"	exists (" +
 				"		select pd.id from ProfessorDomestic pd " +
-				"		left join pd.subject sub " +
 				"		left join pd.fekSubject fsub " +
+				"		left join pd.subject sub " +
 				"		where pd.id = rl.id " +
-				"		and ( UPPER(fsub.name) like :subject or UPPER(fsub.name) like :subject) " +
+				"		and ( UPPER(fsub.name) like :subject or UPPER(sub.name) like :subject) " +
 				"	) " +
 				"	or exists (" +
 				"		select pf.id from ProfessorForeign pf " +
