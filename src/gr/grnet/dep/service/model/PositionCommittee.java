@@ -60,7 +60,7 @@ public class PositionCommittee {
 	@OneToMany(mappedBy = "committee", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<PositionCommitteeFile> files = new HashSet<PositionCommitteeFile>();
 
-	@OneToMany(mappedBy = "committee", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "committee", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<PositionCommitteeMember> members = new HashSet<PositionCommitteeMember>();
 
 	@Temporal(TemporalType.DATE)

@@ -5,7 +5,6 @@ import gr.grnet.dep.service.model.file.CandidacyFile;
 import gr.grnet.dep.service.model.file.CandidateFile;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
-import gr.grnet.dep.service.util.DateUtil;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -73,11 +72,17 @@ public class Candidacy {
 	@OneToMany(mappedBy = "candidacy", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<CandidacyFile> files = new HashSet<CandidacyFile>();
 
-	@OneToMany(mappedBy = "candidacy", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "candidacy", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<CandidacyEvaluator> proposedEvaluators = new HashSet<CandidacyEvaluator>();
 
 	@Transient
 	Boolean allowedToSee;
+
+	@Transient
+	Boolean canAddEvaluators;
+
+	@Transient
+	Boolean nominationCommitteeConverged;
 
 	public static class CandidacySnapshot {
 
@@ -311,23 +316,23 @@ public class Candidacy {
 		this.allowedToSee = allowedToSee;
 	}
 
-	// /////////////////////////////////////////////////////////////
-
-	@JsonView({DetailedPositionCandidaciesView.class, DetailedCandidacyView.class})
-	public boolean getNominationCommitteeConverged() {
-		PositionNomination nomination = this.candidacies.getPosition().getPhase().getNomination();
-		return nomination != null &&
-			nomination.getNominationCommitteeConvergenceDate() != null &&
-			DateUtil.compareDates(new Date(), nomination.getNominationCommitteeConvergenceDate()) >= 0;
+	public Boolean getCanAddEvaluators() {
+		return canAddEvaluators;
 	}
 
-	@JsonView({DetailedCandidacyView.class})
-	public boolean getCanAddEvaluators() {
-		PositionCommittee committee = this.candidacies.getPosition().getPhase().getCommittee();
-		return committee != null &&
-			committee.getMembers().size() > 0 &&
-			DateUtil.compareDates(new Date(), committee.getCandidacyEvalutionsDueDate()) < 0;
+	public void setCanAddEvaluators(Boolean canAddEvaluators) {
+		this.canAddEvaluators = canAddEvaluators;
 	}
+
+	public Boolean getNominationCommitteeConverged() {
+		return nominationCommitteeConverged;
+	}
+
+	public void setNominationCommitteeConverged(Boolean nominationCommitteeConverged) {
+		this.nominationCommitteeConverged = nominationCommitteeConverged;
+	}
+
+	///////////////////////////////////////////////////////////////
 
 	@XmlTransient
 	@JsonIgnore

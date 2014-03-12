@@ -17,6 +17,8 @@ import javax.persistence.Transient;
 import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.map.annotate.JsonView;
+
 @Entity
 @XmlRootElement
 public class Register implements Serializable {
@@ -82,6 +84,7 @@ public class Register implements Serializable {
 		this.subject = subject;
 	}
 
+	@JsonView({DetailedRegisterView.class})
 	public Set<RegisterMember> getMembers() {
 		return members;
 	}

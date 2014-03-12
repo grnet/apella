@@ -89,7 +89,9 @@ public class CandidacyRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Candidacy candidacy = (Candidacy) em.createQuery(
-				"from Candidacy c where c.id=:id")
+				"from Candidacy c " +
+					"left join fetch c.proposedEvaluators pe " +
+					"where c.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
 			Candidate candidate = candidacy.getCandidate();

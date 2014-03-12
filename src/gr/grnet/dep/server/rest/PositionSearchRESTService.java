@@ -77,6 +77,8 @@ public class PositionSearchRESTService extends RESTService {
 				sectorIds.add(sector.getId());
 			}
 			String queryString = "from Position p " +
+				"left join fetch p.assistants asts " +
+				"left join fetch asts.roles astsr " +
 				"where p.permanent = true " +
 				"and p.phase.candidacies.closingDate >= :today ";
 			if (departmentIds.size() > 1 || sectorIds.size() > 1) {

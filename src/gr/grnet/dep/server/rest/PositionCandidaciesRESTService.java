@@ -132,6 +132,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 			PositionCandidacies existingCandidacies = (PositionCandidacies) em.createQuery(
 				"select pc from PositionCandidacies pc " +
 					"left join fetch pc.candidacies c " +
+					"left join fetch c.proposedEvaluators pe " +
 					"where pc.id = :candidaciesId")
 				.setParameter("candidaciesId", candidaciesId)
 				.getSingleResult();

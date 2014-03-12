@@ -39,6 +39,7 @@ import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.servlet.http.HttpServletRequest;
@@ -84,8 +85,15 @@ public class PositionEvaluationRESTService extends RESTService {
 	@JsonView({DetailedPositionEvaluationView.class})
 	public PositionEvaluation getPositionEvaluation(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId) {
 		User loggedOn = getLoggedOn(authToken);
-		PositionEvaluation existingEvaluation = em.find(PositionEvaluation.class, evaluationId);
-		if (existingEvaluation == null) {
+		PositionEvaluation existingEvaluation = null;
+		try {
+			existingEvaluation = (PositionEvaluation) em.createQuery(
+				"from PositionEvaluation pe " +
+					"left join fetch pe.evaluators pee " +
+					"where pe.id = :evaluationId")
+				.setParameter("evaluationId", evaluationId)
+				.getSingleResult();
+		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.evaluation.id");
 		}
 		Position existingPosition = existingEvaluation.getPosition();

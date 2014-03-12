@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -71,8 +72,15 @@ public class PositionRESTService extends RESTService {
 	private Logger log;
 
 	private Position getAndCheckPosition(User loggedOn, long positionId) {
-		Position position = em.find(Position.class, positionId);
-		if (position == null) {
+		Position position = null;
+		try {
+			position = (Position) em.createQuery(
+				"from Position p " +
+					"left join fetch p.phases ph " +
+					"where p.id = :positionId ")
+				.setParameter("positionId", positionId)
+				.getSingleResult();
+		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
 		return position;
@@ -108,8 +116,8 @@ public class PositionRESTService extends RESTService {
 
 			@SuppressWarnings("unchecked")
 			List<Position> positions = (List<Position>) em.createQuery(
-				"from Position p " +
-					"where p.permanent = true")
+				"select p from Position p " +
+					"where p.permanent = true ")
 				.getResultList();
 			return positions;
 		}

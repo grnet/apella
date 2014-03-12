@@ -52,7 +52,7 @@ public class PositionEvaluation {
 	@OneToMany(mappedBy = "evaluation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<PositionPhase> phases = new HashSet<PositionPhase>();
 
-	@OneToMany(mappedBy = "evaluation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "evaluation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<PositionEvaluator> evaluators = new HashSet<PositionEvaluator>();
 
 	@Temporal(TemporalType.DATE)

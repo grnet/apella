@@ -53,6 +53,7 @@ public class ProfessorRESTService extends RESTService {
 			!professor.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+		@SuppressWarnings("unchecked")
 		List<PositionCommitteeMember> committees = em.createQuery(
 			"select pcm from PositionCommitteeMember pcm " +
 				"where pcm.registerMember.professor.id = :professorId ")
@@ -83,6 +84,7 @@ public class ProfessorRESTService extends RESTService {
 			!professor.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+		@SuppressWarnings("unchecked")
 		List<PositionEvaluator> evaluations = em.createQuery(
 			"select pe from PositionEvaluator pe " +
 				"where pe.registerMember.professor.id = :professorId ")

@@ -3,10 +3,13 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
-import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
+import gr.grnet.dep.service.model.Candidacy.MediumCandidacyView;
 import gr.grnet.dep.service.model.Candidate;
+import gr.grnet.dep.service.model.PositionCommittee;
+import gr.grnet.dep.service.model.PositionNomination;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.util.DateUtil;
 
 import java.util.Collection;
 import java.util.Date;
@@ -44,7 +47,7 @@ public class CandidateRESTService extends RESTService {
 	 */
 	@GET
 	@Path("/{id:[0-9]+}/candidacies")
-	@JsonView({DetailedCandidacyView.class})
+	@JsonView({MediumCandidacyView.class})
 	public Collection<Candidacy> getCandidacies(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidateId, @QueryParam("open") String open) {
 		User loggedOn = getLoggedOn(authToken);
 		Candidate candidate = em.find(Candidate.class, candidateId);
@@ -57,6 +60,9 @@ public class CandidateRESTService extends RESTService {
 		}
 
 		String queryString = "from Candidacy c " +
+			"left join fetch c.candidate.user.roles cerls " +
+			"left join fetch c.candidacies.position.assistants pasnt " +
+			"left join fetch pasnt.roles pasntrls " +
 			"where c.candidate = :candidate " +
 			"and c.permanent = true ";
 		if (open != null) {
@@ -72,7 +78,26 @@ public class CandidateRESTService extends RESTService {
 
 		@SuppressWarnings("unchecked")
 		List<Candidacy> retv = query.getResultList();
+
+		for (Candidacy c : retv) {
+			c.setNominationCommitteeConverged(hasNominationCommitteeConverged(c));
+			c.setCanAddEvaluators(canAddEvaluators(c));
+		}
+
 		return retv;
 	}
 
+	public boolean hasNominationCommitteeConverged(Candidacy c) {
+		PositionNomination nomination = c.getCandidacies().getPosition().getPhase().getNomination();
+		return nomination != null &&
+			nomination.getNominationCommitteeConvergenceDate() != null &&
+			DateUtil.compareDates(new Date(), nomination.getNominationCommitteeConvergenceDate()) >= 0;
+	}
+
+	public boolean canAddEvaluators(Candidacy c) {
+		PositionCommittee committee = c.getCandidacies().getPosition().getPhase().getCommittee();
+		return committee != null &&
+			committee.getMembers().size() > 0 &&
+			DateUtil.compareDates(new Date(), committee.getCandidacyEvalutionsDueDate()) < 0;
+	}
 }

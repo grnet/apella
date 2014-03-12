@@ -51,7 +51,7 @@ public class PositionCandidacies {
 	@OneToMany(mappedBy = "candidacies", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<PositionPhase> phases = new HashSet<PositionPhase>();
 
-	@OneToMany(mappedBy = "candidacies", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "candidacies", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@Filter(name = "filterPermanent", condition = "permanent = 'true'")
 	private Set<Candidacy> candidacies = new HashSet<Candidacy>();
 

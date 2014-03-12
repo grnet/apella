@@ -110,6 +110,10 @@ public class RegisterRESTService extends RESTService {
 		try {
 			Register r = (Register) em.createQuery(
 				"select r from Register r " +
+					"left join fetch r.members rm " +
+					"left join fetch rm.professor p " +
+					"left join fetch p.user u " +
+					"left join fetch u.roles rls " +
 					"where r.id=:id")
 				.setParameter("id", id)
 				.getSingleResult();
@@ -197,11 +201,21 @@ public class RegisterRESTService extends RESTService {
 	@JsonView({DetailedRegisterView.class})
 	public Register update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, Register register) {
 		User loggedOn = getLoggedOn(authToken);
-		Register existingRegister = em.find(Register.class, id);
-		// Validate:
-		if (existingRegister == null) {
+		Register existingRegister = null;
+		try {
+			existingRegister = (Register) em.createQuery(
+				"select r from Register r " +
+					"left join fetch r.members rm " +
+					"left join fetch rm.professor p " +
+					"left join fetch p.user u " +
+					"left join fetch u.roles rls " +
+					"where r.id=:id")
+				.setParameter("id", id)
+				.getSingleResult();
+		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
+		// Validate:
 		if (!existingRegister.isUserAllowedToEdit(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}

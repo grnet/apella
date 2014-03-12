@@ -38,6 +38,7 @@ import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.servlet.http.HttpServletRequest;
@@ -144,7 +145,8 @@ public class PositionCommitteeRESTService extends RESTService {
 		// Prepare Query
 		@SuppressWarnings("unchecked")
 		List<RegisterMember> registerMembers = em.createQuery(
-			"select distinct m from RegisterMember m " +
+			"select m from RegisterMember m  " +
+				"join m.professor.user.roles r " +
 				"where m.register.permanent = true " +
 				"and m.register.institution.id = :institutionId " +
 				"and m.register.id = :registerId " +
@@ -183,8 +185,15 @@ public class PositionCommitteeRESTService extends RESTService {
 	@JsonView({DetailedPositionCommitteeView.class})
 	public PositionCommittee get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId) {
 		User loggedOn = getLoggedOn(authToken);
-		PositionCommittee existingCommittee = em.find(PositionCommittee.class, committeeId);
-		if (existingCommittee == null) {
+		PositionCommittee existingCommittee = null;
+		try {
+			existingCommittee = (PositionCommittee) em.createQuery(
+				"select pcom from PositionCommittee pcom " +
+					"left join fetch pcom.members pmem " +
+					"where pcom.id = :committeeId")
+				.setParameter("committeeId", committeeId)
+				.getSingleResult();
+		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.committee.id");
 		}
 		Position existingPosition = existingCommittee.getPosition();

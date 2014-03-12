@@ -112,7 +112,7 @@ public class Position {
 	@ManyToOne(cascade = CascadeType.ALL)
 	private PositionPhase phase;
 
-	@OneToMany(mappedBy = "position", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "position", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@OrderBy("order ASC")
 	private List<PositionPhase> phases = new ArrayList<PositionPhase>();
 
@@ -264,7 +264,7 @@ public class Position {
 		return null;
 	}
 
-	@JsonView({PositionView.class})
+	@JsonView({DetailedPositionView.class})
 	public Map<Integer, PositionStatus> getPhasesMap() {
 		Map<Integer, PositionStatus> phasesMap = new TreeMap<Integer, PositionStatus>();
 		for (PositionPhase phase : this.phases) {
