@@ -4787,7 +4787,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.$el.append(this.template(tpl_data));
 			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 				self.$("table").dataTable({
-					"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+					"sDom": "<'row-fluid'<'span6'l><'span6'>r>t<'row-fluid'<'span6'i><'span6'p>>",
 					"sPaginationType": "bootstrap",
 					"oLanguage": {
 						"sSearch": $.i18n.prop("dataTable_sSearch"),
@@ -4804,6 +4804,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						}
 					}
 				});
+				self.$("table thead input").keyup(function () {
+					self.$("table").dataTable().fnFilter(this.value, self.$("table thead input").index(this));
+				});
 			}
 			// Actions
 			self.renderActions();
@@ -4815,8 +4818,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			if (!App.loggedOnUser.hasRole("INSTITUTION_MANAGER") && !App.loggedOnUser.hasRole("INSTITUTION_ASSISTANT")) {
 				return;
 			}
-			self.$("#actions").html("<select class=\"input-xlarge pull-left\" name=\"department\"></select>");
-			self.$("#actions").append("<a id=\"createPosition\" class=\"btn\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_position') + "</a>");
+			self.$("#actions").html('<select class="input-xxlarge pull-left" name="department"></select>');
+			self.$("#actions").append('<a id="createPosition" class="btn"><i class="icon-plus"></i> ' + $.i18n.prop('btn_create_position') + '</a>');
 
 			// Departments
 			App.departments = App.departments || new Models.Departments();
@@ -4832,10 +4835,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						diacritics: true,
 						create: false,
 						hideSelected: true,
-						sortField: 'name',
-						searchField: [ 'name' ],
-						options: _.filter(collection.toJSON(), function (department) {
+						sortField: 'lname',
+						searchField: [ 'lname' ],
+						options: _.map(collection.filter(function (department) {
 							return App.loggedOnUser.isAssociatedWithDepartment(department);
+						}), function (department) {
+							return _.extend(department.toJSON(), {
+								'lname': department.get('name')[App.locale]
+							});
 						}),
 						render: {
 							item: function (item, escape) { // Shows when
@@ -4872,11 +4879,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var newPosition;
 			// Validate:
 			var departmentId = self.$("select[name='department']").val();
-			if (_.isEqual(departmentId, "-1")) {
-				self.$("select[name='department']").addClass("inputError");
-				self.$("select[name='department']").on("focus", function (event) {
-					self.$("select[name='department']").removeClass("inputError");
-				});
+			if (!departmentId || _.isEqual(departmentId, "-1")) {
 				return;
 			}
 			// Create:
@@ -5339,6 +5342,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			this.template = _.template(tpl_position_main_edit);
 			this.model.bind('change', this.render, this);
 			this.model.bind("destroy", this.close, this);
+
+			App.sectors = App.sectors || new Models.Sectors();
+			this.assistants = new Models.Users();
+			this.assistants.url = this.model.url() + "/assistants";
 		},
 
 		events: {
@@ -5382,6 +5389,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					return App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE") || !self.model.get("permanent");
 				case "closingDate":
 					return App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE") || !self.model.get("permanent");
+				case "assistant":
+					return App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE") || !self.model.get("permanent");
+				case "assistants":
+					return App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE") || !self.model.get("permanent");
 				default:
 					break;
 			}
@@ -5400,8 +5411,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.$("select[name='sector']").change(function (event) {
 				self.$("select[name='sector']").next(".help-block").html(self.$("select[name='area'] option:selected").text() + " / " + self.$("select[name='sector'] option:selected").text());
 			});
-			App.sectors = App.sectors || new Models.Sectors();
-			// ////////////////////
 			self.$("select[name='area']").change(function () {
 				var selectedAreaId;
 				self.$("select[name='sector']").empty();
@@ -5453,6 +5462,28 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					popup.show();
 				}
 			});
+			// Add Assistants:
+			self.assistants.fetch({
+				cache: true,
+				reset: true,
+				success: function (collection, resp, options) {
+					var $select = self.$('div#assistants');
+					$select.empty();
+					collection.each(function (user) {
+						var selected = _.any(self.model.get('assistants'), function (assistant) {
+							return assistant.id === user.get('id');
+						}) ? 'checked' : '';
+						$select.append('<label class="checkbox">' +
+							'<input type = "checkbox" name="assistant" value="' + user.get('id') + '" ' + selected +'>' + user.getDisplayName() +
+							'</label >');
+					});
+					if (self.isEditable('assistant')) {
+						$select.find('input').removeAttr("disabled");
+					} else {
+						$select.find('input').attr("disabled", true);
+					}
+				}
+			});
 
 			// Set isEditable to fields
 			self.$("select, input, textarea").each(function (index) {
@@ -5461,6 +5492,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					$(this).removeAttr("disabled");
 				} else {
 					$(this).attr("disabled", true);
+				}
+			});
+			self.$("div.multiple-select").each(function() {
+				var field = $(this).attr("id");
+				if (self.isEditable(field)) {
+					$(this).removeClass("uneditable-input");
+				} else {
+					$(this).addClass("uneditable-input");
 				}
 			});
 			// Set Buttons:
@@ -5593,7 +5632,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			values.fekSentDate = self.$('form input[name=fekSentDate]').val();
 			values.phase.candidacies.openingDate = self.$('form input[name=openingDate]').val();
 			values.phase.candidacies.closingDate = self.$('form input[name=closingDate]').val();
-
+			values.assistants = self.$('form input[name=assistant]:checked').map(function () {
+				return  {
+					id: this.value
+				};
+			}).get();
 			// Save to model
 			self.model.save(values, {
 				wait: true,
@@ -5755,7 +5798,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 			// Initialize Registers, no request is performed until render
 			self.registerMembers = new Models.PositionCommitteeRegisterMembers();
-			self.registerMembers.url = self.model.url() + "/register";
 			self.registerMembers.on("members:add", self.addMembers);
 		},
 
@@ -5831,15 +5873,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				self.registerMembersView = new Views.PositionCommitteeEditRegisterMembersView({
 					model: self.model,
 					collection: self.registerMembers
+
 				});
 				self.$("div#committee-register-members").hide();
 				self.$("div#committee-register-members").html(self.registerMembersView.el);
 				self.$("select").removeAttr("disabled");
 				self.$("a.btn").show();
 
-				self.registerMembers.fetch({
-					reset: true
-				});
+				self.registerMembersView.render();
 			} else {
 				self.$("div#committee-register-members").hide();
 				self.$("select").attr("disabled", true);
@@ -5872,9 +5913,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 		toggleRegisterMembers: function () {
 			var self = this;
 			self.$("div#committee-register-members").slideToggle({
-				complete: function () {
-					var toggleButton = self.$("a#toggleRegisterMembers");
-					toggleButton.toggleClass('active');
+				'complete': function () {
+					self.$("a#toggleRegisterMembers").toggleClass('active');
 				}
 			});
 		},
@@ -5986,61 +6026,146 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 	Views.PositionCommitteeEditRegisterMembersView = Views.BaseView.extend({
 		tagName: "div",
 
+		className: "span12 well",
+
 		initialize: function (options) {
 			this._super('initialize', [ options ]);
-			_.bindAll(this, "addMembers");
+			_.bindAll(this, "showRegisterMembers", "addMembers");
 			this.template = _.template(tpl_position_committee_edit_register_member_list);
-			this.collection.bind("change", this.render, this);
-			this.collection.bind("reset", this.render, this);
+
+			this.registries = new Models.Registries();
+			this.registries.url = this.model.url() + "/register";
+
 			this.model.bind("change:members", this.render, this);
 		},
 
 		events: {
+			"click a#selectRegister": "showRegisterMembers",
 			"click a#addMembers": "addMembers"
 		},
 
 		render: function (eventName) {
 			var self = this;
-			var tpl_data = {
-				members: (function () {
-					var result = [];
-					self.collection.each(function (model) {
-						var item = model.toJSON();
-						item.cid = model.cid;
-						item.isMember = _.some(self.model.get("members"), function (member) {
-							return _.isEqual(member.registerMember.id, item.id);
-						});
-						result.push(item);
-					});
-					return result;
-				}())
-			};
 			self.closeInnerViews();
 			self.$el.empty();
 			self.addTitle();
-			self.$el.append(self.template(tpl_data));
-
-			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
-				self.$("table").dataTable({
-					"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
-					"sPaginationType": "bootstrap",
-					"oLanguage": {
-						"sSearch": $.i18n.prop("dataTable_sSearch"),
-						"sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
-						"sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
-						"sInfo": $.i18n.prop("dataTable_sInfo"),
-						"sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
-						"sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
-						"oPaginate": {
-							sFirst: $.i18n.prop("dataTable_sFirst"),
-							sPrevious: $.i18n.prop("dataTable_sPrevious"),
-							sNext: $.i18n.prop("dataTable_sNext"),
-							sLast: $.i18n.prop("dataTable_sLast")
-						}
+			self.$el.append(self.template());
+			self.registries.fetch({
+				reset: true,
+				cache: true,
+				success: function (collection, resp, options) {
+					var $select = self.$("select[name=register]");
+					$select.empty();
+					$select.append('<option value="">--</option>');
+					collection.each(function (register) {
+						$select.append('<option value="' + register.get('id') + '">' + register.get("subject").name + '</option>');
+					});
+				}
+			});
+			self.$("table").dataTable({
+				"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+				"sPaginationType": "bootstrap",
+				"oLanguage": {
+					"sSearch": $.i18n.prop("dataTable_sSearch"),
+					"sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+					"sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+					"sInfo": $.i18n.prop("dataTable_sInfo"),
+					"sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+					"sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+					"oPaginate": {
+						sFirst: $.i18n.prop("dataTable_sFirst"),
+						sPrevious: $.i18n.prop("dataTable_sPrevious"),
+						sNext: $.i18n.prop("dataTable_sNext"),
+						sLast: $.i18n.prop("dataTable_sLast")
 					}
-				});
-			}
+				},
+				"aoColumns": [
+					{ "mData": "select"},
+					{ "mData": "id"},
+					{ "mData": "external" },
+					{ "mData": "firstname" },
+					{ "mData": "lastname" },
+					{ "mData": "role"},
+					{ "mData": "institution"},
+					{ "mData": "committees"}
+				]
+			});
 			return self;
+		},
+
+		showRegisterMembers: function (event) {
+			var self = this;
+			var registerId = self.$("select[name=register]").val();
+			if (!registerId) {
+				// CLEAN TABLE
+				self.$("table").dataTable().fnClearTable();
+				return;
+			}
+			self.$("table").dataTable().fnDestroy();
+			self.$("table").dataTable({
+				"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+				"sPaginationType": "bootstrap",
+				"oLanguage": {
+					"sSearch": $.i18n.prop("dataTable_sSearch"),
+					"sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+					"sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+					"sInfo": $.i18n.prop("dataTable_sInfo"),
+					"sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+					"sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+					"oPaginate": {
+						sFirst: $.i18n.prop("dataTable_sFirst"),
+						sPrevious: $.i18n.prop("dataTable_sPrevious"),
+						sNext: $.i18n.prop("dataTable_sNext"),
+						sLast: $.i18n.prop("dataTable_sLast")
+					}
+				},
+				"aoColumns": [
+					{ "mData": "select"},
+					{ "mData": "id"},
+					{ "mData": "external" },
+					{ "mData": "firstname" },
+					{ "mData": "lastname" },
+					{ "mData": "role"},
+					{ "mData": "institution"},
+					{ "mData": "committees"}
+				],
+				"bProcessing": true,
+				"sAjaxSource": self.model.url() + "/register/" + registerId + "/member",
+				"fnServerData": function (sSource, aoData, fnCallback) {
+					self.collection.url = sSource;
+					self.collection.fetch({
+						reset: true,
+						cache: true,
+						success: function (collection, response, options) {
+							var data = {
+								aaData: collection.map(function (registerMember) {
+									var isMember = _.some(self.model.get("members"), function (member) {
+										return _.isEqual(member.registerMember.professor.id, registerMember.get('professor').id);
+									});
+									return {
+										select: isMember ? '' :
+											'<select name="selectMember" class="input-small">' +
+												'<option value="NONE">----</option>' +
+												'<option value="REGULAR" data-model-id="' + registerMember.get('id') + '" data-type="REGULAR">' + $.i18n.prop('PositionCommitteeMemberTypeREGULAR') + '</option>' +
+												'<option value="SUBSTITUTE" data-model-id="' + registerMember.get('id') + '" data-type="SUBSTITUTE">' + $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") + '</option>' +
+												'</select>',
+										id: '<a href = "#user/' + registerMember.get('professor').user.id + '">' + registerMember.get('professor').user.id + '</a>',
+										external: registerMember.get('external') ? $.i18n.prop('RegisterMemberExternal') : $.i18n.prop('RegisterMemberInternal'),
+										firstname: registerMember.get('professor').user.basicInfo.firstname,
+										lastname: registerMember.get('professor').user.basicInfo.lastname,
+										role: $.i18n.prop(registerMember.get('professor').discriminator),
+										institution: registerMember.get('professor').discriminator === 'PROFESSOR_FOREIGN' ? registerMember.get('professor').institution : _.templates.department(registerMember.get('professor').department),
+										committees: registerMember.get('professor').committeesCount
+									}
+
+								})
+							};
+							fnCallback(data);
+						}
+					});
+				}
+
+			});
 		},
 
 		addMembers: function (event) {
@@ -6050,14 +6175,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			// Use dataTable to select elements, as pagination removes them from
 			// DOM
 			self.$("table").dataTable().$('select[name=selectMember] option:selected').each(function () {
-				var selectedOption, cid, type, model, committeeMember;
+				var selectedOption, id, type, model, committeeMember;
 				selectedOption = $(this);
-				cid = selectedOption.data('modelCid');
-				if (!cid) {
+				id = selectedOption.data('modelId');
+				if (!id) {
 					return;
 				}
 				type = selectedOption.data('type');
-				model = self.collection.get(cid);
+				model = self.collection.get(id);
 				committeeMember = {
 					type: type,
 					registerMember: model.toJSON()
@@ -6154,14 +6279,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 			// Initialize Registers, no request is performed until render
 			self.registerMembers = new Models.PositionEvaluationRegisterMembers();
-			self.registerMembers.url = self.model.url() + "/register";
-			self.registerMembers.on("member:add", function (registerMember, position) {
-				var evaluator = {
-					position: position,
-					registerMember: registerMember.toJSON()
-				};
-				self.addMember(evaluator);
-			});
+			self.registerMembers.on("member:add", self.addMember);
 		},
 
 		events: {
@@ -6215,10 +6333,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				self.$("div#evaluation-register-members").html(self.registerMembersView.el);
 				self.$("a.btn").show();
 
-				self.registerMembers.fetch({
-					cache: false,
-					reset: true
-				});
+				self.registerMembersView.render();
 			} else {
 				self.$("div#evaluation-register-members").hide();
 				self.$("select").attr("disabled", true);
@@ -6272,21 +6387,23 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 		addMember: function (evaluator) {
 			var self = this;
 			if (_.any(self.model.get("evaluators"), function (member) {
-				return _.isEqual(member.registerMember.id, evaluator.registerMember.id);
+				return _.isEqual(member.registerMember.professor.id, evaluator.registerMember.professor.id);
 			})) {
 				var popup = new Views.PopupView({
 					type: "error",
 					message: $.i18n.prop("error.member.already.exists")
 				});
 				popup.show();
-			} else {
-				self.model.get("evaluators")[evaluator.position] = evaluator;
-				self.model.trigger("change:members");
-				self.change($.Event("change"), {
-					triggeredBy: "user"
-				});
-				self.renderEvaluators();
+				return;
 			}
+
+			self.model.get("evaluators")[evaluator.position] = evaluator;
+
+			self.model.trigger("change:members");
+			self.change($.Event("change"), {
+				triggeredBy: "user"
+			});
+			self.renderEvaluators();
 		},
 
 		removeMember: function (event) {
@@ -6372,67 +6489,154 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		initialize: function (options) {
 			this._super('initialize', [ options ]);
-			_.bindAll(this, "addMember");
+			_.bindAll(this, "showRegisterMembers", "addMember");
 			this.template = _.template(tpl_position_evaluation_edit_register_member_list);
-			this.collection.bind("change", this.render, this);
-			this.collection.bind("reset", this.render, this);
+
+			this.registries = new Models.Registries();
+			this.registries.url = this.model.url() + "/register";
+
 			this.model.bind("change:members", this.render, this);
 		},
 
 		events: {
+			"click a#selectRegister": "showRegisterMembers",
 			"click a#addMember": "addMember"
 		},
 
 		render: function (eventName) {
 			var self = this;
-			var tpl_data = {
-				members: (function () {
-					var result = [];
-					self.collection.each(function (model) {
-						var item = model.toJSON();
-						item.cid = model.cid;
-						item.isMember = _.some(self.model.get("evaluators"), function (member) {
-							return _.isEqual(member.registerMember.id, item.id);
-						});
-						result.push(item);
-					});
-					return result;
-				}())
-			};
 			self.closeInnerViews();
 			self.$el.empty();
 			self.addTitle();
-			self.$el.append(self.template(tpl_data));
-
-			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
-				self.$("table").dataTable({
-					"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
-					"sPaginationType": "bootstrap",
-					"oLanguage": {
-						"sSearch": $.i18n.prop("dataTable_sSearch"),
-						"sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
-						"sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
-						"sInfo": $.i18n.prop("dataTable_sInfo"),
-						"sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
-						"sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
-						"oPaginate": {
-							sFirst: $.i18n.prop("dataTable_sFirst"),
-							sPrevious: $.i18n.prop("dataTable_sPrevious"),
-							sNext: $.i18n.prop("dataTable_sNext"),
-							sLast: $.i18n.prop("dataTable_sLast")
-						}
+			self.$el.append(self.template());
+			self.registries.fetch({
+				reset: true,
+				cache: true,
+				success: function (collection, resp, options) {
+					var $select = self.$("select[name=register]");
+					$select.empty();
+					$select.append('<option value="">--</option>');
+					collection.each(function (register) {
+						$select.append('<option value="' + register.get('id') + '">' + register.get("subject").name + '</option>');
+					});
+				}
+			});
+			self.$("table").dataTable({
+				"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+				"sPaginationType": "bootstrap",
+				"oLanguage": {
+					"sSearch": $.i18n.prop("dataTable_sSearch"),
+					"sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+					"sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+					"sInfo": $.i18n.prop("dataTable_sInfo"),
+					"sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+					"sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+					"oPaginate": {
+						sFirst: $.i18n.prop("dataTable_sFirst"),
+						sPrevious: $.i18n.prop("dataTable_sPrevious"),
+						sNext: $.i18n.prop("dataTable_sNext"),
+						sLast: $.i18n.prop("dataTable_sLast")
 					}
-				});
-			}
+				},
+				"aoColumns": [
+					{ "mData": "id"},
+					{ "mData": "external" },
+					{ "mData": "firstname" },
+					{ "mData": "lastname" },
+					{ "mData": "role"},
+					{ "mData": "institution"},
+					{ "mData": "select"}
+				]
+			});
 			return self;
+		},
+
+		showRegisterMembers: function (event) {
+			var self = this;
+			var registerId = self.$("select[name=register]").val();
+			if (!registerId) {
+				// CLEAN TABLE
+				self.$("table").dataTable().fnClearTable();
+				return;
+			}
+			self.$("table").dataTable().fnDestroy();
+			self.$("table").dataTable({
+				"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+				"sPaginationType": "bootstrap",
+				"oLanguage": {
+					"sSearch": $.i18n.prop("dataTable_sSearch"),
+					"sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+					"sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+					"sInfo": $.i18n.prop("dataTable_sInfo"),
+					"sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+					"sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+					"oPaginate": {
+						sFirst: $.i18n.prop("dataTable_sFirst"),
+						sPrevious: $.i18n.prop("dataTable_sPrevious"),
+						sNext: $.i18n.prop("dataTable_sNext"),
+						sLast: $.i18n.prop("dataTable_sLast")
+					}
+				},
+				"aoColumns": [
+					{ "mData": "id"},
+					{ "mData": "external" },
+					{ "mData": "firstname" },
+					{ "mData": "lastname" },
+					{ "mData": "role"},
+					{ "mData": "institution"},
+					{ "mData": "select"}
+				],
+				"bProcessing": true,
+				"sAjaxSource": self.model.url() + "/register/" + registerId + "/member",
+				"fnServerData": function (sSource, aoData, fnCallback) {
+					self.collection.url = sSource;
+					self.collection.fetch({
+						reset: true,
+						cache: true,
+						success: function (collection, response, options) {
+							var data = {
+								aaData: collection.map(function (registerMember) {
+									var isMember = _.some(self.model.get("evaluators"), function (evaluator) {
+										console.log(evaluator, registerMember);
+										return _.isEqual(evaluator.registerMember.professor.id, registerMember.get('professor').id);
+									});
+									return {
+										id: '<a href = "#user/' + registerMember.get('professor').user.id + '">' + registerMember.get('professor').user.id + '</a>',
+										external: registerMember.get('external') ? $.i18n.prop('RegisterMemberExternal') : $.i18n.prop('RegisterMemberInternal'),
+										firstname: registerMember.get('professor').user.basicInfo.firstname,
+										lastname: registerMember.get('professor').user.basicInfo.lastname,
+										role: $.i18n.prop(registerMember.get('professor').discriminator),
+										institution: registerMember.get('professor').discriminator === 'PROFESSOR_FOREIGN' ? registerMember.get('professor').institution : _.templates.department(registerMember.get('professor').department),
+										select: isMember ? '' :
+											'<div class="btn-group">' +
+												'<a class = "btn btn-small btn-success dropdown-toggle" data-toggle="dropdown" >' + $.i18n.prop('btn_select') + '<span class="caret"></span></a>' +
+												'<ul class="dropdown-menu">' +
+												'<li><a id="addMember" data-model-id="' + registerMember.get('id') + '" data-position="0"><i class="icon-plus"></i>' + $.i18n.prop('PositionEvaluatorFirst') + '</a></li>' +
+												'<li><a id="addMember" data-model-id="' + registerMember.get('id') + '" data-position="1"><i class="icon-plus"></i>' + $.i18n.prop('PositionEvaluatorSecond') + '</a></li>' +
+												'</ul>' +
+												'</div>'
+									}
+
+								})
+							};
+							fnCallback(data);
+						}
+					});
+				}
+
+			});
 		},
 
 		addMember: function (event) {
 			var self = this;
-			var cid = $(event.currentTarget).data('modelCid');
-			var selectedModel = self.collection.get(cid);
-			var position = $(event.currentTarget).data('position');
-			self.collection.trigger("member:add", selectedModel, position);
+			var id = $(event.currentTarget).data('modelId');
+			var position = $(event.currentTarget).data('position'); // First or second evaluator
+			var selectedModel = self.collection.get(id);
+			var evaluator = {
+				position: position,
+				registerMember: selectedModel.toJSON()
+			};
+			self.collection.trigger("member:add", evaluator);
 		},
 
 		close: function () {
@@ -7032,7 +7236,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
 				self.$("table").dataTable({
-					"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+					"sDom": "<'row-fluid'<'span6'l><'span6'>r>t<'row-fluid'<'span6'i><'span6'p>>",
 					"sPaginationType": "bootstrap",
 					"oLanguage": {
 						"sSearch": $.i18n.prop("dataTable_sSearch"),
@@ -7049,6 +7253,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						}
 					}
 				});
+				self.$("table thead input").keyup(function () {
+					self.$("table").dataTable().fnFilter(this.value, self.$("table thead input").index(this));
+				});
 			}
 			// Add Actions
 			self.renderActions();
@@ -7058,11 +7265,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 		renderActions: function () {
 			var self = this;
 			if (!App.loggedOnUser.hasRole("INSTITUTION_MANAGER") && !App.loggedOnUser.hasRole("INSTITUTION_ASSISTANT")) {
-				return;
-			}
-			if (self.collection.any(function (register) {
-				return App.loggedOnUser.isAssociatedWithInstitution(register.get("institution"));
-			})) {
 				return;
 			}
 			self.$("#actions").append("<div class=\"btn-group\"><input type=\"hidden\" name=\"institution\" /><a id=\"createRegister\" class=\"btn\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_register') + " </a></div>");
@@ -7210,7 +7412,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var self = this;
 
 			this._super('initialize', [ options ]);
-			_.bindAll(this, "change", "renderMembers", "toggleAddMember", "submit", "remove", "cancel", "allowedToEdit", "addMembers", "removeMember");
+			_.bindAll(this, "change", "renderMembers", "toggleAddMember", "submit", "remove", "cancel", "addMembers", "removeMember");
 			self.template = _.template(tpl_register_edit);
 			self.model.bind('change', self.render, self);
 			self.model.bind("destroy", self.close, self);
@@ -7237,10 +7439,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a#removeMember": "removeMember"
 		},
 
-		allowedToEdit: function () {
-			return true;
-		},
-
 		render: function (eventName) {
 			var self = this;
 			var propName;
@@ -7263,32 +7461,42 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					$(element).parent(".controls").parent(".control-group").removeClass("error");
 				},
 				rules: {
-					"institution": "required"
+					'institution': 'required',
+					'subject': 'required'
 				},
 				messages: {
-					"institution": $.i18n.prop('validation_institution')
+					'institution': $.i18n.prop('validation_institution'),
+					'subject': $.i18n.prop('validation_required')
+				}
+			});
+			self.$('input[name=subject]').typeahead({
+				source: function (query, process) {
+					var subjects = new Models.Subjects();
+					subjects.fetch({
+						cache: false,
+						reset: true,
+						data: {
+							"query": query
+						},
+						success: function (collection, response, options) {
+							var data = collection.pluck("name");
+							process(data);
+						}
+					});
 				}
 			});
 
 			// Professors View
-			if (self.allowedToEdit()) {
-				// Inner View
-				if (self.professorListView) {
-					self.professorListView.close();
-				}
-				self.professorListView = new Views.RegisterEditProfessorListView({
-					model: self.model, // This is needed to allow disable button for existing members
-					collection: self.professors
-				});
-				self.$("div#register-professor-list").hide();
-				self.$("div#register-professor-list").html(self.professorListView.render().el);
-				self.$("select").removeAttr("disabled");
-				self.$("a.btn").show();
-			} else {
-				self.$("div#committee-professor-list").hide();
-				self.$("select").attr("disabled", true);
-				self.$("a.btn").hide();
+			if (self.professorListView) {
+				self.professorListView.close();
 			}
+			self.professorListView = new Views.RegisterEditProfessorListView({
+				model: self.model, // This is needed to allow disable button for existing members
+				collection: self.professors
+			});
+			self.$("div#register-professor-list").hide();
+			self.$("div#register-professor-list").html(self.professorListView.render().el);
+
 			// Highlight Required
 			if (self.validator) {
 				for (propName in self.validator.settings.rules) {
@@ -7435,6 +7643,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				"id": self.$('form input[name=institution]').val()
 			};
 			values.members = self.model.get("members");
+			values.subject = {
+				name: self.$('form input[name=subject]').val()
+			};
 			// Save to model
 			self.model.save(values, {
 				wait: true,
@@ -7518,15 +7729,16 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		initialize: function (options) {
 			this._super('initialize', [ options ]);
-			_.bindAll(this, "search", "selectProfessors", "handleKeyUp");
+			_.bindAll(this, "search", "selectProfessors", "handleKeyUp", "displaySelected");
 			this.template = _.template(tpl_register_edit_professor_list);
 			this.model.bind("change:members", this.render, this);
 		},
 
 		events: {
 			"click a#search": "search",
-			"click a#select": "selectProfessors",
-			"keyup #filter": "handleKeyUp"
+			"click a#addSelected": "selectProfessors",
+			"keyup #filter": "handleKeyUp",
+			"click input[type='checkbox']" : "displaySelected"
 		},
 
 		render: function (eventName) {
@@ -7672,10 +7884,17 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 								};
 							});
 							fnCallback(json);
+							self.displaySelected();
 						}
 					});
 				}
 			});
+		},
+
+		displaySelected: function() {
+			var self = this;
+			var count = self.$("table input[type=checkbox]:checked").length;
+			self.$("#displaySelected").text('(' + count + ')');
 		},
 
 		selectProfessors: function (event) {
@@ -9600,5 +9819,5 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 	});
 
 	return Views;
-})
-;
+
+});

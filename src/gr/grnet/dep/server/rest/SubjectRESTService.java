@@ -2,9 +2,11 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Subject;
+import gr.grnet.dep.service.util.StringUtil;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
@@ -37,8 +39,8 @@ public class SubjectRESTService extends RESTService {
 			result = em.createQuery("select distinct s from Subject s ")
 				.getResultList();
 		} else {
-			result = em.createQuery("select s from Subject s where s.name like :query")
-				.setParameter("query", query + "%")
+			result = em.createQuery("select s from Subject s where UPPER(s.name) like :query")
+				.setParameter("query", StringUtil.toUppercaseNoTones(query, new Locale("el")) + "%")
 				.getResultList();
 		}
 		return result;

@@ -6,8 +6,10 @@ import gr.grnet.dep.service.util.SimpleDateSerializer;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.persistence.CascadeType;
@@ -16,6 +18,8 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
@@ -94,7 +98,7 @@ public class Position {
 	@ManyToOne(optional = false)
 	private Department department;
 
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne
 	private Subject subject;
 
 	@ManyToOne
@@ -114,6 +118,10 @@ public class Position {
 
 	@ManyToOne
 	private User createdBy;
+
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinTable(name = "position_assistants")
+	private Set<User> assistants = new HashSet<User>();
 
 	@Transient
 	private Boolean canSubmitCandidacy = Boolean.TRUE;
@@ -228,6 +236,14 @@ public class Position {
 		this.createdBy = createdBy;
 	}
 
+	public Set<User> getAssistants() {
+		return assistants;
+	}
+
+	public void setAssistants(Set<User> assistants) {
+		this.assistants = assistants;
+	}
+
 	/////////////////////////////////////////////////////
 	@JsonView({PositionView.class})
 	public InstitutionManager getManager() {
@@ -307,6 +323,9 @@ public class Position {
 		if (this.getDepartment() == null) {
 			return false;
 		}
+		if (this.getId() == null) {
+			return user.isAssociatedWithDepartment(this.getDepartment());
+		}
 		if (user.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
 			return true;
 		}
@@ -314,11 +333,13 @@ public class Position {
 			user.isAssociatedWithDepartment(this.getDepartment())) {
 			return true;
 		}
-		if (this.getId() == null) {
-			return user.isAssociatedWithDepartment(this.getDepartment());
-		}
 		if (this.getCreatedBy().getId().equals(user.getId())) {
 			return true;
+		}
+		for (User assistant : this.getAssistants()) {
+			if (assistant.getId().equals(user.getId())) {
+				return true;
+			}
 		}
 		return false;
 	}

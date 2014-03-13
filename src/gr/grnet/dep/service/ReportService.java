@@ -4,6 +4,7 @@ import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.ProfessorForeign;
+import gr.grnet.dep.service.model.Register;
 import gr.grnet.dep.service.model.RegisterMember;
 import gr.grnet.dep.service.model.SectorName;
 
@@ -60,6 +61,7 @@ public class ReportService {
 
 	public InputStream createRegisterExportExcel(Long registerId) {
 		//1. Get Data
+		Register register = em.find(Register.class, registerId);
 		List<Object[]> registerData = getRegisterExportData(registerId);
 		//2. Create XLS
 		Workbook wb = new HSSFWorkbook();
@@ -88,12 +90,21 @@ public class ReportService {
 		int rowNum = 0;
 		int colNum = 0;
 
-		Row row = sheet.createRow(rowNum++);
+		Row row = null;
+		Cell cell = null;
 
-		Cell cell = row.createCell(0);
+		row = sheet.createRow(rowNum++);
 
+		cell = row.createCell(0);
 		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 		cell.setCellValue("Ημερομηνία: " + sdf.format(new Date()));
+		cell.setCellStyle(titleStyle);
+		sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
+
+		row = sheet.createRow(rowNum++);
+
+		cell = row.createCell(0);
+		cell.setCellValue("Γνωστικό Αντικείμενο: " + register.getSubject().getName());
 		cell.setCellStyle(titleStyle);
 		sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
 
@@ -149,8 +160,8 @@ public class ReportService {
 			Long allCommittees = (Long) o[2];
 
 			row = sheet.createRow(rowNum++);
-			colNum = 0;
 
+			colNum = 0;
 			cell = row.createCell(colNum++);
 			cell.setCellValue(member.getProfessor().getUser().getFullName());
 			cell.setCellStyle(textStyle);

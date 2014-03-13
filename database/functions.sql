@@ -29,3 +29,39 @@ BEGIN
     RETURN ;
 END;
 $urlencode$ LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION createAdministrator(username text, firstname text, lastname text, firstnamelatin text, lastnamelatin text, email text)
+RETURNS void AS $$
+DECLARE
+userid bigint;
+roleid bigint;
+BEGIN
+	
+INSERT INTO users(
+	id, authtoken, authenticationtype, basicinfo_fathername, basicinfo_firstname, 
+	basicinfo_lastname, basicinfolatin_fathername, basicinfolatin_firstname, 
+	basicinfolatin_lastname, contactinfo_email, contactinfo_mobile, 
+	contactinfo_phone, creationdate, identification, password, passwordsalt, 
+	permanentauthtoken, shibbolethinfo_affiliation, shibbolethinfo_givenname, 
+	shibbolethinfo_remoteuser, shibbolethinfo_schachomeorganization, 
+	shibbolethinfo_sn, status, statusdate, username, verificationnumber, version)
+VALUES (nextval('hibernate_sequence'), null, 'USERNAME', '-', firstname,
+	lastname, '-', firstnamelatin, 
+	lastnamelatin, email, '6900000000', 
+	NULL, '2012-07-04 15:49:29.109', '', 'hNOCXEZfAxgjvRQMGlk7tuXfMk0=', 'QLYo0saNqlODWg==',
+	NULL, NULL, NULL, 
+	NULL, NULL, 
+	NULL, 'ACTIVE', '2012-07-04 15:49:29.109', username, NULL, 1)
+	RETURNING id INTO userid;
+	
+INSERT INTO roles (id, discriminator, status, statusdate, statusenddate, version, user_id) 
+VALUES (nextval('hibernate_sequence'), 'ADMINISTRATOR', 'ACTIVE', '2012-09-05 13:29:18.221', NULL, 0, userid)
+RETURNING id INTO roleid;
+
+INSERT INTO administrator (id) 
+VALUES (roleid);
+
+END
+$$ LANGUAGE plpgsql;

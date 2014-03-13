@@ -70,6 +70,22 @@ a.help:hover {
     font-weight: bold;
 }
 
+.multiple-select {
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    radius: 4px;
+
+    padding: 5px;
+    height: 100px;
+    overflow: auto;
+}
+
+.multiple-select.uneditable-input {
+    background-color: #eeeeee;
+}
+
 /* Layout
 -------------------------------------------------- */
 
