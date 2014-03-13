@@ -5,6 +5,7 @@
 		</div>
 		<div class="span10">
 			<h2><%= $.i18n.prop('RegistrationForm') %> - <%= $.i18n.prop(discriminator) %></h2>
+
 			<div id="shibbolethLoginInstructions">
 				<form class="form-signin" id="shibbolethloginForm" onsubmit="return false">
 					<div class="control-group">
@@ -12,7 +13,8 @@
 						<span class="help-block"><%= $.i18n.prop('Instructions_ShibbolethRegistration') %></span>
 
 						<div class="controls">
-							<a href="/dep/shibboleth/login?nextURL=<%= window.location.protocol + '//' + window.location.host + '/apella.html' %>" class="btn btn-success"><%= $.i18n.prop('btn_shibbolethLogin') %></a>
+							<a href="/dep/shibboleth/login?nextURL=<%= window.location.protocol + '//' + window.location.host + '/apella.html' %>" class="btn btn-success"><%=
+								$.i18n.prop('btn_shibbolethLogin') %></a>
 						</div>
 					</div>
 				</form>
@@ -140,6 +142,9 @@
 				<fieldset>
 					<div class="form-actions">
 						<a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_register') %></a>
+						<% if (discriminator === 'PROFESSOR_FOREIGN') { %>
+						<span class="help-block"><%= $.i18n.prop('ProfessorForeignRegistrationNote') %></span>
+						<% } %>
 					</div>
 				</fieldset>
 			</form>
