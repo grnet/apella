@@ -264,6 +264,18 @@ public class Position {
 		return null;
 	}
 
+	@XmlTransient
+	@JsonIgnore
+	public Set<User> getManagers() {
+		Set<User> managers = new HashSet<User>();
+		managers.add(createdBy);
+		if (createdBy.getPrimaryRole().equals(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+			managers.add(getManager().getUser());
+		}
+		managers.addAll(assistants);
+		return managers;
+	}
+
 	@JsonView({DetailedPositionView.class})
 	public Map<Integer, PositionStatus> getPhasesMap() {
 		Map<Integer, PositionStatus> phasesMap = new TreeMap<Integer, PositionStatus>();

@@ -294,20 +294,22 @@ public class CandidacyRESTService extends RESTService {
 			if (isNew) {
 				// Send E-Mails
 				// 1. candidacy.create@institutionManager
-				mailService.postEmail(existingCandidacy.getCandidacies().getPosition().getCreatedBy().getContactInfo().getEmail(),
-					"default.subject",
-					"candidacy.create@institutionManager",
-					Collections.unmodifiableMap(new HashMap<String, String>() {
+				for (User manager : existingCandidacy.getCandidacies().getPosition().getManagers()) {
+					mailService.postEmail(manager.getContactInfo().getEmail(),
+						"default.subject",
+						"candidacy.create@institutionManager",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
 
-						{
-							put("firstname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getFirstname());
-							put("lastname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getLastname());
-							put("position", existingCandidacy.getCandidacies().getPosition().getName());
-							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-							put("school", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
-							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
-						}
-					}));
+							{
+								put("firstname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getFirstname());
+								put("lastname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getLastname());
+								put("position", existingCandidacy.getCandidacies().getPosition().getName());
+								put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+							}
+						}));
+				}
 				// 2. candidacy.create@candidate
 				mailService.postEmail(existingCandidacy.getCandidate().getUser().getContactInfo().getEmail(),
 					"default.subject",
@@ -342,11 +344,23 @@ public class CandidacyRESTService extends RESTService {
 								put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
 								put("candidate_firstname", existingCandidacy.getSnapshot().getBasicInfo().getFirstname());
 								put("candidate_lastname", existingCandidacy.getSnapshot().getBasicInfo().getLastname());
-								put("im_firstname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getFirstname());
-								put("im_lastname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getLastname());
-								put("im_email", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getContactInfo().getEmail());
-								put("im_phone", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getContactInfo().getPhone());
+								put("assistants", extractAssistantsInfo(existingCandidacy.getCandidacies().getPosition()));
 							}
+
+							private String extractAssistantsInfo(Position position) {
+								StringBuilder assistants = new StringBuilder();
+								assistants.append("<ul>");
+								for (User u : position.getAssistants()) {
+									String im_firstname = u.getBasicInfo().getFirstname();
+									String im_lastname = u.getBasicInfo().getLastname();
+									String im_email = u.getContactInfo().getEmail();
+									String im_phone = u.getContactInfo().getPhone();
+									assistants.append("<li>" + im_firstname + " " + im_lastname + ", " + im_email + ", " + im_phone + "</li>");
+								}
+								assistants.append("</ul>");
+								return assistants.toString();
+							}
+
 						}));
 				}
 				// 4. candidacy.create.candidacyEvaluator@institutionManager
@@ -439,20 +453,22 @@ public class CandidacyRESTService extends RESTService {
 			if (existingCandidacy.isPermanent()) {
 				// Send E-Mails
 				// 1. candidacy.remove@institutionManager
-				mailService.postEmail(existingCandidacy.getCandidacies().getPosition().getCreatedBy().getContactInfo().getEmail(),
-					"default.subject",
-					"candidacy.remove@institutionManager",
-					Collections.unmodifiableMap(new HashMap<String, String>() {
+				for (User manager : existingCandidacy.getCandidacies().getPosition().getManagers()) {
+					mailService.postEmail(manager.getContactInfo().getEmail(),
+						"default.subject",
+						"candidacy.remove@institutionManager",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
 
-						{
-							put("firstname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getFirstname());
-							put("lastname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getLastname());
-							put("position", existingCandidacy.getCandidacies().getPosition().getName());
-							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-							put("school", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
-							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
-						}
-					}));
+							{
+								put("firstname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getFirstname());
+								put("lastname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getLastname());
+								put("position", existingCandidacy.getCandidacies().getPosition().getName());
+								put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+							}
+						}));
+				}
 				// 2. candidacy.remove@candidate
 				mailService.postEmail(existingCandidacy.getCandidate().getUser().getContactInfo().getEmail(),
 					"default.subject",
