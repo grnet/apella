@@ -466,7 +466,7 @@ public class RoleRESTService extends RESTService {
 			if (!existingRole.isMissingRequiredFields()) {
 				String summary = jiraService.getResourceBundleString("user.created.role.summary");
 				String description = jiraService.getResourceBundleString("user.created.role.description",
-					"user", existingRole.getUser().getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + existingRole.getUser().getId() + " )");
+					"user", existingRole.getUser().getFullName("el") + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + existingRole.getUser().getId() + " )");
 				JiraIssue issue = JiraIssue.createRegistrationIssue(existingRole.getUser(), summary, description);
 				jiraService.queueCreateIssue(issue);
 			}
@@ -1155,8 +1155,8 @@ public class RoleRESTService extends RESTService {
 					// Update Issue
 					summary = jiraService.getResourceBundleString("helpdesk.activated.role.summary");
 					description = jiraService.getResourceBundleString("helpdesk.activated.role.description",
-						"user", primaryRole.getUser().getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + primaryRole.getUser().getId() + " )",
-						"admin", loggedOn.getFullName());
+						"user", primaryRole.getUser().getFullName("el") + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + primaryRole.getUser().getId() + " )",
+						"admin", loggedOn.getFullName("el"));
 					issue = JiraIssue.createRegistrationIssue(primaryRole.getUser(), summary, description);
 					jiraService.queueCreateIssue(issue);
 
@@ -1167,8 +1167,11 @@ public class RoleRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("firstname", primaryRole.getUser().getBasicInfo().getFirstname());
-								put("lastname", primaryRole.getUser().getBasicInfo().getLastname());
+								put("firstname_el", primaryRole.getUser().getFirstname("el"));
+								put("lastname_el", primaryRole.getUser().getLastname("el"));
+
+								put("firstname_en", primaryRole.getUser().getFirstname("en"));
+								put("lastname_en", primaryRole.getUser().getLastname("en"));
 							}
 						}));
 
@@ -1176,8 +1179,8 @@ public class RoleRESTService extends RESTService {
 				case UNAPPROVED:
 					summary = jiraService.getResourceBundleString("helpdesk.activated.role.summary");
 					description = jiraService.getResourceBundleString("helpdesk.activated.role.description",
-						"user", primaryRole.getUser().getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + primaryRole.getUser().getId() + " )",
-						"admin", loggedOn.getFullName());
+						"user", primaryRole.getUser().getFullName("el") + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + primaryRole.getUser().getId() + " )",
+						"admin", loggedOn.getFullName("el"));
 					issue = JiraIssue.createRegistrationIssue(primaryRole.getUser(), summary, description);
 					jiraService.queueCreateIssue(issue);
 					break;

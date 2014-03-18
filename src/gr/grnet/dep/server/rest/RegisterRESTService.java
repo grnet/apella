@@ -362,9 +362,14 @@ public class RegisterRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("firstname", savedMember.getProfessor().getUser().getBasicInfo().getFirstname());
-								put("lastname", savedMember.getProfessor().getUser().getBasicInfo().getLastname());
-								put("institution", savedMember.getRegister().getInstitution().getName().get("el"));
+								put("firstname_el", savedMember.getProfessor().getUser().getFirstname("el"));
+								put("lastname_el", savedMember.getProfessor().getUser().getLastname("el"));
+								put("institution_el", savedMember.getRegister().getInstitution().getName().get("el"));
+
+								put("firstname_en", savedMember.getProfessor().getUser().getFirstname("en"));
+								put("lastname_en", savedMember.getProfessor().getUser().getLastname("en"));
+								put("institution_en", savedMember.getRegister().getInstitution().getName().get("en"));
+
 								put("discipline", savedMember.getRegister().getSubject().getName());
 							}
 						}));
@@ -376,9 +381,14 @@ public class RegisterRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("firstname", savedMember.getProfessor().getUser().getBasicInfo().getFirstname());
-								put("lastname", savedMember.getProfessor().getUser().getBasicInfo().getLastname());
-								put("institution", savedMember.getRegister().getInstitution().getName().get("el"));
+								put("firstname_el", savedMember.getProfessor().getUser().getFirstname("el"));
+								put("lastname_el", savedMember.getProfessor().getUser().getLastname("el"));
+								put("institution_el", savedMember.getRegister().getInstitution().getName().get("el"));
+
+								put("firstname_en", savedMember.getProfessor().getUser().getFirstname("en"));
+								put("lastname_en", savedMember.getProfessor().getUser().getLastname("en"));
+								put("institution_en", savedMember.getRegister().getInstitution().getName().get("en"));
+
 								put("discipline", savedMember.getRegister().getSubject().getName());
 							}
 						}));
@@ -395,9 +405,14 @@ public class RegisterRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("firstname", removedMember.getProfessor().getUser().getBasicInfo().getFirstname());
-								put("lastname", removedMember.getProfessor().getUser().getBasicInfo().getLastname());
-								put("institution", removedMember.getRegister().getInstitution().getName().get("el"));
+								put("firstname_el", removedMember.getProfessor().getUser().getFirstname("el"));
+								put("lastname_el", removedMember.getProfessor().getUser().getLastname("el"));
+								put("institution_el", removedMember.getRegister().getInstitution().getName().get("el"));
+
+								put("firstname_en", removedMember.getProfessor().getUser().getFirstname("en"));
+								put("lastname_en", removedMember.getProfessor().getUser().getLastname("en"));
+								put("institution_en", removedMember.getRegister().getInstitution().getName().get("en"));
+
 								put("discipline", removedMember.getRegister().getSubject().getName());
 							}
 						}));
@@ -409,9 +424,14 @@ public class RegisterRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("firstname", removedMember.getProfessor().getUser().getBasicInfo().getFirstname());
-								put("lastname", removedMember.getProfessor().getUser().getBasicInfo().getLastname());
-								put("institution", removedMember.getRegister().getInstitution().getName().get("el"));
+								put("firstname_el", removedMember.getProfessor().getUser().getFirstname("el"));
+								put("lastname_el", removedMember.getProfessor().getUser().getLastname("el"));
+								put("institution_el", removedMember.getRegister().getInstitution().getName().get("el"));
+
+								put("firstname_en", removedMember.getProfessor().getUser().getFirstname("en"));
+								put("lastname_en", removedMember.getProfessor().getUser().getLastname("en"));
+								put("institution_en", removedMember.getRegister().getInstitution().getName().get("en"));
+
 								put("discipline", removedMember.getRegister().getSubject().getName());
 							}
 						}));

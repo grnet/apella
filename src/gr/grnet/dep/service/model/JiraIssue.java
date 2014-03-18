@@ -279,7 +279,7 @@ public class JiraIssue implements Serializable {
 		issue.setDescription(description);
 		issue.setReporter("apella");
 
-		issue.setFullname(user.getFullName());
+		issue.setFullname(user.getFullName("el"));
 		issue.setRole(user.getPrimaryRole());
 		issue.setEmail(user.getContactInfo().getEmail());
 		issue.setMobile(user.getContactInfo().getMobile());

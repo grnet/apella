@@ -195,12 +195,19 @@ public class PositionNominationRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("firstname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
-								put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", existingNomination.getPosition().getPhase().getPosition().getName());
-								put("institution", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+								put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
+								put("institution_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+								put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
+								put("institution_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("en"));
+								put("department_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("en"));
 							}
 						}));
 				}
@@ -212,12 +219,19 @@ public class PositionNominationRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("firstname", candidacy.getCandidate().getUser().getBasicInfo().getFirstname());
-								put("lastname", candidacy.getCandidate().getUser().getBasicInfo().getLastname());
 								put("position", existingNomination.getPosition().getName());
-								put("institution", existingNomination.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school", existingNomination.getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department", existingNomination.getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
+								put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
+								put("institution_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
+								put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
+								put("institution_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("en"));
+								put("department_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("en"));
 							}
 						}));
 				}
@@ -229,12 +243,19 @@ public class PositionNominationRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("firstname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
-								put("lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", existingNomination.getPosition().getName());
-								put("institution", existingNomination.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school", existingNomination.getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department", existingNomination.getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+								put("lastname_el", evaluator.getRegisterMember().getProfessor().getUser().getLastname("el"));
+								put("institution_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_en", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+								put("lastname_en", evaluator.getRegisterMember().getProfessor().getUser().getLastname("en"));
+								put("institution_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("en"));
+								put("department_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("en"));
 							}
 						}));
 				}
@@ -248,12 +269,19 @@ public class PositionNominationRESTService extends RESTService {
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("firstname", existingNomination.getNominatedCandidacy().getCandidate().getUser().getBasicInfo().getFirstname());
-							put("lastname", existingNomination.getNominatedCandidacy().getCandidate().getUser().getBasicInfo().getLastname());
 							put("position", existingNomination.getPosition().getName());
-							put("institution", existingNomination.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-							put("school", existingNomination.getPosition().getDepartment().getSchool().getName().get("el"));
-							put("department", existingNomination.getPosition().getDepartment().getName().get("el"));
+
+							put("firstname_el", existingNomination.getNominatedCandidacy().getCandidate().getUser().getFirstname("el"));
+							put("lastname_el", existingNomination.getNominatedCandidacy().getCandidate().getUser().getLastname("el"));
+							put("institution_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+							put("school_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("el"));
+							put("department_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("el"));
+
+							put("firstname_en", existingNomination.getNominatedCandidacy().getCandidate().getUser().getFirstname("en"));
+							put("lastname_en", existingNomination.getNominatedCandidacy().getCandidate().getUser().getLastname("en"));
+							put("institution_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+							put("school_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("en"));
+							put("department_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("en"));
 						}
 					}));
 			}
@@ -265,12 +293,19 @@ public class PositionNominationRESTService extends RESTService {
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("firstname", existingNomination.getSecondNominatedCandidacy().getCandidate().getUser().getBasicInfo().getFirstname());
-							put("lastname", existingNomination.getSecondNominatedCandidacy().getCandidate().getUser().getBasicInfo().getLastname());
 							put("position", existingNomination.getPosition().getName());
-							put("institution", existingNomination.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-							put("school", existingNomination.getPosition().getDepartment().getSchool().getName().get("el"));
-							put("department", existingNomination.getPosition().getDepartment().getName().get("el"));
+
+							put("firstname_el", existingNomination.getSecondNominatedCandidacy().getCandidate().getUser().getFirstname("el"));
+							put("lastname_el", existingNomination.getSecondNominatedCandidacy().getCandidate().getUser().getLastname("el"));
+							put("institution_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+							put("school_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("el"));
+							put("department_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("el"));
+
+							put("firstname_en", existingNomination.getSecondNominatedCandidacy().getCandidate().getUser().getFirstname("en"));
+							put("lastname_en", existingNomination.getSecondNominatedCandidacy().getCandidate().getUser().getLastname("en"));
+							put("institution_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+							put("school_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("en"));
+							put("department_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("en"));
 						}
 					}));
 			}
@@ -519,12 +554,19 @@ public class PositionNominationRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("firstname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
-								put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", nominationFile.getNomination().getPosition().getName());
-								put("institution", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+								put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
+								put("institution_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department_el", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+								put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
+								put("institution_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("en"));
+								put("department_en", nominationFile.getNomination().getPosition().getDepartment().getName().get("en"));
 							}
 						}));
 				}
@@ -536,12 +578,19 @@ public class PositionNominationRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("firstname", candidacy.getCandidate().getUser().getBasicInfo().getFirstname());
-								put("lastname", candidacy.getCandidate().getUser().getBasicInfo().getLastname());
 								put("position", nominationFile.getNomination().getPosition().getName());
-								put("institution", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
+								put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
+								put("institution_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department_el", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
+								put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
+								put("institution_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("en"));
+								put("department_en", nominationFile.getNomination().getPosition().getDepartment().getName().get("en"));
 							}
 						}));
 				}
@@ -553,11 +602,19 @@ public class PositionNominationRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("firstname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
-								put("lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", nominationFile.getNomination().getPosition().getName());
-								put("institution", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("department", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+								put("lastname_el", evaluator.getRegisterMember().getProfessor().getUser().getLastname("el"));
+								put("institution_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department_el", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_en", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+								put("lastname_en", evaluator.getRegisterMember().getProfessor().getUser().getLastname("en"));
+								put("institution_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("en"));
+								put("department_en", nominationFile.getNomination().getPosition().getDepartment().getName().get("en"));
 							}
 						}));
 				}
@@ -570,12 +627,19 @@ public class PositionNominationRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("firstname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
-								put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", nominationFile.getNomination().getPosition().getName());
-								put("institution", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+								put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
+								put("institution_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department_el", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+								put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
+								put("institution_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("en"));
+								put("department_en", nominationFile.getNomination().getPosition().getDepartment().getName().get("en"));
 							}
 						}));
 				}
@@ -587,12 +651,19 @@ public class PositionNominationRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("firstname", candidacy.getCandidate().getUser().getBasicInfo().getFirstname());
-								put("lastname", candidacy.getCandidate().getUser().getBasicInfo().getLastname());
 								put("position", nominationFile.getNomination().getPosition().getName());
-								put("institution", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
+								put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
+								put("institution_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department_el", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
+								put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
+								put("institution_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("en"));
+								put("department_en", nominationFile.getNomination().getPosition().getDepartment().getName().get("en"));
 							}
 						}));
 				}
@@ -604,12 +675,19 @@ public class PositionNominationRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("firstname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
-								put("lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", nominationFile.getNomination().getPosition().getName());
-								put("institution", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+								put("lastname_el", evaluator.getRegisterMember().getProfessor().getUser().getLastname("el"));
+								put("institution_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department_el", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_en", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+								put("lastname_en", evaluator.getRegisterMember().getProfessor().getUser().getLastname("en"));
+								put("institution_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("en"));
+								put("department_en", nominationFile.getNomination().getPosition().getDepartment().getName().get("en"));
 							}
 						}));
 				}

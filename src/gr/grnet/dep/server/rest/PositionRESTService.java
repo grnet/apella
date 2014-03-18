@@ -362,12 +362,19 @@ public class PositionRESTService extends RESTService {
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("firstname", c.getUser().getBasicInfo().getFirstname());
-							put("lastname", c.getUser().getBasicInfo().getLastname());
 							put("position", position.getName());
-							put("institution", position.getDepartment().getSchool().getInstitution().getName().get("el"));
-							put("school", position.getDepartment().getSchool().getName().get("el"));
-							put("department", position.getDepartment().getName().get("el"));
+
+							put("firstname_el", c.getUser().getFirstname("el"));
+							put("lastname_el", c.getUser().getLastname("el"));
+							put("institution_el", position.getDepartment().getSchool().getInstitution().getName().get("el"));
+							put("school_el", position.getDepartment().getSchool().getName().get("el"));
+							put("department_el", position.getDepartment().getName().get("el"));
+
+							put("firstname_en", c.getUser().getFirstname("en"));
+							put("lastname_en", c.getUser().getLastname("en"));
+							put("institution_en", position.getDepartment().getSchool().getInstitution().getName().get("en"));
+							put("school_en", position.getDepartment().getSchool().getName().get("en"));
+							put("department_en", position.getDepartment().getName().get("en"));
 						}
 					}));
 			}

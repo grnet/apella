@@ -244,12 +244,19 @@ public class QuartzService {
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("firstname", candidacy.getCandidate().getUser().getBasicInfo().getFirstname());
-							put("lastname", candidacy.getCandidate().getUser().getBasicInfo().getLastname());
 							put("position", position.getName());
-							put("institution", position.getDepartment().getSchool().getInstitution().getName().get("el"));
-							put("school", position.getDepartment().getSchool().getName().get("el"));
-							put("department", position.getDepartment().getName().get("el"));
+
+							put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
+							put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
+							put("institution_el", position.getDepartment().getSchool().getInstitution().getName().get("el"));
+							put("school_el", position.getDepartment().getSchool().getName().get("el"));
+							put("department_el", position.getDepartment().getName().get("el"));
+
+							put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
+							put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
+							put("institution_en", position.getDepartment().getSchool().getInstitution().getName().get("en"));
+							put("school_en", position.getDepartment().getSchool().getName().get("en"));
+							put("department_en", position.getDepartment().getName().get("en"));
 						}
 					}));
 			}

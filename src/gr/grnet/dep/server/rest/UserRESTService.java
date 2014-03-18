@@ -380,13 +380,13 @@ public class UserRESTService extends RESTService {
 			if (firstRole.getDiscriminator().equals(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
 				String summary = jiraService.getResourceBundleString("institution.manager.created.assistant.summary");
 				String description = jiraService.getResourceBundleString("institution.manager.created.assistant.description",
-					"user", savedUser.getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + savedUser.getId() + " )");
+					"user", savedUser.getFullName("el") + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + savedUser.getId() + " )");
 				JiraIssue issue = JiraIssue.createRegistrationIssue(savedUser, summary, description);
 				jiraService.queueCreateIssue(issue);
 			} else {
 				String summary = jiraService.getResourceBundleString("user.created.account.summary");
 				String description = jiraService.getResourceBundleString("user.created.account.description",
-					"user", savedUser.getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + savedUser.getId() + " )");
+					"user", savedUser.getFullName("el") + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + savedUser.getId() + " )");
 				JiraIssue issue = JiraIssue.createRegistrationIssue(savedUser, summary, description);
 				jiraService.queueCreateIssue(issue);
 			}
@@ -700,7 +700,7 @@ public class UserRESTService extends RESTService {
 					// Post to Jira
 					String summary = jiraService.getResourceBundleString("user.verified.email.summary");
 					String description = jiraService.getResourceBundleString("user.verified.email.description",
-						"user", u.getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + u.getId() + " )");
+						"user", u.getFullName("el") + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + u.getId() + " )");
 					JiraIssue issue = JiraIssue.createRegistrationIssue(u, summary, description);
 					jiraService.queueCreateIssue(issue);
 					return u;
@@ -753,8 +753,8 @@ public class UserRESTService extends RESTService {
 			if (u.getStatus().equals(UserStatus.BLOCKED)) {
 				String summary = jiraService.getResourceBundleString("helpdesk.blocked.user.summary");
 				String description = jiraService.getResourceBundleString("helpdesk.blocked.user.description",
-					"user", u.getFullName() + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + u.getId() + " )",
-					"admin", loggedOn.getFullName());
+					"user", u.getFullName("el") + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + u.getId() + " )",
+					"admin", loggedOn.getFullName("el"));
 				JiraIssue issue = JiraIssue.createRegistrationIssue(u, summary, description);
 				jiraService.queueCreateIssue(issue);
 			}

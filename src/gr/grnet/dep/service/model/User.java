@@ -285,11 +285,42 @@ public class User implements Serializable {
 
 	@XmlTransient
 	@JsonIgnore
-	public String getFullName() {
-		if (this.basicInfo == null) {
-			return "- -";
+	public String getFirstname(String locale) {
+		if (locale.equals("en") &&
+			this.basicInfoLatin != null &&
+			this.basicInfoLatin.getFirstname() != null) {
+			return this.basicInfoLatin.getFirstname();
 		}
-		return this.basicInfo.getFirstname() + " " + this.basicInfo.getLastname();
+		return this.basicInfo != null ? this.basicInfo.getFirstname() : null;
+	}
+
+	@XmlTransient
+	@JsonIgnore
+	public String getLastname(String locale) {
+		if (locale.equals("en") &&
+			this.basicInfoLatin != null &&
+			this.basicInfoLatin.getLastname() != null) {
+			return this.basicInfoLatin.getLastname();
+		}
+		return this.basicInfo != null ? this.basicInfo.getLastname() : null;
+
+	}
+
+	@XmlTransient
+	@JsonIgnore
+	public String getFathername(String locale) {
+		if (locale.equals("en") &&
+			this.basicInfoLatin != null &&
+			this.basicInfoLatin.getFathername() != null) {
+			return this.basicInfoLatin.getFathername();
+		}
+		return this.basicInfo != null ? this.basicInfo.getFathername() : null;
+	}
+
+	@XmlTransient
+	@JsonIgnore
+	public String getFullName(String locale) {
+		return this.getFirstname(locale) + " " + this.getLastname(locale);
 	}
 
 	public boolean isMissingRequiredFields() {

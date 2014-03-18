@@ -301,12 +301,19 @@ public class CandidacyRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("firstname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getFirstname());
-								put("lastname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getLastname());
 								put("position", existingCandidacy.getCandidacies().getPosition().getName());
-								put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_el", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getFirstname("el"));
+								put("lastname_el", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getLastname("el"));
+								put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_en", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getFirstname("en"));
+								put("lastname_en", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getLastname("en"));
+								put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
+								put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
 							}
 						}));
 				}
@@ -317,12 +324,19 @@ public class CandidacyRESTService extends RESTService {
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("firstname", existingCandidacy.getCandidate().getUser().getBasicInfo().getFirstname());
-							put("lastname", existingCandidacy.getCandidate().getUser().getBasicInfo().getLastname());
 							put("position", existingCandidacy.getCandidacies().getPosition().getName());
-							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-							put("school", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
-							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+
+							put("firstname_el", existingCandidacy.getCandidate().getUser().getFirstname("el"));
+							put("lastname_el", existingCandidacy.getCandidate().getUser().getLastname("el"));
+							put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+							put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
+							put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+
+							put("firstname_en", existingCandidacy.getCandidate().getUser().getFirstname("en"));
+							put("lastname_en", existingCandidacy.getCandidate().getUser().getLastname("en"));
+							put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+							put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
+							put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
 						}
 					}));
 
@@ -336,23 +350,34 @@ public class CandidacyRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("firstname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
-								put("lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 								put("position", existingCandidacy.getCandidacies().getPosition().getName());
-								put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
-								put("candidate_firstname", existingCandidacy.getSnapshot().getBasicInfo().getFirstname());
-								put("candidate_lastname", existingCandidacy.getSnapshot().getBasicInfo().getLastname());
-								put("assistants", extractAssistantsInfo(existingCandidacy.getCandidacies().getPosition()));
+
+								put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+								put("lastname_el", evaluator.getRegisterMember().getProfessor().getUser().getLastname("el"));
+								put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+								put("candidate_firstname_el", existingCandidacy.getSnapshot().getFirstname("el"));
+								put("candidate_lastname_el", existingCandidacy.getSnapshot().getLastname("el"));
+								put("assistants_el", extractAssistantsInfo(existingCandidacy.getCandidacies().getPosition(), "el"));
+
+								put("firstname_en", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+								put("lastname_en", evaluator.getRegisterMember().getProfessor().getUser().getLastname("en"));
+								put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
+								put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
+								put("candidate_firstname_en", existingCandidacy.getSnapshot().getFirstname("en"));
+								put("candidate_lastname_en", existingCandidacy.getSnapshot().getLastname("en"));
+								put("assistants_en", extractAssistantsInfo(existingCandidacy.getCandidacies().getPosition(), "en"));
+
 							}
 
-							private String extractAssistantsInfo(Position position) {
+							private String extractAssistantsInfo(Position position, String locale) {
 								StringBuilder assistants = new StringBuilder();
 								assistants.append("<ul>");
 								for (User u : position.getAssistants()) {
-									String im_firstname = u.getBasicInfo().getFirstname();
-									String im_lastname = u.getBasicInfo().getLastname();
+									String im_firstname = u.getFirstname(locale);
+									String im_lastname = u.getLastname(locale);
 									String im_email = u.getContactInfo().getEmail();
 									String im_phone = u.getContactInfo().getPhone();
 									assistants.append("<li>" + im_firstname + " " + im_lastname + ", " + im_email + ", " + im_phone + "</li>");
@@ -370,36 +395,64 @@ public class CandidacyRESTService extends RESTService {
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("firstname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getFirstname());
-							put("lastname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getLastname());
 							put("position", existingCandidacy.getCandidacies().getPosition().getName());
-							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-							put("school", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
-							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
-							put("candidate_firstname", existingCandidacy.getSnapshot().getBasicInfo().getFirstname());
-							put("candidate_lastname", existingCandidacy.getSnapshot().getBasicInfo().getLastname());
+
+							put("firstname_el", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getFirstname("el"));
+							put("lastname_el", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getLastname("el"));
+							put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+							put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
+							put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+							put("candidate_firstname_el", existingCandidacy.getSnapshot().getFirstname("el"));
+							put("candidate_lastname_el", existingCandidacy.getSnapshot().getLastname("el"));
+
+							put("firstname_en", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getFirstname("en"));
+							put("lastname_en", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getLastname("en"));
+							put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+							put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
+							put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
+							put("candidate_firstname_en", existingCandidacy.getSnapshot().getFirstname("en"));
+							put("candidate_lastname_en", existingCandidacy.getSnapshot().getLastname("en"));
+
 							Iterator<CandidacyEvaluator> it = existingCandidacy.getProposedEvaluators().iterator();
 							if (it.hasNext()) {
 								CandidacyEvaluator eval = it.next();
-								put("evaluator1_firstname", eval.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
-								put("evaluator1_lastname", eval.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
+								put("evaluator1_firstname_el", eval.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+								put("evaluator1_lastname_el", eval.getRegisterMember().getProfessor().getUser().getLastname("el"));
+								put("evaluator1_firstname_en", eval.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+								put("evaluator1_lastname_en", eval.getRegisterMember().getProfessor().getUser().getLastname("e"));
+
 								put("evaluator1_email", eval.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail());
+
 							} else {
-								put("evaluator1_firstname", "-");
-								put("evaluator1_lastname", "-");
+								put("evaluator1_firstname_el", "-");
+								put("evaluator1_lastname_el", "-");
+								put("evaluator1_firstname_en", "-");
+								put("evaluator1_lastname_en", "-");
+
 								put("evaluator1_email", "-");
-								put("evaluator2_firstname", "-");
-								put("evaluator2_lastname", "-");
+
+								put("evaluator2_firstname_el", "-");
+								put("evaluator2_lastname_el", "-");
+								put("evaluator2_firstname_en", "-");
+								put("evaluator2_lastname_en", "-");
+
 								put("evaluator2_email", "-");
+
 							}
 							if (it.hasNext()) {
 								CandidacyEvaluator eval = it.next();
-								put("evaluator2_firstname", eval.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
-								put("evaluator2_lastname", eval.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
+								put("evaluator2_firstname_el", eval.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+								put("evaluator2_lastname_el", eval.getRegisterMember().getProfessor().getUser().getLastname("el"));
+								put("evaluator2_firstname_en", eval.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+								put("evaluator2_lastname_en", eval.getRegisterMember().getProfessor().getUser().getLastname("en"));
+
 								put("evaluator2_email", eval.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail());
 							} else {
-								put("evaluator2_firstname", "-");
-								put("evaluator2_lastname", "-");
+								put("evaluator2_firstname_el", "-");
+								put("evaluator2_lastname_el", "-");
+								put("evaluator2_firstname_en", "-");
+								put("evaluator2_lastname_en", "-");
+
 								put("evaluator2_email", "-");
 							}
 						}
@@ -460,12 +513,19 @@ public class CandidacyRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								put("firstname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getFirstname());
-								put("lastname", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getBasicInfo().getLastname());
 								put("position", existingCandidacy.getCandidacies().getPosition().getName());
-								put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_el", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getFirstname("el"));
+								put("lastname_el", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getLastname("el"));
+								put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_en", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getFirstname("en"));
+								put("lastname_en", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getLastname("en"));
+								put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
+								put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
 							}
 						}));
 				}
@@ -476,12 +536,19 @@ public class CandidacyRESTService extends RESTService {
 					Collections.unmodifiableMap(new HashMap<String, String>() {
 
 						{
-							put("firstname", existingCandidacy.getCandidate().getUser().getBasicInfo().getFirstname());
-							put("lastname", existingCandidacy.getCandidate().getUser().getBasicInfo().getLastname());
 							put("position", existingCandidacy.getCandidacies().getPosition().getName());
-							put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-							put("school", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
-							put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+
+							put("firstname_el", existingCandidacy.getCandidate().getUser().getFirstname("el"));
+							put("lastname_el", existingCandidacy.getCandidate().getUser().getLastname("el"));
+							put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+							put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
+							put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+
+							put("firstname_en", existingCandidacy.getCandidate().getUser().getFirstname("en"));
+							put("lastname_en", existingCandidacy.getCandidate().getUser().getLastname("en"));
+							put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+							put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
+							put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
 						}
 					}));
 				// 3. candidacy.remove@committee
@@ -493,12 +560,19 @@ public class CandidacyRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
-									put("firstname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
-									put("lastname", member.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 									put("position", existingCandidacy.getCandidacies().getPosition().getName());
-									put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-									put("school", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
-									put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+
+									put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+									put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
+									put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
+									put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+
+									put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+									put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
+									put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
+									put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
 								}
 							}));
 					}
@@ -512,12 +586,19 @@ public class CandidacyRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
-									put("firstname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getFirstname());
-									put("lastname", evaluator.getRegisterMember().getProfessor().getUser().getBasicInfo().getLastname());
 									put("position", existingCandidacy.getCandidacies().getPosition().getName());
-									put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-									put("school", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
-									put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+
+									put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+									put("lastname_el", evaluator.getRegisterMember().getProfessor().getUser().getLastname("el"));
+									put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
+									put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+
+									put("firstname_en", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+									put("lastname_en", evaluator.getRegisterMember().getProfessor().getUser().getLastname("en"));
+									put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
+									put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
 								}
 							}));
 					}
@@ -531,12 +612,19 @@ public class CandidacyRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
-									put("firstname", candidacy.getCandidate().getUser().getBasicInfo().getFirstname());
-									put("lastname", candidacy.getCandidate().getUser().getBasicInfo().getLastname());
 									put("position", existingCandidacy.getCandidacies().getPosition().getName());
-									put("institution", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-									put("school", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
-									put("department", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+
+									put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
+									put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
+									put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
+									put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+
+									put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
+									put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
+									put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
+									put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
 								}
 							}));
 					}

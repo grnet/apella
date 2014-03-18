@@ -163,7 +163,7 @@ public class ReportService {
 
 			colNum = 0;
 			cell = row.createCell(colNum++);
-			cell.setCellValue(member.getProfessor().getUser().getFullName());
+			cell.setCellValue(member.getProfessor().getUser().getFullName("el"));
 			cell.setCellStyle(textStyle);
 
 			switch (member.getProfessor().getDiscriminator()) {
@@ -506,13 +506,13 @@ public class ReportService {
 
 				cell = row.createCell(colNum++);
 				if (position.getPhase().getNomination().getNominatedCandidacy() != null) {
-					cell.setCellValue(position.getPhase().getNomination().getNominatedCandidacy().getCandidate().getUser().getFullName());
+					cell.setCellValue(position.getPhase().getNomination().getNominatedCandidacy().getCandidate().getUser().getFullName("el"));
 				}
 				cell.setCellStyle(textStyle);
 
 				cell = row.createCell(colNum++);
 				if (position.getPhase().getNomination().getSecondNominatedCandidacy() != null) {
-					cell.setCellValue(position.getPhase().getNomination().getSecondNominatedCandidacy().getCandidate().getUser().getFullName());
+					cell.setCellValue(position.getPhase().getNomination().getSecondNominatedCandidacy().getCandidate().getUser().getFullName("el"));
 				}
 				cell.setCellStyle(textStyle);
 

@@ -7204,7 +7204,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 		render: function (eventName) {
 			var self = this;
 			var tpl_data = {
-				showAmMember : App.loggedOnUser.hasRole("PROFESSOR_DOMESCTIC") || App.loggedOnUser.hasRole("PROFESSOR_FOREIGN"),
+				showAmMember : App.loggedOnUser.hasRole("PROFESSOR_DOMESTIC") || App.loggedOnUser.hasRole("PROFESSOR_FOREIGN"),
 				registries: (function () {
 					var result = [];
 					var gCanExport =
