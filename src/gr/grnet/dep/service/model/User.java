@@ -73,7 +73,7 @@ public class User implements Serializable {
 
 	private String identification;
 
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.EAGER)
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
 	private Set<Role> roles = new HashSet<Role>();
 
 	// Registration Fields
@@ -323,6 +323,7 @@ public class User implements Serializable {
 		return this.getFirstname(locale) + " " + this.getLastname(locale);
 	}
 
+	@JsonView({UserView.class})
 	public boolean isMissingRequiredFields() {
 		return (this.basicInfo == null || this.basicInfo.isMissingRequiredFields()) ||
 			(this.contactInfo == null || this.contactInfo.isMissingRequiredFields()) ||
@@ -352,6 +353,7 @@ public class User implements Serializable {
 		RoleDiscriminator.ADMINISTRATOR
 	});
 
+	@JsonView({UserView.class})
 	public RoleDiscriminator getPrimaryRole() {
 		TreeSet<Role> sortedRoles = new TreeSet<Role>(new Comparator<Role>() {
 

@@ -370,7 +370,7 @@ public class RegisterRESTService extends RESTService {
 								put("lastname_en", savedMember.getProfessor().getUser().getLastname("en"));
 								put("institution_en", savedMember.getRegister().getInstitution().getName().get("en"));
 
-								put("discipline", savedMember.getRegister().getSubject().getName());
+								put("discipline", savedMember.getRegister().getSubject() != null ? savedMember.getRegister().getSubject().getName() : "");
 							}
 						}));
 				} else {
@@ -389,7 +389,7 @@ public class RegisterRESTService extends RESTService {
 								put("lastname_en", savedMember.getProfessor().getUser().getLastname("en"));
 								put("institution_en", savedMember.getRegister().getInstitution().getName().get("en"));
 
-								put("discipline", savedMember.getRegister().getSubject().getName());
+								put("discipline", savedMember.getRegister().getSubject() != null ? savedMember.getRegister().getSubject().getName() : "");
 							}
 						}));
 				}
@@ -413,7 +413,7 @@ public class RegisterRESTService extends RESTService {
 								put("lastname_en", removedMember.getProfessor().getUser().getLastname("en"));
 								put("institution_en", removedMember.getRegister().getInstitution().getName().get("en"));
 
-								put("discipline", removedMember.getRegister().getSubject().getName());
+								put("discipline", removedMember.getRegister().getSubject() != null ? removedMember.getRegister().getSubject().getName() : "");
 							}
 						}));
 				} else {
@@ -432,7 +432,7 @@ public class RegisterRESTService extends RESTService {
 								put("lastname_en", removedMember.getProfessor().getUser().getLastname("en"));
 								put("institution_en", removedMember.getRegister().getInstitution().getName().get("en"));
 
-								put("discipline", removedMember.getRegister().getSubject().getName());
+								put("discipline", removedMember.getRegister().getSubject() != null ? removedMember.getRegister().getSubject().getName() : "");
 							}
 						}));
 				}

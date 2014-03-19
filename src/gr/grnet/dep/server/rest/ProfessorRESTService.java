@@ -56,6 +56,10 @@ public class ProfessorRESTService extends RESTService {
 		@SuppressWarnings("unchecked")
 		List<PositionCommitteeMember> committees = em.createQuery(
 			"select pcm from PositionCommitteeMember pcm " +
+				"left join fetch pcm.committee co " +
+				"left join fetch co.position po " +
+				"left join fetch po.phase ph " +
+				"left join fetch ph.candidacies pca " +
 				"where pcm.registerMember.professor.id = :professorId ")
 			.setParameter("professorId", professorId)
 			.getResultList();
@@ -87,6 +91,10 @@ public class ProfessorRESTService extends RESTService {
 		@SuppressWarnings("unchecked")
 		List<PositionEvaluator> evaluations = em.createQuery(
 			"select pe from PositionEvaluator pe " +
+				"left join fetch pe.evaluation ev " +
+				"left join fetch ev.position po " +
+				"left join fetch po.phase ph " +
+				"left join fetch ph.candidacies pca " +
 				"where pe.registerMember.professor.id = :professorId ")
 			.setParameter("professorId", professorId)
 			.getResultList();

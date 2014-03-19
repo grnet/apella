@@ -104,7 +104,7 @@ public class ReportService {
 		row = sheet.createRow(rowNum++);
 
 		cell = row.createCell(0);
-		cell.setCellValue("Γνωστικό Αντικείμενο: " + register.getSubject().getName());
+		cell.setCellValue("Γνωστικό Αντικείμενο: " + (register.getSubject() != null ? register.getSubject().getName() : ""));
 		cell.setCellStyle(titleStyle);
 		sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
 

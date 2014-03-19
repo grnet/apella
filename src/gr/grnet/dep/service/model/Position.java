@@ -45,12 +45,6 @@ public class Position {
 	public static interface PositionView extends PublicPositionView {
 	};
 
-	public static interface MemberPositionView extends PositionView {
-	};
-
-	public static interface CandidatePositionView extends PositionView {
-	};
-
 	public static interface DetailedPositionView extends PositionView {
 	};
 
@@ -119,7 +113,7 @@ public class Position {
 	@ManyToOne
 	private User createdBy;
 
-	@ManyToMany(fetch = FetchType.EAGER)
+	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "position_assistants")
 	private Set<User> assistants = new HashSet<User>();
 
@@ -227,7 +221,7 @@ public class Position {
 		this.phases = phases;
 	}
 
-	@JsonView({PositionView.class})
+	@JsonView({DetailedPositionView.class})
 	public User getCreatedBy() {
 		return createdBy;
 	}
@@ -236,6 +230,7 @@ public class Position {
 		this.createdBy = createdBy;
 	}
 
+	@JsonView({DetailedPositionView.class})
 	public Set<User> getAssistants() {
 		return assistants;
 	}
@@ -245,7 +240,7 @@ public class Position {
 	}
 
 	/////////////////////////////////////////////////////
-	@JsonView({PositionView.class})
+	@JsonView({DetailedPositionView.class})
 	public InstitutionManager getManager() {
 		if (this.createdBy == null) {
 			return null;

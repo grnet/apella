@@ -194,6 +194,13 @@ public class CandidacyRESTService extends RESTService {
 		}
 	}
 
+	private boolean canAddEvaluators(Candidacy c) {
+		PositionCommittee committee = c.getCandidacies().getPosition().getPhase().getCommittee();
+		return committee != null &&
+			committee.getMembers().size() > 0 &&
+			DateUtil.compareDates(new Date(), committee.getCandidacyEvalutionsDueDate()) < 0;
+	}
+
 	/**
 	 * Saves and finalizes candidacy
 	 * 
@@ -238,7 +245,7 @@ public class CandidacyRESTService extends RESTService {
 					newRegisterMemberIds.add(newEvaluator.getRegisterMember().getId());
 				}
 			}
-			if (newRegisterMemberIds.size() > 0 && !existingCandidacy.getCanAddEvaluators()) {
+			if (newRegisterMemberIds.size() > 0 && !canAddEvaluators(existingCandidacy)) {
 				throw new RestException(Status.CONFLICT, "committee.not.defined");
 			}
 			if (candidacy.getProposedEvaluators().size() > CandidacyEvaluator.MAX_MEMBERS) {
@@ -674,7 +681,7 @@ public class CandidacyRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 		}
 		// Return empty response while committee is not defined
-		if (!existingCandidacy.getCanAddEvaluators()) {
+		if (!canAddEvaluators(existingCandidacy)) {
 			return new ArrayList<RegisterMember>();
 		}
 		// Prepare Data for Query

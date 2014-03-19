@@ -80,7 +80,7 @@ public class AuthenticationService {
 		try {
 			return (User) em.createQuery(
 				"from User u " +
-					"left join fetch u.roles " +
+					"left join fetch u.roles rls " +
 					"where u.username = :username")
 				.setParameter("username", username)
 				.getSingleResult();
@@ -93,6 +93,7 @@ public class AuthenticationService {
 		try {
 			return (User) em.createQuery(
 				"select u from User u " +
+					"left join fetch u.roles rls " +
 					"where u.shibbolethInfo.remoteUser = :remoteUser")
 				.setParameter("remoteUser", shibbolethInfo.getRemoteUser())
 				.getSingleResult();
@@ -105,6 +106,7 @@ public class AuthenticationService {
 		try {
 			return (User) em.createQuery(
 				"select u from User u " +
+					"left join fetch u.roles " +
 					"where u.permanentAuthToken = :permanentAuthToken")
 				.setParameter("permanentAuthToken", permanentAuthToken)
 				.getSingleResult();
@@ -117,6 +119,7 @@ public class AuthenticationService {
 		try {
 			User u = (User) em.createQuery(
 				"select u from User u " +
+					"left join fetch u.roles rls " +
 					"where u.contactInfo.email = :email")
 				.setParameter("email", data.getEmail())
 				.getSingleResult();

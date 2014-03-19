@@ -392,6 +392,7 @@ public class UserRESTService extends RESTService {
 			}
 
 			//6. Return result
+			newUser.getRoles().size();
 			return newUser;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
@@ -479,7 +480,6 @@ public class UserRESTService extends RESTService {
 			existingUser.getBasicInfo().toUppercase(new Locale("el"));
 			existingUser.getBasicInfoLatin().toUppercase(Locale.ENGLISH);
 			em.flush();
-
 			return existingUser;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
@@ -868,6 +868,7 @@ public class UserRESTService extends RESTService {
 
 		Query searchQuery = em.createQuery(
 			"select usr from User usr " +
+				"join fetch usr.roles rls " +
 				"where usr.id in ( " +
 				searchQueryString.toString() +
 				" ) " +

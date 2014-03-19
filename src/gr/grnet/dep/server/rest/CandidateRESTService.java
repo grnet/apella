@@ -5,15 +5,15 @@ import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidacy.MediumCandidacyView;
 import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.PositionCommittee;
-import gr.grnet.dep.service.model.PositionNomination;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
-import gr.grnet.dep.service.util.DateUtil;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
@@ -61,8 +61,8 @@ public class CandidateRESTService extends RESTService {
 
 		String queryString = "from Candidacy c " +
 			"left join fetch c.candidate.user.roles cerls " +
-			"left join fetch c.candidacies.position.assistants pasnt " +
-			"left join fetch pasnt.roles pasntrls " +
+			"left join fetch c.candidacies ca " +
+			"left join fetch ca.position po " +
 			"where c.candidate = :candidate " +
 			"and c.permanent = true ";
 		if (open != null) {
@@ -78,26 +78,55 @@ public class CandidateRESTService extends RESTService {
 
 		@SuppressWarnings("unchecked")
 		List<Candidacy> retv = query.getResultList();
+		List<Long> candidaciesThatCanAddEvaluators = canAddEvaluators(retv);
+		List<Long> candidaciesThatNominationCommitteeConverged = hasNominationCommitteeConverged(retv);
 
 		for (Candidacy c : retv) {
-			c.setNominationCommitteeConverged(hasNominationCommitteeConverged(c));
-			c.setCanAddEvaluators(canAddEvaluators(c));
+			c.setNominationCommitteeConverged(candidaciesThatNominationCommitteeConverged.contains(c.getId()));
+			c.setCanAddEvaluators(candidaciesThatCanAddEvaluators.contains(c.getId()));
 		}
-
 		return retv;
 	}
 
-	public boolean hasNominationCommitteeConverged(Candidacy c) {
-		PositionNomination nomination = c.getCandidacies().getPosition().getPhase().getNomination();
-		return nomination != null &&
-			nomination.getNominationCommitteeConvergenceDate() != null &&
-			DateUtil.compareDates(new Date(), nomination.getNominationCommitteeConvergenceDate()) >= 0;
+	public List<Long> hasNominationCommitteeConverged(List<Candidacy> candidacies) {
+		Set<Long> ids = new HashSet<Long>();
+		for (Candidacy c : candidacies) {
+			ids.add(c.getId());
+		}
+		if (ids.isEmpty()) {
+			return new ArrayList<Long>();
+		}
+		@SuppressWarnings("unchecked")
+		List<Long> data = em.createQuery(
+			"select c.id from Candidacy c " +
+				"join c.candidacies.position.phase.nomination no " +
+				"where no.nominationCommitteeConvergenceDate IS NOT NULL " +
+				"and no.nominationCommitteeConvergenceDate < :now " +
+				"and c.id in (:ids) ")
+			.setParameter("ids", ids)
+			.setParameter("now", new Date())
+			.getResultList();
+		return data;
 	}
 
-	public boolean canAddEvaluators(Candidacy c) {
-		PositionCommittee committee = c.getCandidacies().getPosition().getPhase().getCommittee();
-		return committee != null &&
-			committee.getMembers().size() > 0 &&
-			DateUtil.compareDates(new Date(), committee.getCandidacyEvalutionsDueDate()) < 0;
+	public List<Long> canAddEvaluators(List<Candidacy> candidacies) {
+		Set<Long> ids = new HashSet<Long>();
+		for (Candidacy c : candidacies) {
+			ids.add(c.getId());
+		}
+		if (ids.isEmpty()) {
+			return new ArrayList<Long>();
+		}
+		@SuppressWarnings("unchecked")
+		List<Long> data = em.createQuery(
+			"select c.id from Candidacy c " +
+				"join c.candidacies.position.phase.committee co " +
+				"where co.members IS NOT EMPTY " +
+				"and co.candidacyEvalutionsDueDate >= :now " +
+				"and c.id in (:ids) ")
+			.setParameter("ids", ids)
+			.setParameter("now", new Date())
+			.getResultList();
+		return data;
 	}
 }

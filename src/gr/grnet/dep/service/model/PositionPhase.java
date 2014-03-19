@@ -1,9 +1,7 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
-import gr.grnet.dep.service.model.Position.CandidatePositionView;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
-import gr.grnet.dep.service.model.Position.MemberPositionView;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.Position.PublicPositionView;
 import gr.grnet.dep.service.model.PositionCommitteeMember.PositionCommitteeMemberView;
@@ -19,6 +17,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
@@ -59,16 +58,16 @@ public class PositionPhase {
 	@ManyToOne(cascade = CascadeType.ALL)
 	private PositionCandidacies candidacies;
 
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private PositionCommittee committee;
 
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private PositionEvaluation evaluation;
 
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private PositionNomination nomination;
 
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private PositionComplementaryDocuments complementaryDocuments;
 
 	@Temporal(TemporalType.DATE)
@@ -132,7 +131,7 @@ public class PositionPhase {
 		this.order = order;
 	}
 
-	@JsonView({PublicPositionView.class, PositionCommitteeMemberView.class, DetailedPositionView.class, MemberPositionView.class, CandidatePositionView.class, PositionEvaluatorView.class})
+	@JsonView({PublicPositionView.class, PositionCommitteeMemberView.class, DetailedPositionView.class, PositionEvaluatorView.class})
 	public PositionCandidacies getCandidacies() {
 		return candidacies;
 	}
@@ -141,7 +140,7 @@ public class PositionPhase {
 		this.candidacies = candidacies;
 	}
 
-	@JsonView({DetailedPositionView.class, MemberPositionView.class, CandidatePositionView.class, DetailedCandidacyView.class})
+	@JsonView({DetailedPositionView.class, DetailedCandidacyView.class})
 	public PositionCommittee getCommittee() {
 		return committee;
 	}
@@ -150,7 +149,7 @@ public class PositionPhase {
 		this.committee = committee;
 	}
 
-	@JsonView({DetailedPositionView.class, MemberPositionView.class, CandidatePositionView.class})
+	@JsonView({DetailedPositionView.class})
 	public PositionEvaluation getEvaluation() {
 		return evaluation;
 	}
@@ -159,7 +158,7 @@ public class PositionPhase {
 		this.evaluation = evaluation;
 	}
 
-	@JsonView({DetailedPositionView.class, MemberPositionView.class, CandidatePositionView.class})
+	@JsonView({DetailedPositionView.class})
 	public PositionNomination getNomination() {
 		return nomination;
 	}
@@ -168,7 +167,7 @@ public class PositionPhase {
 		this.nomination = nomination;
 	}
 
-	@JsonView({DetailedPositionView.class, MemberPositionView.class})
+	@JsonView({DetailedPositionView.class})
 	public PositionComplementaryDocuments getComplementaryDocuments() {
 		return complementaryDocuments;
 	}

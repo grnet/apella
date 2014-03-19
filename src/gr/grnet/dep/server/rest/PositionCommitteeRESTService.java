@@ -246,6 +246,7 @@ public class PositionCommitteeRESTService extends RESTService {
 		}
 		for (PositionCommitteeMember existingMember : existingCommittee.getMembers()) {
 			if (existingMember.getId().equals(cmId)) {
+				existingMember.getRegisterMember().getProfessor().getUser().getRoles();
 				return existingMember;
 			}
 		}

@@ -8,9 +8,7 @@ import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.InstitutionManager;
 import gr.grnet.dep.service.model.Position;
-import gr.grnet.dep.service.model.Position.CandidatePositionView;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
-import gr.grnet.dep.service.model.Position.MemberPositionView;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.Position.PositionView;
 import gr.grnet.dep.service.model.Position.PublicPositionView;
@@ -25,6 +23,7 @@ import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.Sector;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.UserStatus;
+import gr.grnet.dep.service.model.User.UserView;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileType;
 
@@ -77,9 +76,15 @@ public class PositionRESTService extends RESTService {
 			position = (Position) em.createQuery(
 				"from Position p " +
 					"left join fetch p.phases ph " +
+					"left join fetch ph.candidacies ca " +
+					"left join fetch ph.committee co " +
+					"left join fetch ph.evaluation ev " +
+					"left join fetch ph.nomination no " +
+					"left join fetch ph.complementaryDocuments cd " +
 					"where p.id = :positionId ")
 				.setParameter("positionId", positionId)
 				.getSingleResult();
+			position.getAssistants().size();
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
@@ -104,6 +109,8 @@ public class PositionRESTService extends RESTService {
 			@SuppressWarnings("unchecked")
 			List<Position> positions = (List<Position>) em.createQuery(
 				"from Position p " +
+					"join fetch p.phase ph " +
+					"join fetch ph.candidacies cs " +
 					"where p.permanent = true " +
 					"and p.department.school.institution in (:institutions)")
 				.setParameter("institutions", institutions)
@@ -117,6 +124,8 @@ public class PositionRESTService extends RESTService {
 			@SuppressWarnings("unchecked")
 			List<Position> positions = (List<Position>) em.createQuery(
 				"select p from Position p " +
+					"join fetch p.phase ph " +
+					"join fetch ph.candidacies cs " +
 					"where p.permanent = true ")
 				.getResultList();
 			return positions;
@@ -166,35 +175,7 @@ public class PositionRESTService extends RESTService {
 	public String get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @QueryParam("order") Integer order) {
 		User loggedOn = getLoggedOn(authToken);
 		Position p = getAndCheckPosition(loggedOn, positionId);
-
-		String result = null;
-		if (loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) ||
-			loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) ||
-			loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) ||
-			loggedOn.isAssociatedWithDepartment(p.getDepartment())) {
-			result = toJSON(order == null ? p : p.as(order), DetailedPositionView.class);
-		} else if (loggedOn.hasActiveRole(RoleDiscriminator.PROFESSOR_DOMESTIC) ||
-			loggedOn.hasActiveRole(RoleDiscriminator.PROFESSOR_FOREIGN)) {
-			PositionPhase phase = order == null ? p.getPhase() : p.getPhases().get(order);
-			if (phase.getCommittee() != null && phase.getCommittee().containsMember(loggedOn)) {
-				result = toJSON(order == null ? p : p.as(order), MemberPositionView.class);
-			} else if (phase.getEvaluation() != null && phase.getEvaluation().containsEvaluator(loggedOn)) {
-				result = toJSON(order == null ? p : p.as(order), MemberPositionView.class);
-			} else if (phase.getCandidacies().containsCandidate(loggedOn)) {
-				result = toJSON(order == null ? p : p.as(order), CandidatePositionView.class);
-			} else {
-				result = toJSON(order == null ? p : p.as(order), PositionView.class);
-			}
-		} else if (loggedOn.hasActiveRole(RoleDiscriminator.CANDIDATE)) {
-			PositionPhase phase = order == null ? p.getPhase() : p.getPhases().get(order);
-			if (phase.getCandidacies().containsCandidate(loggedOn)) {
-				result = toJSON(order == null ? p : p.as(order), CandidatePositionView.class);
-			} else {
-				result = toJSON(order == null ? p : p.as(order), PositionView.class);
-			}
-		} else {
-			result = toJSON(order == null ? p : p.as(order), PositionView.class);
-		}
+		String result = toJSON(order == null ? p : p.as(order), DetailedPositionView.class);
 		return result;
 	}
 
@@ -416,7 +397,7 @@ public class PositionRESTService extends RESTService {
 
 	@GET
 	@Path("/{id:[0-9][0-9]*}/assistants")
-	@JsonView({DetailedPositionView.class})
+	@JsonView({UserView.class})
 	public Collection<User> getPositionAssistants(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long positionId) {
 		User loggedOn = getLoggedOn(authToken);
 		Position existingPosition = getAndCheckPosition(loggedOn, positionId);
@@ -428,15 +409,13 @@ public class PositionRESTService extends RESTService {
 			"select usr from User usr " +
 				"left join fetch usr.roles rls " +
 				"where usr.id in ( " +
-				"	select u.id from User u " +
-				"	join u.roles r " +
-				"	where r.discriminator = :discriminator " +
-				"	and u.status = :userStatus " +
-				"	and r.status = :roleStatus " +
-				"	and exists (select ia.id from InstitutionAssistant ia where ia.id = r.id and ia.institution.id = :institutionId ) " +
+				"	select u.id from InstitutionAssistant ia " +
+				"	join ia.user u " +
+				"	where u.status = :userStatus " +
+				"	and ia.status = :roleStatus " +
+				"	and ia.institution.id = :institutionId  " +
 				")")
 			.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
-			.setParameter("discriminator", RoleDiscriminator.INSTITUTION_ASSISTANT)
 			.setParameter("userStatus", UserStatus.ACTIVE)
 			.setParameter("roleStatus", RoleStatus.ACTIVE)
 			.getResultList();
@@ -669,7 +648,6 @@ public class PositionRESTService extends RESTService {
 					break;
 
 			}
-
 			em.flush();
 			return existingPosition;
 		} catch (PersistenceException e) {
