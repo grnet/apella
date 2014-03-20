@@ -698,7 +698,6 @@ public class RegisterRESTService extends RESTService {
 			orderString = "order by r.user.basicInfo.lastname " + orderDirection + " , r.user.basicInfo.firstname, r.user.id ";
 		}
 
-		logger.info(searchQueryString.toString());
 		Query countQuery = em.createQuery(
 			"select count(id) from Role r " +
 				"where r.id in ( " +

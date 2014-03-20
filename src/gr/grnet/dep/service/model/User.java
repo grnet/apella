@@ -204,8 +204,8 @@ public class User implements Serializable {
 		this.contactInfo = contactInfo;
 	}
 
-	@JsonView({UserView.class})
 	// This is for circular references when loading Roles
+	@JsonView({UserView.class})
 	public Set<Role> getRoles() {
 		return roles;
 	}

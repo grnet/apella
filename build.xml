@@ -97,6 +97,7 @@
 			<arg value="${basedir}/app.build.js" />
 			<classpath refid="requirejs.class.path" />
 		</java>
+		<native2ascii encoding="UTF-8" src="${www.dir}" dest="${build.dir}/www" includes="**/*.properties"/>
 	</target>
 
 	<target name="package-ejb" description="Package up the EJB classes">
@@ -150,8 +151,13 @@
 	</target>
 
 	<target name="deploy-www" description="Deploy the www files to the server">
+		<sync todir="${build.dir}/www">
+			<fileset dir="${www.dir}" excludes="**/*.properties"/>
+		</sync>
+		<native2ascii encoding="UTF-8" src="${www.dir}" dest="${build.dir}/www" includes="**/*.properties"/>
 		<sync todir="${jboss.standalone.deployments.dir}/${www.dist.war}">
-			<fileset dir="${www.dir}" />
+			<fileset dir="${build.dir}/www">
+		</fileset>
 		</sync>
 		<touch file="${jboss.standalone.deployments.dir}/depui.war.dodeploy" />
 	</target>
