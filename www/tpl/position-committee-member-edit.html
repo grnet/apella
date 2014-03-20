@@ -8,7 +8,7 @@
 	</td>
 	<td><%= registerMember.external ? $.i18n.prop("RegisterMemberExternal") : $.i18n.prop("RegisterMemberInternal") %></td>
 	<td width="1px">
-		<a id="viewMember" href="#user/<%= registerMember.professor.user.id %>"><%= registerMember.professor.user.id %> </a>
+		<a href="#user/<%= registerMember.professor.user.id %>" target="user"><%= registerMember.professor.user.id %> </a>
 	</td>
 	<td><%= registerMember.professor.user.basicInfo.firstname %></td>
 	<td><%= registerMember.professor.user.basicInfo.lastname%></td>

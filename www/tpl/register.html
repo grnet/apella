@@ -22,7 +22,7 @@
 						<td><%= $.i18n.prop(member.external ? "Yes" : "No") %></td>
 						<td>
 							<% if (_.isEqual(member.access, "READ_FULL")) { %>
-								<a id="viewMember" data-committee-member-id="<%= member.id %>" href="#user/<%= member.professor.user.id %>"><%= member.professor.user.id %> </a>
+								<a data-committee-member-id="<%= member.id %>" href="#user/<%= member.professor.user.id %>" target="user"><%= member.professor.user.id %> </a>
 							<% } else { %>
 								<%= member.professor.user.id %>
 							<% } %>

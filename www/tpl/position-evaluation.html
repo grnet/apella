@@ -15,7 +15,7 @@
 	<tr id="positionEvaluator_<%= evaluator.position %>">
 		<td>
 		<% if (_.isEqual(evaluator.access, "READ_FULL")) { %>
-			<a id="viewEvaluator" href="#user/<%= evaluator.registerMember.professor.user.id %>"><%= evaluator.registerMember.professor.user.id %> </a>
+			<a href="#user/<%= evaluator.registerMember.professor.user.id %>" target="user"><%= evaluator.registerMember.professor.user.id %> </a>
 		<% } else { %>
 			<%= evaluator.registerMember.professor.user.id %>
 		<% } %>

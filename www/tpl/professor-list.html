@@ -13,7 +13,7 @@
 		<% _.each(professors, function(professor) { %>
 		<tr>
 			<td>
-				<a id="view" data-model-cid="<%= professor.cid %>" href="#user/<%= professor.user.id %>"><%= $.i18n.prop('ClickForMore') %></a>
+				<a data-model-cid="<%= professor.cid %>" href="#user/<%= professor.user.id %>" target="user"><%= $.i18n.prop('ClickForMore') %></a>
 			</td>
 			<td><%= professor.user.basicInfo.firstname %></td>
 			<td><%= professor.user.basicInfo.lastname%></td>

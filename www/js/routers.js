@@ -629,6 +629,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				position.fetch({
 					cache: false,
 					wait: true,
+					silent: true,
 					success: function () {
 						// Select Edit, Helpdesk or Simple View based on loggedOnUser
 						if (position.isEditableBy(App.loggedOnUser)) {
@@ -661,7 +662,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 						self.refreshBreadcrumb([ $.i18n.prop('menu_positions'), position.get("name") ]);
 						$("#content").unbind();
 						$("#content").empty();
-						$("#content").html(positionView.render().el);
+						$("#content").html(positionView.el);
+						positionView.render();
+
 					}
 				});
 			});
@@ -784,7 +787,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 				register.fetch({
 					cache: false,
+					silent: true,
 					success: function () {
+						registerView.render();
 						self.refreshBreadcrumb([ $.i18n.prop('menu_registers'), register.get("title") ]);
 					}
 				});
@@ -922,19 +927,16 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					});
 				}
 				self.refreshBreadcrumb([ $.i18n.prop('menu_regulatoryframeworks') ]);
-				$("#content").html(institutionRegulatoryFrameworkView.render().el);
+				$("#content").html(institutionRegulatoryFrameworkView.el);
 				// Update history
 				App.router.navigate("regulatoryframeworks/" + institutionRF.id, {
 					trigger: false
 				});
 				institutionRF.fetch({
 					cache: false,
-					error: function (model, resp, options) {
-						var popup = new Views.PopupView({
-							type: "error",
-							message: $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-						});
-						popup.show();
+					silent: true,
+					success: function () {
+						institutionRegulatoryFrameworkView.render();
 					}
 				});
 			});
@@ -1077,10 +1079,14 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				self.refreshBreadcrumb([ $.i18n.prop('menu_candidateCandidacies'), candidacy.id ]);
 				$("#content").unbind();
 				$("#content").empty();
-				$("#content").html(candidacyEditView.render().el);
+				$("#content").html(candidacyEditView.el);
 
 				candidacy.fetch({
-					cache: false
+					cache: false,
+					silent: true,
+					success: function() {
+						candidacyEditView.render();
+					}
 				});
 			});
 

@@ -2496,7 +2496,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							// Read Data
 							json.aaData = _.map(json.records, function (user) {
 								return {
-									"id": '<a href="#user/' + user.id + '">' + user.id + '</a>',
+									"id": '<a href="#user/' + user.id + '" target="user">' + user.id + '</a>',
 									"firstname": user.basicInfo.firstname,
 									"lastname": user.basicInfo.lastname,
 									"username": user.username || "",
@@ -2682,9 +2682,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 								});
 								self.addFile(collection, "FEK", self.$("#fekFile"), {
 									withMetadata: false
-								});
-								self.addFileList(collection, "DIMOSIEYSI", self.$("#dimosieusiFileList"), {
-									withMetadata: true
 								});
 							}
 						});
@@ -7551,7 +7548,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				"aaData": _.map(self.model.get("members"), function (member) {
 					return {
 						external: $.i18n.prop(member.external ? "Yes" : "No"),
-						id: '<a href="#user/' + member.professor.user.id + '">' + member.professor.user.id + '</a>',
+						id: '<a href="#user/' + member.professor.user.id + '" target="user">' + member.professor.user.id + '</a>',
 						firstname: member.professor.user.basicInfo.firstname,
 						lastname: member.professor.user.basicInfo.lastname,
 						profile: $.i18n.prop(member.professor.discriminator),
@@ -7873,7 +7870,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 								return {
 									firstname: professor.user.basicInfo.firstname,
 									lastname: professor.user.basicInfo.lastname,
-									id: '<a href="#user/' + professor.user.id + '">' + professor.user.id + '</a>',
+									id: '<a href="#user/' + professor.user.id + '" target="user">' + professor.user.id + '</a>',
 									profile: $.i18n.prop(professor.discriminator),
 									rank: professor.rank ? professor.rank.name[App.locale] : '',
 									institution: _.isEqual(professor.discriminator, 'PROFESSOR_FOREIGN') ? professor.institution : _.templates.department(professor.department),
@@ -8979,9 +8976,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return false;
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
-			var candidacyRegisterMembers;
 			var files;
 			var sfiles;
 			self.closeInnerViews();

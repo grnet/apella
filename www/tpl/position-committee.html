@@ -27,7 +27,7 @@
 		</td>
 		<td width="1px">
 		<% if (_.isEqual(member.access, "READ_FULL")) { %>
-			<a id="viewMember" href="#user/<%= member.registerMember.professor.user.id %>"><%= member.registerMember.professor.user.id %> </a>
+			<a href="#user/<%= member.registerMember.professor.user.id %>" target="user"><%= member.registerMember.professor.user.id %> </a>
 		<% } else { %>
 			<%= member.registerMember.professor.user.id %>
 		<% } %>
