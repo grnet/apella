@@ -18,6 +18,9 @@ define([
 			"identification": undefined,
 			"authenticationType": undefined,
 			"missingRequiredFields": undefined,
+			"firstname": {},
+			"lastname": {},
+			"fathername": {},
 			"basicInfo": {
 				"firstname": undefined,
 				"lastname": undefined,
@@ -65,24 +68,13 @@ define([
 				self.get("authenticationType") === 'EMAIL' && !self.isAccountIncomplete();
 		},
 
-		getFullName: function () {
-			var self = this;
-			var fullname = ""
-				.concat(self.get("basicInfo").firstname || "-")
-				.concat(" ")
-				.concat(self.get("basicInfo").lastname || "-");
-
-			return fullname;
-		},
-
 		getDisplayName: function () {
 			var self = this;
 			var displayName = ""
-				.concat(self.get("basicInfo").firstname || "-")
+				.concat(self.get('firstname')[App.locale] || "-")
 				.concat(" ")
-				.concat(self.get("basicInfo").lastname || "-")
+				.concat(self.get('lastname')[App.locale] || "-")
 				.concat(" [" + (self.get("id") || '') + "]");
-
 			return displayName;
 		},
 

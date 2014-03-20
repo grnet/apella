@@ -49,7 +49,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		fileViews: {},
 
-		initialize: function (options) {
+		initialize: function () {
 			var self = this;
 			_.bindAll(self, "render", "addFile", "addFileList", "addFileEdit", "addFileListEdit", "addTitle", "close", "closeInnerViews");
 			self.addTitle();
@@ -199,7 +199,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		events: {},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var menuItems = [];
 			self.closeInnerViews();
@@ -208,7 +208,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 			// Shibboleth Login
 			if (self.model.isAccountIncomplete()) {
-				return; // Do not add any menu-items
+				return self; // Do not add any menu-items
 			}
 
 			if (!self.model.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
@@ -268,7 +268,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				self.$el.append('<li><a href="#' + menuItem + '">' + $.i18n.prop('menu_' + menuItem) + '</a></li>');
 			});
 
-			return this;
+			return self;
 		},
 
 		highlightCurrent: function () {
@@ -307,7 +307,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a:not(.active)": "selectLanguage"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var language = App.utils.getLocale();
 			self.closeInnerViews();
@@ -354,7 +354,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a#logout": "logout"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var displayname = self.model.getDisplayName();
 			self.$el.empty();
@@ -370,7 +370,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return self;
 		},
 
-		logout: function (event) {
+		logout: function () {
 			// Remove X-Auth-Token
 			$.ajaxSetup({
 				headers: {}
@@ -422,7 +422,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"submit form#resendVerificationEmailForm": "resendVerificationEmail"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var tpl_data;
 
@@ -438,10 +438,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.validatorLogin = $("form#loginForm", this.el).validate({
 				errorElement: "span",
 				errorClass: "help-inline",
-				highlight: function (element, errorClass, validClass) {
+				highlight: function (element) {
 					$(element).parent(".controls").parent(".control-group").addClass("error");
 				},
-				unhighlight: function (element, errorClass, validClass) {
+				unhighlight: function (element) {
 					$(element).parent(".controls").parent(".control-group").removeClass("error");
 				},
 				rules: {
@@ -467,10 +467,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.validatorResetPasswordForm = $("form#resetPasswordForm", this.el).validate({
 				errorElement: "span",
 				errorClass: "help-inline",
-				highlight: function (element, errorClass, validClass) {
+				highlight: function (element) {
 					$(element).addClass("error");
 				},
-				unhighlight: function (element, errorClass, validClass) {
+				unhighlight: function (element) {
 					$(element).removeClass("error");
 				},
 				rules: {
@@ -490,10 +490,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.validatorResendVerificationEmail = $("form#resendVerificationEmailForm", this.el).validate({
 				errorElement: "span",
 				errorClass: "help-inline",
-				highlight: function (element, errorClass, validClass) {
+				highlight: function (element) {
 					$(element).addClass("error");
 				},
-				unhighlight: function (element, errorClass, validClass) {
+				unhighlight: function (element) {
 					$(element).removeClass("error");
 				},
 				rules: {
@@ -513,19 +513,19 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return self;
 		},
 
-		showResetPassword: function (event) {
+		showResetPassword: function () {
 			var self = this;
 			self.$("#resetPasswordForm").toggle();
 			self.$("#resendVerificationEmailForm").hide();
 		},
 
-		showResendVerificationEmailForm: function (event) {
+		showResendVerificationEmailForm: function () {
 			var self = this;
 			self.$("#resendVerificationEmailForm").toggle();
 			self.$("#resetPasswordForm").hide();
 		},
 
-		login: function (event) {
+		login: function () {
 			var self = this;
 			var username = self.$('form#loginForm input[name=username]').val();
 			var password = self.$('form#loginForm input[name=password]').val();
@@ -536,14 +536,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				"password": password
 			}, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					// Notify AppRouter to start Application (fill
 					// Header and
 					// handle
 					// history token)
 					self.model.trigger("user:loggedon");
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -553,7 +553,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			});
 		},
 
-		resetPassword: function (event) {
+		resetPassword: function () {
 			var self = this;
 			var email = self.$('form#resetPasswordForm input[name=email]').val();
 
@@ -562,14 +562,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				"email": email
 			}, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					var popup = new Views.PopupView({
 						type: "success",
 						message: $.i18n.prop("PasswordReset")
 					});
 					popup.show();
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -579,7 +579,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			});
 		},
 
-		resendVerificationEmail: function (event) {
+		resendVerificationEmail: function () {
 			var self = this;
 			var email = self.$('form#resendVerificationEmailForm input[name=email]').val();
 
@@ -588,14 +588,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				"email": email
 			}, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					var popup = new Views.PopupView({
 						type: "success",
 						message: $.i18n.prop("VerificationEmailResent")
 					});
 					popup.show();
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -638,7 +638,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"submit form": "login"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var propName;
 
@@ -649,10 +649,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.validator = $("form", this.el).validate({
 				errorElement: "span",
 				errorClass: "help-inline",
-				highlight: function (element, errorClass, validClass) {
+				highlight: function (element) {
 					$(element).parent(".controls").parent(".control-group").addClass("error");
 				},
-				unhighlight: function (element, errorClass, validClass) {
+				unhighlight: function (element) {
 					$(element).parent(".controls").parent(".control-group").removeClass("error");
 				},
 				rules: {
@@ -688,7 +688,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return this;
 		},
 
-		login: function (event) {
+		login: function () {
 			var self = this;
 			var username = self.$('form input[name=username]').val();
 			var password = self.$('form input[name=password]').val();
@@ -699,14 +699,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				"password": password
 			}, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					// Notify AppRouter to start Application (fill
 					// Header and
 					// handle
 					// history token)
 					self.model.trigger("user:loggedon");
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -745,7 +745,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"mouseleave": "startTimer"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 
 			self.$el.empty();
@@ -844,7 +844,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 		},
 
 		events: {
-			"click a#yes": function (event) {
+			"click a#yes": function () {
 				this.$el.modal('hide');
 				if (_.isFunction(this.options.yes)) {
 					this.options.yes();
@@ -852,7 +852,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			self.$el.empty();
 			self.$el.append(self.template({
@@ -891,7 +891,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		events: {},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			self.$el.empty();
 			self.addTitle();
@@ -988,7 +988,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return self;
 		},
 
-		onToggleEdit: function (event) {
+		onToggleEdit: function () {
 			var self = this;
 			self.toggleEdit();
 		},
@@ -1056,7 +1056,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		events: {},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			self.$el.empty();
 			self.addTitle();
@@ -1107,7 +1107,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"change select[name=institution]": "changeInstitution"
 		},
 
-		render: function (event) {
+		render: function () {
 			var self = this;
 			var propName;
 			var role = self.model.get('roles')[0];
@@ -1129,7 +1129,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				App.institutions.fetch({
 					cache: true,
 					reset: true,
-					success: function (collection, resp) {
+					success: function (collection) {
 						self.$("select[name='institution']").empty();
 						self.$("select[name='institution']").append("<option value=\"\">" + $.i18n.prop("PleaseSelectInstitution") + "</option>");
 						_.each(collection.filter(function (institution) {
@@ -1146,7 +1146,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							triggeredBy: "application"
 						});
 					},
-					error: function (model, resp, options) {
+					error: function (model, resp) {
 						var popup = new Views.PopupView({
 							type: "error",
 							message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -1174,10 +1174,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.validator = self.$("form#userForm").validate({
 				errorElement: "span",
 				errorClass: "help-inline",
-				highlight: function (element, errorClass, validClass) {
+				highlight: function (element) {
 					$(element).parent(".controls").parent(".control-group").addClass("error");
 				},
-				unhighlight: function (element, errorClass, validClass) {
+				unhighlight: function (element) {
 					$(element).parent(".controls").parent(".control-group").removeClass("error");
 				},
 				rules: {
@@ -1300,7 +1300,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return self;
 		},
 
-		changeInstitution: function (event, data) {
+		changeInstitution: function () {
 			var self = this;
 			if (_.isEqual(self.$("select[name=institution]").val(), "")) {
 				self.$("a#selectInstitution").attr("disabled", true);
@@ -1350,12 +1350,12 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				"password": password
 			}, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					App.router.navigate("success", {
 						trigger: true
 					});
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -1394,7 +1394,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			this.model.bind('change', this.render);
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			self.$el.empty();
 			self.addTitle();
@@ -1426,7 +1426,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		events: {},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var tiles = [];
 			tiles.push({
@@ -1678,10 +1678,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return {
 				errorElement: "span",
 				errorClass: "help-inline",
-				highlight: function (element, errorClass, validClass) {
+				highlight: function (element) {
 					$(element).parent(".controls").parent(".control-group").addClass("error");
 				},
-				unhighlight: function (element, errorClass, validClass) {
+				unhighlight: function (element) {
 					$(element).parent(".controls").parent(".control-group").removeClass("error");
 				},
 				rules: {
@@ -1787,7 +1787,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			};
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var propName;
 			var tpl_data = _.extend(self.model.toJSON(), {
@@ -1826,7 +1826,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return self;
 		},
 
-		cancel: function (event) {
+		cancel: function () {
 			var self = this;
 			if (self.validator) {
 				self.validator.resetForm();
@@ -1842,7 +1842,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.$("a#save").removeAttr("disabled");
 		},
 
-		submit: function (event) {
+		submit: function () {
 			var self = this;
 			// Read Input
 			var username = self.$('form input[name=username]').val();
@@ -1882,7 +1882,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				"password": password
 			}, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					var popup = new Views.PopupView({
 						type: "success",
 						message: $.i18n.prop("Success")
@@ -1890,7 +1890,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					self.model.trigger("sync:save");
 					popup.show();
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -1909,14 +1909,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				yes: function () {
 					self.model.destroy({
 						wait: true,
-						success: function (model, resp) {
+						success: function () {
 							var popup = new Views.PopupView({
 								type: "success",
 								message: $.i18n.prop("Success")
 							});
 							popup.show();
 						},
-						error: function (model, resp, options) {
+						error: function (model, resp) {
 							var popup = new Views.PopupView({
 								type: "error",
 								message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -1936,14 +1936,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				"status": $(event.currentTarget).attr('status')
 			}, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					var popup = new Views.PopupView({
 						type: "success",
 						message: $.i18n.prop("Success")
 					});
 					popup.show();
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -2039,10 +2039,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return {
 				errorElement: "span",
 				errorClass: "help-inline",
-				highlight: function (element, errorClass, validClass) {
+				highlight: function (element) {
 					$(element).parent(".controls").parent(".control-group").addClass("error");
 				},
-				unhighlight: function (element, errorClass, validClass) {
+				unhighlight: function (element) {
 					$(element).parent(".controls").parent(".control-group").removeClass("error");
 				},
 				rules: {
@@ -2147,7 +2147,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			this.model.bind("change", this.render, this);
 		},
 
-		render: function (event) {
+		render: function () {
 			var self = this;
 			self.closeInnerViews();
 			self.$el.empty();
@@ -2201,15 +2201,15 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 		resetIssue: function () {
 			var self = this;
 			self.issueModel.set(_.defaults({
-				status: "OPEN",
-				role: self.model.get("primaryRole"),
-				fullname: self.model.getFullName(),
-				mobile: self.model.get("contactInfo").mobile,
-				email: self.model.get("contactInfo").email
+				status: 'OPEN',
+				role: self.model.get('primaryRole'),
+				fullname: self.model.get('firsname')[App.locale] + ' ' + self.model.get('lastname')[App.locale],
+				mobile: self.model.get('contactInfo').mobile,
+				email: self.model.get('contactInfo').email
 			}, self.issueModel.defaults));
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var userView = new Views.AdminAccountView({
 				model: self.model
@@ -2262,7 +2262,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 			jiraIssue.save({}, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					var popup;
 					popup = new Views.PopupView({
 						type: "success",
@@ -2270,7 +2270,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					});
 					popup.show();
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -2285,7 +2285,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.model.resendLoginEmail({}, {
 				wait: true,
 				createLoginLink: self.$("input[name=createLoginLink]").is(':checked'),
-				success: function (model, resp) {
+				success: function () {
 					var popup;
 					popup = new Views.PopupView({
 						type: "success",
@@ -2293,7 +2293,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					});
 					popup.show();
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -2307,7 +2307,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var self = this;
 			self.model.resendReminderLoginEmail({}, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					var popup;
 					popup = new Views.PopupView({
 						type: "success",
@@ -2315,7 +2315,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					});
 					popup.show();
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -2352,7 +2352,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"keyup form": "handleKeyUp"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			self.closeInnerViews();
 			self.$el.empty();
@@ -2364,7 +2364,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			App.institutions.fetch({
 				cache: true,
 				reset: true,
-				success: function (collection, resp) {
+				success: function (collection) {
 					var $select = self.$("select[name='institution']");
 
 					$select.append('<option value="">--</option>');
@@ -2372,7 +2372,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						$select.append('<option value="' + institution.get("id") + '">' + institution.getName(App.locale) + '</option>');
 					});
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -2541,7 +2541,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			this.model.bind('change', this.render, this);
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var tpl_data = {
 				roles: self.model.get("roles")
@@ -2581,7 +2581,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a.selectRole": "select"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var tpl_data = {
 				roles: (function () {
@@ -2634,7 +2634,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			this.model.bind("change", this.render, this);
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var files;
 			self.closeInnerViews();
@@ -2649,7 +2649,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						files.url = self.model.url() + "/file";
 						files.fetch({
 							cache: false,
-							success: function (collection, response) {
+							success: function (collection) {
 								self.addFile(collection, "TAYTOTHTA", self.$("#tautotitaFile"), {
 									withMetadata: false
 								});
@@ -2676,7 +2676,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						files.url = self.model.url() + "/file";
 						files.fetch({
 							cache: false,
-							success: function (collection, response) {
+							success: function (collection) {
 								self.addFile(collection, "PROFILE", self.$("#profileFile"), {
 									withMetadata: false
 								});
@@ -2691,7 +2691,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						files.url = self.model.url() + "/file";
 						files.fetch({
 							cache: false,
-							success: function (collection, response) {
+							success: function (collection) {
 								self.addFile(collection, "PROFILE", self.$("#profileFile"), {
 									withMetadata: false
 								});
@@ -2896,10 +2896,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					return {
 						errorElement: "span",
 						errorClass: "help-inline",
-						highlight: function (element, errorClass, validClass) {
+						highlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").addClass("error");
 						},
-						unhighlight: function (element, errorClass, validClass) {
+						unhighlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").removeClass("error");
 						},
 						rules: {
@@ -2915,10 +2915,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					return {
 						errorElement: "span",
 						errorClass: "help-inline",
-						highlight: function (element, errorClass, validClass) {
+						highlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").addClass("error");
 						},
-						unhighlight: function (element, errorClass, validClass) {
+						unhighlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").removeClass("error");
 						},
 						rules: {
@@ -2954,10 +2954,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					return {
 						errorElement: "span",
 						errorClass: "help-inline",
-						highlight: function (element, errorClass, validClass) {
+						highlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").addClass("error");
 						},
-						unhighlight: function (element, errorClass, validClass) {
+						unhighlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").removeClass("error");
 						},
 						rules: {
@@ -2987,10 +2987,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					return {
 						errorElement: "span",
 						errorClass: "help-inline",
-						highlight: function (element, errorClass, validClass) {
+						highlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").addClass("error");
 						},
-						unhighlight: function (element, errorClass, validClass) {
+						unhighlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").removeClass("error");
 						},
 						rules: {
@@ -3068,10 +3068,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					return {
 						errorElement: "span",
 						errorClass: "help-inline",
-						highlight: function (element, errorClass, validClass) {
+						highlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").addClass("error");
 						},
-						unhighlight: function (element, errorClass, validClass) {
+						unhighlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").removeClass("error");
 						},
 						rules: {
@@ -3085,10 +3085,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					return {
 						errorElement: "span",
 						errorClass: "help-inline",
-						highlight: function (element, errorClass, validClass) {
+						highlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").addClass("error");
 						},
-						unhighlight: function (element, errorClass, validClass) {
+						unhighlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").removeClass("error");
 						},
 						rules: {
@@ -3121,7 +3121,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					},
 					cache: false,
 					reset: true,
-					success: function (collection, resp) {
+					success: function (collection) {
 						var candidacyUpdateConfirmView;
 						if (collection.length > 0) {
 							candidacyUpdateConfirmView = new Views.CandidacyUpdateConfirmView({
@@ -3162,7 +3162,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					},
 					cache: false,
 					reset: true,
-					success: function (collection, resp) {
+					success: function (collection) {
 						var candidacyUpdateConfirmView;
 						if (collection.length > 0) {
 							candidacyUpdateConfirmView = new Views.CandidacyUpdateConfirmView({
@@ -3188,7 +3188,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var tpl_data;
 			var propName;
@@ -3216,7 +3216,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						files.url = self.model.url() + "/file";
 						files.fetch({
 							cache: false,
-							success: function (collection, response) {
+							success: function (collection) {
 								self.addFileEdit(collection, "TAYTOTHTA", self.$("input[name=tautotitaFile]"), {
 									withMetadata: false,
 									editable: self.isEditable("tautotitaFile")
@@ -3280,7 +3280,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					App.ranks.fetch({
 						cache: true,
 						reset: true,
-						success: function (collection, resp) {
+						success: function (collection) {
 							self.$("select[name='rank']").empty();
 							$("select[name='rank']", self.$el).append("<option value=\"\">--</option>");
 							_.each(collection.filter(function (rank) {
@@ -3303,7 +3303,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							});
 
 						},
-						error: function (model, resp, options) {
+						error: function (model, resp) {
 							var popup = new Views.PopupView({
 								type: "error",
 								message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -3318,7 +3318,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						files.url = self.model.url() + "/file";
 						files.fetch({
 							cache: false,
-							success: function (collection, response) {
+							success: function (collection) {
 								self.addFileEdit(collection, "PROFILE", self.$("input[name=profileFile]"), {
 									withMetadata: false,
 									editable: self.isEditable("profileFile")
@@ -3345,7 +3345,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 								data: {
 									"query": query
 								},
-								success: function (collection, response, options) {
+								success: function (collection) {
 									var data = collection.pluck("name");
 									process(data);
 								}
@@ -3360,7 +3360,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						// Keep previous values in this closure
 						var previousRank = App.ranks.get(self.$("select[name=rank]").val()) || new Models.Rank();
 
-						return function (event) {
+						return function () {
 							// Trigger change on DepartmentSelectView
 							var rank = App.ranks.get(self.$("select[name=rank]").val()) || new Models.Rank();
 							var department = App.departments.get(self.$("input[name=department]").val());
@@ -3383,14 +3383,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 					}()));
 					// OnlineProfile XOR ProfileFile
-					self.$("input[name=hasOnlineProfile]").change(function (event, data) {
+					self.$("input[name=hasOnlineProfile]").change(function () {
 						if ($(this).is(":checked")) {
 							self.$("input[name=profileURL]").focus().val("").attr("disabled", true);
 						} else {
 							self.$("input[name=profileURL]").removeAttr("disabled");
 						}
 					});
-					self.$("input[name=fekCheckbox]").change(function (event, data) {
+					self.$("input[name=fekCheckbox]").change(function () {
 						if ($(this).is(":checked")) {
 							self.$("textarea[name=fekSubject]").attr("disabled", true).val("");
 							self.$("textarea[name=subject]").removeAttr("disabled");
@@ -3415,7 +3415,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					App.ranks.fetch({
 						cache: true,
 						reset: true,
-						success: function (collection, resp) {
+						success: function (collection) {
 							collection.each(function (rank) {
 								if (_.isObject(self.model.get("rank")) && _.isEqual(rank.id, self.model.get("rank").id)) {
 									$("select[name='rank']", self.$el).append("<option value='" + rank.get("id") + "' selected>" + rank.getName(App.locale) + "</option>");
@@ -3424,7 +3424,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 								}
 							});
 						},
-						error: function (model, resp, options) {
+						error: function (model, resp) {
 							var popup = new Views.PopupView({
 								type: "error",
 								message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -3436,7 +3436,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					App.countries.fetch({
 						cache: true,
 						reset: true,
-						success: function (collection, resp) {
+						success: function (collection) {
 							$("select[name='country']", self.$el).append("<option value=''>--</option>");
 							collection.each(function (country) {
 								if (_.isObject(self.model.get("country")) && _.isEqual(country.get("code"), self.model.get("country").code)) {
@@ -3446,7 +3446,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 								}
 							});
 						},
-						error: function (model, resp, options) {
+						error: function (model, resp) {
 							var popup = new Views.PopupView({
 								type: "error",
 								message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -3464,7 +3464,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 								data: {
 									"query": query
 								},
-								success: function (collection, response, options) {
+								success: function (collection) {
 									var data = collection.pluck("name");
 									process(data);
 								}
@@ -3476,7 +3476,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						files.url = self.model.url() + "/file";
 						files.fetch({
 							cache: false,
-							success: function (collection, response) {
+							success: function (collection) {
 								self.addFileEdit(collection, "PROFILE", self.$("input[name=profileFile]"), {
 									withMetadata: false,
 									editable: self.isEditable("profileFile")
@@ -3490,7 +3490,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					self.validator = $("form", this.el).validate(self.validationRules());
 
 					// OnlineProfile XOR ProfileFile
-					self.$("input[name=hasOnlineProfile]").change(function (event, data) {
+					self.$("input[name=hasOnlineProfile]").change(function () {
 						if ($(this).is(":checked")) {
 							self.$("input[name=profileURL]").focus().val("").attr("disabled", true);
 						} else {
@@ -3499,7 +3499,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					});
 					break;
 				case "INSTITUTION_MANAGER":
-					self.$("select[name='verificationAuthority']").change(function (event) {
+					self.$("select[name='verificationAuthority']").change(function () {
 						var authority = self.$("select[name='verificationAuthority']").val();
 						self.$("label[for='verificationAuthorityName']").html($.i18n.prop('VerificationAuthorityName') + " " + $.i18n.prop('VerificationAuthority' + authority));
 						self.$("a[id^=forma_]*").hide();
@@ -3507,14 +3507,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					});
 					self.$("select[name='verificationAuthority']").val(self.model.get("verificationAuthority"));
 
-					self.$("select[name='institution']").change(function (event) {
+					self.$("select[name='institution']").change(function () {
 						self.$("select[name='institution']").next(".help-block").html(self.$("select[name='institution'] option:selected").text());
 					});
 					App.institutions = App.institutions || new Models.Institutions();
 					App.institutions.fetch({
 						cache: true,
 						reset: true,
-						success: function (collection, resp) {
+						success: function (collection) {
 							_.each(collection.filter(function (institution) {
 								return _.isEqual(institution.get("category"), "INSTITUTION");
 							}), function (institution) {
@@ -3530,7 +3530,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 								triggeredBy: "application"
 							});
 						},
-						error: function (model, resp, options) {
+						error: function (model, resp) {
 							var popup = new Views.PopupView({
 								type: "error",
 								message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -3547,14 +3547,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					break;
 
 				case "INSTITUTION_ASSISTANT":
-					self.$("select[name='institution']").change(function (event) {
+					self.$("select[name='institution']").change(function () {
 						self.$("select[name='institution']").next(".help-block").html(self.$("select[name='institution'] option:selected").text());
 					});
 					App.institutions = App.institutions || new Models.Institutions();
 					App.institutions.fetch({
 						cache: true,
 						reset: true,
-						success: function (collection, resp) {
+						success: function (collection) {
 							_.each(collection.filter(function (institution) {
 								return _.isEqual(institution.get("category"), "INSTITUTION");
 							}), function (institution) {
@@ -3570,7 +3570,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 								triggeredBy: "application"
 							});
 						},
-						error: function (model, resp, options) {
+						error: function (model, resp) {
 							var popup = new Views.PopupView({
 								type: "error",
 								message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -3603,7 +3603,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				}
 			}
 			// Set isEditable to fields
-			self.$("select, input, textarea").each(function (index) {
+			self.$("select, input, textarea").each(function () {
 				var field = $(this).attr("name");
 				if (self.isEditable(field)) {
 					$(this).removeAttr("disabled");
@@ -3637,14 +3637,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				self.model.save(values, {
 					url: self.model.url() + (updateCandidacies ? "?updateCandidacies=true" : ""),
 					wait: true,
-					success: function (model, resp) {
+					success: function () {
 						var popup = new Views.PopupView({
 							type: "success",
 							message: $.i18n.prop("Success")
 						});
 						popup.show();
 					},
-					error: function (model, resp, options) {
+					error: function (model, resp) {
 						var popup = new Views.PopupView({
 							type: "error",
 							message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -3752,7 +3752,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						"open": "true"
 					},
 					cache: false,
-					success: function (collection, resp) {
+					success: function (collection) {
 						var candidacyUpdateConfirmView;
 						if (collection.length > 0) {
 							// Found Open Candidacies, show CandidacyUpdateConfirmView
@@ -3783,7 +3783,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return false;
 		},
 
-		cancel: function (event) {
+		cancel: function () {
 			var self = this;
 			if (self.validator) {
 				self.validator.resetForm();
@@ -3799,14 +3799,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				yes: function () {
 					self.model.destroy({
 						wait: true,
-						success: function (model, resp) {
+						success: function () {
 							var popup = new Views.PopupView({
 								type: "success",
 								message: $.i18n.prop("Success")
 							});
 							popup.show();
 						},
-						error: function (model, resp, options) {
+						error: function (model, resp) {
 							var popup = new Views.PopupView({
 								type: "error",
 								message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -3826,14 +3826,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				"status": $(event.currentTarget).attr('status')
 			}, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					var popup = new Views.PopupView({
 						type: "success",
 						message: $.i18n.prop("Success")
 					});
 					popup.show();
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -3909,10 +3909,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					return {
 						errorElement: "span",
 						errorClass: "help-inline",
-						highlight: function (element, errorClass, validClass) {
+						highlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").addClass("error");
 						},
-						unhighlight: function (element, errorClass, validClass) {
+						unhighlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").removeClass("error");
 						},
 						rules: {},
@@ -3922,10 +3922,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					return {
 						errorElement: "span",
 						errorClass: "help-inline",
-						highlight: function (element, errorClass, validClass) {
+						highlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").addClass("error");
 						},
-						unhighlight: function (element, errorClass, validClass) {
+						unhighlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").removeClass("error");
 						},
 						rules: {
@@ -3943,10 +3943,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					return {
 						errorElement: "span",
 						errorClass: "help-inline",
-						highlight: function (element, errorClass, validClass) {
+						highlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").addClass("error");
 						},
-						unhighlight: function (element, errorClass, validClass) {
+						unhighlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").removeClass("error");
 						},
 						rules: {
@@ -3962,10 +3962,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					return {
 						errorElement: "span",
 						errorClass: "help-inline",
-						highlight: function (element, errorClass, validClass) {
+						highlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").addClass("error");
 						},
-						unhighlight: function (element, errorClass, validClass) {
+						unhighlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").removeClass("error");
 						},
 						rules: {
@@ -4019,10 +4019,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					return {
 						errorElement: "span",
 						errorClass: "help-inline",
-						highlight: function (element, errorClass, validClass) {
+						highlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").addClass("error");
 						},
-						unhighlight: function (element, errorClass, validClass) {
+						unhighlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").removeClass("error");
 						},
 						rules: {},
@@ -4032,10 +4032,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					return {
 						errorElement: "span",
 						errorClass: "help-inline",
-						highlight: function (element, errorClass, validClass) {
+						highlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").addClass("error");
 						},
-						unhighlight: function (element, errorClass, validClass) {
+						unhighlight: function (element) {
 							$(element).parent(".controls").parent(".control-group").removeClass("error");
 						},
 						rules: {},
@@ -4075,7 +4075,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		events: {},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			self.closeInnerViews();
 			if (self.model.isNew()) {
@@ -4098,7 +4098,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return self;
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.$el.unbind();
 			this.$el.empty();
@@ -4128,7 +4128,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a#toggleUpload": "toggleUpload"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var tpl_data = {
 				editable: self.options.editable,
@@ -4166,7 +4166,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				multipart: true,
 				maxFileSize: 30000000,
 				add: function (e, data) {
-					self.$("a#upload").bind("click", function (e) {
+					self.$("a#upload").bind("click", function () {
 						data.formData = _.extend({
 							"type": self.$("#uploader input[name=file_type]").val(),
 							"name": self.$("#uploader input[name=file_name]").val(),
@@ -4216,12 +4216,12 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return self;
 		},
 
-		toggleUpload: function (event) {
+		toggleUpload: function () {
 			var self = this;
 			self.$("#uploader").modal("toggle");
 		},
 
-		deleteFile: function (event) {
+		deleteFile: function () {
 			var self = this;
 			var doDelete = function (options) {
 				var tmp;
@@ -4234,7 +4234,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				self.model.destroy({
 					url: self.model.url() + (options.updateCandidacies ? "?updateCandidacies=true" : ""),
 					wait: true,
-					success: function (model, resp) {
+					success: function () {
 						var popup;
 						// Reset Object to empty (without id) status
 						self.model.urlRoot = tmp.urlRoot;
@@ -4250,7 +4250,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						});
 						popup.show();
 					},
-					error: function (model, resp, options) {
+					error: function (model, resp) {
 						var popup = new Views.PopupView({
 							type: "error",
 							message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -4273,7 +4273,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			confirm.show();
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.$el.unbind();
 			this.$el.remove();
@@ -4303,7 +4303,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var tpl_data = {
 				type: self.collection.type,
@@ -4325,7 +4325,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return self;
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.$el.unbind();
 			this.$el.empty();
@@ -4364,7 +4364,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var tpl_data = {
 				editable: self.options.editable,
@@ -4404,7 +4404,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				forceIframeTransport: true,
 				maxFileSize: 30000000,
 				add: function (e, data) {
-					self.$("#uploader a#upload").bind("click", function (e) {
+					self.$("#uploader a#upload").bind("click", function () {
 						data.formData = _.extend({
 							"type": self.$("#uploader input[name=file_type]").val(),
 							"name": self.$("#uploader input[name=file_name]").val(),
@@ -4456,7 +4456,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return self;
 		},
 
-		toggleUpload: function (event) {
+		toggleUpload: function () {
 			var self = this;
 			self.$("#uploader").modal("toggle");
 		},
@@ -4469,7 +4469,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				selectedModel.destroy({
 					url: selectedModel.url() + (options.updateCandidacies ? "?updateCandidacies=true" : ""),
 					wait: true,
-					success: function (model, resp) {
+					success: function () {
 						var popup;
 						popup = new Views.PopupView({
 							type: "success",
@@ -4477,7 +4477,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						});
 						popup.show();
 					},
-					error: function (model, resp, options) {
+					error: function (model, resp) {
 						var popup = new Views.PopupView({
 							type: "error",
 							message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -4500,7 +4500,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			confirm.show();
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.$el.unbind();
 			this.$el.remove();
@@ -4528,7 +4528,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a#createInstitutionAssistant": "createInstitutionAssistant"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var tpl_data = {
 				users: (function () {
@@ -4581,7 +4581,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			this.collection.trigger("user:selected", selectedModel);
 		},
 
-		createInstitutionAssistant: function (event) {
+		createInstitutionAssistant: function () {
 			var institutions = App.loggedOnUser.getAssociatedInstitutions();
 			var user = new Models.User({
 				"authenticationType": "USERNAME",
@@ -4626,7 +4626,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a#createMinistryAssistant": "createMinistryAssistant"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var tpl_data = {
 				users: (function () {
@@ -4679,7 +4679,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			this.collection.trigger("user:selected", selectedModel);
 		},
 
-		createMinistryAssistant: function (event) {
+		createMinistryAssistant: function () {
 			var user = new Models.User({
 				"authenticationType": "USERNAME",
 				"roles": [
@@ -4760,7 +4760,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a#selectPosition": "selectPosition"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var tpl_data = {
 				positions: (function () {
@@ -4823,7 +4823,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			App.departments.fetch({
 				cache: true,
 				reset: true,
-				success: function (collection, resp) {
+				success: function (collection) {
 					_.each(self.$selectize, function (element) {
 						element.selectize.destroy();
 					});
@@ -4842,18 +4842,18 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							});
 						}),
 						render: {
-							item: function (item, escape) { // Shows when
+							item: function (item) { // Shows when
 								// selected
 								return _.templates.department(item);
 							},
-							option: function (item, escape) { // Shows in
+							option: function (item) { // Shows in
 								// dropddown
 								return _.templates.department(item);
 							}
 						}
 					});
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -4871,7 +4871,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 		},
 
-		createPosition: function (event) {
+		createPosition: function () {
 			var self = this;
 			var newPosition;
 			// Validate:
@@ -4887,11 +4887,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				}
 			}, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					self.collection.add(newPosition);
 					self.selectPosition(undefined, newPosition);
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -4927,7 +4927,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		events: {},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var tpl_data = self.model.toJSON();
 			// Remove CreatedBy if loggedOn===owner of Position
@@ -5104,7 +5104,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a#addPhase": "addPhase"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var tpl_data = self.model.toJSON();
 			self.closeInnerViews();
@@ -5202,7 +5202,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			});
 			positionCandidacies.fetch({
 				cache: false,
-				success: function (model, resp) {
+				success: function () {
 					$el.html(positionCandidaciesEditView.render().el);
 				}
 			});
@@ -5222,7 +5222,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			});
 			positionCommittee.fetch({
 				cache: false,
-				success: function (model, resp) {
+				success: function () {
 					$el.html(positionCommitteeEditView.render().el);
 				}
 			});
@@ -5243,7 +5243,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			});
 			positionEvaluation.fetch({
 				cache: false,
-				success: function (model, resp) {
+				success: function () {
 					$el.html(positionEvaluationEditView.render().el);
 				}
 			});
@@ -5264,7 +5264,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			});
 			positionNomination.fetch({
 				cache: false,
-				success: function (model, resp) {
+				success: function () {
 					$el.html(positionNominationEditView.render().el);
 				}
 			});
@@ -5285,7 +5285,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			});
 			positionComplementaryDocuments.fetch({
 				cache: false,
-				success: function (model, resp) {
+				success: function () {
 					$el.html(positionComplementaryDocumentsEditView.render().el);
 				}
 			});
@@ -5302,14 +5302,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				}
 			}, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					var popup = new Views.PopupView({
 						type: "success",
 						message: $.i18n.prop("Success")
 					});
 					popup.show();
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -5396,7 +5396,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return false;
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var propName;
 			self.closeInnerViews();
@@ -5405,7 +5405,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.$el.append(self.template(self.model.toJSON()));
 
 			// Add Sector options
-			self.$("select[name='sector']").change(function (event) {
+			self.$("select[name='sector']").change(function () {
 				self.$("select[name='sector']").next(".help-block").html(self.$("select[name='area'] option:selected").text() + " / " + self.$("select[name='sector'] option:selected").text());
 			});
 			self.$("select[name='area']").change(function () {
@@ -5429,7 +5429,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			App.sectors.fetch({
 				cache: true,
 				reset: true,
-				success: function (collection, resp) {
+				success: function (collection) {
 					var areas = collection.map(function (sector) {
 						return {
 							areaId: sector.get("areaId"),
@@ -5451,7 +5451,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						triggeredBy: "application"
 					});
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -5463,7 +5463,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.assistants.fetch({
 				cache: true,
 				reset: true,
-				success: function (collection, resp, options) {
+				success: function (collection) {
 					var $select = self.$('div#assistants');
 					$select.empty();
 					collection.each(function (user) {
@@ -5471,7 +5471,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							return assistant.id === user.get('id');
 						}) ? 'checked' : '';
 						$select.append('<label class="checkbox">' +
-							'<input type = "checkbox" name="assistant" value="' + user.get('id') + '" ' + selected +'>' + user.getDisplayName() +
+							'<input type = "checkbox" name="assistant" value="' + user.get('id') + '" ' + selected + '>' + user.getDisplayName() +
 							'</label >');
 					});
 					if (self.isEditable('assistant')) {
@@ -5483,7 +5483,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			});
 
 			// Set isEditable to fields
-			self.$("select, input, textarea").each(function (index) {
+			self.$("select, input, textarea").each(function () {
 				var field = $(this).attr("name");
 				if (self.isEditable(field)) {
 					$(this).removeAttr("disabled");
@@ -5491,7 +5491,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					$(this).attr("disabled", true);
 				}
 			});
-			self.$("div.multiple-select").each(function() {
+			self.$("div.multiple-select").each(function () {
 				var field = $(this).attr("id");
 				if (self.isEditable(field)) {
 					$(this).removeClass("uneditable-input");
@@ -5508,7 +5508,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 			// DatePicker
 			self.$("input[data-input-type=date]").datepicker({
-				onClose: function (dateText, inst) {
+				onClose: function () {
 					$(this).parents("form").validate().element(this);
 				}
 			});
@@ -5522,7 +5522,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						data: {
 							"query": query
 						},
-						success: function (collection, response, options) {
+						success: function (collection) {
 							var data = collection.pluck("name");
 							process(data);
 						}
@@ -5533,10 +5533,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.validator = $("form", this.el).validate({
 				errorElement: "span",
 				errorClass: "help-inline",
-				highlight: function (element, errorClass, validClass) {
+				highlight: function (element) {
 					$(element).parent(".controls").parent(".control-group").addClass("error");
 				},
-				unhighlight: function (element, errorClass, validClass) {
+				unhighlight: function (element) {
 					$(element).parent(".controls").parent(".control-group").removeClass("error");
 				},
 				rules: {
@@ -5637,7 +5637,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			// Save to model
 			self.model.save(values, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					var popup;
 					App.router.navigate("positions/" + self.model.id + "/main", {
 						trigger: false
@@ -5648,7 +5648,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					});
 					popup.show();
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -5660,7 +5660,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return false;
 		},
 
-		cancel: function (event) {
+		cancel: function () {
 			var self = this;
 			if (self.validator) {
 				self.validator.resetForm();
@@ -5676,7 +5676,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				yes: function () {
 					self.model.destroy({
 						wait: true,
-						success: function (model, resp) {
+						success: function () {
 							var popup;
 							App.router.navigate("positions", {
 								trigger: false
@@ -5687,7 +5687,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							});
 							popup.show();
 						},
-						error: function (model, resp, options) {
+						error: function (model, resp) {
 							var popup = new Views.PopupView({
 								type: "error",
 								message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -5725,7 +5725,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		events: {},
 
-		render: function (event) {
+		render: function () {
 			var self = this;
 			var tpl_data, files;
 			self.closeInnerViews();
@@ -5749,7 +5749,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				files.url = self.model.url() + "/file";
 				files.fetch({
 					cache: false,
-					success: function (collection, response) {
+					success: function (collection) {
 						self.addFile(collection, "APOFASI_SYSTASIS_EPITROPIS", self.$("#apofasiSystasisEpitropisFileList"), {
 							withMetadata: true
 						});
@@ -5766,7 +5766,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return self;
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.model.unbind('change', this.render, this);
 			this.model.unbind('destory', this.close, this);
@@ -5828,7 +5828,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 		},
 
-		render: function (event) {
+		render: function () {
 			var self = this;
 			var files;
 			self.closeInnerViews();
@@ -5845,7 +5845,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				files.url = self.model.url() + "/file";
 				files.fetch({
 					cache: false,
-					success: function (collection, response) {
+					success: function (collection) {
 						self.addFileEdit(collection, "APOFASI_SYSTASIS_EPITROPIS", self.$("input[name=apofasiSystasisEpitropisFileList]"), {
 							withMetadata: true,
 							editable: self.isEditable("apofasiSystasisEpitropisFileList")
@@ -5885,7 +5885,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 			// DatePicker
 			self.$("input[data-input-type=date]").datepicker({
-				onClose: function (dateText, inst) {
+				onClose: function () {
 					$(this).parents("form").validate().element(this);
 				}
 			});
@@ -5970,7 +5970,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.$("a#saveCommittee").removeAttr("disabled");
 		},
 
-		submit: function (event) {
+		submit: function () {
 			var self = this;
 			var values = {
 				committeeMeetingDate: self.$("input[name=committeeMeetingDate]").val(),
@@ -5979,14 +5979,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			};
 			self.model.save(values, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					var popup = new Views.PopupView({
 						type: "success",
 						message: $.i18n.prop("Success")
 					});
 					popup.show();
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -5996,14 +5996,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			});
 		},
 
-		cancel: function (event) {
+		cancel: function () {
 			var self = this;
 			self.model.fetch({
 				cache: false
 			});
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.registerMembers.off("member:selected");
 			if (this.registerMembersView) {
@@ -6041,7 +6041,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a#addMembers": "addMembers"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			self.closeInnerViews();
 			self.$el.empty();
@@ -6050,7 +6050,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.registries.fetch({
 				reset: true,
 				cache: true,
-				success: function (collection, resp, options) {
+				success: function (collection) {
 					var $select = self.$("select[name=register]");
 					$select.empty();
 					$select.append('<option value="">--</option>');
@@ -6090,7 +6090,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return self;
 		},
 
-		showRegisterMembers: function (event) {
+		showRegisterMembers: function () {
 			var self = this;
 			var registerId = self.$("select[name=register]").val();
 			if (!registerId) {
@@ -6133,7 +6133,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					self.collection.fetch({
 						reset: true,
 						cache: true,
-						success: function (collection, response, options) {
+						success: function (collection) {
 							var data = {
 								aaData: collection.map(function (registerMember) {
 									var isMember = _.some(self.model.get("members"), function (member) {
@@ -6153,7 +6153,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 										role: $.i18n.prop(registerMember.get('professor').discriminator),
 										institution: registerMember.get('professor').discriminator === 'PROFESSOR_FOREIGN' ? registerMember.get('professor').institution : _.templates.department(registerMember.get('professor').department),
 										committees: registerMember.get('professor').committeesCount
-									}
+									};
 
 								})
 							};
@@ -6165,7 +6165,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			});
 		},
 
-		addMembers: function (event) {
+		addMembers: function () {
 			var self = this;
 			var committeeMembers = [];
 
@@ -6214,7 +6214,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		events: {},
 
-		render: function (event) {
+		render: function () {
 			var self = this;
 			var tpl_data;
 			self.closeInnerViews();
@@ -6239,7 +6239,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				files.fetch({
 					cache: false,
 					reset: true,
-					success: function (collection, response) {
+					success: function (collection) {
 						self.addFileList(collection, "AKSIOLOGISI", self.$("#positionEvaluatorFiles_" + positionEvaluator.get("position")).find("#aksiologisiFileList"), {
 							withMetadata: true
 						});
@@ -6249,7 +6249,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return self;
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.model.unbind('change', this.render, this);
 			this.model.unbind('destory', this.close, this);
@@ -6306,7 +6306,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 		},
 
-		render: function (event) {
+		render: function () {
 			var self = this;
 			self.closeInnerViews();
 			self.$el.empty();
@@ -6338,7 +6338,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 			// DatePicker
 			self.$("input[data-input-type=date]").datepicker({
-				onClose: function (dateText, inst) {
+				onClose: function () {
 					$(this).parents("form").validate().element(this);
 				}
 			});
@@ -6353,7 +6353,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var files;
 			self.$("div#positionEvaluator_0").empty();
 			self.$("div#positionEvaluator_1").empty();
-			_.each(self.model.get("evaluators"), function (evaluator, index) {
+			_.each(self.model.get("evaluators"), function (evaluator) {
 				var $el = self.$("div#positionEvaluator_" + evaluator.position);
 				$el.html(self.templateRow(evaluator));
 				// Add files
@@ -6362,7 +6362,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					files.url = self.model.url() + "/evaluator/" + evaluator.id + "/file";
 					files.fetch({
 						cache: false,
-						success: function (collection, response) {
+						success: function (collection) {
 							self.addFileListEdit(collection, "AKSIOLOGISI", $el.find("input[name=aksiologisiFileList]"), {
 								withMetadata: true,
 								editable: self.isEditable("aksiologisiFileList")
@@ -6375,7 +6375,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			});
 		},
 
-		toggleRegisterMembers: function (event) {
+		toggleRegisterMembers: function () {
 			var self = this;
 			self.$("div#evaluation-register-members").toggle();
 			self.$("a#toggleRegisterMembers").toggleClass('active');
@@ -6435,18 +6435,18 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.$("a#saveEvaluation").removeAttr("disabled");
 		},
 
-		submit: function (event) {
+		submit: function () {
 			var self = this;
 			self.model.save({}, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					var popup = new Views.PopupView({
 						type: "success",
 						message: $.i18n.prop("Success")
 					});
 					popup.show();
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -6456,14 +6456,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			});
 		},
 
-		cancel: function (event) {
+		cancel: function () {
 			var self = this;
 			self.model.fetch({
 				cache: false
 			});
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.registerMembers.off("member:selected");
 			if (this.registerMembersView) {
@@ -6500,7 +6500,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a#addMember": "addMember"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			self.closeInnerViews();
 			self.$el.empty();
@@ -6509,7 +6509,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.registries.fetch({
 				reset: true,
 				cache: true,
-				success: function (collection, resp, options) {
+				success: function (collection) {
 					var $select = self.$("select[name=register]");
 					$select.empty();
 					$select.append('<option value="">--</option>');
@@ -6548,7 +6548,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return self;
 		},
 
-		showRegisterMembers: function (event) {
+		showRegisterMembers: function () {
 			var self = this;
 			var registerId = self.$("select[name=register]").val();
 			if (!registerId) {
@@ -6590,11 +6590,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					self.collection.fetch({
 						reset: true,
 						cache: true,
-						success: function (collection, response, options) {
+						success: function (collection) {
 							var data = {
 								aaData: collection.map(function (registerMember) {
 									var isMember = _.some(self.model.get("evaluators"), function (evaluator) {
-										console.log(evaluator, registerMember);
 										return _.isEqual(evaluator.registerMember.professor.id, registerMember.get('professor').id);
 									});
 									return {
@@ -6612,7 +6611,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 												'<li><a id="addMember" data-model-id="' + registerMember.get('id') + '" data-position="1"><i class="icon-plus"></i>' + $.i18n.prop('PositionEvaluatorSecond') + '</a></li>' +
 												'</ul>' +
 												'</div>'
-									}
+									};
 
 								})
 							};
@@ -6659,9 +6658,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		events: {},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
-			var files;
 			var tpl_data;
 			self.closeInnerViews();
 			tpl_data = _.extend(self.model.toJSON(), {
@@ -6676,7 +6674,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return self;
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.model.unbind('change', this.render, this);
 			this.model.unbind("destroy", this.close, this);
@@ -6710,7 +6708,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return self.model.get("position").phase.status === 'EPILOGI';
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var files;
 			self.closeInnerViews();
@@ -6724,7 +6722,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				files.url = self.model.url() + "/file";
 				files.fetch({
 					cache: false,
-					success: function (collection, response) {
+					success: function (collection) {
 						_.each(self.model.get("candidacies"), function (candidacy) {
 							_.each(candidacy.proposedEvaluators, function (proposedEvaluator) {
 								var filteredFiles = new Models.Files(collection.filter(function (file) {
@@ -6745,7 +6743,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return self;
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.model.unbind('change', this.render, this);
 			this.model.unbind("destroy", this.close, this);
@@ -6768,7 +6766,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.model.bind("destroy", self.close, self);
 		},
 
-		render: function (event) {
+		render: function () {
 			var self = this;
 			var files;
 			self.closeInnerViews();
@@ -6780,7 +6778,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			files.url = self.model.url() + "/file";
 			files.fetch({
 				cache: false,
-				success: function (collection, response) {
+				success: function (collection) {
 					self.addFile(collection, "PROSKLISI_KOSMITORA", self.$("#prosklisiKosmitoraFile"), {
 						withMetadata: true
 					});
@@ -6802,7 +6800,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return self;
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.model.unbind('change', this.render, this);
 			this.model.unbind("destroy", this.close, this);
@@ -6859,7 +6857,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 		},
 
-		render: function (event) {
+		render: function () {
 			var self = this;
 			var files;
 			self.closeInnerViews();
@@ -6868,16 +6866,16 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.$el.append(self.template(self.model.toJSON()));
 
 			// Add Nominated and Second Nominated:
-			self.$("select[name='nominatedCandidacy']").change(function (event) {
+			self.$("select[name='nominatedCandidacy']").change(function () {
 				self.$("select[name='nominatedCandidacy']").next(".help-block").html(self.$("select[name='nominatedCandidacy'] option:selected").text());
 			});
-			self.$("select[name='secondNominatedCandidacy']").change(function (event) {
+			self.$("select[name='secondNominatedCandidacy']").change(function () {
 				self.$("select[name='secondNominatedCandidacy']").next(".help-block").html(self.$("select[name='secondNominatedCandidacy'] option:selected").text());
 			});
 			self.positionCandidacies.fetch({
 				cache: false,
 				wait: true,
-				success: function (collection, resp) {
+				success: function (collection) {
 					var nominatedCandidacyId = self.model.has("nominatedCandidacy") ? self.model.get("nominatedCandidacy").id : undefined;
 					var secondNominatedCandidacyId = self.model.has("secondNominatedCandidacy") ? self.model.get("secondNominatedCandidacy").id : undefined;
 					// Clean
@@ -6911,7 +6909,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			files.url = self.model.url() + "/file";
 			files.fetch({
 				cache: false,
-				success: function (collection, response) {
+				success: function (collection) {
 					self.addFileEdit(collection, "PROSKLISI_KOSMITORA", self.$("input[name=prosklisiKosmitoraFile]"), {
 						withMetadata: true,
 						editable: self.isEditable("prosklisiKosmitoraFile")
@@ -6938,12 +6936,12 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			});
 			// DatePicker
 			self.$("input[data-input-type=date]").datepicker({
-				onClose: function (dateText, inst) {
+				onClose: function () {
 					$(this).parents("form").validate().element(this);
 				}
 			});
 			// Set isEditable to fields
-			self.$("select, input, textarea").each(function (index) {
+			self.$("select, input, textarea").each(function () {
 				var field = $(this).attr("name");
 				if (self.isEditable(field)) {
 					$(this).removeAttr("disabled");
@@ -6965,7 +6963,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.$("a#saveNomination").removeAttr("disabled");
 		},
 
-		submit: function (event) {
+		submit: function () {
 			var self = this;
 			var values = {
 				nominationCommitteeConvergenceDate: self.$('form input[name=nominationCommitteeConvergenceDate]').val(),
@@ -6980,14 +6978,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			};
 			self.model.save(values, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					var popup = new Views.PopupView({
 						type: "success",
 						message: $.i18n.prop("Success")
 					});
 					popup.show();
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -6997,14 +6995,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			});
 		},
 
-		cancel: function (event) {
+		cancel: function () {
 			var self = this;
 			self.model.fetch({
 				cache: false
 			});
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.model.unbind('change', this.render, this);
 			this.model.unbind("destroy", this.close, this);
@@ -7028,7 +7026,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.model.bind("destroy", self.close, self);
 		},
 
-		render: function (event) {
+		render: function () {
 			var self = this;
 			var files;
 			self.closeInnerViews();
@@ -7042,7 +7040,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				files.url = self.model.url() + "/file";
 				files.fetch({
 					cache: false,
-					success: function (collection, response) {
+					success: function (collection) {
 						self.addFileList(collection, "DIOIKITIKO_EGGRAFO", self.$("#dioikitikoEggrafoFileList"), {
 							withMetadata: true
 						});
@@ -7052,7 +7050,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return self;
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.model.unbind('change', this.render, this);
 			this.model.unbind('destory', this.close, this);
@@ -7080,12 +7078,12 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		events: {},
 
-		isEditable: function (element) {
+		isEditable: function () {
 			var self = this;
 			return _.indexOf([ "ENTAGMENI", "ANOIXTI", "EPILOGI", "STELEXOMENI", "ANAPOMPI" ], self.model.get("position").phase.status) >= 0;
 		},
 
-		render: function (event) {
+		render: function () {
 			var self = this;
 			var files;
 			self.closeInnerViews();
@@ -7099,7 +7097,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				files.url = self.model.url() + "/file";
 				files.fetch({
 					cache: false,
-					success: function (collection, response) {
+					success: function (collection) {
 						self.addFileListEdit(collection, "DIOIKITIKO_EGGRAFO", self.$("input[name=dioikitikoEggrafoFileList]"), {
 							withMetadata: true,
 							editable: self.isEditable("dioikitikoEggrafoFileList")
@@ -7110,14 +7108,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return self;
 		},
 
-		cancel: function (event) {
+		cancel: function () {
 			var self = this;
 			self.model.fetch({
 				cache: false
 			});
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.model.unbind('change', this.render, this);
 			this.model.unbind('destory', this.close, this);
@@ -7145,7 +7143,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			this.model.bind("destroy", this.close, this);
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var positionView = new Views.PositionView({
 				model: self.model
@@ -7198,10 +7196,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a#select": "selectRegister"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var tpl_data = {
-				showAmMember : App.loggedOnUser.hasRole("PROFESSOR_DOMESTIC") || App.loggedOnUser.hasRole("PROFESSOR_FOREIGN"),
+				showAmMember: App.loggedOnUser.hasRole("PROFESSOR_DOMESTIC") || App.loggedOnUser.hasRole("PROFESSOR_FOREIGN"),
 				registries: (function () {
 					var result = [];
 					var gCanExport =
@@ -7270,13 +7268,13 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			App.institutions.fetch({
 				cache: true,
 				reset: true,
-				success: function (collection, resp) {
+				success: function (collection) {
 					var institution = collection.find(function (institution) {
 						return App.loggedOnUser.isAssociatedWithInstitution(institution);
 					});
 					self.$("#actions input[name=institution]").val(institution.get("id"));
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -7293,7 +7291,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 		},
 
-		createRegister: function (event) {
+		createRegister: function () {
 			var self = this;
 			var newRegister = new Models.Register();
 			newRegister.save({
@@ -7302,11 +7300,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				}
 			}, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					self.collection.add(newRegister);
 					self.selectRegister(undefined, newRegister);
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -7342,7 +7340,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		events: {},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var tpl_data;
 			self.$el.empty();
@@ -7436,7 +7434,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a#removeMember": "removeMember"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var propName;
 			self.closeInnerViews();
@@ -7451,10 +7449,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.validator = self.$("form[name=registerForm]").validate({
 				errorElement: "span",
 				errorClass: "help-inline",
-				highlight: function (element, errorClass, validClass) {
+				highlight: function (element) {
 					$(element).parent(".controls").parent(".control-group").addClass("error");
 				},
-				unhighlight: function (element, errorClass, validClass) {
+				unhighlight: function (element) {
 					$(element).parent(".controls").parent(".control-group").removeClass("error");
 				},
 				rules: {
@@ -7475,7 +7473,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						data: {
 							"query": query
 						},
-						success: function (collection, response, options) {
+						success: function (collection) {
 							var data = collection.pluck("name");
 							process(data);
 						}
@@ -7570,7 +7568,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.$("a#save").removeAttr("disabled");
 		},
 
-		toggleAddMember: function (event) {
+		toggleAddMember: function () {
 			var self = this;
 			self.$("div#register-professor-list").slideToggle({
 				complete: function () {
@@ -7582,7 +7580,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		addMembers: function (professors) {
 			var self = this;
-			var popup, i;
+			var popup;
 			if (_.any(self.model.get("members"), function (existingMember) {
 				return professors.some(function (professor) {
 					return _.isEqual(existingMember.professor.id, professor.get("id"));
@@ -7646,7 +7644,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			// Save to model
 			self.model.save(values, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					var popup;
 					App.router.navigate("registers/" + self.model.id, {
 						trigger: false
@@ -7657,7 +7655,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					});
 					popup.show();
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -7677,7 +7675,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				yes: function () {
 					self.model.destroy({
 						wait: true,
-						success: function (model, resp) {
+						success: function () {
 							var popup;
 							App.router.navigate("registers", {
 								trigger: false
@@ -7688,7 +7686,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							});
 							popup.show();
 						},
-						error: function (model, resp, options) {
+						error: function (model, resp) {
 							var popup = new Views.PopupView({
 								type: "error",
 								message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -7702,7 +7700,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return false;
 		},
 
-		cancel: function (event) {
+		cancel: function () {
 			var self = this;
 			if (self.validator) {
 				self.validator.resetForm();
@@ -7735,10 +7733,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a#search": "search",
 			"click a#addSelected": "selectProfessors",
 			"keyup #filter": "handleKeyUp",
-			"click input[type='checkbox']" : "displaySelected"
+			"click input[type='checkbox']": "displaySelected"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			self.closeInnerViews();
 			self.addTitle();
@@ -7748,14 +7746,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			App.ranks.fetch({
 				cache: true,
 				reset: true,
-				success: function (collection, resp) {
+				success: function (collection) {
 					self.$("select[name='rank']").empty();
 					self.$("select[name='rank']").append("<option value=''>--</option>");
 					collection.each(function (rank) {
 						self.$("select[name='rank']").append("<option value='" + rank.get("id") + "'>" + rank.getName(App.locale) + "</option>");
 					});
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -7888,7 +7886,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			});
 		},
 
-		displaySelected: function() {
+		displaySelected: function () {
 			var self = this;
 			var count = self.$("table input[type=checkbox]:checked").length;
 			self.$("#displaySelected").text('(' + count + ')');
@@ -7901,7 +7899,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			// Use dataTable to select elements, as pagination removes them from
 			// DOM
 			self.$("table").dataTable().$('input[type=checkbox]:checked').each(function () {
-				var selectedCheckbox, id, professor, registerMember;
+				var selectedCheckbox, id;
 				selectedCheckbox = $(this);
 				id = selectedCheckbox.data('modelId');
 				if (!id) {
@@ -7960,7 +7958,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a#select": "select"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var tpl_data = {
 				professors: (function () {
@@ -8041,7 +8039,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a#select": "select"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			self.closeInnerViews();
 			self.$el.empty();
@@ -8080,7 +8078,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.collection.unbind('reset', this.render, this);
 			this.$el.unbind();
@@ -8106,7 +8104,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a#select": "select"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			self.closeInnerViews();
 			self.$el.empty();
@@ -8145,7 +8143,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.collection.unbind('reset', this.render, this);
 			this.$el.unbind();
@@ -8174,7 +8172,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a#createInstitutionRF": "create"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var tpl_data = {
 				institutionRFs: (function () {
@@ -8240,13 +8238,13 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			App.institutions.fetch({
 				cache: true,
 				reset: true,
-				success: function (collection, resp) {
+				success: function (collection) {
 					var institution = collection.find(function (institution) {
 						return App.loggedOnUser.isAssociatedWithInstitution(institution);
 					});
 					self.$("#actions input[name=institution]").val(institution.get("id"));
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -8264,7 +8262,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 		},
 
-		create: function (event) {
+		create: function () {
 			var self = this;
 			var newIRF = new Models.InstitutionRegulatoryFramework();
 			newIRF.save({
@@ -8273,11 +8271,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				}
 			}, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					self.collection.add(newIRF);
 					self.select(undefined, newIRF);
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -8287,7 +8285,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			});
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.collection.unbind("reset");
 			this.collection.unbind("add");
@@ -8326,7 +8324,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"submit form": "submit"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var propName;
 			self.closeInnerViews();
@@ -8336,10 +8334,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.validator = $("form", this.el).validate({
 				errorElement: "span",
 				errorClass: "help-inline",
-				highlight: function (element, errorClass, validClass) {
+				highlight: function (element) {
 					$(element).parent(".controls").parent(".control-group").addClass("error");
 				},
-				unhighlight: function (element, errorClass, validClass) {
+				unhighlight: function (element) {
 					$(element).parent(".controls").parent(".control-group").removeClass("error");
 				},
 				rules: {
@@ -8393,7 +8391,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			// Save to model
 			self.model.save(values, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					var popup;
 					App.router.navigate("regulatoryframeworks/" + self.model.id, {
 						trigger: false
@@ -8404,7 +8402,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					});
 					popup.show();
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -8416,7 +8414,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return false;
 		},
 
-		cancel: function (event) {
+		cancel: function () {
 			var self = this;
 			if (self.validator) {
 				self.validator.resetForm();
@@ -8432,7 +8430,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				yes: function () {
 					self.model.destroy({
 						wait: true,
-						success: function (model, resp) {
+						success: function () {
 							var popup;
 							App.router.navigate("regulatoryframeworks", {
 								trigger: false
@@ -8443,7 +8441,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							});
 							popup.show();
 						},
-						error: function (model, resp, options) {
+						error: function (model, resp) {
 							var popup = new Views.PopupView({
 								type: "error",
 								message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -8457,7 +8455,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return false;
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.model.unbind("change");
 			this.$el.unbind();
@@ -8480,7 +8478,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		events: {},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			self.closeInnerViews();
 			self.$el.empty();
@@ -8489,7 +8487,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return self;
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.model.unbind("change");
 			this.$el.unbind();
@@ -8528,7 +8526,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a#search": "search"
 		},
 
-		render: function (event) {
+		render: function () {
 			var self = this;
 			self.closeInnerViews();
 			self.$el.empty();
@@ -8539,10 +8537,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			App.departments.fetch({
 				cache: true,
 				reset: true,
-				success: function (collection, resp) {
+				success: function (collection) {
 					self.renderDepartments(collection);
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -8555,10 +8553,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			App.sectors.fetch({
 				cache: true,
 				reset: true,
-				success: function (collection, resp) {
+				success: function (collection) {
 					self.renderSectors(collection);
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -8576,7 +8574,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 		renderDepartments: function (departments) {
 			var self = this;
 			var treeData = departments.reduce(function (memo, department) {
-				var institution_node, school_node, department_node;
+				var institution_node, school_node;
 				var school = department.get("school");
 				var institution = school.institution;
 				if (institution.category === 'RESEARCH_CENTER') {
@@ -8647,7 +8645,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					});
 					self.$("label[for=departmentsTree] span").html(count.department || 0);
 				},
-				onPostInit: function (isReloading, isError) {
+				onPostInit: function () {
 					var selectedNodes = this.getSelectedNodes();
 					var count = _.countBy(selectedNodes, function (selectedNode) {
 						return selectedNode.data.type;
@@ -8701,7 +8699,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					});
 					self.$("label[for=sectorsTree] span").html(count.subject || 0);
 				},
-				onPostInit: function (isReloading, isError) {
+				onPostInit: function () {
 					var selectedNodes = this.getSelectedNodes();
 					var count = _.countBy(selectedNodes, function (selectedNode) {
 						return selectedNode.data.isFolder ? 'area' : 'subject';
@@ -8721,7 +8719,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		readValues: function () {
 			var self = this;
-			var values = {
+			return {
 				departments: _.map(_.filter(self.$("#departmentsTree").dynatree("getTree").getSelectedNodes(), function (node) {
 					return node.data.type === 'department';
 				}), function (node) {
@@ -8737,10 +8735,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					};
 				})
 			};
-			return values;
 		},
 
-		search: function (event) {
+		search: function () {
 			var self = this;
 			self.model.trigger("criteria:search", self.readValues());
 		},
@@ -8750,7 +8747,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			// Save to model
 			self.model.save(self.readValues(), {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					var popup = new Views.PopupView({
 						type: "success",
 						message: $.i18n.prop("Success")
@@ -8758,7 +8755,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					popup.show();
 					self.$("a#save").attr("disabled", true);
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -8770,7 +8767,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return false;
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.model.unbind('change', this.render, this);
 			this.$el.unbind();
@@ -8795,7 +8792,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a#selectPosition": "select"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			self.closeInnerViews();
 			self.$el.empty();
@@ -8832,7 +8829,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.collection.trigger("position:selected", selectedModel);
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.collection.unbind('reset', this.render, this);
 			this.$el.unbind();
@@ -8859,7 +8856,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a#selectCandidacy": "select"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			self.closeInnerViews();
 			self.$el.empty();
@@ -8896,7 +8893,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.collection.trigger("candidacy:selected", selectedModel);
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.collection.unbind('reset', this.render, this);
 			this.collection.unbind('remove', this.render, this);
@@ -8996,7 +8993,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				sfiles.url = self.model.url() + "/snapshot/file";
 				sfiles.fetch({
 					cache: false,
-					success: function (collection, response) {
+					success: function (collection) {
 						self.addFile(collection, "BIOGRAFIKO", self.$("#biografikoFile"), {
 							withMetadata: false
 						});
@@ -9013,7 +9010,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				files.url = self.model.url() + "/file";
 				files.fetch({
 					cache: false,
-					success: function (collection, response) {
+					success: function (collection) {
 						self.addFileEdit(collection, "EKTHESI_AUTOAKSIOLOGISIS", self.$("input[name=ekthesiAutoaksiologisisFile]"), {
 							withMetadata: true,
 							editable: self.isEditable("ekthesiAutoaksiologisisFile")
@@ -9030,7 +9027,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 
 			// Set isEditable to fields
-			self.$("select, input, textarea").each(function (index) {
+			self.$("select, input, textarea").each(function () {
 				var field = $(this).attr("name");
 				if (self.isEditable(field)) {
 					$(this).removeAttr("disabled");
@@ -9042,10 +9039,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.validator = self.$("form").validate({
 				errorElement: "span",
 				errorClass: "help-inline",
-				highlight: function (element, errorClass, validClass) {
+				highlight: function (element) {
 					$(element).parent(".controls").parent(".control-group").addClass("error");
 				},
-				unhighlight: function (element, errorClass, validClass) {
+				unhighlight: function (element) {
 					$(element).parent(".controls").parent(".control-group").removeClass("error");
 				},
 				rules: {},
@@ -9057,7 +9054,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				trigger: 'hover'
 			});
 			// Set isEnabled to buttons
-			self.$("a.btn").each(function (index) {
+			self.$("a.btn").each(function () {
 				var buttonType = $(this).attr("id");
 				if (self.isEnabled(buttonType)) {
 					$(this).removeAttr("disabled");
@@ -9084,7 +9081,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.registerMembers.fetch({
 				cache: true,
 				reset: true,
-				success: function (collection, resp) {
+				success: function (collection) {
 					_.each(self.$selectize, function (element) {
 						element.selectize.destroy();
 					});
@@ -9142,7 +9139,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						});
 					}
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -9180,7 +9177,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			// Save to model
 			self.model.save(values, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					var popup;
 					App.router.navigate("candidateCandidacies/" + self.model.id, {
 						trigger: false
@@ -9191,7 +9188,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					});
 					popup.show();
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -9203,12 +9200,12 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return false;
 		},
 
-		cancel: function (event) {
+		cancel: function () {
 			var self = this;
 			self.render();
 		},
 
-		remove: function (event) {
+		remove: function () {
 			var self = this;
 			var confirm = new Views.ConfirmView({
 				title: $.i18n.prop('Confirm'),
@@ -9216,7 +9213,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				yes: function () {
 					self.model.destroy({
 						wait: true,
-						success: function (model, resp) {
+						success: function () {
 							var popup;
 							App.router.navigate("candidateCandidacies", {
 								trigger: false
@@ -9227,7 +9224,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							});
 							popup.show();
 						},
-						error: function (model, resp, options) {
+						error: function (model, resp) {
 							var popup = new Views.PopupView({
 								type: "error",
 								message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -9265,7 +9262,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
 		events: {},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var files;
 			var sfiles;
@@ -9280,7 +9277,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			sfiles.url = self.model.url() + "/snapshot/file";
 			sfiles.fetch({
 				cache: false,
-				success: function (collection, response) {
+				success: function (collection) {
 					self.addFile(collection, "BIOGRAFIKO", self.$("#biografikoFile"), {
 						withMetadata: false
 					});
@@ -9297,7 +9294,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			files.url = self.model.url() + "/file";
 			files.fetch({
 				cache: false,
-				success: function (collection, response) {
+				success: function (collection) {
 					self.addFile(collection, "EKTHESI_AUTOAKSIOLOGISIS", self.$("#ekthesiAutoaksiologisisFile"), {
 						withMetadata: true
 					});
@@ -9313,7 +9310,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				efiles.url = self.model.url() + "/evaluation/file";
 				efiles.fetch({
 					cache: false,
-					success: function (collection, response) {
+					success: function (collection) {
 						_.each(self.model.get("proposedEvaluators"), function (proposedEvaluator) {
 							var filteredFiles = new Models.Files(collection.filter(function (file) {
 								return file.get("evaluator").id === proposedEvaluator.id;
@@ -9353,13 +9350,13 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 		},
 
 		events: {
-			"click a#yes": function (event) {
+			"click a#yes": function () {
 				this.$el.modal('hide');
 				if (_.isFunction(this.options.answer)) {
 					this.options.answer(true);
 				}
 			},
-			"click a#no": function (event) {
+			"click a#no": function () {
 				this.$el.modal('hide');
 				if (_.isFunction(this.options.answer)) {
 					this.options.answer(false);
@@ -9367,7 +9364,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			self.closeInnerViews();
 			self.$el.empty();
@@ -9405,7 +9402,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 		events: {
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			// 1. Render
 			self.$el.html(self.template(self.model.toJSON()));
@@ -9498,7 +9495,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			};
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var propName;
 			self.closeInnerViews();
@@ -9521,7 +9518,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return self;
 		},
 
-		submit: function (event) {
+		submit: function () {
 			var self = this;
 			// Read Input
 			var call = self.$('form select[name=call]').val();
@@ -9545,14 +9542,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				description: description
 			}, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					var popup = new Views.PopupView({
 						type: "success",
 						message: $.i18n.prop("Success")
 					});
 					popup.show();
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -9642,7 +9639,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			};
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			var propName;
 			self.closeInnerViews();
@@ -9665,7 +9662,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			return self;
 		},
 
-		submit: function (event) {
+		submit: function () {
 			var self = this;
 			// Read Input
 			var call = self.$('form select[name=call]').val();
@@ -9689,14 +9686,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				description: description
 			}, {
 				wait: true,
-				success: function (model, resp) {
+				success: function () {
 					var popup = new Views.PopupView({
 						type: "success",
 						message: $.i18n.prop('JiraIssueSubmitSuccess') + '<br/><br/>' + $.i18n.prop('GoToApellaPortalText')
 					});
 					popup.show();
 				},
-				error: function (model, resp, options) {
+				error: function (model, resp) {
 					var popup = new Views.PopupView({
 						type: "error",
 						message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
@@ -9736,7 +9733,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			"click a#createIssue": "showCreateIssue"
 		},
 
-		render: function (eventName) {
+		render: function () {
 			var self = this;
 			self.closeInnerViews();
 			self.addTitle();
@@ -9786,10 +9783,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var view;
 			var model = new Models.JiraIssue({
 				status: "OPEN",
-				role: App.loggedOnUser.get("primaryRole"),
-				fullname: App.loggedOnUser.getFullName(),
-				mobile: App.loggedOnUser.get("contactInfo").mobile,
-				email: App.loggedOnUser.get("contactInfo").email
+				role: App.loggedOnUser.get('primaryRole'),
+				fullname: App.loggedOnUser.get('firstname')[App.locale] + ' ' + App.loggedOnUser.get('lastname')[App.locale],
+				mobile: App.loggedOnUser.get('contactInfo').mobile,
+				email: App.loggedOnUser.get('contactInfo').email
 			});
 			model.url = model.urlRoot + "user/" + App.loggedOnUser.get("id") + "/issue";
 			view = new Views.JiraIssueEditView({
@@ -9804,7 +9801,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.$("#issue").html(view.render().el);
 		},
 
-		close: function (eventName) {
+		close: function () {
 			this.closeInnerViews();
 			this.collection.unbind('add', this.render, this);
 			this.collection.unbind('reset', this.render, this);

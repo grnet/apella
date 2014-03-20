@@ -9,8 +9,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -24,7 +26,11 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.PostLoad;
+import javax.persistence.PostPersist;
+import javax.persistence.PostUpdate;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.Version;
 import javax.validation.Valid;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -115,6 +121,15 @@ public class User implements Serializable {
 	private UserStatus status;
 
 	private Date statusDate;
+
+	@Transient
+	private Map<String, String> firstname = new HashMap<String, String>();
+
+	@Transient
+	private Map<String, String> lastname = new HashMap<String, String>();
+
+	@Transient
+	private Map<String, String> fathername = new HashMap<String, String>();
 
 	///////////////////////////////////////////////////////////////////////////////////////
 
@@ -283,38 +298,65 @@ public class User implements Serializable {
 
 	///////////////////////////////////////////////////////////////////////////////////////
 
+	public Map<String, String> getFirstname() {
+		return firstname;
+	}
+
+	public Map<String, String> getLastname() {
+		return lastname;
+	}
+
+	public Map<String, String> getFathername() {
+		return fathername;
+	}
+
+	@PostPersist
+	@PostUpdate
+	@PostLoad
+	private void refreshLocalizedNames() {
+		firstname.put("el", this.basicInfo != null ? this.basicInfo.getFirstname() : null);
+		if (this.basicInfoLatin != null &&
+			this.basicInfoLatin.getFirstname() != null &&
+			!this.basicInfoLatin.getFirstname().isEmpty()) {
+			firstname.put("en", this.basicInfoLatin != null ? this.basicInfoLatin.getFirstname() : null);
+		} else {
+			firstname.put("en", this.basicInfo != null ? this.basicInfo.getFirstname() : null);
+		}
+		lastname.put("el", this.basicInfo != null ? this.basicInfo.getLastname() : null);
+		if (this.basicInfoLatin != null &&
+			this.basicInfoLatin.getLastname() != null &&
+			!this.basicInfoLatin.getLastname().isEmpty()) {
+			lastname.put("en", this.basicInfoLatin != null ? this.basicInfoLatin.getLastname() : null);
+		} else {
+			lastname.put("en", this.basicInfo != null ? this.basicInfo.getLastname() : null);
+		}
+		fathername.put("el", this.basicInfo != null ? this.basicInfo.getFathername() : null);
+		if (this.basicInfoLatin != null &&
+			this.basicInfoLatin.getFathername() != null &&
+			!this.basicInfoLatin.getFathername().isEmpty()) {
+			fathername.put("en", this.basicInfoLatin != null ? this.basicInfoLatin.getFathername() : null);
+		} else {
+			fathername.put("en", this.basicInfo != null ? this.basicInfo.getFathername() : null);
+		}
+	}
+
 	@XmlTransient
 	@JsonIgnore
 	public String getFirstname(String locale) {
-		if (locale.equals("en") &&
-			this.basicInfoLatin != null &&
-			this.basicInfoLatin.getFirstname() != null) {
-			return this.basicInfoLatin.getFirstname();
-		}
-		return this.basicInfo != null ? this.basicInfo.getFirstname() : null;
+		return firstname.get(locale);
 	}
 
 	@XmlTransient
 	@JsonIgnore
 	public String getLastname(String locale) {
-		if (locale.equals("en") &&
-			this.basicInfoLatin != null &&
-			this.basicInfoLatin.getLastname() != null) {
-			return this.basicInfoLatin.getLastname();
-		}
-		return this.basicInfo != null ? this.basicInfo.getLastname() : null;
+		return lastname.get(locale);
 
 	}
 
 	@XmlTransient
 	@JsonIgnore
 	public String getFathername(String locale) {
-		if (locale.equals("en") &&
-			this.basicInfoLatin != null &&
-			this.basicInfoLatin.getFathername() != null) {
-			return this.basicInfoLatin.getFathername();
-		}
-		return this.basicInfo != null ? this.basicInfo.getFathername() : null;
+		return fathername.get(locale);
 	}
 
 	@XmlTransient
@@ -389,6 +431,8 @@ public class User implements Serializable {
 		return null;
 	}
 
+	@XmlTransient
+	@JsonIgnore
 	public boolean hasActiveRole(RoleDiscriminator discriminator) {
 		for (Role r : getRoles()) {
 			if (r.getDiscriminator() == discriminator && r.getStatus().equals(RoleStatus.ACTIVE)) {
