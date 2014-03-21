@@ -33,8 +33,8 @@
 		<% } %>
 		</td>
 		<td><%= member.external ? $.i18n.prop("RegisterMemberExternal") : $.i18n.prop("RegisterMemberInternal") %></td>
-		<td><%= member.registerMember.professor.user.basicInfo.firstname %></td>
-		<td><%= member.registerMember.professor.user.basicInfo.lastname %></td>
+		<td><%= member.registerMember.professor.user.firstname[App.locale] %></td>
+		<td><%= member.registerMember.professor.user.lastname[App.locale] %></td>
 		<td><%= $.i18n.prop(member.registerMember.professor.discriminator) %></td>
 		<td>
 			<% if (_.isEqual(member.registerMember.professor.discriminator, 'PROFESSOR_FOREIGN')) { %>

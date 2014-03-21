@@ -7,7 +7,9 @@ import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.AttributeOverride;
@@ -24,6 +26,9 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.PostLoad;
+import javax.persistence.PostPersist;
+import javax.persistence.PostUpdate;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
@@ -87,6 +92,15 @@ public class Candidacy {
 	public static class CandidacySnapshot {
 
 		private String username;
+
+		@Transient
+		private Map<String, String> firstname = new HashMap<String, String>();
+
+		@Transient
+		private Map<String, String> lastname = new HashMap<String, String>();
+
+		@Transient
+		private Map<String, String> fathername = new HashMap<String, String>();
 
 		@Embedded
 		private BasicInformation basicInfo = new BasicInformation();
@@ -222,38 +236,65 @@ public class Candidacy {
 
 		/////////////////////////////////
 
+		public Map<String, String> getFirstname() {
+			return firstname;
+		}
+
+		public Map<String, String> getLastname() {
+			return lastname;
+		}
+
+		public Map<String, String> getFathername() {
+			return fathername;
+		}
+
+		@PostPersist
+		@PostUpdate
+		@PostLoad
+		private void refreshLocalizedNames() {
+			firstname.put("el", this.basicInfo != null ? this.basicInfo.getFirstname() : null);
+			if (this.basicInfoLatin != null &&
+				this.basicInfoLatin.getFirstname() != null &&
+				!this.basicInfoLatin.getFirstname().isEmpty()) {
+				firstname.put("en", this.basicInfoLatin != null ? this.basicInfoLatin.getFirstname() : null);
+			} else {
+				firstname.put("en", this.basicInfo != null ? this.basicInfo.getFirstname() : null);
+			}
+			lastname.put("el", this.basicInfo != null ? this.basicInfo.getLastname() : null);
+			if (this.basicInfoLatin != null &&
+				this.basicInfoLatin.getLastname() != null &&
+				!this.basicInfoLatin.getLastname().isEmpty()) {
+				lastname.put("en", this.basicInfoLatin != null ? this.basicInfoLatin.getLastname() : null);
+			} else {
+				lastname.put("en", this.basicInfo != null ? this.basicInfo.getLastname() : null);
+			}
+			fathername.put("el", this.basicInfo != null ? this.basicInfo.getFathername() : null);
+			if (this.basicInfoLatin != null &&
+				this.basicInfoLatin.getFathername() != null &&
+				!this.basicInfoLatin.getFathername().isEmpty()) {
+				fathername.put("en", this.basicInfoLatin != null ? this.basicInfoLatin.getFathername() : null);
+			} else {
+				fathername.put("en", this.basicInfo != null ? this.basicInfo.getFathername() : null);
+			}
+		}
+
 		@XmlTransient
 		@JsonIgnore
 		public String getFirstname(String locale) {
-			if (locale.equals("en") &&
-				this.basicInfoLatin != null &&
-				this.basicInfoLatin.getFirstname() != null) {
-				return this.basicInfoLatin.getFirstname();
-			}
-			return this.basicInfo != null ? this.basicInfo.getFirstname() : null;
+			return firstname.get(locale);
 		}
 
 		@XmlTransient
 		@JsonIgnore
 		public String getLastname(String locale) {
-			if (locale.equals("en") &&
-				this.basicInfoLatin != null &&
-				this.basicInfoLatin.getLastname() != null) {
-				return this.basicInfoLatin.getLastname();
-			}
-			return this.basicInfo != null ? this.basicInfo.getLastname() : null;
+			return lastname.get(locale);
 
 		}
 
 		@XmlTransient
 		@JsonIgnore
 		public String getFathername(String locale) {
-			if (locale.equals("en") &&
-				this.basicInfoLatin != null &&
-				this.basicInfoLatin.getFathername() != null) {
-				return this.basicInfoLatin.getFathername();
-			}
-			return this.basicInfo != null ? this.basicInfo.getFathername() : null;
+			return fathername.get(locale);
 		}
 
 	}

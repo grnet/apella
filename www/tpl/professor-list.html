@@ -15,8 +15,8 @@
 			<td>
 				<a data-model-cid="<%= professor.cid %>" href="#user/<%= professor.user.id %>" target="user"><%= $.i18n.prop('ClickForMore') %></a>
 			</td>
-			<td><%= professor.user.basicInfo.firstname %></td>
-			<td><%= professor.user.basicInfo.lastname%></td>
+			<td><%= professor.user.firstname[App.locale] %></td>
+			<td><%= professor.user.lastname[App.locale]%></td>
 			<td><%= $.i18n.prop(professor.discriminator) %></td>
 			<td>
 				<% if (_.isEqual(professor.discriminator, 'PROFESSOR_FOREIGN')) { %>

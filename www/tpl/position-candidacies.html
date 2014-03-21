@@ -11,9 +11,9 @@
 	<tbody>
 <% _.each(candidacies, function(candidacy) { %>
 		<tr>
-			<td><%= candidacy.snapshot.basicInfo.firstname %> (<%= candidacy.snapshot.basicInfoLatin.firstname %>)</td>
-			<td><%= candidacy.snapshot.basicInfo.lastname %> (<%= candidacy.snapshot.basicInfoLatin.lastname %>)</td>
-			<td><%= candidacy.snapshot.basicInfo.fathername %> (<%= candidacy.snapshot.basicInfoLatin.fathername %>)</td>
+			<td><%= candidacy.snapshot.firstname[App.locale] %></td>
+			<td><%= candidacy.snapshot.lastname[App.locale] %></td>
+			<td><%= candidacy.snapshot.fathername[App.locale] %></td>
 			<td width="96px">
 			<% if (candidacy.allowedToSee) { %>
 				<p align="center">

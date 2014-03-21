@@ -15,11 +15,11 @@
 	</tr>
 	<tr>
 		<th><%= $.i18n.prop("Name") %></th>
-		<td><%= registerMember.professor.user.basicInfo.firstname %></td>
+		<td><%= registerMember.professor.user.firstname[App.locale] %></td>
 	</tr>
 	<tr>
 		<th><%= $.i18n.prop("Surname") %></th>
-		<td><%= registerMember.professor.user.basicInfo.lastname%></td>
+		<td><%= registerMember.professor.user.lastname[App.locale]%></td>
 	</tr>
 	<tr>
 		<th><%= $.i18n.prop("Profile") %></th>

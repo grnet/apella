@@ -2497,8 +2497,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							json.aaData = _.map(json.records, function (user) {
 								return {
 									"id": '<a href="#user/' + user.id + '" target="user">' + user.id + '</a>',
-									"firstname": user.basicInfo.firstname,
-									"lastname": user.basicInfo.lastname,
+									"firstname": user.firstname[App.locale],
+									"lastname": user.lastname[App.locale],
 									"username": user.username || "",
 									"status": $.i18n.prop('status' + user.status),
 									"role": self.templateRoleInfo(user),
@@ -6148,8 +6148,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 												'</select>',
 										id: '<a href = "#user/' + registerMember.get('professor').user.id + '">' + registerMember.get('professor').user.id + '</a>',
 										external: registerMember.get('external') ? $.i18n.prop('RegisterMemberExternal') : $.i18n.prop('RegisterMemberInternal'),
-										firstname: registerMember.get('professor').user.basicInfo.firstname,
-										lastname: registerMember.get('professor').user.basicInfo.lastname,
+										firstname: registerMember.get('professor').user.firstname[App.locale],
+										lastname: registerMember.get('professor').user.lastname[App.locale],
 										role: $.i18n.prop(registerMember.get('professor').discriminator),
 										institution: registerMember.get('professor').discriminator === 'PROFESSOR_FOREIGN' ? registerMember.get('professor').institution : _.templates.department(registerMember.get('professor').department),
 										committees: registerMember.get('professor').committeesCount
@@ -6599,8 +6599,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 									return {
 										id: '<a href = "#user/' + registerMember.get('professor').user.id + '">' + registerMember.get('professor').user.id + '</a>',
 										external: registerMember.get('external') ? $.i18n.prop('RegisterMemberExternal') : $.i18n.prop('RegisterMemberInternal'),
-										firstname: registerMember.get('professor').user.basicInfo.firstname,
-										lastname: registerMember.get('professor').user.basicInfo.lastname,
+										firstname: registerMember.get('professor').user.firstname[App.locale],
+										lastname: registerMember.get('professor').user.lastname[App.locale],
 										role: $.i18n.prop(registerMember.get('professor').discriminator),
 										institution: registerMember.get('professor').discriminator === 'PROFESSOR_FOREIGN' ? registerMember.get('professor').institution : _.templates.department(registerMember.get('professor').department),
 										select: isMember ? '' :
@@ -6886,14 +6886,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					self.$("select[name='secondNominatedCandidacy']").append("<option value=''>--</option>");
 					collection.each(function (candidacy) {
 						if (_.isEqual(candidacy.id, nominatedCandidacyId)) {
-							self.$("select[name='nominatedCandidacy']").append("<option value='" + candidacy.get("id") + "' selected>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + "</option>");
+							self.$("select[name='nominatedCandidacy']").append("<option value='" + candidacy.get("id") + "' selected>" + candidacy.get("snapshot").firstname[App.locale] + " " + candidacy.get("snapshot").lastname[App.locale] + "</option>");
 						} else {
-							self.$("select[name='nominatedCandidacy']").append("<option value='" + candidacy.get("id") + "'>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + "</option>");
+							self.$("select[name='nominatedCandidacy']").append("<option value='" + candidacy.get("id") + "'>" + candidacy.get("snapshot").firstname[App.locale] + " " + candidacy.get("snapshot").lastname[App.locale] + "</option>");
 						}
 						if (_.isEqual(candidacy.id, secondNominatedCandidacyId)) {
-							self.$("select[name='secondNominatedCandidacy']").append("<option value='" + candidacy.get("id") + "' selected>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + "</option>");
+							self.$("select[name='secondNominatedCandidacy']").append("<option value='" + candidacy.get("id") + "' selected>" + candidacy.get("snapshot").firstname[App.locale] + " " + candidacy.get("snapshot").lastname[App.locale] + "</option>");
 						} else {
-							self.$("select[name='secondNominatedCandidacy']").append("<option value='" + candidacy.get("id") + "'>" + candidacy.get("snapshot").basicInfo.firstname + " " + candidacy.get("snapshot").basicInfo.lastname + "</option>");
+							self.$("select[name='secondNominatedCandidacy']").append("<option value='" + candidacy.get("id") + "'>" + candidacy.get("snapshot").firstname[App.locale] + " " + candidacy.get("snapshot").lastname[App.locale] + "</option>");
 						}
 					});
 					self.$("select[name='nominatedCandidacy']").trigger("change", {
@@ -7547,8 +7547,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					return {
 						external: $.i18n.prop(member.external ? "Yes" : "No"),
 						id: '<a href="#user/' + member.professor.user.id + '" target="user">' + member.professor.user.id + '</a>',
-						firstname: member.professor.user.basicInfo.firstname,
-						lastname: member.professor.user.basicInfo.lastname,
+						firstname: member.professor.user.firstname[App.locale],
+						lastname: member.professor.user.lastname[App.locale],
 						profile: $.i18n.prop(member.professor.discriminator),
 						rank: member.professor.rank ? member.professor.rank.name[App.locale] : '',
 						institution: _.isEqual(member.professor.discriminator,
@@ -7866,8 +7866,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							// Read Data
 							json.aaData = _.map(json.records, function (professor) {
 								return {
-									firstname: professor.user.basicInfo.firstname,
-									lastname: professor.user.basicInfo.lastname,
+									firstname: professor.user.firstname[App.locale],
+									lastname: professor.user.lastname[App.locale],
 									id: '<a href="#user/' + professor.user.id + '" target="user">' + professor.user.id + '</a>',
 									profile: $.i18n.prop(professor.discriminator),
 									rank: professor.rank ? professor.rank.name[App.locale] : '',
@@ -9096,13 +9096,13 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						diacritics: true,
 						create: false,
 						hideSelected: true,
-						sortField: 'professor.user.basicInfo.firstname',
+						sortField: 'professor.user.firstname.' + App.locale,
 						options: collection.toJSON(),
 						render: {
 							item: function (item, escape) { // Shows when
 								// selected
 								return '<div>' +
-									'<strong>' + escape(item.professor.user.basicInfo.firstname) + " " + escape(item.professor.user.basicInfo.lastname) + '</strong><br/>' +
+									'<strong>' + escape(item.professor.user.firstname[App.locale]) + " " + escape(item.professor.user.lastname[App.locale]) + '</strong><br/>' +
 									$.i18n.prop(item.professor.discriminator) + '<br/>' +
 									(item.professor.discriminator === "PROFESSOR_DOMESTIC" ?
 										($.i18n.prop('Institution') + ': ' + escape(item.professor.department.school.institution.name[App.locale]) + "<br/>" + $.i18n.prop('School') + ': ' + escape(item.professor.department.school.name[App.locale]) + "<br/>" + $.i18n.prop('Department') + ": " + escape(item.professor.department.name[App.locale])) :
@@ -9112,7 +9112,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							option: function (item, escape) { // Shows in
 								// dropddown
 								return '<div>' +
-									'<strong>' + escape(item.professor.user.basicInfo.firstname) + " " + escape(item.professor.user.basicInfo.lastname) + '</strong><br/>' +
+									'<strong>' + escape(item.professor.user.firstname[App.locale]) + " " + escape(item.professor.user.lastname[App.locale]) + '</strong><br/>' +
 									$.i18n.prop(item.professor.discriminator) + '<br/>' +
 									(item.professor.discriminator === "PROFESSOR_DOMESTIC" ?
 										($.i18n.prop('Institution') + ': ' + escape(item.professor.department.school.institution.name[App.locale]) + "<br/>" + $.i18n.prop('School') + ': ' + escape(item.professor.department.school.name[App.locale]) + "<br/>" + $.i18n.prop('Department') + ": " + escape(item.professor.department.name[App.locale])) :
@@ -9122,7 +9122,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						},
 						score: function (search) {
 							return function (item) {
-								var concat = item.professor.user.basicInfo.firstname + " " + item.professor.user.basicInfo.lastname;
+								var concat = item.professor.user.firstname[App.locale] + " " + item.professor.user.lastname[App.locale];
 								var pos = concat.indexOf(search);
 								return pos >= 0 ? 1000 - pos : 0;
 							};

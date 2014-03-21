@@ -70,7 +70,7 @@
 			<% if (manager.id) { %>
 			<li>
 				<b>
-					<%= manager.user.basicInfo.firstname %> <%= manager.user.basicInfo.lastname %>
+					<%= manager.user.firstname[App.locale] %> <%= manager.user.lastname[App.locale] %>
 				</b>
 				(<%= $.i18n.prop('INSTITUTION_MANAGER') %>),
 				<%= $.i18n.prop('Email') %>: <%= manager.user.contactInfo.email %>,
@@ -89,7 +89,7 @@
 			<% if (createdBy.id && !_.isEqual(createdBy.id, manager.user.id)) { %>
 			<li>
 				<b>
-					<%= createdBy.basicInfo.firstname %> <%= createdBy.basicInfo.lastname %>
+					<%= createdBy.firstname[App.locale] %> <%= createdBy.lastname[App.locale] %>
 				</b>
 				(<%= $.i18n.prop(createdBy.primaryRole) %>),
 				<%= $.i18n.prop('Email') %>: <%= createdBy.contactInfo.email %>,
@@ -99,7 +99,7 @@
 			<% _.each(assistants, function(assistant) { %>
 			<li>
 				<b>
-					<%= assistant.basicInfo.firstname %> <%= assistant.basicInfo.lastname %>
+					<%= assistant.firstname[App.locale] %> <%= assistant.lastname[App.locale] %>
 				</b>
 				(<%= $.i18n.prop(assistant.primaryRole) %>)
 				<%= $.i18n.prop('Email') %>: <%= assistant.contactInfo.email %>,

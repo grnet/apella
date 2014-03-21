@@ -28,11 +28,11 @@
 		<h3><%= $.i18n.prop('Candidate') %></h3>
 		<dl class="dl-glossary">
 			<dt><%= $.i18n.prop('Name') %></dt>
-			<dd><%= snapshot.basicInfo.firstname %> (<%= snapshot.basicInfoLatin.firstname %>)</dd>
+			<dd><%= snapshot.firstname[App.locale] %></dd>
 			<dt><%= $.i18n.prop('Surname') %></dt>
-			<dd><%= snapshot.basicInfo.lastname %> (<%= snapshot.basicInfoLatin.lastname %>)</dd>
+			<dd><%= snapshot.lastname[App.locale] %></dd>
 			<dt><%= $.i18n.prop('FatherName') %></dt>
-			<dd><%= snapshot.basicInfo.fathername %> (<%= snapshot.basicInfoLatin.fathername %>)</dd>
+			<dd><%= snapshot.fathername[App.locale] %></dd>
 			<% if (snapshot.institutionString) { %>
 			<dt><%= $.i18n.prop('Institution') %></dt>
 			<dd><%= snapshot.institutionString %></dd>
@@ -80,8 +80,8 @@
 			<dd>
 				<% if (proposedEvaluators[0]) { %>
 				<ul class="unstyled">
-					<li><%= proposedEvaluators[0].registerMember.professor.user.basicInfo.firstname %> <%=
-						proposedEvaluators[0].registerMember.professor.user.basicInfo.lastname%>
+					<li><%= proposedEvaluators[0].registerMember.professor.user.firstname[App.locale] %> <%=
+						proposedEvaluators[0].registerMember.professor.user.lastname[App.locale] %>
 					</li>
 					<li><%= $.i18n.prop(proposedEvaluators[0].registerMember.professor.discriminator) %></li>
 					<% if (proposedEvaluators[0].registerMember.professor.discriminator === "PROFESSOR_DOMESTIC") { %>
@@ -102,8 +102,8 @@
 			<dd>
 				<% if (proposedEvaluators[1]) { %>
 				<ul class="unstyled">
-					<li><%= proposedEvaluators[1].registerMember.professor.user.basicInfo.firstname %> <%=
-						proposedEvaluators[1].registerMember.professor.user.basicInfo.lastname%>
+					<li><%= proposedEvaluators[1].registerMember.professor.user.firstname[App.locale] %> <%=
+						proposedEvaluators[1].registerMember.professor.user.lastname[App.locale]%>
 					</li>
 					<li><%= $.i18n.prop(proposedEvaluators[1].registerMember.professor.discriminator) %></li>
 					<% if (proposedEvaluators[1].registerMember.professor.discriminator === "PROFESSOR_DOMESTIC") { %>
