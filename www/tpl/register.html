@@ -10,6 +10,7 @@
 						<th><%= $.i18n.prop("RegisterMemberExternal") %></th>
 						<th><%= $.i18n.prop("ID") %></th>
 						<th><%= $.i18n.prop("Name") %></th>
+						<th><%= $.i18n.prop("Surname") %></th>
 						<th><%= $.i18n.prop("Profile") %></th>
 						<th><%= $.i18n.prop("Rank") %></th>
 						<th><%= $.i18n.prop("Institution") %></th>
@@ -27,7 +28,8 @@
 								<%= member.professor.user.id %>
 							<% } %>
 						</td>
-						<td><%= member.professor.user.firstname[App.locale] %> <%= member.professor.user.lastname[App.locale]%></td>
+						<td><%= member.professor.user.firstname[App.locale] %></td>
+						<td><%= member.professor.user.lastname[App.locale]%></td>
 						<td><%= $.i18n.prop(member.professor.discriminator) %></td>
 						<td><%= member.professor.rank.name[App.locale] %></td>
 						<td>

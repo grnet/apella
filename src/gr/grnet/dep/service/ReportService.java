@@ -111,7 +111,11 @@ public class ReportService {
 		row = sheet.createRow(rowNum++);
 
 		cell = row.createCell(colNum++);
-		cell.setCellValue("Ονοματεπώνυμο");
+		cell.setCellValue("Όνομα");
+		cell.setCellStyle(titleStyle);
+
+		cell = row.createCell(colNum++);
+		cell.setCellValue("Επώνυμο");
 		cell.setCellStyle(titleStyle);
 
 		cell = row.createCell(colNum++);
@@ -163,7 +167,11 @@ public class ReportService {
 
 			colNum = 0;
 			cell = row.createCell(colNum++);
-			cell.setCellValue(member.getProfessor().getUser().getFullName("el"));
+			cell.setCellValue(member.getProfessor().getUser().getFirstname("el"));
+			cell.setCellStyle(textStyle);
+
+			cell = row.createCell(colNum++);
+			cell.setCellValue(member.getProfessor().getUser().getLastname("el"));
 			cell.setCellStyle(textStyle);
 
 			switch (member.getProfessor().getDiscriminator()) {

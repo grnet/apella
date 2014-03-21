@@ -248,36 +248,6 @@ public class Candidacy {
 			return fathername;
 		}
 
-		@PostPersist
-		@PostUpdate
-		@PostLoad
-		private void refreshLocalizedNames() {
-			firstname.put("el", this.basicInfo != null ? this.basicInfo.getFirstname() : null);
-			if (this.basicInfoLatin != null &&
-				this.basicInfoLatin.getFirstname() != null &&
-				!this.basicInfoLatin.getFirstname().isEmpty()) {
-				firstname.put("en", this.basicInfoLatin != null ? this.basicInfoLatin.getFirstname() : null);
-			} else {
-				firstname.put("en", this.basicInfo != null ? this.basicInfo.getFirstname() : null);
-			}
-			lastname.put("el", this.basicInfo != null ? this.basicInfo.getLastname() : null);
-			if (this.basicInfoLatin != null &&
-				this.basicInfoLatin.getLastname() != null &&
-				!this.basicInfoLatin.getLastname().isEmpty()) {
-				lastname.put("en", this.basicInfoLatin != null ? this.basicInfoLatin.getLastname() : null);
-			} else {
-				lastname.put("en", this.basicInfo != null ? this.basicInfo.getLastname() : null);
-			}
-			fathername.put("el", this.basicInfo != null ? this.basicInfo.getFathername() : null);
-			if (this.basicInfoLatin != null &&
-				this.basicInfoLatin.getFathername() != null &&
-				!this.basicInfoLatin.getFathername().isEmpty()) {
-				fathername.put("en", this.basicInfoLatin != null ? this.basicInfoLatin.getFathername() : null);
-			} else {
-				fathername.put("en", this.basicInfo != null ? this.basicInfo.getFathername() : null);
-			}
-		}
-
 		@XmlTransient
 		@JsonIgnore
 		public String getFirstname(String locale) {
@@ -301,6 +271,36 @@ public class Candidacy {
 
 	@Embedded
 	private CandidacySnapshot snapshot;
+
+	@PostPersist
+	@PostUpdate
+	@PostLoad
+	private void refreshLocalizedNames() {
+		snapshot.firstname.put("el", this.snapshot.basicInfo != null ? this.snapshot.basicInfo.getFirstname() : null);
+		if (this.snapshot.basicInfoLatin != null &&
+			this.snapshot.basicInfoLatin.getFirstname() != null &&
+			!this.snapshot.basicInfoLatin.getFirstname().isEmpty()) {
+			snapshot.firstname.put("en", this.snapshot.basicInfoLatin != null ? this.snapshot.basicInfoLatin.getFirstname() : null);
+		} else {
+			snapshot.firstname.put("en", this.snapshot.basicInfo != null ? this.snapshot.basicInfo.getFirstname() : null);
+		}
+		snapshot.lastname.put("el", this.snapshot.basicInfo != null ? this.snapshot.basicInfo.getLastname() : null);
+		if (this.snapshot.basicInfoLatin != null &&
+			this.snapshot.basicInfoLatin.getLastname() != null &&
+			!this.snapshot.basicInfoLatin.getLastname().isEmpty()) {
+			snapshot.lastname.put("en", this.snapshot.basicInfoLatin != null ? this.snapshot.basicInfoLatin.getLastname() : null);
+		} else {
+			snapshot.lastname.put("en", this.snapshot.basicInfo != null ? this.snapshot.basicInfo.getLastname() : null);
+		}
+		snapshot.fathername.put("el", this.snapshot.basicInfo != null ? this.snapshot.basicInfo.getFathername() : null);
+		if (this.snapshot.basicInfoLatin != null &&
+			this.snapshot.basicInfoLatin.getFathername() != null &&
+			!this.snapshot.basicInfoLatin.getFathername().isEmpty()) {
+			snapshot.fathername.put("en", this.snapshot.basicInfoLatin != null ? this.snapshot.basicInfoLatin.getFathername() : null);
+		} else {
+			snapshot.fathername.put("en", this.snapshot.basicInfo != null ? this.snapshot.basicInfo.getFathername() : null);
+		}
+	}
 
 	public Long getId() {
 		return id;

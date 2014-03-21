@@ -2203,7 +2203,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.issueModel.set(_.defaults({
 				status: 'OPEN',
 				role: self.model.get('primaryRole'),
-				fullname: self.model.get('firsname')[App.locale] + ' ' + self.model.get('lastname')[App.locale],
+				fullname: self.model.get('firstname')[App.locale] + ' ' + self.model.get('lastname')[App.locale],
 				mobile: self.model.get('contactInfo').mobile,
 				email: self.model.get('contactInfo').email
 			}, self.issueModel.defaults));
@@ -2856,11 +2856,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						case "alternatefathernamelatin":
 							return _.isEqual(self.model.get("status"), "UNAPPROVED");
 						case "alternateemail":
-							return _.isEqual(self.model.get("status"), "UNAPPROVED");
+							return true;
 						case "alternatemobile":
-							return _.isEqual(self.model.get("status"), "UNAPPROVED");
+							return true;
 						case "alternatephone":
-							return _.isEqual(self.model.get("status"), "UNAPPROVED");
+							return true;
 						default:
 							break;
 					}
@@ -3886,6 +3886,16 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					return true;
 				case "PROFESSOR_FOREIGN":
 					return true;
+				case "INSTITUTION_MANAGER":
+					switch (field) {
+						case "alternateemail":
+						case "alternatemobile":
+						case "alternatephone":
+							return false;
+						default:
+							return true;;
+					}
+					break;
 				case "INSTITUTION_ASSISTANT":
 					return false;
 				case "MINISTRY_ASSISTANT":

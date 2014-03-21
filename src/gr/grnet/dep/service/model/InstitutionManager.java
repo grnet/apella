@@ -141,9 +141,6 @@ public class InstitutionManager extends Role {
 		if (!CompareUtil.equalsIgnoreNull(this.getAlternateBasicInfoLatin(), other.getAlternateBasicInfoLatin())) {
 			return false;
 		}
-		if (!CompareUtil.equalsIgnoreNull(this.getAlternateContactInfo(), other.getAlternateContactInfo())) {
-			return false;
-		}
 		return true;
 	}
 
