@@ -103,6 +103,7 @@ public class CandidacyRESTService extends RESTService {
 				loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) ||
 				candidate.getUser().getId().equals(loggedOn.getId())) {
 				// Full Access
+				candidacy.getCandidacyEvalutionsDueDate(); // Load this to avoid lazy exception
 				return toJSON(candidacy, DetailedCandidacyView.class);
 			}
 			// Medium Access COMMITTEE MEMBER, EVALUATOR
@@ -170,6 +171,7 @@ public class CandidacyRESTService extends RESTService {
 					.setParameter("positionId", position.getId())
 					.getSingleResult();
 				// Return Results
+				existingCandidacy.getCandidacyEvalutionsDueDate();
 				return existingCandidacy;
 			} catch (NoResultException e) {
 			}
@@ -187,6 +189,7 @@ public class CandidacyRESTService extends RESTService {
 			em.flush();
 
 			// Return Results
+			candidacy.getCandidacyEvalutionsDueDate();
 			return candidacy;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
@@ -301,7 +304,7 @@ public class CandidacyRESTService extends RESTService {
 			if (isNew) {
 				// Send E-Mails
 				// 1. candidacy.create@institutionManager
-				for (User manager : existingCandidacy.getCandidacies().getPosition().getManagers()) {
+				for (final User manager : existingCandidacy.getCandidacies().getPosition().getManagers()) {
 					mailService.postEmail(manager.getContactInfo().getEmail(),
 						"default.subject",
 						"candidacy.create@institutionManager",
@@ -310,14 +313,14 @@ public class CandidacyRESTService extends RESTService {
 							{
 								put("position", existingCandidacy.getCandidacies().getPosition().getName());
 
-								put("firstname_el", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getFirstname("el"));
-								put("lastname_el", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getLastname("el"));
+								put("firstname_el", manager.getFirstname("el"));
+								put("lastname_el", manager.getLastname("el"));
 								put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
 								put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
 								put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
 
-								put("firstname_en", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getFirstname("en"));
-								put("lastname_en", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getLastname("en"));
+								put("firstname_en", manager.getFirstname("en"));
+								put("lastname_en", manager.getLastname("en"));
 								put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 								put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
 								put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
@@ -396,78 +399,81 @@ public class CandidacyRESTService extends RESTService {
 						}));
 				}
 				// 4. candidacy.create.candidacyEvaluator@institutionManager
-				mailService.postEmail(existingCandidacy.getCandidacies().getPosition().getCreatedBy().getContactInfo().getEmail(),
-					"default.subject",
-					"candidacy.create.candidacyEvaluator@institutionManager",
-					Collections.unmodifiableMap(new HashMap<String, String>() {
+				for (final User manager : existingCandidacy.getCandidacies().getPosition().getManagers()) {
+					mailService.postEmail(manager.getContactInfo().getEmail(),
+						"default.subject",
+						"candidacy.create.candidacyEvaluator@institutionManager",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
 
-						{
-							put("position", existingCandidacy.getCandidacies().getPosition().getName());
+							{
+								put("position", existingCandidacy.getCandidacies().getPosition().getName());
 
-							put("firstname_el", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getFirstname("el"));
-							put("lastname_el", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getLastname("el"));
-							put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-							put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
-							put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
-							put("candidate_firstname_el", existingCandidacy.getSnapshot().getFirstname("el"));
-							put("candidate_lastname_el", existingCandidacy.getSnapshot().getLastname("el"));
+								put("firstname_el", manager.getFirstname("el"));
+								put("lastname_el", manager.getLastname("el"));
+								put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+								put("candidate_firstname_el", existingCandidacy.getSnapshot().getFirstname("el"));
+								put("candidate_lastname_el", existingCandidacy.getSnapshot().getLastname("el"));
 
-							put("firstname_en", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getFirstname("en"));
-							put("lastname_en", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getLastname("en"));
-							put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-							put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
-							put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
-							put("candidate_firstname_en", existingCandidacy.getSnapshot().getFirstname("en"));
-							put("candidate_lastname_en", existingCandidacy.getSnapshot().getLastname("en"));
+								put("firstname_en", manager.getFirstname("en"));
+								put("lastname_en", manager.getLastname("en"));
+								put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
+								put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
+								put("candidate_firstname_en", existingCandidacy.getSnapshot().getFirstname("en"));
+								put("candidate_lastname_en", existingCandidacy.getSnapshot().getLastname("en"));
 
-							Iterator<CandidacyEvaluator> it = existingCandidacy.getProposedEvaluators().iterator();
-							if (it.hasNext()) {
-								CandidacyEvaluator eval = it.next();
-								put("evaluator1_firstname_el", eval.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-								put("evaluator1_lastname_el", eval.getRegisterMember().getProfessor().getUser().getLastname("el"));
-								put("evaluator1_firstname_en", eval.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-								put("evaluator1_lastname_en", eval.getRegisterMember().getProfessor().getUser().getLastname("e"));
+								Iterator<CandidacyEvaluator> it = existingCandidacy.getProposedEvaluators().iterator();
+								if (it.hasNext()) {
+									CandidacyEvaluator eval = it.next();
+									put("evaluator1_firstname_el", eval.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+									put("evaluator1_lastname_el", eval.getRegisterMember().getProfessor().getUser().getLastname("el"));
+									put("evaluator1_firstname_en", eval.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+									put("evaluator1_lastname_en", eval.getRegisterMember().getProfessor().getUser().getLastname("en"));
 
-								put("evaluator1_email", eval.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail());
+									put("evaluator1_email", eval.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail());
 
-							} else {
-								put("evaluator1_firstname_el", "-");
-								put("evaluator1_lastname_el", "-");
-								put("evaluator1_firstname_en", "-");
-								put("evaluator1_lastname_en", "-");
+								} else {
+									put("evaluator1_firstname_el", "-");
+									put("evaluator1_lastname_el", "-");
+									put("evaluator1_firstname_en", "-");
+									put("evaluator1_lastname_en", "-");
 
-								put("evaluator1_email", "-");
+									put("evaluator1_email", "-");
 
-								put("evaluator2_firstname_el", "-");
-								put("evaluator2_lastname_el", "-");
-								put("evaluator2_firstname_en", "-");
-								put("evaluator2_lastname_en", "-");
+									put("evaluator2_firstname_el", "-");
+									put("evaluator2_lastname_el", "-");
+									put("evaluator2_firstname_en", "-");
+									put("evaluator2_lastname_en", "-");
 
-								put("evaluator2_email", "-");
+									put("evaluator2_email", "-");
 
+								}
+								if (it.hasNext()) {
+									CandidacyEvaluator eval = it.next();
+									put("evaluator2_firstname_el", eval.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+									put("evaluator2_lastname_el", eval.getRegisterMember().getProfessor().getUser().getLastname("el"));
+									put("evaluator2_firstname_en", eval.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+									put("evaluator2_lastname_en", eval.getRegisterMember().getProfessor().getUser().getLastname("en"));
+
+									put("evaluator2_email", eval.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail());
+								} else {
+									put("evaluator2_firstname_el", "-");
+									put("evaluator2_lastname_el", "-");
+									put("evaluator2_firstname_en", "-");
+									put("evaluator2_lastname_en", "-");
+
+									put("evaluator2_email", "-");
+								}
 							}
-							if (it.hasNext()) {
-								CandidacyEvaluator eval = it.next();
-								put("evaluator2_firstname_el", eval.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-								put("evaluator2_lastname_el", eval.getRegisterMember().getProfessor().getUser().getLastname("el"));
-								put("evaluator2_firstname_en", eval.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-								put("evaluator2_lastname_en", eval.getRegisterMember().getProfessor().getUser().getLastname("en"));
-
-								put("evaluator2_email", eval.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail());
-							} else {
-								put("evaluator2_firstname_el", "-");
-								put("evaluator2_lastname_el", "-");
-								put("evaluator2_firstname_en", "-");
-								put("evaluator2_lastname_en", "-");
-
-								put("evaluator2_email", "-");
-							}
-						}
-					}));
-				// END: Send E-Mails
+						}));
+					// END: Send E-Mails
+				}
 			}
 
 			// Return
+			existingCandidacy.getCandidacyEvalutionsDueDate();
 			return existingCandidacy;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
@@ -513,7 +519,7 @@ public class CandidacyRESTService extends RESTService {
 			if (existingCandidacy.isPermanent()) {
 				// Send E-Mails
 				// 1. candidacy.remove@institutionManager
-				for (User manager : existingCandidacy.getCandidacies().getPosition().getManagers()) {
+				for (final User manager : existingCandidacy.getCandidacies().getPosition().getManagers()) {
 					mailService.postEmail(manager.getContactInfo().getEmail(),
 						"default.subject",
 						"candidacy.remove@institutionManager",
@@ -522,14 +528,14 @@ public class CandidacyRESTService extends RESTService {
 							{
 								put("position", existingCandidacy.getCandidacies().getPosition().getName());
 
-								put("firstname_el", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getFirstname("el"));
-								put("lastname_el", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getLastname("el"));
+								put("firstname_el", manager.getFirstname("el"));
+								put("lastname_el", manager.getLastname("el"));
 								put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
 								put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
 								put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
 
-								put("firstname_en", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getFirstname("en"));
-								put("lastname_en", existingCandidacy.getCandidacies().getPosition().getCreatedBy().getLastname("en"));
+								put("firstname_en", manager.getFirstname("en"));
+								put("lastname_en", manager.getLastname("en"));
 								put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 								put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
 								put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));

@@ -2,6 +2,8 @@ package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.util.CompareUtil;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -11,6 +13,9 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.ManyToOne;
+import javax.persistence.PostLoad;
+import javax.persistence.PostPersist;
+import javax.persistence.PostUpdate;
 import javax.persistence.Transient;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -52,6 +57,15 @@ public class InstitutionManager extends Role {
 	@Embedded
 	@NotNull
 	private ContactInformation alternateContactInfo = new ContactInformation();
+
+	@Transient
+	private Map<String, String> alternateFirstname = new HashMap<String, String>();
+
+	@Transient
+	private Map<String, String> alternateLastname = new HashMap<String, String>();
+
+	@Transient
+	private Map<String, String> alternateFathername = new HashMap<String, String>();
 
 	public InstitutionManager() {
 		super();
@@ -107,6 +121,48 @@ public class InstitutionManager extends Role {
 	}
 
 	////////////////////////////////////////////////////////////////////////////
+
+	public Map<String, String> getAlternateFirstname() {
+		return alternateFirstname;
+	}
+
+	public Map<String, String> getAlternateLastname() {
+		return alternateLastname;
+	}
+
+	public Map<String, String> getAlternateFathername() {
+		return alternateFathername;
+	}
+
+	@PostPersist
+	@PostUpdate
+	@PostLoad
+	private void refreshLocalizedNames() {
+		alternateFirstname.put("el", this.alternateBasicInfo != null ? this.alternateBasicInfo.getFirstname() : null);
+		if (this.alternateBasicInfoLatin != null &&
+			this.alternateBasicInfoLatin.getFirstname() != null &&
+			!this.alternateBasicInfoLatin.getFirstname().isEmpty()) {
+			alternateFirstname.put("en", this.alternateBasicInfoLatin != null ? this.alternateBasicInfoLatin.getFirstname() : null);
+		} else {
+			alternateFirstname.put("en", this.alternateBasicInfo != null ? this.alternateBasicInfo.getFirstname() : null);
+		}
+		alternateLastname.put("el", this.alternateBasicInfo != null ? this.alternateBasicInfo.getLastname() : null);
+		if (this.alternateBasicInfoLatin != null &&
+			this.alternateBasicInfoLatin.getLastname() != null &&
+			!this.alternateBasicInfoLatin.getLastname().isEmpty()) {
+			alternateLastname.put("en", this.alternateBasicInfoLatin != null ? this.alternateBasicInfoLatin.getLastname() : null);
+		} else {
+			alternateLastname.put("en", this.alternateBasicInfo != null ? this.alternateBasicInfo.getLastname() : null);
+		}
+		alternateFathername.put("el", this.alternateBasicInfo != null ? this.alternateBasicInfo.getFathername() : null);
+		if (this.alternateBasicInfoLatin != null &&
+			this.alternateBasicInfoLatin.getFathername() != null &&
+			!this.alternateBasicInfoLatin.getFathername().isEmpty()) {
+			alternateFathername.put("en", this.alternateBasicInfoLatin != null ? this.alternateBasicInfoLatin.getFathername() : null);
+		} else {
+			alternateFathername.put("en", this.alternateBasicInfo != null ? this.alternateBasicInfo.getFathername() : null);
+		}
+	}
 
 	@Override
 	public Role copyFrom(Role otherRole) {

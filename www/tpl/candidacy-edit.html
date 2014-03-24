@@ -115,8 +115,7 @@
 
 					<div class="controls">
 						<span class="help-inline">
-							<%= (candidacies.position.phase.committee  && candidacies.position.phase.committee.candidacyEvalutionsDueDate) ?
-							candidacies.position.phase.committee.candidacyEvalutionsDueDate : $.i18n.prop('undefined') %>
+							<%= (candidacies.candidacyEvalutionsDueDate || $.i18n.prop('undefined') %>
 						</span>
 					</div>
 				</div>

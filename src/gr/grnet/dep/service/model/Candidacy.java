@@ -411,6 +411,12 @@ public class Candidacy {
 
 	///////////////////////////////////////////////////////////////
 
+	@JsonView({DetailedCandidacyView.class})
+	public Date getCandidacyEvalutionsDueDate() {
+		return this.getCandidacies().getPosition().getPhase().getCommittee() != null ?
+			this.getCandidacies().getPosition().getPhase().getCommittee().getCandidacyEvalutionsDueDate() : null;
+	}
+
 	@XmlTransient
 	@JsonIgnore
 	public Set<CandidateFile> getSnapshotFiles() {

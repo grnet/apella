@@ -84,7 +84,9 @@ public class PositionRESTService extends RESTService {
 					"where p.id = :positionId ")
 				.setParameter("positionId", positionId)
 				.getSingleResult();
-			position.getAssistants().size();
+			for (User assistant : position.getAssistants()) {
+				assistant.getRoles().size();
+			}
 			position.getCreatedBy().getRoles().size();
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
