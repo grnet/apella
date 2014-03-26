@@ -917,13 +917,6 @@ define([
 			"alternateBasicInfoLatin": {},
 			"alternateContactInfo": {}
 		},
-		isPrimary: function () {
-			var self = this;
-			if (self.has("user")) {
-				return _.isEqual(self.get("discriminator"), self.get("user").primaryRole);
-			}
-			return false;
-		},
 
 		// Sync
 		status: function (key, val, options) {

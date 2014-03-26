@@ -746,8 +746,8 @@ public class RegisterRESTService extends RESTService {
 			countQuery.setParameter("institution", "%" + StringUtil.toUppercaseNoTones(institution, new Locale("el")) + "%");
 		}
 		if (subject != null && !subject.isEmpty()) {
-			searchQuery.setParameter("subject", "%" + StringUtil.toUppercaseNoTones(subject, new Locale("el")) + "%");
-			countQuery.setParameter("subject", "%" + StringUtil.toUppercaseNoTones(subject, new Locale("el")) + "%");
+			searchQuery.setParameter("subject", "%" + subject.toUpperCase(new Locale("el")) + "%");
+			countQuery.setParameter("subject", "%" + subject.toUpperCase(new Locale("el")) + "%");
 		}
 		// Execute
 		Long totalRecords = (Long) countQuery.getSingleResult();
