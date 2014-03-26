@@ -3198,7 +3198,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.closeInnerViews();
 			// Re-render
 			tpl_data = _.extend(self.model.toJSON(), {
-				"primary": self.model.isPrimary()
+				"primary": _.isEqual(self.model.get("discriminator"), self.model.get("user").primaryRole)
 			});
 			self.closeInnerViews();
 			self.$el.empty();
@@ -3893,7 +3893,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						case "alternatephone":
 							return false;
 						default:
-							return true;;
+							return true;
 					}
 					break;
 				case "INSTITUTION_ASSISTANT":
@@ -4176,7 +4176,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				multipart: true,
 				maxFileSize: 30000000,
 				add: function (e, data) {
-					self.$("a#upload").bind("click", function () {
+					function upload() {
 						data.formData = _.extend({
 							"type": self.$("#uploader input[name=file_type]").val(),
 							"name": self.$("#uploader input[name=file_name]").val(),
@@ -4194,7 +4194,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							self.$("a#upload").unbind("click");
 							data.submit();
 						}
-					});
+					}
+					self.$("a#upload").unbind("click");
+					self.$("a#upload").bind("click", upload);
 				},
 				progressall: function (e, data) {
 					var progress = parseInt(data.loaded / data.total * 100, 10);
@@ -4414,7 +4416,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				forceIframeTransport: true,
 				maxFileSize: 30000000,
 				add: function (e, data) {
-					self.$("#uploader a#upload").bind("click", function () {
+					function upload() {
 						data.formData = _.extend({
 							"type": self.$("#uploader input[name=file_type]").val(),
 							"name": self.$("#uploader input[name=file_name]").val(),
@@ -4428,10 +4430,12 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							});
 						} else {
 							self.$('#uploader div.progress').show();
-							self.$("#uploader a#upload").unbind("click");
+							self.$("a#upload").unbind("click");
 							data.submit();
 						}
-					});
+					}
+					self.$("a#upload").unbind("click");
+					self.$("a#upload").bind("click", upload);
 				},
 				progressall: function (e, data) {
 					var progress = parseInt(data.loaded / data.total * 100, 10);

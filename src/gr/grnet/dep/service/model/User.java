@@ -1,6 +1,7 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
+import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.util.IdentificationDeserializer;
@@ -396,7 +397,7 @@ public class User implements Serializable {
 		RoleDiscriminator.ADMINISTRATOR
 	});
 
-	@JsonView({UserView.class, DetailedPositionView.class})
+	@JsonView({UserView.class, DetailedRoleView.class, DetailedPositionView.class})
 	public RoleDiscriminator getPrimaryRole() {
 		TreeSet<Role> sortedRoles = new TreeSet<Role>(new Comparator<Role>() {
 
