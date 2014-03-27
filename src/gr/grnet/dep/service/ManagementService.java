@@ -4,10 +4,13 @@ import gr.grnet.dep.service.model.AuthenticationType;
 import gr.grnet.dep.service.model.ProfessorDomesticData;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
+import gr.grnet.dep.service.model.Subject;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
+import gr.grnet.dep.service.util.StringUtil;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
@@ -18,6 +21,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 
 import org.apache.commons.configuration.Configuration;
@@ -110,5 +114,74 @@ public class ManagementService {
 			mailService.sendReminderLoginEmail(userId, false);
 		}
 
+	}
+
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public void upperCaseSubject(Long subjectId) {
+		Subject subject = em.find(Subject.class, subjectId);
+		String newName = StringUtil.toUppercaseNoTones(subject.getName(), new Locale("el"));
+		if (newName.equals(subject.getName())) {
+			logger.info("upperCaseSubject - Skipping    [" + subject.getId() + "]\t" + subject.getName());
+			return;
+		}
+		// 1. Search if another with the new name exists
+		try {
+			Subject otherSubject = (Subject) em.createQuery(
+				"select s from Subject s " +
+					"where s.name = :name ")
+				.setParameter("name", newName)
+				.getSingleResult();
+			// Transfer all entities to this otherSubject
+			logger.info("upperCaseSubject - Transfering [" + subject.getId() + "]\t" + subject.getName() + "\t-> [" + otherSubject.getId() + "]\t" + otherSubject.getName());
+
+			int i = em.createNativeQuery("update ProfessorDomestic set subject_id = :otherSubject where subject_id = :subject")
+				.setParameter("otherSubject", otherSubject.getId())
+				.setParameter("subject", subject.getId())
+				.executeUpdate();
+			logger.info("upperCaseSubject - Updated " + i + " ProfessorDomestic.subject");
+
+			i = em.createNativeQuery("update ProfessorDomestic set fekSubject_id = :otherSubject where fekSubject_id = :subject")
+				.setParameter("otherSubject", otherSubject.getId())
+				.setParameter("subject", subject.getId())
+				.executeUpdate();
+			logger.info("upperCaseSubject - Updated " + i + " ProfessorDomestic.fekSubject");
+
+			i = em.createNativeQuery("update ProfessorForeign p set subject_id = :otherSubject where subject_id = :subject")
+				.setParameter("otherSubject", otherSubject.getId())
+				.setParameter("subject", subject.getId())
+				.executeUpdate();
+			logger.info("upperCaseSubject - Updated " + i + " ProfessorForeign.subject");
+
+			i = em.createNativeQuery("update Candidacy set snapshot_subject_id = :otherSubject where snapshot_subject_id = :subject")
+				.setParameter("otherSubject", otherSubject.getId())
+				.setParameter("subject", subject.getId())
+				.executeUpdate();
+			logger.info("upperCaseSubject - Updated " + i + " Candidacy.subject");
+
+			i = em.createNativeQuery("update Candidacy set snapshot_fekSubject_id = :otherSubject where snapshot_fekSubject_id = :subject")
+				.setParameter("otherSubject", otherSubject.getId())
+				.setParameter("subject", subject.getId())
+				.executeUpdate();
+			logger.info("upperCaseSubject - Updated " + i + " Candidacy.fekSubject");
+
+			i = em.createNativeQuery("update Position set subject_id = :otherSubject where subject_id = :subject")
+				.setParameter("otherSubject", otherSubject.getId())
+				.setParameter("subject", subject.getId())
+				.executeUpdate();
+			logger.info("upperCaseSubject - Updated " + i + " Position.subject");
+
+			i = em.createNativeQuery("update Register set subject_id = :otherSubject where subject_id = :subject")
+				.setParameter("otherSubject", otherSubject.getId())
+				.setParameter("subject", subject.getId())
+				.executeUpdate();
+			logger.info("upperCaseSubject - Updated " + i + " Candidacy.subject");
+
+			// Delete old subject
+			em.remove(subject);
+		} catch (NoResultException e) {
+			// Just save with uppercase letter
+			logger.info("upperCaseSubject - Updating    [" + subject.getId() + "]\t" + subject.getName() + "\t-> " + newName);
+			subject.setName(newName);
+		}
 	}
 }

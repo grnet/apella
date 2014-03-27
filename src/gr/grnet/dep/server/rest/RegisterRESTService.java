@@ -340,7 +340,7 @@ public class RegisterRESTService extends RESTService {
 		try {
 			// Update
 			existingRegister = existingRegister.copyFrom(register);
-			existingRegister.setSubject(supplementSubject(register.getSubject()));
+			existingRegister.setSubject(utilityService.supplementSubject(register.getSubject()));
 			existingRegister.getMembers().clear();
 			for (RegisterMember member : newMembersAsMap.values()) {
 				existingRegister.addMember(member);

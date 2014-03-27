@@ -5,22 +5,19 @@ import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.JiraService;
 import gr.grnet.dep.service.MailService;
 import gr.grnet.dep.service.ReportService;
+import gr.grnet.dep.service.UtilityService;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.ProfessorForeign;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
-import gr.grnet.dep.service.model.Sector;
-import gr.grnet.dep.service.model.Subject;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
-import gr.grnet.dep.service.util.StringUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,8 +28,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -45,8 +40,6 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.SessionContext;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -95,6 +88,9 @@ public class RESTService {
 
 	@EJB
 	ReportService reportService;
+
+	@EJB
+	UtilityService utilityService;
 
 	/**
 	 * Check FileType to upload agrees with max number and direct caller.
@@ -540,78 +536,6 @@ public class RESTService {
 			logger.log(Level.SEVERE, "", e);
 		}
 		return null;
-	}
-
-	/******************************
-	 * Utilitiy Functions *********
-	 ******************************/
-
-	@TransactionAttribute(TransactionAttributeType.REQUIRED)
-	public Subject supplementSubject(Subject subject) {
-		if (subject == null || subject.getName() == null || subject.getName().trim().isEmpty()) {
-			return null;
-		} else {
-			String name = StringUtil.toUppercaseNoTones(subject.getName(), new Locale("el"));
-			try {
-				Subject existingSubject = (Subject) em.createQuery(
-					"select s from Subject s " +
-						"where s.name = :name ")
-					.setParameter("name", name)
-					.getSingleResult();
-				return existingSubject;
-			} catch (NoResultException e) {
-				Subject newSubject = new Subject();
-				newSubject.setName(name);
-				em.persist(newSubject);
-				return newSubject;
-			}
-		}
-	}
-
-	@TransactionAttribute(TransactionAttributeType.REQUIRED)
-	public Collection<Subject> supplementSubjects(Collection<Subject> subjects) {
-		if (subjects.isEmpty()) {
-			return subjects;
-		}
-		Collection<Subject> supplemented = new ArrayList<Subject>();
-		for (Subject subject : subjects) {
-			supplemented.add(supplementSubject(subject));
-		}
-		return supplemented;
-	}
-
-	@SuppressWarnings("unchecked")
-	@TransactionAttribute(TransactionAttributeType.REQUIRED)
-	public Collection<Department> supplementDepartments(Collection<Department> departments) {
-		if (departments.isEmpty()) {
-			return departments;
-		}
-		Collection<Long> departmentIds = new ArrayList<Long>();
-		for (Department department : departments) {
-			departmentIds.add(department.getId());
-		}
-		return em.createQuery(
-			"from Department d " +
-				"where d.id in (:departmentIds)")
-			.setParameter("departmentIds", departmentIds)
-			.getResultList();
-	}
-
-	@SuppressWarnings("unchecked")
-	@TransactionAttribute(TransactionAttributeType.REQUIRED)
-	public Collection<Sector> supplementSectors(Collection<Sector> sectors) {
-		if (sectors.isEmpty()) {
-			return sectors;
-		}
-		Collection<Long> sectorIds = new ArrayList<Long>();
-		for (Sector sector : sectors) {
-			sectorIds.add(sector.getId());
-		}
-		return em.createQuery(
-			"from Sector s " +
-				"where s.id in (:sectorIds)")
-			.setParameter("sectorIds", sectorIds)
-			.getResultList();
 	}
 
 }

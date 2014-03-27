@@ -423,8 +423,8 @@ public class RoleRESTService extends RESTService {
 			switch (existingRole.getDiscriminator()) {
 				case PROFESSOR_DOMESTIC:
 					ProfessorDomestic professorDomestic = (ProfessorDomestic) existingRole;
-					professorDomestic.setSubject(supplementSubject(((ProfessorDomestic) role).getSubject()));
-					professorDomestic.setFekSubject(supplementSubject(((ProfessorDomestic) role).getFekSubject()));
+					professorDomestic.setSubject(utilityService.supplementSubject(((ProfessorDomestic) role).getSubject()));
+					professorDomestic.setFekSubject(utilityService.supplementSubject(((ProfessorDomestic) role).getFekSubject()));
 
 					// Activate if !misingRequiredFields and is not authenticated by username (needs helpdesk approval)
 					if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
@@ -440,7 +440,7 @@ public class RoleRESTService extends RESTService {
 					break;
 				case PROFESSOR_FOREIGN:
 					ProfessorForeign professorForeign = (ProfessorForeign) existingRole;
-					professorForeign.setSubject(supplementSubject(((ProfessorForeign) role).getSubject()));
+					professorForeign.setSubject(utilityService.supplementSubject(((ProfessorForeign) role).getSubject()));
 					break;
 				default:
 					break;

@@ -273,7 +273,7 @@ public class PositionRESTService extends RESTService {
 
 			existingPosition.copyFrom(position);
 			existingPosition.setSector(sector);
-			existingPosition.setSubject(supplementSubject(position.getSubject()));
+			existingPosition.setSubject(utilityService.supplementSubject(position.getSubject()));
 			if (isNew) {
 				// Managers
 				Set<Long> managerIds = new HashSet<Long>();
