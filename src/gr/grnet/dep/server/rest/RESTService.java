@@ -20,6 +20,7 @@ import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
+import gr.grnet.dep.service.util.StringUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -550,16 +551,17 @@ public class RESTService {
 		if (subject == null || subject.getName() == null || subject.getName().trim().isEmpty()) {
 			return null;
 		} else {
+			String name = StringUtil.toUppercaseNoTones(subject.getName(), new Locale("el"));
 			try {
 				Subject existingSubject = (Subject) em.createQuery(
 					"select s from Subject s " +
 						"where s.name = :name ")
-					.setParameter("name", subject.getName())
+					.setParameter("name", name)
 					.getSingleResult();
 				return existingSubject;
 			} catch (NoResultException e) {
 				Subject newSubject = new Subject();
-				newSubject.setName(subject.getName());
+				newSubject.setName(name);
 				em.persist(newSubject);
 				return newSubject;
 			}

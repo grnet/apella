@@ -651,15 +651,15 @@ public class RegisterRESTService extends RESTService {
 				"		join pd.department.school.name sname " +
 				"		join pd.department.school.institution.name iname " +
 				"		where pd.id = rl.id " +
-				"		and ( UPPER(dname) like :institution " +
-				"			or UPPER(sname) like :institution " +
-				"			or UPPER(iname) like :institution " +
+				"		and ( dname like :institution " +
+				"			or sname like :institution " +
+				"			or iname like :institution " +
 				"		)" +
 				"	) " +
 				"	or exists (" +
 				"		select pf.id from ProfessorForeign pf " +
 				"		where pf.id = rl.id " +
-				"		and UPPER(pf.institution) like :institution " +
+				"		and pf.institution like :institution " +
 				"	) " +
 				") ");
 		}
@@ -670,13 +670,13 @@ public class RegisterRESTService extends RESTService {
 				"		left join pd.fekSubject fsub " +
 				"		left join pd.subject sub " +
 				"		where pd.id = rl.id " +
-				"		and ( UPPER(fsub.name) like :subject or UPPER(sub.name) like :subject) " +
+				"		and ( fsub.name like :subject or sub.name like :subject) " +
 				"	) " +
 				"	or exists (" +
 				"		select pf.id from ProfessorForeign pf " +
 				"		left join pf.subject sub " +
 				"		where pf.id = rl.id " +
-				"		and UPPER(sub.name) like :subject " +
+				"		and sub.name like :subject " +
 				"	) " +
 				") ");
 		}
@@ -746,8 +746,8 @@ public class RegisterRESTService extends RESTService {
 			countQuery.setParameter("institution", "%" + StringUtil.toUppercaseNoTones(institution, new Locale("el")) + "%");
 		}
 		if (subject != null && !subject.isEmpty()) {
-			searchQuery.setParameter("subject", "%" + subject.toUpperCase(new Locale("el")) + "%");
-			countQuery.setParameter("subject", "%" + subject.toUpperCase(new Locale("el")) + "%");
+			searchQuery.setParameter("subject", "%" + StringUtil.toUppercaseNoTones(subject, new Locale("el")) + "%");
+			countQuery.setParameter("subject", "%" + StringUtil.toUppercaseNoTones(subject, new Locale("el")) + "%");
 		}
 		// Execute
 		Long totalRecords = (Long) countQuery.getSingleResult();
