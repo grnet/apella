@@ -210,6 +210,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			App.loggedOnUser.fetch({
 				url: "/dep/rest/user/loggedon",
 				cache: false,
+				wait: true,
 				success: function (model, resp) {
 					App.loggedOnUser.trigger("user:loggedon");
 				},
@@ -353,7 +354,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			$("#featured").html(homeView.render().el);
 			App.roles.fetch({
 				cache: false,
-				reset: true
+				reset: true,
+				wait: true
 			});
 
 			self.currentView = homeView;
@@ -422,6 +424,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			App.roles.fetch({
 				cache: false,
 				reset: true,
+				wait: true,
 				success: function () {
 					if (!_.isUndefined(roleId)) {
 						App.roles.trigger("role:selected", App.roles.get(roleId));
@@ -468,10 +471,12 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			// Fetch Data
 			user.fetch({
 				cache: false,
+				wait: true,
 				success: function (model, resp) {
 					roles.fetch({
 						cache: false,
 						reset: true,
+						wait: true,
 						success: function (collection, response) {
 							displayContent();
 						}
@@ -531,6 +536,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			assistants.fetch({
 				cache: false,
 				reset: true,
+				wait: true,
 				data: {
 					im: App.loggedOnUser.getRole("INSTITUTION_MANAGER").id
 				},
@@ -599,6 +605,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			assistants.fetch({
 				cache: false,
 				reset: true,
+				wait: true,
 				data: {
 					mm: App.loggedOnUser.getRole("MINISTRY_MANAGER").id
 				},
@@ -677,6 +684,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			positions.fetch({
 				cache: false,
 				reset: true,
+				wait: true,
 				success: function () {
 					var selectedPosition;
 					if (!_.isUndefined(positionId)) {
@@ -742,6 +750,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			position.fetch({
 				url: position.url() + (order ? "?order=" + order : ""),
 				cache: false,
+				wait: true,
 				success: function () {
 					self.refreshBreadcrumb([ $.i18n.prop('menu_position'), position.get("name") ]);
 				}
@@ -788,6 +797,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				register.fetch({
 					cache: false,
 					silent: true,
+					wait: true,
 					success: function () {
 						registerView.render();
 						self.refreshBreadcrumb([ $.i18n.prop('menu_registers'), register.get("title") ]);
@@ -802,6 +812,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			registries.fetch({
 				cache: false,
 				reset: true,
+				wait: true,
 				data: {
 					institution: (function () {
 						var institutions = App.loggedOnUser.getAssociatedInstitutions();
@@ -865,6 +876,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			professorCommittees.fetch({
 				cache: false,
 				reset: true,
+				wait: true,
 				error: function (collection, resp, options) {
 					var popup = new Views.PopupView({
 						type: "error",
@@ -893,6 +905,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			professorEvaluations.fetch({
 				cache: false,
 				reset: true,
+				wait: true,
 				error: function (model, resp, options) {
 					var popup = new Views.PopupView({
 						type: "error",
@@ -935,6 +948,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				institutionRF.fetch({
 					cache: false,
 					silent: true,
+					wait: true,
 					success: function () {
 						institutionRegulatoryFrameworkView.render();
 					}
@@ -948,6 +962,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			institutionRFs.fetch({
 				cache: false,
 				reset: true,
+				wait: true,
 				success: function () {
 					if (!_.isUndefined(institutionRFId)) {
 						var selectedInstitutionRF = institutionRFs.get(institutionRFId);
@@ -1001,6 +1016,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				positions.fetch({
 					cache: false,
 					reset: true,
+					wait: true,
 					data: {
 						"criteria": JSON.stringify(criteria)
 					}
@@ -1048,7 +1064,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 
 			// Refresh Data - triggers change to render view
 			criteria.fetch({
-				cache: false
+				cache: false,
+				wait: true
 			});
 
 			self.currentView = [ positionSearchCriteriaView, positionSearchResultView ];
@@ -1084,6 +1101,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 				candidacy.fetch({
 					cache: false,
 					silent: true,
+					wait: true,
 					success: function() {
 						candidacyEditView.render();
 					}
@@ -1098,6 +1116,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			candidateCandidacies.fetch({
 				cache: false,
 				reset: true,
+				wait: true,
 				error: function (collection, resp, options) {
 					var popup = new Views.PopupView({
 						type: "error",
@@ -1172,6 +1191,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			issues.fetch({
 				cache: false,
 				reset: true,
+				wait: true,
 				error: function (collection, resp, options) {
 					var popup = new Views.PopupView({
 						type: "error",

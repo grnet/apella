@@ -19,6 +19,9 @@ import javax.persistence.PostUpdate;
 import javax.persistence.Transient;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.xml.bind.annotation.XmlTransient;
+
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 @Entity
 @DiscriminatorValue("INSTITUTION_MANAGER")
@@ -132,6 +135,25 @@ public class InstitutionManager extends Role {
 
 	public Map<String, String> getAlternateFathername() {
 		return alternateFathername;
+	}
+
+	@XmlTransient
+	@JsonIgnore
+	public String getAlternateFirstname(String locale) {
+		return alternateFirstname.get(locale);
+	}
+
+	@XmlTransient
+	@JsonIgnore
+	public String getAlternateLastname(String locale) {
+		return alternateLastname.get(locale);
+
+	}
+
+	@XmlTransient
+	@JsonIgnore
+	public String getAlternateFathername(String locale) {
+		return alternateFathername.get(locale);
 	}
 
 	@PostPersist

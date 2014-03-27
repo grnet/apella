@@ -9,12 +9,14 @@ import gr.grnet.dep.service.model.CandidacyEvaluator;
 import gr.grnet.dep.service.model.CandidacyEvaluator.DetailedCandidacyEvaluatorView;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Institution;
+import gr.grnet.dep.service.model.InstitutionManager;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.PositionCandidacies;
 import gr.grnet.dep.service.model.PositionCommittee;
 import gr.grnet.dep.service.model.PositionCommitteeMember;
 import gr.grnet.dep.service.model.PositionEvaluator;
+import gr.grnet.dep.service.model.PositionNomination;
 import gr.grnet.dep.service.model.RegisterMember;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
@@ -74,6 +76,20 @@ public class CandidacyRESTService extends RESTService {
 	@Inject
 	private Logger log;
 
+	private boolean canAddEvaluators(Candidacy c) {
+		PositionCommittee committee = c.getCandidacies().getPosition().getPhase().getCommittee();
+		return committee != null &&
+			committee.getMembers().size() > 0 &&
+			DateUtil.compareDates(new Date(), committee.getCandidacyEvalutionsDueDate()) < 0;
+	}
+
+	private boolean hasNominationCommitteeConverged(Candidacy c) {
+		PositionNomination nomination = c.getCandidacies().getPosition().getPhase().getNomination();
+		return nomination != null &&
+			nomination.getNominationCommitteeConvergenceDate() != null &&
+			DateUtil.compareDates(new Date(), nomination.getNominationCommitteeConvergenceDate()) >= 0;
+	}
+
 	/**
 	 * Get Candidacy by it's ID
 	 * 
@@ -104,6 +120,8 @@ public class CandidacyRESTService extends RESTService {
 				candidate.getUser().getId().equals(loggedOn.getId())) {
 				// Full Access
 				candidacy.getCandidacyEvalutionsDueDate(); // Load this to avoid lazy exception
+				candidacy.setCanAddEvaluators(canAddEvaluators(candidacy));
+				candidacy.setNominationCommitteeConverged(hasNominationCommitteeConverged(candidacy));
 				return toJSON(candidacy, DetailedCandidacyView.class);
 			}
 			// Medium Access COMMITTEE MEMBER, EVALUATOR
@@ -190,18 +208,13 @@ public class CandidacyRESTService extends RESTService {
 
 			// Return Results
 			candidacy.getCandidacyEvalutionsDueDate();
+			candidacy.setCanAddEvaluators(canAddEvaluators(candidacy));
+			candidacy.setNominationCommitteeConverged(hasNominationCommitteeConverged(candidacy));
 			return candidacy;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
 		}
-	}
-
-	private boolean canAddEvaluators(Candidacy c) {
-		PositionCommittee committee = c.getCandidacies().getPosition().getPhase().getCommittee();
-		return committee != null &&
-			committee.getMembers().size() > 0 &&
-			DateUtil.compareDates(new Date(), committee.getCandidacyEvalutionsDueDate()) < 0;
 	}
 
 	/**
@@ -304,23 +317,21 @@ public class CandidacyRESTService extends RESTService {
 			if (isNew) {
 				// Send E-Mails
 				// 1. candidacy.create@institutionManager
-				for (final User manager : existingCandidacy.getCandidacies().getPosition().getManagers()) {
-					mailService.postEmail(manager.getContactInfo().getEmail(),
+				for (final Map<String, String> recipient : existingCandidacy.getCandidacies().getPosition().getEmailRecipients()) {
+					mailService.postEmail(recipient.get("email"),
 						"default.subject",
 						"candidacy.create@institutionManager",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
+								putAll(recipient);
+
 								put("position", existingCandidacy.getCandidacies().getPosition().getName());
 
-								put("firstname_el", manager.getFirstname("el"));
-								put("lastname_el", manager.getLastname("el"));
 								put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
 								put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
 								put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
 
-								put("firstname_en", manager.getFirstname("en"));
-								put("lastname_en", manager.getLastname("en"));
 								put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 								put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
 								put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
@@ -383,41 +394,64 @@ public class CandidacyRESTService extends RESTService {
 							}
 
 							private String extractAssistantsInfo(Position position, String locale) {
-								StringBuilder assistants = new StringBuilder();
-								assistants.append("<ul>");
-								for (User u : position.getAssistants()) {
-									String im_firstname = u.getFirstname(locale);
-									String im_lastname = u.getLastname(locale);
-									String im_email = u.getContactInfo().getEmail();
-									String im_phone = u.getContactInfo().getPhone();
-									assistants.append("<li>" + im_firstname + " " + im_lastname + ", " + im_email + ", " + im_phone + "</li>");
+								StringBuilder info = new StringBuilder();
+								info.append("<ul>");
+
+								InstitutionManager manager = position.getManager();
+								String im_firstname = manager.getUser().getFirstname(locale);
+								String im_lastname = manager.getUser().getLastname(locale);
+								String im_email = manager.getUser().getContactInfo().getEmail();
+								String im_phone = manager.getUser().getContactInfo().getPhone();
+								info.append("<li>" + im_firstname + " " + im_lastname + ", " + im_email + ", " + im_phone + "</li>");
+
+								im_firstname = manager.getAlternateFirstname(locale);
+								im_lastname = manager.getAlternateLastname(locale);
+								im_email = manager.getAlternateContactInfo().getEmail();
+								im_phone = manager.getAlternateContactInfo().getPhone();
+								info.append("<li>" + im_firstname + " " + im_lastname + ", " + im_email + ", " + im_phone + "</li>");
+
+								info.append("<li><ul>");
+								Set<User> assistants = new HashSet<User>();
+								assistants.addAll(position.getAssistants());
+								if (position.getCreatedBy().getPrimaryRole().equals(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+									assistants.add(position.getCreatedBy());
 								}
-								assistants.append("</ul>");
-								return assistants.toString();
+								for (User u : assistants) {
+									if (u.getId().equals(manager.getUser().getId())) {
+										continue;
+									}
+									im_firstname = u.getFirstname(locale);
+									im_lastname = u.getLastname(locale);
+									im_email = u.getContactInfo().getEmail();
+									im_phone = u.getContactInfo().getPhone();
+									info.append("<li>" + im_firstname + " " + im_lastname + ", " + im_email + ", " + im_phone + "</li>");
+								}
+								info.append("</ul></li>");
+
+								info.append("</ul>");
+								return info.toString();
 							}
 
 						}));
 				}
 				// 4. candidacy.create.candidacyEvaluator@institutionManager
-				for (final User manager : existingCandidacy.getCandidacies().getPosition().getManagers()) {
-					mailService.postEmail(manager.getContactInfo().getEmail(),
+				for (final Map<String, String> recipient : existingCandidacy.getCandidacies().getPosition().getEmailRecipients()) {
+					mailService.postEmail(recipient.get("email"),
 						"default.subject",
 						"candidacy.create.candidacyEvaluator@institutionManager",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
+								putAll(recipient); //firstname, lastname (el|en)
+
 								put("position", existingCandidacy.getCandidacies().getPosition().getName());
 
-								put("firstname_el", manager.getFirstname("el"));
-								put("lastname_el", manager.getLastname("el"));
 								put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
 								put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
 								put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
 								put("candidate_firstname_el", existingCandidacy.getSnapshot().getFirstname("el"));
 								put("candidate_lastname_el", existingCandidacy.getSnapshot().getLastname("el"));
 
-								put("firstname_en", manager.getFirstname("en"));
-								put("lastname_en", manager.getLastname("en"));
 								put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 								put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
 								put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
@@ -474,6 +508,8 @@ public class CandidacyRESTService extends RESTService {
 
 			// Return
 			existingCandidacy.getCandidacyEvalutionsDueDate();
+			existingCandidacy.setCanAddEvaluators(canAddEvaluators(existingCandidacy));
+			existingCandidacy.setNominationCommitteeConverged(hasNominationCommitteeConverged(existingCandidacy));
 			return existingCandidacy;
 		} catch (PersistenceException e) {
 			sc.setRollbackOnly();
@@ -519,23 +555,21 @@ public class CandidacyRESTService extends RESTService {
 			if (existingCandidacy.isPermanent()) {
 				// Send E-Mails
 				// 1. candidacy.remove@institutionManager
-				for (final User manager : existingCandidacy.getCandidacies().getPosition().getManagers()) {
-					mailService.postEmail(manager.getContactInfo().getEmail(),
+				for (final Map<String, String> recipient : existingCandidacy.getCandidacies().getPosition().getEmailRecipients()) {
+					mailService.postEmail(recipient.get("email"),
 						"default.subject",
 						"candidacy.remove@institutionManager",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
+								putAll(recipient); //firstname, lastname (el|en)
+
 								put("position", existingCandidacy.getCandidacies().getPosition().getName());
 
-								put("firstname_el", manager.getFirstname("el"));
-								put("lastname_el", manager.getLastname("el"));
 								put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
 								put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
 								put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
 
-								put("firstname_en", manager.getFirstname("en"));
-								put("lastname_en", manager.getLastname("en"));
 								put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 								put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
 								put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));

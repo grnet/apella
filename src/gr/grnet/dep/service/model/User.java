@@ -352,7 +352,6 @@ public class User implements Serializable {
 	@JsonIgnore
 	public String getLastname(String locale) {
 		return lastname.get(locale);
-
 	}
 
 	@XmlTransient

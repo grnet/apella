@@ -1640,6 +1640,7 @@ define([
 			permanent: undefined,
 			date: undefined,
 			openToOtherCandidates: undefined,
+			candidacyEvalutionsDueDate : undefined,
 			candidacies: {
 				id: undefined,
 				openingDate: undefined,

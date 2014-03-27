@@ -8964,6 +8964,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				case "ekthesiAutoaksiologisisFile":
 					return _.isEqual(self.model.get("candidacies").position.phase.clientStatus, "ANOIXTI");
 				case "evaluator":
+					console.log(self.model.get("canAddEvaluators"));
 					return self.model.get("canAddEvaluators");
 				case "sympliromatikaEggrafaFileList":
 					return !self.model.get("nominationCommitteeConverged");
@@ -9095,6 +9096,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.registerMembers.fetch({
 				cache: true,
 				reset: true,
+				wait: true,
 				success: function (collection) {
 					_.each(self.$selectize, function (element) {
 						element.selectize.destroy();
@@ -9150,6 +9152,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					if (!self.isEditable("evaluator")) {
 						_.each(self.$selectize, function (element) {
 							element.selectize.disable();
+						});
+					} else {
+						_.each(self.$selectize, function (element) {
+							element.selectize.enable();
 						});
 					}
 				},
