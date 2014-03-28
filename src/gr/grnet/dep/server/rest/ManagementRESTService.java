@@ -6,6 +6,7 @@ import gr.grnet.dep.service.ManagementService;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
@@ -63,6 +64,21 @@ public class ManagementRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		mgmtService.massSendReminderLoginEmails();
+		return "OK";
+	}
+
+	@GET
+	@Produces(MediaType.TEXT_PLAIN)
+	@Path("/uppercaseSubjects")
+	public String uppercaseSubjects(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
+		User loggedOn = getLoggedOn(authToken);
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		List<Long> allSubjectIds = em.createQuery("select s.id from Subject s", Long.class).getResultList();
+		for (Long subjectId : allSubjectIds) {
+			mgmtService.upperCaseSubject(subjectId);
+		}
 		return "OK";
 	}
 }

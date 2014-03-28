@@ -205,8 +205,8 @@ public class PositionSearchRESTService extends RESTService {
 				.getSingleResult();
 			throw new RestException(Status.CONFLICT, "already.exists");
 		} catch (NoResultException e) {
-			Collection<Department> departments = supplementDepartments(newCriteria.getDepartments());
-			Collection<Sector> sectors = supplementSectors(newCriteria.getSectors());
+			Collection<Department> departments = utilityService.supplementDepartments(newCriteria.getDepartments());
+			Collection<Sector> sectors = utilityService.supplementSectors(newCriteria.getSectors());
 
 			newCriteria.setCandidate(candidate);
 			newCriteria.getDepartments().clear();
@@ -243,8 +243,8 @@ public class PositionSearchRESTService extends RESTService {
 		if (!criteria.getCandidate().getUser().getId().equals(loggedOnUser.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		Collection<Department> departments = supplementDepartments(newCriteria.getDepartments());
-		Collection<Sector> sectors = supplementSectors(newCriteria.getSectors());
+		Collection<Department> departments = utilityService.supplementDepartments(newCriteria.getDepartments());
+		Collection<Sector> sectors = utilityService.supplementSectors(newCriteria.getSectors());
 
 		criteria.getDepartments().clear();
 		criteria.getDepartments().addAll(departments);

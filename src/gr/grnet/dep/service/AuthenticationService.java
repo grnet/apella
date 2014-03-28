@@ -67,6 +67,9 @@ public class AuthenticationService {
 	@EJB
 	JiraService jiraService;
 
+	@EJB
+	UtilityService utilityService;
+
 	protected static Configuration conf;
 
 	static {
@@ -176,7 +179,7 @@ public class AuthenticationService {
 		pd.setFek(data.getFek());
 		Subject fekSubject = new Subject();
 		fekSubject.setName(data.getFekSubject());
-		pd.setFekSubject(supplementSubject(fekSubject));
+		pd.setFekSubject(utilityService.supplementSubject(fekSubject));
 
 		pd.setStatus(RoleStatus.UNAPPROVED);
 		pd.setStatusDate(new Date());
@@ -198,26 +201,6 @@ public class AuthenticationService {
 		u = em.merge(u);
 
 		return u;
-	}
-
-	private Subject supplementSubject(Subject subject) {
-		if (subject == null || subject.getName() == null || subject.getName().trim().isEmpty()) {
-			return null;
-		} else {
-			try {
-				Subject existingSubject = (Subject) em.createQuery(
-					"select s from Subject s " +
-						"where s.name = :name ")
-					.setParameter("name", subject.getName())
-					.getSingleResult();
-				return existingSubject;
-			} catch (NoResultException e) {
-				Subject newSubject = new Subject();
-				newSubject.setName(subject.getName());
-				em.persist(newSubject);
-				return newSubject;
-			}
-		}
 	}
 
 	/////////////////////////////////////////////////////////////////

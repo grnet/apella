@@ -5,6 +5,7 @@ import gr.grnet.dep.service.model.file.CandidacyFile;
 import gr.grnet.dep.service.model.file.CandidateFile;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
+import gr.grnet.dep.service.util.SimpleDateSerializer;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -37,6 +38,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonView;
 import org.hibernate.annotations.FilterDef;
 
@@ -385,6 +387,8 @@ public class Candidacy {
 		file.setCandidacy(this);
 	}
 
+	// Transient
+
 	public Boolean getAllowedToSee() {
 		return allowedToSee;
 	}
@@ -412,6 +416,7 @@ public class Candidacy {
 	///////////////////////////////////////////////////////////////
 
 	@JsonView({DetailedCandidacyView.class})
+	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getCandidacyEvalutionsDueDate() {
 		return this.getCandidacies().getPosition().getPhase().getCommittee() != null ?
 			this.getCandidacies().getPosition().getPhase().getCommittee().getCandidacyEvalutionsDueDate() : null;

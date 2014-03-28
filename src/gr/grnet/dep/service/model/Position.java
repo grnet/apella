@@ -6,6 +6,7 @@ import gr.grnet.dep.service.util.SimpleDateSerializer;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -261,14 +262,41 @@ public class Position {
 
 	@XmlTransient
 	@JsonIgnore
-	public Set<User> getManagers() {
-		Set<User> managers = new HashSet<User>();
-		managers.add(createdBy);
+	public List<Map<String, String>> getEmailRecipients() {
+		Set<User> assistants = new HashSet<User>();
+		assistants.addAll(this.assistants);
 		if (createdBy.getPrimaryRole().equals(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
-			managers.add(getManager().getUser());
+			assistants.add(createdBy);
 		}
-		managers.addAll(assistants);
-		return managers;
+		InstitutionManager manager = getManager();
+
+		List<Map<String, String>> recipients = new ArrayList<Map<String, String>>();
+		Map<String, String> recipient = new HashMap<String, String>();
+		recipient.put("email", manager.getUser().getContactInfo().getEmail());
+		recipient.put("firstname_el", manager.getUser().getFirstname("el"));
+		recipient.put("lastname_el", manager.getUser().getLastname("el"));
+		recipient.put("firstname_en", manager.getUser().getFirstname("en"));
+		recipient.put("lastname_en", manager.getUser().getLastname("en"));
+		recipients.add(recipient);
+
+		recipient = new HashMap<String, String>();
+		recipient.put("email", manager.getAlternateContactInfo().getEmail());
+		recipient.put("firstname_el", manager.getAlternateFirstname("el"));
+		recipient.put("lastname_el", manager.getAlternateLastname("el"));
+		recipient.put("firstname_en", manager.getAlternateFirstname("en"));
+		recipient.put("lastname_en", manager.getAlternateLastname("en"));
+		recipients.add(recipient);
+
+		for (User assistant : assistants) {
+			recipient = new HashMap<String, String>();
+			recipient.put("email", assistant.getContactInfo().getEmail());
+			recipient.put("firstname_el", assistant.getFirstname("el"));
+			recipient.put("lastname_el", assistant.getLastname("el"));
+			recipient.put("firstname_en", assistant.getFirstname("en"));
+			recipient.put("lastname_en", assistant.getLastname("en"));
+			recipients.add(recipient);
+		}
+		return recipients;
 	}
 
 	@JsonView({DetailedPositionView.class})
