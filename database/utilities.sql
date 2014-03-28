@@ -1,4 +1,4 @@
-/* DELETE PROFESSOR DOMESTIC */
+﻿/* DELETE PROFESSOR DOMESTIC */
 delete from professordomestic where id in (
 	select id from roles r where r.user_id = 1703
 );
@@ -83,3 +83,31 @@ join users u on u.id = r.user_id
 left join subject fs on fs.id = pd.feksubject_id
 left join subject s on s.id = pd.subject_id
 join rank ra on ra.id = pd.rank_id
+
+select type, professor_id, count(pfile.id) from professorfile pfile 
+join fileheader fh on fh.id = pfile.id and fh.deleted=false and fh.type='PROFILE'
+group by type, professor_id
+having count(pfile.id) > 1
+
+select * from professorfile pfile 
+join fileheader fh on fh.id = pfile.id and fh.deleted=false and fh.type='PROFILE'
+where professor_id in (54082)
+
+select * from filebody fb where header_id in (
+	select pfile.id from professorfile pfile 
+	join fileheader fh on fh.id = pfile.id and fh.deleted=false and fh.type='PROFILE'
+	where professor_id in (54082)
+)
+update fileheader set currentbody_id = null where id = 54085;
+delete from filebody where header_id = 54085;
+delete from professorfile where id = 54085;
+delete from candidatefile where id = 54085;
+delete from fileheader where id = 54085;
+
+update fileheader set currentbody_id = null where id in (select header_id from filebody where originalfilename is null and id=currentbody_id);
+delete from filebody where originalfilename is null;
+delete from professorfile where id in (select id from fileheader where  currentbody_id is null);
+delete from candidatefile where id in (select id from fileheader where  currentbody_id is null);
+delete from fileheader where currentbody_id is null;
+
+select * from fileheader where id not in ( (select id from professorfile) union (select id from candidatefile) );
