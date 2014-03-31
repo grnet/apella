@@ -202,6 +202,7 @@ define([ "jquery",
 			});
 			return this;
 		};
+		$.fn.dataTable.defaults.bAutoWidth = false;
 
 		// Add _super function in Model, Views
 		(function (Backbone) {
@@ -333,6 +334,12 @@ define([ "jquery",
 						}
 					}
 					return null;
+				},
+
+				scrollTo : function($el) {
+					$('html, body').animate({
+						scrollTop: ($el.offset().top - 75) // 50 is the header height
+					}, 500);
 				},
 
 				removeCookie: function (name) {

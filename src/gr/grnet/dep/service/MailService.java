@@ -189,7 +189,6 @@ public class MailService {
 	}
 
 	public void sendEmail(String aToEmailAddr, String aSubject, String aBody) {
-		logger.log(Level.INFO, "Sending email to " + aToEmailAddr + " " + aSubject + "\n" + aBody);
 		try {
 			MimeMessage message = new MimeMessage(mailSession);
 			message.setFrom(new InternetAddress("apella@grnet.gr"));
@@ -227,8 +226,10 @@ public class MailService {
 				String aToEmailAddr = u.getContactInfo().getEmail();
 				String aSubject = resources.getString("login.email.subject");
 				String aBody = resources.getString("login.email.body")
-					.replaceAll("\\[firstname\\]", u.getBasicInfo().getFirstname())
-					.replaceAll("\\[lastname\\]", u.getBasicInfo().getLastname())
+					.replaceAll("\\[firstname_el\\]", u.getFirstname("el"))
+					.replaceAll("\\[lastname_el\\]", u.getLastname("el"))
+					.replaceAll("\\[firstname_en\\]", u.getFirstname("en"))
+					.replaceAll("\\[lastname_en\\]", u.getLastname("en"))
 					.replaceAll("\\[loginLink\\]", "<a href=\"" + getloginLink(u.getPermanentAuthToken()) + "\">Είσοδος</a>");
 				if (sendNow) {
 					sendEmail(aToEmailAddr, aSubject, aBody);
@@ -260,8 +261,10 @@ public class MailService {
 				String aToEmailAddr = u.getContactInfo().getEmail();
 				String aSubject = resources.getString("reminder.login.email.subject");
 				String aBody = resources.getString("reminder.login.email.body")
-					.replaceAll("\\[firstname\\]", u.getBasicInfo().getFirstname())
-					.replaceAll("\\[lastname\\]", u.getBasicInfo().getLastname())
+					.replaceAll("\\[firstname_el\\]", u.getFirstname("el"))
+					.replaceAll("\\[lastname_el\\]", u.getLastname("el"))
+					.replaceAll("\\[firstname_en\\]", u.getFirstname("en"))
+					.replaceAll("\\[lastname_en\\]", u.getLastname("en"))
 					.replaceAll("\\[loginLink\\]", "<a href=\"" + getloginLink(u.getPermanentAuthToken()) + "\">Είσοδος</a>");
 				if (sendNow) {
 					sendEmail(aToEmailAddr, aSubject, aBody);

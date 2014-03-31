@@ -488,7 +488,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 		showInstitutionAssistantsView: function (userId) {
 			var self = this;
 			var accountView;
-			var userRoleInfoView;
 			var assistants;
 			var assistantsView;
 
@@ -501,29 +500,21 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					if (accountView) {
 						accountView.close();
 					}
-					if (userRoleInfoView) {
-						userRoleInfoView.close();
-					}
-					$("#content").unbind();
-					$("#content").empty();
-
-					// Add
-					self.refreshBreadcrumb([ $.i18n.prop('menu_iassistants'), user.getDisplayName() ]);
-
 					accountView = new Views.AssistantAccountView({
 						model: user
 					});
+
+					// Add
+					$("#content").unbind();
+					$("#content").empty();
 					$("#content").append(accountView.render().el);
 
-					if (!_.isUndefined(user.id)) {
-						self.navigate("iassistants/" + user.id, {
-							trigger: false
-						});
-					} else {
-						self.navigate("iassistants", {
-							trigger: false
-						});
-					}
+					self.refreshBreadcrumb([ $.i18n.prop('menu_iassistants'), user.getDisplayName() ]);
+					self.navigate("iassistants/" + (user.id || ''), {
+						trigger: false
+					});
+					App.utils.scrollTo(accountView.$el);
+
 				}
 			}, this);
 
@@ -553,7 +544,6 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 		showMinistryAssistantsView: function (userId) {
 			var self = this;
 			var accountView;
-			var userRoleInfoView;
 			var assistants;
 			var assistantsView;
 
@@ -566,33 +556,20 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					if (accountView) {
 						accountView.close();
 					}
-					if (userRoleInfoView) {
-						userRoleInfoView.close();
-					}
-					$("#content").unbind();
-					$("#content").empty();
-
-					// Add
-					self.refreshBreadcrumb([ $.i18n.prop('menu_massistants'), user.getDisplayName() ]);
-
-					userRoleInfoView = new Views.UserRoleInfoView({
-						model: user
-					});
-					$("#content").append(userRoleInfoView.render().el);
 					accountView = new Views.AssistantAccountView({
 						model: user
 					});
+
+					// Add
+					$("#content").unbind();
+					$("#content").empty();
 					$("#content").append(accountView.render().el);
 
-					if (!_.isUndefined(user.id)) {
-						self.navigate("massistants/" + user.id, {
-							trigger: false
-						});
-					} else {
-						self.navigate("massistants", {
-							trigger: false
-						});
-					}
+					self.refreshBreadcrumb([ $.i18n.prop('menu_massistants'), user.getDisplayName() ]);
+					self.navigate("massistants" + (user.id ? '/' + user.id : ''), {
+						trigger: false
+					});
+					App.utils.scrollTo(accountView.$el);
 				}
 			}, this);
 
@@ -666,11 +643,13 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 							});
 						}
 						// Add to UI
-						self.refreshBreadcrumb([ $.i18n.prop('menu_positions'), position.get("name") ]);
 						$("#content").unbind();
 						$("#content").empty();
 						$("#content").html(positionView.el);
 						positionView.render();
+
+						self.refreshBreadcrumb([ $.i18n.prop('menu_positions'), position.get("name") ]);
+						App.utils.scrollTo(positionView.$el);
 
 					}
 				});
@@ -790,17 +769,18 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					});
 				}
 
-				$("#content").unbind();
-				$("#content").empty();
-				$("#content").html(registerView.render().el);
-
 				register.fetch({
 					cache: false,
 					silent: true,
 					wait: true,
 					success: function () {
+						$("#content").unbind();
+						$("#content").empty();
+						$("#content").html(registerView.el);
 						registerView.render();
+
 						self.refreshBreadcrumb([ $.i18n.prop('menu_registers'), register.get("title") ]);
+						App.utils.scrollTo(registerView.$el);
 					}
 				});
 			});
@@ -939,18 +919,20 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 						model: institutionRF
 					});
 				}
-				self.refreshBreadcrumb([ $.i18n.prop('menu_regulatoryframeworks') ]);
-				$("#content").html(institutionRegulatoryFrameworkView.el);
-				// Update history
-				App.router.navigate("regulatoryframeworks/" + institutionRF.id, {
-					trigger: false
-				});
 				institutionRF.fetch({
 					cache: false,
 					silent: true,
 					wait: true,
 					success: function () {
+						$("#content").html(institutionRegulatoryFrameworkView.el);
 						institutionRegulatoryFrameworkView.render();
+
+						self.refreshBreadcrumb([ $.i18n.prop('menu_regulatoryframeworks') ]);
+						// Update history
+						App.router.navigate("regulatoryframeworks/" + institutionRF.id, {
+							trigger: false
+						});
+						App.utils.scrollTo(institutionRegulatoryFrameworkView.$el);
 					}
 				});
 			});
@@ -1089,21 +1071,21 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					model: candidacy
 				});
 				// Update history
-				App.router.navigate("candidateCandidacies/" + candidacy.id, {
-					trigger: false
-				});
-
-				self.refreshBreadcrumb([ $.i18n.prop('menu_candidateCandidacies'), candidacy.id ]);
-				$("#content").unbind();
-				$("#content").empty();
-				$("#content").html(candidacyEditView.el);
-
 				candidacy.fetch({
 					cache: false,
 					silent: true,
 					wait: true,
-					success: function() {
+					success: function () {
+						$("#content").unbind();
+						$("#content").empty();
+						$("#content").html(candidacyEditView.el);
 						candidacyEditView.render();
+
+						self.refreshBreadcrumb([ $.i18n.prop('menu_candidateCandidacies'), candidacy.id ]);
+						App.router.navigate("candidateCandidacies/" + candidacy.id, {
+							trigger: false
+						});
+						App.utils.scrollTo(candidacyEditView.$el);
 					}
 				});
 			});
