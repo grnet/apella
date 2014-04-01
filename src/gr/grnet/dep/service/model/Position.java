@@ -222,7 +222,7 @@ public class Position {
 		this.phases = phases;
 	}
 
-	@JsonView({DetailedPositionView.class})
+	@JsonView({PositionView.class})
 	public User getCreatedBy() {
 		return createdBy;
 	}
@@ -231,7 +231,7 @@ public class Position {
 		this.createdBy = createdBy;
 	}
 
-	@JsonView({DetailedPositionView.class})
+	@JsonView({PositionView.class})
 	public Set<User> getAssistants() {
 		return assistants;
 	}

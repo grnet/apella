@@ -280,9 +280,10 @@ public class ReportService {
 			"left join fetch ph.committee co " +
 			"left join fetch ph.evaluation ev " +
 			"left join fetch ph.nomination no " +
-			"left join fetch ph.complementaryDocuments cd ";
+			"left join fetch ph.complementaryDocuments cd " +
+			"where p.permanent = true ";
 		if (institutionId != null) {
-			query = query.concat("where p.department.school.institution.id = :institutionId");
+			query = query.concat("and p.department.school.institution.id = :institutionId");
 		}
 
 		Query q = em.createQuery(query);

@@ -88,6 +88,7 @@ public class PositionRESTService extends RESTService {
 				assistant.getRoles().size();
 			}
 			position.getCreatedBy().getRoles().size();
+			position.getManager().getUser().getRoles().size();
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
@@ -229,6 +230,7 @@ public class PositionRESTService extends RESTService {
 			position = em.merge(position);
 			em.flush();
 
+			position = getAndCheckPosition(loggedOn, position.getId());
 			return position;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
