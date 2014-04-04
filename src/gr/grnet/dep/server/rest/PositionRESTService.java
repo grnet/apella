@@ -112,9 +112,10 @@ public class PositionRESTService extends RESTService {
 			institutions.addAll(loggedOnUser.getAssociatedInstitutions());
 			@SuppressWarnings("unchecked")
 			List<Position> positions = (List<Position>) em.createQuery(
-				"from Position p " +
+				"select distinct p from Position p " +
 					"join fetch p.phase ph " +
 					"join fetch ph.candidacies cs " +
+					"left join fetch p.assistants " +
 					"where p.permanent = true " +
 					"and p.department.school.institution in (:institutions)")
 				.setParameter("institutions", institutions)
@@ -256,7 +257,7 @@ public class PositionRESTService extends RESTService {
 	public Position update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, Position position) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
-			Position existingPosition = getAndCheckPosition(loggedOn, id);
+			final Position existingPosition = getAndCheckPosition(loggedOn, id);
 			if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
@@ -312,6 +313,77 @@ public class PositionRESTService extends RESTService {
 			// Send E-Mails
 			if (isNew) {
 				sendNotificationsToInterestedCandidates(existingPosition);
+				// Send to Assistants
+				for (final User assistant : position.getAssistants()) {
+					mailService.postEmail(assistant.getContactInfo().getEmail(),
+						"default.subject",
+						"position.create@institutionAssistant",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("position", existingPosition.getName());
+
+								put("firstname_el", assistant.getFirstname("el"));
+								put("lastname_el", assistant.getLastname("el"));
+								put("institution_el", existingPosition.getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", existingPosition.getDepartment().getSchool().getName().get("el"));
+								put("department_el", existingPosition.getDepartment().getName().get("el"));
+
+								put("firstname_en", assistant.getFirstname("en"));
+								put("lastname_en", assistant.getLastname("en"));
+								put("institution_en", existingPosition.getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", existingPosition.getDepartment().getSchool().getName().get("en"));
+								put("department_en", existingPosition.getDepartment().getName().get("en"));
+							}
+						}));
+				}
+
+				if (loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+					// Send also to manager and alternateManager
+					final InstitutionManager im = existingPosition.getManager();
+					mailService.postEmail(im.getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"position.create@institutionManager",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("position", existingPosition.getName());
+
+								put("firstname_el", im.getUser().getFirstname("el"));
+								put("lastname_el", im.getUser().getLastname("el"));
+								put("institution_el", existingPosition.getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", existingPosition.getDepartment().getSchool().getName().get("el"));
+								put("department_el", existingPosition.getDepartment().getName().get("el"));
+
+								put("firstname_en", im.getUser().getFirstname("en"));
+								put("lastname_en", im.getUser().getLastname("en"));
+								put("institution_en", existingPosition.getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", existingPosition.getDepartment().getSchool().getName().get("en"));
+								put("department_en", existingPosition.getDepartment().getName().get("en"));
+							}
+						}));
+					mailService.postEmail(im.getAlternateContactInfo().getEmail(),
+						"default.subject",
+						"position.create@institutionManager",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("position", existingPosition.getName());
+
+								put("firstname_el", im.getAlternateFirstname("el"));
+								put("lastname_el", im.getAlternateLastname("el"));
+								put("institution_el", existingPosition.getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", existingPosition.getDepartment().getSchool().getName().get("el"));
+								put("department_el", existingPosition.getDepartment().getName().get("el"));
+
+								put("firstname_en", im.getAlternateFirstname("en"));
+								put("lastname_en", im.getAlternateLastname("en"));
+								put("institution_en", existingPosition.getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", existingPosition.getDepartment().getSchool().getName().get("en"));
+								put("department_en", existingPosition.getDepartment().getName().get("en"));
+							}
+						}));
+				}
 			}
 
 			// Return result

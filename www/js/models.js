@@ -1427,7 +1427,6 @@ define([
 				return user.isAssociatedWithDepartment(position.get("department"));
 			}
 			return _.any(user.get("roles"), function (r) {
-				debugger;
 				if (r.discriminator === "INSTITUTION_MANAGER") {
 					return r.institution.id === position.get("department").school.institution.id;
 				}
