@@ -214,6 +214,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			if (!self.model.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
 				menuItems.push("profile");
 			}
+			if (self.model.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
+				menuItems.push("administrators");
+			}
 			if (self.model.hasRoleWithStatus("PROFESSOR_DOMESTIC", "ACTIVE")) {
 				menuItems.push("regulatoryframeworks");
 				menuItems.push("registers");
@@ -1706,7 +1709,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						onlyLatin: true
 					},
 					identification: {
-						required: !(self.model.hasRole('PROFESSOR_DOMESTIC') || self.model.hasRole('PROFESSOR_FOREIGN'))
+						required: !(self.model.hasRole('PROFESSOR_DOMESTIC') || self.model.hasRole('PROFESSOR_FOREIGN') || self.model.hasRole('ADMINISTRATOR'))
 					},
 					password: {
 						required: self.model.isNew(),
@@ -1719,7 +1722,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 						equalTo: "form input[name=password]"
 					},
 					mobile: {
-						required: true,
+						required: !(self.model.hasRole('ADMINISTRATOR')),
 						number: true,
 						minlength: 10
 					},
@@ -4522,6 +4525,104 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 	});
 
 	/***************************************************************************
+	 * AdministratorListView ***************************************************
+	 **************************************************************************/
+	Views.AdministratorListView = Views.BaseView.extend({
+		tagName: "div",
+
+		initialize: function (options) {
+			this._super('initialize', [ options ]);
+			this.template = _.template(tpl_user_list);
+			this.roleInfoTemplate = _.template(tpl_user_role_info);
+			this.collection.bind("add", this.render, this);
+			this.collection.bind("remove", this.render, this);
+			this.collection.bind("change", this.render, this);
+			this.collection.bind("reset", this.render, this);
+		},
+
+		events: {
+			"click a#select": "select",
+			"click a#createAdministrator": "createAdministrator"
+		},
+
+		render: function () {
+			var self = this;
+			var tpl_data = {
+				users: (function () {
+					var result = [];
+					self.collection.each(function (model) {
+						var item;
+						if (model.has("id")) {
+							item = model.toJSON();
+							item.cid = model.cid;
+							item.roleInfo = self.roleInfoTemplate({
+								roles: item.roles
+							});
+							result.push(item);
+						}
+					});
+					return result;
+				}())
+			};
+			self.closeInnerViews();
+			self.$el.empty();
+			self.addTitle();
+			self.$el.append(self.template(tpl_data));
+			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
+				self.$("table").dataTable({
+					"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+					"sPaginationType": "bootstrap",
+					"oLanguage": {
+						"sSearch": $.i18n.prop("dataTable_sSearch"),
+						"sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+						"sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+						"sInfo": $.i18n.prop("dataTable_sInfo"),
+						"sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+						"sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+						"oPaginate": {
+							sFirst: $.i18n.prop("dataTable_sFirst"),
+							sPrevious: $.i18n.prop("dataTable_sPrevious"),
+							sNext: $.i18n.prop("dataTable_sNext"),
+							sLast: $.i18n.prop("dataTable_sLast")
+						}
+					}
+				});
+			}
+			// Add Actions:
+			self.$("#actions").html('<div class="btn-group input-append">' +
+				'<a id="createAdministrator" class="btn btn-small add-on"><i class="icon-plus"></i> ' +$.i18n.prop('btn_create') + ' </a>' +
+				'</div>');
+			return self;
+		},
+
+		select: function (event) {
+			var selectedModel = this.collection.get($(event.currentTarget).attr('user'));
+			this.collection.trigger("user:selected", selectedModel);
+		},
+
+		createAdministrator: function () {
+			var user = new Models.User({
+				"authenticationType": "USERNAME",
+				"roles": [
+					{
+						"discriminator": "ADMINISTRATOR"
+					}
+				]
+			});
+			this.collection.add(user);
+			this.collection.trigger("user:selected", user);
+		},
+
+		close: function () {
+			this.closeInnerViews();
+			this.collection.unbind("change", this.render, this);
+			this.collection.unbind("reset", this.render, this);
+			$(this.el).unbind();
+			$(this.el).remove();
+		}
+	});
+
+	/***************************************************************************
 	 * AssistantListView *******************************************************
 	 **************************************************************************/
 	Views.InstitutionAssistantListView = Views.BaseView.extend({
@@ -4712,6 +4813,35 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			this.collection.unbind("reset", this.render, this);
 			$(this.el).unbind();
 			$(this.el).remove();
+		}
+	});
+
+	/***************************************************************************
+	 * AdministratorAccountView ************************************************
+	 **************************************************************************/
+	Views.AdministratorAccountView = Views.AccountView.extend({
+		initialize: function (options) {
+			this._super('initialize', [ options ]);
+		},
+
+		applyRules: function () {
+			var self = this;
+			// Actions:
+			if (self.model.isNew()) {
+				self.$("a#status").addClass("disabled");
+			} else {
+				self.$("a#status").removeClass("disabled");
+			}
+			self.$("select,input,textarea").removeAttr("disabled");
+			self.$("a#save").show();
+			self.$("a#remove").show();
+		},
+
+		render: function (eventName) {
+			var self = this;
+			self._super('render', [ eventName ]);
+			self.$("span#accounthelpdesk").hide();
+			return self;
 		}
 	});
 
@@ -7213,6 +7343,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 		render: function () {
 			var self = this;
 			var tpl_data = {
+				canExportGeneric: App.loggedOnUser.hasRole("INSTITUTION_MANAGER") || App.loggedOnUser.hasRole("ADMINISTRATOR"),
+				exportGenericUrl : (new Models.Register()).urlRoot + "/professorsexport?X-Auth-Token=" + encodeURIComponent(App.authToken),
 				showAmMember: App.loggedOnUser.hasRole("PROFESSOR_DOMESTIC") || App.loggedOnUser.hasRole("PROFESSOR_FOREIGN"),
 				registries: (function () {
 					var result = [];

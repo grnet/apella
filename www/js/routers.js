@@ -247,7 +247,9 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			"candidateCandidacies/:candidacyId": "showCandidateCandidacyView",
 			"candidacy/:candidacyId": "showCandidacyView",
 			"issues": "showIssueListView",
-			"searchusers": "showUserSearchView"
+			"searchusers": "showUserSearchView",
+			"administrators": "showAdministratorsView",
+			"administrators/:userId": "showAdministratorsView"
 		},
 
 		start: function (eventName, authToken) {
@@ -485,6 +487,62 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			});
 		},
 
+		showAdministratorsView: function (userId) {
+			var self = this;
+			var accountView;
+			var administrators;
+			var adminitratorsView;
+
+			self.clear();
+
+			administrators = new Models.Users();
+			administrators.on("user:selected", function (user) {
+				if (user) {
+					// Clean up
+					if (accountView) {
+						accountView.close();
+					}
+					accountView = new Views.AdministratorAccountView({
+						model: user
+					});
+
+					// Add
+					$("#content").unbind();
+					$("#content").empty();
+					$("#content").append(accountView.render().el);
+
+					self.refreshBreadcrumb([ $.i18n.prop('menu_administrators'), user.getDisplayName() ]);
+					self.navigate("administrators" + (user.id ? ('/' + user.id) : ''), {
+						trigger: false
+					});
+					App.utils.scrollTo(accountView.$el);
+
+				}
+			}, this);
+
+			adminitratorsView = new Views.AdministratorListView({
+				collection: administrators
+			});
+			self.refreshBreadcrumb([ $.i18n.prop('menu_iassistants') ]);
+			$("#featured").append(adminitratorsView.el);
+
+			administrators.fetch({
+				cache: false,
+				reset: true,
+				wait: true,
+				data: {
+					role: 'ADMINISTRATOR'
+				},
+				success: function () {
+					if (!_.isUndefined(userId)) {
+						administrators.trigger("user:selected", administrators.get(userId));
+					}
+				}
+			});
+
+			self.currentView = adminitratorsView;
+		},
+
 		showInstitutionAssistantsView: function (userId) {
 			var self = this;
 			var accountView;
@@ -510,7 +568,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					$("#content").append(accountView.render().el);
 
 					self.refreshBreadcrumb([ $.i18n.prop('menu_iassistants'), user.getDisplayName() ]);
-					self.navigate("iassistants/" + (user.id || ''), {
+					self.navigate("iassistants" + (user.id ? ('/' + user.id) : ''), {
 						trigger: false
 					});
 					App.utils.scrollTo(accountView.$el);
@@ -566,7 +624,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					$("#content").append(accountView.render().el);
 
 					self.refreshBreadcrumb([ $.i18n.prop('menu_massistants'), user.getDisplayName() ]);
-					self.navigate("massistants" + (user.id ? '/' + user.id : ''), {
+					self.navigate("massistants" + (user.id ? ('/' + user.id) : ''), {
 						trigger: false
 					});
 					App.utils.scrollTo(accountView.$el);

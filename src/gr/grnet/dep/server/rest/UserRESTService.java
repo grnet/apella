@@ -332,13 +332,21 @@ public class UserRESTService extends RESTService {
 					firstRole.setStatus(RoleStatus.ACTIVE);
 					break;
 				case ADMINISTRATOR:
-					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+					// CHECK LOGGEDON USER, ACTIVATE NEW USER
+					loggedOn = getLoggedOn(authToken);
+					if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+					}
+					newUser.setStatus(UserStatus.ACTIVE);
+					newUser.setVerificationNumber(null);
+					firstRole.setStatus(RoleStatus.ACTIVE);
 			}
 
 			// Identification Required
-			if (!(firstRole.getDiscriminator().equals(RoleDiscriminator.PROFESSOR_DOMESTIC) || firstRole.getDiscriminator().equals(RoleDiscriminator.PROFESSOR_FOREIGN)) &&
+			if (!firstRole.getDiscriminator().equals(RoleDiscriminator.PROFESSOR_DOMESTIC) &&
+				!firstRole.getDiscriminator().equals(RoleDiscriminator.PROFESSOR_FOREIGN) &&
+				!firstRole.getDiscriminator().equals(RoleDiscriminator.ADMINISTRATOR) &&
 				(newUser.getIdentification() == null || newUser.getIdentification().trim().isEmpty())) {
-
 				throw new RestException(Status.BAD_REQUEST, "registration.identification.required");
 			}
 			// Identification availability
@@ -383,7 +391,7 @@ public class UserRESTService extends RESTService {
 					"user", savedUser.getFullName("el") + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + savedUser.getId() + " )");
 				JiraIssue issue = JiraIssue.createRegistrationIssue(savedUser, summary, description);
 				jiraService.queueCreateIssue(issue);
-			} else {
+			} else if (!firstRole.getDiscriminator().equals(RoleDiscriminator.ADMINISTRATOR)) {
 				String summary = jiraService.getResourceBundleString("user.created.account.summary");
 				String description = jiraService.getResourceBundleString("user.created.account.description",
 					"user", savedUser.getFullName("el") + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + savedUser.getId() + " )");
@@ -446,7 +454,9 @@ public class UserRESTService extends RESTService {
 		} catch (NoResultException e) {
 		}
 		// Identification Required
-		if (!(existingUser.getPrimaryRole().equals(RoleDiscriminator.PROFESSOR_DOMESTIC) || existingUser.getPrimaryRole().equals(RoleDiscriminator.PROFESSOR_FOREIGN)) &&
+		if (!existingUser.getPrimaryRole().equals(RoleDiscriminator.PROFESSOR_DOMESTIC) &&
+			!existingUser.getPrimaryRole().equals(RoleDiscriminator.PROFESSOR_FOREIGN) &&
+			!existingUser.getPrimaryRole().equals(RoleDiscriminator.ADMINISTRATOR) &&
 			(user.getIdentification() == null || user.getIdentification().trim().isEmpty())) {
 			throw new RestException(Status.BAD_REQUEST, "registration.identification.required");
 		}
@@ -501,6 +511,11 @@ public class UserRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
+			//Delete all associations
+			em.createQuery(
+				"delete from JiraIssue where user.id = :userId")
+				.setParameter("userId", id)
+				.executeUpdate();
 			//Do Delete:
 			em.remove(existingUser);
 			em.flush();

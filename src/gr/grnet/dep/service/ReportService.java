@@ -2,11 +2,14 @@ package gr.grnet.dep.service;
 
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
+import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.ProfessorForeign;
 import gr.grnet.dep.service.model.Register;
 import gr.grnet.dep.service.model.RegisterMember;
+import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.SectorName;
+import gr.grnet.dep.service.model.User.UserStatus;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -43,6 +46,188 @@ public class ReportService {
 	protected EntityManager em;
 
 	private static final Logger logger = Logger.getLogger(ReportService.class.getName());
+
+	private List<Professor> getProfessorData() {
+		List<Professor> data = em.createQuery(
+			"select p " +
+				"from Professor p " +
+				"where p.status = :roleStatus and p.user.status = :userStatus ", Professor.class)
+			.setParameter("roleStatus", RoleStatus.ACTIVE)
+			.setParameter("userStatus", UserStatus.ACTIVE)
+			.getResultList();
+		return data;
+	}
+
+	public InputStream createProfessorDataExcel() {
+		//1. Get Data
+		List<Professor> professors = getProfessorData();
+		//2. Create XLS
+		Workbook wb = new HSSFWorkbook();
+		Sheet sheet = wb.createSheet("Sheet1");
+
+		CellStyle titleStyle = wb.createCellStyle();
+		Font font = wb.createFont();
+		font.setFontName(HSSFFont.FONT_ARIAL);
+		font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+		titleStyle.setFont(font);
+		titleStyle.setWrapText(false);
+
+		CellStyle textStyle = wb.createCellStyle();
+		textStyle.setWrapText(false);
+
+		CellStyle floatStyle = wb.createCellStyle();
+		floatStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+		floatStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
+
+		CellStyle intStyle = wb.createCellStyle();
+		intStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+
+		CellStyle dateStyle = wb.createCellStyle();
+		dateStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("m/d/yy"));
+
+		int rowNum = 0;
+		int colNum = 0;
+
+		Row row = null;
+		Cell cell = null;
+
+		row = sheet.createRow(rowNum++);
+
+		cell = row.createCell(0);
+		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+		cell.setCellValue("Ημερομηνία: " + sdf.format(new Date()));
+		cell.setCellStyle(titleStyle);
+		sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
+
+		row = sheet.createRow(rowNum++);
+
+		cell = row.createCell(colNum++);
+		cell.setCellValue("Όνομα");
+		cell.setCellStyle(titleStyle);
+
+		cell = row.createCell(colNum++);
+		cell.setCellValue("Επώνυμο");
+		cell.setCellStyle(titleStyle);
+
+		cell = row.createCell(colNum++);
+		cell.setCellValue("Κωδικός");
+		cell.setCellStyle(titleStyle);
+
+		cell = row.createCell(colNum++);
+		cell.setCellValue("Προφίλ Χρήστη");
+		cell.setCellStyle(titleStyle);
+
+		cell = row.createCell(colNum++);
+		cell.setCellValue("Βαθμίδα");
+		cell.setCellStyle(titleStyle);
+
+		cell = row.createCell(colNum++);
+		cell.setCellValue("Ίδρυμα/Ερευνητικό Κέντρο");
+		cell.setCellStyle(titleStyle);
+
+		cell = row.createCell(colNum++);
+		cell.setCellValue("Σχολή/-");
+		cell.setCellStyle(titleStyle);
+
+		cell = row.createCell(colNum++);
+		cell.setCellValue("Τμήμα/Ινστιτούτο");
+		cell.setCellStyle(titleStyle);
+
+		cell = row.createCell(colNum++);
+		cell.setCellValue("Γνωστικό Αντικείμενο");
+		cell.setCellStyle(titleStyle);
+
+		for (Professor p : professors) {
+			row = sheet.createRow(rowNum++);
+
+			colNum = 0;
+			cell = row.createCell(colNum++);
+			cell.setCellValue(p.getUser().getFirstname("el"));
+			cell.setCellStyle(textStyle);
+
+			cell = row.createCell(colNum++);
+			cell.setCellValue(p.getUser().getLastname("el"));
+			cell.setCellStyle(textStyle);
+
+			cell = row.createCell(colNum++);
+			cell.setCellValue(p.getUser().getId());
+			cell.setCellStyle(intStyle);
+
+			switch (p.getDiscriminator()) {
+				case PROFESSOR_DOMESTIC:
+					ProfessorDomestic professorDomestic = (ProfessorDomestic) p;
+
+					cell = row.createCell(colNum++);
+					cell.setCellValue("Καθηγητής Ημεδαπής");
+					cell.setCellStyle(textStyle);
+
+					cell = row.createCell(colNum++);
+					cell.setCellValue(professorDomestic.getRank().getName().get("el"));
+					cell.setCellStyle(textStyle);
+
+					cell = row.createCell(colNum++);
+					cell.setCellValue(professorDomestic.getDepartment().getSchool().getInstitution().getName().get("el"));
+					cell.setCellStyle(textStyle);
+
+					cell = row.createCell(colNum++);
+					cell.setCellValue(professorDomestic.getDepartment().getSchool().getName().get("el"));
+					cell.setCellStyle(textStyle);
+
+					cell = row.createCell(colNum++);
+					cell.setCellValue(professorDomestic.getDepartment().getName().get("el"));
+					cell.setCellStyle(textStyle);
+
+					cell = row.createCell(colNum++);
+					cell.setCellValue(professorDomestic.getFekSubject() != null ? professorDomestic.getFekSubject().getName() : professorDomestic.getSubject().getName());
+					cell.setCellStyle(textStyle);
+
+					break;
+
+				case PROFESSOR_FOREIGN:
+					ProfessorForeign professorForeign = (ProfessorForeign) p;
+
+					cell = row.createCell(colNum++);
+					cell.setCellValue("Καθηγητής Αλλοδαπής");
+					cell.setCellStyle(textStyle);
+
+					cell = row.createCell(colNum++);
+					cell.setCellValue(professorForeign.getRank().getName().get("el"));
+					cell.setCellStyle(textStyle);
+
+					cell = row.createCell(colNum++);
+					cell.setCellValue(professorForeign.getInstitution());
+					cell.setCellStyle(textStyle);
+
+					cell = row.createCell(colNum++);
+					cell.setCellStyle(textStyle);
+
+					cell = row.createCell(colNum++);
+					cell.setCellStyle(textStyle);
+
+					cell = row.createCell(colNum++);
+					cell.setCellValue(professorForeign.getSubject().getName());
+					cell.setCellStyle(textStyle);
+
+				default:
+					// Won't happen
+					break;
+			}
+		}
+
+		for (int i = 0; i < colNum; i++) {
+			sheet.autoSizeColumn(i);
+		}
+
+		try {
+			ByteArrayOutputStream output = new ByteArrayOutputStream();
+			wb.write(output);
+			output.close();
+
+			return new ByteArrayInputStream(output.toByteArray());
+		} catch (IOException e) {
+			throw new EJBException(e);
+		}
+	}
 
 	private List<Object[]> getRegisterExportData(Long registerId) {
 		@SuppressWarnings("unchecked")

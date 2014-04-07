@@ -769,8 +769,35 @@ public class RegisterRESTService extends RESTService {
 
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	@Path("/professorsexport")
+	public Response getProfessorsExport(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
+		User loggedOn = getLoggedOn(authToken);
+		// Authorize
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+			!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// Generate Document
+		try {
+			InputStream is = reportService.createProfessorDataExcel();
+			String filename = "generic_register.xls";
+
+			// Return response
+			return Response.ok(is)
+				.type(MediaType.APPLICATION_OCTET_STREAM)
+				.header("charset", "UTF-8")
+				.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(filename, "UTF-8") + "\"")
+				.build();
+		} catch (UnsupportedEncodingException e) {
+			logger.log(Level.SEVERE, "getDocument", e);
+			throw new EJBException(e);
+		}
+	}
+
+	@GET
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/{id:[0-9]+}/export")
-	public Response getDocument(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long registerId) {
+	public Response getRegisterExport(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long registerId) {
 		User loggedOn = getLoggedOn(authToken);
 		Register register = em.find(Register.class, registerId);
 		// Authorize
