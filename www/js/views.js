@@ -214,8 +214,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			if (!self.model.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
 				menuItems.push("profile");
 			}
-			if (self.model.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
-				menuItems.push("administrators");
+			if (self.model.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE") && self.model.getRole('ADMINISTRATOR').superAdministrator) {
+                menuItems.push("administrators");
 			}
 			if (self.model.hasRoleWithStatus("PROFESSOR_DOMESTIC", "ACTIVE")) {
 				menuItems.push("regulatoryframeworks");
@@ -1440,6 +1440,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					link: "profile"
 				});
 			}
+            if (self.model.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE") && self.model.getRole('ADMINISTRATOR').superAdministrator) {
+                tiles.push({
+                    link: "administrators"
+                });
+            }
 			if (self.model.hasRoleWithStatus("PROFESSOR_DOMESTIC", "ACTIVE")) {
 				tiles.push({
 					link: "registers"
@@ -4337,6 +4342,27 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.addTitle();
 			self.$el.append(self.template(tpl_data));
 
+            if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
+                self.$("table").dataTable({
+                    "bPaginate" : false,
+                    "bFilter" : false,
+                    "oLanguage": {
+                        "sSearch": $.i18n.prop("dataTable_sSearch"),
+                        "sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+                        "sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+                        "sInfo": $.i18n.prop("dataTable_sInfo"),
+                        "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+                        "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+                        "oPaginate": {
+                            sFirst: $.i18n.prop("dataTable_sFirst"),
+                            sPrevious: $.i18n.prop("dataTable_sPrevious"),
+                            sNext: $.i18n.prop("dataTable_sNext"),
+                            sLast: $.i18n.prop("dataTable_sLast")
+                        }
+                    }
+                });
+            }
+
 			return self;
 		},
 
@@ -4397,8 +4423,31 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.closeInnerViews();
 			self.$el.empty();
 			self.addTitle();
+
 			self.$el.append(self.template(tpl_data));
 			self.$input.val(self.collection.length);
+
+            // Add DataTables for sorting:
+            if (!$.fn.DataTable.fnIsDataTable(self.$("table.file-table-edit"))) {
+                self.$("table.file-table-edit").dataTable({
+                    "bPaginate" : false,
+                    "bFilter" : false,
+                    "oLanguage": {
+                        "sSearch": $.i18n.prop("dataTable_sSearch"),
+                        "sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+                        "sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+                        "sInfo": $.i18n.prop("dataTable_sInfo"),
+                        "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+                        "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+                        "oPaginate": {
+                            sFirst: $.i18n.prop("dataTable_sFirst"),
+                            sPrevious: $.i18n.prop("dataTable_sPrevious"),
+                            sNext: $.i18n.prop("dataTable_sNext"),
+                            sLast: $.i18n.prop("dataTable_sLast")
+                        }
+                    }
+                });
+            }
 
 			// Initialize FileUpload Modal
 			self.$("#uploader").modal({

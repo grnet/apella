@@ -168,7 +168,7 @@ public class MailService {
 			mailMessage.setString("aBody", aBody);
 			mailMessage.setBoolean("sendNow", sendNow);
 
-			logger.log(Level.INFO, "Posting emailMessage to " + aToEmailAddr + " " + aSubject + "\n" + aBody);
+			logger.log(Level.INFO, "Posting emailMessage to " + aToEmailAddr + " " + aSubject);
 			sender.send(mailMessage);
 		} catch (NamingException e) {
 			logger.log(Level.SEVERE, "Message not published: ", e);

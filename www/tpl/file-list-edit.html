@@ -1,22 +1,19 @@
-<table class="file-table-edit">
+<table class="table file-table-edit">
 <thead>
 	<tr>
-		<th width="1px">#</th>
 		<th><%= $.i18n.prop('FileName') %></th>
 		<th><%= $.i18n.prop('FileSize') %></th>
 		<th><%= $.i18n.prop('FileDate') %></th>
 <% if (withMetadata) { %>
 		<th><%= $.i18n.prop('FileDescription') %></th>
 <% } %>
-		<th width="1px"></th>
+    	<th width="120px"></th>
 	</tr>
 </thead>
 <tbody>
-<% var row = 1; %>
 <% _.each(files, function(file) { %>
 <% if (!_.isUndefined(file.id)) { %>
-<tr>
-		<td width="1px"><%= row++ %></td>
+    <tr>
 		<td>
 	<% if (withMetadata && file.name) { %>
 			<a href='<%= file.currentBody.url %>' target="viewfile"><%= file.name %>, (<%= file.currentBody.originalFilename %>)</a>
@@ -33,19 +30,19 @@
 	<% if (withMetadata) { %>
 		<td><%= file.description %></td>
 	<% } %>
-	<% if (editable) { %>
 		<td width="120px">
+            <% if (editable) { %>
 			<a id="delete" data-file-id="<%= file.id %>" class="btn btn-block btn-mini btn-danger pull-right"><i class="icon-trash icon-white"></i> <%=$.i18n.prop('btn_delete') %></a>
+            <% } %>
 		</td>
-	</tr>
-	<% } %>
+    </tr>
 <% } %>
 <% }); %>
 </tbody>
 <tfoot>
 <% if (editable) { %>
 	<tr>
-		<td colspan="<%= withMetadata ? 5 : 4%>"></td>
+		<td colspan="<%= withMetadata ? 4 : 3 %>"></td>
 		<td>
 			<a id="toggleUpload" class="btn btn-block btn-mini pull-right"><i class="icon-plus"></i> <%=$.i18n.prop('btn_add_file') %></a>
 		</td>

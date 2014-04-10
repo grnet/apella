@@ -314,7 +314,7 @@ public class PositionRESTService extends RESTService {
 			if (isNew) {
 				sendNotificationsToInterestedCandidates(existingPosition);
 				// Send to Assistants
-				for (final User assistant : position.getAssistants()) {
+				for (final User assistant : existingPosition.getAssistants()) {
 					mailService.postEmail(assistant.getContactInfo().getEmail(),
 						"default.subject",
 						"position.create@institutionAssistant",

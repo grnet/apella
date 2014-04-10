@@ -18,15 +18,26 @@ public class Administrator extends Role {
 	@Transient
 	private Logger logger;
 
+	private boolean superAdministrator = false;
+
 	public Administrator() {
 		super();
 		setDiscriminator(RoleDiscriminator.ADMINISTRATOR);
+	}
+
+	public boolean isSuperAdministrator() {
+		return superAdministrator;
+	}
+
+	public void setSuperAdministrator(boolean superAdministrator) {
+		this.superAdministrator = superAdministrator;
 	}
 
 	////////////////////////////////////////////////////////////////////////////
 
 	@Override
 	public Role copyFrom(Role otherRole) {
+		// Do not change superAdministrator. it is fixed
 		return this;
 	}
 

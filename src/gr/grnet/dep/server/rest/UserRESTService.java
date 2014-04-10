@@ -4,6 +4,7 @@ import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.AuthenticationService;
 import gr.grnet.dep.service.exceptions.ServiceException;
+import gr.grnet.dep.service.model.Administrator;
 import gr.grnet.dep.service.model.AuthenticationType;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.InstitutionAssistant;
@@ -337,6 +338,10 @@ public class UserRESTService extends RESTService {
 					if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
 						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 					}
+					Administrator admin = (Administrator) loggedOn.getActiveRole(RoleDiscriminator.ADMINISTRATOR);
+					if (!admin.isSuperAdministrator()) {
+						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+					}
 					newUser.setStatus(UserStatus.ACTIVE);
 					newUser.setVerificationNumber(null);
 					firstRole.setStatus(RoleStatus.ACTIVE);
@@ -428,6 +433,13 @@ public class UserRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.user.id");
 		}
 		boolean canUpdate = loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR);
+		if (existingUser.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+			canUpdate = loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR);
+			if (canUpdate) {
+				Administrator admin = (Administrator) loggedOn.getActiveRole(RoleDiscriminator.ADMINISTRATOR);
+				canUpdate = admin.isSuperAdministrator();
+			}
+		}
 		if (!canUpdate) {
 			canUpdate = loggedOn.getId().equals(id);
 		}
@@ -507,9 +519,21 @@ public class UserRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.user.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			(existingUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT) && !((InstitutionAssistant) existingUser.getActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)).getManager().getUser().getId().equals(loggedOn.getId()))) {
+			(existingUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
+			!((InstitutionAssistant) existingUser.getActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)).getManager().getUser().getId().equals(loggedOn.getId())
+			)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+		if (existingUser.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+			if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+			}
+			Administrator admin = (Administrator) loggedOn.getActiveRole(RoleDiscriminator.ADMINISTRATOR);
+			if (!admin.isSuperAdministrator()) {
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+			}
+		}
+
 		try {
 			//Delete all associations
 			em.createQuery(
