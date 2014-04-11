@@ -252,7 +252,7 @@ public class User implements Serializable {
 
 	@XmlTransient
 	@JsonIgnore
-	public Date creationDate() {
+	public Date getCreationDate() {
 		return creationDate;
 	}
 

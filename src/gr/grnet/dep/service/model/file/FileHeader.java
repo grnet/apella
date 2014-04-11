@@ -189,6 +189,26 @@ public class FileHeader implements Serializable {
 		currentBody = body;
 	}
 
+	public static <T extends FileHeader> T filterOne(Set<T> files, FileType type) {
+		Set<T> result = new HashSet<T>();
+		for (T file : files) {
+			if (!file.isDeleted() && file.getType().equals(type)) {
+				result.add(file);
+			}
+		}
+		return result.isEmpty() ? null : result.iterator().next();
+	}
+
+	public static <T extends FileHeader> T filterOneIncludingDeleted(Set<T> files, FileType type) {
+		Set<T> result = new HashSet<T>();
+		for (T file : files) {
+			if (file.getType().equals(type)) {
+				result.add(file);
+			}
+		}
+		return result.isEmpty() ? null : result.iterator().next();
+	}
+
 	public static <T extends FileHeader> Set<T> filter(Set<T> files, FileType type) {
 		Set<T> result = new HashSet<T>();
 		for (T file : files) {
@@ -214,6 +234,16 @@ public class FileHeader implements Serializable {
 		for (T file : files) {
 			if (!file.isDeleted()) {
 				result.add(file);
+			}
+		}
+		return result;
+	}
+
+	public static <T extends FileHeader> Set<Long> ids(Set<T> files) {
+		Set<Long> result = new HashSet<Long>();
+		for (T file : files) {
+			if (!file.isDeleted()) {
+				result.add(file.getId());
 			}
 		}
 		return result;
