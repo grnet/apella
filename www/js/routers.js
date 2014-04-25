@@ -1057,6 +1057,7 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 					cache: false,
 					reset: true,
 					wait: true,
+					type: 'POST',
 					data: {
 						"criteria": JSON.stringify(criteria)
 					}

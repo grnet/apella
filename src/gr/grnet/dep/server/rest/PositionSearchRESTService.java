@@ -26,13 +26,15 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
 import org.codehaus.jackson.map.annotate.JsonView;
@@ -52,10 +54,11 @@ public class PositionSearchRESTService extends RESTService {
 	 * @return
 	 * @HTTP 400 X-Error-Code: bad.criteria.format
 	 */
-	@GET
+	@POST
 	@Path("/search")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@JsonView({PublicPositionView.class})
-	public Collection<Position> search(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @QueryParam("criteria") String criteriaString) {
+	public Collection<Position> search(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @FormParam("criteria") String criteriaString) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
