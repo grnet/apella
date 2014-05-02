@@ -234,7 +234,7 @@ public class DataExportService {
 		return data;
 	}
 
-	public InputStream getProfessorForeignExcel() {
+	public InputStream createProfessorForeignExcel() {
 		//1. Get Data
 		List<ProfessorForeign> professors = getProfessorForeignData();
 		//2. Create XLS
@@ -368,7 +368,7 @@ public class DataExportService {
 		return data;
 	}
 
-	public InputStream getCandidateExcel() {
+	public InputStream createCandidateExcel() {
 		//1. Get Data
 		List<Candidate> candidates = getCandidateData();
 		//2. Create XLS

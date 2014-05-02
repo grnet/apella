@@ -14,17 +14,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 	"text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-candidacies.html", "text!tpl/position-committee.html",
 	"text!tpl/position-evaluation.html", "text!tpl/position-nomination.html", "text!tpl/position-complementaryDocuments.html", "text!tpl/position-nomination-edit.html",
 	"text!tpl/position-complementaryDocuments-edit.html", "text!tpl/department-select.html", "text!tpl/department.html", "text!tpl/user-helpdesk.html",
-	"text!tpl/position-helpdesk.html", "text!tpl/jira-issue-edit.html", "text!tpl/jira-issue-list.html", "text!tpl/jira-issue.html", "text!tpl/jira-issue-public-edit.html"
-], function ($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit, tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main,
-	tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select,
-	tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees,
-	tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria,
-	tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list,
-	tpl_register_edit_professor_list, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit,
-	tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list,
-	tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation, tpl_position_nomination,
-	tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit, tpl_department_select, tpl_department, tpl_user_helpdesk,
-	tpl_position_helpdesk, tpl_jira_issue_edit, tpl_jira_issue_list, tpl_jira_issue, tpl_jira_issue_public_edit) {
+	"text!tpl/position-helpdesk.html", "text!tpl/jira-issue-edit.html", "text!tpl/jira-issue-list.html", "text!tpl/jira-issue.html", "text!tpl/jira-issue-public-edit.html", "text!tpl/data-exports.html"
+], function ($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit, tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_edit_professor_list, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation, tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit, tpl_department_select, tpl_department, tpl_user_helpdesk, tpl_position_helpdesk, tpl_jira_issue_edit, tpl_jira_issue_list, tpl_jira_issue, tpl_jira_issue_public_edit, tpl_data_exports) {
 
 	"use strict";
 	/** ****************************************************************** */
@@ -214,8 +205,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			if (!self.model.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
 				menuItems.push("profile");
 			}
-			if (self.model.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE") && self.model.getRole('ADMINISTRATOR').superAdministrator) {
-                menuItems.push("administrators");
+			if (self.model.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
+				if (self.model.getRole('ADMINISTRATOR').superAdministrator) {
+					menuItems.push("administrators");
+				}
+				menuItems.push("dataExports");
 			}
 			if (self.model.hasRoleWithStatus("PROFESSOR_DOMESTIC", "ACTIVE")) {
 				menuItems.push("regulatoryframeworks");
@@ -1440,11 +1434,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 					link: "profile"
 				});
 			}
-            if (self.model.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE") && self.model.getRole('ADMINISTRATOR').superAdministrator) {
-                tiles.push({
-                    link: "administrators"
-                });
-            }
+			if (self.model.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE") && self.model.getRole('ADMINISTRATOR').superAdministrator) {
+				tiles.push({
+					link: "administrators"
+				});
+			}
 			if (self.model.hasRoleWithStatus("PROFESSOR_DOMESTIC", "ACTIVE")) {
 				tiles.push({
 					link: "registers"
@@ -2510,7 +2504,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 									"username": user.username || "",
 									"status": $.i18n.prop('status' + user.status),
 									"role": self.templateRoleInfo(user),
-									"roleStatus": $.i18n.prop('status' + _.find(user.roles,function (r) {
+									"roleStatus": $.i18n.prop('status' + _.find(user.roles, function (r) {
 										return r.discriminator === user.primaryRole;
 									}).status)
 								};
@@ -4203,6 +4197,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							data.submit();
 						}
 					}
+
 					self.$("a#upload").unbind("click");
 					self.$("a#upload").bind("click", upload);
 				},
@@ -4342,26 +4337,26 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.addTitle();
 			self.$el.append(self.template(tpl_data));
 
-            if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
-                self.$("table").dataTable({
-                    "bPaginate" : false,
-                    "bFilter" : false,
-                    "oLanguage": {
-                        "sSearch": $.i18n.prop("dataTable_sSearch"),
-                        "sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
-                        "sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
-                        "sInfo": $.i18n.prop("dataTable_sInfo"),
-                        "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
-                        "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
-                        "oPaginate": {
-                            sFirst: $.i18n.prop("dataTable_sFirst"),
-                            sPrevious: $.i18n.prop("dataTable_sPrevious"),
-                            sNext: $.i18n.prop("dataTable_sNext"),
-                            sLast: $.i18n.prop("dataTable_sLast")
-                        }
-                    }
-                });
-            }
+			if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
+				self.$("table").dataTable({
+					"bPaginate": false,
+					"bFilter": false,
+					"oLanguage": {
+						"sSearch": $.i18n.prop("dataTable_sSearch"),
+						"sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+						"sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+						"sInfo": $.i18n.prop("dataTable_sInfo"),
+						"sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+						"sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+						"oPaginate": {
+							sFirst: $.i18n.prop("dataTable_sFirst"),
+							sPrevious: $.i18n.prop("dataTable_sPrevious"),
+							sNext: $.i18n.prop("dataTable_sNext"),
+							sLast: $.i18n.prop("dataTable_sLast")
+						}
+					}
+				});
+			}
 
 			return self;
 		},
@@ -4427,27 +4422,27 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			self.$el.append(self.template(tpl_data));
 			self.$input.val(self.collection.length);
 
-            // Add DataTables for sorting:
-            if (!$.fn.DataTable.fnIsDataTable(self.$("table.file-table-edit"))) {
-                self.$("table.file-table-edit").dataTable({
-                    "bPaginate" : false,
-                    "bFilter" : false,
-                    "oLanguage": {
-                        "sSearch": $.i18n.prop("dataTable_sSearch"),
-                        "sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
-                        "sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
-                        "sInfo": $.i18n.prop("dataTable_sInfo"),
-                        "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
-                        "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
-                        "oPaginate": {
-                            sFirst: $.i18n.prop("dataTable_sFirst"),
-                            sPrevious: $.i18n.prop("dataTable_sPrevious"),
-                            sNext: $.i18n.prop("dataTable_sNext"),
-                            sLast: $.i18n.prop("dataTable_sLast")
-                        }
-                    }
-                });
-            }
+			// Add DataTables for sorting:
+			if (!$.fn.DataTable.fnIsDataTable(self.$("table.file-table-edit"))) {
+				self.$("table.file-table-edit").dataTable({
+					"bPaginate": false,
+					"bFilter": false,
+					"oLanguage": {
+						"sSearch": $.i18n.prop("dataTable_sSearch"),
+						"sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+						"sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+						"sInfo": $.i18n.prop("dataTable_sInfo"),
+						"sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+						"sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+						"oPaginate": {
+							sFirst: $.i18n.prop("dataTable_sFirst"),
+							sPrevious: $.i18n.prop("dataTable_sPrevious"),
+							sNext: $.i18n.prop("dataTable_sNext"),
+							sLast: $.i18n.prop("dataTable_sLast")
+						}
+					}
+				});
+			}
 
 			// Initialize FileUpload Modal
 			self.$("#uploader").modal({
@@ -4486,6 +4481,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 							data.submit();
 						}
 					}
+
 					self.$("a#upload").unbind("click");
 					self.$("a#upload").bind("click", upload);
 				},
@@ -4639,7 +4635,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			}
 			// Add Actions:
 			self.$("#actions").html('<div class="btn-group input-append">' +
-				'<a id="createAdministrator" class="btn btn-small add-on"><i class="icon-plus"></i> ' +$.i18n.prop('btn_create') + ' </a>' +
+				'<a id="createAdministrator" class="btn btn-small add-on"><i class="icon-plus"></i> ' + $.i18n.prop('btn_create') + ' </a>' +
 				'</div>');
 			return self;
 		},
@@ -5609,12 +5605,12 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				App.sectors.filter(function (sector) {
 					return sector.get('areaId') === +selectedAreaId;
 				}).forEach(function (sector) {
-						if (_.isObject(self.model.get("sector")) && _.isEqual(self.model.get("sector").id, sector.get("id"))) {
-							self.$("select[name='sector']").append("<option value='" + sector.get("id") + "' selected>" + sector.get("name")[App.locale].subject + "</option>");
-						} else {
-							self.$("select[name='sector']").append("<option value='" + sector.get("id") + "'>" + sector.get("name")[App.locale].subject + "</option>");
-						}
-					});
+					if (_.isObject(self.model.get("sector")) && _.isEqual(self.model.get("sector").id, sector.get("id"))) {
+						self.$("select[name='sector']").append("<option value='" + sector.get("id") + "' selected>" + sector.get("name")[App.locale].subject + "</option>");
+					} else {
+						self.$("select[name='sector']").append("<option value='" + sector.get("id") + "'>" + sector.get("name")[App.locale].subject + "</option>");
+					}
+				});
 				self.$("select[name='sector']").trigger("change", {
 					triggeredBy: "application"
 				});
@@ -6335,10 +6331,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 									return {
 										select: isMember ? '' :
 											'<select name="selectMember" class="input-small">' +
-												'<option value="NONE">----</option>' +
-												'<option value="REGULAR" data-model-id="' + registerMember.get('id') + '" data-type="REGULAR">' + $.i18n.prop('PositionCommitteeMemberTypeREGULAR') + '</option>' +
-												'<option value="SUBSTITUTE" data-model-id="' + registerMember.get('id') + '" data-type="SUBSTITUTE">' + $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") + '</option>' +
-												'</select>',
+											'<option value="NONE">----</option>' +
+											'<option value="REGULAR" data-model-id="' + registerMember.get('id') + '" data-type="REGULAR">' + $.i18n.prop('PositionCommitteeMemberTypeREGULAR') + '</option>' +
+											'<option value="SUBSTITUTE" data-model-id="' + registerMember.get('id') + '" data-type="SUBSTITUTE">' + $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") + '</option>' +
+											'</select>',
 										id: '<a href = "#user/' + registerMember.get('professor').user.id + '">' + registerMember.get('professor').user.id + '</a>',
 										external: registerMember.get('external') ? $.i18n.prop('RegisterMemberExternal') : $.i18n.prop('RegisterMemberInternal'),
 										firstname: registerMember.get('professor').user.firstname[App.locale],
@@ -6798,12 +6794,12 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 										institution: registerMember.get('professor').discriminator === 'PROFESSOR_FOREIGN' ? registerMember.get('professor').institution : _.templates.department(registerMember.get('professor').department),
 										select: isMember ? '' :
 											'<div class="btn-group">' +
-												'<a class = "btn btn-small btn-success dropdown-toggle" data-toggle="dropdown" >' + $.i18n.prop('btn_select') + '<span class="caret"></span></a>' +
-												'<ul class="dropdown-menu">' +
-												'<li><a id="addMember" data-model-id="' + registerMember.get('id') + '" data-position="0"><i class="icon-plus"></i>' + $.i18n.prop('PositionEvaluatorFirst') + '</a></li>' +
-												'<li><a id="addMember" data-model-id="' + registerMember.get('id') + '" data-position="1"><i class="icon-plus"></i>' + $.i18n.prop('PositionEvaluatorSecond') + '</a></li>' +
-												'</ul>' +
-												'</div>'
+											'<a class = "btn btn-small btn-success dropdown-toggle" data-toggle="dropdown" >' + $.i18n.prop('btn_select') + '<span class="caret"></span></a>' +
+											'<ul class="dropdown-menu">' +
+											'<li><a id="addMember" data-model-id="' + registerMember.get('id') + '" data-position="0"><i class="icon-plus"></i>' + $.i18n.prop('PositionEvaluatorFirst') + '</a></li>' +
+											'<li><a id="addMember" data-model-id="' + registerMember.get('id') + '" data-position="1"><i class="icon-plus"></i>' + $.i18n.prop('PositionEvaluatorSecond') + '</a></li>' +
+											'</ul>' +
+											'</div>'
 									};
 
 								})
@@ -7393,14 +7389,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			var self = this;
 			var tpl_data = {
 				canExportGeneric: App.loggedOnUser.hasRole("INSTITUTION_MANAGER") || App.loggedOnUser.hasRole("ADMINISTRATOR"),
-				exportGenericUrl : (new Models.Register()).urlRoot + "/professorsexport?X-Auth-Token=" + encodeURIComponent(App.authToken),
+				exportGenericUrl: (new Models.Register()).urlRoot + "/professorsexport?X-Auth-Token=" + encodeURIComponent(App.authToken),
 				showAmMember: App.loggedOnUser.hasRole("PROFESSOR_DOMESTIC") || App.loggedOnUser.hasRole("PROFESSOR_FOREIGN"),
 				registries: (function () {
 					var result = [];
 					var gCanExport =
 						App.loggedOnUser.hasRole("MINISTRY_MANAGER") ||
-							App.loggedOnUser.hasRole("MINISTRY_ASSISTANT") ||
-							App.loggedOnUser.hasRole("ADMINISTRATOR");
+						App.loggedOnUser.hasRole("MINISTRY_ASSISTANT") ||
+						App.loggedOnUser.hasRole("ADMINISTRATOR");
 
 					self.collection.each(function (model) {
 						var canEdit = model.isEditableBy(App.loggedOnUser);
@@ -9145,7 +9141,6 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 				case "ekthesiAutoaksiologisisFile":
 					return _.isEqual(self.model.get("candidacies").position.phase.clientStatus, "ANOIXTI");
 				case "evaluator":
-					console.log(self.model.get("canAddEvaluators"));
 					return self.model.get("canAddEvaluators");
 				case "sympliromatikaEggrafaFileList":
 					return !self.model.get("nominationCommitteeConverged");
@@ -10009,6 +10004,54 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 			this.collection.unbind('remove', this.render, this);
 			this.$el.unbind();
 			this.$el.remove();
+		}
+	});
+
+	/***************************************************************************
+	 * DataExportsView *********************************************************
+	 **************************************************************************/
+	Views.DataExportsView = Views.BaseView.extend({
+
+		tagName: "div",
+
+		validator: undefined,
+
+		initialize: function (options) {
+			this._super('initialize', [ options ]);
+			this.template = _.template(tpl_data_exports);
+		},
+
+		events: {
+		},
+
+		render: function () {
+			var self = this;
+			// 1. Render
+			self.$el.html(self.template({
+				urlPrefix: '/dep/rest/exports',
+				types: [
+					"institution-manager",
+					"institution-assistant",
+					"professor-domestic",
+					"professor-foreign",
+					"candidate",
+					"institution-regulatory-framework",
+					"register",
+					"register-member",
+					"position-evaluator",
+					"position-committee-member",
+					"candidacy"
+				],
+				urlSuffix: '?X-Auth-Token=' + encodeURIComponent(App.authToken)
+			}));
+			// 2. Return
+			return self;
+		},
+
+		close: function () {
+			this.closeInnerViews();
+			$(this.el).unbind();
+			$(this.el).remove();
 		}
 	});
 

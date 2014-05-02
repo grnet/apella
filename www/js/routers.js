@@ -249,7 +249,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			"issues": "showIssueListView",
 			"searchusers": "showUserSearchView",
 			"administrators": "showAdministratorsView",
-			"administrators/:userId": "showAdministratorsView"
+			"administrators/:userId": "showAdministratorsView",
+			"dataExports": "showDataExportsView"
 		},
 
 		start: function (eventName, authToken) {
@@ -1257,6 +1258,20 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			$("#content").html(userSearchView.render().el);
 
 			self.currentView = [ userSearchView ];
+		},
+
+		showDataExportsView: function () {
+			var self = this;
+			var dataExportsView;
+			self.clear();
+
+			dataExportsView = new Views.DataExportsView({
+			});
+			self.refreshBreadcrumb([ $.i18n.prop('menu_dataExports') ]);
+
+			$("#content").html(dataExportsView.render().el);
+
+			self.currentView = dataExportsView;
 		}
 
 	});
