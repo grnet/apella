@@ -11,10 +11,7 @@ import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.ProfessorForeign;
 import gr.grnet.dep.service.model.Register;
 import gr.grnet.dep.service.model.RegisterMember;
-import gr.grnet.dep.service.model.file.CandidateFile;
-import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileType;
-import gr.grnet.dep.service.model.file.ProfessorFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -22,7 +19,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -87,11 +88,35 @@ public class DataExportService {
 
 	/*******************************************************/
 
+	private Map<Long, Map<FileType, Long>> getProfessorFilesData() {
+		List<Object[]> files = em.createQuery(
+			"select p.id, pf.type, pf.id from ProfessorFile pf " +
+				"join pf.professor p " +
+				"where pf.deleted = false ", Object[].class).getResultList();
+		Map<Long, Map<FileType, Long>> filesMap = new HashMap<Long, Map<FileType, Long>>();
+		for (Object[] file : files) {
+			Long professorId = (Long) file[0];
+			FileType type = (FileType) file[1];
+			Long fileId = (Long) file[2];
+			if (!filesMap.containsKey(professorId)) {
+				filesMap.put(professorId, new HashMap<FileType, Long>());
+			}
+			filesMap.get(professorId).put(type, fileId);
+		}
+		return filesMap;
+	}
+
 	private List<ProfessorDomestic> getProfessorDomesticData() {
 		List<ProfessorDomestic> data = em.createQuery(
 			"select distinct pd " +
 				"from ProfessorDomestic pd " +
-				"left join fetch pd.files f ", ProfessorDomestic.class)
+				"join fetch pd.user u " +
+				"left join fetch pd.institution inst " +
+				"left join fetch pd.department dep " +
+				"left join fetch dep.school sch " +
+				"left join fetch sch.institution sinst " +
+				"left join fetch pd.subject sub " +
+				"left join fetch pd.fekSubject fsub ", ProfessorDomestic.class)
 			.getResultList();
 		return data;
 	}
@@ -99,6 +124,7 @@ public class DataExportService {
 	public InputStream createProfessorDomesticExcel() {
 		//1. Get Data
 		List<ProfessorDomestic> professors = getProfessorDomesticData();
+		Map<Long, Map<FileType, Long>> pFilesMap = getProfessorFilesData();
 		//2. Create XLS
 		Workbook wb = new HSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");
@@ -170,8 +196,9 @@ public class DataExportService {
 		addCell(row, colNum++, titleStyle, "hasacceptedterms");
 
 		for (ProfessorDomestic p : professors) {
-			ProfessorFile cvFile = FileHeader.filterOne(p.getFiles(), FileType.BIOGRAFIKO);
-			ProfessorFile fekFile = FileHeader.filterOne(p.getFiles(), FileType.FEK);
+			Map<FileType, Long> pFiles = pFilesMap.containsKey(p.getId()) ? pFilesMap.get(p.getId()) : new HashMap<FileType, Long>();
+			Long cvFile = pFiles.get(FileType.BIOGRAFIKO);
+			Long fekFile = pFiles.get(FileType.FEK);
 
 			row = sheet.createRow(rowNum++);
 			colNum = 0;
@@ -188,25 +215,25 @@ public class DataExportService {
 			addCell(row, colNum++, dateStyle, p.getUser().getCreationDate());
 			addCell(row, colNum++, textStyle, p.getUser().getIdentification());
 			addCell(row, colNum++, textStyle, p.getUser().getAuthenticationType().toString());
-			addCell(row, colNum++, textStyle, p.getUser().getShibbolethInfo().getGivenName());
-			addCell(row, colNum++, textStyle, p.getUser().getShibbolethInfo().getSn());
-			addCell(row, colNum++, textStyle, p.getUser().getShibbolethInfo().getSchacHomeOrganization());
+			addCell(row, colNum++, textStyle, p.getUser().getShibbolethInfo() != null ? p.getUser().getShibbolethInfo().getGivenName() : "");
+			addCell(row, colNum++, textStyle, p.getUser().getShibbolethInfo() != null ? p.getUser().getShibbolethInfo().getSn() : "");
+			addCell(row, colNum++, textStyle, p.getUser().getShibbolethInfo() != null ? p.getUser().getShibbolethInfo().getSchacHomeOrganization() : "");
 			addCell(row, colNum++, textStyle, p.getUser().getStatus().toString());
 			addCell(row, colNum++, dateStyle, p.getUser().getStatusDate());
 			addCell(row, colNum++, textStyle, p.getStatus().toString());
-			addCell(row, colNum++, textStyle, p.getStatusDate());
-			addCell(row, colNum++, textStyle, p.getRank().getName().get("el"));
+			addCell(row, colNum++, dateStyle, p.getStatusDate());
+			addCell(row, colNum++, textStyle, p.getRank() != null ? p.getRank().getName().get("el") : "");
 			addCell(row, colNum++, textStyle, p.getInstitution().getId());
 			addCell(row, colNum++, textStyle, p.getInstitution().getName().get("el"));
 			addCell(row, colNum++, textStyle, p.getDepartment() != null ? p.getDepartment().getId() : null);
 			addCell(row, colNum++, textStyle, p.getDepartment() != null ? p.getDepartment().getName().get("el") : null);
 			addCell(row, colNum++, textStyle, p.getHasOnlineProfile() ? "NAI" : "OXI");
 			addCell(row, colNum++, textStyle, p.getProfileURL());
-			addCell(row, colNum++, intStyle, cvFile != null ? cvFile.getId() : null);
+			addCell(row, colNum++, intStyle, cvFile != null ? cvFile : null);
 			addCell(row, colNum++, textStyle, p.getFekSubject() != null ? p.getFekSubject().getName() : null);
 			addCell(row, colNum++, textStyle, p.getSubject() != null ? p.getSubject().getName() : null);
 			addCell(row, colNum++, textStyle, p.getFek());
-			addCell(row, colNum++, intStyle, fekFile != null ? fekFile.getId() : null);
+			addCell(row, colNum++, intStyle, fekFile != null ? fekFile : null);
 			addCell(row, colNum++, textStyle, p.getHasAcceptedTerms() ? "NAI" : "OXI");
 		}
 
@@ -229,7 +256,9 @@ public class DataExportService {
 		List<ProfessorForeign> data = em.createQuery(
 			"select distinct pf " +
 				"from ProfessorForeign pf " +
-				"left join fetch pd.files f ", ProfessorForeign.class)
+				"join fetch pf.user u " +
+				"left join fetch pf.country c " +
+				"left join fetch pf.subject sub ", ProfessorForeign.class)
 			.getResultList();
 		return data;
 	}
@@ -237,6 +266,7 @@ public class DataExportService {
 	public InputStream createProfessorForeignExcel() {
 		//1. Get Data
 		List<ProfessorForeign> professors = getProfessorForeignData();
+		Map<Long, Map<FileType, Long>> pFilesMap = getProfessorFilesData();
 		//2. Create XLS
 		Workbook wb = new HSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");
@@ -303,7 +333,8 @@ public class DataExportService {
 		addCell(row, colNum++, titleStyle, "hasacceptedterms");
 
 		for (ProfessorForeign p : professors) {
-			ProfessorFile cvFile = FileHeader.filterOne(p.getFiles(), FileType.BIOGRAFIKO);
+			Map<FileType, Long> pFiles = pFilesMap.containsKey(p.getId()) ? pFilesMap.get(p.getId()) : new HashMap<FileType, Long>();
+			Long cvFile = pFiles.get(FileType.BIOGRAFIKO);
 
 			row = sheet.createRow(rowNum++);
 			colNum = 0;
@@ -320,20 +351,20 @@ public class DataExportService {
 			addCell(row, colNum++, dateStyle, p.getUser().getCreationDate());
 			addCell(row, colNum++, textStyle, p.getUser().getIdentification());
 			addCell(row, colNum++, textStyle, p.getUser().getAuthenticationType().toString());
-			addCell(row, colNum++, textStyle, p.getUser().getShibbolethInfo().getGivenName());
-			addCell(row, colNum++, textStyle, p.getUser().getShibbolethInfo().getSn());
-			addCell(row, colNum++, textStyle, p.getUser().getShibbolethInfo().getSchacHomeOrganization());
+			addCell(row, colNum++, textStyle, p.getUser().getShibbolethInfo() != null ? p.getUser().getShibbolethInfo().getGivenName() : null);
+			addCell(row, colNum++, textStyle, p.getUser().getShibbolethInfo() != null ? p.getUser().getShibbolethInfo().getSn() : null);
+			addCell(row, colNum++, textStyle, p.getUser().getShibbolethInfo() != null ? p.getUser().getShibbolethInfo().getSchacHomeOrganization() : null);
 			addCell(row, colNum++, textStyle, p.getUser().getStatus().toString());
 			addCell(row, colNum++, dateStyle, p.getUser().getStatusDate());
 			addCell(row, colNum++, textStyle, p.getStatus().toString());
-			addCell(row, colNum++, textStyle, p.getStatusDate());
-			addCell(row, colNum++, textStyle, p.getRank().getName().get("el"));
+			addCell(row, colNum++, dateStyle, p.getStatusDate());
+			addCell(row, colNum++, textStyle, p.getRank() != null ? p.getRank().getName().get("el") : null);
 			addCell(row, colNum++, textStyle, p.getInstitution());
 			addCell(row, colNum++, textStyle, p.getHasOnlineProfile() ? "NAI" : "OXI");
 			addCell(row, colNum++, textStyle, p.getProfileURL());
-			addCell(row, colNum++, intStyle, cvFile != null ? cvFile.getId() : null);
+			addCell(row, colNum++, intStyle, cvFile != null ? cvFile : null);
 			addCell(row, colNum++, textStyle, p.getSubject() != null ? p.getSubject().getName() : null);
-			addCell(row, colNum++, textStyle, p.getSpeakingGreek() ? "NAI" : "OXI");
+			addCell(row, colNum++, textStyle, p.getSpeakingGreek() != null ? (p.getSpeakingGreek() ? "NAI" : "OXI") : null);
 			addCell(row, colNum++, textStyle, p.getHasAcceptedTerms() ? "NAI" : "OXI");
 		}
 
@@ -352,18 +383,54 @@ public class DataExportService {
 		}
 	}
 
-	/*
-	-Διαχειριστές Ιδρύματος
-	id	Όνομα	Επώνυμο	Πατρώνυμο	Name	Surname	Father's Name	e-mail	Κινητό	Σταθερό	creationdate	identification	username	AccountStatus	AccountStatusDate	ProfileStatus	ProfileStatusDate	institution_id	Ίδρυμα	Αρχή πιστοποίησης	Ονοματεπώνυμο αρχής	Όνομα Αναπληρωτή	Επώνυμο Αναπληρωτή	Πατρώνυμο Αναπληρωτή	Name Αναπληρωτή	Surname Αναπληρωτή	Father's Name Αναπληρωτή	e-mail Αναπληρωτή	Κινητό Αναπληρωτή	Σταθερό Αναπληρωτή
-	-Βοηθοί Ιδρύματος
-	id	Όνομα	Επώνυμο	Πατρώνυμο	Name	Surname	Father's Name	e-mail	Κινητό	Σταθερό	creationdate	identification	username	AccountStatus	AccountStatusDate	institution_id	Ίδρυμα
-	*/
+	/****************************/
+
+	private Map<Long, Map<FileType, Set<Long>>> getCandidateFilesData() {
+		List<Object[]> files = em.createQuery(
+			"select c.id, cf.type, cf.id from CandidateFile cf " +
+				"join cf.candidate c " +
+				"where cf.deleted = false ", Object[].class).getResultList();
+		Map<Long, Map<FileType, Set<Long>>> filesMap = new HashMap<Long, Map<FileType, Set<Long>>>();
+		for (Object[] file : files) {
+			Long candidateId = (Long) file[0];
+			FileType type = (FileType) file[1];
+			Long fileId = (Long) file[2];
+			Map<FileType, Set<Long>> entry = filesMap.get(candidateId);
+			if (entry == null) {
+				entry = new HashMap<FileType, Set<Long>>();
+				filesMap.put(candidateId, entry);
+			}
+			Set<Long> entryFiles = entry.get(type);
+			if (entryFiles == null) {
+				entryFiles = new HashSet<Long>();
+				entry.put(type, entryFiles);
+			}
+			entryFiles.add(fileId);
+		}
+		return filesMap;
+	}
+
+	private Map<Long, Long> getCandidateCandidaciesData() {
+		Map<Long, Long> result = new HashMap<Long, Long>();
+		List<Object[]> data = em.createQuery(
+			"select c.candidate.id, count(c.id) " +
+				"from Candidacy c " +
+				"group by c.candidate.id ", Object[].class)
+			.getResultList();
+		for (Object[] row : data) {
+			Long cid = (Long) row[0];
+			Long candidacies = (Long) row[1];
+			result.put(cid, candidacies);
+		}
+		return result;
+	}
 
 	private List<Candidate> getCandidateData() {
 		List<Candidate> data = em.createQuery(
-			"select distinct c " +
+			"select c " +
 				"from Candidate c " +
-				"left join fetch c.files f ", Candidate.class)
+				"join fetch c.user u " +
+				"where c.id not in (select p.id from Professor p) ", Candidate.class)
 			.getResultList();
 		return data;
 	}
@@ -371,6 +438,8 @@ public class DataExportService {
 	public InputStream createCandidateExcel() {
 		//1. Get Data
 		List<Candidate> candidates = getCandidateData();
+		Map<Long, Map<FileType, Set<Long>>> filesMap = getCandidateFilesData();
+		Map<Long, Long> candidaciesMap = getCandidateCandidaciesData();
 		//2. Create XLS
 		Workbook wb = new HSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");
@@ -434,12 +503,13 @@ public class DataExportService {
 		addCell(row, colNum++, titleStyle, "Υποψηφιότητες");
 
 		for (Candidate c : candidates) {
-			CandidateFile idFile = FileHeader.filterOne(c.getFiles(), FileType.TAYTOTHTA);
-			CandidateFile militaryFile = FileHeader.filterOne(c.getFiles(), FileType.BEBAIWSH_STRATIOTIKIS_THITIAS);
-			CandidateFile formaFile = FileHeader.filterOne(c.getFiles(), FileType.FORMA_SYMMETOXIS);
-			CandidateFile cvFile = FileHeader.filterOne(c.getFiles(), FileType.BIOGRAFIKO);
-			Set<CandidateFile> degreesFiles = FileHeader.filter(c.getFiles(), FileType.PTYXIO);
-			Set<CandidateFile> publicationsFiles = FileHeader.filter(c.getFiles(), FileType.DIMOSIEYSI);
+			Map<FileType, Set<Long>> cFiles = filesMap.containsKey(c.getId()) ? filesMap.get(c.getId()) : new HashMap<FileType, Set<Long>>();
+			Set<Long> idFile = cFiles.get(FileType.TAYTOTHTA);
+			Set<Long> militaryFile = cFiles.get(FileType.BEBAIWSH_STRATIOTIKIS_THITIAS);
+			Set<Long> formaFile = cFiles.get(FileType.FORMA_SYMMETOXIS);
+			Set<Long> cvFile = cFiles.get(FileType.BIOGRAFIKO);
+			Set<Long> degreesFiles = cFiles.get(FileType.PTYXIO);
+			Set<Long> publicationsFiles = cFiles.get(FileType.DIMOSIEYSI);
 
 			row = sheet.createRow(rowNum++);
 			colNum = 0;
@@ -460,13 +530,13 @@ public class DataExportService {
 			addCell(row, colNum++, dateStyle, c.getUser().getStatusDate());
 			addCell(row, colNum++, textStyle, c.getStatus().toString());
 			addCell(row, colNum++, intStyle, c.getStatusDate());
-			addCell(row, colNum++, textStyle, idFile != null ? idFile.getId() : null);
-			addCell(row, colNum++, textStyle, militaryFile != null ? militaryFile.getId() : null);
-			addCell(row, colNum++, textStyle, formaFile != null ? formaFile.getId() : null);
-			addCell(row, colNum++, textStyle, cvFile != null ? cvFile.getId() : null);
-			addCell(row, colNum++, textStyle, degreesFiles != null ? FileHeader.ids(degreesFiles).toString() : null);
-			addCell(row, colNum++, textStyle, publicationsFiles != null ? FileHeader.ids(publicationsFiles).toString() : null);
-			addCell(row, colNum++, intStyle, c.getCandidacies().size());
+			addCell(row, colNum++, textStyle, idFile != null ? idFile.toString() : null);
+			addCell(row, colNum++, textStyle, militaryFile != null ? militaryFile.toString() : null);
+			addCell(row, colNum++, textStyle, formaFile != null ? formaFile.toString() : null);
+			addCell(row, colNum++, textStyle, cvFile != null ? cvFile.toString() : null);
+			addCell(row, colNum++, intStyle, degreesFiles != null ? degreesFiles.size() : null);
+			addCell(row, colNum++, intStyle, publicationsFiles != null ? publicationsFiles.size() : null);
+			addCell(row, colNum++, intStyle, candidaciesMap.containsKey(c.getId()) ? candidaciesMap.get(c.getId()) : null);
 		}
 
 		for (int i = 0; i < colNum; i++) {
@@ -486,7 +556,9 @@ public class DataExportService {
 
 	private List<InstitutionManager> getInstitutionManagerData() {
 		List<InstitutionManager> data = em.createQuery(
-			"select im from InstitutionManager im ", InstitutionManager.class)
+			"select im from InstitutionManager im " +
+				"join fetch im.user u " +
+				"left join fetch im.institution i ", InstitutionManager.class)
 			.getResultList();
 		return data;
 	}
@@ -584,7 +656,7 @@ public class DataExportService {
 			addCell(row, colNum++, textStyle, im.getStatusDate());
 			addCell(row, colNum++, intStyle, im.getInstitution().getId());
 			addCell(row, colNum++, textStyle, im.getInstitution().getName().get("el"));
-			addCell(row, colNum++, textStyle, im.getVerificationAuthority().toString());
+			addCell(row, colNum++, textStyle, im.getVerificationAuthority() != null ? im.getVerificationAuthority().toString() : "");
 			addCell(row, colNum++, textStyle, im.getVerificationAuthorityName());
 			addCell(row, colNum++, textStyle, im.getAlternateFirstname("el"));
 			addCell(row, colNum++, textStyle, im.getAlternateLastname("el"));
@@ -592,9 +664,9 @@ public class DataExportService {
 			addCell(row, colNum++, textStyle, im.getAlternateFirstname("en"));
 			addCell(row, colNum++, textStyle, im.getAlternateLastname("en"));
 			addCell(row, colNum++, textStyle, im.getAlternateFathername("en"));
-			addCell(row, colNum++, textStyle, im.getAlternateContactInfo().getEmail());
-			addCell(row, colNum++, textStyle, im.getAlternateContactInfo().getMobile());
-			addCell(row, colNum++, textStyle, im.getAlternateContactInfo().getPhone());
+			addCell(row, colNum++, textStyle, im.getAlternateContactInfo() != null ? im.getAlternateContactInfo().getEmail() : "");
+			addCell(row, colNum++, textStyle, im.getAlternateContactInfo() != null ? im.getAlternateContactInfo().getMobile() : "");
+			addCell(row, colNum++, textStyle, im.getAlternateContactInfo() != null ? im.getAlternateContactInfo().getPhone() : "");
 
 		}
 
@@ -615,7 +687,11 @@ public class DataExportService {
 
 	private List<InstitutionAssistant> getInstitutionAssistantData() {
 		List<InstitutionAssistant> data = em.createQuery(
-			"select ia from InstitutionAssistant ia ", InstitutionAssistant.class)
+			"select ia from InstitutionAssistant ia " +
+				"join fetch ia.user u " +
+				"join fetch ia.manager im " +
+				"join fetch im.user um " +
+				"left join fetch im.institution imi ", InstitutionAssistant.class)
 			.getResultList();
 		return data;
 	}
@@ -792,16 +868,33 @@ public class DataExportService {
 		}
 	}
 
-	private List<Object[]> getRegisterData() {
-		List<Object[]> data = em.createQuery(
-			"select r, count(r.members) from Register r ", Object[].class)
+	private List<Register> getRegisterData() {
+		List<Register> data = em.createQuery(
+			"select r from Register r " +
+				"where permanent = true ", Register.class)
 			.getResultList();
 		return data;
 	}
 
+	private Map<Long, Long> getRegisterRegisterMemberData() {
+		Map<Long, Long> result = new HashMap<Long, Long>();
+		List<Object[]> data = em.createQuery(
+			"select rm.register.id, count(rm.id) " +
+				"from RegisterMember rm " +
+				"group by rm.register.id ", Object[].class)
+			.getResultList();
+		for (Object[] row : data) {
+			Long cid = (Long) row[0];
+			Long candidacies = (Long) row[1];
+			result.put(cid, candidacies);
+		}
+		return result;
+	}
+
 	public InputStream createRegisterExcel() {
 		//1. Get Data
-		List<Object[]> regsiters = getRegisterData();
+		List<Register> registers = getRegisterData();
+		Map<Long, Long> membersMap = getRegisterRegisterMemberData();
 		//2. Create XLS
 		Workbook wb = new HSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");
@@ -843,9 +936,8 @@ public class DataExportService {
 		addCell(row, colNum++, titleStyle, "Γνωστικό Αντικείμενο");
 		addCell(row, colNum++, titleStyle, "Μέλη");
 
-		for (Object[] irf : regsiters) {
-			Register r = (Register) irf[0];
-			Long membersCount = (Long) irf[1];
+		for (Register r : registers) {
+			Long membersCount = membersMap.containsKey(r.getId()) ? membersMap.get(r.getId()) : 0;
 
 			row = sheet.createRow(rowNum++);
 			colNum = 0;
@@ -872,8 +964,16 @@ public class DataExportService {
 
 	private List<RegisterMember> getRegisterMemberData() {
 		List<RegisterMember> data = em.createQuery(
-			"select r from RegisterMember r " +
-				"order by r.member.id ", RegisterMember.class)
+			"select rm from RegisterMember rm " +
+				"join fetch rm.register r " +
+				"join fetch r.subject rsub " +
+				"join fetch rm.professor p " +
+				"join fetch p.user u " +
+				"left join fetch p.department dep " +
+				"left join fetch dep.school sch " +
+				"left join fetch sch.institution inst " +
+				"left join fetch p.subject sub " +
+				"left join fetch p.fekSubject fsub ", RegisterMember.class)
 			.getResultList();
 		return data;
 	}
@@ -930,7 +1030,9 @@ public class DataExportService {
 		addCell(row, colNum++, titleStyle, "Γνωστικό Αντικείμενο Μητρώου");
 		addCell(row, colNum++, titleStyle, "Εσωτερικό/Εξωτερικό μέλος");
 
-		for (RegisterMember rm : members) {
+		Iterator<RegisterMember> iterator = members.iterator();
+		while (iterator.hasNext()) {
+			RegisterMember rm = iterator.next();
 			row = sheet.createRow(rowNum++);
 			colNum = 0;
 
@@ -959,6 +1061,8 @@ public class DataExportService {
 			addCell(row, colNum++, textStyle, rm.getRegister().getInstitution().getName().get("el"));
 			addCell(row, colNum++, textStyle, rm.getRegister().getSubject().getName());
 			addCell(row, colNum++, textStyle, rm.isExternal() ? "ΕΞΩΤΕΡΙΚΟ" : "ΕΣΩΤΕΡΙΚΟ");
+
+			iterator.remove();
 		}
 
 		for (int i = 0; i < colNum; i++) {
@@ -978,7 +1082,17 @@ public class DataExportService {
 
 	private List<PositionCommitteeMember> getPositionCommitteeMemberData() {
 		List<PositionCommitteeMember> data = em.createQuery(
-			"select r from PositionCommitteeMember r ", PositionCommitteeMember.class)
+			"select pcm from PositionCommitteeMember pcm " +
+				"join fetch pcm.registerMember rm " +
+				"join fetch rm.register r " +
+				"join fetch rm.professor p " +
+				"join fetch r.subject rsub " +
+				"join fetch p.user u " +
+				"left join fetch p.department dep " +
+				"left join fetch dep.school sch " +
+				"left join fetch sch.institution inst " +
+				"left join fetch p.subject sub " +
+				"left join fetch p.fekSubject fsub ", PositionCommitteeMember.class)
 			.getResultList();
 		return data;
 	}
@@ -1088,7 +1202,17 @@ public class DataExportService {
 
 	private List<PositionEvaluator> getPositionEvaluatorData() {
 		List<PositionEvaluator> data = em.createQuery(
-			"select r from PositionEvaluator r ", PositionEvaluator.class)
+			"select e from PositionEvaluator e " +
+				"join fetch e.registerMember rm " +
+				"join fetch rm.register r " +
+				"join fetch r.subject rsub " +
+				"join fetch rm.professor p " +
+				"join fetch p.user u " +
+				"left join fetch p.department dep " +
+				"left join fetch dep.school sch " +
+				"left join fetch sch.institution inst " +
+				"left join fetch p.subject sub " +
+				"left join fetch p.fekSubject fsub ", PositionEvaluator.class)
 			.getResultList();
 		return data;
 	}
@@ -1195,7 +1319,14 @@ public class DataExportService {
 
 	private List<Candidacy> getCandidacyData() {
 		List<Candidacy> data = em.createQuery(
-			"select r from Candidacy r ", Candidacy.class)
+			"select cy from Candidacy cy " +
+				"join fetch cy.candidate c " +
+				"join fetch c.user u " +
+				"join fetch cy.candidacies pc " +
+				"join fetch pc.position p " +
+				"join fetch p.department dep " +
+				"join fetch dep.school sch " +
+				"join fetch sch.institution inst ", Candidacy.class)
 			.getResultList();
 		return data;
 	}
