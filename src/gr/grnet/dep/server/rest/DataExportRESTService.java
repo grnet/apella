@@ -3,6 +3,7 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.DataExportService;
+import gr.grnet.dep.service.model.Administrator;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
@@ -42,6 +43,10 @@ public class DataExportRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		// Authorize
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		Administrator admin = (Administrator) loggedOn.getActiveRole(RoleDiscriminator.ADMINISTRATOR);
+		if (!admin.isSuperAdministrator()) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {

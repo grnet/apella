@@ -190,7 +190,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			_.extend(self, Backbone.Events);
 			_.bindAll(self, "setTitle", "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showUserView", "showInstitutionAssistantsView",
 				"showMinistryAssistantsView", "showPositionView", "showPositionsView", "showRegistersView", "showProfessorCommitteesView", "showProfessorEvaluationsView",
-				"showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "showCandidacyView", "showUserSearchView", "showIssueListView", "start");
+				"showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "showCandidacyView", "showUserSearchView", "showIssueListView", "showDataExportsView",
+				"showStatisticsView", "start");
 
 			self.on("route", function (routefn) {
 				self.setTitle(routefn);
@@ -250,7 +251,8 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			"searchusers": "showUserSearchView",
 			"administrators": "showAdministratorsView",
 			"administrators/:userId": "showAdministratorsView",
-			"dataExports": "showDataExportsView"
+			"dataExports": "showDataExportsView",
+			"statistics": "showStatisticsView"
 		},
 
 		start: function (eventName, authToken) {
@@ -1272,6 +1274,28 @@ define([ "jquery", "underscore", "backbone", "application", "models", "views", "
 			$("#content").html(dataExportsView.render().el);
 
 			self.currentView = dataExportsView;
+		},
+
+		showStatisticsView: function () {
+			var self = this;
+			var statistics = new Models.Statistics();
+			var statisticsView = new Views.StatisticsView({
+				model: statistics
+			});
+
+			self.clear();
+			$("#content").html(statisticsView.el);
+			self.refreshBreadcrumb([ $.i18n.prop('menu_statistics') ]);
+
+			statistics.fetch({
+				cache: false,
+				wait: true,
+				success: function (model, response, options) {
+					statisticsView.render();
+				}
+			});
+
+			self.currentView = [ statisticsView ];
 		}
 
 	});

@@ -1,16 +1,22 @@
 package gr.grnet.dep.service;
 
+import gr.grnet.dep.service.dto.Statistics;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.InstitutionAssistant;
 import gr.grnet.dep.service.model.InstitutionManager;
 import gr.grnet.dep.service.model.InstitutionRegulatoryFramework;
+import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.PositionCommitteeMember;
 import gr.grnet.dep.service.model.PositionEvaluator;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.ProfessorForeign;
+import gr.grnet.dep.service.model.Rank;
 import gr.grnet.dep.service.model.Register;
 import gr.grnet.dep.service.model.RegisterMember;
+import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import gr.grnet.dep.service.model.Role.RoleStatus;
+import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.file.FileType;
 
 import java.io.ByteArrayInputStream;
@@ -1408,5 +1414,113 @@ public class DataExportService {
 		} catch (IOException e) {
 			throw new EJBException(e);
 		}
+	}
+
+	public Statistics getStatistics() {
+		Statistics stats = new Statistics();
+
+		// 1. Users
+		List<Object[]> userStats = em.createQuery(
+			"select role.discriminator, usr.status, role.status, count(usr.id) from Role role " +
+				"join role.user usr " +
+				"where (role.discriminator != :candidate and role.discriminator != :administrator ) " +
+				"or (role.discriminator = :candidate and role.user.id not in (select p.user.id from Professor p) )" +
+				"group by role.discriminator, usr.status, role.status " +
+				"order by role.discriminator, usr.status, role.status ", Object[].class)
+			.setParameter("candidate", RoleDiscriminator.CANDIDATE)
+			.setParameter("administrator", RoleDiscriminator.ADMINISTRATOR)
+			.getResultList();
+		for (RoleDiscriminator discriminator : RoleDiscriminator.values()) {
+			if (discriminator.equals(RoleDiscriminator.ADMINISTRATOR)) {
+				continue;
+			}
+			Map<String, Long> user = new HashMap<String, Long>();
+			user.put("registered", 0l);
+			user.put("verified", 0l);
+			stats.getUsers().put(discriminator.toString(), user);
+		}
+		for (Object[] usr : userStats) {
+			String discriminator = ((RoleDiscriminator) usr[0]).toString();
+			UserStatus userStatus = (UserStatus) usr[1];
+			RoleStatus roleStatus = (RoleStatus) usr[2];
+			Long count = (Long) usr[3];
+			Map<String, Long> user = stats.getUsers().get(discriminator);
+			Long registeredCount = user.get("registered");
+			Long verifiedCount = user.get("verified");
+			if (userStatus.equals(UserStatus.ACTIVE) &&
+				roleStatus.equals(RoleStatus.ACTIVE)) {
+				verifiedCount += count;
+			}
+			registeredCount += count;
+			user.put("registered", registeredCount);
+			user.put("verified", verifiedCount);
+		}
+
+		// 2. Professors
+		List<Object[]> pdStats = em.createQuery(
+			"select pd.rank.category, usr.status, pd.status, count(usr.id) from ProfessorDomestic pd " +
+				"join pd.user usr " +
+				"group by pd.rank.category, pd.status, usr.status " +
+				"order by pd.rank.category, pd.status, usr.status ", Object[].class)
+			.getResultList();
+
+		for (Rank.Category category : Rank.Category.values()) {
+			Map<String, Long> prof = new HashMap<String, Long>();
+			prof.put("registered", 0l);
+			prof.put("verified", 0l);
+			stats.getProfessors().put(category.toString(), prof);
+		}
+		for (Object[] prof : pdStats) {
+			String category = ((Rank.Category) prof[0]).toString();
+			UserStatus userStatus = (UserStatus) prof[1];
+			RoleStatus roleStatus = (RoleStatus) prof[2];
+			Long count = (Long) prof[3];
+			Map<String, Long> professor = stats.getProfessors().get(category);
+			Long registeredCount = professor.get("registered");
+			Long verifiedCount = professor.get("verified");
+			if (userStatus.equals(UserStatus.ACTIVE) &&
+				roleStatus.equals(RoleStatus.ACTIVE)) {
+				verifiedCount += count;
+			}
+			registeredCount += count;
+			professor.put("registered", registeredCount);
+			professor.put("verified", verifiedCount);
+		}
+
+		// 3. IRF
+		Long irfStats = em.createQuery(
+			"select count(irf) from InstitutionRegulatoryFramework irf " +
+				"where irf.permanent = true ", Long.class)
+			.getSingleResult();
+		stats.setInstitutionRegulatoryFrameworks(irfStats);
+
+		// 4. Registers
+		Long registerStats = em.createQuery(
+			"select count(r) from Register r " +
+				"where r.permanent = true ", Long.class)
+			.getSingleResult();
+		stats.setRegisters(registerStats);
+
+		// 5. Positions
+		List<Object[]> positionStats = em.createQuery(
+			"select ph.status, count(pos.id) from Position pos " +
+				"join pos.phase ph " +
+				"where pos.permanent = true " +
+				"group by ph.status " +
+				"order by ph.status ", Object[].class)
+			.getResultList();
+		for (PositionStatus status : PositionStatus.values()) {
+			stats.getPositions().put(status.toString(), 0l);
+		}
+		Long sum = 0L;
+		for (Object[] pos : positionStats) {
+			String status = ((PositionStatus) pos[0]).toString();
+			Long count = (Long) pos[1];
+			stats.getPositions().put(status, stats.getPositions().get(status) + count);
+			sum += count;
+		}
+		stats.getPositions().put("TOTAL", sum);
+
+		return stats;
 	}
 }

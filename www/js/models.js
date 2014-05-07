@@ -1760,5 +1760,24 @@ define([
 		url: "/dep/rest/jira"
 	});
 
+
+	Models.Statistics = Backbone.Model.extend({
+		urlRoot: "/dep/rest/statistics/",
+		defaults: {
+			'users' : {
+
+			},
+			'professors' : {
+
+			},
+			institutionRegulatoryFrameworks : undefined,
+			registers: undefined,
+			positions: {
+
+			}
+		}
+	});
+
+
 	return Models;
 });
