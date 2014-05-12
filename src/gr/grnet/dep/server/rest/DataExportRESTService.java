@@ -22,7 +22,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -37,7 +36,7 @@ public class DataExportRESTService extends RESTService {
 	DataExportService dataExportService;
 
 	@GET
-	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	@Produces("application/vnd.ms-excel")
 	@Path("/{type}")
 	public Response getPositionsExport(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("type") String type) {
 		User loggedOn = getLoggedOn(authToken);
@@ -79,7 +78,7 @@ public class DataExportRESTService extends RESTService {
 			// Return response
 			String string = ".xls";
 			return Response.ok(is)
-				.type(MediaType.APPLICATION_OCTET_STREAM)
+				.type("application/vnd.ms-excel")
 				.header("charset", "UTF-8")
 				.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(type + string, "UTF-8") + "\"")
 				.build();

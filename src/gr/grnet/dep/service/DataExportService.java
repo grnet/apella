@@ -203,7 +203,7 @@ public class DataExportService {
 
 		for (ProfessorDomestic p : professors) {
 			Map<FileType, Long> pFiles = pFilesMap.containsKey(p.getId()) ? pFilesMap.get(p.getId()) : new HashMap<FileType, Long>();
-			Long cvFile = pFiles.get(FileType.BIOGRAFIKO);
+			Long cvFile = pFiles.get(FileType.PROFILE);
 			Long fekFile = pFiles.get(FileType.FEK);
 
 			row = sheet.createRow(rowNum++);
@@ -331,6 +331,7 @@ public class DataExportService {
 		addCell(row, colNum++, titleStyle, "ProfileStatusDate");
 		addCell(row, colNum++, titleStyle, "Βαθμίδα");
 		addCell(row, colNum++, titleStyle, "Ίδρυμα/Ερευνητικό κέντρο");
+		addCell(row, colNum++, titleStyle, "Χώρα Ιδρύματος");
 		addCell(row, colNum++, titleStyle, "hasCVURL");
 		addCell(row, colNum++, titleStyle, "CVURL");
 		addCell(row, colNum++, titleStyle, "CVfile");
@@ -340,7 +341,7 @@ public class DataExportService {
 
 		for (ProfessorForeign p : professors) {
 			Map<FileType, Long> pFiles = pFilesMap.containsKey(p.getId()) ? pFilesMap.get(p.getId()) : new HashMap<FileType, Long>();
-			Long cvFile = pFiles.get(FileType.BIOGRAFIKO);
+			Long cvFile = pFiles.get(FileType.PROFILE);
 
 			row = sheet.createRow(rowNum++);
 			colNum = 0;
@@ -366,6 +367,7 @@ public class DataExportService {
 			addCell(row, colNum++, dateStyle, p.getStatusDate());
 			addCell(row, colNum++, textStyle, p.getRank() != null ? p.getRank().getName().get("el") : null);
 			addCell(row, colNum++, textStyle, p.getInstitution());
+			addCell(row, colNum++, textStyle, p.getCountry() != null ? p.getCountry().getName() : null);
 			addCell(row, colNum++, textStyle, p.getHasOnlineProfile() ? "NAI" : "OXI");
 			addCell(row, colNum++, textStyle, p.getProfileURL());
 			addCell(row, colNum++, intStyle, cvFile != null ? cvFile : null);
@@ -436,7 +438,7 @@ public class DataExportService {
 			"select c " +
 				"from Candidate c " +
 				"join fetch c.user u " +
-				"where c.id not in (select p.id from Professor p) ", Candidate.class)
+				"where c.user.id not in (select p.user.id from Professor p) ", Candidate.class)
 			.getResultList();
 		return data;
 	}
@@ -535,7 +537,7 @@ public class DataExportService {
 			addCell(row, colNum++, textStyle, c.getUser().getStatus().toString());
 			addCell(row, colNum++, dateStyle, c.getUser().getStatusDate());
 			addCell(row, colNum++, textStyle, c.getStatus().toString());
-			addCell(row, colNum++, intStyle, c.getStatusDate());
+			addCell(row, colNum++, dateStyle, c.getStatusDate());
 			addCell(row, colNum++, textStyle, idFile != null ? idFile.toString() : null);
 			addCell(row, colNum++, textStyle, militaryFile != null ? militaryFile.toString() : null);
 			addCell(row, colNum++, textStyle, formaFile != null ? formaFile.toString() : null);
@@ -756,6 +758,8 @@ public class DataExportService {
 		addCell(row, colNum++, titleStyle, "username");
 		addCell(row, colNum++, titleStyle, "AccountStatus");
 		addCell(row, colNum++, titleStyle, "AccountStatusDate");
+		addCell(row, colNum++, titleStyle, "ProfileStatus");
+		addCell(row, colNum++, titleStyle, "ProfileStatusDate");
 		addCell(row, colNum++, titleStyle, "institution_id");
 		addCell(row, colNum++, titleStyle, "Ίδρυμα");
 

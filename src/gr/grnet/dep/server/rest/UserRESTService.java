@@ -270,6 +270,7 @@ public class UserRESTService extends RESTService {
 			newUser.setPassword(authenticationService.encodePassword(newUser.getPassword(), newUser.getPasswordSalt()));
 			newUser.setVerificationNumber(generateVerificationNumber());
 
+			newUser.setCreationDate(new Date());
 			newUser.setStatus(UserStatus.UNVERIFIED);
 			newUser.setStatusDate(new Date());
 
