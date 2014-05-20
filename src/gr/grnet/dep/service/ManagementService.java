@@ -6,9 +6,12 @@ import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.Subject;
 import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 import gr.grnet.dep.service.util.StringUtil;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
@@ -114,6 +117,33 @@ public class ManagementService {
 			mailService.sendReminderLoginEmail(userId, false);
 		}
 
+	}
+
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+	public void massSendShibbolethConnectEmails(Collection<Long> institutionIds) {
+		if (institutionIds.isEmpty()) {
+			logger.info("massSendShibbolethConnectEmails: Empty Institutions Array");
+			return;
+		}
+		logger.info("massSendShibbolethConnectEmails: Institutions = " + Arrays.toString(institutionIds.toArray()));
+		@SuppressWarnings("unchecked")
+		List<Long> users = em.createQuery(
+			"select u.id from ProfessorDomestic pd " +
+				"join pd.user u " +
+				"where u.authenticationType = :uAuthType " +
+				"and u.status = :userStatus " +
+				"and u.permanentAuthToken is not null " +
+				"and pd.institution.authenticationType = :iAuthType " +
+				"and pd.institution.id in (:institutionIds) ")
+			.setParameter("uAuthType", AuthenticationType.EMAIL)
+			.setParameter("iAuthType", AuthenticationType.SHIBBOLETH)
+			.setParameter("userStatus", UserStatus.ACTIVE)
+			.setParameter("institutionIds", institutionIds)
+			.getResultList();
+		logger.info("massSendShibbolethConnectEmails: Sending to " + users.size() + " users");
+		for (Long userId : users) {
+			mailService.sendShibbolethConnectEmail(userId, false);
+		}
 	}
 
 	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)

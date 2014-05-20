@@ -6,6 +6,7 @@ import gr.grnet.dep.service.ManagementService;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -14,6 +15,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -64,6 +66,18 @@ public class ManagementRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		mgmtService.massSendReminderLoginEmails();
+		return "OK";
+	}
+
+	@POST
+	@Produces(MediaType.TEXT_PLAIN)
+	@Path("/massSendShibbolethConnectEmails")
+	public String massSendShibbolethConnectEmails(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, Collection<Long> institutionIds) {
+		User loggedOn = getLoggedOn(authToken);
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		mgmtService.massSendShibbolethConnectEmails(institutionIds);
 		return "OK";
 	}
 

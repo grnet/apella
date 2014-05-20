@@ -1,10 +1,12 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.util.CompareUtil;
+import gr.grnet.dep.service.util.LowercaseDeserializer;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.hibernate.validator.constraints.Email;
 
 @Embeddable
@@ -12,6 +14,7 @@ public class ContactInformation {
 
 	@Email
 	@Column(unique = true)
+	@JsonDeserialize(using = LowercaseDeserializer.class)
 	private String email;
 
 	private String mobile;

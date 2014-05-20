@@ -281,6 +281,41 @@ public class MailService {
 		}
 	}
 
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	public void sendShibbolethConnectEmail(Long userId, boolean sendNow) {
+		User u = em.find(User.class, userId);
+		if (u == null) {
+			logger.log(Level.WARNING, "Failed to send login email user with id " + userId + " not found");
+			return;
+		}
+		try {
+			// Double Check here:
+			if (u.getAuthenticationType().equals(AuthenticationType.EMAIL) &&
+				u.getPermanentAuthToken() != null) {
+
+				String aToEmailAddr = u.getContactInfo().getEmail();
+				String aSubject = resources.getString("shibboleth.connect.email.subject");
+				String aBody = resources.getString("shibboleth.connect.email.body")
+					.replaceAll("\\[firstname_el\\]", u.getFirstname("el"))
+					.replaceAll("\\[lastname_el\\]", u.getLastname("el"))
+					.replaceAll("\\[firstname_en\\]", u.getFirstname("en"))
+					.replaceAll("\\[lastname_en\\]", u.getLastname("en"))
+					.replaceAll("\\[loginLink\\]", "<a href=\"" + getloginLink(u.getPermanentAuthToken()) + "\">Είσοδος</a>");
+				if (sendNow) {
+					sendEmail(aToEmailAddr, aSubject, aBody);
+				} else {
+					pushEmail(aToEmailAddr, aSubject, aBody);
+				}
+				u.setLoginEmailSent(Boolean.TRUE);
+				logger.log(Level.INFO, "Sent connect to shibboleth email to user with id " + u.getId() + " " + getloginLink(u.getPermanentAuthToken()));
+			} else {
+				logger.log(Level.INFO, "Skipped Sent connect to shibboleth email for user with id " + u.getId());
+			}
+		} catch (UnsupportedEncodingException e) {
+			logger.log(Level.WARNING, "Failed to send login email", e.getMessage());
+		}
+	}
+
 	private String getloginLink(String token) throws UnsupportedEncodingException {
 		return conf.getString("rest.url") +
 			"/email/login?nextURL=" + conf.getString("home.url") + "/apella.html" +
