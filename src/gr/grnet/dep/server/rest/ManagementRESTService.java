@@ -69,6 +69,18 @@ public class ManagementRESTService extends RESTService {
 		return "OK";
 	}
 
+	@GET
+	@Produces(MediaType.TEXT_PLAIN)
+	@Path("/massSendReminderFinalizeRegistrationEmails")
+	public String massSendReminderFinalizeRegistrationEmails(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
+		User loggedOn = getLoggedOn(authToken);
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		mgmtService.massSendReminderFinalizeRegistrationEmails();
+		return "OK";
+	}
+
 	@POST
 	@Produces(MediaType.TEXT_PLAIN)
 	@Path("/massSendShibbolethConnectEmails")

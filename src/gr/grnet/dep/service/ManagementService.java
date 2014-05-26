@@ -146,6 +146,25 @@ public class ManagementService {
 		}
 	}
 
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+	public void massSendReminderFinalizeRegistrationEmails() {
+		List<Long> users = em.createQuery(
+			"select u.id from ProfessorDomestic pd " +
+				"join pd.user u " +
+				"where u.authenticationType = :uAuthType " +
+				"and u.status = :userStatus " +
+				"and u.permanentAuthToken is not null " +
+				"and pd.status = :roleStatus ", Long.class)
+			.setParameter("uAuthType", AuthenticationType.EMAIL)
+			.setParameter("userStatus", UserStatus.ACTIVE)
+			.setParameter("roleStatus", RoleStatus.UNAPPROVED)
+			.getResultList();
+		logger.info("massSendReminderFinalizeRegistrationEmails: Sending to " + users.size() + " users");
+		for (Long userId : users) {
+			mailService.sendReminderFinalizeRegistrationEmail(userId, false);
+		}
+	}
+
 	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	public void upperCaseSubject(Long subjectId) {
 		Subject subject = em.find(Subject.class, subjectId);
