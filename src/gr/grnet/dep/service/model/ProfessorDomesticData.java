@@ -1,13 +1,12 @@
 package gr.grnet.dep.service.model;
 
-import java.io.Serializable;
+import org.hibernate.validator.constraints.Email;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-
-import org.hibernate.validator.constraints.Email;
+import java.io.Serializable;
 
 @Entity
 public class ProfessorDomesticData implements Serializable {

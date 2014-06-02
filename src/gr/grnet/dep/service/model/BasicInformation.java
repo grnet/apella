@@ -2,10 +2,9 @@ package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.util.StringUtil;
 
-import java.util.Locale;
-
 import javax.persistence.Embeddable;
 import javax.xml.bind.annotation.XmlElement;
+import java.util.Locale;
 
 @Embeddable
 public class BasicInformation {

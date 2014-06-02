@@ -7,23 +7,18 @@ import gr.grnet.dep.service.model.Administrator;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.ejb.Stateless;
+import javax.inject.Inject;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 @Path("/exports")
 @Stateless
@@ -78,10 +73,10 @@ public class DataExportRESTService extends RESTService {
 			// Return response
 			String string = ".xls";
 			return Response.ok(is)
-				.type("application/vnd.ms-excel")
-				.header("charset", "UTF-8")
-				.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(type + string, "UTF-8") + "\"")
-				.build();
+					.type("application/vnd.ms-excel")
+					.header("charset", "UTF-8")
+					.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(type + string, "UTF-8") + "\"")
+					.build();
 		} catch (UnsupportedEncodingException e) {
 			logger.log(Level.SEVERE, "getDocument", e);
 			throw new EJBException(e);

@@ -1,6 +1,6 @@
 package gr.grnet.dep.service.model;
 
-import java.util.logging.Logger;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 import javax.inject.Inject;
 import javax.persistence.DiscriminatorValue;
@@ -8,14 +8,15 @@ import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlTransient;
-
-import org.codehaus.jackson.annotate.JsonIgnore;
+import java.util.logging.Logger;
 
 @Entity
 @DiscriminatorValue("PROFESSOR_FOREIGN")
 public class ProfessorForeign extends Professor {
 
-	/** Default value included to remove warning. Remove or modify at will. **/
+	/**
+	 * Default value included to remove warning. Remove or modify at will. *
+	 */
 	private static final long serialVersionUID = 1L;
 
 	@Inject

@@ -1,11 +1,10 @@
 package gr.grnet.dep.server;
 
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
-
-import java.io.File;
-
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
+
+import java.io.File;
 
 public final class WebConstants {
 

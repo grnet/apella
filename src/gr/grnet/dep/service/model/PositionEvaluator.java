@@ -2,24 +2,15 @@ package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.PositionEvaluation.DetailedPositionEvaluationView;
 import gr.grnet.dep.service.model.file.PositionEvaluatorFile;
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.map.annotate.JsonView;
 
+import javax.persistence.*;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Version;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 @XmlRootElement
@@ -28,10 +19,14 @@ public class PositionEvaluator implements Serializable {
 	private static final long serialVersionUID = 8362685537946833737L;
 
 	public static interface PositionEvaluatorView {
-	};
+	}
+
+	;
 
 	public static interface DetailedPositionEvaluatorView extends PositionEvaluatorView {
-	};
+	}
+
+	;
 
 	public static final int MAX_MEMBERS = 2;
 

@@ -6,41 +6,15 @@ import gr.grnet.dep.service.model.file.CandidateFile;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.PostLoad;
-import javax.persistence.PostPersist;
-import javax.persistence.PostUpdate;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.Transient;
-import javax.persistence.Version;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonView;
 import org.hibernate.annotations.FilterDef;
+
+import javax.persistence.*;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+import java.util.*;
 
 @Entity
 @XmlRootElement
@@ -48,13 +22,19 @@ import org.hibernate.annotations.FilterDef;
 public class Candidacy {
 
 	public static interface CandidacyView {
-	};
+	}
+
+	;
 
 	public static interface MediumCandidacyView extends CandidacyView {
-	};
+	}
+
+	;
 
 	public static interface DetailedCandidacyView extends MediumCandidacyView {
-	};
+	}
+
+	;
 
 	@Id
 	@GeneratedValue
@@ -112,7 +92,7 @@ public class Candidacy {
 
 		@Embedded
 		@AttributeOverrides({
-			@AttributeOverride(name = "email", column = @Column(unique = false))
+				@AttributeOverride(name = "email", column = @Column(unique = false))
 		})
 		private ContactInformation contactInfo = new ContactInformation();
 
@@ -280,24 +260,24 @@ public class Candidacy {
 	private void refreshLocalizedNames() {
 		snapshot.firstname.put("el", this.snapshot.basicInfo != null ? this.snapshot.basicInfo.getFirstname() : null);
 		if (this.snapshot.basicInfoLatin != null &&
-			this.snapshot.basicInfoLatin.getFirstname() != null &&
-			!this.snapshot.basicInfoLatin.getFirstname().isEmpty()) {
+				this.snapshot.basicInfoLatin.getFirstname() != null &&
+				!this.snapshot.basicInfoLatin.getFirstname().isEmpty()) {
 			snapshot.firstname.put("en", this.snapshot.basicInfoLatin != null ? this.snapshot.basicInfoLatin.getFirstname() : null);
 		} else {
 			snapshot.firstname.put("en", this.snapshot.basicInfo != null ? this.snapshot.basicInfo.getFirstname() : null);
 		}
 		snapshot.lastname.put("el", this.snapshot.basicInfo != null ? this.snapshot.basicInfo.getLastname() : null);
 		if (this.snapshot.basicInfoLatin != null &&
-			this.snapshot.basicInfoLatin.getLastname() != null &&
-			!this.snapshot.basicInfoLatin.getLastname().isEmpty()) {
+				this.snapshot.basicInfoLatin.getLastname() != null &&
+				!this.snapshot.basicInfoLatin.getLastname().isEmpty()) {
 			snapshot.lastname.put("en", this.snapshot.basicInfoLatin != null ? this.snapshot.basicInfoLatin.getLastname() : null);
 		} else {
 			snapshot.lastname.put("en", this.snapshot.basicInfo != null ? this.snapshot.basicInfo.getLastname() : null);
 		}
 		snapshot.fathername.put("el", this.snapshot.basicInfo != null ? this.snapshot.basicInfo.getFathername() : null);
 		if (this.snapshot.basicInfoLatin != null &&
-			this.snapshot.basicInfoLatin.getFathername() != null &&
-			!this.snapshot.basicInfoLatin.getFathername().isEmpty()) {
+				this.snapshot.basicInfoLatin.getFathername() != null &&
+				!this.snapshot.basicInfoLatin.getFathername().isEmpty()) {
 			snapshot.fathername.put("en", this.snapshot.basicInfoLatin != null ? this.snapshot.basicInfoLatin.getFathername() : null);
 		} else {
 			snapshot.fathername.put("en", this.snapshot.basicInfo != null ? this.snapshot.basicInfo.getFathername() : null);
@@ -419,7 +399,7 @@ public class Candidacy {
 	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getCandidacyEvalutionsDueDate() {
 		return this.getCandidacies().getPosition().getPhase().getCommittee() != null ?
-			this.getCandidacies().getPosition().getPhase().getCommittee().getCandidacyEvalutionsDueDate() : null;
+				this.getCandidacies().getPosition().getPhase().getCommittee().getCandidacyEvalutionsDueDate() : null;
 	}
 
 	@XmlTransient

@@ -2,43 +2,17 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.model.AuthenticationType;
-import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.InstitutionAssistant;
-import gr.grnet.dep.service.model.InstitutionManager;
-import gr.grnet.dep.service.model.JiraIssue;
+import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.Position.PositionStatus;
-import gr.grnet.dep.service.model.Professor;
-import gr.grnet.dep.service.model.ProfessorDomestic;
-import gr.grnet.dep.service.model.ProfessorForeign;
-import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
-import gr.grnet.dep.service.model.User;
-import gr.grnet.dep.service.model.file.CandidateFile;
-import gr.grnet.dep.service.model.file.FileBody;
-import gr.grnet.dep.service.model.file.FileHeader;
+import gr.grnet.dep.service.model.file.*;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
-import gr.grnet.dep.service.model.file.FileType;
-import gr.grnet.dep.service.model.file.ProfessorFile;
 import gr.grnet.dep.service.util.PdfUtil;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
+import org.codehaus.jackson.map.annotate.JsonView;
 
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
@@ -47,25 +21,20 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.codehaus.jackson.map.annotate.JsonView;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Path("/role")
 @Stateless
@@ -117,6 +86,7 @@ public class RoleRESTService extends RESTService {
 	}
 
 	private static final Set<RolePair> forbiddenPairs;
+
 	static {
 		Set<RolePair> aSet = new HashSet<RolePair>();
 		// ADMINISTRATOR
@@ -171,11 +141,11 @@ public class RoleRESTService extends RESTService {
 
 	/**
 	 * Returns roles of user based on parameters
-	 * 
-	 * @param authToken Authentication Token
-	 * @param userID ID of user
+	 *
+	 * @param authToken      Authentication Token
+	 * @param userID         ID of user
 	 * @param discriminators Comma separated list of types of roles
-	 * @param statuses Comma separated list of status of roles
+	 * @param statuses       Comma separated list of status of roles
 	 * @return
 	 */
 	@GET
@@ -185,7 +155,7 @@ public class RoleRESTService extends RESTService {
 		// Prepare Query
 		StringBuilder sb = new StringBuilder();
 		sb.append("select r from Role r " +
-			"where r.status in (:statuses) ");
+				"where r.status in (:statuses) ");
 		if (userID != null) {
 			sb.append("and r.user.id = :userID ");
 		}
@@ -240,7 +210,7 @@ public class RoleRESTService extends RESTService {
 
 	private boolean isForbiddenPair(RoleDiscriminator first, RoleDiscriminator second) {
 		return forbiddenPairs.contains(new RolePair(first, second))
-			|| forbiddenPairs.contains(new RolePair(second, first));
+				|| forbiddenPairs.contains(new RolePair(second, first));
 	}
 
 	private boolean isIncompatibleRole(Role role, Collection<Role> roles) {
@@ -253,7 +223,7 @@ public class RoleRESTService extends RESTService {
 
 	/**
 	 * Returns role with given id
-	 * 
+	 *
 	 * @param authToken
 	 * @param id
 	 * @return
@@ -276,9 +246,9 @@ public class RoleRESTService extends RESTService {
 		}
 
 		Role r = (Role) em.createQuery(
-			"from Role r where r.id=:id")
-			.setParameter("id", id)
-			.getSingleResult();
+				"from Role r where r.id=:id")
+				.setParameter("id", id)
+				.getSingleResult();
 
 		r.getUser().getPrimaryRole();
 		return r;
@@ -286,7 +256,7 @@ public class RoleRESTService extends RESTService {
 
 	/**
 	 * Adds a role to an existing user
-	 * 
+	 *
 	 * @param authToken
 	 * @param newRole
 	 * @return
@@ -316,9 +286,9 @@ public class RoleRESTService extends RESTService {
 			// Find if the same role already exists and is active.
 			// If it does, it should be made inactive.
 			Query query = em.createQuery("select r from Role r " +
-				"where r.status = :status " +
-				"and r.user.id = :userID " +
-				"and r.discriminator = :discriminator");
+					"where r.status = :status " +
+					"and r.user.id = :userID " +
+					"and r.discriminator = :discriminator");
 			query.setParameter("status", RoleStatus.ACTIVE);
 			query.setParameter("userID", newRole.getUser().getId());
 			query.setParameter("discriminator", newRole.getDiscriminator());
@@ -342,11 +312,11 @@ public class RoleRESTService extends RESTService {
 
 	/**
 	 * Updates role of user
-	 * 
+	 *
 	 * @param authToken
 	 * @param id
 	 * @param updateCandidacies If true it will also update all open candidacies
-	 *            connected to this profile
+	 *                          connected to this profile
 	 * @param role
 	 * @return
 	 * @HTTP 403 X-Error-Code: insufficient.privileges
@@ -365,7 +335,7 @@ public class RoleRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.role.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!existingRole.getUser().getId().equals(loggedOn.getId())) {
+				!existingRole.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Validate data if loggedOn is not admin we trust admin(!!!)
@@ -374,7 +344,7 @@ public class RoleRESTService extends RESTService {
 				throw new RestException(Status.CONFLICT, "user.missing.required.fields");
 			}
 			if (!existingRole.getStatus().equals(RoleStatus.UNAPPROVED) &&
-				!existingRole.compareCriticalFields(role)) {
+					!existingRole.compareCriticalFields(role)) {
 				throw new RestException(Status.CONFLICT, "cannot.change.critical.fields");
 			}
 			Long managerInstitutionId;
@@ -428,10 +398,10 @@ public class RoleRESTService extends RESTService {
 
 					// Activate if !misingRequiredFields and is not authenticated by username (needs helpdesk approval)
 					if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-						existingRole.getStatus().equals(RoleStatus.UNAPPROVED) &&
-						!existingRole.getUser().getAuthenticationType().equals(AuthenticationType.USERNAME) &&
-						!existingRole.getUser().isMissingRequiredFields() &&
-						!existingRole.isMissingRequiredFields()) {
+							existingRole.getStatus().equals(RoleStatus.UNAPPROVED) &&
+							!existingRole.getUser().getAuthenticationType().equals(AuthenticationType.USERNAME) &&
+							!existingRole.getUser().isMissingRequiredFields() &&
+							!existingRole.isMissingRequiredFields()) {
 						// At this point all fields are filled, 
 						// so we activate the Role 
 						Role.updateStatus(professorDomestic, RoleStatus.ACTIVE);
@@ -466,7 +436,7 @@ public class RoleRESTService extends RESTService {
 			if (!existingRole.isMissingRequiredFields()) {
 				String summary = jiraService.getResourceBundleString("user.created.role.summary");
 				String description = jiraService.getResourceBundleString("user.created.role.description",
-					"user", existingRole.getUser().getFullName("el") + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + existingRole.getUser().getId() + " )");
+						"user", existingRole.getUser().getFullName("el") + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + existingRole.getUser().getId() + " )");
 				JiraIssue issue = JiraIssue.createRegistrationIssue(existingRole.getUser(), summary, description);
 				jiraService.queueCreateIssue(issue);
 			}
@@ -479,9 +449,11 @@ public class RoleRESTService extends RESTService {
 		}
 	}
 
-	/***************************
+	/**
+	 * ************************
 	 * Document Functions ******
-	 ***************************/
+	 * *************************
+	 */
 
 	public enum DocumentDiscriminator {
 		InstitutionManagerCertificationDean,
@@ -493,11 +465,11 @@ public class RoleRESTService extends RESTService {
 	 * Creates a PDF File with
 	 * (1) the form required for Institution Managers or
 	 * (2) the form for Candidates
-	 * 
+	 *
 	 * @param authToken
 	 * @param id
-	 * @param fileName Name of file (Forma_allagis_Diax_Idrymatos or
-	 *            Forma_Ypopsifiou)
+	 * @param fileName  Name of file (Forma_allagis_Diax_Idrymatos or
+	 *                  Forma_Ypopsifiou)
 	 * @return
 	 * @HTTP 403 X-Error-Code: insufficient.privileges
 	 * @HTTP 404 X-Error-Code: wrong.role.id
@@ -538,10 +510,10 @@ public class RoleRESTService extends RESTService {
 			}
 			// Return response
 			return Response.ok(is)
-				.type(MediaType.APPLICATION_OCTET_STREAM)
-				.header("charset", "UTF-8")
-				.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(fileName + ".pdf", "UTF-8") + "\"")
-				.build();
+					.type(MediaType.APPLICATION_OCTET_STREAM)
+					.header("charset", "UTF-8")
+					.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(fileName + ".pdf", "UTF-8") + "\"")
+					.build();
 		} catch (UnsupportedEncodingException e) {
 			logger.log(Level.SEVERE, "getDocument", e);
 			throw new EJBException(e);
@@ -554,7 +526,7 @@ public class RoleRESTService extends RESTService {
 
 	/**
 	 * Retrieves files of role
-	 * 
+	 *
 	 * @param authToken
 	 * @param id
 	 * @return
@@ -572,21 +544,23 @@ public class RoleRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.role.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!role.getUser().getId().equals(loggedOn.getId())) {
+				!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
 		if (role instanceof Candidate) {
 			Candidate candidate = (Candidate) role;
-			GenericEntity<Set<CandidateFile>> entity = new GenericEntity<Set<CandidateFile>>(FileHeader.filterDeleted(candidate.getFiles())) {};
+			GenericEntity<Set<CandidateFile>> entity = new GenericEntity<Set<CandidateFile>>(FileHeader.filterDeleted(candidate.getFiles())) {
+			};
 			return Response.ok(entity).build();
 		} else if (role instanceof Professor) {
 			Professor professor = (Professor) role;
-			GenericEntity<Set<ProfessorFile>> entity = new GenericEntity<Set<ProfessorFile>>(FileHeader.filterDeleted(professor.getFiles())) {};
+			GenericEntity<Set<ProfessorFile>> entity = new GenericEntity<Set<ProfessorFile>>(FileHeader.filterDeleted(professor.getFiles())) {
+			};
 			return Response.ok(entity).build();
 		}
 		// Default Action
@@ -595,7 +569,7 @@ public class RoleRESTService extends RESTService {
 
 	/**
 	 * Retrieves specific file description of specific role
-	 * 
+	 *
 	 * @param authToken Authentication Token
 	 * @param id
 	 * @param fileId
@@ -614,11 +588,11 @@ public class RoleRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.role.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!role.getUser().getId().equals(loggedOn.getId())) {
+				!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -643,7 +617,7 @@ public class RoleRESTService extends RESTService {
 
 	/**
 	 * Retrieves file body (binary) of specified file
-	 * 
+	 *
 	 * @param authToken
 	 * @param id
 	 * @param fileId
@@ -663,11 +637,11 @@ public class RoleRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.role.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!role.getUser().getId().equals(loggedOn.getId())) {
+				!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!role.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -700,12 +674,12 @@ public class RoleRESTService extends RESTService {
 
 	/**
 	 * Creates a new file associated with specified role
-	 * 
+	 *
 	 * @param authToken
 	 * @param id
 	 * @param request
 	 * @return A JSON representation of the file description, needs to be
-	 *         text/plain since it is handled by a multipart-form
+	 * text/plain since it is handled by a multipart-form
 	 * @throws FileUploadException
 	 * @throws IOException
 	 * @HTTP 400 X-Error-Code: missing.file.type
@@ -824,15 +798,15 @@ public class RoleRESTService extends RESTService {
 
 	/**
 	 * Updates the specified file
-	 * 
+	 *
 	 * @param authToken
 	 * @param id
 	 * @param fileId
 	 * @param request
 	 * @param updateCandidacies If set to true, it will update open position
-	 *            connected with this profile
+	 *                          connected with this profile
 	 * @return A JSON representation of the file description, needs to be
-	 *         text/plain since it is handled by a multipart-form
+	 * text/plain since it is handled by a multipart-form
 	 * @throws FileUploadException
 	 * @throws IOException
 	 * @HTTP 400 X-Error-Code: missing.file.type
@@ -958,12 +932,12 @@ public class RoleRESTService extends RESTService {
 
 	/**
 	 * Removes the specified file
-	 * 
+	 *
 	 * @param authToken
 	 * @param id
 	 * @param fileId
 	 * @param updateCandidacies If set to true it will update also open
-	 *            candidacies connected with this profile
+	 *                          candidacies connected with this profile
 	 * @return
 	 */
 	@DELETE
@@ -986,13 +960,13 @@ public class RoleRESTService extends RESTService {
 				Candidate candidate = (Candidate) role;
 				try {
 					CandidateFile candidateFile = (CandidateFile) em.createQuery(
-						"select cf from CandidateFile cf " +
-							"where cf.candidate.id = :candidateId " +
-							"and cf.id = :fileId " +
-							"and cf.deleted = false")
-						.setParameter("candidateId", id)
-						.setParameter("fileId", fileId)
-						.getSingleResult();
+							"select cf from CandidateFile cf " +
+									"where cf.candidate.id = :candidateId " +
+									"and cf.id = :fileId " +
+									"and cf.deleted = false")
+							.setParameter("candidateId", id)
+							.setParameter("fileId", fileId)
+							.getSingleResult();
 					//Validate delete
 					if (!candidate.getStatus().equals(RoleStatus.UNAPPROVED)) {
 						switch (candidateFile.getType()) {
@@ -1026,13 +1000,13 @@ public class RoleRESTService extends RESTService {
 				Professor professor = (Professor) role;
 				try {
 					ProfessorFile professorFile = (ProfessorFile) em.createQuery(
-						"select cf from ProfessorFile cf " +
-							"where cf.professor.id = :professorId " +
-							"and cf.id = :fileId " +
-							"and cf.deleted = false")
-						.setParameter("professorId", id)
-						.setParameter("fileId", fileId)
-						.getSingleResult();
+							"select cf from ProfessorFile cf " +
+									"where cf.professor.id = :professorId " +
+									"and cf.id = :fileId " +
+									"and cf.deleted = false")
+							.setParameter("professorId", id)
+							.setParameter("fileId", fileId)
+							.getSingleResult();
 					ProfessorFile pf = deleteAsMuchAsPossible(professorFile);
 					if (pf == null) {
 						professor.getFiles().remove(professorFile);
@@ -1068,7 +1042,7 @@ public class RoleRESTService extends RESTService {
 
 	/**
 	 * Used by admins to update status of users
-	 * 
+	 *
 	 * @param authToken
 	 * @param id
 	 * @param requestRole
@@ -1103,12 +1077,12 @@ public class RoleRESTService extends RESTService {
 					InstitutionManager im = (InstitutionManager) primaryRole;
 					// Check if exists active IM for same Institution:
 					em.createQuery("select im from InstitutionManager im " +
-						"where im.status = :status " +
-						"and im.institution.id = :institutionId")
-						.setParameter("status", RoleStatus.ACTIVE)
-						.setParameter("institutionId", im.getInstitution().getId())
-						.setMaxResults(1)
-						.getSingleResult();
+							"where im.status = :status " +
+							"and im.institution.id = :institutionId")
+							.setParameter("status", RoleStatus.ACTIVE)
+							.setParameter("institutionId", im.getInstitution().getId())
+							.setMaxResults(1)
+							.getSingleResult();
 					throw new RestException(Status.CONFLICT, "exists.active.institution.manager");
 				} catch (NoResultException e) {
 				}
@@ -1119,23 +1093,23 @@ public class RoleRESTService extends RESTService {
 			if (!requestRole.getStatus().equals(RoleStatus.ACTIVE)) {
 				try {
 					em.createQuery("select pcm from PositionCommitteeMember pcm " +
-						"where pcm.committee.position.phase.status = :status " +
-						"and pcm.registerMember.professor.id = :professorId")
-						.setParameter("status", PositionStatus.EPILOGI)
-						.setParameter("professorId", primaryRole.getId())
-						.setMaxResults(1)
-						.getSingleResult();
+							"where pcm.committee.position.phase.status = :status " +
+							"and pcm.registerMember.professor.id = :professorId")
+							.setParameter("status", PositionStatus.EPILOGI)
+							.setParameter("professorId", primaryRole.getId())
+							.setMaxResults(1)
+							.getSingleResult();
 					throw new RestException(Status.CONFLICT, "professor.is.committee.member");
 				} catch (NoResultException e) {
 				}
 				try {
 					em.createQuery("select e.id from PositionEvaluator e " +
-						"where e.evaluation.position.phase.status = :status " +
-						"and e.registerMember.professor.id = :professorId")
-						.setParameter("status", PositionStatus.EPILOGI)
-						.setParameter("professorId", primaryRole.getId())
-						.setMaxResults(1)
-						.getSingleResult();
+							"where e.evaluation.position.phase.status = :status " +
+							"and e.registerMember.professor.id = :professorId")
+							.setParameter("status", PositionStatus.EPILOGI)
+							.setParameter("professorId", primaryRole.getId())
+							.setMaxResults(1)
+							.getSingleResult();
 					throw new RestException(Status.CONFLICT, "professor.is.evaluator");
 				} catch (NoResultException e) {
 				}
@@ -1155,32 +1129,32 @@ public class RoleRESTService extends RESTService {
 					// Update Issue
 					summary = jiraService.getResourceBundleString("helpdesk.activated.role.summary");
 					description = jiraService.getResourceBundleString("helpdesk.activated.role.description",
-						"user", primaryRole.getUser().getFullName("el") + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + primaryRole.getUser().getId() + " )",
-						"admin", loggedOn.getFullName("el"));
+							"user", primaryRole.getUser().getFullName("el") + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + primaryRole.getUser().getId() + " )",
+							"admin", loggedOn.getFullName("el"));
 					issue = JiraIssue.createRegistrationIssue(primaryRole.getUser(), summary, description);
 					jiraService.queueCreateIssue(issue);
 
 					// Send also an email to user:
 					mailService.postEmail(primaryRole.getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"profile.activated@user",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+							"default.subject",
+							"profile.activated@user",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("firstname_el", primaryRole.getUser().getFirstname("el"));
-								put("lastname_el", primaryRole.getUser().getLastname("el"));
+								{
+									put("firstname_el", primaryRole.getUser().getFirstname("el"));
+									put("lastname_el", primaryRole.getUser().getLastname("el"));
 
-								put("firstname_en", primaryRole.getUser().getFirstname("en"));
-								put("lastname_en", primaryRole.getUser().getLastname("en"));
-							}
-						}));
+									put("firstname_en", primaryRole.getUser().getFirstname("en"));
+									put("lastname_en", primaryRole.getUser().getLastname("en"));
+								}
+							}));
 
 					break;
 				case UNAPPROVED:
 					summary = jiraService.getResourceBundleString("helpdesk.activated.role.summary");
 					description = jiraService.getResourceBundleString("helpdesk.activated.role.description",
-						"user", primaryRole.getUser().getFullName("el") + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + primaryRole.getUser().getId() + " )",
-						"admin", loggedOn.getFullName("el"));
+							"user", primaryRole.getUser().getFullName("el") + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + primaryRole.getUser().getId() + " )",
+							"admin", loggedOn.getFullName("el"));
 					issue = JiraIssue.createRegistrationIssue(primaryRole.getUser(), summary, description);
 					jiraService.queueCreateIssue(issue);
 					break;

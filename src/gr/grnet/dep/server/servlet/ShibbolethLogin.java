@@ -5,26 +5,21 @@ import gr.grnet.dep.service.exceptions.ServiceException;
 import gr.grnet.dep.service.model.ShibbolethInformation;
 import gr.grnet.dep.service.model.User;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.Locale;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.logging.Level;
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.*;
+import java.util.logging.Level;
 
 @WebServlet(
-	name = "shibbolethLoginServlet",
-	urlPatterns = {"/shibboleth/*"})
+		name = "shibbolethLoginServlet",
+		urlPatterns = {"/shibboleth/*"})
 public class ShibbolethLogin extends BaseHttpServlet {
 
 	private static final long serialVersionUID = -8201973038949627229L;

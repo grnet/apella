@@ -2,9 +2,6 @@ package gr.grnet.dep.service;
 
 import gr.grnet.dep.service.model.JiraIssue;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -12,10 +9,12 @@ import javax.ejb.MessageDriven;
 import javax.jms.JMSException;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @MessageDriven(activationConfig = {
-	@ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-	@ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/JiraQ")
+		@ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+		@ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/JiraQ")
 })
 public class JiraQueue implements MessageListener {
 

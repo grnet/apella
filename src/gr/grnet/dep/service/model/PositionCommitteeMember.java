@@ -1,36 +1,30 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.PositionCommittee.DetailedPositionCommitteeView;
-
-import java.io.Serializable;
-
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.persistence.Version;
-import javax.xml.bind.annotation.XmlRootElement;
-
 import org.codehaus.jackson.map.annotate.JsonView;
+
+import javax.persistence.*;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
 
 @Entity
 @XmlRootElement
 @Table(uniqueConstraints = {
-	@UniqueConstraint(columnNames = {"committee_id", "registerMember_id"})
+		@UniqueConstraint(columnNames = {"committee_id", "registerMember_id"})
 })
 public class PositionCommitteeMember implements Serializable {
 
 	private static final long serialVersionUID = -1339853623265264893L;
 
 	public static interface PositionCommitteeMemberView {
-	};
+	}
+
+	;
 
 	public static interface DetailedPositionCommitteeMemberView extends PositionCommitteeMemberView {
-	};
+	}
+
+	;
 
 	public static final int MAX_MEMBERS = 7;
 

@@ -11,40 +11,28 @@ import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.system.Notification;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 import gr.grnet.dep.service.util.DateUtil;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.SessionContext;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceException;
-
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang.time.DateUtils;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerConfigException;
 import org.quartz.SchedulerException;
 import org.quartz.impl.StdSchedulerFactory;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
+import javax.ejb.*;
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Singleton
 @Startup
@@ -85,6 +73,7 @@ public class QuartzService {
 	}
 
 	@PostConstruct
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	public void createQuartzService() throws SchedulerConfigException {
 		log.info("Create QuartzService(" + jndiName + ")...");
 		try {
@@ -104,6 +93,7 @@ public class QuartzService {
 	}
 
 	@PreDestroy
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	public void destroyService() throws SchedulerException {
 		log.info("Destroy QuartzService(" + jndiName + ")...");
 		Scheduler scheduler = schedulerFactory.getScheduler();
@@ -132,8 +122,8 @@ public class QuartzService {
 		// May Contain files, delete files first
 		@SuppressWarnings("unchecked")
 		List<Candidacy> candidacies = em.createQuery(
-			"from Candidacy c where c.permanent is false")
-			.getResultList();
+				"from Candidacy c where c.permanent is false")
+				.getResultList();
 
 		int i = 0;
 		for (Candidacy candidacy : candidacies) {
@@ -150,8 +140,8 @@ public class QuartzService {
 		// Due to triggers (PositionPhase), cannot execute bulk delete
 		@SuppressWarnings("unchecked")
 		List<Position> positions = em.createQuery(
-			"from Position p where p.permanent is false")
-			.getResultList();
+				"from Position p where p.permanent is false")
+				.getResultList();
 		int i = 0;
 		for (Position position : positions) {
 			em.remove(position);
@@ -163,16 +153,16 @@ public class QuartzService {
 	public int deleteInstitutionRegulatoryFrameworks() {
 		// No files, we can run a bulk delete
 		int i = em.createQuery(
-			"delete from InstitutionRegulatoryFramework irf where irf.permanent is false")
-			.executeUpdate();
+				"delete from InstitutionRegulatoryFramework irf where irf.permanent is false")
+				.executeUpdate();
 		return i;
 	}
 
 	public int deleteRegisters() {
 		// No files, we can run a bulk delete
 		int i = em.createQuery(
-			"delete from Register r where r.permanent is false")
-			.executeUpdate();
+				"delete from Register r where r.permanent is false")
+				.executeUpdate();
 		return i;
 	}
 
@@ -180,14 +170,14 @@ public class QuartzService {
 		Date now = DateUtils.truncate(new Date(), Calendar.DATE);
 		@SuppressWarnings("unchecked")
 		List<Position> positions = em.createQuery(
-			"from Position p where " +
-				"p.permanent is true " +
-				"and p.phase.status = :status " +
-				"and p.phase.candidacies.openingDate <= :now " +
-				"and p.phase.candidacies.closingDate > :now")
-			.setParameter("status", PositionStatus.ENTAGMENI)
-			.setParameter("now", now)
-			.getResultList();
+				"from Position p where " +
+						"p.permanent is true " +
+						"and p.phase.status = :status " +
+						"and p.phase.candidacies.openingDate <= :now " +
+						"and p.phase.candidacies.closingDate > :now")
+				.setParameter("status", PositionStatus.ENTAGMENI)
+				.setParameter("now", now)
+				.getResultList();
 		int i = 0;
 		try {
 			for (Position position : positions) {
@@ -222,43 +212,43 @@ public class QuartzService {
 		Date toDate = DateUtil.removeTime(new Date());
 		@SuppressWarnings("unchecked")
 		List<Position> positions = em.createQuery(
-			"from Position p where " +
-				"p.permanent is true " +
-				"and p.phase.status = :status " +
-				"and p.phase.candidacies.closingDate < :toDate " +
-				"and p.id not in ( " +
-				"	select n.referredEntityId " +
-				"	from Notification n " +
-				"	where n.type = 'position.closed' " +
-				") ")
-			.setParameter("status", PositionStatus.ANOIXTI)
-			.setParameter("toDate", DateUtil.removeTime(toDate))
-			.getResultList();
+				"from Position p where " +
+						"p.permanent is true " +
+						"and p.phase.status = :status " +
+						"and p.phase.candidacies.closingDate < :toDate " +
+						"and p.id not in ( " +
+						"	select n.referredEntityId " +
+						"	from Notification n " +
+						"	where n.type = 'position.closed' " +
+						") ")
+				.setParameter("status", PositionStatus.ANOIXTI)
+				.setParameter("toDate", DateUtil.removeTime(toDate))
+				.getResultList();
 
 		for (final Position position : positions) {
 			for (final Candidacy candidacy : position.getPhase().getCandidacies().getCandidacies()) {
 				//position.update.closingDate@candidates
 				mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
-					"default.subject",
-					"position.update.closingDate@candidates",
-					Collections.unmodifiableMap(new HashMap<String, String>() {
+						"default.subject",
+						"position.update.closingDate@candidates",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
 
-						{
-							put("position", position.getName());
+							{
+								put("position", position.getName());
 
-							put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
-							put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
-							put("institution_el", position.getDepartment().getSchool().getInstitution().getName().get("el"));
-							put("school_el", position.getDepartment().getSchool().getName().get("el"));
-							put("department_el", position.getDepartment().getName().get("el"));
+								put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
+								put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
+								put("institution_el", position.getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", position.getDepartment().getSchool().getName().get("el"));
+								put("department_el", position.getDepartment().getName().get("el"));
 
-							put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
-							put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
-							put("institution_en", position.getDepartment().getSchool().getInstitution().getName().get("en"));
-							put("school_en", position.getDepartment().getSchool().getName().get("en"));
-							put("department_en", position.getDepartment().getName().get("en"));
-						}
-					}));
+								put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
+								put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
+								put("institution_en", position.getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", position.getDepartment().getSchool().getName().get("en"));
+								put("department_en", position.getDepartment().getName().get("en"));
+							}
+						}));
 			}
 			Notification notification = new Notification();
 			notification.setDate(toDate);

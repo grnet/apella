@@ -2,13 +2,12 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.service.model.Sector;
 
-import java.util.Collection;
-import java.util.logging.Logger;
-
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import java.util.Collection;
+import java.util.logging.Logger;
 
 @Path("/sector")
 @Stateless
@@ -19,7 +18,7 @@ public class SectorRESTService extends RESTService {
 
 	/**
 	 * Returns all sectors
-	 * 
+	 *
 	 * @return
 	 */
 	@GET

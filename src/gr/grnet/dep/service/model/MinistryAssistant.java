@@ -1,11 +1,11 @@
 package gr.grnet.dep.service.model;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.xml.bind.annotation.XmlTransient;
-
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 @Entity
 @DiscriminatorValue("MINISTRY_ASSISTANT")

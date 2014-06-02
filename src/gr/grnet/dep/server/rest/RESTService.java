@@ -6,35 +6,22 @@ import gr.grnet.dep.service.JiraService;
 import gr.grnet.dep.service.MailService;
 import gr.grnet.dep.service.ReportService;
 import gr.grnet.dep.service.UtilityService;
-import gr.grnet.dep.service.model.Candidacy;
-import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.ProfessorDomestic;
-import gr.grnet.dep.service.model.ProfessorForeign;
+import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
-import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -54,15 +41,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Providers;
-
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
+import java.io.*;
+import java.net.URLEncoder;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Produces(MediaType.APPLICATION_JSON + "; charset=UTF-8")
 @Consumes({MediaType.APPLICATION_JSON})
@@ -94,12 +77,12 @@ public class RESTService {
 
 	/**
 	 * Check FileType to upload agrees with max number and direct caller.
-	 * 
+	 *
 	 * @param fileTypes Map<FileType, Integer>
-	 * @param type type to check
-	 * @param files existing files
+	 * @param type      type to check
+	 * @param files     existing files
 	 * @return null to continue and create file; existing file to switch to
-	 *         update
+	 * update
 	 * @throws RestException if wrong file type
 	 */
 	protected <T extends FileHeader> T checkNumberOfFileTypes(Map<FileType, Integer> fileTypes, FileType type, Set<T> files) throws RestException {
@@ -115,13 +98,11 @@ public class RESTService {
 					// Reuse!
 					existingFile.undelete();
 					return existingFile;
-				}
-				else {
+				} else {
 					throw new RestException(Status.CONFLICT, "wrong.file.type");
 				}
 			}
-		}
-		else {
+		} else {
 			existingFiles = FileHeader.filter(files, type);
 			if (existingFiles.size() >= fileTypes.get(type))
 				throw new RestException(Status.CONFLICT, "wrong.file.type");
@@ -142,9 +123,11 @@ public class RESTService {
 		}
 	}
 
-	/******************************
+	/**
+	 * ***************************
 	 * Login Functions ************
-	 ******************************/
+	 * ****************************
+	 */
 
 	protected User getLoggedOn(String authToken) throws RestException {
 		if (authToken == null) {
@@ -152,13 +135,13 @@ public class RESTService {
 		}
 		try {
 			User user = (User) em.createQuery(
-				"from User u " +
-					"left join fetch u.roles " +
-					"where u.status = :status " +
-					"and u.authToken = :authToken")
-				.setParameter("status", UserStatus.ACTIVE)
-				.setParameter("authToken", authToken)
-				.getSingleResult();
+					"from User u " +
+							"left join fetch u.roles " +
+							"where u.status = :status " +
+							"and u.authToken = :authToken")
+					.setParameter("status", UserStatus.ACTIVE)
+					.setParameter("authToken", authToken)
+					.getSingleResult();
 			return user;
 		} catch (NoResultException e) {
 			throw new RestException(Status.UNAUTHORIZED, "login.invalid.token");
@@ -172,7 +155,7 @@ public class RESTService {
 	/**
 	 * Check that a (possible) Candidacy passes some basic checks before
 	 * creation / update. Takes into account all roles
-	 * 
+	 *
 	 * @param candidacy
 	 * @param candidate
 	 */
@@ -188,7 +171,7 @@ public class RESTService {
 				throw new RestException(Status.CONFLICT, "validation.candidacy.no.cv");
 			}
 			if (candidate.getUser().getPrimaryRole().equals(RoleDiscriminator.CANDIDATE) &&
-				FileHeader.filter(candidate.getFiles(), FileType.PTYXIO).size() == 0) {
+					FileHeader.filter(candidate.getFiles(), FileType.PTYXIO).size() == 0) {
 				throw new RestException(Status.CONFLICT, "validation.candidacy.no.ptyxio");
 			}
 		} else {
@@ -203,7 +186,7 @@ public class RESTService {
 				throw new RestException(Status.CONFLICT, "validation.candidacy.no.cv");
 			}
 			if (candidate.getUser().getPrimaryRole().equals(RoleDiscriminator.CANDIDATE) &&
-				FileHeader.filterIncludingDeleted(candidacy.getSnapshotFiles(), FileType.PTYXIO).size() == 0) {
+					FileHeader.filterIncludingDeleted(candidacy.getSnapshotFiles(), FileType.PTYXIO).size() == 0) {
 				throw new RestException(Status.CONFLICT, "validation.candidacy.no.ptyxio");
 			}
 		}
@@ -212,7 +195,7 @@ public class RESTService {
 	/**
 	 * Hold on to a snapshot of candidate's details in given candidacy. Takes
 	 * into account all roles
-	 * 
+	 *
 	 * @param candidacy
 	 * @param candidate
 	 */
@@ -233,11 +216,11 @@ public class RESTService {
 		// Get Open Candidacies
 		@SuppressWarnings("unchecked")
 		List<Candidacy> openCandidacies = em.createQuery(
-			"from Candidacy c where c.candidate = :candidate " +
-				"and c.candidacies.closingDate >= :now")
-			.setParameter("candidate", candidate)
-			.setParameter("now", new Date())
-			.getResultList();
+				"from Candidacy c where c.candidate = :candidate " +
+						"and c.candidacies.closingDate >= :now")
+				.setParameter("candidate", candidate)
+				.setParameter("now", new Date())
+				.getResultList();
 
 		// Validate all candidacies
 		for (Candidacy candidacy : openCandidacies) {
@@ -249,9 +232,11 @@ public class RESTService {
 		}
 	}
 
-	/******************************
+	/**
+	 * ***************************
 	 * File Functions *************
-	 ******************************/
+	 * ****************************
+	 */
 
 	public File saveFile(User loggedOn, List<FileItem> fileItems, FileHeader header) throws IOException {
 		try {
@@ -279,8 +264,8 @@ public class RESTService {
 
 					String mimeType = fileItem.getContentType();
 					if (StringUtils.isEmpty(mimeType) || "application/octet-stream".equals(mimeType)
-						|| "application/download".equals(mimeType) || "application/force-download".equals(mimeType)
-						|| "octet/stream".equals(mimeType) || "application/unknown".equals(mimeType)) {
+							|| "application/download".equals(mimeType) || "application/force-download".equals(mimeType)
+							|| "octet/stream".equals(mimeType) || "application/unknown".equals(mimeType)) {
 						body.setMimeType(identifyMimeType(filename));
 					} else {
 						body.setMimeType(mimeType);
@@ -307,11 +292,11 @@ public class RESTService {
 	/**
 	 * Deletes the last body of given file, if possible.
 	 * If no bodies are left, deletes header too.
-	 * 
+	 *
 	 * @param fh
 	 * @return
 	 * @throws RestException (Status.CONFLICT) if body cannot be deleted because
-	 *             it is in use
+	 *                       it is in use
 	 */
 	protected <T extends FileHeader> File deleteFileBody(T fh) throws RestException {
 		int size = fh.getBodies().size();
@@ -321,11 +306,11 @@ public class RESTService {
 		// Validate:
 		try {
 			em.createQuery("select c.id from Candidacy c " +
-				"left join c.snapshot.files fb " +
-				"where fb.id = :bodyId")
-				.setParameter("bodyId", fb.getId())
-				.setMaxResults(1)
-				.getSingleResult();
+					"left join c.snapshot.files fb " +
+					"where fb.id = :bodyId")
+					.setParameter("bodyId", fb.getId())
+					.setMaxResults(1)
+					.getSingleResult();
 			logger.log(Level.INFO, "Could not delete FileBody id=" + fb.getId() + ". Constraint violation. ");
 			throw new RestException(Status.CONFLICT, "file.in.use");
 		} catch (NoResultException e) {
@@ -348,10 +333,10 @@ public class RESTService {
 
 	/**
 	 * Delete given FileHeader and all bodies and physical files.
-	 * 
+	 *
 	 * @param fh FileHeader
 	 * @throws RestException (Status.CONFLICT) if FileHeader cannot be deleted
-	 *             because some body is in use
+	 *                       because some body is in use
 	 */
 	protected void deleteCompletely(FileHeader fh) throws RestException {
 		List<FileBody> fileBodies = fh.getBodies();
@@ -368,7 +353,7 @@ public class RESTService {
 	 * The body and previous ones are left untouched, and
 	 * FileHeader is just marked as deleted.
 	 * No Exception is thrown.
-	 * 
+	 *
 	 * @param fh FileHeader
 	 */
 	protected <T extends FileHeader> T deleteAsMuchAsPossible(T fh) {
@@ -389,10 +374,10 @@ public class RESTService {
 		try {
 			String fullPath = WebConstants.FILES_PATH + File.separator + fb.getStoredFilePath();
 			return Response.ok(new FileInputStream(new File(fullPath)))
-				.type(MediaType.APPLICATION_OCTET_STREAM)
-				.header("charset", "UTF-8")
-				.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(fb.getOriginalFilename(), "UTF-8") + "\"")
-				.build();
+					.type(MediaType.APPLICATION_OCTET_STREAM)
+					.header("charset", "UTF-8")
+					.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(fb.getOriginalFilename(), "UTF-8") + "\"")
+					.build();
 		} catch (FileNotFoundException e) {
 			logger.log(Level.SEVERE, "sendFileBody", e);
 			throw new EJBException(e);
@@ -428,7 +413,7 @@ public class RESTService {
 	/**
 	 * Helper method for identifying mime type by examining the filename
 	 * extension
-	 * 
+	 *
 	 * @param filename
 	 * @return the mime type
 	 */
@@ -491,9 +476,11 @@ public class RESTService {
 		}
 	}
 
-	/******************************
+	/**
+	 * ***************************
 	 * JSON Utility Functions *****
-	 ******************************/
+	 * ****************************
+	 */
 
 	public String toJSON(Object object, Class<?> view) {
 		try {

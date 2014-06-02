@@ -1,20 +1,23 @@
 package gr.grnet.dep.service;
 
 import gr.grnet.dep.service.exceptions.ServiceException;
-import gr.grnet.dep.service.model.AuthenticationType;
-import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.Institution;
-import gr.grnet.dep.service.model.InstitutionCategory;
-import gr.grnet.dep.service.model.ProfessorDomestic;
-import gr.grnet.dep.service.model.ProfessorDomesticData;
+import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
-import gr.grnet.dep.service.model.ShibbolethInformation;
-import gr.grnet.dep.service.model.Subject;
-import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
 
+import javax.annotation.Resource;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import javax.ejb.*;
+import javax.inject.Inject;
+import javax.persistence.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.ext.Providers;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -23,28 +26,6 @@ import java.security.SecureRandom;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.annotation.Resource;
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.ext.Providers;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
 
 @Stateless
 public class AuthenticationService {
@@ -82,11 +63,11 @@ public class AuthenticationService {
 	public User findAccountByUsername(String username) {
 		try {
 			return (User) em.createQuery(
-				"from User u " +
-					"left join fetch u.roles rls " +
-					"where u.username = :username")
-				.setParameter("username", username)
-				.getSingleResult();
+					"from User u " +
+							"left join fetch u.roles rls " +
+							"where u.username = :username")
+					.setParameter("username", username)
+					.getSingleResult();
 		} catch (NoResultException e) {
 			return null;
 		}
@@ -95,11 +76,11 @@ public class AuthenticationService {
 	public User findAccountByShibbolethInfo(ShibbolethInformation shibbolethInfo) {
 		try {
 			return (User) em.createQuery(
-				"select u from User u " +
-					"left join fetch u.roles rls " +
-					"where u.shibbolethInfo.remoteUser = :remoteUser")
-				.setParameter("remoteUser", shibbolethInfo.getRemoteUser())
-				.getSingleResult();
+					"select u from User u " +
+							"left join fetch u.roles rls " +
+							"where u.shibbolethInfo.remoteUser = :remoteUser")
+					.setParameter("remoteUser", shibbolethInfo.getRemoteUser())
+					.getSingleResult();
 		} catch (NoResultException e) {
 			return null;
 		}
@@ -108,11 +89,11 @@ public class AuthenticationService {
 	public User findAccountByPermanentAuthToken(String permanentAuthToken) {
 		try {
 			return (User) em.createQuery(
-				"select u from User u " +
-					"left join fetch u.roles " +
-					"where u.permanentAuthToken = :permanentAuthToken")
-				.setParameter("permanentAuthToken", permanentAuthToken)
-				.getSingleResult();
+					"select u from User u " +
+							"left join fetch u.roles " +
+							"where u.permanentAuthToken = :permanentAuthToken")
+					.setParameter("permanentAuthToken", permanentAuthToken)
+					.getSingleResult();
 		} catch (NoResultException e) {
 			return null;
 		}
@@ -121,11 +102,11 @@ public class AuthenticationService {
 	public User findAccountByProfessorDomesticData(ProfessorDomesticData data) {
 		try {
 			User u = (User) em.createQuery(
-				"select u from User u " +
-					"left join fetch u.roles rls " +
-					"where u.contactInfo.email = :email")
-				.setParameter("email", data.getEmail())
-				.getSingleResult();
+					"select u from User u " +
+							"left join fetch u.roles rls " +
+							"where u.contactInfo.email = :email")
+					.setParameter("email", data.getEmail())
+					.getSingleResult();
 			return u;
 		} catch (NoResultException e) {
 			return null;
@@ -375,10 +356,10 @@ public class AuthenticationService {
 	private Institution findInstitutionBySchacHomeOrganization(String schacHomeOrganization) {
 		try {
 			return (Institution) em.createQuery(
-				"from Institution i " +
-					"where i.schacHomeOrganization = :schacHomeOrganization ")
-				.setParameter("schacHomeOrganization", schacHomeOrganization)
-				.getSingleResult();
+					"from Institution i " +
+							"where i.schacHomeOrganization = :schacHomeOrganization ")
+					.setParameter("schacHomeOrganization", schacHomeOrganization)
+					.getSingleResult();
 		} catch (NoResultException e) {
 			return null;
 		} catch (NonUniqueResultException e) {
@@ -430,7 +411,7 @@ public class AuthenticationService {
 
 	/**
 	 * Generates the token used after each login
-	 * 
+	 *
 	 * @param userId
 	 * @return
 	 */
@@ -450,7 +431,7 @@ public class AuthenticationService {
 
 	/**
 	 * Generates the permanent login used for email-link-authentication
-	 * 
+	 *
 	 * @param userId
 	 * @param email
 	 * @return

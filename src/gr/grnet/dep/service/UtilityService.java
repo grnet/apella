@@ -5,10 +5,8 @@ import gr.grnet.dep.service.model.Sector;
 import gr.grnet.dep.service.model.Subject;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 import gr.grnet.dep.service.util.StringUtil;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Locale;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
 
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -16,9 +14,9 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Locale;
 
 @Stateless
 public class UtilityService {
@@ -43,10 +41,10 @@ public class UtilityService {
 			String name = StringUtil.toUppercaseNoTones(subject.getName(), new Locale("el"));
 			try {
 				Subject existingSubject = (Subject) em.createQuery(
-					"select s from Subject s " +
-						"where s.name = :name ")
-					.setParameter("name", name)
-					.getSingleResult();
+						"select s from Subject s " +
+								"where s.name = :name ")
+						.setParameter("name", name)
+						.getSingleResult();
 				return existingSubject;
 			} catch (NoResultException e) {
 				Subject newSubject = new Subject();
@@ -80,10 +78,10 @@ public class UtilityService {
 			departmentIds.add(department.getId());
 		}
 		return em.createQuery(
-			"from Department d " +
-				"where d.id in (:departmentIds)")
-			.setParameter("departmentIds", departmentIds)
-			.getResultList();
+				"from Department d " +
+						"where d.id in (:departmentIds)")
+				.setParameter("departmentIds", departmentIds)
+				.getResultList();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -97,9 +95,9 @@ public class UtilityService {
 			sectorIds.add(sector.getId());
 		}
 		return em.createQuery(
-			"from Sector s " +
-				"where s.id in (:sectorIds)")
-			.setParameter("sectorIds", sectorIds)
-			.getResultList();
+				"from Sector s " +
+						"where s.id in (:sectorIds)")
+				.setParameter("sectorIds", sectorIds)
+				.getResultList();
 	}
 }

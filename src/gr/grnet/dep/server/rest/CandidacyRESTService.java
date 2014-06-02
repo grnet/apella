@@ -2,47 +2,19 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.model.Candidacy;
+import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
 import gr.grnet.dep.service.model.Candidacy.MediumCandidacyView;
-import gr.grnet.dep.service.model.CandidacyEvaluator;
 import gr.grnet.dep.service.model.CandidacyEvaluator.DetailedCandidacyEvaluatorView;
-import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.Institution;
-import gr.grnet.dep.service.model.InstitutionManager;
-import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
-import gr.grnet.dep.service.model.PositionCandidacies;
-import gr.grnet.dep.service.model.PositionCommittee;
-import gr.grnet.dep.service.model.PositionCommitteeMember;
-import gr.grnet.dep.service.model.PositionEvaluator;
-import gr.grnet.dep.service.model.PositionNomination;
-import gr.grnet.dep.service.model.RegisterMember;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
-import gr.grnet.dep.service.model.User;
-import gr.grnet.dep.service.model.file.CandidacyFile;
-import gr.grnet.dep.service.model.file.CandidateFile;
-import gr.grnet.dep.service.model.file.FileBody;
-import gr.grnet.dep.service.model.file.FileHeader;
+import gr.grnet.dep.service.model.file.*;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
-import gr.grnet.dep.service.model.file.FileType;
-import gr.grnet.dep.service.model.file.PositionCandidaciesFile;
 import gr.grnet.dep.service.util.DateUtil;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
+import org.codehaus.jackson.map.annotate.JsonView;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -50,24 +22,15 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.codehaus.jackson.map.annotate.JsonView;
+import java.io.IOException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Path("/candidacy")
 @Stateless
@@ -79,22 +42,22 @@ public class CandidacyRESTService extends RESTService {
 	private boolean canAddEvaluators(Candidacy c) {
 		PositionCommittee committee = c.getCandidacies().getPosition().getPhase().getCommittee();
 		return committee != null &&
-			committee.getMembers().size() > 0 &&
-			DateUtil.compareDates(new Date(), committee.getCandidacyEvalutionsDueDate()) < 0;
+				committee.getMembers().size() > 0 &&
+				DateUtil.compareDates(new Date(), committee.getCandidacyEvalutionsDueDate()) < 0;
 	}
 
 	private boolean hasNominationCommitteeConverged(Candidacy c) {
 		PositionNomination nomination = c.getCandidacies().getPosition().getPhase().getNomination();
 		return nomination != null &&
-			nomination.getNominationCommitteeConvergenceDate() != null &&
-			DateUtil.compareDates(new Date(), nomination.getNominationCommitteeConvergenceDate()) >= 0;
+				nomination.getNominationCommitteeConvergenceDate() != null &&
+				DateUtil.compareDates(new Date(), nomination.getNominationCommitteeConvergenceDate()) >= 0;
 	}
 
 	/**
 	 * Get Candidacy by it's ID
-	 * 
+	 *
 	 * @param authToken The Authentication Token
-	 * @param id The Id of the Candidacy
+	 * @param id        The Id of the Candidacy
 	 * @returnWrapped gr.grnet.dep.service.model.Candidacy
 	 * @HTTP 403 X-Error-Code: insufficient.privileges
 	 * @HTTP 404 X-Error-Code: wrong.candidacy.id
@@ -105,19 +68,19 @@ public class CandidacyRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			Candidacy candidacy = (Candidacy) em.createQuery(
-				"from Candidacy c " +
-					"left join fetch c.proposedEvaluators pe " +
-					"where c.id=:id")
-				.setParameter("id", id)
-				.getSingleResult();
+					"from Candidacy c " +
+							"left join fetch c.proposedEvaluators pe " +
+							"where c.id=:id")
+					.setParameter("id", id)
+					.getSingleResult();
 			Candidate candidate = candidacy.getCandidate();
 
 			// Full Access ADMINISTRATOR, MINISTRY, ISNSTITUTION, OWNER
 			if (loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) ||
-				loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) ||
-				loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) ||
-				loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) ||
-				candidate.getUser().getId().equals(loggedOn.getId())) {
+					loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) ||
+					loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) ||
+					loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) ||
+					candidate.getUser().getId().equals(loggedOn.getId())) {
 				// Full Access
 				candidacy.getCandidacyEvalutionsDueDate(); // Load this to avoid lazy exception
 				candidacy.setCanAddEvaluators(canAddEvaluators(candidacy));
@@ -126,7 +89,7 @@ public class CandidacyRESTService extends RESTService {
 			}
 			// Medium Access COMMITTEE MEMBER, EVALUATOR
 			if ((candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) ||
-				(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn))) {
+					(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn))) {
 				// Medium (without ContactInformation)
 				return toJSON(candidacy, MediumCandidacyView.class);
 			}
@@ -143,7 +106,7 @@ public class CandidacyRESTService extends RESTService {
 
 	/**
 	 * Creates a new Candidacy, not finalized
-	 * 
+	 *
 	 * @param authToken The Authentication Token
 	 * @param candidacy
 	 * @return The new candidacy, with ID
@@ -182,12 +145,12 @@ public class CandidacyRESTService extends RESTService {
 			}
 			try {
 				Candidacy existingCandidacy = (Candidacy) em.createQuery(
-					"select c from Candidacy c " +
-						"where c.candidate.id = :candidateId " +
-						"and c.candidacies.position.id = :positionId")
-					.setParameter("candidateId", candidate.getId())
-					.setParameter("positionId", position.getId())
-					.getSingleResult();
+						"select c from Candidacy c " +
+								"where c.candidate.id = :candidateId " +
+								"and c.candidacies.position.id = :positionId")
+						.setParameter("candidateId", candidate.getId())
+						.setParameter("positionId", position.getId())
+						.getSingleResult();
 				// Return Results
 				existingCandidacy.getCandidacyEvalutionsDueDate();
 				return existingCandidacy;
@@ -219,7 +182,7 @@ public class CandidacyRESTService extends RESTService {
 
 	/**
 	 * Saves and finalizes candidacy
-	 * 
+	 *
 	 * @param authToken The Authentication Token
 	 * @param id
 	 * @param candidacy
@@ -247,12 +210,12 @@ public class CandidacyRESTService extends RESTService {
 			}
 			Position position = existingCandidacy.getCandidacies().getPosition();
 			if (!position.getPhase().getStatus().equals(PositionStatus.ANOIXTI) &&
-				!position.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
+					!position.getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
 			// Only one field is not allowed to change after closing date: isOpenToOtherCandidates
 			if ((existingCandidacy.isOpenToOtherCandidates() ^ candidacy.isOpenToOtherCandidates()) &&
-				!existingCandidacy.getCandidacies().getPosition().getPhase().getClientStatus().equals(PositionStatus.ANOIXTI.toString())) {
+					!existingCandidacy.getCandidacies().getPosition().getPhase().getClientStatus().equals(PositionStatus.ANOIXTI.toString())) {
 				throw new RestException(Status.CONFLICT, "wrong.position.candidacies.closingDate");
 			}
 			Set<Long> newRegisterMemberIds = new HashSet<Long>();
@@ -278,15 +241,15 @@ public class CandidacyRESTService extends RESTService {
 			List<RegisterMember> newRegisterMembers = new ArrayList<RegisterMember>();
 			if (!newRegisterMemberIds.isEmpty()) {
 				Query query = em.createQuery(
-					"select distinct m from Register r " +
-						"join r.members m " +
-						"where r.permanent = true " +
-						"and r.institution.id = :institutionId " +
-						"and m.professor.status = :status " +
-						"and m.id in (:registerIds)")
-					.setParameter("institutionId", candidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getId())
-					.setParameter("status", RoleStatus.ACTIVE)
-					.setParameter("registerIds", newRegisterMemberIds);
+						"select distinct m from Register r " +
+								"join r.members m " +
+								"where r.permanent = true " +
+								"and r.institution.id = :institutionId " +
+								"and m.professor.status = :status " +
+								"and m.id in (:registerIds)")
+						.setParameter("institutionId", candidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getId())
+						.setParameter("status", RoleStatus.ACTIVE)
+						.setParameter("registerIds", newRegisterMemberIds);
 				newRegisterMembers.addAll(query.getResultList());
 			}
 			Collection<CandidacyEvaluator> addedEvaluators = new ArrayList<CandidacyEvaluator>();
@@ -319,189 +282,189 @@ public class CandidacyRESTService extends RESTService {
 				// 1. candidacy.create@institutionManager
 				for (final Map<String, String> recipient : existingCandidacy.getCandidacies().getPosition().getEmailRecipients()) {
 					mailService.postEmail(recipient.get("email"),
+							"default.subject",
+							"candidacy.create@institutionManager",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
+
+								{
+									putAll(recipient);
+
+									put("position", existingCandidacy.getCandidacies().getPosition().getName());
+
+									put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
+									put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+
+									put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
+									put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
+								}
+							}));
+				}
+				// 2. candidacy.create@candidate
+				mailService.postEmail(existingCandidacy.getCandidate().getUser().getContactInfo().getEmail(),
 						"default.subject",
-						"candidacy.create@institutionManager",
+						"candidacy.create@candidate",
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
-								putAll(recipient);
-
 								put("position", existingCandidacy.getCandidacies().getPosition().getName());
 
+								put("firstname_el", existingCandidacy.getCandidate().getUser().getFirstname("el"));
+								put("lastname_el", existingCandidacy.getCandidate().getUser().getLastname("el"));
 								put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
 								put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
 								put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
 
+								put("firstname_en", existingCandidacy.getCandidate().getUser().getFirstname("en"));
+								put("lastname_en", existingCandidacy.getCandidate().getUser().getLastname("en"));
 								put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 								put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
 								put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
 							}
 						}));
-				}
-				// 2. candidacy.create@candidate
-				mailService.postEmail(existingCandidacy.getCandidate().getUser().getContactInfo().getEmail(),
-					"default.subject",
-					"candidacy.create@candidate",
-					Collections.unmodifiableMap(new HashMap<String, String>() {
-
-						{
-							put("position", existingCandidacy.getCandidacies().getPosition().getName());
-
-							put("firstname_el", existingCandidacy.getCandidate().getUser().getFirstname("el"));
-							put("lastname_el", existingCandidacy.getCandidate().getUser().getLastname("el"));
-							put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-							put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
-							put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
-
-							put("firstname_en", existingCandidacy.getCandidate().getUser().getFirstname("en"));
-							put("lastname_en", existingCandidacy.getCandidate().getUser().getLastname("en"));
-							put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-							put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
-							put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
-						}
-					}));
 
 			}
 			if (!addedEvaluators.isEmpty()) {
 				// 3. candidacy.create.candidacyEvaluator@candidacyEvaluator
 				for (final CandidacyEvaluator evaluator : addedEvaluators) {
 					mailService.postEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"candidacy.create.candidacyEvaluator@candidacyEvaluator",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+							"default.subject",
+							"candidacy.create.candidacyEvaluator@candidacyEvaluator",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("position", existingCandidacy.getCandidacies().getPosition().getName());
+								{
+									put("position", existingCandidacy.getCandidacies().getPosition().getName());
 
-								put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-								put("lastname_el", evaluator.getRegisterMember().getProfessor().getUser().getLastname("el"));
-								put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
-								put("candidate_firstname_el", existingCandidacy.getSnapshot().getFirstname("el"));
-								put("candidate_lastname_el", existingCandidacy.getSnapshot().getLastname("el"));
-								put("assistants_el", extractAssistantsInfo(existingCandidacy.getCandidacies().getPosition(), "el"));
+									put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+									put("lastname_el", evaluator.getRegisterMember().getProfessor().getUser().getLastname("el"));
+									put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
+									put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+									put("candidate_firstname_el", existingCandidacy.getSnapshot().getFirstname("el"));
+									put("candidate_lastname_el", existingCandidacy.getSnapshot().getLastname("el"));
+									put("assistants_el", extractAssistantsInfo(existingCandidacy.getCandidacies().getPosition(), "el"));
 
-								put("firstname_en", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-								put("lastname_en", evaluator.getRegisterMember().getProfessor().getUser().getLastname("en"));
-								put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
-								put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
-								put("candidate_firstname_en", existingCandidacy.getSnapshot().getFirstname("en"));
-								put("candidate_lastname_en", existingCandidacy.getSnapshot().getLastname("en"));
-								put("assistants_en", extractAssistantsInfo(existingCandidacy.getCandidacies().getPosition(), "en"));
+									put("firstname_en", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+									put("lastname_en", evaluator.getRegisterMember().getProfessor().getUser().getLastname("en"));
+									put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
+									put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
+									put("candidate_firstname_en", existingCandidacy.getSnapshot().getFirstname("en"));
+									put("candidate_lastname_en", existingCandidacy.getSnapshot().getLastname("en"));
+									put("assistants_en", extractAssistantsInfo(existingCandidacy.getCandidacies().getPosition(), "en"));
 
-							}
-
-							private String extractAssistantsInfo(Position position, String locale) {
-								StringBuilder info = new StringBuilder();
-								info.append("<ul>");
-
-								InstitutionManager manager = position.getManager();
-								String im_firstname = manager.getUser().getFirstname(locale);
-								String im_lastname = manager.getUser().getLastname(locale);
-								String im_email = manager.getUser().getContactInfo().getEmail();
-								String im_phone = manager.getUser().getContactInfo().getPhone();
-								info.append("<li>" + im_firstname + " " + im_lastname + ", " + im_email + ", " + im_phone + "</li>");
-
-								im_firstname = manager.getAlternateFirstname(locale);
-								im_lastname = manager.getAlternateLastname(locale);
-								im_email = manager.getAlternateContactInfo().getEmail();
-								im_phone = manager.getAlternateContactInfo().getPhone();
-								info.append("<li>" + im_firstname + " " + im_lastname + ", " + im_email + ", " + im_phone + "</li>");
-
-								info.append("<li><ul>");
-								Set<User> assistants = new HashSet<User>();
-								assistants.addAll(position.getAssistants());
-								if (position.getCreatedBy().getPrimaryRole().equals(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
-									assistants.add(position.getCreatedBy());
 								}
-								for (User u : assistants) {
-									if (u.getId().equals(manager.getUser().getId())) {
-										continue;
-									}
-									im_firstname = u.getFirstname(locale);
-									im_lastname = u.getLastname(locale);
-									im_email = u.getContactInfo().getEmail();
-									im_phone = u.getContactInfo().getPhone();
+
+								private String extractAssistantsInfo(Position position, String locale) {
+									StringBuilder info = new StringBuilder();
+									info.append("<ul>");
+
+									InstitutionManager manager = position.getManager();
+									String im_firstname = manager.getUser().getFirstname(locale);
+									String im_lastname = manager.getUser().getLastname(locale);
+									String im_email = manager.getUser().getContactInfo().getEmail();
+									String im_phone = manager.getUser().getContactInfo().getPhone();
 									info.append("<li>" + im_firstname + " " + im_lastname + ", " + im_email + ", " + im_phone + "</li>");
+
+									im_firstname = manager.getAlternateFirstname(locale);
+									im_lastname = manager.getAlternateLastname(locale);
+									im_email = manager.getAlternateContactInfo().getEmail();
+									im_phone = manager.getAlternateContactInfo().getPhone();
+									info.append("<li>" + im_firstname + " " + im_lastname + ", " + im_email + ", " + im_phone + "</li>");
+
+									info.append("<li><ul>");
+									Set<User> assistants = new HashSet<User>();
+									assistants.addAll(position.getAssistants());
+									if (position.getCreatedBy().getPrimaryRole().equals(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+										assistants.add(position.getCreatedBy());
+									}
+									for (User u : assistants) {
+										if (u.getId().equals(manager.getUser().getId())) {
+											continue;
+										}
+										im_firstname = u.getFirstname(locale);
+										im_lastname = u.getLastname(locale);
+										im_email = u.getContactInfo().getEmail();
+										im_phone = u.getContactInfo().getPhone();
+										info.append("<li>" + im_firstname + " " + im_lastname + ", " + im_email + ", " + im_phone + "</li>");
+									}
+									info.append("</ul></li>");
+
+									info.append("</ul>");
+									return info.toString();
 								}
-								info.append("</ul></li>");
 
-								info.append("</ul>");
-								return info.toString();
-							}
-
-						}));
+							}));
 				}
 				// 4. candidacy.create.candidacyEvaluator@institutionManager
 				for (final Map<String, String> recipient : existingCandidacy.getCandidacies().getPosition().getEmailRecipients()) {
 					mailService.postEmail(recipient.get("email"),
-						"default.subject",
-						"candidacy.create.candidacyEvaluator@institutionManager",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+							"default.subject",
+							"candidacy.create.candidacyEvaluator@institutionManager",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								putAll(recipient); //firstname, lastname (el|en)
+								{
+									putAll(recipient); //firstname, lastname (el|en)
 
-								put("position", existingCandidacy.getCandidacies().getPosition().getName());
+									put("position", existingCandidacy.getCandidacies().getPosition().getName());
 
-								put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
-								put("candidate_firstname_el", existingCandidacy.getSnapshot().getFirstname("el"));
-								put("candidate_lastname_el", existingCandidacy.getSnapshot().getLastname("el"));
+									put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
+									put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+									put("candidate_firstname_el", existingCandidacy.getSnapshot().getFirstname("el"));
+									put("candidate_lastname_el", existingCandidacy.getSnapshot().getLastname("el"));
 
-								put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
-								put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
-								put("candidate_firstname_en", existingCandidacy.getSnapshot().getFirstname("en"));
-								put("candidate_lastname_en", existingCandidacy.getSnapshot().getLastname("en"));
+									put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
+									put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
+									put("candidate_firstname_en", existingCandidacy.getSnapshot().getFirstname("en"));
+									put("candidate_lastname_en", existingCandidacy.getSnapshot().getLastname("en"));
 
-								Iterator<CandidacyEvaluator> it = existingCandidacy.getProposedEvaluators().iterator();
-								if (it.hasNext()) {
-									CandidacyEvaluator eval = it.next();
-									put("evaluator1_firstname_el", eval.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-									put("evaluator1_lastname_el", eval.getRegisterMember().getProfessor().getUser().getLastname("el"));
-									put("evaluator1_firstname_en", eval.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-									put("evaluator1_lastname_en", eval.getRegisterMember().getProfessor().getUser().getLastname("en"));
+									Iterator<CandidacyEvaluator> it = existingCandidacy.getProposedEvaluators().iterator();
+									if (it.hasNext()) {
+										CandidacyEvaluator eval = it.next();
+										put("evaluator1_firstname_el", eval.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+										put("evaluator1_lastname_el", eval.getRegisterMember().getProfessor().getUser().getLastname("el"));
+										put("evaluator1_firstname_en", eval.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+										put("evaluator1_lastname_en", eval.getRegisterMember().getProfessor().getUser().getLastname("en"));
 
-									put("evaluator1_email", eval.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail());
+										put("evaluator1_email", eval.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail());
 
-								} else {
-									put("evaluator1_firstname_el", "-");
-									put("evaluator1_lastname_el", "-");
-									put("evaluator1_firstname_en", "-");
-									put("evaluator1_lastname_en", "-");
+									} else {
+										put("evaluator1_firstname_el", "-");
+										put("evaluator1_lastname_el", "-");
+										put("evaluator1_firstname_en", "-");
+										put("evaluator1_lastname_en", "-");
 
-									put("evaluator1_email", "-");
+										put("evaluator1_email", "-");
 
-									put("evaluator2_firstname_el", "-");
-									put("evaluator2_lastname_el", "-");
-									put("evaluator2_firstname_en", "-");
-									put("evaluator2_lastname_en", "-");
+										put("evaluator2_firstname_el", "-");
+										put("evaluator2_lastname_el", "-");
+										put("evaluator2_firstname_en", "-");
+										put("evaluator2_lastname_en", "-");
 
-									put("evaluator2_email", "-");
+										put("evaluator2_email", "-");
 
+									}
+									if (it.hasNext()) {
+										CandidacyEvaluator eval = it.next();
+										put("evaluator2_firstname_el", eval.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+										put("evaluator2_lastname_el", eval.getRegisterMember().getProfessor().getUser().getLastname("el"));
+										put("evaluator2_firstname_en", eval.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+										put("evaluator2_lastname_en", eval.getRegisterMember().getProfessor().getUser().getLastname("en"));
+
+										put("evaluator2_email", eval.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail());
+									} else {
+										put("evaluator2_firstname_el", "-");
+										put("evaluator2_lastname_el", "-");
+										put("evaluator2_firstname_en", "-");
+										put("evaluator2_lastname_en", "-");
+
+										put("evaluator2_email", "-");
+									}
 								}
-								if (it.hasNext()) {
-									CandidacyEvaluator eval = it.next();
-									put("evaluator2_firstname_el", eval.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-									put("evaluator2_lastname_el", eval.getRegisterMember().getProfessor().getUser().getLastname("el"));
-									put("evaluator2_firstname_en", eval.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-									put("evaluator2_lastname_en", eval.getRegisterMember().getProfessor().getUser().getLastname("en"));
-
-									put("evaluator2_email", eval.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail());
-								} else {
-									put("evaluator2_firstname_el", "-");
-									put("evaluator2_lastname_el", "-");
-									put("evaluator2_firstname_en", "-");
-									put("evaluator2_lastname_en", "-");
-
-									put("evaluator2_email", "-");
-								}
-							}
-						}));
+							}));
 					// END: Send E-Mails
 				}
 			}
@@ -519,7 +482,7 @@ public class CandidacyRESTService extends RESTService {
 
 	/**
 	 * Deletes the submitted candidacy
-	 * 
+	 *
 	 * @param authToken The Authentication Token
 	 * @param id
 	 * @HTTP 403 X-Error-Code: insufficient.privileges
@@ -543,12 +506,12 @@ public class CandidacyRESTService extends RESTService {
 			}
 			Position position = existingCandidacy.getCandidacies().getPosition();
 			if (!position.getPhase().getStatus().equals(PositionStatus.ANOIXTI)
-				&& (!position.getPhase().getStatus().equals(PositionStatus.EPILOGI))) {
+					&& (!position.getPhase().getStatus().equals(PositionStatus.EPILOGI))) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
 			if (position.getPhase().getStatus().equals(PositionStatus.EPILOGI) &&
-				position.getPhase().getNomination().getNominationCommitteeConvergenceDate() != null
-				&& DateUtil.compareDates(position.getPhase().getNomination().getNominationCommitteeConvergenceDate(), new Date()) <= 0) {
+					position.getPhase().getNomination().getNominationCommitteeConvergenceDate() != null
+					&& DateUtil.compareDates(position.getPhase().getNomination().getNominationCommitteeConvergenceDate(), new Date()) <= 0) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status.committee.converged");
 			}
 
@@ -557,123 +520,123 @@ public class CandidacyRESTService extends RESTService {
 				// 1. candidacy.remove@institutionManager
 				for (final Map<String, String> recipient : existingCandidacy.getCandidacies().getPosition().getEmailRecipients()) {
 					mailService.postEmail(recipient.get("email"),
-						"default.subject",
-						"candidacy.remove@institutionManager",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
-
-							{
-								putAll(recipient); //firstname, lastname (el|en)
-
-								put("position", existingCandidacy.getCandidacies().getPosition().getName());
-
-								put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
-
-								put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
-								put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
-							}
-						}));
-				}
-				// 2. candidacy.remove@candidate
-				mailService.postEmail(existingCandidacy.getCandidate().getUser().getContactInfo().getEmail(),
-					"default.subject",
-					"candidacy.remove@candidate",
-					Collections.unmodifiableMap(new HashMap<String, String>() {
-
-						{
-							put("position", existingCandidacy.getCandidacies().getPosition().getName());
-
-							put("firstname_el", existingCandidacy.getCandidate().getUser().getFirstname("el"));
-							put("lastname_el", existingCandidacy.getCandidate().getUser().getLastname("el"));
-							put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-							put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
-							put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
-
-							put("firstname_en", existingCandidacy.getCandidate().getUser().getFirstname("en"));
-							put("lastname_en", existingCandidacy.getCandidate().getUser().getLastname("en"));
-							put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-							put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
-							put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
-						}
-					}));
-				// 3. candidacy.remove@committee
-				if (existingCandidacy.getCandidacies().getPosition().getPhase().getCommittee() != null) {
-					for (final PositionCommitteeMember member : existingCandidacy.getCandidacies().getPosition().getPhase().getCommittee().getMembers()) {
-						mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 							"default.subject",
-							"candidacy.remove@committee",
+							"candidacy.remove@institutionManager",
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									putAll(recipient); //firstname, lastname (el|en)
+
 									put("position", existingCandidacy.getCandidacies().getPosition().getName());
 
-									put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-									put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
 									put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
 									put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
 									put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
 
-									put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-									put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
 									put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 									put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
 									put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
 								}
 							}));
+				}
+				// 2. candidacy.remove@candidate
+				mailService.postEmail(existingCandidacy.getCandidate().getUser().getContactInfo().getEmail(),
+						"default.subject",
+						"candidacy.remove@candidate",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
+
+							{
+								put("position", existingCandidacy.getCandidacies().getPosition().getName());
+
+								put("firstname_el", existingCandidacy.getCandidate().getUser().getFirstname("el"));
+								put("lastname_el", existingCandidacy.getCandidate().getUser().getLastname("el"));
+								put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+
+								put("firstname_en", existingCandidacy.getCandidate().getUser().getFirstname("en"));
+								put("lastname_en", existingCandidacy.getCandidate().getUser().getLastname("en"));
+								put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
+								put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
+							}
+						}));
+				// 3. candidacy.remove@committee
+				if (existingCandidacy.getCandidacies().getPosition().getPhase().getCommittee() != null) {
+					for (final PositionCommitteeMember member : existingCandidacy.getCandidacies().getPosition().getPhase().getCommittee().getMembers()) {
+						mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+								"default.subject",
+								"candidacy.remove@committee",
+								Collections.unmodifiableMap(new HashMap<String, String>() {
+
+									{
+										put("position", existingCandidacy.getCandidacies().getPosition().getName());
+
+										put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+										put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
+										put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+										put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
+										put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+
+										put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+										put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
+										put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+										put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
+										put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
+									}
+								}));
 					}
 				}
 				// 4. candidacy.remove@evaluators
 				if (existingCandidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null) {
 					for (final PositionEvaluator evaluator : existingCandidacy.getCandidacies().getPosition().getPhase().getEvaluation().getEvaluators()) {
 						mailService.postEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
-							"default.subject",
-							"candidacy.remove@evaluators",
-							Collections.unmodifiableMap(new HashMap<String, String>() {
+								"default.subject",
+								"candidacy.remove@evaluators",
+								Collections.unmodifiableMap(new HashMap<String, String>() {
 
-								{
-									put("position", existingCandidacy.getCandidacies().getPosition().getName());
+									{
+										put("position", existingCandidacy.getCandidacies().getPosition().getName());
 
-									put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-									put("lastname_el", evaluator.getRegisterMember().getProfessor().getUser().getLastname("el"));
-									put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-									put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
-									put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+										put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+										put("lastname_el", evaluator.getRegisterMember().getProfessor().getUser().getLastname("el"));
+										put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+										put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
+										put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
 
-									put("firstname_en", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-									put("lastname_en", evaluator.getRegisterMember().getProfessor().getUser().getLastname("en"));
-									put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-									put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
-									put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
-								}
-							}));
+										put("firstname_en", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+										put("lastname_en", evaluator.getRegisterMember().getProfessor().getUser().getLastname("en"));
+										put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+										put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
+										put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
+									}
+								}));
 					}
 				}
 				// 5. candidacy.remove@candidates 
 				for (final Candidacy candidacy : existingCandidacy.getCandidacies().getCandidacies()) {
 					if (candidacy.isPermanent() && !candidacy.getId().equals(existingCandidacy.getId())) {
 						mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
-							"default.subject",
-							"candidacy.remove@candidates",
-							Collections.unmodifiableMap(new HashMap<String, String>() {
+								"default.subject",
+								"candidacy.remove@candidates",
+								Collections.unmodifiableMap(new HashMap<String, String>() {
 
-								{
-									put("position", existingCandidacy.getCandidacies().getPosition().getName());
+									{
+										put("position", existingCandidacy.getCandidacies().getPosition().getName());
 
-									put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
-									put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
-									put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-									put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
-									put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
+										put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
+										put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
+										put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+										put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
+										put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
 
-									put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
-									put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
-									put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-									put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
-									put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
-								}
-							}));
+										put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
+										put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
+										put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+										put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
+										put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
+									}
+								}));
 					}
 				}
 				// End: Send E-Mails
@@ -705,8 +668,8 @@ public class CandidacyRESTService extends RESTService {
 	/**
 	 * Returns the list of Register Members selectable
 	 * as Evaluators for this Candidacy
-	 * 
-	 * @param authToken The Authentication Token
+	 *
+	 * @param authToken   The Authentication Token
 	 * @param positionId
 	 * @param candidacyId
 	 * @returnWrapped gr.grnet.dep.service.model.RegisterMember Array
@@ -740,16 +703,16 @@ public class CandidacyRESTService extends RESTService {
 		// Run Query
 		@SuppressWarnings("unchecked")
 		List<RegisterMember> registerMembers = em.createQuery(
-			"select distinct m from Register r " +
-				"join r.members m " +
-				"where r.permanent = true " +
-				"and r.institution.id = :institutionId " +
-				"and m.professor.status = :status " +
-				"and m.id not in (:committeeMemberIds)")
-			.setParameter("institutionId", institution.getId())
-			.setParameter("status", RoleStatus.ACTIVE)
-			.setParameter("committeeMemberIds", committeeMemberIds)
-			.getResultList();
+				"select distinct m from Register r " +
+						"join r.members m " +
+						"where r.permanent = true " +
+						"and r.institution.id = :institutionId " +
+						"and m.professor.status = :status " +
+						"and m.id not in (:committeeMemberIds)")
+				.setParameter("institutionId", institution.getId())
+				.setParameter("status", RoleStatus.ACTIVE)
+				.setParameter("committeeMemberIds", committeeMemberIds)
+				.getResultList();
 
 		// Return result
 		return registerMembers;
@@ -762,8 +725,8 @@ public class CandidacyRESTService extends RESTService {
 	/**
 	 * Returns the list of snapshot files of this candidacy
 	 * (copied from profile)
-	 * 
-	 * @param authToken The Authentication Token
+	 *
+	 * @param authToken   The Authentication Token
 	 * @param candidacyId
 	 * @return Array of gr.grnet.dep.service.model.file.CandidateFile Array
 	 * @HTTP 403 X-Error-Code: insufficient.privileges
@@ -780,17 +743,17 @@ public class CandidacyRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
-			(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
-			(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-			!candidacy.getCandidacies().containsCandidate(loggedOn)) {
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
+				(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
+				(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+				!candidacy.getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
-			!candidacy.isOpenToOtherCandidates() &&
-			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
+				!candidacy.isOpenToOtherCandidates() &&
+				!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -800,8 +763,8 @@ public class CandidacyRESTService extends RESTService {
 
 	/**
 	 * Returns the file description with the given id
-	 * 
-	 * @param authToken The authentication Token
+	 *
+	 * @param authToken   The authentication Token
 	 * @param candidacyId
 	 * @param fileId
 	 * @return
@@ -820,17 +783,17 @@ public class CandidacyRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
-			(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
-			(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-			!candidacy.getCandidacies().containsCandidate(loggedOn)) {
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
+				(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
+				(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+				!candidacy.getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
-			!candidacy.isOpenToOtherCandidates() &&
-			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
+				!candidacy.isOpenToOtherCandidates() &&
+				!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -844,7 +807,7 @@ public class CandidacyRESTService extends RESTService {
 
 	/**
 	 * Returns the actual file body (binary)
-	 * 
+	 *
 	 * @param authToken
 	 * @param candidacyId
 	 * @param fileId
@@ -865,17 +828,17 @@ public class CandidacyRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
-			(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
-			(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-			!candidacy.getCandidacies().containsCandidate(loggedOn)) {
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
+				(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
+				(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+				!candidacy.getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
-			!candidacy.isOpenToOtherCandidates() &&
-			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
+				!candidacy.isOpenToOtherCandidates() &&
+				!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -893,8 +856,8 @@ public class CandidacyRESTService extends RESTService {
 
 	/**
 	 * Returns files specific to this candidacy
-	 * 
-	 * @param authToken The authentication Token
+	 *
+	 * @param authToken   The authentication Token
 	 * @param candidacyId
 	 * @return
 	 * @HTTP 403 X-Error-Code: insufficient.privileges
@@ -911,17 +874,17 @@ public class CandidacyRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
-			(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
-			(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-			!candidacy.getCandidacies().containsCandidate(loggedOn)) {
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
+				(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
+				(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+				!candidacy.getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
-			!candidacy.isOpenToOtherCandidates() &&
-			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
+				!candidacy.isOpenToOtherCandidates() &&
+				!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -930,7 +893,7 @@ public class CandidacyRESTService extends RESTService {
 
 	/**
 	 * Returns file description of a file in candidacy
-	 * 
+	 *
 	 * @param authToken
 	 * @param candidacyId
 	 * @param fileId
@@ -950,17 +913,17 @@ public class CandidacyRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
-			(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
-			(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-			!candidacy.getCandidacies().containsCandidate(loggedOn)) {
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
+				(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
+				(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+				!candidacy.getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
-			!candidacy.isOpenToOtherCandidates() &&
-			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
+				!candidacy.isOpenToOtherCandidates() &&
+				!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -974,7 +937,7 @@ public class CandidacyRESTService extends RESTService {
 
 	/**
 	 * Returns the actual file body (binary)
-	 * 
+	 *
 	 * @param authToken
 	 * @param candidacyId
 	 * @param fileId
@@ -995,17 +958,17 @@ public class CandidacyRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
-			(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
-			(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-			!candidacy.getCandidacies().containsCandidate(loggedOn)) {
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
+				(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
+				(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+				!candidacy.getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
-			!candidacy.isOpenToOtherCandidates() &&
-			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
+				!candidacy.isOpenToOtherCandidates() &&
+				!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -1023,13 +986,13 @@ public class CandidacyRESTService extends RESTService {
 
 	/**
 	 * Uploads a new file
-	 * 
+	 *
 	 * @param authToken
 	 * @param candidacyId
 	 * @param request
-	 * @returnWrapped gr.grnet.dep.service.model.file.CandidacyFile
 	 * @throws FileUploadException
 	 * @throws IOException
+	 * @returnWrapped gr.grnet.dep.service.model.file.CandidacyFile
 	 * @HTTP 400 X-Error-Code: missing.file.type
 	 * @HTTP 403 X-Error-Code: insufficient.privileges
 	 * @HTTP 404 X-Error-Code: wrong.candidacy.id
@@ -1064,15 +1027,15 @@ public class CandidacyRESTService extends RESTService {
 		}
 		// Other files until closing date
 		if (!type.equals(FileType.SYMPLIROMATIKA_EGGRAFA) &&
-			!candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.ANOIXTI) &&
-			DateUtil.compareDates(new Date(), candidacy.getCandidacies().getClosingDate()) >= 0) {
+				!candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.ANOIXTI) &&
+				DateUtil.compareDates(new Date(), candidacy.getCandidacies().getClosingDate()) >= 0) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		//SYMPLIROMATIKA EGGRAFA until CommitteeMeetingDate
 		PositionCommittee committee = candidacy.getCandidacies().getPosition().getPhase().getCommittee();
 		if (type.equals(FileType.SYMPLIROMATIKA_EGGRAFA) &&
-			committee != null && committee.getCommitteeMeetingDate() != null &&
-			DateUtil.compareDates(new Date(), committee.getCommitteeMeetingDate()) > 0) {
+				committee != null && committee.getCommitteeMeetingDate() != null &&
+				DateUtil.compareDates(new Date(), committee.getCommitteeMeetingDate()) > 0) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status.committee.converged");
 		}
 		// Check number of file types
@@ -1099,14 +1062,14 @@ public class CandidacyRESTService extends RESTService {
 
 	/**
 	 * Uploads and updates an existing file
-	 * 
+	 *
 	 * @param authToken
 	 * @param candidacyId
 	 * @param fileId
 	 * @param request
-	 * @returnWrapped gr.grnet.dep.service.model.file.CandidacyFile
 	 * @throws FileUploadException
 	 * @throws IOException
+	 * @returnWrapped gr.grnet.dep.service.model.file.CandidacyFile
 	 * @HTTP 400 X-Error-Code: missing.file.type
 	 * @HTTP 403 X-Error-Code: insufficient.privileges
 	 * @HTTP 404 X-Error-Code: wrong.candidacy.id
@@ -1141,15 +1104,15 @@ public class CandidacyRESTService extends RESTService {
 		}
 		// Other files until closing date
 		if (!type.equals(FileType.SYMPLIROMATIKA_EGGRAFA) &&
-			!candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.ANOIXTI) &&
-			DateUtil.compareDates(new Date(), candidacy.getCandidacies().getClosingDate()) >= 0) {
+				!candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.ANOIXTI) &&
+				DateUtil.compareDates(new Date(), candidacy.getCandidacies().getClosingDate()) >= 0) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		//SYMPLIROMATIKA EGGRAFA until CommitteeMeetingDate
 		PositionCommittee committee = candidacy.getCandidacies().getPosition().getPhase().getCommittee();
 		if (type.equals(FileType.SYMPLIROMATIKA_EGGRAFA) &&
-			committee != null && committee.getCommitteeMeetingDate() != null &&
-			DateUtil.compareDates(new Date(), committee.getCommitteeMeetingDate()) > 0) {
+				committee != null && committee.getCommitteeMeetingDate() != null &&
+				DateUtil.compareDates(new Date(), committee.getCommitteeMeetingDate()) > 0) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status.committee.converged");
 		}
 		if (!CandidacyFile.fileTypes.containsKey(type)) {
@@ -1172,7 +1135,7 @@ public class CandidacyRESTService extends RESTService {
 
 	/**
 	 * Removes the file body
-	 * 
+	 *
 	 * @param authToken
 	 * @param candidacyId
 	 * @param fileId
@@ -1210,15 +1173,15 @@ public class CandidacyRESTService extends RESTService {
 			FileType type = candidacyFile.getType();
 			// Other files until closing date
 			if (!type.equals(FileType.SYMPLIROMATIKA_EGGRAFA) &&
-				!candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.ANOIXTI) &&
-				DateUtil.compareDates(new Date(), candidacy.getCandidacies().getClosingDate()) >= 0) {
+					!candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(PositionStatus.ANOIXTI) &&
+					DateUtil.compareDates(new Date(), candidacy.getCandidacies().getClosingDate()) >= 0) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
 			//SYMPLIROMATIKA EGGRAFA until CommitteeMeetingDate
 			PositionCommittee committee = candidacy.getCandidacies().getPosition().getPhase().getCommittee();
 			if (type.equals(FileType.SYMPLIROMATIKA_EGGRAFA) &&
-				committee != null && committee.getCommitteeMeetingDate() != null &&
-				DateUtil.compareDates(new Date(), committee.getCommitteeMeetingDate()) > 0) {
+					committee != null && committee.getCommitteeMeetingDate() != null &&
+					DateUtil.compareDates(new Date(), committee.getCommitteeMeetingDate()) > 0) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status.committee.converged");
 			}
 			CandidacyFile cf = deleteAsMuchAsPossible(candidacyFile);
@@ -1239,11 +1202,11 @@ public class CandidacyRESTService extends RESTService {
 
 	/**
 	 * Returns the list of evaluation files of this candidacy
-	 * 
-	 * @param authToken The Authentication Token
+	 *
+	 * @param authToken   The Authentication Token
 	 * @param candidacyId
 	 * @return Array of gr.grnet.dep.service.model.file.PositionCandidaciesFile
-	 *         Array
+	 * Array
 	 * @HTTP 403 X-Error-Code: insufficient.privileges
 	 * @HTTP 404 X-Error-Code: wrong.candidacy.id
 	 */
@@ -1263,30 +1226,30 @@ public class CandidacyRESTService extends RESTService {
 		}
 		// Validate:
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
-			(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
-			(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-			!candidacy.getCandidacies().containsCandidate(loggedOn)) {
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
+				(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
+				(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+				!candidacy.getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
-			!candidacy.isOpenToOtherCandidates() &&
-			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
+				!candidacy.isOpenToOtherCandidates() &&
+				!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 
 		// Search
 		@SuppressWarnings("unchecked")
 		List<PositionCandidaciesFile> result = em.createQuery(
-			"select pcf from PositionCandidaciesFile pcf " +
-				"where pcf.deleted = false " +
-				"and pcf.candidacies.id = :pcId " +
-				"and pcf.evaluator.candidacy.id = :cid ")
-			.setParameter("pcId", existingCandidacies.getId())
-			.setParameter("cid", candidacy.getId())
-			.getResultList();
+				"select pcf from PositionCandidaciesFile pcf " +
+						"where pcf.deleted = false " +
+						"and pcf.candidacies.id = :pcId " +
+						"and pcf.evaluator.candidacy.id = :cid ")
+				.setParameter("pcId", existingCandidacies.getId())
+				.setParameter("cid", candidacy.getId())
+				.getResultList();
 
 		// Return Result
 		return result;
@@ -1294,8 +1257,8 @@ public class CandidacyRESTService extends RESTService {
 
 	/**
 	 * Returns the file description with the given id
-	 * 
-	 * @param authToken The authentication Token
+	 *
+	 * @param authToken   The authentication Token
 	 * @param candidacyId
 	 * @param fileId
 	 * @return
@@ -1319,17 +1282,17 @@ public class CandidacyRESTService extends RESTService {
 		}
 		// Validate:
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
-			(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
-			(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-			!candidacy.getCandidacies().containsCandidate(loggedOn)) {
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
+				(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
+				(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+				!candidacy.getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
-			!candidacy.isOpenToOtherCandidates() &&
-			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
+				!candidacy.isOpenToOtherCandidates() &&
+				!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Find File
@@ -1344,7 +1307,7 @@ public class CandidacyRESTService extends RESTService {
 
 	/**
 	 * Returns the actual file body (binary)
-	 * 
+	 *
 	 * @param authToken
 	 * @param candidacyId
 	 * @param fileId
@@ -1370,17 +1333,17 @@ public class CandidacyRESTService extends RESTService {
 		}
 		// Validate:
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
-			(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
-			(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-			!candidacy.getCandidacies().containsCandidate(loggedOn)) {
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
+				(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
+				(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+				!candidacy.getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
-			!candidacy.isOpenToOtherCandidates() &&
-			!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
+				!candidacy.isOpenToOtherCandidates() &&
+				!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result

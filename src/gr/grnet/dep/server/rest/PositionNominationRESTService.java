@@ -2,53 +2,33 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.model.Candidacy;
-import gr.grnet.dep.service.model.Position;
+import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.Position.PositionStatus;
-import gr.grnet.dep.service.model.PositionCommitteeMember;
-import gr.grnet.dep.service.model.PositionEvaluator;
-import gr.grnet.dep.service.model.PositionNomination;
 import gr.grnet.dep.service.model.PositionNomination.DetailedPositionNominationView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
-import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.file.PositionNominationFile;
 import gr.grnet.dep.service.util.DateUtil;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
+import org.codehaus.jackson.map.annotate.JsonView;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.codehaus.jackson.map.annotate.JsonView;
+import java.io.IOException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Path("/position/{id:[0-9][0-9]*}/nomination")
 @Stateless
@@ -59,7 +39,7 @@ public class PositionNominationRESTService extends RESTService {
 
 	/**
 	 * Returns the nomination description of the specified position
-	 * 
+	 *
 	 * @param authToken
 	 * @param positionId
 	 * @param nominationId
@@ -83,12 +63,12 @@ public class PositionNominationRESTService extends RESTService {
 		}
 
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
-			!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
-			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-			!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
+				!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
+				!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+				!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		return existingNomination;
@@ -96,7 +76,7 @@ public class PositionNominationRESTService extends RESTService {
 
 	/**
 	 * Update the nomination of the specified position
-	 * 
+	 *
 	 * @param authToken
 	 * @param positionId
 	 * @param nominationId
@@ -132,12 +112,12 @@ public class PositionNominationRESTService extends RESTService {
 				throw new RestException(Status.FORBIDDEN, "wrong.position.nomination.phase");
 			}
 			if (!existingPosition.getPhase().getStatus().equals(PositionStatus.EPILOGI) &&
-				!existingPosition.getPhase().getStatus().equals(PositionStatus.STELEXOMENI)) {
+					!existingPosition.getPhase().getStatus().equals(PositionStatus.STELEXOMENI)) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
 
 			boolean updatedNominationCommitteeConvergenceDate = newNomination.getNominationCommitteeConvergenceDate() != null &&
-				DateUtil.compareDates(existingNomination.getNominationCommitteeConvergenceDate(), newNomination.getNominationCommitteeConvergenceDate()) != 0;
+					DateUtil.compareDates(existingNomination.getNominationCommitteeConvergenceDate(), newNomination.getNominationCommitteeConvergenceDate()) != 0;
 			boolean updatedNominatedCandidacy = (newNomination.getNominatedCandidacy() != null && newNomination.getNominatedCandidacy().getId() != null) && (existingNomination.getNominatedCandidacy() == null || !existingNomination.getNominatedCandidacy().getId().equals(newNomination.getNominatedCandidacy().getId()));
 			boolean updatedSecondNominatedCandidacy = (newNomination.getSecondNominatedCandidacy() != null && newNomination.getSecondNominatedCandidacy().getId() != null) && (existingNomination.getSecondNominatedCandidacy() == null || !existingNomination.getSecondNominatedCandidacy().getId().equals(newNomination.getSecondNominatedCandidacy().getId()));
 
@@ -145,17 +125,17 @@ public class PositionNominationRESTService extends RESTService {
 			// 5) Να μην είναι δυνατή η συμπλήρωση του πεδίου "Ημερομηνία Σύγκλησης Επιτροπής για Επιλογή" εάν δεν είναι συμπληρωμένο 
 			// το πεδίο "Πρόσκληση Κοσμήτορα για Σύγκληση της Επιτροπής για επιλογή"
 			if (newNomination.getNominationCommitteeConvergenceDate() != null &&
-				FileHeader.filter(existingNomination.getFiles(), FileType.PROSKLISI_KOSMITORA).isEmpty()) {
+					FileHeader.filter(existingNomination.getFiles(), FileType.PROSKLISI_KOSMITORA).isEmpty()) {
 				throw new RestException(Status.CONFLICT, "nomination.missing.prosklisi.kosmitora");
 			}
 			// 7) Να μην είναι δυνατή η συμπλήρωση των πεδίων "Διαβιβαστικό Πρακτικού, "Εκλεγείς", "Δεύτερος Καταλληλότερος Υποψήφιος", εάν δεν έχει αναρτηθεί το Πρακτικό Επιλογής.
 			if ((newNomination.getNominatedCandidacy().getId() != null || newNomination.getSecondNominatedCandidacy().getId() != null)
-				&& FileHeader.filter(existingNomination.getFiles(), FileType.PRAKTIKO_EPILOGIS).isEmpty()) {
+					&& FileHeader.filter(existingNomination.getFiles(), FileType.PRAKTIKO_EPILOGIS).isEmpty()) {
 				throw new RestException(Status.CONFLICT, "nomination.missing.praktiko.epilogis");
 			}
 			// 8) Τα πεδία "Πράξη Διορισμού" και "ΦΕΚ Πράξης Διορισμού" να ενεργοποιούνται μόνο μετά τη μετάβαση της θέσης σε status "Στελεχωμένη".
 			if (newNomination.getNominationFEK() != null && !newNomination.getNominationFEK().isEmpty()
-				&& !existingPosition.getPhase().getStatus().equals(PositionStatus.STELEXOMENI)) {
+					&& !existingPosition.getPhase().getStatus().equals(PositionStatus.STELEXOMENI)) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
 
@@ -190,124 +170,124 @@ public class PositionNominationRESTService extends RESTService {
 				// positionNomination.update.nominationCommitteeConvergenceDate@committee
 				for (final PositionCommitteeMember member : existingNomination.getPosition().getPhase().getEvaluation().getPosition().getPhase().getCommittee().getMembers()) {
 					mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"positionNomination.update.nominationCommitteeConvergenceDate@committee",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+							"default.subject",
+							"positionNomination.update.nominationCommitteeConvergenceDate@committee",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("position", existingNomination.getPosition().getPhase().getPosition().getName());
+								{
+									put("position", existingNomination.getPosition().getPhase().getPosition().getName());
 
-								put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-								put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
-								put("institution_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("el"));
+									put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+									put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
+									put("institution_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("el"));
+									put("department_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("el"));
 
-								put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-								put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
-								put("institution_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("en"));
-								put("department_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("en"));
-							}
-						}));
+									put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+									put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
+									put("institution_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("en"));
+									put("department_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("en"));
+								}
+							}));
 				}
 				// positionNomination.update.nominationCommitteeConvergenceDate@candidates
 				for (final Candidacy candidacy : existingNomination.getPosition().getPhase().getCandidacies().getCandidacies()) {
 					mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"positionNomination.update.nominationCommitteeConvergenceDate@candidates",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+							"default.subject",
+							"positionNomination.update.nominationCommitteeConvergenceDate@candidates",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("position", existingNomination.getPosition().getName());
+								{
+									put("position", existingNomination.getPosition().getName());
 
-								put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
-								put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
-								put("institution_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("el"));
+									put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
+									put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
+									put("institution_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("el"));
+									put("department_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("el"));
 
-								put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
-								put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
-								put("institution_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("en"));
-								put("department_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("en"));
-							}
-						}));
+									put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
+									put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
+									put("institution_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("en"));
+									put("department_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("en"));
+								}
+							}));
 				}
 				// positionNomination.update.nominationCommitteeConvergenceDate@evaluators
 				for (final PositionEvaluator evaluator : existingNomination.getPosition().getPhase().getEvaluation().getPosition().getPhase().getEvaluation().getEvaluators()) {
 					mailService.postEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"positionNomination.update.nominationCommitteeConvergenceDate@evaluators",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+							"default.subject",
+							"positionNomination.update.nominationCommitteeConvergenceDate@evaluators",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("position", existingNomination.getPosition().getName());
+								{
+									put("position", existingNomination.getPosition().getName());
 
-								put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-								put("lastname_el", evaluator.getRegisterMember().getProfessor().getUser().getLastname("el"));
-								put("institution_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("el"));
+									put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+									put("lastname_el", evaluator.getRegisterMember().getProfessor().getUser().getLastname("el"));
+									put("institution_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("el"));
+									put("department_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("el"));
 
-								put("firstname_en", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-								put("lastname_en", evaluator.getRegisterMember().getProfessor().getUser().getLastname("en"));
-								put("institution_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("en"));
-								put("department_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("en"));
-							}
-						}));
+									put("firstname_en", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+									put("lastname_en", evaluator.getRegisterMember().getProfessor().getUser().getLastname("en"));
+									put("institution_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("en"));
+									put("department_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("en"));
+								}
+							}));
 				}
 
 			}
 			if (updatedNominatedCandidacy) {
 				// positionNomination.update.nominated@candidate
 				mailService.postEmail(existingNomination.getNominatedCandidacy().getCandidate().getUser().getContactInfo().getEmail(),
-					"default.subject",
-					"positionNomination.update.nominated@candidate",
-					Collections.unmodifiableMap(new HashMap<String, String>() {
+						"default.subject",
+						"positionNomination.update.nominated@candidate",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
 
-						{
-							put("position", existingNomination.getPosition().getName());
+							{
+								put("position", existingNomination.getPosition().getName());
 
-							put("firstname_el", existingNomination.getNominatedCandidacy().getCandidate().getUser().getFirstname("el"));
-							put("lastname_el", existingNomination.getNominatedCandidacy().getCandidate().getUser().getLastname("el"));
-							put("institution_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-							put("school_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("el"));
-							put("department_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("el"));
+								put("firstname_el", existingNomination.getNominatedCandidacy().getCandidate().getUser().getFirstname("el"));
+								put("lastname_el", existingNomination.getNominatedCandidacy().getCandidate().getUser().getLastname("el"));
+								put("institution_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("el"));
 
-							put("firstname_en", existingNomination.getNominatedCandidacy().getCandidate().getUser().getFirstname("en"));
-							put("lastname_en", existingNomination.getNominatedCandidacy().getCandidate().getUser().getLastname("en"));
-							put("institution_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-							put("school_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("en"));
-							put("department_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("en"));
-						}
-					}));
+								put("firstname_en", existingNomination.getNominatedCandidacy().getCandidate().getUser().getFirstname("en"));
+								put("lastname_en", existingNomination.getNominatedCandidacy().getCandidate().getUser().getLastname("en"));
+								put("institution_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("en"));
+								put("department_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("en"));
+							}
+						}));
 			}
 			if (updatedSecondNominatedCandidacy) {
 				// positionNomination.update.secondNominated@candidate
 				mailService.postEmail(existingNomination.getSecondNominatedCandidacy().getCandidate().getUser().getContactInfo().getEmail(),
-					"default.subject",
-					"positionNomination.update.secondNominated@candidate",
-					Collections.unmodifiableMap(new HashMap<String, String>() {
+						"default.subject",
+						"positionNomination.update.secondNominated@candidate",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
 
-						{
-							put("position", existingNomination.getPosition().getName());
+							{
+								put("position", existingNomination.getPosition().getName());
 
-							put("firstname_el", existingNomination.getSecondNominatedCandidacy().getCandidate().getUser().getFirstname("el"));
-							put("lastname_el", existingNomination.getSecondNominatedCandidacy().getCandidate().getUser().getLastname("el"));
-							put("institution_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-							put("school_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("el"));
-							put("department_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("el"));
+								put("firstname_el", existingNomination.getSecondNominatedCandidacy().getCandidate().getUser().getFirstname("el"));
+								put("lastname_el", existingNomination.getSecondNominatedCandidacy().getCandidate().getUser().getLastname("el"));
+								put("institution_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department_el", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("el"));
 
-							put("firstname_en", existingNomination.getSecondNominatedCandidacy().getCandidate().getUser().getFirstname("en"));
-							put("lastname_en", existingNomination.getSecondNominatedCandidacy().getCandidate().getUser().getLastname("en"));
-							put("institution_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-							put("school_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("en"));
-							put("department_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("en"));
-						}
-					}));
+								put("firstname_en", existingNomination.getSecondNominatedCandidacy().getCandidate().getUser().getFirstname("en"));
+								put("lastname_en", existingNomination.getSecondNominatedCandidacy().getCandidate().getUser().getLastname("en"));
+								put("institution_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getSchool().getName().get("en"));
+								put("department_en", existingNomination.getPosition().getPhase().getPosition().getDepartment().getName().get("en"));
+							}
+						}));
 			}
 
 			// End: Send E-Mails
@@ -327,7 +307,7 @@ public class PositionNominationRESTService extends RESTService {
 	/**
 	 * Returns the list of file descriptions associated with position
 	 * nomination
-	 * 
+	 *
 	 * @param authToken
 	 * @param positionId
 	 * @param nominationId
@@ -351,12 +331,12 @@ public class PositionNominationRESTService extends RESTService {
 		}
 		// Validate:
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isAssociatedWithDepartment(position.getDepartment()) &&
-			!(position.getPhase().getCommittee() != null && position.getPhase().getCommittee().containsMember(loggedOn)) &&
-			!(position.getPhase().getEvaluation() != null && position.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-			!position.getPhase().getCandidacies().containsCandidate(loggedOn)) {
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.isAssociatedWithDepartment(position.getDepartment()) &&
+				!(position.getPhase().getCommittee() != null && position.getPhase().getCommittee().containsMember(loggedOn)) &&
+				!(position.getPhase().getEvaluation() != null && position.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+				!position.getPhase().getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -366,7 +346,7 @@ public class PositionNominationRESTService extends RESTService {
 	/**
 	 * Return the file description of the file with given id and associated with
 	 * given position nomination
-	 * 
+	 *
 	 * @param authToken
 	 * @param positionId
 	 * @param nominationId
@@ -392,12 +372,12 @@ public class PositionNominationRESTService extends RESTService {
 		}
 		// Validate:
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isAssociatedWithDepartment(position.getDepartment()) &&
-			!(position.getPhase().getCommittee() != null && position.getPhase().getCommittee().containsMember(loggedOn)) &&
-			!(position.getPhase().getEvaluation() != null && position.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-			!position.getPhase().getCandidacies().containsCandidate(loggedOn)) {
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.isAssociatedWithDepartment(position.getDepartment()) &&
+				!(position.getPhase().getCommittee() != null && position.getPhase().getCommittee().containsMember(loggedOn)) &&
+				!(position.getPhase().getEvaluation() != null && position.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+				!position.getPhase().getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -413,7 +393,7 @@ public class PositionNominationRESTService extends RESTService {
 	/**
 	 * Return the file data of the file with given id and associated with
 	 * given position nomination
-	 * 
+	 *
 	 * @param authToken
 	 * @param positionId
 	 * @param nominationId
@@ -439,12 +419,12 @@ public class PositionNominationRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isAssociatedWithDepartment(position.getDepartment()) &&
-			!(position.getPhase().getCommittee() != null && position.getPhase().getCommittee().containsMember(loggedOn)) &&
-			!(position.getPhase().getEvaluation() != null && position.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-			!position.getPhase().getCandidacies().containsCandidate(loggedOn)) {
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.isAssociatedWithDepartment(position.getDepartment()) &&
+				!(position.getPhase().getCommittee() != null && position.getPhase().getCommittee().containsMember(loggedOn)) &&
+				!(position.getPhase().getEvaluation() != null && position.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+				!position.getPhase().getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -465,7 +445,7 @@ public class PositionNominationRESTService extends RESTService {
 
 	/**
 	 * Handles upload of a new file associated with given position nomination
-	 * 
+	 *
 	 * @param authToken
 	 * @param positionId
 	 * @param nominationId
@@ -503,7 +483,7 @@ public class PositionNominationRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (!position.getPhase().getStatus().equals(PositionStatus.EPILOGI) &&
-			!position.getPhase().getStatus().equals(PositionStatus.STELEXOMENI)) {
+				!position.getPhase().getStatus().equals(PositionStatus.STELEXOMENI)) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		// Parse Request
@@ -522,7 +502,7 @@ public class PositionNominationRESTService extends RESTService {
 
 		// 6) Να μην είναι δυνατή η ανάρτηση του Πρακτικού Επιλογής αν δεν είναι συμπληρωμένο το πεδίο ""Ημερομηνία Σύγκλησης Επιτροπής για Επιλογή"
 		if ((type.equals(FileType.PRAKTIKO_EPILOGIS) || type.equals(FileType.DIAVIVASTIKO_PRAKTIKOU))
-			&& existingNomination.getNominationCommitteeConvergenceDate() == null) {
+				&& existingNomination.getNominationCommitteeConvergenceDate() == null) {
 			throw new RestException(Status.CONFLICT, "nomination.missing.committee.convergence.date");
 		}
 		// 8) Τα πεδία "Πράξη Διορισμού" και "ΦΕΚ Πράξης Διορισμού" να ενεργοποιούνται μόνο μετά τη μετάβαση της θέσης σε status "Στελεχωμένη".
@@ -549,147 +529,147 @@ public class PositionNominationRESTService extends RESTService {
 				// positionNomination.upload.praktikoEpilogis@committee
 				for (final PositionCommitteeMember member : nominationFile.getNomination().getPosition().getPhase().getCommittee().getMembers()) {
 					mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"positionNomination.upload.praktikoEpilogis@committee",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+							"default.subject",
+							"positionNomination.upload.praktikoEpilogis@committee",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("position", nominationFile.getNomination().getPosition().getName());
+								{
+									put("position", nominationFile.getNomination().getPosition().getName());
 
-								put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-								put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
-								put("institution_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department_el", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
+									put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+									put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
+									put("institution_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
+									put("department_el", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
 
-								put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-								put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
-								put("institution_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("en"));
-								put("department_en", nominationFile.getNomination().getPosition().getDepartment().getName().get("en"));
-							}
-						}));
+									put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+									put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
+									put("institution_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("en"));
+									put("department_en", nominationFile.getNomination().getPosition().getDepartment().getName().get("en"));
+								}
+							}));
 				}
 				// positionNomination.upload.praktikoEpilogis@candidates
 				for (final Candidacy candidacy : nominationFile.getNomination().getPosition().getPhase().getCandidacies().getCandidacies()) {
 					mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"positionNomination.upload.praktikoEpilogis@candidates",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+							"default.subject",
+							"positionNomination.upload.praktikoEpilogis@candidates",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("position", nominationFile.getNomination().getPosition().getName());
+								{
+									put("position", nominationFile.getNomination().getPosition().getName());
 
-								put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
-								put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
-								put("institution_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department_el", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
+									put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
+									put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
+									put("institution_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
+									put("department_el", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
 
-								put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
-								put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
-								put("institution_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("en"));
-								put("department_en", nominationFile.getNomination().getPosition().getDepartment().getName().get("en"));
-							}
-						}));
+									put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
+									put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
+									put("institution_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("en"));
+									put("department_en", nominationFile.getNomination().getPosition().getDepartment().getName().get("en"));
+								}
+							}));
 				}
 				// positionNomination.upload.praktikoEpilogis@evaluators
 				for (final PositionEvaluator evaluator : nominationFile.getNomination().getPosition().getPhase().getEvaluation().getEvaluators()) {
 					mailService.postEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"positionNomination.upload.praktikoEpilogis@evaluators",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+							"default.subject",
+							"positionNomination.upload.praktikoEpilogis@evaluators",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("position", nominationFile.getNomination().getPosition().getName());
+								{
+									put("position", nominationFile.getNomination().getPosition().getName());
 
-								put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-								put("lastname_el", evaluator.getRegisterMember().getProfessor().getUser().getLastname("el"));
-								put("institution_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department_el", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
+									put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+									put("lastname_el", evaluator.getRegisterMember().getProfessor().getUser().getLastname("el"));
+									put("institution_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
+									put("department_el", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
 
-								put("firstname_en", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-								put("lastname_en", evaluator.getRegisterMember().getProfessor().getUser().getLastname("en"));
-								put("institution_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("en"));
-								put("department_en", nominationFile.getNomination().getPosition().getDepartment().getName().get("en"));
-							}
-						}));
+									put("firstname_en", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+									put("lastname_en", evaluator.getRegisterMember().getProfessor().getUser().getLastname("en"));
+									put("institution_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("en"));
+									put("department_en", nominationFile.getNomination().getPosition().getDepartment().getName().get("en"));
+								}
+							}));
 				}
 			} else {
 				// position.upload@committee
 				for (final PositionCommitteeMember member : nominationFile.getNomination().getPosition().getPhase().getCommittee().getMembers()) {
 					mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"position.upload@committee",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+							"default.subject",
+							"position.upload@committee",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("position", nominationFile.getNomination().getPosition().getName());
+								{
+									put("position", nominationFile.getNomination().getPosition().getName());
 
-								put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-								put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
-								put("institution_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department_el", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
+									put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+									put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
+									put("institution_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
+									put("department_el", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
 
-								put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-								put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
-								put("institution_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("en"));
-								put("department_en", nominationFile.getNomination().getPosition().getDepartment().getName().get("en"));
-							}
-						}));
+									put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+									put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
+									put("institution_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("en"));
+									put("department_en", nominationFile.getNomination().getPosition().getDepartment().getName().get("en"));
+								}
+							}));
 				}
 				// position.upload@candidates
 				for (final Candidacy candidacy : nominationFile.getNomination().getPosition().getPhase().getCandidacies().getCandidacies()) {
 					mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"position.upload@candidates",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+							"default.subject",
+							"position.upload@candidates",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("position", nominationFile.getNomination().getPosition().getName());
+								{
+									put("position", nominationFile.getNomination().getPosition().getName());
 
-								put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
-								put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
-								put("institution_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department_el", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
+									put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
+									put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
+									put("institution_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
+									put("department_el", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
 
-								put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
-								put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
-								put("institution_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("en"));
-								put("department_en", nominationFile.getNomination().getPosition().getDepartment().getName().get("en"));
-							}
-						}));
+									put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
+									put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
+									put("institution_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("en"));
+									put("department_en", nominationFile.getNomination().getPosition().getDepartment().getName().get("en"));
+								}
+							}));
 				}
 				// position.upload@evaluators
 				for (final PositionEvaluator evaluator : nominationFile.getNomination().getPosition().getPhase().getEvaluation().getEvaluators()) {
 					mailService.postEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"position.upload@evaluators",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+							"default.subject",
+							"position.upload@evaluators",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("position", nominationFile.getNomination().getPosition().getName());
+								{
+									put("position", nominationFile.getNomination().getPosition().getName());
 
-								put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-								put("lastname_el", evaluator.getRegisterMember().getProfessor().getUser().getLastname("el"));
-								put("institution_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department_el", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
+									put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+									put("lastname_el", evaluator.getRegisterMember().getProfessor().getUser().getLastname("el"));
+									put("institution_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("el"));
+									put("department_el", nominationFile.getNomination().getPosition().getDepartment().getName().get("el"));
 
-								put("firstname_en", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-								put("lastname_en", evaluator.getRegisterMember().getProfessor().getUser().getLastname("en"));
-								put("institution_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("en"));
-								put("department_en", nominationFile.getNomination().getPosition().getDepartment().getName().get("en"));
-							}
-						}));
+									put("firstname_en", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+									put("lastname_en", evaluator.getRegisterMember().getProfessor().getUser().getLastname("en"));
+									put("institution_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", nominationFile.getNomination().getPosition().getDepartment().getSchool().getName().get("en"));
+									put("department_en", nominationFile.getNomination().getPosition().getDepartment().getName().get("en"));
+								}
+							}));
 				}
 			}
 
@@ -704,7 +684,7 @@ public class PositionNominationRESTService extends RESTService {
 	/**
 	 * Handles upload that updates an existing file associated with position
 	 * nomination
-	 * 
+	 *
 	 * @param authToken
 	 * @param positionId
 	 * @param nominationId
@@ -744,7 +724,7 @@ public class PositionNominationRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (!position.getPhase().getStatus().equals(PositionStatus.EPILOGI) &&
-			!position.getPhase().getStatus().equals(PositionStatus.STELEXOMENI)) {
+				!position.getPhase().getStatus().equals(PositionStatus.STELEXOMENI)) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		// Parse Request
@@ -785,7 +765,7 @@ public class PositionNominationRESTService extends RESTService {
 
 	/**
 	 * Removes the specified file
-	 * 
+	 *
 	 * @param authToken
 	 * @param positionId
 	 * @param nominationId
@@ -819,7 +799,7 @@ public class PositionNominationRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (!position.getPhase().getStatus().equals(PositionStatus.EPILOGI) &&
-			!position.getPhase().getStatus().equals(PositionStatus.STELEXOMENI)) {
+				!position.getPhase().getStatus().equals(PositionStatus.STELEXOMENI)) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
 		try {

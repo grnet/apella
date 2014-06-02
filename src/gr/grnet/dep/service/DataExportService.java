@@ -1,54 +1,30 @@
 package gr.grnet.dep.service;
 
 import gr.grnet.dep.service.dto.Statistics;
-import gr.grnet.dep.service.model.Candidacy;
-import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.InstitutionAssistant;
-import gr.grnet.dep.service.model.InstitutionManager;
-import gr.grnet.dep.service.model.InstitutionRegulatoryFramework;
+import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.Position.PositionStatus;
-import gr.grnet.dep.service.model.PositionCommitteeMember;
-import gr.grnet.dep.service.model.PositionEvaluator;
-import gr.grnet.dep.service.model.ProfessorDomestic;
-import gr.grnet.dep.service.model.ProfessorForeign;
-import gr.grnet.dep.service.model.Rank;
-import gr.grnet.dep.service.model.Register;
-import gr.grnet.dep.service.model.RegisterMember;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.file.FileType;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Logger;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFDataFormat;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFDataFormat;
-import org.apache.poi.hssf.usermodel.HSSFFont;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.util.CellRangeAddress;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.logging.Logger;
 
 @Stateless
 public class DataExportService {
@@ -58,7 +34,9 @@ public class DataExportService {
 
 	private static final Logger logger = Logger.getLogger(DataExportService.class.getName());
 
-	/*******************************************************/
+	/**
+	 * ***************************************************
+	 */
 
 	private void addCell(Row row, int col, CellStyle style, String value) {
 		Cell cell = row.createCell(col);
@@ -92,13 +70,15 @@ public class DataExportService {
 		}
 	}
 
-	/*******************************************************/
+	/**
+	 * ***************************************************
+	 */
 
 	private Map<Long, Map<FileType, Long>> getProfessorFilesData() {
 		List<Object[]> files = em.createQuery(
-			"select p.id, pf.type, pf.id from ProfessorFile pf " +
-				"join pf.professor p " +
-				"where pf.deleted = false ", Object[].class).getResultList();
+				"select p.id, pf.type, pf.id from ProfessorFile pf " +
+						"join pf.professor p " +
+						"where pf.deleted = false ", Object[].class).getResultList();
 		Map<Long, Map<FileType, Long>> filesMap = new HashMap<Long, Map<FileType, Long>>();
 		for (Object[] file : files) {
 			Long professorId = (Long) file[0];
@@ -114,16 +94,16 @@ public class DataExportService {
 
 	private List<ProfessorDomestic> getProfessorDomesticData() {
 		List<ProfessorDomestic> data = em.createQuery(
-			"select distinct pd " +
-				"from ProfessorDomestic pd " +
-				"join fetch pd.user u " +
-				"left join fetch pd.institution inst " +
-				"left join fetch pd.department dep " +
-				"left join fetch dep.school sch " +
-				"left join fetch sch.institution sinst " +
-				"left join fetch pd.subject sub " +
-				"left join fetch pd.fekSubject fsub ", ProfessorDomestic.class)
-			.getResultList();
+				"select distinct pd " +
+						"from ProfessorDomestic pd " +
+						"join fetch pd.user u " +
+						"left join fetch pd.institution inst " +
+						"left join fetch pd.department dep " +
+						"left join fetch dep.school sch " +
+						"left join fetch sch.institution sinst " +
+						"left join fetch pd.subject sub " +
+						"left join fetch pd.fekSubject fsub ", ProfessorDomestic.class)
+				.getResultList();
 		return data;
 	}
 
@@ -260,12 +240,12 @@ public class DataExportService {
 
 	private List<ProfessorForeign> getProfessorForeignData() {
 		List<ProfessorForeign> data = em.createQuery(
-			"select distinct pf " +
-				"from ProfessorForeign pf " +
-				"join fetch pf.user u " +
-				"left join fetch pf.country c " +
-				"left join fetch pf.subject sub ", ProfessorForeign.class)
-			.getResultList();
+				"select distinct pf " +
+						"from ProfessorForeign pf " +
+						"join fetch pf.user u " +
+						"left join fetch pf.country c " +
+						"left join fetch pf.subject sub ", ProfessorForeign.class)
+				.getResultList();
 		return data;
 	}
 
@@ -391,13 +371,15 @@ public class DataExportService {
 		}
 	}
 
-	/****************************/
+	/**
+	 * ************************
+	 */
 
 	private Map<Long, Map<FileType, Set<Long>>> getCandidateFilesData() {
 		List<Object[]> files = em.createQuery(
-			"select c.id, cf.type, cf.id from CandidateFile cf " +
-				"join cf.candidate c " +
-				"where cf.deleted = false ", Object[].class).getResultList();
+				"select c.id, cf.type, cf.id from CandidateFile cf " +
+						"join cf.candidate c " +
+						"where cf.deleted = false ", Object[].class).getResultList();
 		Map<Long, Map<FileType, Set<Long>>> filesMap = new HashMap<Long, Map<FileType, Set<Long>>>();
 		for (Object[] file : files) {
 			Long candidateId = (Long) file[0];
@@ -421,10 +403,10 @@ public class DataExportService {
 	private Map<Long, Long> getCandidateCandidaciesData() {
 		Map<Long, Long> result = new HashMap<Long, Long>();
 		List<Object[]> data = em.createQuery(
-			"select c.candidate.id, count(c.id) " +
-				"from Candidacy c " +
-				"group by c.candidate.id ", Object[].class)
-			.getResultList();
+				"select c.candidate.id, count(c.id) " +
+						"from Candidacy c " +
+						"group by c.candidate.id ", Object[].class)
+				.getResultList();
 		for (Object[] row : data) {
 			Long cid = (Long) row[0];
 			Long candidacies = (Long) row[1];
@@ -435,11 +417,11 @@ public class DataExportService {
 
 	private List<Candidate> getCandidateData() {
 		List<Candidate> data = em.createQuery(
-			"select c " +
-				"from Candidate c " +
-				"join fetch c.user u " +
-				"where c.user.id not in (select p.user.id from Professor p) ", Candidate.class)
-			.getResultList();
+				"select c " +
+						"from Candidate c " +
+						"join fetch c.user u " +
+						"where c.user.id not in (select p.user.id from Professor p) ", Candidate.class)
+				.getResultList();
 		return data;
 	}
 
@@ -564,10 +546,10 @@ public class DataExportService {
 
 	private List<InstitutionManager> getInstitutionManagerData() {
 		List<InstitutionManager> data = em.createQuery(
-			"select im from InstitutionManager im " +
-				"join fetch im.user u " +
-				"left join fetch im.institution i ", InstitutionManager.class)
-			.getResultList();
+				"select im from InstitutionManager im " +
+						"join fetch im.user u " +
+						"left join fetch im.institution i ", InstitutionManager.class)
+				.getResultList();
 		return data;
 	}
 
@@ -695,12 +677,12 @@ public class DataExportService {
 
 	private List<InstitutionAssistant> getInstitutionAssistantData() {
 		List<InstitutionAssistant> data = em.createQuery(
-			"select ia from InstitutionAssistant ia " +
-				"join fetch ia.user u " +
-				"join fetch ia.manager im " +
-				"join fetch im.user um " +
-				"left join fetch im.institution imi ", InstitutionAssistant.class)
-			.getResultList();
+				"select ia from InstitutionAssistant ia " +
+						"join fetch ia.user u " +
+						"join fetch ia.manager im " +
+						"join fetch im.user um " +
+						"left join fetch im.institution imi ", InstitutionAssistant.class)
+				.getResultList();
 		return data;
 	}
 
@@ -805,8 +787,8 @@ public class DataExportService {
 
 	private List<InstitutionRegulatoryFramework> getInstitutionRegulatoryFrameworkData() {
 		List<InstitutionRegulatoryFramework> data = em.createQuery(
-			"select ia from InstitutionRegulatoryFramework ia ", InstitutionRegulatoryFramework.class)
-			.getResultList();
+				"select ia from InstitutionRegulatoryFramework ia ", InstitutionRegulatoryFramework.class)
+				.getResultList();
 		return data;
 	}
 
@@ -880,19 +862,19 @@ public class DataExportService {
 
 	private List<Register> getRegisterData() {
 		List<Register> data = em.createQuery(
-			"select r from Register r " +
-				"where permanent = true ", Register.class)
-			.getResultList();
+				"select r from Register r " +
+						"where permanent = true ", Register.class)
+				.getResultList();
 		return data;
 	}
 
 	private Map<Long, Long> getRegisterRegisterMemberData() {
 		Map<Long, Long> result = new HashMap<Long, Long>();
 		List<Object[]> data = em.createQuery(
-			"select rm.register.id, count(rm.id) " +
-				"from RegisterMember rm " +
-				"group by rm.register.id ", Object[].class)
-			.getResultList();
+				"select rm.register.id, count(rm.id) " +
+						"from RegisterMember rm " +
+						"group by rm.register.id ", Object[].class)
+				.getResultList();
 		for (Object[] row : data) {
 			Long cid = (Long) row[0];
 			Long candidacies = (Long) row[1];
@@ -974,17 +956,17 @@ public class DataExportService {
 
 	private List<RegisterMember> getRegisterMemberData() {
 		List<RegisterMember> data = em.createQuery(
-			"select rm from RegisterMember rm " +
-				"join fetch rm.register r " +
-				"join fetch r.subject rsub " +
-				"join fetch rm.professor p " +
-				"join fetch p.user u " +
-				"left join fetch p.department dep " +
-				"left join fetch dep.school sch " +
-				"left join fetch sch.institution inst " +
-				"left join fetch p.subject sub " +
-				"left join fetch p.fekSubject fsub ", RegisterMember.class)
-			.getResultList();
+				"select rm from RegisterMember rm " +
+						"join fetch rm.register r " +
+						"join fetch r.subject rsub " +
+						"join fetch rm.professor p " +
+						"join fetch p.user u " +
+						"left join fetch p.department dep " +
+						"left join fetch dep.school sch " +
+						"left join fetch sch.institution inst " +
+						"left join fetch p.subject sub " +
+						"left join fetch p.fekSubject fsub ", RegisterMember.class)
+				.getResultList();
 		return data;
 	}
 
@@ -1092,18 +1074,18 @@ public class DataExportService {
 
 	private List<PositionCommitteeMember> getPositionCommitteeMemberData() {
 		List<PositionCommitteeMember> data = em.createQuery(
-			"select pcm from PositionCommitteeMember pcm " +
-				"join fetch pcm.registerMember rm " +
-				"join fetch rm.register r " +
-				"join fetch rm.professor p " +
-				"join fetch r.subject rsub " +
-				"join fetch p.user u " +
-				"left join fetch p.department dep " +
-				"left join fetch dep.school sch " +
-				"left join fetch sch.institution inst " +
-				"left join fetch p.subject sub " +
-				"left join fetch p.fekSubject fsub ", PositionCommitteeMember.class)
-			.getResultList();
+				"select pcm from PositionCommitteeMember pcm " +
+						"join fetch pcm.registerMember rm " +
+						"join fetch rm.register r " +
+						"join fetch rm.professor p " +
+						"join fetch r.subject rsub " +
+						"join fetch p.user u " +
+						"left join fetch p.department dep " +
+						"left join fetch dep.school sch " +
+						"left join fetch sch.institution inst " +
+						"left join fetch p.subject sub " +
+						"left join fetch p.fekSubject fsub ", PositionCommitteeMember.class)
+				.getResultList();
 		return data;
 	}
 
@@ -1212,18 +1194,18 @@ public class DataExportService {
 
 	private List<PositionEvaluator> getPositionEvaluatorData() {
 		List<PositionEvaluator> data = em.createQuery(
-			"select e from PositionEvaluator e " +
-				"join fetch e.registerMember rm " +
-				"join fetch rm.register r " +
-				"join fetch r.subject rsub " +
-				"join fetch rm.professor p " +
-				"join fetch p.user u " +
-				"left join fetch p.department dep " +
-				"left join fetch dep.school sch " +
-				"left join fetch sch.institution inst " +
-				"left join fetch p.subject sub " +
-				"left join fetch p.fekSubject fsub ", PositionEvaluator.class)
-			.getResultList();
+				"select e from PositionEvaluator e " +
+						"join fetch e.registerMember rm " +
+						"join fetch rm.register r " +
+						"join fetch r.subject rsub " +
+						"join fetch rm.professor p " +
+						"join fetch p.user u " +
+						"left join fetch p.department dep " +
+						"left join fetch dep.school sch " +
+						"left join fetch sch.institution inst " +
+						"left join fetch p.subject sub " +
+						"left join fetch p.fekSubject fsub ", PositionEvaluator.class)
+				.getResultList();
 		return data;
 	}
 
@@ -1329,15 +1311,15 @@ public class DataExportService {
 
 	private List<Candidacy> getCandidacyData() {
 		List<Candidacy> data = em.createQuery(
-			"select cy from Candidacy cy " +
-				"join fetch cy.candidate c " +
-				"join fetch c.user u " +
-				"join fetch cy.candidacies pc " +
-				"join fetch pc.position p " +
-				"join fetch p.department dep " +
-				"join fetch dep.school sch " +
-				"join fetch sch.institution inst ", Candidacy.class)
-			.getResultList();
+				"select cy from Candidacy cy " +
+						"join fetch cy.candidate c " +
+						"join fetch c.user u " +
+						"join fetch cy.candidacies pc " +
+						"join fetch pc.position p " +
+						"join fetch p.department dep " +
+						"join fetch dep.school sch " +
+						"join fetch sch.institution inst ", Candidacy.class)
+				.getResultList();
 		return data;
 	}
 
@@ -1425,15 +1407,15 @@ public class DataExportService {
 
 		// 1. Users
 		List<Object[]> userStats = em.createQuery(
-			"select role.discriminator, usr.status, role.status, count(usr.id) from Role role " +
-				"join role.user usr " +
-				"where (role.discriminator != :candidate and role.discriminator != :administrator ) " +
-				"or (role.discriminator = :candidate and role.user.id not in (select p.user.id from Professor p) )" +
-				"group by role.discriminator, usr.status, role.status " +
-				"order by role.discriminator, usr.status, role.status ", Object[].class)
-			.setParameter("candidate", RoleDiscriminator.CANDIDATE)
-			.setParameter("administrator", RoleDiscriminator.ADMINISTRATOR)
-			.getResultList();
+				"select role.discriminator, usr.status, role.status, count(usr.id) from Role role " +
+						"join role.user usr " +
+						"where (role.discriminator != :candidate and role.discriminator != :administrator ) " +
+						"or (role.discriminator = :candidate and role.user.id not in (select p.user.id from Professor p) )" +
+						"group by role.discriminator, usr.status, role.status " +
+						"order by role.discriminator, usr.status, role.status ", Object[].class)
+				.setParameter("candidate", RoleDiscriminator.CANDIDATE)
+				.setParameter("administrator", RoleDiscriminator.ADMINISTRATOR)
+				.getResultList();
 		for (RoleDiscriminator discriminator : RoleDiscriminator.values()) {
 			if (discriminator.equals(RoleDiscriminator.ADMINISTRATOR)) {
 				continue;
@@ -1452,7 +1434,7 @@ public class DataExportService {
 			Long registeredCount = user.get("registered");
 			Long verifiedCount = user.get("verified");
 			if (userStatus.equals(UserStatus.ACTIVE) &&
-				roleStatus.equals(RoleStatus.ACTIVE)) {
+					roleStatus.equals(RoleStatus.ACTIVE)) {
 				verifiedCount += count;
 			}
 			registeredCount += count;
@@ -1462,11 +1444,11 @@ public class DataExportService {
 
 		// 2. Professors
 		List<Object[]> pdStats = em.createQuery(
-			"select pd.rank.category, usr.status, pd.status, count(usr.id) from ProfessorDomestic pd " +
-				"join pd.user usr " +
-				"group by pd.rank.category, pd.status, usr.status " +
-				"order by pd.rank.category, pd.status, usr.status ", Object[].class)
-			.getResultList();
+				"select pd.rank.category, usr.status, pd.status, count(usr.id) from ProfessorDomestic pd " +
+						"join pd.user usr " +
+						"group by pd.rank.category, pd.status, usr.status " +
+						"order by pd.rank.category, pd.status, usr.status ", Object[].class)
+				.getResultList();
 
 		for (Rank.Category category : Rank.Category.values()) {
 			Map<String, Long> prof = new HashMap<String, Long>();
@@ -1483,7 +1465,7 @@ public class DataExportService {
 			Long registeredCount = professor.get("registered");
 			Long verifiedCount = professor.get("verified");
 			if (userStatus.equals(UserStatus.ACTIVE) &&
-				roleStatus.equals(RoleStatus.ACTIVE)) {
+					roleStatus.equals(RoleStatus.ACTIVE)) {
 				verifiedCount += count;
 			}
 			registeredCount += count;
@@ -1493,26 +1475,26 @@ public class DataExportService {
 
 		// 3. IRF
 		Long irfStats = em.createQuery(
-			"select count(irf) from InstitutionRegulatoryFramework irf " +
-				"where irf.permanent = true ", Long.class)
-			.getSingleResult();
+				"select count(irf) from InstitutionRegulatoryFramework irf " +
+						"where irf.permanent = true ", Long.class)
+				.getSingleResult();
 		stats.setInstitutionRegulatoryFrameworks(irfStats);
 
 		// 4. Registers
 		Long registerStats = em.createQuery(
-			"select count(r) from Register r " +
-				"where r.permanent = true ", Long.class)
-			.getSingleResult();
+				"select count(r) from Register r " +
+						"where r.permanent = true ", Long.class)
+				.getSingleResult();
 		stats.setRegisters(registerStats);
 
 		// 5. Positions
 		List<Object[]> positionStats = em.createQuery(
-			"select ph.status, count(pos.id) from Position pos " +
-				"join pos.phase ph " +
-				"where pos.permanent = true " +
-				"group by ph.status " +
-				"order by ph.status ", Object[].class)
-			.getResultList();
+				"select ph.status, count(pos.id) from Position pos " +
+						"join pos.phase ph " +
+						"where pos.permanent = true " +
+						"group by ph.status " +
+						"order by ph.status ", Object[].class)
+				.getResultList();
 		for (PositionStatus status : PositionStatus.values()) {
 			stats.getPositions().put(status.toString(), 0l);
 		}

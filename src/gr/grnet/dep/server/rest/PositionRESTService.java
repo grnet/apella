@@ -2,66 +2,36 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.Department;
-import gr.grnet.dep.service.model.Institution;
-import gr.grnet.dep.service.model.InstitutionAssistant;
-import gr.grnet.dep.service.model.InstitutionManager;
-import gr.grnet.dep.service.model.Position;
+import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.Position.PositionView;
 import gr.grnet.dep.service.model.Position.PublicPositionView;
-import gr.grnet.dep.service.model.PositionCandidacies;
-import gr.grnet.dep.service.model.PositionCommittee;
-import gr.grnet.dep.service.model.PositionComplementaryDocuments;
-import gr.grnet.dep.service.model.PositionEvaluation;
-import gr.grnet.dep.service.model.PositionNomination;
-import gr.grnet.dep.service.model.PositionPhase;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
-import gr.grnet.dep.service.model.Sector;
-import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.User.UserView;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileType;
-
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.codehaus.jackson.map.annotate.JsonView;
 
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
-import org.codehaus.jackson.map.annotate.JsonView;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Path("/position")
 @Stateless
@@ -74,16 +44,16 @@ public class PositionRESTService extends RESTService {
 		Position position = null;
 		try {
 			position = (Position) em.createQuery(
-				"from Position p " +
-					"left join fetch p.phases ph " +
-					"left join fetch ph.candidacies ca " +
-					"left join fetch ph.committee co " +
-					"left join fetch ph.evaluation ev " +
-					"left join fetch ph.nomination no " +
-					"left join fetch ph.complementaryDocuments cd " +
-					"where p.id = :positionId ")
-				.setParameter("positionId", positionId)
-				.getSingleResult();
+					"from Position p " +
+							"left join fetch p.phases ph " +
+							"left join fetch ph.candidacies ca " +
+							"left join fetch ph.committee co " +
+							"left join fetch ph.evaluation ev " +
+							"left join fetch ph.nomination no " +
+							"left join fetch ph.complementaryDocuments cd " +
+							"where p.id = :positionId ")
+					.setParameter("positionId", positionId)
+					.getSingleResult();
 			for (User assistant : position.getAssistants()) {
 				assistant.getRoles().size();
 			}
@@ -97,7 +67,7 @@ public class PositionRESTService extends RESTService {
 
 	/**
 	 * Returns all positions
-	 * 
+	 *
 	 * @param authToken
 	 * @return A list of position
 	 */
@@ -106,33 +76,33 @@ public class PositionRESTService extends RESTService {
 	public Collection<Position> getAll(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
 		User loggedOnUser = getLoggedOn(authToken);
 		if (loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) ||
-			loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+				loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
 
 			List<Institution> institutions = new ArrayList<Institution>();
 			institutions.addAll(loggedOnUser.getAssociatedInstitutions());
 			@SuppressWarnings("unchecked")
 			List<Position> positions = (List<Position>) em.createQuery(
-				"select distinct p from Position p " +
-					"join fetch p.phase ph " +
-					"join fetch ph.candidacies cs " +
-					"left join fetch p.assistants " +
-					"where p.permanent = true " +
-					"and p.department.school.institution in (:institutions)")
-				.setParameter("institutions", institutions)
-				.getResultList();
+					"select distinct p from Position p " +
+							"join fetch p.phase ph " +
+							"join fetch ph.candidacies cs " +
+							"left join fetch p.assistants " +
+							"where p.permanent = true " +
+							"and p.department.school.institution in (:institutions)")
+					.setParameter("institutions", institutions)
+					.getResultList();
 
 			return positions;
 		} else if (loggedOnUser.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) ||
-			loggedOnUser.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) ||
-			loggedOnUser.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT)) {
+				loggedOnUser.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) ||
+				loggedOnUser.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT)) {
 
 			@SuppressWarnings("unchecked")
 			List<Position> positions = (List<Position>) em.createQuery(
-				"select p from Position p " +
-					"join fetch p.phase ph " +
-					"join fetch ph.candidacies cs " +
-					"where p.permanent = true ")
-				.getResultList();
+					"select p from Position p " +
+							"join fetch p.phase ph " +
+							"join fetch ph.candidacies cs " +
+							"where p.permanent = true ")
+					.getResultList();
 			return positions;
 		}
 		throw new RestException(Status.UNAUTHORIZED, "insufficient.privileges");
@@ -140,7 +110,7 @@ public class PositionRESTService extends RESTService {
 
 	/**
 	 * Returns the list of public positions
-	 * 
+	 *
 	 * @return A list of position
 	 */
 	@GET
@@ -152,11 +122,11 @@ public class PositionRESTService extends RESTService {
 			Date today = sdf.parse(sdf.format(new Date()));
 			@SuppressWarnings("unchecked")
 			List<Position> positions = (List<Position>) em.createQuery(
-				"from Position p " +
-					"where p.phase.candidacies.closingDate >= :today " +
-					"and p.permanent = true ")
-				.setParameter("today", today)
-				.getResultList();
+					"from Position p " +
+							"where p.phase.candidacies.closingDate >= :today " +
+							"and p.permanent = true ")
+					.setParameter("today", today)
+					.getResultList();
 
 			return positions;
 		} catch (ParseException e) {
@@ -167,11 +137,11 @@ public class PositionRESTService extends RESTService {
 
 	/**
 	 * Return the full position description
-	 * 
+	 *
 	 * @param authToken
 	 * @param positionId
-	 * @param order If specified a specific phase will be returned instead of
-	 *            the last one
+	 * @param order      If specified a specific phase will be returned instead of
+	 *                   the last one
 	 * @returnWrapper gr.grnet.dep.service.model.Position
 	 */
 	@GET
@@ -186,7 +156,7 @@ public class PositionRESTService extends RESTService {
 
 	/**
 	 * Creates a non-finalized position entry
-	 * 
+	 *
 	 * @param authToken
 	 * @param position
 	 * @return
@@ -242,7 +212,7 @@ public class PositionRESTService extends RESTService {
 
 	/**
 	 * Updates and finalizes the position
-	 * 
+	 *
 	 * @param authToken
 	 * @param id
 	 * @param position
@@ -288,21 +258,21 @@ public class PositionRESTService extends RESTService {
 				} else {
 					@SuppressWarnings("unchecked")
 					List<User> assistants = em.createQuery(
-						"select usr from User usr " +
-							"left join fetch usr.roles rls " +
-							"where usr.id in ( " +
-							"	select u.id from User u " +
-							"	join u.roles r " +
-							"	where u.id in (:managerIds) " +
-							"	and r.discriminator = :discriminator " +
-							"	and u.status = :userStatus " +
-							"	and r.status = :roleStatus " +
-							")")
-						.setParameter("managerIds", managerIds)
-						.setParameter("discriminator", RoleDiscriminator.INSTITUTION_ASSISTANT)
-						.setParameter("userStatus", UserStatus.ACTIVE)
-						.setParameter("roleStatus", RoleStatus.ACTIVE)
-						.getResultList();
+							"select usr from User usr " +
+									"left join fetch usr.roles rls " +
+									"where usr.id in ( " +
+									"	select u.id from User u " +
+									"	join u.roles r " +
+									"	where u.id in (:managerIds) " +
+									"	and r.discriminator = :discriminator " +
+									"	and u.status = :userStatus " +
+									"	and r.status = :roleStatus " +
+									")")
+							.setParameter("managerIds", managerIds)
+							.setParameter("discriminator", RoleDiscriminator.INSTITUTION_ASSISTANT)
+							.setParameter("userStatus", UserStatus.ACTIVE)
+							.setParameter("roleStatus", RoleStatus.ACTIVE)
+							.getResultList();
 					existingPosition.getAssistants().clear();
 					existingPosition.getAssistants().addAll(assistants);
 				}
@@ -316,73 +286,73 @@ public class PositionRESTService extends RESTService {
 				// Send to Assistants
 				for (final User assistant : existingPosition.getAssistants()) {
 					mailService.postEmail(assistant.getContactInfo().getEmail(),
-						"default.subject",
-						"position.create@institutionAssistant",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+							"default.subject",
+							"position.create@institutionAssistant",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("position", existingPosition.getName());
+								{
+									put("position", existingPosition.getName());
 
-								put("firstname_el", assistant.getFirstname("el"));
-								put("lastname_el", assistant.getLastname("el"));
-								put("institution_el", existingPosition.getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", existingPosition.getDepartment().getSchool().getName().get("el"));
-								put("department_el", existingPosition.getDepartment().getName().get("el"));
+									put("firstname_el", assistant.getFirstname("el"));
+									put("lastname_el", assistant.getLastname("el"));
+									put("institution_el", existingPosition.getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", existingPosition.getDepartment().getSchool().getName().get("el"));
+									put("department_el", existingPosition.getDepartment().getName().get("el"));
 
-								put("firstname_en", assistant.getFirstname("en"));
-								put("lastname_en", assistant.getLastname("en"));
-								put("institution_en", existingPosition.getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", existingPosition.getDepartment().getSchool().getName().get("en"));
-								put("department_en", existingPosition.getDepartment().getName().get("en"));
-							}
-						}));
+									put("firstname_en", assistant.getFirstname("en"));
+									put("lastname_en", assistant.getLastname("en"));
+									put("institution_en", existingPosition.getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", existingPosition.getDepartment().getSchool().getName().get("en"));
+									put("department_en", existingPosition.getDepartment().getName().get("en"));
+								}
+							}));
 				}
 
 				if (loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
 					// Send also to manager and alternateManager
 					final InstitutionManager im = existingPosition.getManager();
 					mailService.postEmail(im.getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"position.create@institutionManager",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+							"default.subject",
+							"position.create@institutionManager",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("position", existingPosition.getName());
+								{
+									put("position", existingPosition.getName());
 
-								put("firstname_el", im.getUser().getFirstname("el"));
-								put("lastname_el", im.getUser().getLastname("el"));
-								put("institution_el", existingPosition.getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", existingPosition.getDepartment().getSchool().getName().get("el"));
-								put("department_el", existingPosition.getDepartment().getName().get("el"));
+									put("firstname_el", im.getUser().getFirstname("el"));
+									put("lastname_el", im.getUser().getLastname("el"));
+									put("institution_el", existingPosition.getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", existingPosition.getDepartment().getSchool().getName().get("el"));
+									put("department_el", existingPosition.getDepartment().getName().get("el"));
 
-								put("firstname_en", im.getUser().getFirstname("en"));
-								put("lastname_en", im.getUser().getLastname("en"));
-								put("institution_en", existingPosition.getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", existingPosition.getDepartment().getSchool().getName().get("en"));
-								put("department_en", existingPosition.getDepartment().getName().get("en"));
-							}
-						}));
+									put("firstname_en", im.getUser().getFirstname("en"));
+									put("lastname_en", im.getUser().getLastname("en"));
+									put("institution_en", existingPosition.getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", existingPosition.getDepartment().getSchool().getName().get("en"));
+									put("department_en", existingPosition.getDepartment().getName().get("en"));
+								}
+							}));
 					mailService.postEmail(im.getAlternateContactInfo().getEmail(),
-						"default.subject",
-						"position.create@institutionManager",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+							"default.subject",
+							"position.create@institutionManager",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("position", existingPosition.getName());
+								{
+									put("position", existingPosition.getName());
 
-								put("firstname_el", im.getAlternateFirstname("el"));
-								put("lastname_el", im.getAlternateLastname("el"));
-								put("institution_el", existingPosition.getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", existingPosition.getDepartment().getSchool().getName().get("el"));
-								put("department_el", existingPosition.getDepartment().getName().get("el"));
+									put("firstname_el", im.getAlternateFirstname("el"));
+									put("lastname_el", im.getAlternateLastname("el"));
+									put("institution_el", existingPosition.getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", existingPosition.getDepartment().getSchool().getName().get("el"));
+									put("department_el", existingPosition.getDepartment().getName().get("el"));
 
-								put("firstname_en", im.getAlternateFirstname("en"));
-								put("lastname_en", im.getAlternateLastname("en"));
-								put("institution_en", existingPosition.getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", existingPosition.getDepartment().getSchool().getName().get("en"));
-								put("department_en", existingPosition.getDepartment().getName().get("en"));
-							}
-						}));
+									put("firstname_en", im.getAlternateFirstname("en"));
+									put("lastname_en", im.getAlternateLastname("en"));
+									put("institution_en", existingPosition.getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", existingPosition.getDepartment().getSchool().getName().get("en"));
+									put("department_en", existingPosition.getDepartment().getName().get("en"));
+								}
+							}));
 				}
 			}
 
@@ -402,39 +372,39 @@ public class PositionRESTService extends RESTService {
 			// Execute Query
 			@SuppressWarnings("unchecked")
 			List<Candidate> candidates = (List<Candidate>) em.createQuery(
-				"select distinct(c.candidate) from PositionSearchCriteria c " +
-					"left join c.departments d " +
-					"left join c.sectors s " +
-					"where ((s is null) and (d is not null) and (d.id = :departmentId)) " +
-					"or ((d is null) and (s is not null) and (s.id = :sectorId)) " +
-					"or ((s is not null) and (s.id = :sectorId) and (d is not null) and (d.id = :departmentId))")
-				.setParameter("departmentId", position.getDepartment().getId())
-				.setParameter("sectorId", position.getSector().getId())
-				.getResultList();
+					"select distinct(c.candidate) from PositionSearchCriteria c " +
+							"left join c.departments d " +
+							"left join c.sectors s " +
+							"where ((s is null) and (d is not null) and (d.id = :departmentId)) " +
+							"or ((d is null) and (s is not null) and (s.id = :sectorId)) " +
+							"or ((s is not null) and (s.id = :sectorId) and (d is not null) and (d.id = :departmentId))")
+					.setParameter("departmentId", position.getDepartment().getId())
+					.setParameter("sectorId", position.getSector().getId())
+					.getResultList();
 
 			// Send E-Mails
 			for (final Candidate c : candidates) {
 				mailService.postEmail(c.getUser().getContactInfo().getEmail(),
-					"default.subject",
-					"position.create@interested.candidates",
-					Collections.unmodifiableMap(new HashMap<String, String>() {
+						"default.subject",
+						"position.create@interested.candidates",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
 
-						{
-							put("position", position.getName());
+							{
+								put("position", position.getName());
 
-							put("firstname_el", c.getUser().getFirstname("el"));
-							put("lastname_el", c.getUser().getLastname("el"));
-							put("institution_el", position.getDepartment().getSchool().getInstitution().getName().get("el"));
-							put("school_el", position.getDepartment().getSchool().getName().get("el"));
-							put("department_el", position.getDepartment().getName().get("el"));
+								put("firstname_el", c.getUser().getFirstname("el"));
+								put("lastname_el", c.getUser().getLastname("el"));
+								put("institution_el", position.getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", position.getDepartment().getSchool().getName().get("el"));
+								put("department_el", position.getDepartment().getName().get("el"));
 
-							put("firstname_en", c.getUser().getFirstname("en"));
-							put("lastname_en", c.getUser().getLastname("en"));
-							put("institution_en", position.getDepartment().getSchool().getInstitution().getName().get("en"));
-							put("school_en", position.getDepartment().getSchool().getName().get("en"));
-							put("department_en", position.getDepartment().getName().get("en"));
-						}
-					}));
+								put("firstname_en", c.getUser().getFirstname("en"));
+								put("lastname_en", c.getUser().getLastname("en"));
+								put("institution_en", position.getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", position.getDepartment().getSchool().getName().get("en"));
+								put("department_en", position.getDepartment().getName().get("en"));
+							}
+						}));
 			}
 		} catch (ParseException e) {
 			logger.log(Level.WARNING, "", e);
@@ -444,7 +414,7 @@ public class PositionRESTService extends RESTService {
 
 	/**
 	 * Removes the position entry
-	 * 
+	 *
 	 * @param authToken
 	 * @param id
 	 * @HTTP 403 X-Error-Code: insufficient.privileges
@@ -483,25 +453,25 @@ public class PositionRESTService extends RESTService {
 		}
 		@SuppressWarnings("unchecked")
 		List<User> managers = em.createQuery(
-			"select usr from User usr " +
-				"left join fetch usr.roles rls " +
-				"where usr.id in ( " +
-				"	select u.id from InstitutionAssistant ia " +
-				"	join ia.user u " +
-				"	where u.status = :userStatus " +
-				"	and ia.status = :roleStatus " +
-				"	and ia.institution.id = :institutionId  " +
-				")")
-			.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
-			.setParameter("userStatus", UserStatus.ACTIVE)
-			.setParameter("roleStatus", RoleStatus.ACTIVE)
-			.getResultList();
+				"select usr from User usr " +
+						"left join fetch usr.roles rls " +
+						"where usr.id in ( " +
+						"	select u.id from InstitutionAssistant ia " +
+						"	join ia.user u " +
+						"	where u.status = :userStatus " +
+						"	and ia.status = :roleStatus " +
+						"	and ia.institution.id = :institutionId  " +
+						")")
+				.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
+				.setParameter("userStatus", UserStatus.ACTIVE)
+				.setParameter("roleStatus", RoleStatus.ACTIVE)
+				.getResultList();
 		return managers;
 	}
 
 	/**
 	 * Adds a new phase in the position
-	 * 
+	 *
 	 * @param authToken
 	 * @param positionId
 	 * @param position
@@ -513,9 +483,9 @@ public class PositionRESTService extends RESTService {
 	 * @HTTP 409 X-Error-Code: position.phase.epilogi.wrong.closing.date
 	 * @HTTP 409 X-Error-Code: position.phase.anapompi.missing.apofasi
 	 * @HTTP 409 X-Error-Code:
-	 *       position.phase.stelexomeni.missing.nominated.candidacy
+	 * position.phase.stelexomeni.missing.nominated.candidacy
 	 * @HTTP 409 X-Error-Code:
-	 *       position.phase.stelexomeni.missing.praktiko.epilogis
+	 * position.phase.stelexomeni.missing.praktiko.epilogis
 	 */
 	@PUT
 	@Path("/{id:[0-9][0-9]*}/phase")
@@ -741,10 +711,10 @@ public class PositionRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		// Authorize
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Generate Document
@@ -753,17 +723,17 @@ public class PositionRESTService extends RESTService {
 			institutionId = ((InstitutionManager) loggedOn.getActiveRole(RoleDiscriminator.INSTITUTION_MANAGER)).getInstitution().getId();
 		}
 		if (institutionId == null &&
-			loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+				loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
 			institutionId = ((InstitutionAssistant) loggedOn.getActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)).getInstitution().getId();
 		}
 		try {
 			InputStream is = reportService.createPositionsExportExcel(institutionId);
 			// Return response
 			return Response.ok(is)
-				.type(MediaType.APPLICATION_OCTET_STREAM)
-				.header("charset", "UTF-8")
-				.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode("positions.xls", "UTF-8") + "\"")
-				.build();
+					.type(MediaType.APPLICATION_OCTET_STREAM)
+					.header("charset", "UTF-8")
+					.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode("positions.xls", "UTF-8") + "\"")
+					.build();
 		} catch (UnsupportedEncodingException e) {
 			logger.log(Level.SEVERE, "getDocument", e);
 			throw new EJBException(e);

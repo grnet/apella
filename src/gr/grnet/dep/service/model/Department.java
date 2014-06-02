@@ -1,19 +1,12 @@
 package gr.grnet.dep.service.model;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.MapKeyColumn;
+import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-
-import org.codehaus.jackson.annotate.JsonIgnore;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 @XmlRootElement

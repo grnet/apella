@@ -5,22 +5,14 @@ import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommit
 import gr.grnet.dep.service.model.Register.DetailedRegisterView;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
-
-import java.io.Serializable;
-import java.util.Date;
-
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.Version;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.map.annotate.JsonView;
+
+import javax.persistence.*;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * The mutable part of the structure of a file.
@@ -33,10 +25,14 @@ public final class FileBody implements Serializable {
 
 	// define 2 json views
 	public static interface SimpleFileBodyView {
-	}; // shows a summary view of a FileHeader/FileBody
+	}
+
+	; // shows a summary view of a FileHeader/FileBody
 
 	public static interface DetailedFileBodyView extends SimpleFileBodyView {
-	};
+	}
+
+	;
 
 	/**
 	 * The persistence ID of the object.

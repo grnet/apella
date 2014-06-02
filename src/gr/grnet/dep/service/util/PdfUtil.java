@@ -1,8 +1,15 @@
 package gr.grnet.dep.service.util;
 
+import com.lowagie.text.*;
+import com.lowagie.text.pdf.BaseFont;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.InstitutionManager;
+import org.apache.commons.io.IOUtils;
 
+import javax.ejb.EJBException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -12,23 +19,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.ejb.EJBException;
-
-import org.apache.commons.io.IOUtils;
-
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.Element;
-import com.lowagie.text.Font;
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.Image;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.Phrase;
-import com.lowagie.text.pdf.BaseFont;
-import com.lowagie.text.pdf.PdfPCell;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
 
 public class PdfUtil {
 
@@ -117,7 +107,7 @@ public class PdfUtil {
 
 			PdfPTable institutionTable = new PdfPTable(2);
 			institutionTable.setWidthPercentage(100);
-			institutionTable.setWidths(new float[] {30, 70});
+			institutionTable.setWidths(new float[]{30, 70});
 			institutionTable.addCell(createCell(new Phrase("ΙΔΡΥΜΑ", normalFont), Element.ALIGN_LEFT, 1));
 			institutionTable.addCell(createCell(new Phrase(im.getInstitution().getName().get("el"), normalFont), Element.ALIGN_LEFT, 1));
 			switch (im.getVerificationAuthority()) {
@@ -140,17 +130,17 @@ public class PdfUtil {
 			doc.add(p);
 
 			p = new Paragraph("Βεβαιώνεται ότι το ως άνω Ίδρυμα ορίζει ως Διαχειριστή Ιδρύματος στο πρόγραμμα ΑΠΕΛΛΑ τον/την " +
-				im.getUser().getBasicInfo().getFirstname() +
-				" " +
-				im.getUser().getBasicInfo().getLastname() +
-				" με e-mail " +
-				im.getUser().getContactInfo().getEmail() +
-				", τηλέφωνο " +
-				im.getUser().getContactInfo().getPhone() +
-				" και όνομα χρήστη " +
-				im.getUser().getUsername()
-				+ "."
-				, normalFont);
+					im.getUser().getBasicInfo().getFirstname() +
+					" " +
+					im.getUser().getBasicInfo().getLastname() +
+					" με e-mail " +
+					im.getUser().getContactInfo().getEmail() +
+					", τηλέφωνο " +
+					im.getUser().getContactInfo().getPhone() +
+					" και όνομα χρήστη " +
+					im.getUser().getUsername()
+					+ "."
+					, normalFont);
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
@@ -159,15 +149,15 @@ public class PdfUtil {
 			doc.add(p);
 
 			p = new Paragraph("Αναπληρωτής Διαχειριστής Ιδρύματος ορίζεται ο/η " +
-				im.getAlternateBasicInfo().getFirstname() +
-				" " +
-				im.getAlternateBasicInfo().getLastname() +
-				" με e-mail " +
-				im.getAlternateContactInfo().getEmail() +
-				", τηλέφωνο " +
-				im.getAlternateContactInfo().getPhone()
-				+ ".",
-				normalFont);
+					im.getAlternateBasicInfo().getFirstname() +
+					" " +
+					im.getAlternateBasicInfo().getLastname() +
+					" με e-mail " +
+					im.getAlternateContactInfo().getEmail() +
+					", τηλέφωνο " +
+					im.getAlternateContactInfo().getPhone()
+					+ ".",
+					normalFont);
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
@@ -189,7 +179,7 @@ public class PdfUtil {
 
 			PdfPTable signTable = new PdfPTable(3);
 			signTable.setWidthPercentage(100);
-			signTable.setWidths(new float[] {33, 33, 33});
+			signTable.setWidths(new float[]{33, 33, 33});
 			signTable.addCell(createCell(new Phrase("__/__/____", normalFont), Element.ALIGN_CENTER, 0));
 			signTable.addCell(createCell(new Phrase(" ", normalFont), Element.ALIGN_CENTER, 0));
 			signTable.addCell(createCell(new Phrase(" ", normalFont), Element.ALIGN_CENTER, 0));
@@ -326,24 +316,24 @@ public class PdfUtil {
 			doc.add(p);
 
 			p = new Paragraph("Βεβαιώνεται ότι ο " +
-				candidate.getUser().getBasicInfo().getFirstname() +
-				" (" +
-				candidate.getUser().getBasicInfoLatin().getFirstname() +
-				") " +
-				candidate.getUser().getBasicInfo().getLastname() +
-				" (" +
-				candidate.getUser().getBasicInfoLatin().getLastname() +
-				") " +
-				" με Α.Δ.Τ. "
-				+ candidate.getUser().getIdentification() +
-				", e-mail "
-				+ candidate.getUser().getContactInfo().getEmail() +
-				" και τηλέφωνο " +
-				candidate.getUser().getContactInfo().getMobile() +
-				" συμμετέχει στο πρόγραμμα \"Απέλλα - Σύστημα Εκλογής και Εξέλιξης Μελών ΔΕΠ\" με το Όνομα Χρήστη "
-				+ candidate.getUser().getUsername()
-				+ ".",
-				normalFont);
+					candidate.getUser().getBasicInfo().getFirstname() +
+					" (" +
+					candidate.getUser().getBasicInfoLatin().getFirstname() +
+					") " +
+					candidate.getUser().getBasicInfo().getLastname() +
+					" (" +
+					candidate.getUser().getBasicInfoLatin().getLastname() +
+					") " +
+					" με Α.Δ.Τ. "
+					+ candidate.getUser().getIdentification() +
+					", e-mail "
+					+ candidate.getUser().getContactInfo().getEmail() +
+					" και τηλέφωνο " +
+					candidate.getUser().getContactInfo().getMobile() +
+					" συμμετέχει στο πρόγραμμα \"Απέλλα - Σύστημα Εκλογής και Εξέλιξης Μελών ΔΕΠ\" με το Όνομα Χρήστη "
+					+ candidate.getUser().getUsername()
+					+ ".",
+					normalFont);
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
@@ -352,7 +342,7 @@ public class PdfUtil {
 			doc.add(p);
 
 			p = new Paragraph("O συμμετέχων δηλώνει υπεύθυνα ότι αποδέχεται τους όρους και τις προϋποθέσεις του προγράμματος " +
-				"\"Απέλλα - Σύστημα Εκλογής και Εξέλιξης Μελών ΔΕΠ\", όπως κάθε φορά ισχύουν.", normalFont);
+					"\"Απέλλα - Σύστημα Εκλογής και Εξέλιξης Μελών ΔΕΠ\", όπως κάθε φορά ισχύουν.", normalFont);
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
@@ -374,7 +364,7 @@ public class PdfUtil {
 
 			PdfPTable signTable = new PdfPTable(2);
 			signTable.setWidthPercentage(100);
-			signTable.setWidths(new float[] {50, 50});
+			signTable.setWidths(new float[]{50, 50});
 			signTable.addCell(createCell(new Phrase(" ", normalFont), Element.ALIGN_CENTER, 0));
 			signTable.addCell(createCell(new Phrase("Ο/Η Συμμετέχων", normalFont), Element.ALIGN_CENTER, 0));
 			signTable.addCell(createCell(new Phrase("__/__/____", normalFont), Element.ALIGN_CENTER, 0));
@@ -441,7 +431,7 @@ public class PdfUtil {
 		// Create table
 		PdfPTable logoTable = new PdfPTable(5);
 		logoTable.setHorizontalAlignment(Element.ALIGN_CENTER);
-		logoTable.setWidths(new float[] {27, 28, 12, 15, 18});
+		logoTable.setWidths(new float[]{27, 28, 12, 15, 18});
 
 		logoTable.addCell(createImageCell(logoMinedu, Element.ALIGN_CENTER, 0));
 		logoTable.addCell(createImageCell(logoGRnet, Element.ALIGN_CENTER, 0));

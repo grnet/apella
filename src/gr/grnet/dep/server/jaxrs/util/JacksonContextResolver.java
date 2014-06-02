@@ -1,12 +1,6 @@
 package gr.grnet.dep.server.jaxrs.util;
 
-import java.text.SimpleDateFormat;
-
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.ContextResolver;
-import javax.ws.rs.ext.Provider;
-
+import com.fasterxml.jackson.module.hibernate.HibernateModule;
 import org.codehaus.jackson.map.AnnotationIntrospector;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -15,7 +9,11 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.introspect.JacksonAnnotationIntrospector;
 import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 
-import com.fasterxml.jackson.module.hibernate.HibernateModule;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.ext.ContextResolver;
+import javax.ws.rs.ext.Provider;
+import java.text.SimpleDateFormat;
 
 // Customized {@code ContextResolver} implementation to pass ObjectMapper to use
 @Provider
@@ -32,11 +30,11 @@ public class JacksonContextResolver implements ContextResolver<ObjectMapper> {
 		AnnotationIntrospector pair = new AnnotationIntrospector.Pair(primaryIntrospector, secondaryIntropsector);
 
 		this.objectMapper = new ObjectMapper()
-			.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-			.configure(SerializationConfig.Feature.WRITE_DATES_AS_TIMESTAMPS, false)
-			.configure(SerializationConfig.Feature.WRITE_DATE_KEYS_AS_TIMESTAMPS, false)
-			.setAnnotationIntrospector(pair)
-			.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
+				.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+				.configure(SerializationConfig.Feature.WRITE_DATES_AS_TIMESTAMPS, false)
+				.configure(SerializationConfig.Feature.WRITE_DATE_KEYS_AS_TIMESTAMPS, false)
+				.setAnnotationIntrospector(pair)
+				.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
 		this.objectMapper.setDateFormat(new SimpleDateFormat("dd/MM/yyyy HH:mm:ss"));
 		this.objectMapper.registerModule(new HibernateModule());
 	}

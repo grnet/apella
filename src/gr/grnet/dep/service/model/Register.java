@@ -1,23 +1,13 @@
 package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import org.codehaus.jackson.map.annotate.JsonView;
 
+import javax.persistence.*;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Transient;
-import javax.persistence.Version;
-import javax.xml.bind.annotation.XmlRootElement;
-
-import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 @XmlRootElement
@@ -26,10 +16,14 @@ public class Register implements Serializable {
 	private static final long serialVersionUID = 6147648073392341863L;
 
 	public static interface RegisterView {
-	};
+	}
+
+	;
 
 	public static interface DetailedRegisterView extends RegisterView {
-	};
+	}
+
+	;
 
 	@Id
 	@GeneratedValue

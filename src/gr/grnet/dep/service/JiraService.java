@@ -2,45 +2,10 @@ package gr.grnet.dep.service;
 
 import gr.grnet.dep.service.exceptions.ServiceException;
 import gr.grnet.dep.service.model.JiraIssue;
-import gr.grnet.dep.service.model.JiraIssue.IssueCall;
-import gr.grnet.dep.service.model.JiraIssue.IssueCustomField;
-import gr.grnet.dep.service.model.JiraIssue.IssueResolution;
-import gr.grnet.dep.service.model.JiraIssue.IssueStatus;
-import gr.grnet.dep.service.model.JiraIssue.IssueType;
+import gr.grnet.dep.service.model.JiraIssue.*;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
-
-import java.net.URLEncoder;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
-import javax.jms.Queue;
-import javax.jms.QueueConnectionFactory;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -50,6 +15,25 @@ import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.jms.*;
+import javax.jms.Queue;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Stateless(name = "jiraService")
 public class JiraService {
@@ -273,10 +257,10 @@ public class JiraService {
 	public List<JiraIssue> getUserIssues(Long userId) {
 		@SuppressWarnings("unchecked")
 		List<JiraIssue> issues = em.createQuery(
-			"from JiraIssue issue " +
-				"where issue.user.id = :userId")
-			.setParameter("userId", userId)
-			.getResultList();
+				"from JiraIssue issue " +
+						"where issue.user.id = :userId")
+				.setParameter("userId", userId)
+				.getResultList();
 
 		return issues;
 	}
@@ -466,7 +450,7 @@ public class JiraService {
 		}
 
 		if (jiraConfiguration.getIssueCustomFieldId(IssueCustomField.REPORTER).length() > 0 &&
-			jiraIssue.getReporter() != null) {
+				jiraIssue.getReporter() != null) {
 			fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.REPORTER), jiraIssue.getReporter());
 		}
 

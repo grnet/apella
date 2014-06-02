@@ -1,11 +1,11 @@
 package gr.grnet.dep.service.util;
 
-import java.io.IOException;
-
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.DeserializationContext;
 import org.codehaus.jackson.map.JsonDeserializer;
+
+import java.io.IOException;
 
 public class IdentificationDeserializer extends JsonDeserializer<String> {
 
