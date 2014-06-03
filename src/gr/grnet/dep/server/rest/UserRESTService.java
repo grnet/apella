@@ -46,7 +46,6 @@ public class UserRESTService extends RESTService {
 	AuthenticationService authenticationService;
 
 	@GET
-	@SuppressWarnings("unchecked")
 	@JsonView({UserView.class})
 	public Collection<User> getAll(
 			@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken,

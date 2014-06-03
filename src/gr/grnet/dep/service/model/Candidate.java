@@ -82,6 +82,7 @@ public class Candidate extends Role {
 
 	@Override
 	@XmlTransient
+	@JsonIgnore
 	public boolean isMissingRequiredFields() {
 		boolean hasTAYTOTHTAFile = false;
 		boolean hasFORMA_SYMMETOXISFile = false;
