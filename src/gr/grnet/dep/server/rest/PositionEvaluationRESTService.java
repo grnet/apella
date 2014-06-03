@@ -1,5 +1,6 @@
 package gr.grnet.dep.server.rest;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.*;
@@ -17,13 +18,11 @@ import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.file.PositionEvaluatorFile;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
-import org.codehaus.jackson.map.annotate.JsonView;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -876,7 +875,7 @@ public class PositionEvaluationRESTService extends RESTService {
 	 *
 	 * @param authToken
 	 * @param positionId
-	 * @param committeeId
+	 * @param evaluationId
 	 * @return A list of registerMember
 	 * @HTTP 403 X-Error-Code: insufficient.privileges
 	 * @HTTP 404 X-Error-Code: wrong.position.committee.id

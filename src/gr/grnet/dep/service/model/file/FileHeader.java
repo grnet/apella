@@ -1,7 +1,7 @@
 package gr.grnet.dep.service.model.file;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.service.model.User;
-import org.codehaus.jackson.map.annotate.JsonView;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;

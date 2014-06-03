@@ -12,7 +12,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response.Status;
 import java.util.Collection;
-import java.util.List;
 
 @Path("/rank")
 @Stateless

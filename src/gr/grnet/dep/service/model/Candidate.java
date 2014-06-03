@@ -1,8 +1,8 @@
 package gr.grnet.dep.service.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import gr.grnet.dep.service.model.file.CandidateFile;
 import gr.grnet.dep.service.model.file.FileHeader;
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 import javax.inject.Inject;
 import javax.persistence.*;

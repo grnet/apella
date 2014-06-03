@@ -1,5 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.service.model.Candidacy.CandidacyView;
 import gr.grnet.dep.service.model.CandidacyEvaluator.DetailedCandidacyEvaluatorView;
 import gr.grnet.dep.service.model.PositionCandidacies.DetailedPositionCandidaciesView;
@@ -8,8 +10,6 @@ import gr.grnet.dep.service.model.PositionCommitteeMember.PositionCommitteeMembe
 import gr.grnet.dep.service.model.PositionEvaluation.PositionEvaluationView;
 import gr.grnet.dep.service.model.PositionEvaluator.PositionEvaluatorView;
 import gr.grnet.dep.service.model.Register.DetailedRegisterView;
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.map.annotate.JsonView;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;

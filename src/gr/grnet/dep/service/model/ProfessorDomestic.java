@@ -1,7 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import gr.grnet.dep.service.util.CompareUtil;
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 import javax.inject.Inject;
 import javax.persistence.DiscriminatorValue;

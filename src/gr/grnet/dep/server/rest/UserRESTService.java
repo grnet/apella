@@ -1,5 +1,6 @@
 package gr.grnet.dep.server.rest;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.AuthenticationService;
@@ -11,7 +12,6 @@ import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.User.UserView;
 import gr.grnet.dep.service.model.User.UserWithLoginDataView;
 import gr.grnet.dep.service.util.StringUtil;
-import org.codehaus.jackson.map.annotate.JsonView;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;

@@ -1,8 +1,8 @@
 package gr.grnet.dep.service.model.file;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.service.model.CandidacyEvaluator;
 import gr.grnet.dep.service.model.PositionCandidacies;
-import org.codehaus.jackson.map.annotate.JsonView;
 
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;

@@ -1,5 +1,8 @@
 package gr.grnet.dep.service.model;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.service.model.Candidacy.MediumCandidacyView;
 import gr.grnet.dep.service.model.CandidacyEvaluator.DetailedCandidacyEvaluatorView;
 import gr.grnet.dep.service.model.Position.PositionView;
@@ -10,10 +13,6 @@ import gr.grnet.dep.service.model.PositionEvaluation.DetailedPositionEvaluationV
 import gr.grnet.dep.service.model.PositionEvaluator.DetailedPositionEvaluatorView;
 import gr.grnet.dep.service.model.Register.DetailedRegisterView;
 import gr.grnet.dep.service.model.RegisterMember.DetailedRegisterMemberView;
-import org.codehaus.jackson.annotate.JsonSubTypes;
-import org.codehaus.jackson.annotate.JsonTypeInfo;
-import org.codehaus.jackson.annotate.JsonTypeInfo.As;
-import org.codehaus.jackson.map.annotate.JsonView;
 
 import javax.inject.Inject;
 import javax.persistence.*;
@@ -29,7 +28,7 @@ import java.util.logging.Logger;
 @Table(name = "Roles", indexes = {
 		@Index(name = "IDX_Roles_discriminator", columnList = "discriminator")
 })
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = As.PROPERTY, property = "discriminator")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "discriminator")
 @JsonSubTypes({
 		@JsonSubTypes.Type(value = ProfessorDomestic.class, name = "PROFESSOR_DOMESTIC"),
 		@JsonSubTypes.Type(value = ProfessorForeign.class, name = "PROFESSOR_FOREIGN"),

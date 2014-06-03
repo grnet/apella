@@ -1,7 +1,7 @@
 package gr.grnet.dep.service.model.file;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.service.model.Professor;
-import org.codehaus.jackson.map.annotate.JsonView;
 
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
@@ -16,9 +16,6 @@ import java.util.Map;
 @XmlRootElement
 public class ProfessorFile extends FileHeader {
 
-	private static final long serialVersionUID = -3078442579988112911L;
-
-	@SuppressWarnings("serial")
 	public static final Map<FileType, Integer> fileTypes = Collections.unmodifiableMap(new HashMap<FileType, Integer>() {
 
 		{
@@ -26,7 +23,7 @@ public class ProfessorFile extends FileHeader {
 			put(FileType.FEK, 1);
 		}
 	});
-
+	private static final long serialVersionUID = -3078442579988112911L;
 	@ManyToOne
 	private Professor professor;
 

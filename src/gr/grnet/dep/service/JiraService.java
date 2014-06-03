@@ -1,5 +1,9 @@
 package gr.grnet.dep.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import gr.grnet.dep.service.exceptions.ServiceException;
 import gr.grnet.dep.service.model.JiraIssue;
 import gr.grnet.dep.service.model.JiraIssue.*;
@@ -9,10 +13,6 @@ import gr.grnet.dep.service.util.DEPConfigurationFactory;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ArrayNode;
-import org.codehaus.jackson.node.ObjectNode;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
