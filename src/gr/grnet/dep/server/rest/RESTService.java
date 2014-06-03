@@ -134,11 +134,11 @@ public class RESTService {
 			throw new RestException(Status.UNAUTHORIZED, "login.missing.token");
 		}
 		try {
-			User user = (User) em.createQuery(
+			User user = em.createQuery(
 					"from User u " +
 							"left join fetch u.roles " +
 							"where u.status = :status " +
-							"and u.authToken = :authToken")
+							"and u.authToken = :authToken", User.class)
 					.setParameter("status", UserStatus.ACTIVE)
 					.setParameter("authToken", authToken)
 					.getSingleResult();
@@ -214,10 +214,9 @@ public class RESTService {
 
 	protected void updateOpenCandidacies(Candidate candidate) {
 		// Get Open Candidacies
-		@SuppressWarnings("unchecked")
 		List<Candidacy> openCandidacies = em.createQuery(
 				"from Candidacy c where c.candidate = :candidate " +
-						"and c.candidacies.closingDate >= :now")
+						"and c.candidacies.closingDate >= :now", Candidacy.class)
 				.setParameter("candidate", candidate)
 				.setParameter("now", new Date())
 				.getResultList();
@@ -307,7 +306,7 @@ public class RESTService {
 		try {
 			em.createQuery("select c.id from Candidacy c " +
 					"left join c.snapshot.files fb " +
-					"where fb.id = :bodyId")
+					"where fb.id = :bodyId", Long.class)
 					.setParameter("bodyId", fb.getId())
 					.setMaxResults(1)
 					.getSingleResult();

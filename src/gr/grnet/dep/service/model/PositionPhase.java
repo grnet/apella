@@ -24,8 +24,6 @@ public class PositionPhase {
 	public static interface DetailedPositionPhaseView {
 	}
 
-	;
-
 	@Id
 	@GeneratedValue
 	private Long id;

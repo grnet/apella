@@ -22,12 +22,8 @@ public class PositionNomination {
 	public static interface PositionNominationView {
 	}
 
-	;
-
 	public static interface DetailedPositionNominationView extends PositionNominationView {
 	}
-
-	;
 
 	@Id
 	@GeneratedValue

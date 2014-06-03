@@ -18,6 +18,7 @@ import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -48,16 +49,14 @@ public class RegisterRESTService extends RESTService {
 	@JsonView({RegisterView.class})
 	public Collection<Register> getAll(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
 		User loggedOn = getLoggedOn(authToken);
-		@SuppressWarnings("unchecked")
-		Collection<Register> registers = (Collection<Register>) em.createQuery(
+		Collection<Register> registers = em.createQuery(
 				"select r from Register r " +
-						"where r.permanent = true")
+						"where r.permanent = true", Register.class)
 				.getResultList();
 
-		@SuppressWarnings("unchecked")
-		Collection<Long> loggedOnRegisterIds = (Collection<Long>) em.createQuery(
+		Collection<Long> loggedOnRegisterIds = em.createQuery(
 				"select distinct(rm.register.id) from RegisterMember rm " +
-						"where rm.professor.user.id = :userId")
+						"where rm.professor.user.id = :userId", Long.class)
 				.setParameter("userId", loggedOn.getId())
 				.getResultList();
 
@@ -82,13 +81,13 @@ public class RegisterRESTService extends RESTService {
 	public Register get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		getLoggedOn(authToken);
 		try {
-			Register r = (Register) em.createQuery(
+			Register r = em.createQuery(
 					"select r from Register r " +
 							"left join fetch r.members rm " +
 							"left join fetch rm.professor p " +
 							"left join fetch p.user u " +
 							"left join fetch u.roles rls " +
-							"where r.id=:id")
+							"where r.id=:id", Register.class)
 					.setParameter("id", id)
 					.getSingleResult();
 
@@ -101,15 +100,14 @@ public class RegisterRESTService extends RESTService {
 	}
 
 	private void addCanBeDeletedInfo(Register register) {
-		@SuppressWarnings("unchecked")
-		List<Long> nonRemovableMemberIds = (List<Long>) em.createQuery(
+		List<Long> nonRemovableMemberIds = em.createQuery(
 				"select rm.id from RegisterMember rm " +
 						"where rm.register.id = :registerId " +
 						"and (" +
 						"	exists (select pcm.id from PositionCommitteeMember pcm where pcm.registerMember.id = rm.id ) " +
 						"	or exists (select pe.id from PositionEvaluator pe where pe.registerMember.id = rm.id ) " +
 						"	or exists (select ce.id from CandidacyEvaluator ce where ce.registerMember.id = rm.id ) " +
-						")")
+						")", Long.class)
 				.setParameter("registerId", register.getId())
 				.getResultList();
 
@@ -177,13 +175,13 @@ public class RegisterRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		Register existingRegister = null;
 		try {
-			existingRegister = (Register) em.createQuery(
+			existingRegister = em.createQuery(
 					"select r from Register r " +
 							"left join fetch r.members rm " +
 							"left join fetch rm.professor p " +
 							"left join fetch p.user u " +
 							"left join fetch u.roles rls " +
-							"where r.id=:id")
+							"where r.id=:id", Register.class)
 					.setParameter("id", id)
 					.getSingleResult();
 		} catch (NoResultException e) {
@@ -206,7 +204,7 @@ public class RegisterRESTService extends RESTService {
 						"select r.id from Register r " +
 								"where r.subject.name = :name " +
 								"and r.institution.id = :institutionId " +
-								"and r.id != :registerId ")
+								"and r.id != :registerId ", Long.class)
 						.setParameter("institutionId", existingRegister.getInstitution().getId())
 						.setParameter("name", register.getSubject().getName())
 						.setParameter("registerId", existingRegister.getId())
@@ -229,9 +227,9 @@ public class RegisterRESTService extends RESTService {
 		}
 		List<Professor> newRegisterMembers = new ArrayList<Professor>();
 		if (!newMemberIds.isEmpty()) {
-			Query query = em.createQuery(
+			TypedQuery<Professor> query = em.createQuery(
 					"select distinct p from Professor p " +
-							"where p.id in (:ids)")
+							"where p.id in (:ids)", Professor.class)
 					.setParameter("ids", newMemberIds);
 			newRegisterMembers.addAll(query.getResultList());
 		}
@@ -250,7 +248,7 @@ public class RegisterRESTService extends RESTService {
 			try {
 				em.createQuery("select pcm from PositionCommitteeMember pcm " +
 						"where pcm.registerMember.register.id = :registerId " +
-						"and pcm.registerMember.professor.id in (:professorIds)")
+						"and pcm.registerMember.professor.id in (:professorIds)", PositionCommitteeMember.class)
 						.setParameter("registerId", existingRegister.getId())
 						.setParameter("professorIds", removedProfessorIds)
 						.setMaxResults(1)
@@ -261,7 +259,7 @@ public class RegisterRESTService extends RESTService {
 			try {
 				em.createQuery("select e.id from PositionEvaluator e " +
 						"where e.registerMember.register.id = :registerId " +
-						"and e.registerMember.professor.id in (:professorIds)")
+						"and e.registerMember.professor.id in (:professorIds)", PositionEvaluator.class)
 						.setParameter("registerId", existingRegister.getId())
 						.setParameter("professorIds", removedProfessorIds)
 						.setMaxResults(1)
@@ -272,7 +270,7 @@ public class RegisterRESTService extends RESTService {
 			try {
 				em.createQuery("select e.id from CandidacyEvaluator e " +
 						"where e.registerMember.register.id = :registerId " +
-						"and e.registerMember.professor.id in (:professorIds)")
+						"and e.registerMember.professor.id in (:professorIds)", CandidacyEvaluator.class)
 						.setParameter("registerId", existingRegister.getId())
 						.setParameter("professorIds", removedProfessorIds)
 						.setMaxResults(1)
@@ -299,7 +297,7 @@ public class RegisterRESTService extends RESTService {
 				newMember.setProfessor(existingProfessor);
 				switch (existingProfessor.getDiscriminator()) {
 					case PROFESSOR_DOMESTIC:
-						newMember.setExternal(existingRegister.getInstitution().getId() != ((ProfessorDomestic) existingProfessor).getDepartment().getSchool().getInstitution().getId());
+						newMember.setExternal(!existingRegister.getInstitution().getId().equals(((ProfessorDomestic) existingProfessor).getDepartment().getSchool().getInstitution().getId()));
 						break;
 					case PROFESSOR_FOREIGN:
 						newMember.setExternal(true);
@@ -529,7 +527,7 @@ public class RegisterRESTService extends RESTService {
 					"select r from Role r " +
 							"where r.id in (:ids) " +
 							"and r.discriminator in (:discriminators) " +
-							"and r.status = :status")
+							"and r.status = :status", Role.class)
 					.setParameter("discriminators", discriminatorList)
 					.setParameter("status", RoleStatus.ACTIVE)
 					.setParameter("ids", roleIds)
@@ -656,7 +654,7 @@ public class RegisterRESTService extends RESTService {
 		}
 
 		// Query Sorting
-		String orderString = null;
+		String orderString;
 		if (orderField != null && !orderField.isEmpty()) {
 			if (orderField.equals("id")) {
 				orderString = "order by r.user.id " + orderDirection;
@@ -677,13 +675,13 @@ public class RegisterRESTService extends RESTService {
 						"where r.id in ( " +
 						searchQueryString.toString() +
 						" ) ");
-		Query searchQuery = em.createQuery(
+		TypedQuery<Role> searchQuery = em.createQuery(
 				"select r from Role r " +
 						"left join fetch r.user u " +
 						"where r.id in ( " +
 						searchQueryString.toString() +
 						" ) " +
-						orderString);
+						orderString, Role.class);
 
 		// Parameters:
 		List<RoleDiscriminator> discriminatorList = new ArrayList<Role.RoleDiscriminator>();
@@ -725,7 +723,6 @@ public class RegisterRESTService extends RESTService {
 		}
 		// Execute
 		Long totalRecords = (Long) countQuery.getSingleResult();
-		@SuppressWarnings("unchecked")
 		List<Role> paginatedProfessors = searchQuery
 				.setFirstResult(iDisplayStart)
 				.setMaxResults(iDisplayLength)

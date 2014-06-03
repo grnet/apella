@@ -19,12 +19,8 @@ public class PositionCommitteeMember implements Serializable {
 	public static interface PositionCommitteeMemberView {
 	}
 
-	;
-
 	public static interface DetailedPositionCommitteeMemberView extends PositionCommitteeMemberView {
 	}
-
-	;
 
 	public static final int MAX_MEMBERS = 7;
 

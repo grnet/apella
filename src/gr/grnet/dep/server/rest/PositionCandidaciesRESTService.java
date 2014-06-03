@@ -107,11 +107,11 @@ public class PositionCandidaciesRESTService extends RESTService {
 			Session session = em.unwrap(Session.class);
 			session.enableFilter("filterPermanent");
 
-			PositionCandidacies existingCandidacies = (PositionCandidacies) em.createQuery(
+			PositionCandidacies existingCandidacies = em.createQuery(
 					"select pc from PositionCandidacies pc " +
 							"left join fetch pc.candidacies c " +
 							"left join fetch c.proposedEvaluators pe " +
-							"where pc.id = :candidaciesId")
+							"where pc.id = :candidaciesId", PositionCandidacies.class)
 					.setParameter("candidaciesId", candidaciesId)
 					.getSingleResult();
 

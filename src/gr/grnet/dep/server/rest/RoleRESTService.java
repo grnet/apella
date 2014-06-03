@@ -20,6 +20,7 @@ import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -163,7 +164,7 @@ public class RoleRESTService extends RESTService {
 			sb.append("and r.discriminator in (:discriminators) ");
 		}
 		// Set Parameters
-		Query query = em.createQuery(sb.toString());
+		TypedQuery<Role> query = em.createQuery(sb.toString(), Role.class);
 		Set<RoleStatus> statusesList = new HashSet<RoleStatus>();
 		if (statuses != null) {
 			try {
@@ -245,8 +246,8 @@ public class RoleRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 
-		Role r = (Role) em.createQuery(
-				"from Role r where r.id=:id")
+		Role r = em.createQuery(
+				"from Role r where r.id=:id", Role.class)
 				.setParameter("id", id)
 				.getSingleResult();
 
@@ -285,14 +286,14 @@ public class RoleRESTService extends RESTService {
 		try {
 			// Find if the same role already exists and is active.
 			// If it does, it should be made inactive.
-			Query query = em.createQuery("select r from Role r " +
+			TypedQuery<Role> query = em.createQuery("select r from Role r " +
 					"where r.status = :status " +
 					"and r.user.id = :userID " +
-					"and r.discriminator = :discriminator");
+					"and r.discriminator = :discriminator", Role.class);
 			query.setParameter("status", RoleStatus.ACTIVE);
 			query.setParameter("userID", newRole.getUser().getId());
 			query.setParameter("discriminator", newRole.getDiscriminator());
-			List<Role> existingRoles = (List<Role>) query.getResultList();
+			List<Role> existingRoles = query.getResultList();
 			for (Role existingRole : existingRoles) {
 				existingRole.setStatus(RoleStatus.INACTIVE);
 				existingRole.setStatusEndDate(new Date());
@@ -959,11 +960,11 @@ public class RoleRESTService extends RESTService {
 			if (role instanceof Candidate) {
 				Candidate candidate = (Candidate) role;
 				try {
-					CandidateFile candidateFile = (CandidateFile) em.createQuery(
+					CandidateFile candidateFile = em.createQuery(
 							"select cf from CandidateFile cf " +
 									"where cf.candidate.id = :candidateId " +
 									"and cf.id = :fileId " +
-									"and cf.deleted = false")
+									"and cf.deleted = false", CandidateFile.class)
 							.setParameter("candidateId", id)
 							.setParameter("fileId", fileId)
 							.getSingleResult();
@@ -999,11 +1000,11 @@ public class RoleRESTService extends RESTService {
 			} else if (role instanceof Professor) {
 				Professor professor = (Professor) role;
 				try {
-					ProfessorFile professorFile = (ProfessorFile) em.createQuery(
+					ProfessorFile professorFile = em.createQuery(
 							"select cf from ProfessorFile cf " +
 									"where cf.professor.id = :professorId " +
 									"and cf.id = :fileId " +
-									"and cf.deleted = false")
+									"and cf.deleted = false", ProfessorFile.class)
 							.setParameter("professorId", id)
 							.setParameter("fileId", fileId)
 							.getSingleResult();
@@ -1078,7 +1079,7 @@ public class RoleRESTService extends RESTService {
 					// Check if exists active IM for same Institution:
 					em.createQuery("select im from InstitutionManager im " +
 							"where im.status = :status " +
-							"and im.institution.id = :institutionId")
+							"and im.institution.id = :institutionId", InstitutionManager.class)
 							.setParameter("status", RoleStatus.ACTIVE)
 							.setParameter("institutionId", im.getInstitution().getId())
 							.setMaxResults(1)
@@ -1094,7 +1095,7 @@ public class RoleRESTService extends RESTService {
 				try {
 					em.createQuery("select pcm from PositionCommitteeMember pcm " +
 							"where pcm.committee.position.phase.status = :status " +
-							"and pcm.registerMember.professor.id = :professorId")
+							"and pcm.registerMember.professor.id = :professorId", PositionCommitteeMember.class)
 							.setParameter("status", PositionStatus.EPILOGI)
 							.setParameter("professorId", primaryRole.getId())
 							.setMaxResults(1)
@@ -1105,7 +1106,7 @@ public class RoleRESTService extends RESTService {
 				try {
 					em.createQuery("select e.id from PositionEvaluator e " +
 							"where e.evaluation.position.phase.status = :status " +
-							"and e.registerMember.professor.id = :professorId")
+							"and e.registerMember.professor.id = :professorId", PositionEvaluator.class)
 							.setParameter("status", PositionStatus.EPILOGI)
 							.setParameter("professorId", primaryRole.getId())
 							.setMaxResults(1)

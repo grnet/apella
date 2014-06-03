@@ -20,6 +20,7 @@ import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -104,7 +105,7 @@ public class UserRESTService extends RESTService {
 		sb.append(") ");
 		sb.append("order by usr.basicInfo.lastname, usr.basicInfo.firstname");
 
-		Query query = em.createQuery(sb.toString())
+		TypedQuery<User> query = em.createQuery(sb.toString(), User.class)
 				.setParameter("firstname", "%" + (firstname != null ? StringUtil.toUppercaseNoTones(firstname, new Locale("el")) : "") + "%")
 				.setParameter("lastname", "%" + (lastname != null ? StringUtil.toUppercaseNoTones(lastname, new Locale("el")) : "") + "%");
 
@@ -180,10 +181,10 @@ public class UserRESTService extends RESTService {
 	public String get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id) throws RestException {
 		User loggedOn = getLoggedOn(authToken);
 		try {
-			User u = (User) em.createQuery(
+			User u = em.createQuery(
 					"from User u " +
 							"left join fetch u.roles " +
-							"where u.id=:id")
+							"where u.id=:id", User.class)
 					.setParameter("id", id)
 					.getSingleResult();
 			if (u.getId().equals(loggedOn.getId())) {
@@ -213,7 +214,7 @@ public class UserRESTService extends RESTService {
 			try {
 				em.createQuery(
 						"select u from User u" +
-								" where u.username = :username")
+								" where u.username = :username", User.class)
 						.setParameter("username", newUser.getUsername())
 						.getSingleResult();
 				throw new RestException(Status.FORBIDDEN, "username.not.available");
@@ -226,7 +227,7 @@ public class UserRESTService extends RESTService {
 			try {
 				em.createQuery(
 						"select u from User u " +
-								"where u.contactInfo.email = :email")
+								"where u.contactInfo.email = :email", User.class)
 						.setParameter("email", newUser.getContactInfo().getEmail())
 						.getSingleResult();
 				throw new RestException(Status.FORBIDDEN, "contact.email.not.available");
@@ -272,7 +273,7 @@ public class UserRESTService extends RESTService {
 						em.createQuery(
 								"select im from InstitutionManager im " +
 										"where im.institution.id = :institutionId " +
-										"and im.status = :status ")
+										"and im.status = :status ", InstitutionManager.class)
 								.setParameter("institutionId", newIM.getInstitution().getId())
 								.setParameter("status", RoleStatus.ACTIVE)
 								.setMaxResults(1)
@@ -333,7 +334,7 @@ public class UserRESTService extends RESTService {
 				try {
 					em.createQuery(
 							"select identification from User u " +
-									"where u.identification = :identification")
+									"where u.identification = :identification", String.class)
 							.setParameter("identification", newUser.getIdentification())
 							.setMaxResults(1)
 							.getSingleResult();
@@ -432,7 +433,7 @@ public class UserRESTService extends RESTService {
 		try {
 			em.createQuery("select u from User u " +
 					"where u.id != :id " +
-					"and u.contactInfo.email = :email")
+					"and u.contactInfo.email = :email", User.class)
 					.setParameter("id", user.getId())
 					.setParameter("email", user.getContactInfo().getEmail())
 					.getSingleResult();
@@ -548,10 +549,10 @@ public class UserRESTService extends RESTService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public Response resetPassword(@FormParam("email") String email) {
 		try {
-			final User u = (User) em.createQuery(
+			final User u = em.createQuery(
 					"from User u " +
 							"left join fetch u.roles " +
-							"where u.contactInfo.email = :email")
+							"where u.contactInfo.email = :email", User.class)
 					.setParameter("email", email)
 					.getSingleResult();
 			// Validate:
@@ -586,10 +587,10 @@ public class UserRESTService extends RESTService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public Response sendVerificationEmail(@FormParam("email") String email) {
 		try {
-			final User u = (User) em.createQuery(
+			final User u = em.createQuery(
 					"from User u " +
 							"left join fetch u.roles " +
-							"where u.contactInfo.email = :email")
+							"where u.contactInfo.email = :email", User.class)
 					.setParameter("email", email)
 					.getSingleResult();
 
@@ -630,10 +631,10 @@ public class UserRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
-			final User u = (User) em.createQuery(
+			final User u = em.createQuery(
 					"from User u " +
 							"left join fetch u.roles " +
-							"where u.id = :id")
+							"where u.id = :id", User.class)
 					.setParameter("id", id)
 					.getSingleResult();
 
@@ -642,7 +643,7 @@ public class UserRESTService extends RESTService {
 				throw new RestException(Status.NOT_FOUND, "login.wrong.registration.type");
 			}
 
-			if (createLoginLink != null && createLoginLink.booleanValue()) {
+			if (createLoginLink != null && createLoginLink) {
 				// Create new AuthenticationToken
 				u.setPermanentAuthToken(authenticationService.generatePermanentAuthenticationToken(u.getId(), u.getContactInfo().getEmail()));
 				u.setLoginEmailSent(Boolean.FALSE);
@@ -664,10 +665,10 @@ public class UserRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
-			final User u = (User) em.createQuery(
+			final User u = em.createQuery(
 					"from User u " +
 							"left join fetch u.roles " +
-							"where u.id = :id")
+							"where u.id = :id", User.class)
 					.setParameter("id", id)
 					.getSingleResult();
 
@@ -688,10 +689,10 @@ public class UserRESTService extends RESTService {
 	@JsonView({UserWithLoginDataView.class})
 	public User verify(User user) {
 		try {
-			final User u = (User) em.createQuery(
+			final User u = em.createQuery(
 					"from User u " +
 							"left join fetch u.roles " +
-							"where u.username = :username")
+							"where u.username = :username", User.class)
 					.setParameter("username", user.getUsername())
 					.getSingleResult();
 			// Validate
@@ -752,10 +753,10 @@ public class UserRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
-			final User u = (User) em.createQuery(
+			final User u = em.createQuery(
 					"from User u " +
 							"left join fetch u.roles " +
-							"where u.id=:id")
+							"where u.id=:id", User.class)
 					.setParameter("id", id)
 					.getSingleResult();
 			u.setStatus(requestUser.getStatus());
@@ -879,13 +880,13 @@ public class UserRESTService extends RESTService {
 						searchQueryString.toString() +
 						" ) ");
 
-		Query searchQuery = em.createQuery(
+		TypedQuery<User> searchQuery = em.createQuery(
 				"select usr from User usr " +
 						"join fetch usr.roles rls " +
 						"where usr.id in ( " +
 						searchQueryString.toString() +
 						" ) " +
-						orderString);
+						orderString, User.class);
 
 		if (userId != null) {
 			searchQuery.setParameter("userId", userId);

@@ -24,6 +24,7 @@ import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -60,10 +61,10 @@ public class PositionEvaluationRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		PositionEvaluation existingEvaluation = null;
 		try {
-			existingEvaluation = (PositionEvaluation) em.createQuery(
+			existingEvaluation = em.createQuery(
 					"from PositionEvaluation pe " +
 							"left join fetch pe.evaluators pee " +
-							"where pe.id = :evaluationId")
+							"where pe.id = :evaluationId", PositionEvaluation.class)
 					.setParameter("evaluationId", evaluationId)
 					.getSingleResult();
 		} catch (NoResultException e) {
@@ -198,14 +199,14 @@ public class PositionEvaluationRESTService extends RESTService {
 		}
 		List<RegisterMember> newRegisterMembers = new ArrayList<RegisterMember>();
 		if (!newEvaluatorsRegisterMap.isEmpty()) {
-			Query query = em.createQuery(
+			TypedQuery<RegisterMember> query = em.createQuery(
 					"select distinct rm from Register r " +
 							"join r.members rm " +
 							"where r.permanent = true " +
 							"and r.institution.id = :institutionId " +
 							"and rm.external = true " +
 							"and rm.professor.status = :status " +
-							"and rm.id in (:registerIds)")
+							"and rm.id in (:registerIds)", RegisterMember.class)
 					.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
 					.setParameter("status", RoleStatus.ACTIVE)
 					.setParameter("registerIds", newEvaluatorsRegisterMap.keySet());
@@ -898,11 +899,10 @@ public class PositionEvaluationRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Prepare Query
-		@SuppressWarnings("unchecked")
 		List<Register> registers = em.createQuery(
 				"select r from Register r " +
 						"where r.permanent = true " +
-						"and r.institution.id = :institutionId ")
+						"and r.institution.id = :institutionId ", Register.class)
 				.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
 				.getResultList();
 
@@ -935,13 +935,12 @@ public class PositionEvaluationRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Prepare Query
-		@SuppressWarnings("unchecked")
 		List<RegisterMember> registerMembers = em.createQuery(
 				"select distinct m from RegisterMember m " +
 						"where m.register.permanent = true " +
 						"and m.register.institution.id = :institutionId " +
 						"and m.register.id = :registerId " +
-						"and m.professor.status = :status ")
+						"and m.professor.status = :status ", RegisterMember.class)
 				.setParameter("registerId", registerId)
 				.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
 				.setParameter("status", RoleStatus.ACTIVE)
@@ -949,7 +948,7 @@ public class PositionEvaluationRESTService extends RESTService {
 
 		// Execute
 		for (RegisterMember r : registerMembers) {
-			Professor p = (Professor) r.getProfessor();
+			Professor p = r.getProfessor();
 			p.setCommitteesCount(Professor.countActiveCommittees(p));
 			p.setEvaluationsCount(Professor.countActiveEvaluations(p));
 		}

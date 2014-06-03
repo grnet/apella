@@ -24,12 +24,8 @@ public class PositionCandidacies {
 	public static interface PositionCandidaciesView {
 	}
 
-	;
-
 	public static interface DetailedPositionCandidaciesView extends PositionCandidaciesView {
 	}
-
-	;
 
 	@Id
 	@GeneratedValue

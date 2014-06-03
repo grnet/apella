@@ -60,7 +60,7 @@
 
 	<target name="compile" description="Compile src to bin">
 		<mkdir dir="${build.dir}" />
-		<javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" debuglevel="lines,vars,source" source="1.6" encoding="UTF-8">
+		<javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" debuglevel="lines,vars,source" encoding="UTF-8">
 			<classpath refid="project.class.path" />
 		</javac>
 	</target>

@@ -24,12 +24,8 @@ public class PositionCommittee {
 	public static interface PositionCommitteeView {
 	}
 
-	;
-
 	public static interface DetailedPositionCommitteeView extends PositionCommitteeView {
 	}
-
-	;
 
 	@Id
 	@GeneratedValue

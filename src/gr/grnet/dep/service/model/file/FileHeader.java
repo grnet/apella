@@ -21,12 +21,8 @@ public class FileHeader implements Serializable {
 	public static interface SimpleFileHeaderView {
 	}
 
-	;
-
 	public static interface DetailedFileHeaderView extends SimpleFileHeaderView {
 	}
-
-	;
 
 	/**
 	 * The persistence ID of the object.

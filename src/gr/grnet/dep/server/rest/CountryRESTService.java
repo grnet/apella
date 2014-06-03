@@ -22,8 +22,7 @@ public class CountryRESTService extends RESTService {
 	 * @return
 	 */
 	@GET
-	@SuppressWarnings("unchecked")
 	public Collection<Country> getAll() {
-		return em.createQuery("from Country c order by c.name, c.code").getResultList();
+		return em.createQuery("from Country c order by c.name, c.code", Country.class).getResultList();
 	}
 }

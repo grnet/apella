@@ -16,6 +16,7 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -458,12 +459,11 @@ public class ReportService {
 			query = query.concat("and p.department.school.institution.id = :institutionId");
 		}
 
-		Query q = em.createQuery(query);
+		TypedQuery<Position> q = em.createQuery(query, Position.class);
 		if (institutionId != null) {
 			q.setParameter("institutionId", institutionId);
 		}
 
-		@SuppressWarnings("unchecked")
 		List<Position> data = q.getResultList();
 		return data;
 	}

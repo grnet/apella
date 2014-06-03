@@ -21,12 +21,8 @@ public class PositionEvaluator implements Serializable {
 	public static interface PositionEvaluatorView {
 	}
 
-	;
-
 	public static interface DetailedPositionEvaluatorView extends PositionEvaluatorView {
 	}
-
-	;
 
 	public static final int MAX_MEMBERS = 2;
 

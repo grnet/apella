@@ -22,12 +22,8 @@ public class PositionComplementaryDocuments {
 	public static interface PositionComplementaryDocumentsView {
 	}
 
-	;
-
 	public static interface DetailedPositionComplementaryDocumentsView extends PositionComplementaryDocumentsView {
 	}
-
-	;
 
 	@Id
 	@GeneratedValue

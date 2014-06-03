@@ -22,8 +22,7 @@ public class SectorRESTService extends RESTService {
 	 * @return
 	 */
 	@GET
-	@SuppressWarnings("unchecked")
 	public Collection<Sector> getAll() {
-		return em.createQuery("from Sector s order by s.areaId, s.subjectId").getResultList();
+		return em.createQuery("from Sector s order by s.areaId, s.subjectId", Sector.class).getResultList();
 	}
 }

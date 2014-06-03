@@ -13,6 +13,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
@@ -75,7 +76,7 @@ public class PositionSearchRESTService extends RESTService {
 						"	or p.sector.id in (:sectorIds) " +
 						")";
 			}
-			Query query = em.createQuery(queryString)
+			TypedQuery<Position> query = em.createQuery(queryString, Position.class)
 					.setParameter("today", today);
 			if (departmentIds.size() > 1 || sectorIds.size() > 1) {
 				query = query
@@ -84,8 +85,7 @@ public class PositionSearchRESTService extends RESTService {
 			}
 
 			// Execute Query
-			@SuppressWarnings("unchecked")
-			List<Position> positions = (List<Position>) query.getResultList();
+			List<Position> positions = query.getResultList();
 
 			// Calculate CanSubmitCandidacy => set false if already submitted
 			if (loggedOn.hasActiveRole(RoleDiscriminator.CANDIDATE)) {
@@ -129,9 +129,9 @@ public class PositionSearchRESTService extends RESTService {
 		}
 		try {
 			Candidate candidate = (Candidate) loggedOnUser.getActiveRole(RoleDiscriminator.CANDIDATE);
-			PositionSearchCriteria criteria = (PositionSearchCriteria) em.createQuery(
+			PositionSearchCriteria criteria = em.createQuery(
 					"from PositionSearchCriteria c " +
-							"where c.candidate.id = :candidateId ")
+							"where c.candidate.id = :candidateId ", PositionSearchCriteria.class)
 					.setParameter("candidateId", candidate.getId())
 					.getSingleResult();
 			return criteria;
@@ -188,7 +188,7 @@ public class PositionSearchRESTService extends RESTService {
 		try {
 			em.createQuery(
 					"from PositionSearchCriteria c " +
-							"where c.candidate.id = :candidateId ")
+							"where c.candidate.id = :candidateId ", PositionSearchCriteria.class)
 					.setParameter("candidateId", candidate.getId())
 					.getSingleResult();
 			throw new RestException(Status.CONFLICT, "already.exists");

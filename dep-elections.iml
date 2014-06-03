@@ -7,8 +7,8 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="wildfly-8.0.0" level="project" />
     <orderEntry type="library" name="ear-lib" level="project" />
+    <orderEntry type="library" name="wildfly-8.1.0" level="project" />
   </component>
 </module>
 

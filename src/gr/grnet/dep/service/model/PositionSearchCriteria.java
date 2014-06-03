@@ -14,12 +14,8 @@ public class PositionSearchCriteria {
 	public static interface PositionSearchCriteriaView {
 	}
 
-	;
-
 	public static interface DetailedPositionSearchCriteriaView extends PositionSearchCriteriaView {
 	}
-
-	;
 
 	@Id
 	@GeneratedValue

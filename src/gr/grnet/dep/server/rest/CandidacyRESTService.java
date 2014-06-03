@@ -21,6 +21,7 @@ import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -67,10 +68,10 @@ public class CandidacyRESTService extends RESTService {
 	public String get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
-			Candidacy candidacy = (Candidacy) em.createQuery(
+			Candidacy candidacy = em.createQuery(
 					"from Candidacy c " +
 							"left join fetch c.proposedEvaluators pe " +
-							"where c.id=:id")
+							"where c.id=:id", Candidacy.class)
 					.setParameter("id", id)
 					.getSingleResult();
 			Candidate candidate = candidacy.getCandidate();
@@ -126,7 +127,7 @@ public class CandidacyRESTService extends RESTService {
 			if (candidate == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.candidate.id");
 			}
-			if (candidate.getUser().getId() != loggedOn.getId()) {
+			if (!candidate.getUser().getId().equals(loggedOn.getId())) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			Position position = em.find(Position.class, candidacy.getCandidacies().getPosition().getId());
@@ -147,7 +148,7 @@ public class CandidacyRESTService extends RESTService {
 				Candidacy existingCandidacy = (Candidacy) em.createQuery(
 						"select c from Candidacy c " +
 								"where c.candidate.id = :candidateId " +
-								"and c.candidacies.position.id = :positionId")
+								"and c.candidacies.position.id = :positionId", Candidacy.class)
 						.setParameter("candidateId", candidate.getId())
 						.setParameter("positionId", position.getId())
 						.getSingleResult();
@@ -205,7 +206,7 @@ public class CandidacyRESTService extends RESTService {
 			}
 			boolean isNew = !existingCandidacy.isPermanent();
 			Candidate candidate = existingCandidacy.getCandidate();
-			if (candidate.getUser().getId() != loggedOn.getId()) {
+			if (!candidate.getUser().getId().equals(loggedOn.getId())) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			Position position = existingCandidacy.getCandidacies().getPosition();
@@ -240,13 +241,13 @@ public class CandidacyRESTService extends RESTService {
 			}
 			List<RegisterMember> newRegisterMembers = new ArrayList<RegisterMember>();
 			if (!newRegisterMemberIds.isEmpty()) {
-				Query query = em.createQuery(
+				TypedQuery<RegisterMember> query = em.createQuery(
 						"select distinct m from Register r " +
 								"join r.members m " +
 								"where r.permanent = true " +
 								"and r.institution.id = :institutionId " +
 								"and m.professor.status = :status " +
-								"and m.id in (:registerIds)")
+								"and m.id in (:registerIds)", RegisterMember.class)
 						.setParameter("institutionId", candidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getId())
 						.setParameter("status", RoleStatus.ACTIVE)
 						.setParameter("registerIds", newRegisterMemberIds);
@@ -501,7 +502,7 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
 			}
 			Candidate candidate = existingCandidacy.getCandidate();
-			if (candidate.getUser().getId() != loggedOn.getId()) {
+			if (!candidate.getUser().getId().equals(loggedOn.getId())) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			Position position = existingCandidacy.getCandidacies().getPosition();
@@ -708,7 +709,7 @@ public class CandidacyRESTService extends RESTService {
 						"where r.permanent = true " +
 						"and r.institution.id = :institutionId " +
 						"and m.professor.status = :status " +
-						"and m.id not in (:committeeMemberIds)")
+						"and m.id not in (:committeeMemberIds)", RegisterMember.class)
 				.setParameter("institutionId", institution.getId())
 				.setParameter("status", RoleStatus.ACTIVE)
 				.setParameter("committeeMemberIds", committeeMemberIds)
@@ -1241,12 +1242,11 @@ public class CandidacyRESTService extends RESTService {
 		}
 
 		// Search
-		@SuppressWarnings("unchecked")
 		List<PositionCandidaciesFile> result = em.createQuery(
 				"select pcf from PositionCandidaciesFile pcf " +
 						"where pcf.deleted = false " +
 						"and pcf.candidacies.id = :pcId " +
-						"and pcf.evaluator.candidacy.id = :cid ")
+						"and pcf.evaluator.candidacy.id = :cid ", PositionCandidaciesFile.class)
 				.setParameter("pcId", existingCandidacies.getId())
 				.setParameter("cid", candidacy.getId())
 				.getResultList();

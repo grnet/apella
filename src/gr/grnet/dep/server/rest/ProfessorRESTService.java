@@ -51,14 +51,13 @@ public class ProfessorRESTService extends RESTService {
 				!professor.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		@SuppressWarnings("unchecked")
 		List<PositionCommitteeMember> committees = em.createQuery(
 				"select pcm from PositionCommitteeMember pcm " +
 						"left join fetch pcm.committee co " +
 						"left join fetch co.position po " +
 						"left join fetch po.phase ph " +
 						"left join fetch ph.candidacies pca " +
-						"where pcm.registerMember.professor.id = :professorId ")
+						"where pcm.registerMember.professor.id = :professorId ", PositionCommitteeMember.class)
 				.setParameter("professorId", professorId)
 				.getResultList();
 		return committees;
@@ -86,14 +85,13 @@ public class ProfessorRESTService extends RESTService {
 				!professor.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		@SuppressWarnings("unchecked")
 		List<PositionEvaluator> evaluations = em.createQuery(
 				"select pe from PositionEvaluator pe " +
 						"left join fetch pe.evaluation ev " +
 						"left join fetch ev.position po " +
 						"left join fetch po.phase ph " +
 						"left join fetch ph.candidacies pca " +
-						"where pe.registerMember.professor.id = :professorId ")
+						"where pe.registerMember.professor.id = :professorId ", PositionEvaluator.class)
 				.setParameter("professorId", professorId)
 				.getResultList();
 		return evaluations;

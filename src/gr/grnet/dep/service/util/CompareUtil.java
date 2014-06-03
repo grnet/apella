@@ -8,8 +8,7 @@ import java.util.TreeSet;
 public class CompareUtil {
 
 	public static boolean equalsIgnoreNull(Object a, Object b) {
-		return a == null ? (b == null ? true : false) : (b == null ? false : a
-				.equals(b));
+		return a == null ? (b == null) : (b == null ? false : a.equals(b));
 	}
 
 	public static <T> boolean compareCollections(Collection<T> collection1, Collection<T> collection2, Comparator<T> comparator) {

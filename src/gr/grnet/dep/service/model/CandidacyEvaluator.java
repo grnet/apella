@@ -23,8 +23,6 @@ public class CandidacyEvaluator implements Serializable {
 	public static interface DetailedCandidacyEvaluatorView {
 	}
 
-	;
-
 	@Id
 	@GeneratedValue
 	private Long id;

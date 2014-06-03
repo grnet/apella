@@ -43,7 +43,7 @@ public class PositionRESTService extends RESTService {
 	private Position getAndCheckPosition(User loggedOn, long positionId) {
 		Position position = null;
 		try {
-			position = (Position) em.createQuery(
+			position = em.createQuery(
 					"from Position p " +
 							"left join fetch p.phases ph " +
 							"left join fetch ph.candidacies ca " +
@@ -51,7 +51,7 @@ public class PositionRESTService extends RESTService {
 							"left join fetch ph.evaluation ev " +
 							"left join fetch ph.nomination no " +
 							"left join fetch ph.complementaryDocuments cd " +
-							"where p.id = :positionId ")
+							"where p.id = :positionId ", Position.class)
 					.setParameter("positionId", positionId)
 					.getSingleResult();
 			for (User assistant : position.getAssistants()) {
@@ -80,14 +80,13 @@ public class PositionRESTService extends RESTService {
 
 			List<Institution> institutions = new ArrayList<Institution>();
 			institutions.addAll(loggedOnUser.getAssociatedInstitutions());
-			@SuppressWarnings("unchecked")
-			List<Position> positions = (List<Position>) em.createQuery(
+			List<Position> positions = em.createQuery(
 					"select distinct p from Position p " +
 							"join fetch p.phase ph " +
 							"join fetch ph.candidacies cs " +
 							"left join fetch p.assistants " +
 							"where p.permanent = true " +
-							"and p.department.school.institution in (:institutions)")
+							"and p.department.school.institution in (:institutions)", Position.class)
 					.setParameter("institutions", institutions)
 					.getResultList();
 
@@ -96,12 +95,11 @@ public class PositionRESTService extends RESTService {
 				loggedOnUser.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) ||
 				loggedOnUser.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT)) {
 
-			@SuppressWarnings("unchecked")
-			List<Position> positions = (List<Position>) em.createQuery(
+			List<Position> positions = em.createQuery(
 					"select p from Position p " +
 							"join fetch p.phase ph " +
 							"join fetch ph.candidacies cs " +
-							"where p.permanent = true ")
+							"where p.permanent = true ", Position.class)
 					.getResultList();
 			return positions;
 		}
@@ -120,11 +118,10 @@ public class PositionRESTService extends RESTService {
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 			Date today = sdf.parse(sdf.format(new Date()));
-			@SuppressWarnings("unchecked")
-			List<Position> positions = (List<Position>) em.createQuery(
+			List<Position> positions = em.createQuery(
 					"from Position p " +
 							"where p.phase.candidacies.closingDate >= :today " +
-							"and p.permanent = true ")
+							"and p.permanent = true ", Position.class)
 					.setParameter("today", today)
 					.getResultList();
 
@@ -267,7 +264,7 @@ public class PositionRESTService extends RESTService {
 									"	and r.discriminator = :discriminator " +
 									"	and u.status = :userStatus " +
 									"	and r.status = :roleStatus " +
-									")")
+									")", User.class)
 							.setParameter("managerIds", managerIds)
 							.setParameter("discriminator", RoleDiscriminator.INSTITUTION_ASSISTANT)
 							.setParameter("userStatus", UserStatus.ACTIVE)
@@ -371,13 +368,13 @@ public class PositionRESTService extends RESTService {
 			Date today = sdf.parse(sdf.format(new Date()));
 			// Execute Query
 			@SuppressWarnings("unchecked")
-			List<Candidate> candidates = (List<Candidate>) em.createQuery(
+			List<Candidate> candidates = em.createQuery(
 					"select distinct(c.candidate) from PositionSearchCriteria c " +
 							"left join c.departments d " +
 							"left join c.sectors s " +
 							"where ((s is null) and (d is not null) and (d.id = :departmentId)) " +
 							"or ((d is null) and (s is not null) and (s.id = :sectorId)) " +
-							"or ((s is not null) and (s.id = :sectorId) and (d is not null) and (d.id = :departmentId))")
+							"or ((s is not null) and (s.id = :sectorId) and (d is not null) and (d.id = :departmentId))", Candidate.class)
 					.setParameter("departmentId", position.getDepartment().getId())
 					.setParameter("sectorId", position.getSector().getId())
 					.getResultList();
@@ -461,7 +458,7 @@ public class PositionRESTService extends RESTService {
 						"	where u.status = :userStatus " +
 						"	and ia.status = :roleStatus " +
 						"	and ia.institution.id = :institutionId  " +
-						")")
+						")", User.class)
 				.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
 				.setParameter("userStatus", UserStatus.ACTIVE)
 				.setParameter("roleStatus", RoleStatus.ACTIVE)

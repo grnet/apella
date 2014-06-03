@@ -18,12 +18,8 @@ public class Register implements Serializable {
 	public static interface RegisterView {
 	}
 
-	;
-
 	public static interface DetailedRegisterView extends RegisterView {
 	}
-
-	;
 
 	@Id
 	@GeneratedValue

@@ -13,8 +13,6 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
-import org.jboss.resteasy.client.ClientRequest;
-import org.jboss.resteasy.client.ClientResponse;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -26,7 +24,9 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import java.net.URLEncoder;
 import java.text.ParseException;
@@ -94,33 +94,23 @@ public class JiraService {
 	private final ObjectMapper mapper = new ObjectMapper();
 
 	private JsonNode doGet(String path) throws Exception {
-		ClientRequest request = new ClientRequest(REST_URL + path);
-		request.accept(MediaType.APPLICATION_JSON);
-		request.header("Authorization", "Basic " + authenticationString());
+		Client client = ClientBuilder.newClient();
 		logger.info("GET REQUEST: " + path);
-		ClientResponse<String> response = request.get(String.class);
-		if (response.getStatus() < 200 || response.getStatus() > 299) {
-			throw new WebApplicationException(response.getStatus());
-		}
-		String json = response.getEntity();
-		JsonNode jsonNode = (json == null) ? mapper.createObjectNode() : mapper.readTree(json);
+		JsonNode jsonNode = client.target(REST_URL + path)
+				.request(MediaType.APPLICATION_JSON)
+				.header("Authorization", "Basic " + authenticationString())
+				.get(JsonNode.class);
 		logger.info("GET RESPONSE: " + path + " " + jsonNode.toString());
 		return jsonNode;
 	}
 
-	private JsonNode doPost(String path, JsonNode data) throws Exception {
-		ClientRequest request = new ClientRequest(REST_URL + path);
-		request.accept(MediaType.APPLICATION_JSON);
-		request.header("Authorization", "Basic " + authenticationString());
-		request.body("application/json", data);
+	private JsonNode doPost(String path, JsonNode data) {
+		Client client = ClientBuilder.newClient();
 		logger.info("POST REQUEST: " + path + " " + data.toString());
-		ClientResponse<String> response = request.post(String.class);
-		if (response.getStatus() < 200 || response.getStatus() > 299) {
-			throw new WebApplicationException(response.getStatus());
-		}
-		String json = response.getEntity();
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode jsonNode = (json == null) ? mapper.createObjectNode() : mapper.readTree(json);
+		JsonNode jsonNode = client.target(REST_URL + path)
+				.request(MediaType.APPLICATION_JSON)
+				.header("Authorization", "Basic " + authenticationString())
+				.post(Entity.json(data), JsonNode.class);
 		logger.info("POST RESPONSE: " + path + " " + jsonNode.toString());
 		return jsonNode;
 	}
@@ -301,7 +291,9 @@ public class JiraService {
 
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	public int synchronizeIssues() throws Exception {
-		List<Long> localIssueIds = em.createQuery("select i.id from JiraIssue i").getResultList();
+		List<Long> localIssueIds = em.createQuery(
+				"select i.id from JiraIssue i", Long.class)
+				.getResultList();
 		List<JiraIssue> remoteIssues = getRemoteIssues(localIssueIds);
 		for (JiraIssue issue : remoteIssues) {
 			jiraService.updateIssue(issue);

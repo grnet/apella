@@ -28,12 +28,8 @@ public class RegisterMember implements Serializable {
 	public static interface RegisterMemberView {
 	}
 
-	;
-
 	public static interface DetailedRegisterMemberView extends RegisterMemberView {
 	}
-
-	;
 
 	private static final Logger log = Logger.getLogger(RegisterMember.class.getName());
 

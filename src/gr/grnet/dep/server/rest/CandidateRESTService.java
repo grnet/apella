@@ -12,6 +12,7 @@ import org.codehaus.jackson.map.annotate.JsonView;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response.Status;
 import java.util.*;
@@ -57,7 +58,7 @@ public class CandidateRESTService extends RESTService {
 		if (open != null) {
 			queryString += " and c.candidacies.closingDate >= :now";
 		}
-		Query query = em.createQuery(queryString)
+		TypedQuery<Candidacy> query = em.createQuery(queryString, Candidacy.class)
 				.setParameter("candidate", candidate);
 
 		if (open != null) {
@@ -65,7 +66,6 @@ public class CandidateRESTService extends RESTService {
 			query.setParameter("now", now);
 		}
 
-		@SuppressWarnings("unchecked")
 		List<Candidacy> retv = query.getResultList();
 		List<Long> candidaciesThatCanAddEvaluators = canAddEvaluators(retv);
 		List<Long> candidaciesThatNominationCommitteeConverged = hasNominationCommitteeConverged(retv);
@@ -85,13 +85,12 @@ public class CandidateRESTService extends RESTService {
 		if (ids.isEmpty()) {
 			return new ArrayList<Long>();
 		}
-		@SuppressWarnings("unchecked")
 		List<Long> data = em.createQuery(
 				"select c.id from Candidacy c " +
 						"join c.candidacies.position.phase.nomination no " +
 						"where no.nominationCommitteeConvergenceDate IS NOT NULL " +
 						"and no.nominationCommitteeConvergenceDate < :now " +
-						"and c.id in (:ids) ")
+						"and c.id in (:ids) ", Long.class)
 				.setParameter("ids", ids)
 				.setParameter("now", new Date())
 				.getResultList();
@@ -106,13 +105,12 @@ public class CandidateRESTService extends RESTService {
 		if (ids.isEmpty()) {
 			return new ArrayList<Long>();
 		}
-		@SuppressWarnings("unchecked")
 		List<Long> data = em.createQuery(
 				"select c.id from Candidacy c " +
 						"join c.candidacies.position.phase.committee co " +
 						"where co.members IS NOT EMPTY " +
 						"and co.candidacyEvalutionsDueDate >= :now " +
-						"and c.id in (:ids) ")
+						"and c.id in (:ids) ", Long.class)
 				.setParameter("ids", ids)
 				.setParameter("now", new Date())
 				.getResultList();

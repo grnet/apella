@@ -27,12 +27,9 @@ public final class FileBody implements Serializable {
 	public static interface SimpleFileBodyView {
 	}
 
-	; // shows a summary view of a FileHeader/FileBody
-
+	// shows a summary view of a FileHeader/FileBody
 	public static interface DetailedFileBodyView extends SimpleFileBodyView {
 	}
-
-	;
 
 	/**
 	 * The persistence ID of the object.

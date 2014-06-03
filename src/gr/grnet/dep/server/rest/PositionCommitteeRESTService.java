@@ -24,6 +24,7 @@ import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -76,11 +77,10 @@ public class PositionCommitteeRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Prepare Query
-		@SuppressWarnings("unchecked")
 		List<Register> registers = em.createQuery(
 				"select r from Register r " +
 						"where r.permanent = true " +
-						"and r.institution.id = :institutionId ")
+						"and r.institution.id = :institutionId ", Register.class)
 				.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
 				.getResultList();
 
@@ -117,14 +117,13 @@ public class PositionCommitteeRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Prepare Query
-		@SuppressWarnings("unchecked")
 		List<RegisterMember> registerMembers = em.createQuery(
 				"select m from RegisterMember m  " +
 						"join m.professor.user.roles r " +
 						"where m.register.permanent = true " +
 						"and m.register.institution.id = :institutionId " +
 						"and m.register.id = :registerId " +
-						"and m.professor.status = :status ")
+						"and m.professor.status = :status ", RegisterMember.class)
 				.setParameter("registerId", registerId)
 				.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
 				.setParameter("status", RoleStatus.ACTIVE)
@@ -161,10 +160,10 @@ public class PositionCommitteeRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCommittee existingCommittee = null;
 		try {
-			existingCommittee = (PositionCommittee) em.createQuery(
+			existingCommittee = em.createQuery(
 					"select pcom from PositionCommittee pcom " +
 							"left join fetch pcom.members pmem " +
-							"where pcom.id = :committeeId")
+							"where pcom.id = :committeeId", PositionCommittee.class)
 					.setParameter("committeeId", committeeId)
 					.getSingleResult();
 		} catch (NoResultException e) {
@@ -286,13 +285,13 @@ public class PositionCommitteeRESTService extends RESTService {
 		List<RegisterMember> newRegisterMembers = new ArrayList<RegisterMember>();
 
 		if (!newCommitteeMemberAsMap.isEmpty()) {
-			Query query = em.createQuery(
+			TypedQuery<RegisterMember> query = em.createQuery(
 					"select distinct m from Register r " +
 							"join r.members m " +
 							"where r.permanent = true " +
 							"and r.institution.id = :institutionId " +
 							"and m.professor.status = :status " +
-							"and m.id in (:registerIds)")
+							"and m.id in (:registerIds)", RegisterMember.class)
 					.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
 					.setParameter("status", RoleStatus.ACTIVE)
 					.setParameter("registerIds", newCommitteeMemberAsMap.keySet());

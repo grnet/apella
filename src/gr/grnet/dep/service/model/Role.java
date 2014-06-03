@@ -26,7 +26,9 @@ import java.util.logging.Logger;
 @Entity
 @XmlRootElement
 @Inheritance(strategy = InheritanceType.JOINED)
-@Table(name = "Roles")
+@Table(name = "Roles", indexes = {
+		@Index(name = "IDX_Roles_discriminator", columnList = "discriminator")
+})
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = As.PROPERTY, property = "discriminator")
 @JsonSubTypes({
 		@JsonSubTypes.Type(value = ProfessorDomestic.class, name = "PROFESSOR_DOMESTIC"),
@@ -48,8 +50,6 @@ public abstract class Role implements Serializable {
 	public static interface DetailedRoleView {
 	}
 
-	;
-
 	public enum RoleDiscriminator {
 		PROFESSOR_DOMESTIC,
 		PROFESSOR_FOREIGN,
@@ -61,15 +61,11 @@ public abstract class Role implements Serializable {
 		ADMINISTRATOR
 	}
 
-	;
-
 	public enum RoleStatus {
 		UNAPPROVED,
 		ACTIVE,
 		INACTIVE
 	}
-
-	;
 
 	@Inject
 	@Transient
@@ -81,9 +77,7 @@ public abstract class Role implements Serializable {
 
 	@Version
 	private int version;
-
 	@Enumerated(value = EnumType.STRING)
-	@org.hibernate.annotations.Index(name = "IDX_Roles_discriminator")
 	@NotNull
 	private RoleDiscriminator discriminator;
 

@@ -20,17 +20,11 @@ public class Position {
 	public static interface PublicPositionView {
 	}
 
-	;
-
 	public static interface PositionView extends PublicPositionView {
 	}
 
-	;
-
 	public static interface DetailedPositionView extends PositionView {
 	}
-
-	;
 
 	public enum PositionStatus {
 		ENTAGMENI,

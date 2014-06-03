@@ -31,12 +31,12 @@ public class SubjectRESTService extends RESTService {
 	@GET
 	@SuppressWarnings("unchecked")
 	public Collection<Subject> get(@QueryParam("query") String query) {
-		List<Subject> result = null;
+		List<Subject> result;
 		if (query == null) {
-			result = em.createQuery("select distinct s from Subject s ")
+			result = em.createQuery("select distinct s from Subject s ", Subject.class)
 					.getResultList();
 		} else {
-			result = em.createQuery("select s from Subject s where s.name like :query")
+			result = em.createQuery("select s from Subject s where s.name like :query", Subject.class)
 					.setParameter("query", query + "%")
 					.getResultList();
 		}
@@ -55,9 +55,9 @@ public class SubjectRESTService extends RESTService {
 	@Path("/{id:[0-9]+}")
 	public Subject get(@PathParam("id") long id) {
 		try {
-			return (Subject) em.createQuery(
+			return em.createQuery(
 					"select i from Subject i " +
-							"where i.id = :id")
+							"where i.id = :id", Subject.class)
 					.setParameter("id", id)
 					.getSingleResult();
 		} catch (NoResultException e) {

@@ -14,7 +14,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Response.Status;
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,9 +32,9 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 	@GET
 	@SuppressWarnings("unchecked")
 	public Collection<InstitutionRegulatoryFramework> getAll() {
-		return (List<InstitutionRegulatoryFramework>) em.createQuery(
+		return em.createQuery(
 				"select i from InstitutionRegulatoryFramework i " +
-						"where i.permanent = true")
+						"where i.permanent = true", InstitutionRegulatoryFramework.class)
 				.getResultList();
 	}
 
@@ -49,9 +48,9 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 	@Path("/{id:[0-9]+}")
 	public InstitutionRegulatoryFramework get(@PathParam("id") long id) {
 		try {
-			return (InstitutionRegulatoryFramework) em.createQuery(
+			return em.createQuery(
 					"select i from InstitutionRegulatoryFramework i " +
-							"where i.id = :id")
+							"where i.id = :id", InstitutionRegulatoryFramework.class)
 					.setParameter("id", id)
 					.getSingleResult();
 		} catch (NoResultException e) {
@@ -82,9 +81,10 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 		}
 		// Validate
 		try {
-			em.createQuery("select irf from InstitutionRegulatoryFramework irf " +
-					"where irf.institution.id = :institutionId " +
-					"and irf.permanent = true ")
+			em.createQuery(
+					"select irf from InstitutionRegulatoryFramework irf " +
+							"where irf.institution.id = :institutionId " +
+							"and irf.permanent = true ", InstitutionRegulatoryFramework.class)
 					.setParameter("institutionId", institution.getId())
 					.getSingleResult();
 			throw new RestException(Status.CONFLICT, "institutionrf.already.exists");

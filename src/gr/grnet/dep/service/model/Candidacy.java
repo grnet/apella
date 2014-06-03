@@ -24,17 +24,11 @@ public class Candidacy {
 	public static interface CandidacyView {
 	}
 
-	;
-
 	public static interface MediumCandidacyView extends CandidacyView {
 	}
 
-	;
-
 	public static interface DetailedCandidacyView extends MediumCandidacyView {
 	}
-
-	;
 
 	@Id
 	@GeneratedValue

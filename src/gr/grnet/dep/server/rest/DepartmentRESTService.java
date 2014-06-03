@@ -10,7 +10,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response.Status;
 import java.util.Collection;
-import java.util.List;
 
 @Path("/department")
 @Stateless
@@ -24,8 +23,8 @@ public class DepartmentRESTService extends RESTService {
 	@GET
 	@SuppressWarnings("unchecked")
 	public Collection<Department> getAll() {
-		return (List<Department>) em.createQuery(
-				"select distinct d from Department d ")
+		return em.createQuery(
+				"select distinct d from Department d ", Department.class)
 				.getResultList();
 	}
 
@@ -39,9 +38,9 @@ public class DepartmentRESTService extends RESTService {
 	@Path("/{id:[0-9][0-9]*}")
 	public Department get(@PathParam("id") long id) {
 		try {
-			return (Department) em.createQuery(
+			return em.createQuery(
 					"select d from Department d " +
-							"where d.id = :id")
+							"where d.id = :id", Department.class)
 					.setParameter("id", id)
 					.getSingleResult();
 		} catch (NoResultException e) {

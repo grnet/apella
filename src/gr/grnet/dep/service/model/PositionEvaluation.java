@@ -25,12 +25,8 @@ public class PositionEvaluation {
 	public static interface PositionEvaluationView {
 	}
 
-	;
-
 	public static interface DetailedPositionEvaluationView extends PositionEvaluationView {
 	}
-
-	;
 
 	@Id
 	@GeneratedValue

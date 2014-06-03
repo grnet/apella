@@ -62,10 +62,10 @@ public class AuthenticationService {
 
 	public User findAccountByUsername(String username) {
 		try {
-			return (User) em.createQuery(
+			return em.createQuery(
 					"from User u " +
 							"left join fetch u.roles rls " +
-							"where u.username = :username")
+							"where u.username = :username", User.class)
 					.setParameter("username", username)
 					.getSingleResult();
 		} catch (NoResultException e) {
@@ -75,10 +75,10 @@ public class AuthenticationService {
 
 	public User findAccountByShibbolethInfo(ShibbolethInformation shibbolethInfo) {
 		try {
-			return (User) em.createQuery(
+			return em.createQuery(
 					"select u from User u " +
 							"left join fetch u.roles rls " +
-							"where u.shibbolethInfo.remoteUser = :remoteUser")
+							"where u.shibbolethInfo.remoteUser = :remoteUser", User.class)
 					.setParameter("remoteUser", shibbolethInfo.getRemoteUser())
 					.getSingleResult();
 		} catch (NoResultException e) {
@@ -88,10 +88,10 @@ public class AuthenticationService {
 
 	public User findAccountByPermanentAuthToken(String permanentAuthToken) {
 		try {
-			return (User) em.createQuery(
+			return em.createQuery(
 					"select u from User u " +
 							"left join fetch u.roles " +
-							"where u.permanentAuthToken = :permanentAuthToken")
+							"where u.permanentAuthToken = :permanentAuthToken", User.class)
 					.setParameter("permanentAuthToken", permanentAuthToken)
 					.getSingleResult();
 		} catch (NoResultException e) {
@@ -101,10 +101,10 @@ public class AuthenticationService {
 
 	public User findAccountByProfessorDomesticData(ProfessorDomesticData data) {
 		try {
-			User u = (User) em.createQuery(
+			User u = em.createQuery(
 					"select u from User u " +
 							"left join fetch u.roles rls " +
-							"where u.contactInfo.email = :email")
+							"where u.contactInfo.email = :email", User.class)
 					.setParameter("email", data.getEmail())
 					.getSingleResult();
 			return u;
@@ -355,9 +355,9 @@ public class AuthenticationService {
 
 	private Institution findInstitutionBySchacHomeOrganization(String schacHomeOrganization) {
 		try {
-			return (Institution) em.createQuery(
+			return em.createQuery(
 					"from Institution i " +
-							"where i.schacHomeOrganization = :schacHomeOrganization ")
+							"where i.schacHomeOrganization = :schacHomeOrganization ", Institution.class)
 					.setParameter("schacHomeOrganization", schacHomeOrganization)
 					.getSingleResult();
 		} catch (NoResultException e) {

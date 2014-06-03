@@ -28,8 +28,8 @@ public class RankRESTService extends RESTService {
 	@SuppressWarnings("unchecked")
 	public Collection<Rank> getAll(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
 		getLoggedOn(authToken);
-		return (List<Rank>) em.createQuery(
-				"select distinct r from Rank r ")
+		return em.createQuery(
+				"select distinct r from Rank r ", Rank.class)
 				.getResultList();
 	}
 
@@ -45,9 +45,9 @@ public class RankRESTService extends RESTService {
 	public Rank get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		getLoggedOn(authToken);
 		try {
-			return (Rank) em.createQuery(
+			return em.createQuery(
 					"select r from Rank r " +
-							"where r.id = :id")
+							"where r.id = :id", Rank.class)
 					.setParameter("id", id)
 					.getSingleResult();
 		} catch (NoResultException e) {
