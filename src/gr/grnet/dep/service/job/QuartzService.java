@@ -14,8 +14,6 @@ import gr.grnet.dep.service.util.DateUtil;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang.time.DateUtils;
 import org.quartz.Scheduler;
-import org.quartz.SchedulerConfigException;
-import org.quartz.SchedulerException;
 import org.quartz.impl.StdSchedulerFactory;
 
 import javax.annotation.PostConstruct;
@@ -38,29 +36,9 @@ import java.util.logging.Logger;
 @Startup
 public class QuartzService {
 
-	@Inject
-	private Logger log;
-
-	@PersistenceContext(unitName = "apelladb")
-	protected EntityManager em;
-
-	@Resource
-	SessionContext sc;
-
-	@EJB
-	MailService mailService;
-
-	@EJB
-	JiraService jiraService;
-
 	private static final String jndiName = "Quartz";
-
 	private static final String propertiesFile = "gr/grnet/dep/service/job/quartz.properties";
-
-	private StdSchedulerFactory schedulerFactory;
-
 	static String savePath;
-
 	private static Logger staticLog = Logger.getLogger(QuartzService.class.getName());
 
 	static {
@@ -72,38 +50,49 @@ public class QuartzService {
 		}
 	}
 
+	@PersistenceContext(unitName = "apelladb")
+	protected EntityManager em;
+	@Resource
+	SessionContext sc;
+	@EJB
+	MailService mailService;
+	@EJB
+	JiraService jiraService;
+	@Inject
+	private Logger log;
+	private StdSchedulerFactory schedulerFactory;
+
 	@PostConstruct
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-	public void createQuartzService() throws SchedulerConfigException {
+	public void createQuartzService() throws IllegalStateException {
 		log.info("Create QuartzService(" + jndiName + ")...");
 		try {
 			Properties properties = loadProperties(propertiesFile);
 			schedulerFactory = new StdSchedulerFactory();
-
 			schedulerFactory.initialize(properties);
-
 			Scheduler scheduler = schedulerFactory.getScheduler();
 			scheduler.start();
 
 		} catch (Exception e) {
 			log.log(Level.SEVERE, "Failed to initialize Scheduler", e);
-			throw new SchedulerConfigException("Failed to initialize Scheduler - ", e);
+			throw new IllegalStateException("Failed to initialize Scheduler - ", e);
 		}
 		log.info("QuartzService(" + jndiName + ") created.");
 	}
 
 	@PreDestroy
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-	public void destroyService() throws SchedulerException {
-		log.info("Destroy QuartzService(" + jndiName + ")...");
-		Scheduler scheduler = schedulerFactory.getScheduler();
-		scheduler.shutdown();
-		schedulerFactory = null;
+	public void destroyService() throws IllegalStateException {
+		try {
+			log.info("Destroy QuartzService(" + jndiName + ")...");
+			Scheduler scheduler = schedulerFactory.getScheduler();
+			scheduler.shutdown();
+			schedulerFactory = null;
+		} catch (Exception e) {
+			log.log(Level.SEVERE, "Failed to initialize Scheduler", e);
+			throw new IllegalStateException("Failed to destroy Scheduler - ", e);
+		}
 		log.info("QuartzService(" + jndiName + ") destroyed.");
-	}
-
-	public Scheduler getSheduler() throws SchedulerException {
-		return schedulerFactory.getScheduler();
 	}
 
 	private Properties loadProperties(String propFileName) throws IOException {

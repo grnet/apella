@@ -39,30 +39,16 @@ import java.util.logging.Logger;
 public class JiraService {
 
 	private static final Logger logger = Logger.getLogger(JiraService.class.getName());
-
-	@PersistenceContext(unitName = "apelladb")
-	protected EntityManager em;
-
-	@EJB
-	JiraService jiraService;
-
-	private ResourceBundle jiraResourceBundle = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-jira", new Locale("el"));
-
 	/**
 	 * username: apella
 	 * password: Test "!@#$%^&*()" || Production: "Pk%81:$/IES/"
 	 */
 
 	private static String PROJECT_KEY;
-
 	private static String REST_URL;
-
 	private static String USERNAME;
-
 	private static String PASSWORD;
-
 	private static String CONFIGURATION;
-
 	private static Configuration conf;
 
 	static {
@@ -79,6 +65,13 @@ public class JiraService {
 		}
 	}
 
+	private final ObjectMapper mapper = new ObjectMapper();
+	@PersistenceContext(unitName = "apelladb")
+	protected EntityManager em;
+	@EJB
+	JiraService jiraService;
+	private ResourceBundle jiraResourceBundle = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-jira", new Locale("el"));
+
 	public String getResourceBundleString(String key, String... args) {
 		String result = jiraResourceBundle.getString(key);
 		if (args != null && (args.length % 2 == 0)) {
@@ -91,8 +84,6 @@ public class JiraService {
 		return result;
 	}
 
-	private final ObjectMapper mapper = new ObjectMapper();
-
 	private JsonNode doGet(String path) throws Exception {
 		Client client = ClientBuilder.newClient();
 		logger.info("GET REQUEST: " + path);
@@ -100,7 +91,7 @@ public class JiraService {
 				.request(MediaType.APPLICATION_JSON)
 				.header("Authorization", "Basic " + authenticationString())
 				.get(JsonNode.class);
-		logger.info("GET RESPONSE: " + path + " " + jsonNode.toString());
+		logger.info("GET RESPONSE: " + path + " SUCCESS");
 		return jsonNode;
 	}
 
@@ -111,7 +102,7 @@ public class JiraService {
 				.request(MediaType.APPLICATION_JSON)
 				.header("Authorization", "Basic " + authenticationString())
 				.post(Entity.json(data), JsonNode.class);
-		logger.info("POST RESPONSE: " + path + " " + jsonNode.toString());
+		logger.info("POST RESPONSE: " + path + " SUCCESS");
 		return jsonNode;
 	}
 
