@@ -1,1 +1,3 @@
-Dependencies: org.apache.commons.configuration
+Dependencies: org.apache.commons.configuration,
+    org.apache.commons.codec
+

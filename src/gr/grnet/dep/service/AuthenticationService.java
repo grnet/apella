@@ -114,7 +114,7 @@ public class AuthenticationService {
 	}
 
 	public User createProfessorDomesticAccount(ShibbolethInformation shibbolethInfo) {
-		// Create User from Shibboleth Fields 
+		// Create User from Shibboleth Fields
 		User u = new User();
 		u.setAuthenticationType(AuthenticationType.SHIBBOLETH);
 		u.setCreationDate(new Date());
@@ -139,7 +139,7 @@ public class AuthenticationService {
 
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public User createProfessorDomesticAccount(ProfessorDomesticData data) {
-		// Create User from Data 
+		// Create User from Data
 		User u = new User();
 		u.setAuthenticationType(AuthenticationType.EMAIL);
 
@@ -419,7 +419,7 @@ public class AuthenticationService {
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA");
 			byte[] hash = md.digest((userId.toString() + System.currentTimeMillis()).getBytes("ISO-8859-1"));
-			return new String(Base64.encodeBase64(hash), "ISO-8859-1");
+			return new String(Base64.encodeBase64(hash, false, true), "ISO-8859-1");
 		} catch (NoSuchAlgorithmException nsae) {
 			throw new EJBException(nsae);
 		} catch (UnsupportedEncodingException uee) {
@@ -442,7 +442,7 @@ public class AuthenticationService {
 			Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
 			sha256_HMAC.init(secretKey);
 			byte[] hash = sha256_HMAC.doFinal(unencoded.getBytes());
-			String token = new String(Base64.encodeBase64(hash), "ISO-8859-1");
+			String token = new String(Base64.encodeBase64(hash, false, true), "ISO-8859-1");
 			return token;
 		} catch (NoSuchAlgorithmException e) {
 			throw new EJBException(e);

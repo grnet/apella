@@ -99,6 +99,7 @@ public class PositionRESTService extends RESTService {
 					"select p from Position p " +
 							"join fetch p.phase ph " +
 							"join fetch ph.candidacies cs " +
+							"left join fetch p.assistants " +
 							"where p.permanent = true ", Position.class)
 					.getResultList();
 			return positions;

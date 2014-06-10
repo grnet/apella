@@ -15,7 +15,6 @@ import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -218,14 +217,14 @@ public class ReportService {
 	}
 
 	private List<Object[]> getRegisterExportData(Long registerId) {
-		@SuppressWarnings("unchecked")
 		List<Object[]> data = em.createQuery(
 				"select rm, " +
 						"(select count(pcm.id) from PositionCommitteeMember pcm where pcm.registerMember.professor.id = rm.professor.id " +
 						"	and pcm.committee.position.phase.status = :statusEPILOGI), " +
 						"(select count(pcm.id) from PositionCommitteeMember pcm where pcm.registerMember.professor.id = rm.professor.id) " +
 						"from RegisterMember rm " +
-						"where rm.register.id = :registerId ")
+						"join fetch rm.professor p " +
+						"where rm.register.id = :registerId ", Object[].class)
 				.setParameter("registerId", registerId)
 				.setParameter("statusEPILOGI", PositionStatus.EPILOGI)
 				.getResultList();
