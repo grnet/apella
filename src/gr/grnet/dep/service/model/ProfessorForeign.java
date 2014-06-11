@@ -3,10 +3,7 @@ package gr.grnet.dep.service.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.inject.Inject;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import javax.xml.bind.annotation.XmlTransient;
 import java.util.logging.Logger;
 
@@ -23,7 +20,10 @@ public class ProfessorForeign extends Professor {
 	@Transient
 	private Logger logger;
 
-	private String institution;
+	@Column(name = "institution")
+	// Different variable name to avoid conflict with variable institution in ProfessorDomestic,
+	// getters and setters are same as column name (institution)
+	private String foreignInstitution;
 
 	@ManyToOne
 	private Country country;
@@ -42,11 +42,11 @@ public class ProfessorForeign extends Professor {
 	}
 
 	public String getInstitution() {
-		return institution;
+		return foreignInstitution;
 	}
 
 	public void setInstitution(String institution) {
-		this.institution = institution;
+		this.foreignInstitution = institution;
 	}
 
 	public Country getCountry() {
@@ -105,7 +105,7 @@ public class ProfessorForeign extends Professor {
 		if (this.country == null) {
 			return true;
 		}
-		if (this.institution == null) {
+		if (this.foreignInstitution == null) {
 			return true;
 		}
 		if (this.rank == null) {

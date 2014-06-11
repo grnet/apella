@@ -12,7 +12,6 @@ import gr.grnet.dep.service.model.system.Notification;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 import gr.grnet.dep.service.util.DateUtil;
 import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.lang.time.DateUtils;
 import org.quartz.Scheduler;
 import org.quartz.impl.StdSchedulerFactory;
 
@@ -156,14 +155,13 @@ public class QuartzService {
 	}
 
 	public int openPositions() {
-		Date now = DateUtils.truncate(new Date(), Calendar.DATE);
-		@SuppressWarnings("unchecked")
+		Date now = DateUtil.removeTime(new Date());
 		List<Position> positions = em.createQuery(
 				"from Position p where " +
 						"p.permanent is true " +
 						"and p.phase.status = :status " +
 						"and p.phase.candidacies.openingDate <= :now " +
-						"and p.phase.candidacies.closingDate > :now")
+						"and p.phase.candidacies.closingDate > :now", Position.class)
 				.setParameter("status", PositionStatus.ENTAGMENI)
 				.setParameter("now", now)
 				.getResultList();
