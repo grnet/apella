@@ -1,7 +1,9 @@
 *~
-/build.properties
 /bin/
-
+/out
 /dependencies
 /.idea
+*/.idea
+dep-elections.iml
+build.properties
 .DS_Store

@@ -191,7 +191,7 @@ public class MailService {
 	public void sendEmail(String aToEmailAddr, String aSubject, String aBody) {
 		try {
 			MimeMessage message = new MimeMessage(mailSession);
-			message.setFrom(new InternetAddress("apella@grnet.gr"));
+			message.setFrom(new InternetAddress("no-reply@apella.grnet.gr"));
 			message.addRecipient(Message.RecipientType.TO, new InternetAddress(aToEmailAddr));
 			message.setSubject(aSubject, "UTF-8");
 
