@@ -28,9 +28,8 @@ public class PdfUtil {
 
 	public static InputStream generateFormaAllagisIM(InstitutionManager im) {
 		try {
-
-			FontFactory.register("arial.ttf");
-			FontFactory.register("arialbd.ttf");
+			FontFactory.register("gr/grnet/dep/service/util/resources/arial.ttf");
+			FontFactory.register("gr/grnet/dep/service/util/resources/arialbd.ttf");
 			Font normalFont = FontFactory.getFont("Arial", BaseFont.IDENTITY_H, BASE_FONT_SIZE);
 			Font boldFont = FontFactory.getFont("Arial", BaseFont.IDENTITY_H, normalFont.getSize(), Font.BOLD);
 			Font largerBoldFont = FontFactory.getFont("Arial", BaseFont.IDENTITY_H, (float) 1.2 * normalFont.getSize(), Font.BOLD);
@@ -223,8 +222,8 @@ public class PdfUtil {
 
 	public static InputStream generateFormaYpopsifiou(Candidate candidate) {
 		try {
-			FontFactory.register("arial.ttf");
-			FontFactory.register("arialbd.ttf");
+			FontFactory.register("gr/grnet/dep/service/util/resources/arial.ttf");
+			FontFactory.register("gr/grnet/dep/service/util/resources/arialbd.ttf");
 			Font normalFont = FontFactory.getFont("Arial", BaseFont.IDENTITY_H, BASE_FONT_SIZE);
 			Font boldFont = FontFactory.getFont("Arial", BaseFont.IDENTITY_H, normalFont.getSize(), Font.BOLD);
 			Font largerBoldFont = FontFactory.getFont("Arial", BaseFont.IDENTITY_H, (float) 1.2 * normalFont.getSize(), Font.BOLD);

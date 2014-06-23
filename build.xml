@@ -20,7 +20,7 @@
 
 	<!-- Build dirs -->
 	<property name="src.dir" value="${basedir}/src" />
-	<property name="build.dir" value="${basedir}/out/production/dep-election" />
+	<property name="build.dir" value="${basedir}/out/production/dep-elections" />
 	<property name="dist.ear" value="${ant.project.name}.ear" />
 
 	<property name="ear.dir" value="${basedir}/ear" />
@@ -83,6 +83,7 @@
 			</zipfileset>
 			<zipfileset dir="${src.dir}">
 				<include name="**/*.properties" />
+                <include name="**/*.ttf" />
 				<include name="**/*.xml" />
 				<include name="**/*.png" />
 				<include name="**/*.jpg" />
