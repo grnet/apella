@@ -13,12 +13,12 @@
 			<tbody>
 			<% _.each(candidacies, function(candidacy) { %>
 				<tr>
-					<td><%= candidacy.snapshot.firstname[App.locale] %></td>
-					<td><%= candidacy.snapshot.lastname[App.locale] %></td>
-					<td><%= candidacy.snapshot.fathername[App.locale] %></td>
+					<td><%- candidacy.snapshot.firstname[App.locale] %></td>
+					<td><%- candidacy.snapshot.lastname[App.locale] %></td>
+					<td><%- candidacy.snapshot.fathername[App.locale] %></td>
 					<td width="96px">
 						<p align="center">
-							<a id="viewCandidacy" href="#candidacy/<%= candidacy.id %>" data-candidacy-id="<%= candidacy.id %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>
+							<a id="viewCandidacy" href="#candidacy/<%- candidacy.id %>" data-candidacy-id="<%- candidacy.id %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>
 						</p>
 					</td>
 				</tr>
@@ -36,22 +36,22 @@
 				<% _.each(candidacy.proposedEvaluators, function(proposedEvaluator, index) { %>
 				<tr>
 					<td width="15%">
-						<%= $.i18n.prop("ProposedEvaluator") %> <%= index + 1 %> :<br/>
-						<i>(<%= candidacy.snapshot.firstname[App.locale] %> <%= candidacy.snapshot.lastname[App.locale] %>)</i>
+						<%= $.i18n.prop("ProposedEvaluator") %> <%- index + 1 %> :<br/>
+						<i>(<%- candidacy.snapshot.firstname[App.locale] %> <%- candidacy.snapshot.lastname[App.locale] %>)</i>
 					</td>
 					<td width="25%">
 						<ul class="unstyled">
-							<li><%= proposedEvaluator.registerMember.professor.user.firstname[App.locale] %> <%= proposedEvaluator.registerMember.professor.user.lastname[App.locale]%></li>
+							<li><%- proposedEvaluator.registerMember.professor.user.firstname[App.locale] %> <%- proposedEvaluator.registerMember.professor.user.lastname[App.locale]%></li>
 							<li><%= $.i18n.prop(proposedEvaluator.registerMember.professor.discriminator) %></li>
 							<% if (proposedEvaluator.registerMember.professor.discriminator === "PROFESSOR_DOMESTIC") { %>
 							<li><%= $.i18n.prop('Department') %>: <%= _.templates.department(proposedEvaluator.registerMember.professor.department) %></li>
 							<% } else { %>
-							<li><%= $.i18n.prop('Institution') %>: <%= proposedEvaluator.registerMember.professor.institution %></li>
+							<li><%= $.i18n.prop('Institution') %>: <%- proposedEvaluator.registerMember.professor.institution %></li>
 							<% } %>
 						</ul>
 					</td>
 					<td>
-						<input type="hidden" name="eisigisiDepYpopsifiouFileList" data-candidacy-evaluator-id="<%= proposedEvaluator.id %>"/>
+						<input type="hidden" name="eisigisiDepYpopsifiouFileList" data-candidacy-evaluator-id="<%- proposedEvaluator.id %>"/>
 					</td>
 				</tr>
 				<% }); %>

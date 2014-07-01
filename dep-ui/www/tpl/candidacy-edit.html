@@ -1,7 +1,7 @@
 <div class="row-fluid">
 	<div class="span12">
 		<h2><%= $.i18n.prop('Candidacy') %>
-			<small><%= permanent ? "" : $.i18n.prop('Unsaved') %></small>
+			<small><%- permanent ? "" : $.i18n.prop('Unsaved') %></small>
 		</h2>
 	</div>
 </div>
@@ -10,25 +10,25 @@
 		<h3><%= $.i18n.prop('Position') %></h3>
 		<dl class="dl-glossary">
 			<dt><%= $.i18n.prop('PositionName') %></dt>
-			<dd><%= candidacies.position.name %></dd>
+			<dd><%- candidacies.position.name %></dd>
 			<dt><%= $.i18n.prop('Department') %></dt>
 			<dd><%= _.templates.department(candidacies.position.department) %></dd>
 			<dt><%= $.i18n.prop('Description') %></dt>
-			<dd><%= candidacies.position.description %></dd>
+			<dd><%- candidacies.position.description %></dd>
 			<dt><%= $.i18n.prop('Subject') %></dt>
-			<dd><% if (!_.isUndefined(candidacies.position.subject)) { %><%= candidacies.position.subject.name %><% } %></dd>
+			<dd><% if (!_.isUndefined(candidacies.position.subject)) { %><%- candidacies.position.subject.name %><% } %></dd>
 			<dt><%= $.i18n.prop('FEK') %></dt>
-			<dd><a target="fek" href="<%= candidacies.position.fek %>"><%= $.i18n.prop('btn_view') %></a></dd>
+			<dd><a target="fek" href="<%- candidacies.position.fek %>"><%= $.i18n.prop('btn_view') %></a></dd>
 			<dt><%= $.i18n.prop('FEKSentDate') %></dt>
-			<dd><%= candidacies.position.fekSentDate %></dd>
+			<dd><%- candidacies.position.fekSentDate %></dd>
 			<dt><%= $.i18n.prop('PositionStatus') %></dt>
 			<dd><%= $.i18n.prop('PositionStatus_' + candidacies.position.phase.clientStatus) %></dd>
 			<dt><%= $.i18n.prop('PositionOpeningDate') %></dt>
-			<dd><%= candidacies.openingDate %></dd>
+			<dd><%- candidacies.openingDate %></dd>
 			<dt><%= $.i18n.prop('PositionClosingDate') %></dt>
-			<dd><%= candidacies.closingDate %></dd>
+			<dd><%- candidacies.closingDate %></dd>
 			<dt><%= $.i18n.prop('More') %></dt>
-			<dd><a id="viewPosition" href="#position/<%= candidacies.position.id %>"><%= candidacies.position.name %></a></dd>
+			<dd><a id="viewPosition" href="#position/<%- candidacies.position.id %>"><%- candidacies.position.name %></a></dd>
 		</dl>
 	</div>
 </div>
@@ -37,14 +37,14 @@
 		<h3><%= $.i18n.prop('Candidate') %></h3>
 		<dl class="dl-glossary">
 			<dt><%= $.i18n.prop('Name') %></dt>
-			<dd><%= snapshot.firstname[App.locale] %></dd>
+			<dd><%- snapshot.firstname[App.locale] %></dd>
 			<dt><%= $.i18n.prop('Surname') %></dt>
-			<dd><%= snapshot.lastname[App.locale] %></dd>
+			<dd><%- snapshot.lastname[App.locale] %></dd>
 			<dt><%= $.i18n.prop('FatherName') %></dt>
-			<dd><%= snapshot.fathername[App.locale] %></dd>
+			<dd><%- snapshot.fathername[App.locale] %></dd>
 			<% if (snapshot.institutionString) { %>
 			<dt><%= $.i18n.prop('Institution') %></dt>
-			<dd><%= snapshot.institutionString %></dd>
+			<dd><%- snapshot.institutionString %></dd>
 			<% } %>
 			<% if (snapshot.department) { %>
 			<dt><%= $.i18n.prop('Department') %></dt>
@@ -52,19 +52,19 @@
 			<% } %>
 			<% if (snapshot.rank) { %>
 			<dt><%= $.i18n.prop('Rank') %></dt>
-			<dd><%= snapshot.rank.name[App.locale] %></dd>
+			<dd><%- snapshot.rank.name[App.locale] %></dd>
 			<% } %>
 			<% if (snapshot.subject) { %>
 			<dt><%= $.i18n.prop('Subject') %></dt>
-			<dd><%= snapshot.subject.name %></dd>
+			<dd><%- snapshot.subject.name %></dd>
 			<% } %>
 			<% if (snapshot.fek) { %>
 			<dt><%= $.i18n.prop('FEK') %></dt>
-			<dd><%= snapshot.fek %></dd>
+			<dd><%- snapshot.fek %></dd>
 			<% } %>
 			<% if (snapshot.fekSubject) { %>
 			<dt><%= $.i18n.prop('FEKSubject') %></dt>
-			<dd><%= snapshot.fekSubject.name %></dd>
+			<dd><%- snapshot.fekSubject.name %></dd>
 			<% } %>
 			<dt><%= $.i18n.prop('BiografikoFile') %></dt>
 			<dd>
@@ -115,7 +115,7 @@
 
 					<div class="controls">
 						<span class="help-inline">
-							<%= candidacyEvalutionsDueDate || $.i18n.prop('undefined') %>
+							<%- candidacyEvalutionsDueDate || $.i18n.prop('undefined') %>
 						</span>
 					</div>
 				</div>

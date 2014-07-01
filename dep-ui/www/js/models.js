@@ -241,6 +241,71 @@ define([
 			return xhr;
 		},
 
+        logout: function (key, val, options) {
+            var attrs, success, xhr, attributes = this.attributes;
+
+            // Handle both `"key", value` and `{key: value}` -style
+            // arguments.
+            if (key == null || typeof key === 'object') {
+                attrs = key;
+                options = val;
+            } else {
+                (attrs = {})[key] = val;
+            }
+
+            // If we're not waiting and attributes exist, save acts as
+            // `set(attr).save(null, opts)`.
+            if (attrs && (!options || !options.wait) && !this.set(attrs, options)) {
+                return false;
+            }
+
+            options = _.extend({
+                validate: true
+            }, options);
+
+            // Do not persist invalid models.
+            if (!this._validate(attrs, options)) {
+                return false;
+            }
+
+            // Set temporary attributes if `{wait: true}`.
+            if (attrs && options.wait) {
+                this.attributes = _.extend({}, attributes, attrs);
+            }
+
+            // After a successful server-side save, the client is
+            // (optionally)
+            // updated with the server-side state.
+            if (options.parse === void 0) {
+                options.parse = true;
+            }
+            success = options.success;
+            options.success = function (model, resp, options) {
+                // Ensure attributes are restored during synchronous saves.
+                model.attributes = attributes;
+                var serverAttrs = model.parse(resp, options);
+                if (options.wait) {
+                    serverAttrs = _.extend(attrs || {}, serverAttrs);
+                }
+                if (_.isObject(serverAttrs) && !model.set(serverAttrs, options)) {
+                    return false;
+                }
+                if (success) {
+                    success(model, resp, options);
+                }
+            };
+
+            // Finish configuring and sending the Ajax request.
+            xhr = this.sync("logout", this, options);
+
+            // Restore attributes.
+            if (attrs && options.wait) {
+                this.attributes = attributes;
+            }
+
+            return xhr;
+        },
+
 		status: function (key, val, options) {
 			var attrs, success, xhr, attributes = this.attributes;
 
@@ -651,6 +716,44 @@ define([
 					xhr = options.xhr = Backbone.ajax(_.extend(params, options));
 					model.trigger('request', model, xhr, options);
 					return xhr;
+
+                case "logout":
+                    // Default options, unless specified.
+                    options || (options = {});
+                    options = options || {};
+                    params = {
+                        type: 'PUT',
+                        dataType: 'json',
+                        data: {}
+                    };
+                    // Ensure that we have a URL.
+                    if (!options.url) {
+                        if (model.url) {
+                            //params.url = (_.isFunction(model.url) ? model.url() : model.url) + "/logout";
+                            params.url = model.urlRoot + "/logout";
+                        } else {
+                            urlError();
+                        }
+                    }
+                    success = options.success;
+                    options.success = function (resp) {
+                        if (success) {
+                            success(model, resp, options);
+                        }
+                        model.trigger('sync', model, resp, options);
+                    };
+                    error = options.error;
+                    options.error = function (xhr) {
+                        if (error) {
+                            error(model, xhr, options);
+                        }
+                        model.trigger('error', model, xhr, options);
+                    };
+                    // Make the request, allowing the user to override any Ajax
+                    // options.
+                    xhr = options.xhr = Backbone.ajax(_.extend(params, options));
+                    model.trigger('request', model, xhr, options);
+                    return xhr;
 
 				case "status":
 					// Default options, unless specified.

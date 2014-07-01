@@ -27,32 +27,32 @@
 		</td>
 		<td width="1px">
 		<% if (_.isEqual(member.access, "READ_FULL")) { %>
-			<a href="#user/<%= member.registerMember.professor.user.id %>" target="user"><%= member.registerMember.professor.user.id %> </a>
+			<a href="#user/<%- member.registerMember.professor.user.id %>" target="user"><%- member.registerMember.professor.user.id %> </a>
 		<% } else { %>
-			<%= member.registerMember.professor.user.id %>
+			<%- member.registerMember.professor.user.id %>
 		<% } %>
 		</td>
-		<td><%= member.external ? $.i18n.prop("RegisterMemberExternal") : $.i18n.prop("RegisterMemberInternal") %></td>
-		<td><%= member.registerMember.professor.user.firstname[App.locale] %></td>
-		<td><%= member.registerMember.professor.user.lastname[App.locale] %></td>
+		<td><%- member.external ? $.i18n.prop("RegisterMemberExternal") : $.i18n.prop("RegisterMemberInternal") %></td>
+		<td><%- member.registerMember.professor.user.firstname[App.locale] %></td>
+		<td><%- member.registerMember.professor.user.lastname[App.locale] %></td>
 		<td><%= $.i18n.prop(member.registerMember.professor.discriminator) %></td>
 		<td>
 			<% if (_.isEqual(member.registerMember.professor.discriminator, 'PROFESSOR_FOREIGN')) { %>
-			<%= member.registerMember.professor.institution %>
+			<%- member.registerMember.professor.institution %>
 			<% } else { %>
 			<%= _.templates.department(member.registerMember.professor.department) %>
 			<% } %>
 		</td>
-		<td><%= member.registerMember.register.subject.name %></td>
+		<td><%- member.registerMember.register.subject.name %></td>
 	</tr>
 	<% }); %>
 	</tbody>
 </table>
 <dl class="dl-glossary">
 	<dt><%= $.i18n.prop('CandidacyEvalutionsDueDate') %></dt>
-	<dd><%= candidacyEvalutionsDueDate %></dd>
+	<dd><%- candidacyEvalutionsDueDate %></dd>
 	<dt><%= $.i18n.prop('CommitteeMeetingDate') %></dt>
-	<dd><%= committeeMeetingDate %></dd>
+	<dd><%- committeeMeetingDate %></dd>
 	<dt><%= $.i18n.prop('PraktikoSynedriasisEpitropisGiaAksiologitesFile') %></dt>
 	<dd>
 		<div id="praktikoSynedriasisEpitropisGiaAksiologitesFile"></div>

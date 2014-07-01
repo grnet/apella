@@ -1,29 +1,29 @@
 <tr id="positionCommitteeMember">
 	<td width="1px" align="right">
-		<%= index %>
+		<%- index %>
 	</td>
 	<td width="1px">
-		<input type="hidden" name="registerMemberId" value="<%= registerMember.id %>">
+		<input type="hidden" name="registerMemberId" value="<%- registerMember.id %>">
 		<%= $.i18n.prop("PositionCommitteeMemberType" + type) %>
 	</td>
-	<td><%= registerMember.external ? $.i18n.prop("RegisterMemberExternal") : $.i18n.prop("RegisterMemberInternal") %></td>
+	<td><%- registerMember.external ? $.i18n.prop("RegisterMemberExternal") : $.i18n.prop("RegisterMemberInternal") %></td>
 	<td width="1px">
-		<a href="#user/<%= registerMember.professor.user.id %>" target="user"><%= registerMember.professor.user.id %> </a>
+		<a href="#user/<%- registerMember.professor.user.id %>" target="user"><%- registerMember.professor.user.id %> </a>
 	</td>
-	<td><%= registerMember.professor.user.firstname[App.locale] %></td>
-	<td><%= registerMember.professor.user.lastname[App.locale] %></td>
+	<td><%- registerMember.professor.user.firstname[App.locale] %></td>
+	<td><%- registerMember.professor.user.lastname[App.locale] %></td>
 	<td><%= $.i18n.prop(registerMember.professor.discriminator) %></td>
 	<td>
 		<% if (_.isEqual(registerMember.professor.discriminator, 'PROFESSOR_FOREIGN')) { %>
-		<%= registerMember.professor.institution %>
+		<%- registerMember.professor.institution %>
 		<% } else { %>
 		<%= _.templates.department(registerMember.professor.department) %>
 		<% } %>
 	</td>
-	<td><%= registerMember.register.subject.name %></td>
+	<td><%- registerMember.register.subject.name %></td>
 	<td>
 		<div class="btn-group">
-			<a id="removeMember" class="btn btn-small btn-danger" data-register-member-id="<%= registerMember.id %>" rel="tooltip" title="<%= $.i18n.prop('btn_remove_member') %>"><i class="icon-remove-circle icon-white"></i></a>
+			<a id="removeMember" class="btn btn-small btn-danger" data-register-member-id="<%- registerMember.id %>" rel="tooltip" title="<%= $.i18n.prop('btn_remove_member') %>"><i class="icon-remove-circle icon-white"></i></a>
 		</div>
 	</td>
 </tr>

@@ -8,7 +8,7 @@
 			<br/>
 			<% _.each(roles, function(role) { %>
 			<p>
-				<a href="#profile=<%= role %>" class="btn btn-inverse btn-block"><%= $.i18n.prop(role) %></a>
+				<a href="#profile=<%- role %>" class="btn btn-inverse btn-block"><%= $.i18n.prop(role) %></a>
 			</p>
 			<% }); %>
 		</div>

@@ -14,14 +14,14 @@
 			<tbody>
 			<% _.each(issues, function(issue) { %>
 			<tr>
-				<td><%= issue.updated %></td>
-				<td><%= issue.key %></td>
-				<td><%= issue.summary %></td>
+				<td><%- issue.updated %></td>
+				<td><%- issue.key %></td>
+				<td><%- issue.summary %></td>
 				<td><%= $.i18n.prop("IssueStatus_" + issue.status) %></td>
 				<td><%= $.i18n.prop("IssueType_" + issue.type) %></td>
 				<td width="100px">
 					<p align="center">
-						<a id="select" data-issue-id="<%= issue.id %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>
+						<a id="select" data-issue-id="<%- issue.id %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>
 					</p>
 				</td>
 			</tr>

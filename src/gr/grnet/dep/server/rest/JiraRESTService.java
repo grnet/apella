@@ -61,6 +61,7 @@ public class JiraRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
+			issue.sanitize();
 			issue.setUser(loggedOn);
 			issue.setReporter(null);
 			JiraIssue createdIssue = jiraService.createIssue(issue);
@@ -79,6 +80,7 @@ public class JiraRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
+			issue.sanitize();
 			issue.setReporter(loggedOn.getUsername());
 			JiraIssue createdIssue = jiraService.createRemoteIssue(issue);
 			return createdIssue;
@@ -91,6 +93,7 @@ public class JiraRESTService extends RESTService {
 	@Path("/public")
 	public JiraIssue createPublicIssue(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, JiraIssue issue) {
 		try {
+			issue.sanitize();
 			issue.setReporter(null);
 			JiraIssue createdIssue = jiraService.createRemoteIssue(issue);
 			return createdIssue;

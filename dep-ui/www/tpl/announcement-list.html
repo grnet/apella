@@ -1,7 +1,7 @@
 <ul>
 <% _.each(announcements, function(announcement) { %>
 	<li>
-		<p><%= announcement.text %> <a href="<%= announcement.url %>"><%= $.i18n.prop('ClickForMore') %></a></p>
+		<p><%- announcement.text %> <a href="<%- announcement.url %>"><%= $.i18n.prop('ClickForMore') %></a></p>
 	</li>
 <% }); %>
 </ul>

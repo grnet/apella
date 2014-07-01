@@ -4,13 +4,13 @@
 		<div class="control-group">
 			<label class="control-label" for="name"><%= $.i18n.prop('PositionID') %>:</label>
 			<div class="controls">
-				<span class="input-xlarge uneditable-input"><%= App.utils.formatPositionID(id) %></span>
+				<span class="input-xlarge uneditable-input"><%- App.utils.formatPositionID(id) %></span>
 			</div>
 		</div>
 		<div class="control-group">
 			<label class="control-label" for="name"><%= $.i18n.prop('PositionName') %>:</label>
 			<div class="controls">
-				<input class="input-xlarge" type="text" name="name" value="<%= name %>" />
+				<input class="input-xlarge" type="text" name="name" value="<%- name %>" />
 			</div>
 		</div>
 		<div class="control-group">
@@ -22,13 +22,13 @@
 		<div class="control-group">
 			<label class="control-label" for="description"><%= $.i18n.prop('Description') %>:</label>
 			<div class="controls">
-				<textarea class="input-xlarge" name="description"><%= description %></textarea>
+				<textarea class="input-xlarge" name="description"><%- description %></textarea>
 			</div>
 		</div>
 		<div class="control-group">
 			<label class="control-label" for="subject"><%= $.i18n.prop('Subject') %>:</label>
 			<div class="controls">
-				<textarea class="input-xlarge" name="subject" class="edit"><% if (!_.isUndefined(subject)) { %><%= subject.name %><% } %></textarea>
+				<textarea class="input-xlarge" name="subject" class="edit"><% if (!_.isUndefined(subject)) { %><%- subject.name %><% } %></textarea>
 			</div>
 		</div>
 		<div class="control-group">
@@ -41,15 +41,15 @@
 		<div class="control-group">
 			<label class="control-label" for="fek"><%= $.i18n.prop('FEK') %>:</label>
 			<div class="controls">
-				<input class="input-xlarge" name="fek" type="text" value="<%= fek %>" />
+				<input class="input-xlarge" name="fek" type="text" value="<%- fek %>" />
 				<br/>
-				<a href="<%= fek %>" target="external"><%= fek %></a>
+				<a href="<%- fek %>" target="external"><%- fek %></a>
 			</div>
 		</div>
 		<div class="control-group">
 			<label class="control-label" for="fekSentDate"><%= $.i18n.prop('FEKSentDate') %>:</label>
 			<div class="controls">
-				<input class="input-xlarge" name="fekSentDate" type="text" data-input-type="date" value="<%= fekSentDate %>" />
+				<input class="input-xlarge" name="fekSentDate" type="text" data-input-type="date" value="<%- fekSentDate %>" />
 			</div>
 		</div>
 		<div class="control-group">
@@ -61,13 +61,13 @@
 		<div class="control-group">
 			<label class="control-label" for="openingDate"><%= $.i18n.prop('PositionOpeningDate') %>:</label>
 			<div class="controls">
-				<input class="input-xlarge" name="openingDate" type="text" data-input-type="date" value="<%= phase.candidacies.openingDate %>" />
+				<input class="input-xlarge" name="openingDate" type="text" data-input-type="date" value="<%- phase.candidacies.openingDate %>" />
 			</div>
 		</div>
 		<div class="control-group">
 			<label class="control-label" for=closingDate><%= $.i18n.prop('PositionClosingDate') %>:</label>
 			<div class="controls">
-				<input class="input-xlarge" name="closingDate" type="text" data-input-type="date" value="<%= phase.candidacies.closingDate %>" />
+				<input class="input-xlarge" name="closingDate" type="text" data-input-type="date" value="<%- phase.candidacies.closingDate %>" />
 			</div>
 		</div>
 		<div class="control-group">

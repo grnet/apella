@@ -15,19 +15,19 @@
 <tr>
 		<td>
 	<% if (withMetadata && file.name) { %>
-			<a href='<%= file.currentBody.url %>' target="viewfile"><%= file.name %>, (<%= file.currentBody.originalFilename %>)</a>
+			<a href='<%- file.currentBody.url %>' target="viewfile"><%- file.name %>, (<%- file.currentBody.originalFilename %>)</a>
 	<% } else { %>
-			<a href='<%= file.currentBody.url %>' target="viewfile"><%= file.currentBody.originalFilename %></a>
+			<a href='<%- file.currentBody.url %>' target="viewfile"><%- file.currentBody.originalFilename %></a>
 	<% } %>	
 		</td>
 		<td>
-			<%= App.utils.formatFileSize(file.currentBody.fileSize) %>
+			<%- App.utils.formatFileSize(file.currentBody.fileSize) %>
 		</td>
 		<td>
-			<%= file.currentBody.date %>
+			<%- file.currentBody.date %>
 		</td>
 	<% if (withMetadata) { %>
-		<td><%= file.description %></td>
+		<td><%- file.description %></td>
 	<% } %>
 <% } %>
 <% }); %>

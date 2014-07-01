@@ -13,7 +13,7 @@
 						<span class="help-block"><%= $.i18n.prop('Instructions_ShibbolethRegistration') %></span>
 
 						<div class="controls">
-							<a href="/dep/shibboleth/login?nextURL=<%= window.location.protocol + '//' + window.location.host + '/apella.html' %>" class="btn btn-success"><%=
+							<a href="/dep/shibboleth/login?nextURL=<%- window.location.protocol + '//' + window.location.host + '/apella.html' %>" class="btn btn-success"><%-
 								$.i18n.prop('btn_shibbolethLogin') %></a>
 						</div>
 					</div>
@@ -116,7 +116,7 @@
 				<fieldset>
 					<legend><%= $.i18n.prop('ContactInformation') %></legend>
 					<div class="control-group">
-						<label class="control-label" for="email"><%= _.isEqual(discriminator, "PROFESSOR_FOREIGN") ? $.i18n.prop('InstitutionEmail') : $.i18n.prop('Email')
+						<label class="control-label" for="email"><%- _.isEqual(discriminator, "PROFESSOR_FOREIGN") ? $.i18n.prop('InstitutionEmail') : $.i18n.prop('Email')
 							%>:</label>
 
 						<div class="controls">

@@ -11,13 +11,13 @@
 	<tbody>
 <% _.each(candidacies, function(candidacy) { %>
 		<tr>
-			<td><%= candidacy.snapshot.firstname[App.locale] %></td>
-			<td><%= candidacy.snapshot.lastname[App.locale] %></td>
-			<td><%= candidacy.snapshot.fathername[App.locale] %></td>
+			<td><%- candidacy.snapshot.firstname[App.locale] %></td>
+			<td><%- candidacy.snapshot.lastname[App.locale] %></td>
+			<td><%- candidacy.snapshot.fathername[App.locale] %></td>
 			<td width="96px">
 			<% if (candidacy.allowedToSee) { %>
 				<p align="center">
-					<a id="viewCandidacy" href="#candidacy/<%= candidacy.id %>" data-candidacy-id="<%= candidacy.id %>"><%= $.i18n.prop('btn_view') %></a>
+					<a id="viewCandidacy" href="#candidacy/<%- candidacy.id %>" data-candidacy-id="<%- candidacy.id %>"><%= $.i18n.prop('btn_view') %></a>
 				</p>
 			<% } %>
 			</td>

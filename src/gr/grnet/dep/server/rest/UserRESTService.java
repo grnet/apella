@@ -42,9 +42,6 @@ public class UserRESTService extends RESTService {
 	@Inject
 	private Logger log;
 
-	@EJB
-	AuthenticationService authenticationService;
-
 	@GET
 	@JsonView({UserView.class})
 	public Collection<User> getAll(
@@ -539,6 +536,18 @@ public class UserRESTService extends RESTService {
 					.build();
 		} catch (ServiceException e) {
 			throw new RestException(Status.UNAUTHORIZED, e.getErrorKey());
+		}
+
+	}
+
+	@PUT
+	@Path("/logout")
+	public Response logout(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
+		try {
+			authenticationService.logout(authToken);
+			return Response.noContent().build();
+		} catch (ServiceException e) {
+			throw new RestException(Status.NOT_FOUND, e.getErrorKey());
 		}
 
 	}

@@ -5,10 +5,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.JiraService;
-import gr.grnet.dep.service.MailService;
-import gr.grnet.dep.service.ReportService;
-import gr.grnet.dep.service.UtilityService;
+import gr.grnet.dep.service.*;
+import gr.grnet.dep.service.exceptions.ServiceException;
 import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
@@ -62,6 +60,9 @@ public class RESTService {
 
 	@Context
 	protected Providers providers;
+
+	@EJB
+	AuthenticationService authenticationService;
 
 	@EJB
 	MailService mailService;
@@ -130,21 +131,10 @@ public class RESTService {
 	 */
 
 	protected User getLoggedOn(String authToken) throws RestException {
-		if (authToken == null) {
-			throw new RestException(Status.UNAUTHORIZED, "login.missing.token");
-		}
 		try {
-			User user = em.createQuery(
-					"from User u " +
-							"left join fetch u.roles " +
-							"where u.status = :status " +
-							"and u.authToken = :authToken", User.class)
-					.setParameter("status", UserStatus.ACTIVE)
-					.setParameter("authToken", authToken)
-					.getSingleResult();
-			return user;
-		} catch (NoResultException e) {
-			throw new RestException(Status.UNAUTHORIZED, "login.invalid.token");
+			return authenticationService.getLoggedOn(authToken);
+		} catch (ServiceException e) {
+			throw new RestException(Status.UNAUTHORIZED, e.getMessage());
 		}
 	}
 

@@ -13,14 +13,14 @@
 	<tbody>
 		<% _.each(evaluations, function(evaluator) { %>
 		<tr>
-			<td><%= App.utils.formatPositionID(evaluator.evaluation.position.id) %></td>
+			<td><%- App.utils.formatPositionID(evaluator.evaluation.position.id) %></td>
 			<td>
-				<a id="select" data-position-id="<%= evaluator.evaluation.position.id %>" href="#position/<%= evaluator.evaluation.position.id %>"><%= evaluator.evaluation.position.name %></a>
+				<a id="select" data-position-id="<%- evaluator.evaluation.position.id %>" href="#position/<%- evaluator.evaluation.position.id %>"><%- evaluator.evaluation.position.name %></a>
 			</td>
 			<td><%= _.templates.department(evaluator.evaluation.position.department) %></td>
-			<td><%= evaluator.evaluation.position.description %></td>
-			<td><%= evaluator.evaluation.position.subject.name %></td>
-			<td><%= evaluator.evaluation.position.fek %>, <%= evaluator.evaluation.position.fekSentDate %></td>
+			<td><%- evaluator.evaluation.position.description %></td>
+			<td><%- evaluator.evaluation.position.subject.name %></td>
+			<td><%- evaluator.evaluation.position.fek %>, <%- evaluator.evaluation.position.fekSentDate %></td>
 			<td><%= $.i18n.prop('PositionStatus_' + evaluator.evaluation.position.phase.clientStatus) %></td>
 		</tr>
 		<% }); %>

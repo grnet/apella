@@ -1,12 +1,12 @@
 <form name="registerForm" onsubmit="return false">
 	<fieldset>
-		<legend><b><%= $.i18n.prop('Register') %>:</b> <%= institution.name[App.locale] %></legend>
-		<input type="hidden" name="institution" value="<%= institution.id %>"/>
+		<legend><b><%= $.i18n.prop('Register') %>:</b> <%- institution.name[App.locale] %></legend>
+		<input type="hidden" name="institution" value="<%- institution.id %>"/>
 
 		<div class="row-fluid">
 			<div class="span12" id="registerMembers">
 				<label for="register-subject"><%= $.i18n.prop('Subject') %>:</label>
-				<input type="text" name="subject" class="input-block-level" value="<%= subject.name %>"/>
+				<input type="text" name="subject" class="input-block-level" value="<%- subject.name %>"/>
 			</div>
 		</div>
 		<br/>

@@ -14,16 +14,16 @@
 	<tbody>
 		<% _.each(users, function(user) { %>
 		<tr>
-			<td><%= user.id %></td>
-			<td><%= user.firstname[App.locale] %></td>
-			<td><%= user.lastname[App.locale]%></td>
-			<td><%= user.username %></td>
+			<td><%- user.id %></td>
+			<td><%- user.firstname[App.locale] %></td>
+			<td><%- user.lastname[App.locale]%></td>
+			<td><%- user.username %></td>
 			<td><%= $.i18n.prop('status' + user.status) %></td>
 			<td><%= user.roleInfo %></td>
 			<td><%= $.i18n.prop('status' + user.primaryRole.status) %></td>
 			<td width="100px">
 				<p align="center">
-					<a href="#user/<%= user.id %>" target="user"><%= $.i18n.prop('btn_view') %></a>
+					<a href="#user/<%- user.id %>" target="user"><%= $.i18n.prop('btn_view') %></a>
 				</p>
 			</td>
 		</tr>

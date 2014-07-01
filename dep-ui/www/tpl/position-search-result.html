@@ -15,18 +15,18 @@
 	<tbody>
 		<% _.each(positions, function(position) { %>
 		<tr>
-			<td><%= position.name %></td>
+			<td><%- position.name %></td>
 			<td><%= _.templates.department(position.department) %></td>
-			<td><%= position.description %></td>
-			<td><%= position.subject.name %></td>
-			<td><a href="<%= position.fek %>" target="external"><%= $.i18n.prop("FEK") %></a>, <%= position.fekSentDate %></td>
+			<td><%- position.description %></td>
+			<td><%- position.subject.name %></td>
+			<td><a href="<%- position.fek %>" target="external"><%= $.i18n.prop("FEK") %></a>, <%- position.fekSentDate %></td>
 			<td><%= $.i18n.prop('PositionStatus_' + position.phase.clientStatus) %></td>
-			<td><%= position.phase.candidacies.openingDate %></td>
-			<td><%= position.phase.candidacies.closingDate %></td>
+			<td><%- position.phase.candidacies.openingDate %></td>
+			<td><%- position.phase.candidacies.closingDate %></td>
 			<td width="96px">
 				<% if (position.canSubmitCandidacy) { %> 
 				<p align="center">
-					<a id="selectPosition" data-position-id="<%= position.id %>" class="btn btn-small btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_create_candidacy') %></a>
+					<a id="selectPosition" data-position-id="<%- position.id %>" class="btn btn-small btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_create_candidacy') %></a>
 				</p>
 				<% } %>
 			</td>

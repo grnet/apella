@@ -13,8 +13,8 @@
 		<tbody>
 			<% _.each(candidacies, function(candidacy) { %>
 			<tr>
-				<td><%= candidacy.snapshot.firstname[App.locale] %> <%= candidacy.snapshot.lastname[App.locale] %></td>
-				<td><%= candidacy.candidacies.position.name %></td>
+				<td><%- candidacy.snapshot.firstname[App.locale] %> <%- candidacy.snapshot.lastname[App.locale] %></td>
+				<td><%- candidacy.candidacies.position.name %></td>
 				<td><%= _.templates.department(candidacy.candidacies.position.department) %></td>
 			</tr>
 			<% }); %>

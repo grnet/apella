@@ -5,7 +5,7 @@
 		<div id="prosklisiKosmitoraFile"></div>
 	</dd>
 	<dt><%= $.i18n.prop('NominationCommitteeConvergenceDate') %></dt>
-	<dd><%= nominationCommitteeConvergenceDate %></dd>
+	<dd><%- nominationCommitteeConvergenceDate %></dd>
 	<dt><%= $.i18n.prop('PraktikoEpilogisFile') %></dt>
 	<dd>
 		<div id="praktikoEpilogisFile"></div>
@@ -19,12 +19,12 @@
 		<div id="praksiDiorismouFile"></div>
 	</dd>
 	<dt><%= $.i18n.prop('NominationFEK') %></dt>
-	<dd><%= nominationFEK %></dd>
+	<dd><%- nominationFEK %></dd>
 	
 	<dt><%= $.i18n.prop('NominatedCandidacy') %></dt>
-	<dd><%= _.isUndefined(nominatedCandidacy) ? undefined : nominatedCandidacy.snapshot.firstname[App.locale] + " " + nominatedCandidacy.snapshot.lastname[App.locale] %></dd>
+	<dd><%- _.isUndefined(nominatedCandidacy) ? undefined : nominatedCandidacy.snapshot.firstname[App.locale] + " " + nominatedCandidacy.snapshot.lastname[App.locale] %></dd>
 	<dt><%= $.i18n.prop('SecondNominatedCandidacy') %></dt>
-	<dd><%= !_.isObject(secondNominatedCandidacy) ? undefined : secondNominatedCandidacy.snapshot.firstname[App.locale] + " " + secondNominatedCandidacy.snapshot.lastname[App.locale] %></dd>
+	<dd><%- !_.isObject(secondNominatedCandidacy) ? undefined : secondNominatedCandidacy.snapshot.firstname[App.locale] + " " + secondNominatedCandidacy.snapshot.lastname[App.locale] %></dd>
 	
 	<dt><%= $.i18n.prop('ApofasiAnapompisFile') %></dt>
 	<dd>

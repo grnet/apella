@@ -1,7 +1,7 @@
 <div class="row-fluid">
 	<div class="span12">
-		<h3><%= $.i18n.prop('Register') %> : <%= institution.name[App.locale] %></h3>
-		<p><%= $.i18n.prop('Subject') %>: <%= subject.name %></p>
+		<h3><%= $.i18n.prop('Register') %> : <%- institution.name[App.locale] %></h3>
+		<p><%= $.i18n.prop('Subject') %>: <%- subject.name %></p>
 		<p><%= $.i18n.prop('RegisterMembers') %>: </p>
 		<div id="members">
 			<table class="table table-striped table-bordered">
@@ -23,18 +23,18 @@
 						<td><%= $.i18n.prop(member.external ? "Yes" : "No") %></td>
 						<td>
 							<% if (_.isEqual(member.access, "READ_FULL")) { %>
-								<a data-committee-member-id="<%= member.id %>" href="#user/<%= member.professor.user.id %>" target="user"><%= member.professor.user.id %> </a>
+								<a data-committee-member-id="<%- member.id %>" href="#user/<%- member.professor.user.id %>" target="user"><%- member.professor.user.id %> </a>
 							<% } else { %>
-								<%= member.professor.user.id %>
+								<%- member.professor.user.id %>
 							<% } %>
 						</td>
-						<td><%= member.professor.user.firstname[App.locale] %></td>
-						<td><%= member.professor.user.lastname[App.locale]%></td>
+						<td><%- member.professor.user.firstname[App.locale] %></td>
+						<td><%- member.professor.user.lastname[App.locale]%></td>
 						<td><%= $.i18n.prop(member.professor.discriminator) %></td>
-						<td><%= member.professor.rank.name[App.locale] %></td>
+						<td><%- member.professor.rank.name[App.locale] %></td>
 						<td>
 							<% if (_.isEqual(member.professor.discriminator, 'PROFESSOR_FOREIGN')) { %>
-							<%= member.professor.institution %>
+							<%- member.professor.institution %>
 							<% } else { %>
 							<%= _.templates.department(member.professor.department) %>
 							<% } %>
@@ -42,10 +42,10 @@
 						<td>
 							<ul>
 								<% if (_.isObject(member.professor.subject)) { %>
-								<li><%= member.professor.subject.name %></li>
+								<li><%- member.professor.subject.name %></li>
 								 <% } %>
 								 <% if (_.isObject(member.professor.fekSubject)) { %>
-								<li><%= member.professor.fekSubject.name %></li>
+								<li><%- member.professor.fekSubject.name %></li>
 								 <% } %>
 							</ul>
 						</td>

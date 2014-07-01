@@ -23,7 +23,7 @@
 		<div class="span4">
 			<fieldset>
 				<label class="control-label" for="fullname"><%= $.i18n.prop('Name') %>:</label>
-				<input type="text" name="fullname" class="input-large" value="<%= fullname %>"/>
+				<input type="text" name="fullname" class="input-large" value="<%- fullname %>"/>
 				<label class="control-label" for="role"><%= $.i18n.prop('Profile') %>:</label>
 				<select name="role" class="input-large">
 					<option value="">--</option>
@@ -40,9 +40,9 @@
 		<div class="span4">
 			<fieldset>
 				<label class="control-label" for="mobile"><%= $.i18n.prop('Mobile') %>:</label>
-				<input type="text" name="mobile" class="input-large" value="<%= mobile %>"/>
+				<input type="text" name="mobile" class="input-large" value="<%- mobile %>"/>
 				<label class="control-label" for="email"><%= $.i18n.prop('Email') %>:</label>
-				<input type="text" name="email" class="input-large" value="<%= email %>"/>
+				<input type="text" name="email" class="input-large" value="<%- email %>"/>
 			</fieldset>
 		</div>
 	</div>
@@ -51,11 +51,11 @@
 		<div class="span12">
 			<fieldset>
 				<label class="control-label" for="summary"><%= $.i18n.prop('IssueSummary') %>:</label>
-				<input type="text" name="summary" class="input-xxlarge" value="<%= summary %>"/>
+				<input type="text" name="summary" class="input-xxlarge" value="<%- summary %>"/>
 			</fieldset>
 			<fieldset>
 				<label class="control-label" for="description"><%= $.i18n.prop('Description') %>:</label>
-				<textarea name="description" class="input-block-level" rows="10"><%= description %></textarea>
+				<textarea name="description" class="input-block-level" rows="10"><%- description %></textarea>
 			</fieldset>
 			<fieldset>
 				<div class="form-actions">

@@ -8,13 +8,13 @@
 	<tbody>
 <% _.each(institutionRFs, function(institutionRF) { %>
 		<tr>
-			<td><%= institutionRF.institution.name[App.locale] %></td>
+			<td><%- institutionRF.institution.name[App.locale] %></td>
 			<td width="96px">
 				<p align="center">
 					<% if (institutionRF.canEdit) { %>
-					<a id="selectInstitutionRF" data-institutionrf-cid="<%= institutionRF.cid %>" class="btn btn-mini"><i class="icon-edit"></i> <%= $.i18n.prop('btn_edit') %></a>
+					<a id="selectInstitutionRF" data-institutionrf-cid="<%- institutionRF.cid %>" class="btn btn-mini"><i class="icon-edit"></i> <%= $.i18n.prop('btn_edit') %></a>
 					<% } else { %>
-					<a id="selectInstitutionRF" data-institutionrf-cid="<%= institutionRF.cid %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>
+					<a id="selectInstitutionRF" data-institutionrf-cid="<%- institutionRF.cid %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>
 					<% } %>
 				</p>
 			</td>

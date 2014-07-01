@@ -11,6 +11,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 
 import javax.annotation.Resource;
+import javax.crypto.Cipher;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.ejb.*;
@@ -57,6 +58,22 @@ public class AuthenticationService {
 		try {
 			conf = DEPConfigurationFactory.getServerConfiguration();
 		} catch (ConfigurationException e) {
+		}
+	}
+
+	public User findAccountByAuthenticationToken(String authToken) {
+		try {
+			User user = em.createQuery(
+					"from User u " +
+							"left join fetch u.roles " +
+							"where u.status = :status " +
+							"and u.authToken = :authToken", User.class)
+					.setParameter("status", UserStatus.ACTIVE)
+					.setParameter("authToken", authToken)
+					.getSingleResult();
+			return user;
+		} catch (NoResultException e) {
+			return null;
 		}
 	}
 
@@ -351,6 +368,32 @@ public class AuthenticationService {
 		}
 	}
 
+	public User getLoggedOn(String authToken) throws ServiceException {
+		if (authToken == null) {
+			throw new ServiceException("login.missing.token");
+		}
+		if (!isValidAuthenticationToken(authToken)) {
+			throw new ServiceException("login.invalid.token");
+		}
+		User user = findAccountByAuthenticationToken(authToken);
+		if (user == null) {
+			throw new ServiceException("login.invalid.token");
+		}
+		return user;
+
+	}
+
+	public void logout(String authToken) throws ServiceException {
+		if (authToken == null) {
+			throw new ServiceException("login.missing.token");
+		}
+		User user = findAccountByAuthenticationToken(authToken);
+		if (user == null) {
+			throw new ServiceException("login.invalid.token");
+		}
+		user.setAuthToken(null);
+	}
+
 	/////////////////////////////////////////////////////////////////
 
 	private Institution findInstitutionBySchacHomeOrganization(String schacHomeOrganization) {
@@ -409,6 +452,14 @@ public class AuthenticationService {
 		}
 	}
 
+	////////////////////////////////////////////////////////////////
+
+	private static final long MAX_AGE = 7200000L; //2 Hours  2*60*60*1000 = 7.200.000
+
+	private static byte[] tempAuthTokenSecretKey = {
+			0x76, 0x69, 0x59, 0x43, 0x68, 0x71, 0x40, 0x54, 0x62, 0x52, 0x12, 0x25, 0x54, 0x3b, 0x35, 0x39
+	};//"thisIsASecretKey";
+
 	/**
 	 * Generates the token used after each login
 	 *
@@ -416,18 +467,39 @@ public class AuthenticationService {
 	 * @return
 	 */
 	private String generateAuthenticationToken(Long userId) {
+		String strToEncrypt = userId + "/" + Long.toString(new SecureRandom().nextLong()) + "/" + System.currentTimeMillis();
 		try {
-			MessageDigest md = MessageDigest.getInstance("SHA");
-			byte[] hash = md.digest((userId.toString() + System.currentTimeMillis()).getBytes("ISO-8859-1"));
-			return new String(Base64.encodeBase64(hash, false, true), "ISO-8859-1");
-		} catch (NoSuchAlgorithmException nsae) {
-			throw new EJBException(nsae);
-		} catch (UnsupportedEncodingException uee) {
-			throw new EJBException(uee);
+			Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+			final SecretKeySpec secretKey = new SecretKeySpec(tempAuthTokenSecretKey, "AES");
+			cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+			final String encryptedString = new String(Base64.encodeBase64(cipher.doFinal(strToEncrypt.getBytes()), false, true), "ISO-8859-1");
+			return encryptedString;
+		} catch (Exception e) {
+			throw new IllegalStateException(e);
 		}
 	}
 
-	private static final SecretKeySpec secretKey = new SecretKeySpec("APELLA3EMAIL6LOGIN9SECRET2KEY8".getBytes(), "HmacSHA256");
+	private boolean isValidAuthenticationToken(String authToken) {
+		try {
+			Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5PADDING");
+			final SecretKeySpec secretKey = new SecretKeySpec(tempAuthTokenSecretKey, "AES");
+			cipher.init(Cipher.DECRYPT_MODE, secretKey);
+			final String decryptedString = new String(cipher.doFinal(Base64.decodeBase64(authToken)));
+			String[] tokens = decryptedString.split("/");
+			if (tokens.length < 3) {
+				return false;
+			}
+			long tokenTime = Long.parseLong(tokens[2]);
+			if (System.currentTimeMillis() - tokenTime > MAX_AGE) {
+				return false;
+			}
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	private static final SecretKeySpec permanentAuthTokenSecretKey = new SecretKeySpec("APELLA3EMAIL6LOGIN9SECRET2KEY8".getBytes(), "HmacSHA256");
 
 	/**
 	 * Generates the permanent login used for email-link-authentication
@@ -440,7 +512,7 @@ public class AuthenticationService {
 		String unencoded = userId + "/" + email + "/" + System.currentTimeMillis();
 		try {
 			Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
-			sha256_HMAC.init(secretKey);
+			sha256_HMAC.init(permanentAuthTokenSecretKey);
 			byte[] hash = sha256_HMAC.doFinal(unencoded.getBytes());
 			String token = new String(Base64.encodeBase64(hash, false, true), "ISO-8859-1");
 			return token;

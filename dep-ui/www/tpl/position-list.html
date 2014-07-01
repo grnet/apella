@@ -1,6 +1,6 @@
 <div class="row-fluid">
 	<div class="span12">
-		<a href="<%= exportUrl %>" target="export" class="btn btn-success btn-small pull-right"><i class="icon-white icon-download"></i> <%= $.i18n.prop("btn_positions_export") %></a>
+		<a href="<%- exportUrl %>" target="export" class="btn btn-success btn-small pull-right"><i class="icon-white icon-download"></i> <%= $.i18n.prop("btn_positions_export") %></a>
 	</div>
 </div>
 <div class="row-fluid">
@@ -25,16 +25,16 @@
 			<tbody>
 			<% _.each(positions, function(position) { %>
 			<tr>
-				<td><%= App.utils.formatPositionID(position.id) %></td>
-				<td><%= position.name %></td>
+				<td><%- App.utils.formatPositionID(position.id) %></td>
+				<td><%- position.name %></td>
 				<td><%= position.department ? _.templates.department(position.department) : "" %></td>
 				<td><%= $.i18n.prop('PositionStatus_' + position.phase.clientStatus) %></td>
 				<td width="96px">
 					<p align="center">
 						<% if (position.canEdit) { %>
-						<a id="selectPosition" data-position-cid="<%= position.cid %>" class="btn btn-primary btn-mini"><i class="icon-edit icon-white"></i> <%= $.i18n.prop('btn_edit') %></a>
+						<a id="selectPosition" data-position-cid="<%- position.cid %>" class="btn btn-primary btn-mini"><i class="icon-edit icon-white"></i> <%= $.i18n.prop('btn_edit') %></a>
 						<% } else { %>
-						<a id="selectPosition" data-position-cid="<%= position.cid %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>
+						<a id="selectPosition" data-position-cid="<%- position.cid %>" class="btn btn-mini"><i class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>
 						<% } %>
 					</p>
 				</td>

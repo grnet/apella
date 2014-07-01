@@ -27,22 +27,22 @@
 			<div class="control-group">
 				<label class="control-label" for="department"><%= $.i18n.prop('Department') %><br/><%= $.i18n.prop('School') %><br/><%= $.i18n.prop('Institution') %>:</label>
 				<div class="controls">
-					<input type="text" style="display:none" name="department" value="<%= department.id %>" />
+					<input type="text" style="display:none" name="department" value="<%- department.id %>" />
 					<span class="help-block"></span>
 				</div>
 			</div>
 			<div class="control-group">
 				<div class="controls">
 					<label class="checkbox">
-						<input type="checkbox" name="hasOnlineProfile" value="hasOnlineProfile" <%= hasOnlineProfile? "" : "checked" %> /> <%= $.i18n.prop('ProfileCheckbox') %>
+						<input type="checkbox" name="hasOnlineProfile" value="hasOnlineProfile" <%- hasOnlineProfile? "" : "checked" %> /> <%= $.i18n.prop('ProfileCheckbox') %>
 					</label>
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="profileURL"><%= $.i18n.prop('ProfileURL') %>:</label>
 				<div class="controls">
-					<input class="input-xlarge" name="profileURL" type="text" value="<%= profileURL %>" />
-					<a href="<%= profileURL %>" target="external"><abbr><%= profileURL %></abbr></a>
+					<input class="input-xlarge" name="profileURL" type="text" value="<%- profileURL %>" />
+					<a href="<%- profileURL %>" target="external"><abbr><%- profileURL %></abbr></a>
 				</div>
 			</div>
 			<div class="control-group">
@@ -54,7 +54,7 @@
 			<div class="control-group">
 				<label class="control-label" for="fek"><%= $.i18n.prop('FEK') %>:</label>
 				<div class="controls">
-					<input class="input-xlarge" name="fek" type="text" value="<%= fek %>" />
+					<input class="input-xlarge" name="fek" type="text" value="<%- fek %>" />
 				</div>
 			</div>
 			<div class="control-group">
@@ -73,19 +73,19 @@
     		<div class="control-group">
     			<label class="control-label" for="fekSubject"><%= $.i18n.prop('FEKSubject') %>:</label>
 				<div class="controls">
-					<textarea class="input-xlarge" name="fekSubject"><% if (!_.isUndefined(fekSubject)) { %><%= fekSubject.name %><% } %></textarea>
+					<textarea class="input-xlarge" name="fekSubject"><% if (!_.isUndefined(fekSubject)) { %><%- fekSubject.name %><% } %></textarea>
 				</div>
     		</div>
     		<div class="control-group">
     			<label class="control-label" for="subject"><%= $.i18n.prop('Subject') %>:</label>
 				<div class="controls">
-					<textarea class="input-xlarge" name="subject"><% if (!_.isUndefined(subject)) { %><%= subject.name %><% } %></textarea>
+					<textarea class="input-xlarge" name="subject"><% if (!_.isUndefined(subject)) { %><%- subject.name %><% } %></textarea>
 				</div>
     		</div>
 			<div class="control-group">
 				<label class="control-label" for="hasAcceptedTerms"><%= $.i18n.prop('IAcceptTheTerms') %> :</label>
 				<div class="controls">
-					<input type="checkbox" name="hasAcceptedTerms" value="true" <%= hasAcceptedTerms? "checked" : "" %> />
+					<input type="checkbox" name="hasAcceptedTerms" value="true" <%- hasAcceptedTerms? "checked" : "" %> />
 					<span class="help-block"><%= $.i18n.prop('ApellaTerms') %></span>
 				</div>
 			</div>
@@ -120,7 +120,7 @@
 			<div class="control-group">
 				<label class="control-label" for="institution"><%= $.i18n.prop('Institution') %>:</label>
 				<div class="controls">
-				<input class="input-xlarge" name="institution" type="text" value="<%= institution %>"/>
+				<input class="input-xlarge" name="institution" type="text" value="<%- institution %>"/>
 				</div>
 			</div>
 			<div class="control-group">
@@ -133,15 +133,15 @@
 			<div class="control-group">
 				<div class="controls">
 					<label class="checkbox">
-						<input type="checkbox" name="hasOnlineProfile" value="hasOnlineProfile" <%= hasOnlineProfile? "" : "checked" %> /> <%= $.i18n.prop('ProfileCheckbox') %>
+						<input type="checkbox" name="hasOnlineProfile" value="hasOnlineProfile" <%- hasOnlineProfile? "" : "checked" %> /> <%= $.i18n.prop('ProfileCheckbox') %>
 					</label>
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="profileURL"><%= $.i18n.prop('ProfileURL') %>:</label>
 				<div class="controls">
-					<input class="input-xlarge" name="profileURL" type="text" value="<%= profileURL %>" />
-					<a href="<%= profileURL %>" target="external"><%= profileURL %></a>
+					<input class="input-xlarge" name="profileURL" type="text" value="<%- profileURL %>" />
+					<a href="<%- profileURL %>" target="external"><%- profileURL %></a>
 				</div>
 			</div>
 			<div class="control-group">
@@ -160,7 +160,7 @@
 			<div class="control-group">
 				<label class="control-label" for="subject"><%= $.i18n.prop('Subject') %>:</label>
 				<div class="controls">
-				<textarea class="input-xlarge" name="subject" class="edit"><% if (!_.isUndefined(subject)) { %><%= subject.name %><% } %></textarea>
+				<textarea class="input-xlarge" name="subject" class="edit"><% if (!_.isUndefined(subject)) { %><%- subject.name %><% } %></textarea>
 				</div>
 			</div>
 			<div class="control-group">
@@ -168,8 +168,8 @@
 				<div class="controls">
 					<select name="speakingGreek" class="input-xlarge">
 						<option value="">--</option>
-						<option	<%= (speakingGreek === true )? 'selected' : undefined %> value='true'><%= $.i18n.prop('ISpeakGreek') %></option>
-						<option	<%= (speakingGreek === false)? 'selected' : undefined %> value='false'><%= $.i18n.prop('IDoNotSpeakGreek') %></option>
+						<option	<%- (speakingGreek === true )? 'selected' : undefined %> value='true'><%= $.i18n.prop('ISpeakGreek') %></option>
+						<option	<%- (speakingGreek === false)? 'selected' : undefined %> value='false'><%= $.i18n.prop('IDoNotSpeakGreek') %></option>
 					</select>
 				</div>
 			</div>
@@ -177,7 +177,7 @@
 				<label class="control-label" for="hasAcceptedTerms"><%= $.i18n.prop('IAcceptTheTerms') %> :</label>
 
 				<div class="controls">
-					<input type="checkbox" name="hasAcceptedTerms" value="true" <%= hasAcceptedTerms? "checked" : "" %> />
+					<input type="checkbox" name="hasAcceptedTerms" value="true" <%- hasAcceptedTerms? "checked" : "" %> />
 					<span class="help-block"><%= $.i18n.prop('ApellaTerms') %></span>
 				</div>
 			</div>
@@ -229,7 +229,7 @@
 			<div class="control-group">
 				<label class="control-label" for="verificationAuthorityName"><%= $.i18n.prop('VerificationAuthorityName') %>:</label>
 				<div class="controls">
-				<input class="input-xlarge" name="verificationAuthorityName" type="text" value="<%= verificationAuthorityName %>" />
+				<input class="input-xlarge" name="verificationAuthorityName" type="text" value="<%- verificationAuthorityName %>" />
 				</div>
 			</div>
 		</fieldset>
@@ -238,55 +238,55 @@
 			<div class="control-group">
 				<label class="control-label" for="alternatefirstname"><%= $.i18n.prop('Name') %>:</label>
 				<div class="controls">
-					<input class="input-xlarge" type="text" name="alternatefirstname" value="<%= alternateBasicInfo.firstname %>" />
+					<input class="input-xlarge" type="text" name="alternatefirstname" value="<%- alternateBasicInfo.firstname %>" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="alternatelastname"><%= $.i18n.prop('Surname') %>:</label>
 				<div class="controls">
-					<input class="input-xlarge" type="text" name="alternatelastname" value="<%= alternateBasicInfo.lastname %>" />
+					<input class="input-xlarge" type="text" name="alternatelastname" value="<%- alternateBasicInfo.lastname %>" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="alternatefathername"><%= $.i18n.prop('FatherName') %>:</label>
 				<div class="controls">
-					<input class="input-xlarge" type="text" name="alternatefathername" value="<%= alternateBasicInfo.fathername %>" />
+					<input class="input-xlarge" type="text" name="alternatefathername" value="<%- alternateBasicInfo.fathername %>" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="alternatefirstnamelatin"><%= $.i18n.prop('NameLatin') %>:</label>
 				<div class="controls">
-					<input class="input-xlarge" type="text" name="alternatefirstnamelatin" value="<%= alternateBasicInfoLatin.firstname %>" />
+					<input class="input-xlarge" type="text" name="alternatefirstnamelatin" value="<%- alternateBasicInfoLatin.firstname %>" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="alternatelastname"><%= $.i18n.prop('SurnameLatin') %>:</label>
 				<div class="controls">
-					<input class="input-xlarge" type="text" name="alternatelastnamelatin" value="<%= alternateBasicInfoLatin.lastname %>" />
+					<input class="input-xlarge" type="text" name="alternatelastnamelatin" value="<%- alternateBasicInfoLatin.lastname %>" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="alternatefathernamelatin"><%= $.i18n.prop('FatherNameLatin') %>:</label>
 				<div class="controls">
-					<input class="input-xlarge" type="text" name="alternatefathernamelatin" value="<%= alternateBasicInfoLatin.fathername %>" />
+					<input class="input-xlarge" type="text" name="alternatefathernamelatin" value="<%- alternateBasicInfoLatin.fathername %>" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="alternateemail"><%= $.i18n.prop('Email') %>:</label>
 				<div class="controls">
-					<input class="input-xlarge" type="text" name="alternateemail" value="<%= alternateContactInfo.email %>" />
+					<input class="input-xlarge" type="text" name="alternateemail" value="<%- alternateContactInfo.email %>" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="alternatemobile"><%= $.i18n.prop('Mobile') %>:</label>
 				<div class="controls">
-					<input class="input-xlarge" type="text" name="alternatemobile" value="<%= alternateContactInfo.mobile %>" />
+					<input class="input-xlarge" type="text" name="alternatemobile" value="<%- alternateContactInfo.mobile %>" />
 				</div>
 			</div>
 			<div class="control-group">
 				<label class="control-label" for="alternatephone"><%= $.i18n.prop('Phone') %>:</label>
 				<div class="controls">
-					<input class="input-xlarge" type="text" name="alternatephone" value="<%= alternateContactInfo.phone %>" />
+					<input class="input-xlarge" type="text" name="alternatephone" value="<%- alternateContactInfo.phone %>" />
 				</div>
 			</div>
 		</fieldset>
@@ -295,8 +295,8 @@
 				<label class="control-label" for="institutionManagerForm"><%= $.i18n.prop('InstitutionManagerForm') %>:</label>
 				<div class="controls">
 				<% if (!missingRequiredFields) { %>
-					<a id="forma_DEAN" href="/dep/rest/role/<%= id %>/documents/InstitutionManagerCertificationDean" target="documents"><%= $.i18n.prop('InstitutionManagerFormDEAN') %></a>
-					<a id="forma_PRESIDENT" href="/dep/rest/role/<%= id %>/documents/InstitutionManagerCertificationPresident" target="documents"><%= $.i18n.prop('InstitutionManagerFormPRESIDENT') %></a>
+					<a id="forma_DEAN" href="/dep/rest/role/<%- id %>/documents/InstitutionManagerCertificationDean" target="documents"><%= $.i18n.prop('InstitutionManagerFormDEAN') %></a>
+					<a id="forma_PRESIDENT" href="/dep/rest/role/<%- id %>/documents/InstitutionManagerCertificationPresident" target="documents"><%= $.i18n.prop('InstitutionManagerFormPRESIDENT') %></a>
 				<% } else { %>
 					<%= $.i18n.prop('PressSave') %>
 				<% } %>
@@ -369,7 +369,7 @@
 			<div class="control-group">
 				<label class="control-label" for="ministry"><%= $.i18n.prop('Ministry') %>:</label>
 				<div class="controls">
-				<input class="input-xlarge" name="ministry" type="text" value="<%= ministry %>" />
+				<input class="input-xlarge" name="ministry" type="text" value="<%- ministry %>" />
 				</div>
 			</div>
 			<div class="form-actions">
@@ -437,7 +437,7 @@
 				</div>
 			</div>
 			<div class="control-group">
-				<label class="control-label" for="formaSymmetoxisFile"><%= $.i18n.prop('FormaSymmetoxisFile') %> <a href="/dep/rest/role/<%= id %>/documents/CandidateCertification" target="documents"><%= $.i18n.prop('DownloadHere') %></a>:</label>
+				<label class="control-label" for="formaSymmetoxisFile"><%= $.i18n.prop('FormaSymmetoxisFile') %> <a href="/dep/rest/role/<%- id %>/documents/CandidateCertification" target="documents"><%= $.i18n.prop('DownloadHere') %></a>:</label>
 				<div class="controls">
 					<input type="hidden" name="formaSymmetoxisFile" />
 				</div>

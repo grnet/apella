@@ -6,8 +6,8 @@
 		<% _.each(tiles, function(tilecol, row) { %>
 			<div class="row-fluid">
 			<% _.each(tilecol, function(tile, col) { %>
-			<div class="span4 tile <%= ((row + col)%2 == 0) ? 'solid-tiledark' : 'solid-tilelight'  %> shadow-black">
-				<a href="#<%= tile.link %>">
+			<div class="span4 tile <%- ((row + col)%2 == 0) ? 'solid-tiledark' : 'solid-tilelight'  %> shadow-black">
+				<a href="#<%- tile.link %>">
 					<img src="css/images/tile-icon.png" alt="" />
 					<span><%= $.i18n.prop("menu_" + tile.link) %></span>
 				</a>

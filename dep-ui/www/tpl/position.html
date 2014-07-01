@@ -11,7 +11,7 @@
 				<li><a tabindex="-1"><i class="icon-eye-close"></i> <%= $.i18n.prop('PositionStatus_' + value) %></a>
 				</li>
 				<% } else { %>
-				<li><a tabindex="-1" href="#position/<%= id %>/<%= key %>"><i class="icon-eye-open"></i> <%=
+				<li><a tabindex="-1" href="#position/<%- id %>/<%- key %>"><i class="icon-eye-open"></i> <%-
 					$.i18n.prop('PositionStatus_' + value) %></a></li>
 				<% } %>
 				<% }); %>
@@ -21,24 +21,24 @@
 </div>
 <div class="row-fluid">
 	<div class="span6">
-		<h3><%= $.i18n.prop('PositionMain') %>: <%= name %></h3>
+		<h3><%= $.i18n.prop('PositionMain') %>: <%- name %></h3>
 		<dl class="dl-glossary">
 			<dt><%= $.i18n.prop('PositionID') %></dt>
-			<dd><%= App.utils.formatPositionID(id) %></dd>
+			<dd><%- App.utils.formatPositionID(id) %></dd>
 			<dt><%= $.i18n.prop('Title') %></dt>
-			<dd><%= name %></dd>
+			<dd><%- name %></dd>
 			<dt><%= $.i18n.prop('Department') %></dt>
 			<dd><%= _.templates.department(department) %></dd>
 			<dt><%= $.i18n.prop('Description') %></dt>
-			<dd><%= description %></dd>
+			<dd><%- description %></dd>
 			<dt><%= $.i18n.prop('Subject') %></dt>
-			<dd><% if (!_.isUndefined(subject)) { %><%= subject.name %><% } %></dd>
+			<dd><% if (!_.isUndefined(subject)) { %><%- subject.name %><% } %></dd>
 			<dt><%= $.i18n.prop('FEK') %></dt>
 			<dd>
-				<a href="<%= fek %>" target="external"><%= $.i18n.prop('ClickForMore') %></a>
+				<a href="<%- fek %>" target="external"><%= $.i18n.prop('ClickForMore') %></a>
 			</dd>
 			<dt><%= $.i18n.prop('FEKSentDate') %></dt>
-			<dd><%= fekSentDate %></dd>
+			<dd><%- fekSentDate %></dd>
 		</dl>
 	</div>
 	<div class="span6">
@@ -47,9 +47,9 @@
 			<dt><%= $.i18n.prop('PositionStatus') %></dt>
 			<dd><%= $.i18n.prop('PositionStatus_' + phase.clientStatus) %></dd>
 			<dt><%= $.i18n.prop('PositionOpeningDate') %></dt>
-			<dd><%= phase.candidacies.openingDate %></dd>
+			<dd><%- phase.candidacies.openingDate %></dd>
 			<dt><%= $.i18n.prop('PositionClosingDate') %></dt>
-			<dd><%= phase.candidacies.closingDate %></dd>
+			<dd><%- phase.candidacies.closingDate %></dd>
 		</dl>
 	</div>
 </div>
@@ -70,40 +70,40 @@
 			<% if (manager.id) { %>
 			<li>
 				<b>
-					<%= manager.user.firstname[App.locale] %> <%= manager.user.lastname[App.locale] %>
+					<%- manager.user.firstname[App.locale] %> <%- manager.user.lastname[App.locale] %>
 				</b>
 				(<%= $.i18n.prop('INSTITUTION_MANAGER') %>),
-				<%= $.i18n.prop('Email') %>: <%= manager.user.contactInfo.email %>,
-				<i><%= $.i18n.prop('Phone') %>:</i> <%= manager.user.contactInfo.phone %>
+				<%= $.i18n.prop('Email') %>: <%- manager.user.contactInfo.email %>,
+				<i><%= $.i18n.prop('Phone') %>:</i> <%- manager.user.contactInfo.phone %>
 			</li>
 			<li>
 				<b>
-					<%= manager.alternateFirstname[App.locale] %> <%= manager.alternateLastname[App.locale] %>
+					<%- manager.alternateFirstname[App.locale] %> <%- manager.alternateLastname[App.locale] %>
 				</b>
 				(<%= $.i18n.prop('AlternateInstitutionManager') %></b>),
-				<i><%= $.i18n.prop('Email') %>:</i> <%= manager.alternateContactInfo.email %>,
-				<i><%= $.i18n.prop('Phone') %>:</i> <%= manager.alternateContactInfo.phone %>
+				<i><%= $.i18n.prop('Email') %>:</i> <%- manager.alternateContactInfo.email %>,
+				<i><%= $.i18n.prop('Phone') %>:</i> <%- manager.alternateContactInfo.phone %>
 			</li>
 			</li>
 			<% } %>
 			<% if (createdBy.id && !_.isEqual(createdBy.id, manager.user.id)) { %>
 			<li>
 				<b>
-					<%= createdBy.firstname[App.locale] %> <%= createdBy.lastname[App.locale] %>
+					<%- createdBy.firstname[App.locale] %> <%- createdBy.lastname[App.locale] %>
 				</b>
 				(<%= $.i18n.prop(createdBy.primaryRole) %>),
-				<%= $.i18n.prop('Email') %>: <%= createdBy.contactInfo.email %>,
-				<i><%= $.i18n.prop('Phone') %>:</i> <%= createdBy.contactInfo.phone %>
+				<%= $.i18n.prop('Email') %>: <%- createdBy.contactInfo.email %>,
+				<i><%= $.i18n.prop('Phone') %>:</i> <%- createdBy.contactInfo.phone %>
 			</li>
 			<% } %>
 			<% _.each(assistants, function(assistant) { %>
 			<li>
 				<b>
-					<%= assistant.firstname[App.locale] %> <%= assistant.lastname[App.locale] %>
+					<%- assistant.firstname[App.locale] %> <%- assistant.lastname[App.locale] %>
 				</b>
 				(<%= $.i18n.prop(assistant.primaryRole) %>)
-				<%= $.i18n.prop('Email') %>: <%= assistant.contactInfo.email %>,
-				<i><%= $.i18n.prop('Phone') %>:</i> <%= assistant.contactInfo.phone %>
+				<%= $.i18n.prop('Email') %>: <%- assistant.contactInfo.email %>,
+				<i><%= $.i18n.prop('Phone') %>:</i> <%- assistant.contactInfo.phone %>
 			</li>
 			<% }); %>
 		</ul>

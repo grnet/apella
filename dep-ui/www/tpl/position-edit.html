@@ -1,6 +1,6 @@
 <h3>
-	<%= $.i18n.prop('Position') %> : <%= (name || "*") %> <br/>
-	<%= $.i18n.prop('PositionID') %> : <%= (id ? App.utils.formatPositionID(id) : "") %>
+	<%= $.i18n.prop('Position') %> : <%- (name || "*") %> <br/>
+	<%= $.i18n.prop('PositionID') %> : <%- (id ? App.utils.formatPositionID(id) : "") %>
 	<div class="btn-group">
 		<button class="btn btn-small btn-inverse"><%= $.i18n.prop('PositionStatus_' + phase.clientStatus) %></button>
 		<button class="btn btn-small btn-inverse dropdown-toggle" data-toggle="dropdown">
@@ -34,7 +34,7 @@
 			<% if ("" + key === "" + phase.order) { %>
 			<li><a tabindex="-1"><i class="icon-eye-close"></i> <%= $.i18n.prop('PositionStatus_' + value) %></a></li>
 			<% } else { %>
-			<li><a tabindex="-1" href="#position/<%= id %>/<%= key %>"><i class="icon-eye-open"></i> <%= $.i18n.prop('PositionStatus_' + value) %></a></li>
+			<li><a tabindex="-1" href="#position/<%- id %>/<%- key %>"><i class="icon-eye-open"></i> <%= $.i18n.prop('PositionStatus_' + value) %></a></li>
 			<% } %>
 			<% }); %>
 		</ul>
@@ -51,39 +51,39 @@
 			<% if (manager.id) { %>
 			<li>
 				<b>
-					<%= manager.user.firstname[App.locale] %> <%= manager.user.lastname[App.locale] %>
+					<%- manager.user.firstname[App.locale] %> <%- manager.user.lastname[App.locale] %>
 				</b>
 				(<%= $.i18n.prop('INSTITUTION_MANAGER') %>),
-				<%= $.i18n.prop('Email') %>: <%= manager.user.contactInfo.email %>,
-				<i><%= $.i18n.prop('Phone') %>:</i> <%= manager.user.contactInfo.phone %>
+				<%= $.i18n.prop('Email') %>: <%- manager.user.contactInfo.email %>,
+				<i><%= $.i18n.prop('Phone') %>:</i> <%- manager.user.contactInfo.phone %>
 			</li>
 			<li>
 				<b>
-					<%= manager.alternateFirstname[App.locale] %> <%= manager.alternateLastname[App.locale] %>
+					<%- manager.alternateFirstname[App.locale] %> <%- manager.alternateLastname[App.locale] %>
 				</b>
 				(<%= $.i18n.prop('AlternateInstitutionManager') %></b>),
-				<i><%= $.i18n.prop('Email') %>:</i> <%= manager.alternateContactInfo.email %>,
-				<i><%= $.i18n.prop('Phone') %>:</i> <%= manager.alternateContactInfo.phone %>
+				<i><%= $.i18n.prop('Email') %>:</i> <%- manager.alternateContactInfo.email %>,
+				<i><%= $.i18n.prop('Phone') %>:</i> <%- manager.alternateContactInfo.phone %>
 			</li>
 			<% } %>
 			<% if (createdBy.id && !_.isEqual(createdBy.id, manager.user.id)) { %>
 			<li>
 				<b>
-					<%= createdBy.firstname[App.locale] %> <%= createdBy.lastname[App.locale] %>
+					<%- createdBy.firstname[App.locale] %> <%- createdBy.lastname[App.locale] %>
 				</b>
 				(<%= $.i18n.prop(createdBy.primaryRole) %>),
-				<%= $.i18n.prop('Email') %>: <%= createdBy.contactInfo.email %>,
-				<i><%= $.i18n.prop('Phone') %>:</i> <%= createdBy.contactInfo.phone %>
+				<%= $.i18n.prop('Email') %>: <%- createdBy.contactInfo.email %>,
+				<i><%= $.i18n.prop('Phone') %>:</i> <%- createdBy.contactInfo.phone %>
 			</li>
 			<% } %>
 			<% _.each(assistants, function(assistant) { %>
 			<li>
 				<b>
-					<%= assistant.firstname[App.locale] %> <%= assistant.lastname[App.locale] %>
+					<%- assistant.firstname[App.locale] %> <%- assistant.lastname[App.locale] %>
 				</b>
 				(<%= $.i18n.prop(assistant.primaryRole) %>)
-				<%= $.i18n.prop('Email') %>: <%= assistant.contactInfo.email %>,
-				<i><%= $.i18n.prop('Phone') %>:</i> <%= assistant.contactInfo.phone %>
+				<%= $.i18n.prop('Email') %>: <%- assistant.contactInfo.email %>,
+				<i><%= $.i18n.prop('Phone') %>:</i> <%- assistant.contactInfo.phone %>
 			</li>
 			<% }); %>
 		</ul>

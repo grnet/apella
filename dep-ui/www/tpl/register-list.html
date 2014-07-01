@@ -1,7 +1,7 @@
 <div class="row-fluid">
 	<div class="span12">
 		<% if (canExportGeneric) { %>
-		<a href="<%= exportGenericUrl %>" target="export" class="btn btn-success btn-small pull-right"><i class="icon-white icon-download"></i> <%= $.i18n.prop("btn_professors_export") %></a>
+		<a href="<%- exportGenericUrl %>" target="export" class="btn btn-success btn-small pull-right"><i class="icon-white icon-download"></i> <%= $.i18n.prop("btn_professors_export") %></a>
 		<% } %>
 	</div>
 </div>
@@ -29,21 +29,21 @@
 			<tbody>
 			<% _.each(registries, function(register) { %>
 			<tr>
-				<td><%= register.institution.name[App.locale] %></td>
-				<td><%= register.subject.name %></td>
+				<td><%- register.institution.name[App.locale] %></td>
+				<td><%- register.subject.name %></td>
 				<% if (showAmMember) { %>
 				<td><%= $.i18n.prop(register.amMember ? 'Yes' : 'No') %></td>
 				<% } %>
 				<td width="1px">
 					<div class="btn-group btn-group-vertical btn-block">
 						<% if (register.canEdit) { %>
-						<a id="select" data-register-cid="<%= register.cid %>" class="btn btn-success btn-small"><i class="icon-edit icon-white"></i> <%= $.i18n.prop('btn_edit') %></a>
+						<a id="select" data-register-cid="<%- register.cid %>" class="btn btn-success btn-small"><i class="icon-edit icon-white"></i> <%= $.i18n.prop('btn_edit') %></a>
 						<% } else { %>
-						<a id="select" data-register-cid="<%= register.cid %>" class="btn btn-primary btn-small"><i class="icon-eye-open icon-white"></i> <%=
+						<a id="select" data-register-cid="<%- register.cid %>" class="btn btn-primary btn-small"><i class="icon-eye-open icon-white"></i> <%-
 							$.i18n.prop('btn_view') %></a>
 						<% } %>
 						<% if (register.canExport) { %>
-						<a href="<%= register.exportUrl %>" target="export" class="btn btn-small"><i class="icon-download"></i> <%= $.i18n.prop('btn_register_export') %></a>
+						<a href="<%- register.exportUrl %>" target="export" class="btn btn-small"><i class="icon-download"></i> <%= $.i18n.prop('btn_register_export') %></a>
 						<% } %>
 					</div>
 				</td>
@@ -53,7 +53,7 @@
 			</tbody>
 			<tfoot>
 			<tr>
-				<td colspan="<%= showAmMember ? 4 : 3 %>">
+				<td colspan="<%- showAmMember ? 4 : 3 %>">
 					<div class="btn-toolbar" id="actions">
 					</div>
 				</td>
