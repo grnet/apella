@@ -389,6 +389,7 @@ public class PositionRESTService extends RESTService {
 
 							{
 								put("position", position.getName());
+								put("description", position.getDescription());
 
 								put("firstname_el", c.getUser().getFirstname("el"));
 								put("lastname_el", c.getUser().getLastname("el"));
