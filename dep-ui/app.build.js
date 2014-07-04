@@ -1,7 +1,7 @@
 ({
     appDir: "./www",
     baseUrl: "./",
-    dir: "../out/production/dep-election/www",
+    dir: "../out/production/dep-elections/www",
     optimize: "closure",
     closure: {
         CompilerOptions: {},
