@@ -28,6 +28,8 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.EJB;
 import javax.ejb.SessionContext;
 import javax.ejb.Singleton;
@@ -47,6 +49,7 @@ import org.quartz.SchedulerException;
 import org.quartz.impl.StdSchedulerFactory;
 
 @Singleton
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 @Startup
 public class QuartzService {
 
@@ -198,6 +201,8 @@ public class QuartzService {
 				PositionPhase newPhase = new PositionPhase();
 				newPhase.setStatus(PositionStatus.ANOIXTI);
 				newPhase.setCandidacies(existingPhase.getCandidacies());
+				newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
+
 				position.addPhase(newPhase);
 
 				i++;
