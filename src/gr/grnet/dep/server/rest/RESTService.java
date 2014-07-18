@@ -16,6 +16,7 @@ import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -453,10 +454,13 @@ public class RESTService {
 			DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
 			ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
 			servletFileUpload.setFileSizeMax(30 * 1024 * 1024);
+			servletFileUpload.setSizeMax(30 * 1024 * 1024);
 			servletFileUpload.setHeaderEncoding("UTF-8");
 			@SuppressWarnings("unchecked")
 			List<FileItem> fileItems = servletFileUpload.parseRequest(request);
 			return fileItems;
+		} catch (FileUploadBase.SizeLimitExceededException e) {
+			throw new RestException(Status.BAD_REQUEST, "file.size.exceeded");
 		} catch (FileUploadException e) {
 			logger.log(Level.SEVERE, "Error encountered while parsing the request", e);
 			throw new RestException(Status.INTERNAL_SERVER_ERROR, "generic");
