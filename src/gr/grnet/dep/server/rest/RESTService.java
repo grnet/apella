@@ -480,7 +480,7 @@ public class RESTService {
 		try {
 			DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
 			ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
-			servletFileUpload.setSizeMax(30 * 1024 * 1024);
+			servletFileUpload.setFileSizeMax(30 * 1024 * 1024);
 			servletFileUpload.setHeaderEncoding("UTF-8");
 			@SuppressWarnings("unchecked")
 			List<FileItem> fileItems = servletFileUpload.parseRequest(request);
