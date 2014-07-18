@@ -160,8 +160,7 @@ public class RESTService {
 			if (FileHeader.filter(candidate.getFiles(), FileType.BIOGRAFIKO).size() == 0) {
 				throw new RestException(Status.CONFLICT, "validation.candidacy.no.cv");
 			}
-			if (candidate.getUser().getPrimaryRole().equals(RoleDiscriminator.CANDIDATE) &&
-					FileHeader.filter(candidate.getFiles(), FileType.PTYXIO).size() == 0) {
+			if (FileHeader.filter(candidate.getFiles(), FileType.PTYXIO).size() == 0) {
 				throw new RestException(Status.CONFLICT, "validation.candidacy.no.ptyxio");
 			}
 		} else {
@@ -175,8 +174,7 @@ public class RESTService {
 			if (FileHeader.filterIncludingDeleted(candidacy.getSnapshotFiles(), FileType.BIOGRAFIKO).size() == 0) {
 				throw new RestException(Status.CONFLICT, "validation.candidacy.no.cv");
 			}
-			if (candidate.getUser().getPrimaryRole().equals(RoleDiscriminator.CANDIDATE) &&
-					FileHeader.filterIncludingDeleted(candidacy.getSnapshotFiles(), FileType.PTYXIO).size() == 0) {
+			if (FileHeader.filterIncludingDeleted(candidacy.getSnapshotFiles(), FileType.PTYXIO).size() == 0) {
 				throw new RestException(Status.CONFLICT, "validation.candidacy.no.ptyxio");
 			}
 		}
@@ -213,7 +211,7 @@ public class RESTService {
 
 		// Validate all candidacies
 		for (Candidacy candidacy : openCandidacies) {
-			validateCandidacy(candidacy, candidate, false);
+			validateCandidacy(candidacy, candidate, true);
 		}
 		// If all valid, update
 		for (Candidacy candidacy : openCandidacies) {
@@ -454,7 +452,7 @@ public class RESTService {
 		try {
 			DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
 			ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
-			servletFileUpload.setSizeMax(30 * 1024 * 1024);
+			servletFileUpload.setFileSizeMax(30 * 1024 * 1024);
 			servletFileUpload.setHeaderEncoding("UTF-8");
 			@SuppressWarnings("unchecked")
 			List<FileItem> fileItems = servletFileUpload.parseRequest(request);

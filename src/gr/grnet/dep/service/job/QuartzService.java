@@ -32,6 +32,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Singleton
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 @Startup
 public class QuartzService {
 
