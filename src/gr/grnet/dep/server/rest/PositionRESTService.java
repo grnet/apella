@@ -543,6 +543,9 @@ public class PositionRESTService extends RESTService {
 							break;
 						case ANOIXTI:
 							// Validate:
+							if (existingPhase.getCandidacies().getOpeningDate().compareTo(new Date()) > 0) {
+								throw new RestException(Status.CONFLICT, "position.phase.anoixti.wrong.opening.date");
+							}
 							if (existingPhase.getCandidacies().getClosingDate().compareTo(new Date()) < 0) {
 								throw new RestException(Status.CONFLICT, "position.phase.anoixti.wrong.closing.date");
 							}
