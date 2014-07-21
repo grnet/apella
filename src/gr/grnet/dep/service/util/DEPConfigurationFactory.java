@@ -1,14 +1,14 @@
 package gr.grnet.dep.service.util;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.ConfigurationUtils;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * @author chstath
@@ -52,7 +52,7 @@ public class DEPConfigurationFactory {
 
 	/**
 	 * It returns the server configuration object
-	 * 
+	 *
 	 * @return Configuration
 	 * @throws ConfigurationException
 	 */
@@ -91,54 +91,49 @@ public class DEPConfigurationFactory {
 	 * Extends the FileChangedReloadingStrategy from Commons Configuration,
 	 * adding
 	 * support for files in JBoss MC VFS.
-	 * 
+	 *
 	 * @author past
 	 */
 	static class VfsFileChangedReloadingStrategy extends FileChangedReloadingStrategy {
 
-		/** Constant for the jar URL protocol. */
+		/**
+		 * Constant for the jar URL protocol.
+		 */
 		private static final String JAR_PROTOCOL = "jar";
 
-		/** Constant for the JBoss MC VFSFile URL protocol. */
+		/**
+		 * Constant for the JBoss MC VFSFile URL protocol.
+		 */
 		private static final String VFSFILE_PROTOCOL = "vfsfile";
 
 		@Override
-		protected File getFile()
-		{
+		protected File getFile() {
 			return configuration.getURL() != null ? fileFromURL(configuration
-				.getURL()) : configuration.getFile();
+					.getURL()) : configuration.getFile();
 		}
 
 		/**
 		 * Helper method for transforming a URL into a file object. This method
 		 * handles file: and jar: URLs, as well as JBoss VFS-specific vfsfile:
 		 * URLs.
-		 * 
+		 *
 		 * @param url the URL to be converted
 		 * @return the resulting file or <b>null </b>
 		 */
-		private File fileFromURL(URL url)
-		{
-			if (VFSFILE_PROTOCOL.equals(url.getProtocol()))
-			{
+		private File fileFromURL(URL url) {
+			if (VFSFILE_PROTOCOL.equals(url.getProtocol())) {
 				String path = url.getPath();
-				try
-				{
+				try {
 					return ConfigurationUtils.fileFromURL(new URL("file:" + path));
-				} catch (MalformedURLException mex)
-				{
+				} catch (MalformedURLException mex) {
 					return null;
 				}
-			}
-			else if (JAR_PROTOCOL.equals(url.getProtocol()))
-			{
+			} else if (JAR_PROTOCOL.equals(url.getProtocol())) {
 				String path = url.getPath();
-				try
-				{
+				try {
 					return ConfigurationUtils.fileFromURL(new URL(path.substring(0,
-						path.indexOf('!'))));
-				} catch (MalformedURLException mex)
-				{
+							path.indexOf('!'))));
+				} catch (MalformedURLException mex) {
 					return null;
 				}
 			} else

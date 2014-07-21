@@ -1,10 +1,10 @@
 package gr.grnet.dep.server.rest.exceptions;
 
+import org.jboss.resteasy.spi.NoLogWebApplicationException;
+
 import javax.ejb.ApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
-import org.jboss.resteasy.spi.NoLogWebApplicationException;
 
 @ApplicationException
 public class RestException extends NoLogWebApplicationException {
@@ -13,13 +13,13 @@ public class RestException extends NoLogWebApplicationException {
 
 	public RestException(Status status) {
 		super(Response.status(status)
-			.header("X-Error-Code", "")
-			.build());
+				.header("X-Error-Code", "")
+				.build());
 	}
 
 	public RestException(Status status, String errorCode) {
 		super(Response.status(status)
-			.header("X-Error-Code", errorCode)
-			.build());
+				.header("X-Error-Code", errorCode)
+				.build());
 	}
 }

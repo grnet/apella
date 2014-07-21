@@ -1,11 +1,10 @@
 package gr.grnet.dep.service.model.system;
 
-import java.util.Date;
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.Date;
 
 @Entity
 @XmlRootElement

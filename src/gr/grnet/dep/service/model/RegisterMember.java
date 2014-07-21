@@ -1,5 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.service.model.Candidacy.CandidacyView;
 import gr.grnet.dep.service.model.CandidacyEvaluator.DetailedCandidacyEvaluatorView;
 import gr.grnet.dep.service.model.PositionCandidacies.DetailedPositionCandidaciesView;
@@ -9,25 +11,13 @@ import gr.grnet.dep.service.model.PositionEvaluation.PositionEvaluationView;
 import gr.grnet.dep.service.model.PositionEvaluator.PositionEvaluatorView;
 import gr.grnet.dep.service.model.Register.DetailedRegisterView;
 
+import javax.persistence.*;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Transient;
-import javax.persistence.Version;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 @XmlRootElement
@@ -36,10 +26,10 @@ public class RegisterMember implements Serializable {
 	private static final long serialVersionUID = -2335307229946834215L;
 
 	public static interface RegisterMemberView {
-	};
+	}
 
 	public static interface DetailedRegisterMemberView extends RegisterMemberView {
-	};
+	}
 
 	private static final Logger log = Logger.getLogger(RegisterMember.class.getName());
 

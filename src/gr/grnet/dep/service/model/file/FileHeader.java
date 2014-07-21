@@ -1,30 +1,15 @@
 package gr.grnet.dep.service.model.file;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.service.model.User;
 
+import javax.persistence.*;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
-import javax.persistence.Version;
-import javax.xml.bind.annotation.XmlRootElement;
-
-import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -34,10 +19,10 @@ public class FileHeader implements Serializable {
 	private static final long serialVersionUID = -4813579007397289759L;
 
 	public static interface SimpleFileHeaderView {
-	};
+	}
 
 	public static interface DetailedFileHeaderView extends SimpleFileHeaderView {
-	};
+	}
 
 	/**
 	 * The persistence ID of the object.
@@ -164,7 +149,7 @@ public class FileHeader implements Serializable {
 
 	/**
 	 * Add a body to list of bodies.
-	 * 
+	 *
 	 * @param body InfoItemBody The body to add.
 	 */
 	public void addBody(final FileBody body) {

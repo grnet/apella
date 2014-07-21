@@ -4,10 +4,8 @@ import gr.grnet.dep.service.AuthenticationService;
 import gr.grnet.dep.service.JiraService;
 import gr.grnet.dep.service.MailService;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
-
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -16,9 +14,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public abstract class BaseHttpServlet extends HttpServlet {
 

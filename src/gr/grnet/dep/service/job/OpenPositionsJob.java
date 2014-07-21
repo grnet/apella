@@ -1,14 +1,13 @@
 package gr.grnet.dep.service.job;
 
-import java.util.logging.Logger;
+import org.quartz.Job;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 
 import javax.ejb.EJBException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
+import java.util.logging.Logger;
 
 public class OpenPositionsJob implements Job {
 

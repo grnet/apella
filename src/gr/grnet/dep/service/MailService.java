@@ -4,27 +4,15 @@ import gr.grnet.dep.service.model.AuthenticationType;
 import gr.grnet.dep.service.model.MailRecord;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Locale;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.QueueConnectionFactory;
+import javax.jms.*;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -38,9 +26,13 @@ import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Locale;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Stateless
 public class MailService {
@@ -74,13 +66,13 @@ public class MailService {
 		mail.setBody(aBody);
 		try {
 			em.createQuery("select mr.id from MailRecord mr " +
-				"where mr.toEmailAddr = :toEmailAddr " +
-				"and mr.subject = :subject " +
-				"and mr.body = :body")
-				.setParameter("toEmailAddr", mail.getToEmailAddr())
-				.setParameter("subject", mail.getSubject())
-				.setParameter("body", mail.getBody())
-				.getSingleResult();
+					"where mr.toEmailAddr = :toEmailAddr " +
+					"and mr.subject = :subject " +
+					"and mr.body = :body")
+					.setParameter("toEmailAddr", mail.getToEmailAddr())
+					.setParameter("subject", mail.getSubject())
+					.setParameter("body", mail.getBody())
+					.getSingleResult();
 		} catch (NoResultException e) {
 			// Email does not exist
 			em.persist(mail);
@@ -91,9 +83,9 @@ public class MailService {
 	public MailRecord popEmail() {
 		try {
 			MailRecord mail = (MailRecord) em.createQuery(
-				"from MailRecord")
-				.setMaxResults(1)
-				.getSingleResult();
+					"from MailRecord")
+					.setMaxResults(1)
+					.getSingleResult();
 			em.remove(mail);
 			em.flush();
 
@@ -221,16 +213,16 @@ public class MailService {
 		try {
 			// Double Check here:
 			if (u.getAuthenticationType().equals(AuthenticationType.EMAIL) &&
-				u.getPermanentAuthToken() != null) {
+					u.getPermanentAuthToken() != null) {
 
 				String aToEmailAddr = u.getContactInfo().getEmail();
 				String aSubject = resources.getString("login.email.subject");
 				String aBody = resources.getString("login.email.body")
-					.replaceAll("\\[firstname_el\\]", u.getFirstname("el"))
-					.replaceAll("\\[lastname_el\\]", u.getLastname("el"))
-					.replaceAll("\\[firstname_en\\]", u.getFirstname("en"))
-					.replaceAll("\\[lastname_en\\]", u.getLastname("en"))
-					.replaceAll("\\[loginLink\\]", "<a href=\"" + getloginLink(u.getPermanentAuthToken()) + "\">Είσοδος</a>");
+						.replaceAll("\\[firstname_el\\]", u.getFirstname("el"))
+						.replaceAll("\\[lastname_el\\]", u.getLastname("el"))
+						.replaceAll("\\[firstname_en\\]", u.getFirstname("en"))
+						.replaceAll("\\[lastname_en\\]", u.getLastname("en"))
+						.replaceAll("\\[loginLink\\]", "<a href=\"" + getloginLink(u.getPermanentAuthToken()) + "\">Είσοδος</a>");
 				if (sendNow) {
 					sendEmail(aToEmailAddr, aSubject, aBody);
 				} else {
@@ -256,16 +248,16 @@ public class MailService {
 		try {
 			// Double Check here:
 			if (u.getAuthenticationType().equals(AuthenticationType.EMAIL) &&
-				u.getPermanentAuthToken() != null) {
+					u.getPermanentAuthToken() != null) {
 
 				String aToEmailAddr = u.getContactInfo().getEmail();
 				String aSubject = resources.getString("reminder.login.email.subject");
 				String aBody = resources.getString("reminder.login.email.body")
-					.replaceAll("\\[firstname_el\\]", u.getFirstname("el"))
-					.replaceAll("\\[lastname_el\\]", u.getLastname("el"))
-					.replaceAll("\\[firstname_en\\]", u.getFirstname("en"))
-					.replaceAll("\\[lastname_en\\]", u.getLastname("en"))
-					.replaceAll("\\[loginLink\\]", "<a href=\"" + getloginLink(u.getPermanentAuthToken()) + "\">Είσοδος</a>");
+						.replaceAll("\\[firstname_el\\]", u.getFirstname("el"))
+						.replaceAll("\\[lastname_el\\]", u.getLastname("el"))
+						.replaceAll("\\[firstname_en\\]", u.getFirstname("en"))
+						.replaceAll("\\[lastname_en\\]", u.getLastname("en"))
+						.replaceAll("\\[loginLink\\]", "<a href=\"" + getloginLink(u.getPermanentAuthToken()) + "\">Είσοδος</a>");
 				if (sendNow) {
 					sendEmail(aToEmailAddr, aSubject, aBody);
 				} else {
@@ -291,16 +283,16 @@ public class MailService {
 		try {
 			// Double Check here:
 			if (u.getAuthenticationType().equals(AuthenticationType.EMAIL) &&
-				u.getPermanentAuthToken() != null) {
+					u.getPermanentAuthToken() != null) {
 
 				String aToEmailAddr = u.getContactInfo().getEmail();
 				String aSubject = resources.getString("shibboleth.connect.email.subject");
 				String aBody = resources.getString("shibboleth.connect.email.body")
-					.replaceAll("\\[firstname_el\\]", u.getFirstname("el"))
-					.replaceAll("\\[lastname_el\\]", u.getLastname("el"))
-					.replaceAll("\\[firstname_en\\]", u.getFirstname("en"))
-					.replaceAll("\\[lastname_en\\]", u.getLastname("en"))
-					.replaceAll("\\[loginLink\\]", "<a href=\"" + getloginLink(u.getPermanentAuthToken()) + "\">Είσοδος</a>");
+						.replaceAll("\\[firstname_el\\]", u.getFirstname("el"))
+						.replaceAll("\\[lastname_el\\]", u.getLastname("el"))
+						.replaceAll("\\[firstname_en\\]", u.getFirstname("en"))
+						.replaceAll("\\[lastname_en\\]", u.getLastname("en"))
+						.replaceAll("\\[loginLink\\]", "<a href=\"" + getloginLink(u.getPermanentAuthToken()) + "\">Είσοδος</a>");
 				if (sendNow) {
 					sendEmail(aToEmailAddr, aSubject, aBody);
 				} else {
@@ -326,16 +318,16 @@ public class MailService {
 		try {
 			// Double Check here:
 			if (u.getAuthenticationType().equals(AuthenticationType.EMAIL) &&
-				u.getPermanentAuthToken() != null) {
+					u.getPermanentAuthToken() != null) {
 
 				String aToEmailAddr = u.getContactInfo().getEmail();
 				String aSubject = resources.getString("reminder.complete.registration.email.subject");
 				String aBody = resources.getString("reminder.complete.registration.email.body")
-					.replaceAll("\\[firstname_el\\]", u.getFirstname("el"))
-					.replaceAll("\\[lastname_el\\]", u.getLastname("el"))
-					.replaceAll("\\[firstname_en\\]", u.getFirstname("en"))
-					.replaceAll("\\[lastname_en\\]", u.getLastname("en"))
-					.replaceAll("\\[loginLink\\]", "<a href=\"" + getloginLink(u.getPermanentAuthToken()) + "\">Είσοδος</a>");
+						.replaceAll("\\[firstname_el\\]", u.getFirstname("el"))
+						.replaceAll("\\[lastname_el\\]", u.getLastname("el"))
+						.replaceAll("\\[firstname_en\\]", u.getFirstname("en"))
+						.replaceAll("\\[lastname_en\\]", u.getLastname("en"))
+						.replaceAll("\\[loginLink\\]", "<a href=\"" + getloginLink(u.getPermanentAuthToken()) + "\">Είσοδος</a>");
 				if (sendNow) {
 					sendEmail(aToEmailAddr, aSubject, aBody);
 				} else {
@@ -353,7 +345,7 @@ public class MailService {
 
 	private String getloginLink(String token) throws UnsupportedEncodingException {
 		return conf.getString("rest.url") +
-			"/email/login?nextURL=" + conf.getString("home.url") + "/apella.html" +
-			"&user=" + URLEncoder.encode(token, "UTF-8");
+				"/email/login?nextURL=" + conf.getString("home.url") + "/apella.html" +
+				"&user=" + URLEncoder.encode(token, "UTF-8");
 	}
 }

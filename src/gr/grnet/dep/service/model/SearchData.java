@@ -1,8 +1,7 @@
 package gr.grnet.dep.service.model;
 
-import java.util.Collection;
-
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.Collection;
 
 @XmlRootElement
 public class SearchData<T> {

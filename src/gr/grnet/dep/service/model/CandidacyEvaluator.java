@@ -1,24 +1,16 @@
 package gr.grnet.dep.service.model;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.service.model.Candidacy.MediumCandidacyView;
 import gr.grnet.dep.service.model.PositionCandidacies.DetailedPositionCandidaciesView;
 import gr.grnet.dep.service.model.file.PositionCandidaciesFile;
 import gr.grnet.dep.service.util.CompareUtil;
 
+import javax.persistence.*;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Version;
-import javax.xml.bind.annotation.XmlRootElement;
-
-import org.codehaus.jackson.map.annotate.JsonView;
 
 @Entity
 @XmlRootElement
@@ -29,7 +21,7 @@ public class CandidacyEvaluator implements Serializable {
 	public static final int MAX_MEMBERS = 2;
 
 	public static interface DetailedCandidacyEvaluatorView {
-	};
+	}
 
 	@Id
 	@GeneratedValue

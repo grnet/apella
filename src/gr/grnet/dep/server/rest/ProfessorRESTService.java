@@ -1,5 +1,6 @@
 package gr.grnet.dep.server.rest;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.PositionCommitteeMember;
@@ -10,10 +11,6 @@ import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.logging.Logger;
-
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -21,8 +18,9 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response.Status;
-
-import org.codehaus.jackson.map.annotate.JsonView;
+import java.util.Collection;
+import java.util.List;
+import java.util.logging.Logger;
 
 @Path("/professor")
 @Stateless
@@ -33,7 +31,7 @@ public class ProfessorRESTService extends RESTService {
 
 	/**
 	 * Returns committees that the professor participates
-	 * 
+	 *
 	 * @param authToken
 	 * @param professorId
 	 * @return
@@ -50,25 +48,24 @@ public class ProfessorRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!professor.getUser().getId().equals(loggedOn.getId())) {
+				!professor.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		@SuppressWarnings("unchecked")
 		List<PositionCommitteeMember> committees = em.createQuery(
-			"select pcm from PositionCommitteeMember pcm " +
-				"left join fetch pcm.committee co " +
-				"left join fetch co.position po " +
-				"left join fetch po.phase ph " +
-				"left join fetch ph.candidacies pca " +
-				"where pcm.registerMember.professor.id = :professorId ")
-			.setParameter("professorId", professorId)
-			.getResultList();
+				"select pcm from PositionCommitteeMember pcm " +
+						"left join fetch pcm.committee co " +
+						"left join fetch co.position po " +
+						"left join fetch po.phase ph " +
+						"left join fetch ph.candidacies pca " +
+						"where pcm.registerMember.professor.id = :professorId ", PositionCommitteeMember.class)
+				.setParameter("professorId", professorId)
+				.getResultList();
 		return committees;
 	}
 
 	/**
 	 * Returns professor's participations as evaluator in positions
-	 * 
+	 *
 	 * @param authToken
 	 * @param professorId
 	 * @return
@@ -85,19 +82,18 @@ public class ProfessorRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!professor.getUser().getId().equals(loggedOn.getId())) {
+				!professor.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		@SuppressWarnings("unchecked")
 		List<PositionEvaluator> evaluations = em.createQuery(
-			"select pe from PositionEvaluator pe " +
-				"left join fetch pe.evaluation ev " +
-				"left join fetch ev.position po " +
-				"left join fetch po.phase ph " +
-				"left join fetch ph.candidacies pca " +
-				"where pe.registerMember.professor.id = :professorId ")
-			.setParameter("professorId", professorId)
-			.getResultList();
+				"select pe from PositionEvaluator pe " +
+						"left join fetch pe.evaluation ev " +
+						"left join fetch ev.position po " +
+						"left join fetch po.phase ph " +
+						"left join fetch ph.candidacies pca " +
+						"where pe.registerMember.professor.id = :professorId ", PositionEvaluator.class)
+				.setParameter("professorId", professorId)
+				.getResultList();
 		return evaluations;
 	}
 

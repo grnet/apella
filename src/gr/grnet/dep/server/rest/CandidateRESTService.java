@@ -1,5 +1,6 @@
 package gr.grnet.dep.server.rest;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
@@ -8,25 +9,13 @@ import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Logger;
-
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.persistence.Query;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
+import javax.persistence.TypedQuery;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Response.Status;
-
-import org.codehaus.jackson.map.annotate.JsonView;
+import java.util.*;
+import java.util.logging.Logger;
 
 @Path("/candidate")
 @Stateless
@@ -37,10 +26,10 @@ public class CandidateRESTService extends RESTService {
 
 	/**
 	 * Returns Candidate's Candidacies
-	 * 
-	 * @param authToken The authentication token
+	 *
+	 * @param authToken   The authentication token
 	 * @param candidateId The ID of the candidate
-	 * @param open If it set returns only candidacies of open positions
+	 * @param open        If it set returns only candidacies of open positions
 	 * @return
 	 * @HTTP 403 X-Error-Code: wrong.candidate.id
 	 * @HTTP 404 X-Error-Code: insufficient.privileges
@@ -55,28 +44,27 @@ public class CandidateRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidate.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!candidate.getUser().getId().equals(loggedOn.getId())) {
+				!candidate.getUser().getId().equals(loggedOn.getId())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 
 		String queryString = "from Candidacy c " +
-			"left join fetch c.candidate.user.roles cerls " +
-			"left join fetch c.candidacies ca " +
-			"left join fetch ca.position po " +
-			"where c.candidate = :candidate " +
-			"and c.permanent = true ";
+				"left join fetch c.candidate.user.roles cerls " +
+				"left join fetch c.candidacies ca " +
+				"left join fetch ca.position po " +
+				"where c.candidate = :candidate " +
+				"and c.permanent = true ";
 		if (open != null) {
 			queryString += " and c.candidacies.closingDate >= :now";
 		}
-		Query query = em.createQuery(queryString)
-			.setParameter("candidate", candidate);
+		TypedQuery<Candidacy> query = em.createQuery(queryString, Candidacy.class)
+				.setParameter("candidate", candidate);
 
 		if (open != null) {
 			Date now = new Date();
 			query.setParameter("now", now);
 		}
 
-		@SuppressWarnings("unchecked")
 		List<Candidacy> retv = query.getResultList();
 		List<Long> candidaciesThatCanAddEvaluators = canAddEvaluators(retv);
 		List<Long> candidaciesThatNominationCommitteeConverged = hasNominationCommitteeConverged(retv);
@@ -96,16 +84,15 @@ public class CandidateRESTService extends RESTService {
 		if (ids.isEmpty()) {
 			return new ArrayList<Long>();
 		}
-		@SuppressWarnings("unchecked")
 		List<Long> data = em.createQuery(
-			"select c.id from Candidacy c " +
-				"join c.candidacies.position.phase.nomination no " +
-				"where no.nominationCommitteeConvergenceDate IS NOT NULL " +
-				"and no.nominationCommitteeConvergenceDate < :now " +
-				"and c.id in (:ids) ")
-			.setParameter("ids", ids)
-			.setParameter("now", new Date())
-			.getResultList();
+				"select c.id from Candidacy c " +
+						"join c.candidacies.position.phase.nomination no " +
+						"where no.nominationCommitteeConvergenceDate IS NOT NULL " +
+						"and no.nominationCommitteeConvergenceDate < :now " +
+						"and c.id in (:ids) ", Long.class)
+				.setParameter("ids", ids)
+				.setParameter("now", new Date())
+				.getResultList();
 		return data;
 	}
 
@@ -117,16 +104,15 @@ public class CandidateRESTService extends RESTService {
 		if (ids.isEmpty()) {
 			return new ArrayList<Long>();
 		}
-		@SuppressWarnings("unchecked")
 		List<Long> data = em.createQuery(
-			"select c.id from Candidacy c " +
-				"join c.candidacies.position.phase.committee co " +
-				"where co.members IS NOT EMPTY " +
-				"and co.candidacyEvalutionsDueDate >= :now " +
-				"and c.id in (:ids) ")
-			.setParameter("ids", ids)
-			.setParameter("now", new Date())
-			.getResultList();
+				"select c.id from Candidacy c " +
+						"join c.candidacies.position.phase.committee co " +
+						"where co.members IS NOT EMPTY " +
+						"and co.candidacyEvalutionsDueDate >= :now " +
+						"and c.id in (:ids) ", Long.class)
+				.setParameter("ids", ids)
+				.setParameter("now", new Date())
+				.getResultList();
 		return data;
 	}
 }

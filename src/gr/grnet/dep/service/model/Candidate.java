@@ -1,23 +1,16 @@
 package gr.grnet.dep.service.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import gr.grnet.dep.service.model.file.CandidateFile;
 import gr.grnet.dep.service.model.file.FileHeader;
 
+import javax.inject.Inject;
+import javax.persistence.*;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
-
-import javax.inject.Inject;
-import javax.persistence.CascadeType;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.OneToMany;
-import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 @Entity
 @XmlRootElement
@@ -89,6 +82,7 @@ public class Candidate extends Role {
 
 	@Override
 	@XmlTransient
+	@JsonIgnore
 	public boolean isMissingRequiredFields() {
 		boolean hasTAYTOTHTAFile = false;
 		boolean hasFORMA_SYMMETOXISFile = false;

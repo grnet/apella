@@ -1,33 +1,24 @@
 package gr.grnet.dep.service.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import gr.grnet.dep.service.util.CompareUtil;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Logger;
-
 import javax.inject.Inject;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.ManyToOne;
-import javax.persistence.PostLoad;
-import javax.persistence.PostPersist;
-import javax.persistence.PostUpdate;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlTransient;
-
-import org.codehaus.jackson.annotate.JsonIgnore;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
 
 @Entity
 @DiscriminatorValue("INSTITUTION_MANAGER")
 public class InstitutionManager extends Role {
 
-	/** Default value included to remove warning. Remove or modify at will. **/
+	/**
+	 * Default value included to remove warning. Remove or modify at will. *
+	 */
 	private static final long serialVersionUID = 1L;
 
 	public enum VerificationAuthority {
@@ -162,24 +153,24 @@ public class InstitutionManager extends Role {
 	private void refreshLocalizedNames() {
 		alternateFirstname.put("el", this.alternateBasicInfo != null ? this.alternateBasicInfo.getFirstname() : null);
 		if (this.alternateBasicInfoLatin != null &&
-			this.alternateBasicInfoLatin.getFirstname() != null &&
-			!this.alternateBasicInfoLatin.getFirstname().isEmpty()) {
+				this.alternateBasicInfoLatin.getFirstname() != null &&
+				!this.alternateBasicInfoLatin.getFirstname().isEmpty()) {
 			alternateFirstname.put("en", this.alternateBasicInfoLatin != null ? this.alternateBasicInfoLatin.getFirstname() : null);
 		} else {
 			alternateFirstname.put("en", this.alternateBasicInfo != null ? this.alternateBasicInfo.getFirstname() : null);
 		}
 		alternateLastname.put("el", this.alternateBasicInfo != null ? this.alternateBasicInfo.getLastname() : null);
 		if (this.alternateBasicInfoLatin != null &&
-			this.alternateBasicInfoLatin.getLastname() != null &&
-			!this.alternateBasicInfoLatin.getLastname().isEmpty()) {
+				this.alternateBasicInfoLatin.getLastname() != null &&
+				!this.alternateBasicInfoLatin.getLastname().isEmpty()) {
 			alternateLastname.put("en", this.alternateBasicInfoLatin != null ? this.alternateBasicInfoLatin.getLastname() : null);
 		} else {
 			alternateLastname.put("en", this.alternateBasicInfo != null ? this.alternateBasicInfo.getLastname() : null);
 		}
 		alternateFathername.put("el", this.alternateBasicInfo != null ? this.alternateBasicInfo.getFathername() : null);
 		if (this.alternateBasicInfoLatin != null &&
-			this.alternateBasicInfoLatin.getFathername() != null &&
-			!this.alternateBasicInfoLatin.getFathername().isEmpty()) {
+				this.alternateBasicInfoLatin.getFathername() != null &&
+				!this.alternateBasicInfoLatin.getFathername().isEmpty()) {
 			alternateFathername.put("en", this.alternateBasicInfoLatin != null ? this.alternateBasicInfoLatin.getFathername() : null);
 		} else {
 			alternateFathername.put("en", this.alternateBasicInfo != null ? this.alternateBasicInfo.getFathername() : null);

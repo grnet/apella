@@ -1,20 +1,21 @@
 package gr.grnet.dep.service.util;
 
-import java.io.IOException;
 
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.map.DeserializationContext;
-import org.codehaus.jackson.map.JsonDeserializer;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+
+import java.io.IOException;
 
 public class IdentificationDeserializer extends JsonDeserializer<String> {
 
 	@Override
-	public String deserialize(JsonParser parser, DeserializationContext ctx) throws IOException, JsonProcessingException {
-		if (parser.getText() == null || parser.getText().trim().isEmpty()) {
+	public String deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+		String value = jsonParser.getValueAsString();
+		if (value == null || value.trim().isEmpty()) {
 			return null;
 		}
-		return replaceAllLatinWithGreek(parser.getText());
+		return replaceAllLatinWithGreek(value);
 	}
 
 	private static final char[] latin = {'A', 'B', 'E', 'H', 'I', 'K', 'M', 'N', 'O', 'P', 'T', 'X', 'Y', 'Z', 'o', 'p', 'x', 'a', 'i', 'k', 'v'};

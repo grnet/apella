@@ -1,0 +1,95 @@
+<table class="file-table-edit">
+<thead>
+	<tr>
+		<th><%= $.i18n.prop('FileName') %></th>
+		<th><%= $.i18n.prop('FileSize') %></th>
+		<th><%= $.i18n.prop('FileDate') %></th>
+<% if (withMetadata) { %>
+		<th><%= $.i18n.prop('FileDescription') %></th>
+<% } %>
+		<th>
+		</th>
+	</tr>
+</thead>
+<tbody>
+	<tr>
+		<td>
+<% if (!_.isUndefined(file.id)) { %>
+<% if (withMetadata && file.name) { %>
+			<a href='<%- file.currentBody.url %>' target="viewfile"><%- file.name %>, (<%- file.currentBody.originalFilename %>)</a>
+<% } else { %>
+			<a href='<%- file.currentBody.url %>' target="viewfile"><%- file.currentBody.originalFilename %></a>
+<% } %>	
+<% } %>
+		</td>
+		<td>
+<% if (!_.isUndefined(file.id)) { %>
+			<%- App.utils.formatFileSize(file.currentBody.fileSize) %>
+<% } %>			
+		</td>
+		<td>
+<% if (!_.isUndefined(file.id)) { %>
+			<%- file.currentBody.date %>
+<% } %>
+		</td>
+<% if (withMetadata) { %>
+		<td><%- file.description %></td>
+<% } %>
+<% if (editable) { %>
+		<td>
+			<div class="btn-group btn-group-vertical pull-right">
+				<% if (!_.isUndefined(file.id)) { %>
+				<a id="delete" data-file-id="<%- file.id %>" class="btn btn-mini btn-danger"><i class="icon-trash icon-white"></i> <%= $.i18n.prop('btn_delete') %></a>
+				<% } %>
+				<a id="toggleUpload" class="btn btn-mini"><i class="icon-upload"></i> <%= $.i18n.prop('btn_upload') %></a>
+			</div>
+		</td>
+<% } %>
+	</tr>
+</tbody>
+</table>
+<div id="uploader" class="modal hide fade">
+	<div class="modal-header">
+ 		<h3><%= $.i18n.prop('FileUploadForm') %></h3>
+	</div>
+	<div class="modal-body">
+		<table class="table table-striped table-bordered">
+			<tr>
+				<th>
+					<%= $.i18n.prop('File') %>
+				</th>
+				<td>
+					<input type="hidden" name="file_type" value="<%- file.type %>" />
+					<input type="file" name="file" />
+				</td>
+			</tr>
+			<% if (withMetadata) { %>
+			<tr>	
+				<th>
+					<%= $.i18n.prop('FileName') %>
+				</th>
+				<td>
+					<input type="text" name="file_name" class="input-large" value="<%- file.name %>" />
+				</td>
+			</tr>
+			<tr>
+				<th>
+					<%= $.i18n.prop('FileDescription') %>
+				</th>
+				<td>
+					<textarea name="file_description" rows="3" class="input-large"><%- file.description %></textarea>
+				</td>
+			</tr>
+			<% } %>
+		</table>
+	</div>
+	<div class="modal-footer">
+		<div class="pull-right">
+			<a id="upload" data-file-id="<%- file.id %>" class="btn btn-small btn-primary"><i class="icon-white icon-upload"></i> <%= $.i18n.prop('btn_upload') %></a>
+			<a id="close" class="btn btn-small"><i class="icon-remove-circle"></i> <%= $.i18n.prop('btn_cancel') %></a>
+ 		</div>
+ 		<div class="progress">
+			<div class="bar" style="width: 0%;"></div>
+		</div>
+	</div>
+</div>

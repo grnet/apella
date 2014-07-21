@@ -1,53 +1,30 @@
 package gr.grnet.dep.service.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.Transient;
-import javax.persistence.Version;
+import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.map.annotate.JsonDeserialize;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.codehaus.jackson.map.annotate.JsonView;
+import java.util.*;
 
 @Entity
 @XmlRootElement
 public class Position {
 
 	public static interface PublicPositionView {
-	};
+	}
 
 	public static interface PositionView extends PublicPositionView {
-	};
+	}
 
 	public static interface DetailedPositionView extends PositionView {
-	};
+	}
 
 	public enum PositionStatus {
 		ENTAGMENI,
@@ -365,7 +342,7 @@ public class Position {
 			return true;
 		}
 		if (user.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
-			user.isAssociatedWithDepartment(this.getDepartment())) {
+				user.isAssociatedWithDepartment(this.getDepartment())) {
 			return true;
 		}
 		if (this.getCreatedBy().getId().equals(user.getId())) {

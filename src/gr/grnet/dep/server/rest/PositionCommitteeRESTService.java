@@ -1,65 +1,39 @@
 package gr.grnet.dep.server.rest;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.model.Candidacy;
-import gr.grnet.dep.service.model.Position;
+import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.Position.PositionStatus;
-import gr.grnet.dep.service.model.PositionCommittee;
 import gr.grnet.dep.service.model.PositionCommittee.DetailedPositionCommitteeView;
-import gr.grnet.dep.service.model.PositionCommitteeMember;
 import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
 import gr.grnet.dep.service.model.PositionCommitteeMember.MemberType;
-import gr.grnet.dep.service.model.PositionEvaluator;
-import gr.grnet.dep.service.model.Professor;
-import gr.grnet.dep.service.model.Register;
-import gr.grnet.dep.service.model.RegisterMember;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
-import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.file.PositionCommitteeFile;
 import gr.grnet.dep.service.util.DateUtil;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
-import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.codehaus.jackson.map.annotate.JsonView;
+import java.io.IOException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Path("/position/{id:[0-9][0-9]*}/committee")
 @Stateless
@@ -75,7 +49,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	/**
 	 * Returns the list of registries associated with specified position
 	 * committee
-	 * 
+	 *
 	 * @param authToken
 	 * @param positionId
 	 * @param committeeId
@@ -98,17 +72,16 @@ public class PositionCommitteeRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)
-			&& !loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment())) {
+				&& !loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Prepare Query
-		@SuppressWarnings("unchecked")
 		List<Register> registers = em.createQuery(
-			"select r from Register r " +
-				"where r.permanent = true " +
-				"and r.institution.id = :institutionId ")
-			.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
-			.getResultList();
+				"select r from Register r " +
+						"where r.permanent = true " +
+						"and r.institution.id = :institutionId ", Register.class)
+				.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
+				.getResultList();
 
 		return registers;
 	}
@@ -116,7 +89,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	/**
 	 * Returns the list of register members associates with specified position
 	 * committee
-	 * 
+	 *
 	 * @param authToken
 	 * @param positionId
 	 * @param committeeId
@@ -139,22 +112,21 @@ public class PositionCommitteeRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)
-			&& !loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment())) {
+				&& !loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Prepare Query
-		@SuppressWarnings("unchecked")
 		List<RegisterMember> registerMembers = em.createQuery(
-			"select m from RegisterMember m  " +
-				"join m.professor.user.roles r " +
-				"where m.register.permanent = true " +
-				"and m.register.institution.id = :institutionId " +
-				"and m.register.id = :registerId " +
-				"and m.professor.status = :status ")
-			.setParameter("registerId", registerId)
-			.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
-			.setParameter("status", RoleStatus.ACTIVE)
-			.getResultList();
+				"select m from RegisterMember m  " +
+						"join m.professor.user.roles r " +
+						"where m.register.permanent = true " +
+						"and m.register.institution.id = :institutionId " +
+						"and m.register.id = :registerId " +
+						"and m.professor.status = :status ", RegisterMember.class)
+				.setParameter("registerId", registerId)
+				.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
+				.setParameter("status", RoleStatus.ACTIVE)
+				.getResultList();
 
 		// Execute
 		for (RegisterMember r : registerMembers) {
@@ -171,7 +143,7 @@ public class PositionCommitteeRESTService extends RESTService {
 
 	/**
 	 * Returns the committee description of the specified position
-	 * 
+	 *
 	 * @param authToken
 	 * @param positionId
 	 * @param committeeId
@@ -187,12 +159,12 @@ public class PositionCommitteeRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		PositionCommittee existingCommittee = null;
 		try {
-			existingCommittee = (PositionCommittee) em.createQuery(
-				"select pcom from PositionCommittee pcom " +
-					"left join fetch pcom.members pmem " +
-					"where pcom.id = :committeeId")
-				.setParameter("committeeId", committeeId)
-				.getSingleResult();
+			existingCommittee = em.createQuery(
+					"select pcom from PositionCommittee pcom " +
+							"left join fetch pcom.members pmem " +
+							"where pcom.id = :committeeId", PositionCommittee.class)
+					.setParameter("committeeId", committeeId)
+					.getSingleResult();
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.committee.id");
 		}
@@ -201,12 +173,12 @@ public class PositionCommitteeRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
-			!existingCommittee.containsMember(loggedOn) &&
-			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-			!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
+				!existingCommittee.containsMember(loggedOn) &&
+				!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+				!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		return existingCommittee;
@@ -214,7 +186,7 @@ public class PositionCommitteeRESTService extends RESTService {
 
 	/**
 	 * Returns information of the specified member of the committee
-	 * 
+	 *
 	 * @param authToken
 	 * @param positionId
 	 * @param committeeId
@@ -239,9 +211,9 @@ public class PositionCommitteeRESTService extends RESTService {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment())) {
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		for (PositionCommitteeMember existingMember : existingCommittee.getMembers()) {
@@ -255,7 +227,7 @@ public class PositionCommitteeRESTService extends RESTService {
 
 	/**
 	 * Updates the specified committee of the position
-	 * 
+	 *
 	 * @param authToken
 	 * @param positionId
 	 * @param committeeId
@@ -312,16 +284,16 @@ public class PositionCommitteeRESTService extends RESTService {
 		List<RegisterMember> newRegisterMembers = new ArrayList<RegisterMember>();
 
 		if (!newCommitteeMemberAsMap.isEmpty()) {
-			Query query = em.createQuery(
-				"select distinct m from Register r " +
-					"join r.members m " +
-					"where r.permanent = true " +
-					"and r.institution.id = :institutionId " +
-					"and m.professor.status = :status " +
-					"and m.id in (:registerIds)")
-				.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
-				.setParameter("status", RoleStatus.ACTIVE)
-				.setParameter("registerIds", newCommitteeMemberAsMap.keySet());
+			TypedQuery<RegisterMember> query = em.createQuery(
+					"select distinct m from Register r " +
+							"join r.members m " +
+							"where r.permanent = true " +
+							"and r.institution.id = :institutionId " +
+							"and m.professor.status = :status " +
+							"and m.id in (:registerIds)", RegisterMember.class)
+					.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
+					.setParameter("status", RoleStatus.ACTIVE)
+					.setParameter("registerIds", newCommitteeMemberAsMap.keySet());
 			newRegisterMembers.addAll(query.getResultList());
 		}
 		if (newCommittee.getMembers().size() != newRegisterMembers.size()) {
@@ -329,13 +301,13 @@ public class PositionCommitteeRESTService extends RESTService {
 		}
 		// Validate New Committee
 		if (newCommittee.getMembers().size() > 0 &&
-			newCommittee.getCandidacyEvalutionsDueDate() == null) {
+				newCommittee.getCandidacyEvalutionsDueDate() == null) {
 			throw new RestException(Status.CONFLICT, "committee.missing.candidacyEvalutions.dueDate");
 		}
 
 		// Να μην είναι δυνατή η συμπλήρωση της Επιτροπής εάν δεν έχει συμπληρωθεί το πεδίο "Απόφαση Σύστασης Επιτροπής".
 		if (newCommittee.getMembers().size() > 0 &&
-			FileHeader.filter(existingCommittee.getFiles(), FileType.APOFASI_SYSTASIS_EPITROPIS).isEmpty()) {
+				FileHeader.filter(existingCommittee.getFiles(), FileType.APOFASI_SYSTASIS_EPITROPIS).isEmpty()) {
 			throw new RestException(Status.CONFLICT, "committee.missing.apofasi.systasis.epitropis");
 		}
 
@@ -405,7 +377,7 @@ public class PositionCommitteeRESTService extends RESTService {
 		Set<Long> removedMemberIds = new HashSet<Long>();
 		removedMemberIds.addAll(existingCommitteeMemberAsMap.keySet());
 		boolean committeeMeetingDateUpdated = (newCommittee.getCommitteeMeetingDate() != null) &&
-			(DateUtil.compareDates(existingCommittee.getCommitteeMeetingDate(), newCommittee.getCommitteeMeetingDate()) != 0);
+				(DateUtil.compareDates(existingCommittee.getCommitteeMeetingDate(), newCommittee.getCommitteeMeetingDate()) != 0);
 
 		// Update
 		try {
@@ -436,49 +408,49 @@ public class PositionCommitteeRESTService extends RESTService {
 					if (member.getType().equals(MemberType.REGULAR)) {
 						// positionCommittee.create.regular.member@member
 						mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
-							"default.subject",
-							"positionCommittee.create.regular.member@member",
-							Collections.unmodifiableMap(new HashMap<String, String>() {
+								"default.subject",
+								"positionCommittee.create.regular.member@member",
+								Collections.unmodifiableMap(new HashMap<String, String>() {
 
-								{
-									put("position", savedCommittee.getPosition().getName());
+									{
+										put("position", savedCommittee.getPosition().getName());
 
-									put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-									put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
-									put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-									put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
-									put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
+										put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+										put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
+										put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+										put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
+										put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
 
-									put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-									put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
-									put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-									put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
-									put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
-								}
-							}));
+										put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+										put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
+										put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+										put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
+										put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
+									}
+								}));
 					} else {
 						// positionCommittee.create.substitute.member@member
 						mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
-							"default.subject",
-							"positionCommittee.create.substitute.member@member",
-							Collections.unmodifiableMap(new HashMap<String, String>() {
+								"default.subject",
+								"positionCommittee.create.substitute.member@member",
+								Collections.unmodifiableMap(new HashMap<String, String>() {
 
-								{
-									put("position", savedCommittee.getPosition().getName());
+									{
+										put("position", savedCommittee.getPosition().getName());
 
-									put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-									put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
-									put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-									put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
-									put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
+										put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+										put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
+										put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+										put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
+										put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
 
-									put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-									put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
-									put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-									put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
-									put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
-								}
-							}));
+										put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+										put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
+										put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+										put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
+										put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
+									}
+								}));
 					}
 				}
 			}
@@ -487,109 +459,134 @@ public class PositionCommitteeRESTService extends RESTService {
 				if (removedMember.getType().equals(MemberType.REGULAR)) {
 					// positionCommittee.remove.regular.member@member
 					mailService.postEmail(removedMember.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"positionCommittee.remove.regular.member@member",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+							"default.subject",
+							"positionCommittee.remove.regular.member@member",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("position", savedCommittee.getPosition().getName());
+								{
+									put("position", savedCommittee.getPosition().getName());
 
-								put("firstname_el", removedMember.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-								put("lastname_el", removedMember.getRegisterMember().getProfessor().getUser().getLastname("el"));
-								put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
+									put("firstname_el", removedMember.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+									put("lastname_el", removedMember.getRegisterMember().getProfessor().getUser().getLastname("el"));
+									put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
+									put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
 
-								put("firstname_en", removedMember.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-								put("lastname_en", removedMember.getRegisterMember().getProfessor().getUser().getLastname("en"));
-								put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
-								put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
-							}
-						}));
+									put("firstname_en", removedMember.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+									put("lastname_en", removedMember.getRegisterMember().getProfessor().getUser().getLastname("en"));
+									put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
+									put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
+								}
+							}));
 				} else {
 					// positionCommittee.remove.substitute.member@member
 					mailService.postEmail(removedMember.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"positionCommittee.remove.substitute.member@member",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+							"default.subject",
+							"positionCommittee.remove.substitute.member@member",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("position", savedCommittee.getPosition().getName());
+								{
+									put("position", savedCommittee.getPosition().getName());
 
-								put("firstname_el", removedMember.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-								put("lastname_el", removedMember.getRegisterMember().getProfessor().getUser().getLastname("el"));
-								put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
+									put("firstname_el", removedMember.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+									put("lastname_el", removedMember.getRegisterMember().getProfessor().getUser().getLastname("el"));
+									put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
+									put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
 
-								put("firstname_en", removedMember.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-								put("lastname_en", removedMember.getRegisterMember().getProfessor().getUser().getLastname("en"));
-								put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
-								put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
-							}
-						}));
+									put("firstname_en", removedMember.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+									put("lastname_en", removedMember.getRegisterMember().getProfessor().getUser().getLastname("en"));
+									put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
+									put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
+								}
+							}));
 				}
 			}
 			if (!addedMemberIds.isEmpty() && removedMemberIds.isEmpty()) {
 				// positionCommittee.create.members@candidates
 				for (final Candidacy candidacy : savedCommittee.getPosition().getPhase().getCandidacies().getCandidacies()) {
 					mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"positionCommittee.create.members@candidates",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+							"default.subject",
+							"positionCommittee.create.members@candidates",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("position", savedCommittee.getPosition().getName());
+								{
+									put("position", savedCommittee.getPosition().getName());
 
-								put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
-								put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
-								put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
+									put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
+									put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
+									put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
+									put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
 
-								put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
-								put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
-								put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
-								put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
-							}
-						}));
+									put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
+									put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
+									put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
+									put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
+								}
+							}));
 				}
 			}
 			if (!removedMemberIds.isEmpty()) {
 				//positionCommittee.remove.members@candidates
 				for (final Candidacy candidacy : savedCommittee.getPosition().getPhase().getCandidacies().getCandidacies()) {
 					mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"positionCommittee.remove.members@candidates",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+							"default.subject",
+							"positionCommittee.remove.members@candidates",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("position", savedCommittee.getPosition().getName());
+								{
+									put("position", savedCommittee.getPosition().getName());
 
-								put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
-								put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
-								put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
+									put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
+									put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
+									put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
+									put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
 
-								put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
-								put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
-								put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
-								put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
-							}
-						}));
+									put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
+									put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
+									put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
+									put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
+								}
+							}));
 				}
 				//positionCommittee.remove.members@evaluators
 				if (savedCommittee.getPosition().getPhase().getEvaluation() != null) {
 					for (final PositionEvaluator member : savedCommittee.getPosition().getPhase().getEvaluation().getEvaluators()) {
 						//positionCommittee.remove.members@members
 						mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
+								"default.subject",
+								"positionCommittee.remove.members@evaluators",
+								Collections.unmodifiableMap(new HashMap<String, String>() {
+
+									{
+										put("position", savedCommittee.getPosition().getName());
+
+										put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+										put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
+										put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+										put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
+										put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
+
+										put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+										put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
+										put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+										put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
+										put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
+									}
+								}));
+					}
+				}
+				//positionCommittee.remove.members@members
+				for (final PositionCommitteeMember member : savedCommittee.getMembers()) {
+					mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
 							"default.subject",
-							"positionCommittee.remove.members@evaluators",
+							"positionCommittee.remove.members@members",
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
@@ -608,31 +605,6 @@ public class PositionCommitteeRESTService extends RESTService {
 									put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
 								}
 							}));
-					}
-				}
-				//positionCommittee.remove.members@members
-				for (final PositionCommitteeMember member : savedCommittee.getMembers()) {
-					mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"positionCommittee.remove.members@members",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
-
-							{
-								put("position", savedCommittee.getPosition().getName());
-
-								put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-								put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
-								put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
-
-								put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-								put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
-								put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
-								put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
-							}
-						}));
 				}
 
 			}
@@ -640,50 +612,50 @@ public class PositionCommitteeRESTService extends RESTService {
 				// positionCommittee.update.committeeMeetingDate@members
 				for (final PositionCommitteeMember member : savedCommittee.getMembers()) {
 					mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"positionCommittee.update.committeeMeetingDate@members",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+							"default.subject",
+							"positionCommittee.update.committeeMeetingDate@members",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("position", savedCommittee.getPosition().getName());
+								{
+									put("position", savedCommittee.getPosition().getName());
 
-								put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-								put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
-								put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
+									put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+									put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
+									put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
+									put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
 
-								put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-								put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
-								put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
-								put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
-							}
-						}));
+									put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+									put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
+									put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
+									put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
+								}
+							}));
 				}
 				// positionCommittee.update.committeeMeetingDate@candidates
 				for (final Candidacy candidacy : savedCommittee.getPosition().getPhase().getCandidacies().getCandidacies()) {
 					mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"positionCommittee.update.committeeMeetingDate@candidates",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+							"default.subject",
+							"positionCommittee.update.committeeMeetingDate@candidates",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
 
-							{
-								put("position", savedCommittee.getPosition().getName());
+								{
+									put("position", savedCommittee.getPosition().getName());
 
-								put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
-								put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
-								put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
+									put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
+									put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
+									put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
+									put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
 
-								put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
-								put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
-								put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
-								put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
-							}
-						}));
+									put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
+									put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
+									put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
+									put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
+								}
+							}));
 				}
 			}
 
@@ -704,7 +676,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	/**
 	 * Returns the list of file descriptions associated with position
 	 * committee
-	 * 
+	 *
 	 * @param authToken
 	 * @param positionId
 	 * @param committeeId
@@ -728,12 +700,12 @@ public class PositionCommitteeRESTService extends RESTService {
 		}
 		// Validate:
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
-			!existingCommittee.containsMember(loggedOn) &&
-			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-			!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
+				!existingCommittee.containsMember(loggedOn) &&
+				!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+				!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -743,7 +715,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	/**
 	 * Return the file description of the file with given id and associated with
 	 * given position committee
-	 * 
+	 *
 	 * @param authToken
 	 * @param positionId
 	 * @param committeeId
@@ -769,12 +741,12 @@ public class PositionCommitteeRESTService extends RESTService {
 		}
 		// Validate:
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
-			!existingCommittee.containsMember(loggedOn) &&
-			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-			!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
+				!existingCommittee.containsMember(loggedOn) &&
+				!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+				!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -790,7 +762,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	/**
 	 * Return the file data of the file with given id and associated with
 	 * given position committtee
-	 * 
+	 *
 	 * @param authToken
 	 * @param positionId
 	 * @param committeeId
@@ -817,12 +789,12 @@ public class PositionCommitteeRESTService extends RESTService {
 		}
 		// Validate:
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-			!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-			!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
-			!existingCommittee.containsMember(loggedOn) &&
-			!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-			!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
+				!existingCommittee.containsMember(loggedOn) &&
+				!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+				!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
@@ -843,7 +815,7 @@ public class PositionCommitteeRESTService extends RESTService {
 
 	/**
 	 * Handles upload of a new file associated with given position committee
-	 * 
+	 *
 	 * @param authToken
 	 * @param positionId
 	 * @param committeeId
@@ -899,7 +871,7 @@ public class PositionCommitteeRESTService extends RESTService {
 		// 2) Να μην είναι δυνατή η συμπλήρωση των πεδίων 
 		// "Πρακτικό Συνεδρίασης Επιτροπής για Αξιολογητές" και "Αίτημα Επιτροπής για Αξιολογητές" εάν δεν έχει συμπληρωθεί το πεδίο "Ημερομηνία Συνεδρίασης Επιτροπής".
 		if ((type.equals(FileType.PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES) || type.equals(FileType.AITIMA_EPITROPIS_PROS_AKSIOLOGITES))
-			&& existingCommittee.getCommitteeMeetingDate() == null) {
+				&& existingCommittee.getCommitteeMeetingDate() == null) {
 			throw new RestException(Status.CONFLICT, "committee.missing.committee.meeting.day");
 		}
 
@@ -922,74 +894,74 @@ public class PositionCommitteeRESTService extends RESTService {
 			// position.upload@committee
 			for (final PositionCommitteeMember member : pcFile.getCommittee().getPosition().getPhase().getCommittee().getMembers()) {
 				mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
-					"default.subject",
-					"position.upload@committee",
-					Collections.unmodifiableMap(new HashMap<String, String>() {
+						"default.subject",
+						"position.upload@committee",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
 
-						{
-							put("position", pcFile.getCommittee().getPosition().getName());
+							{
+								put("position", pcFile.getCommittee().getPosition().getName());
 
-							put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-							put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
-							put("institution_el", pcFile.getCommittee().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-							put("school_el", pcFile.getCommittee().getPosition().getDepartment().getSchool().getName().get("el"));
-							put("department_el", pcFile.getCommittee().getPosition().getDepartment().getName().get("el"));
+								put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+								put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
+								put("institution_el", pcFile.getCommittee().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", pcFile.getCommittee().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department_el", pcFile.getCommittee().getPosition().getDepartment().getName().get("el"));
 
-							put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-							put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
-							put("institution_en", pcFile.getCommittee().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-							put("school_en", pcFile.getCommittee().getPosition().getDepartment().getSchool().getName().get("en"));
-							put("department_en", pcFile.getCommittee().getPosition().getDepartment().getName().get("en"));
-						}
-					}));
+								put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+								put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
+								put("institution_en", pcFile.getCommittee().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", pcFile.getCommittee().getPosition().getDepartment().getSchool().getName().get("en"));
+								put("department_en", pcFile.getCommittee().getPosition().getDepartment().getName().get("en"));
+							}
+						}));
 			}
 			// position.upload@candidates
 			for (final Candidacy candidacy : pcFile.getCommittee().getPosition().getPhase().getCandidacies().getCandidacies()) {
 				mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
-					"default.subject",
-					"position.upload@candidates",
-					Collections.unmodifiableMap(new HashMap<String, String>() {
+						"default.subject",
+						"position.upload@candidates",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
 
-						{
-							put("position", pcFile.getCommittee().getPosition().getName());
+							{
+								put("position", pcFile.getCommittee().getPosition().getName());
 
-							put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
-							put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
-							put("institution_el", pcFile.getCommittee().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-							put("school_el", pcFile.getCommittee().getPosition().getDepartment().getSchool().getName().get("el"));
-							put("department_el", pcFile.getCommittee().getPosition().getDepartment().getName().get("el"));
+								put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
+								put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
+								put("institution_el", pcFile.getCommittee().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", pcFile.getCommittee().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department_el", pcFile.getCommittee().getPosition().getDepartment().getName().get("el"));
 
-							put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
-							put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
-							put("institution_en", pcFile.getCommittee().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-							put("school_en", pcFile.getCommittee().getPosition().getDepartment().getSchool().getName().get("en"));
-							put("department_en", pcFile.getCommittee().getPosition().getDepartment().getName().get("en"));
-						}
-					}));
+								put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
+								put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
+								put("institution_en", pcFile.getCommittee().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", pcFile.getCommittee().getPosition().getDepartment().getSchool().getName().get("en"));
+								put("department_en", pcFile.getCommittee().getPosition().getDepartment().getName().get("en"));
+							}
+						}));
 			}
 			// position.upload@evaluators
 			for (final PositionEvaluator evaluator : pcFile.getCommittee().getPosition().getPhase().getEvaluation().getEvaluators()) {
 				mailService.postEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
-					"default.subject",
-					"position.upload@evaluators",
-					Collections.unmodifiableMap(new HashMap<String, String>() {
+						"default.subject",
+						"position.upload@evaluators",
+						Collections.unmodifiableMap(new HashMap<String, String>() {
 
-						{
-							put("position", pcFile.getCommittee().getPosition().getName());
+							{
+								put("position", pcFile.getCommittee().getPosition().getName());
 
-							put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-							put("lastname_el", evaluator.getRegisterMember().getProfessor().getUser().getLastname("el"));
-							put("institution_el", pcFile.getCommittee().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-							put("school_el", pcFile.getCommittee().getPosition().getDepartment().getSchool().getName().get("el"));
-							put("department_el", pcFile.getCommittee().getPosition().getDepartment().getName().get("el"));
+								put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
+								put("lastname_el", evaluator.getRegisterMember().getProfessor().getUser().getLastname("el"));
+								put("institution_el", pcFile.getCommittee().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+								put("school_el", pcFile.getCommittee().getPosition().getDepartment().getSchool().getName().get("el"));
+								put("department_el", pcFile.getCommittee().getPosition().getDepartment().getName().get("el"));
 
-							put("firstname_en", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-							put("lastname_en", evaluator.getRegisterMember().getProfessor().getUser().getLastname("en"));
-							put("institution_en", pcFile.getCommittee().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-							put("school_en", pcFile.getCommittee().getPosition().getDepartment().getSchool().getName().get("en"));
-							put("department_en", pcFile.getCommittee().getPosition().getDepartment().getName().get("en"));
-						}
-					}));
+								put("firstname_en", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("en"));
+								put("lastname_en", evaluator.getRegisterMember().getProfessor().getUser().getLastname("en"));
+								put("institution_en", pcFile.getCommittee().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+								put("school_en", pcFile.getCommittee().getPosition().getDepartment().getSchool().getName().get("en"));
+								put("department_en", pcFile.getCommittee().getPosition().getDepartment().getName().get("en"));
+							}
+						}));
 			}
 
 			return toJSON(pcFile, SimpleFileHeaderView.class);
@@ -1003,7 +975,7 @@ public class PositionCommitteeRESTService extends RESTService {
 	/**
 	 * Handles upload that updates an existing file associated with position
 	 * committee
-	 * 
+	 *
 	 * @param authToken
 	 * @param positionId
 	 * @param committeeId
@@ -1083,7 +1055,7 @@ public class PositionCommitteeRESTService extends RESTService {
 
 	/**
 	 * Removes the specified file
-	 * 
+	 *
 	 * @param authToken
 	 * @param committeeId
 	 * @param positionId

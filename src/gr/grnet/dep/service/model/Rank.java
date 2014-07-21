@@ -1,20 +1,12 @@
 package gr.grnet.dep.service.model;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.hibernate.validator.constraints.NotEmpty;
 
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.MapKeyColumn;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
-
-import org.hibernate.validator.constraints.NotEmpty;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 @XmlRootElement

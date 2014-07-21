@@ -1,25 +1,21 @@
 package gr.grnet.dep.service.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.file.ProfessorFile;
 import gr.grnet.dep.service.util.CompareUtil;
 
+import javax.persistence.*;
+import javax.xml.bind.annotation.XmlTransient;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.OneToMany;
-import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlTransient;
-
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 @Entity
 public abstract class Professor extends Role {
 
-	/** Default value included to remove warning. Remove or modify at will. **/
+	/**
+	 * Default value included to remove warning. Remove or modify at will. *
+	 */
 	private static final long serialVersionUID = 1L;
 
 	private String profileURL;

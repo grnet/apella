@@ -4,21 +4,20 @@ import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.service.exceptions.ServiceException;
 import gr.grnet.dep.service.model.User;
 
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 @WebServlet(
-	name = "emailLoginServlet",
-	urlPatterns = {"/email/*"})
+		name = "emailLoginServlet",
+		urlPatterns = {"/email/*"})
 public class EmailLogin extends BaseHttpServlet {
 
 	private static final long serialVersionUID = -8201973038949627229L;

@@ -1,5 +1,8 @@
 package gr.grnet.dep.service.model;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
 import gr.grnet.dep.service.model.Position.PositionStatus;
@@ -10,33 +13,16 @@ import gr.grnet.dep.service.util.DateUtil;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 
-import java.util.Date;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OrderColumn;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.Version;
+import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
-
-import org.codehaus.jackson.map.annotate.JsonDeserialize;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.codehaus.jackson.map.annotate.JsonView;
+import java.util.Date;
 
 @Entity
 @XmlRootElement
 public class PositionPhase {
 
 	public static interface DetailedPositionPhaseView {
-	};
+	}
 
 	@Id
 	@GeneratedValue
@@ -104,7 +90,7 @@ public class PositionPhase {
 	public String getClientStatus() {
 		String clientStatus = null;
 		if (status.equals(PositionStatus.ANOIXTI)
-			&& DateUtil.compareDates(new Date(), this.candidacies.getClosingDate()) > 0) {
+				&& DateUtil.compareDates(new Date(), this.candidacies.getClosingDate()) > 0) {
 			clientStatus = "KLEISTI";
 		} else {
 			clientStatus = status.toString();
@@ -115,7 +101,7 @@ public class PositionPhase {
 	public String getClientStatusInGreek() {
 		String clientStatus = null;
 		if (status.equals(PositionStatus.ANOIXTI)
-			&& DateUtil.compareDates(new Date(), this.candidacies.getClosingDate()) > 0) {
+				&& DateUtil.compareDates(new Date(), this.candidacies.getClosingDate()) > 0) {
 			clientStatus = "Κλειστή";
 		} else {
 			clientStatus = status.toGreekString();

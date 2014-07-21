@@ -1,0 +1,5 @@
+<ul class="nav nav-tabs">
+<% _.each(roles, function(role) { %>
+	<li><a class="selectRole" role="<%- role.cid %>"><%= $.i18n.prop(role.discriminator) %></a></li>
+<% }); %>
+</ul>

@@ -1,0 +1,11 @@
+<div class="row-fluid">
+    <div class="span12">
+        <ul>
+            <% _.each(types, function(type) { %>
+            <li>
+                <a href="<%- urlPrefix + '/' + type + urlSuffix%>" target="export"><%= $.i18n.prop('export-' + type) %></a>
+            </li>
+            <% }); %>
+        </ul>
+    </div>
+</div>

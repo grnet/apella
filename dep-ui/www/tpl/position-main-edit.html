@@ -1,0 +1,90 @@
+<form class="form-horizontal" onsubmit="return false">
+	<fieldset>
+		<legend><%= $.i18n.prop('PositionMain') %></legend>
+		<div class="control-group">
+			<label class="control-label" for="name"><%= $.i18n.prop('PositionID') %>:</label>
+			<div class="controls">
+				<span class="input-xlarge uneditable-input"><%- App.utils.formatPositionID(id) %></span>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="name"><%= $.i18n.prop('PositionName') %>:</label>
+			<div class="controls">
+				<input class="input-xlarge" type="text" name="name" value="<%- name %>" />
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="department"><%= $.i18n.prop('Department') %>:</label>
+			<div class="controls">
+				<div><%= _.templates.department(department) %></div>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="description"><%= $.i18n.prop('Description') %>:</label>
+			<div class="controls">
+				<textarea class="input-xlarge" name="description"><%- description %></textarea>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="subject"><%= $.i18n.prop('Subject') %>:</label>
+			<div class="controls">
+				<textarea class="input-xlarge" name="subject" class="edit"><% if (!_.isUndefined(subject)) { %><%- subject.name %><% } %></textarea>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="sector"><%= $.i18n.prop('Sector') %>:</label>
+			<div class="controls">
+				<select class="input-xlarge" name="area"></select><br/><br/>
+				<select class="input-xlarge" name="sector"></select><span class="help-block"></span>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="fek"><%= $.i18n.prop('FEK') %>:</label>
+			<div class="controls">
+				<input class="input-xlarge" name="fek" type="text" value="<%- fek %>" />
+				<br/>
+				<a href="<%- fek %>" target="external"><%- fek %></a>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="fekSentDate"><%= $.i18n.prop('FEKSentDate') %>:</label>
+			<div class="controls">
+				<input class="input-xlarge" name="fekSentDate" type="text" data-input-type="date" value="<%- fekSentDate %>" />
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="status"><%= $.i18n.prop('PositionStatus') %>:</label>
+			<div class="controls">
+				<span class="input-xlarge uneditable-input"><%= $.i18n.prop('PositionStatus_' + phase.clientStatus) %></span>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="openingDate"><%= $.i18n.prop('PositionOpeningDate') %>:</label>
+			<div class="controls">
+				<input class="input-xlarge" name="openingDate" type="text" data-input-type="date" value="<%- phase.candidacies.openingDate %>" />
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for=closingDate><%= $.i18n.prop('PositionClosingDate') %>:</label>
+			<div class="controls">
+				<input class="input-xlarge" name="closingDate" type="text" data-input-type="date" value="<%- phase.candidacies.closingDate %>" />
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for=assistants><%= $.i18n.prop('PositionAssistants') %>:</label>
+
+			<div class="controls">
+				<div class="multiple-select input-xlarge" id="assistants">
+
+				</div>
+			</div>
+		</div>
+	</fieldset>
+	<fieldset>
+		<div class="form-actions">
+			<a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
+			<a id="remove" class="btn btn-danger"><i class="icon-remove icon-white"></i> <%= $.i18n.prop('btn_remove_position') %></a>
+			<span class="help-block"><%= $.i18n.prop('SaveInstructions') %></span>
+		</div>
+	</fieldset>
+</form>

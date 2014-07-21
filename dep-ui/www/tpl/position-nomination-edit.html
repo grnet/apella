@@ -1,0 +1,67 @@
+<form class="form-horizontal" onsubmit="return false">
+	<fieldset>
+		<legend><%= $.i18n.prop('PositionNomination') %></legend>
+		<div class="control-group">
+			<label class="control-label" for="prosklisiKosmitoraFile"><%= $.i18n.prop('ProsklisiKosmitoraFile') %>:</label>
+			<div class="controls">
+				<input type="hidden" name="prosklisiKosmitoraFile" />
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for=nominationCommitteeConvergenceDate><%= $.i18n.prop('NominationCommitteeConvergenceDate') %>:</label>
+			<div class="controls">
+				<input class="input-xlarge" name="nominationCommitteeConvergenceDate" type="text" data-input-type="date" value="<%- nominationCommitteeConvergenceDate %>" />
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="praktikoEpilogisFile"><%= $.i18n.prop('PraktikoEpilogisFile') %>:</label>
+			<div class="controls">
+				<input type="hidden" name="praktikoEpilogisFile" />
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="diavivastikoPraktikouFile"><%= $.i18n.prop('DiavivastikoPraktikouFile') %>:</label>
+			<div class="controls">
+				<input type="hidden" name="diavivastikoPraktikouFile" />
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="nominatedCandidacy"><%= $.i18n.prop('NominatedCandidacy') %>:</label>
+			<div class="controls">
+				<select class="input-xlarge" name="nominatedCandidacy"></select>
+				<span class="help-block"></span>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="secondNominatedCandidacy"><%= $.i18n.prop('SecondNominatedCandidacy') %>:</label>
+			<div class="controls">
+				<select class="input-xlarge" name="secondNominatedCandidacy">
+				</select> <span class="help-block"></span>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="praksiDiorismouFile"><%= $.i18n.prop('PraksiDiorismouFile') %>:</label>
+			<div class="controls">
+				<input type="hidden" name="praksiDiorismouFile" />
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="nominationFEK"><%= $.i18n.prop('NominationFEK') %>:</label>
+			<div class="controls">
+				<input class="input-xlarge" name="nominationFEK" type="text" value="<%- nominationFEK %>" />
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" for="apofasiAnapompisFile"><%= $.i18n.prop('ApofasiAnapompisFile') %>:</label>
+			<div class="controls">
+				<input type="hidden" name="apofasiAnapompisFile" />
+			</div>
+		</div>
+	</fieldset>
+	<fieldset>
+		<div class="form-actions">
+			<a id="saveNomination" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
+			<span class="help-block"><%= $.i18n.prop('SaveInstructions') %></span>
+		</div>
+	</fieldset>
+</form>

@@ -1,16 +1,21 @@
 package gr.grnet.dep.service;
 
-import gr.grnet.dep.service.model.Position;
+import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.Position.PositionStatus;
-import gr.grnet.dep.service.model.Professor;
-import gr.grnet.dep.service.model.ProfessorDomestic;
-import gr.grnet.dep.service.model.ProfessorForeign;
-import gr.grnet.dep.service.model.Register;
-import gr.grnet.dep.service.model.RegisterMember;
 import gr.grnet.dep.service.model.Role.RoleStatus;
-import gr.grnet.dep.service.model.SectorName;
 import gr.grnet.dep.service.model.User.UserStatus;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFDataFormat;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 
+import javax.ejb.EJBException;
+import javax.ejb.Stateless;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -20,24 +25,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
-
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFDataFormat;
-import org.apache.poi.hssf.usermodel.HSSFFont;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.util.CellRangeAddress;
 
 @Stateless
 public class ReportService {
@@ -49,12 +36,12 @@ public class ReportService {
 
 	private List<Professor> getProfessorData() {
 		List<Professor> data = em.createQuery(
-			"select p " +
-				"from Professor p " +
-				"where p.status = :roleStatus and p.user.status = :userStatus ", Professor.class)
-			.setParameter("roleStatus", RoleStatus.ACTIVE)
-			.setParameter("userStatus", UserStatus.ACTIVE)
-			.getResultList();
+				"select p " +
+						"from Professor p " +
+						"where p.status = :roleStatus and p.user.status = :userStatus ", Professor.class)
+				.setParameter("roleStatus", RoleStatus.ACTIVE)
+				.setParameter("userStatus", UserStatus.ACTIVE)
+				.getResultList();
 		return data;
 	}
 
@@ -230,17 +217,17 @@ public class ReportService {
 	}
 
 	private List<Object[]> getRegisterExportData(Long registerId) {
-		@SuppressWarnings("unchecked")
 		List<Object[]> data = em.createQuery(
-			"select rm, " +
-				"(select count(pcm.id) from PositionCommitteeMember pcm where pcm.registerMember.professor.id = rm.professor.id " +
-				"	and pcm.committee.position.phase.status = :statusEPILOGI), " +
-				"(select count(pcm.id) from PositionCommitteeMember pcm where pcm.registerMember.professor.id = rm.professor.id) " +
-				"from RegisterMember rm " +
-				"where rm.register.id = :registerId ")
-			.setParameter("registerId", registerId)
-			.setParameter("statusEPILOGI", PositionStatus.EPILOGI)
-			.getResultList();
+				"select rm, " +
+						"(select count(pcm.id) from PositionCommitteeMember pcm where pcm.registerMember.professor.id = rm.professor.id " +
+						"	and pcm.committee.position.phase.status = :statusEPILOGI), " +
+						"(select count(pcm.id) from PositionCommitteeMember pcm where pcm.registerMember.professor.id = rm.professor.id) " +
+						"from RegisterMember rm " +
+						"join fetch rm.professor p " +
+						"where rm.register.id = :registerId ", Object[].class)
+				.setParameter("registerId", registerId)
+				.setParameter("statusEPILOGI", PositionStatus.EPILOGI)
+				.getResultList();
 		return data;
 	}
 
@@ -460,23 +447,22 @@ public class ReportService {
 
 	private List<Position> getPositionsExportData(Long institutionId) {
 		String query = "select p from Position p " +
-			"left join fetch p.phase ph " +
-			"left join fetch ph.candidacies ca " +
-			"left join fetch ph.committee co " +
-			"left join fetch ph.evaluation ev " +
-			"left join fetch ph.nomination no " +
-			"left join fetch ph.complementaryDocuments cd " +
-			"where p.permanent = true ";
+				"left join fetch p.phase ph " +
+				"left join fetch ph.candidacies ca " +
+				"left join fetch ph.committee co " +
+				"left join fetch ph.evaluation ev " +
+				"left join fetch ph.nomination no " +
+				"left join fetch ph.complementaryDocuments cd " +
+				"where p.permanent = true ";
 		if (institutionId != null) {
 			query = query.concat("and p.department.school.institution.id = :institutionId");
 		}
 
-		Query q = em.createQuery(query);
+		TypedQuery<Position> q = em.createQuery(query, Position.class);
 		if (institutionId != null) {
 			q.setParameter("institutionId", institutionId);
 		}
 
-		@SuppressWarnings("unchecked")
 		List<Position> data = q.getResultList();
 		return data;
 	}

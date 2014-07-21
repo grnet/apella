@@ -1,17 +1,15 @@
 package gr.grnet.dep.service.model.file;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.service.model.Candidacy;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.xml.bind.annotation.XmlRootElement;
-
-import org.codehaus.jackson.map.annotate.JsonView;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 @DiscriminatorValue("CandidacyFile")

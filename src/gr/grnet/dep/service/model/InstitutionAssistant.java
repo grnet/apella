@@ -1,8 +1,7 @@
 package gr.grnet.dep.service.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import gr.grnet.dep.service.util.CompareUtil;
-
-import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.persistence.DiscriminatorValue;
@@ -10,14 +9,15 @@ import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlTransient;
-
-import org.codehaus.jackson.annotate.JsonIgnore;
+import java.util.logging.Logger;
 
 @Entity
 @DiscriminatorValue("INSTITUTION_ASSISTANT")
 public class InstitutionAssistant extends Role {
 
-	/** Default value included to remove warning. Remove or modify at will. **/
+	/**
+	 * Default value included to remove warning. Remove or modify at will. *
+	 */
 	private static final long serialVersionUID = 1L;
 
 	@Inject

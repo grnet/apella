@@ -1,20 +1,14 @@
 package gr.grnet.dep.service.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import org.apache.commons.lang.StringEscapeUtils;
 
-import java.io.Serializable;
-import java.util.Date;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-
-import org.codehaus.jackson.annotate.JsonIgnore;
+import java.io.Serializable;
+import java.util.Date;
 
 @Entity
 @XmlRootElement
@@ -286,5 +280,25 @@ public class JiraIssue implements Serializable {
 		issue.setResolution(IssueResolution.FIXED);
 
 		return issue;
+	}
+
+	public void sanitize() {
+		setComment(sanitize(getComment()));
+		setDescription(sanitize(getDescription()));
+		setEmail(sanitize(getEmail()));
+		setFullname(sanitize(getFullname()));
+		setMobile(sanitize(getMobile()));
+		setReporter(sanitize(getReporter()));
+		setSummary(sanitize(getSummary()));
+		setUsername(sanitize(getUsername()));
+	}
+
+	private static String sanitize(String string) {
+		if (string == null) {
+			return null;
+		}
+		return string
+				.replaceAll("<", "&lt;")   // case 1
+				.replaceAll(">", "&gt;"); // case 2
 	}
 }

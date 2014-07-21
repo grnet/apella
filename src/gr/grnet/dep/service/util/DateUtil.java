@@ -7,7 +7,7 @@ public class DateUtil {
 
 	/**
 	 * Compares dates ignoring time
-	 * 
+	 *
 	 * @param date1
 	 * @param date2
 	 * @return

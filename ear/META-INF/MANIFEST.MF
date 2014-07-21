@@ -1,1 +1,1 @@
-Dependencies: org.apache.log4j export, org.apache.commons.logging export, org.apache.commons.collections export, org.apache.commons.io export, org.apache.commons.lang export, org.codehaus.jackson.jackson-core-asl export, org.codehaus.jackson.jackson-mapper-asl export, org.codehaus.jackson.jackson-xc export, org.codehaus.jackson.jackson-jaxrs export, org.quartz export
+Dependencies: org.apache.commons.configuration

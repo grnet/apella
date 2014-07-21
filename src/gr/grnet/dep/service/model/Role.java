@@ -1,5 +1,8 @@
 package gr.grnet.dep.service.model;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.service.model.Candidacy.MediumCandidacyView;
 import gr.grnet.dep.service.model.CandidacyEvaluator.DetailedCandidacyEvaluatorView;
 import gr.grnet.dep.service.model.Position.PositionView;
@@ -11,52 +14,40 @@ import gr.grnet.dep.service.model.PositionEvaluator.DetailedPositionEvaluatorVie
 import gr.grnet.dep.service.model.Register.DetailedRegisterView;
 import gr.grnet.dep.service.model.RegisterMember.DetailedRegisterMemberView;
 
+import javax.inject.Inject;
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.persistence.Version;
-import javax.validation.constraints.NotNull;
-import javax.xml.bind.annotation.XmlRootElement;
-
-import org.codehaus.jackson.annotate.JsonSubTypes;
-import org.codehaus.jackson.annotate.JsonTypeInfo;
-import org.codehaus.jackson.annotate.JsonTypeInfo.As;
-import org.codehaus.jackson.map.annotate.JsonView;
-
 @Entity
 @XmlRootElement
 @Inheritance(strategy = InheritanceType.JOINED)
-@Table(name = "Roles")
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = As.PROPERTY, property = "discriminator")
+@Table(name = "Roles", indexes = {
+		@Index(name = "IDX_Roles_discriminator", columnList = "discriminator")
+})
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "discriminator")
 @JsonSubTypes({
-	@JsonSubTypes.Type(value = ProfessorDomestic.class, name = "PROFESSOR_DOMESTIC"),
-	@JsonSubTypes.Type(value = ProfessorForeign.class, name = "PROFESSOR_FOREIGN"),
-	@JsonSubTypes.Type(value = InstitutionManager.class, name = "INSTITUTION_MANAGER"),
-	@JsonSubTypes.Type(value = InstitutionAssistant.class, name = "INSTITUTION_ASSISTANT"),
-	@JsonSubTypes.Type(value = MinistryManager.class, name = "MINISTRY_MANAGER"),
-	@JsonSubTypes.Type(value = MinistryAssistant.class, name = "MINISTRY_ASSISTANT"),
-	@JsonSubTypes.Type(value = Candidate.class, name = "CANDIDATE"),
-	@JsonSubTypes.Type(value = Administrator.class, name = "ADMINISTRATOR")
+		@JsonSubTypes.Type(value = ProfessorDomestic.class, name = "PROFESSOR_DOMESTIC"),
+		@JsonSubTypes.Type(value = ProfessorForeign.class, name = "PROFESSOR_FOREIGN"),
+		@JsonSubTypes.Type(value = InstitutionManager.class, name = "INSTITUTION_MANAGER"),
+		@JsonSubTypes.Type(value = InstitutionAssistant.class, name = "INSTITUTION_ASSISTANT"),
+		@JsonSubTypes.Type(value = MinistryManager.class, name = "MINISTRY_MANAGER"),
+		@JsonSubTypes.Type(value = MinistryAssistant.class, name = "MINISTRY_ASSISTANT"),
+		@JsonSubTypes.Type(value = Candidate.class, name = "CANDIDATE"),
+		@JsonSubTypes.Type(value = Administrator.class, name = "ADMINISTRATOR")
 })
 public abstract class Role implements Serializable {
 
-	/** Default value included to remove warning. Remove or modify at will. **/
+	/**
+	 * Default value included to remove warning. Remove or modify at will. *
+	 */
 	private static final long serialVersionUID = 1L;
 
 	public static interface DetailedRoleView {
-	};
+	}
 
 	public enum RoleDiscriminator {
 		PROFESSOR_DOMESTIC,
@@ -67,13 +58,13 @@ public abstract class Role implements Serializable {
 		MINISTRY_ASSISTANT,
 		CANDIDATE,
 		ADMINISTRATOR
-	};
+	}
 
 	public enum RoleStatus {
 		UNAPPROVED,
 		ACTIVE,
 		INACTIVE
-	};
+	}
 
 	@Inject
 	@Transient
@@ -85,9 +76,7 @@ public abstract class Role implements Serializable {
 
 	@Version
 	private int version;
-
 	@Enumerated(value = EnumType.STRING)
-	@org.hibernate.annotations.Index(name = "IDX_Roles_discriminator")
 	@NotNull
 	private RoleDiscriminator discriminator;
 
@@ -143,17 +132,17 @@ public abstract class Role implements Serializable {
 	}
 
 	@JsonView({
-		PositionView.class,
-		DetailedRoleView.class,
-		DetailedPositionCommitteeMemberView.class,
-		DetailedPositionCandidaciesView.class,
-		MediumCandidacyView.class,
-		DetailedRegisterView.class,
-		DetailedRegisterMemberView.class,
-		DetailedPositionEvaluatorView.class,
-		DetailedPositionEvaluationView.class,
-		DetailedPositionCommitteeView.class,
-		DetailedCandidacyEvaluatorView.class})
+			PositionView.class,
+			DetailedRoleView.class,
+			DetailedPositionCommitteeMemberView.class,
+			DetailedPositionCandidaciesView.class,
+			MediumCandidacyView.class,
+			DetailedRegisterView.class,
+			DetailedRegisterMemberView.class,
+			DetailedPositionEvaluatorView.class,
+			DetailedPositionEvaluationView.class,
+			DetailedPositionCommitteeView.class,
+			DetailedCandidacyEvaluatorView.class})
 	public User getUser() {
 		return user;
 	}

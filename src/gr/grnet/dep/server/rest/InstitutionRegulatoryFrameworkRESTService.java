@@ -6,24 +6,16 @@ import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.InstitutionRegulatoryFramework;
 import gr.grnet.dep.service.model.User;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Response.Status;
+import java.util.Collection;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Path("/institutionrf")
 @Stateless
@@ -34,21 +26,21 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 
 	/**
 	 * Returns Regulatory Frameworks of all Institutions
-	 * 
+	 *
 	 * @return
 	 */
 	@GET
 	@SuppressWarnings("unchecked")
 	public Collection<InstitutionRegulatoryFramework> getAll() {
-		return (List<InstitutionRegulatoryFramework>) em.createQuery(
-			"select i from InstitutionRegulatoryFramework i " +
-				"where i.permanent = true")
-			.getResultList();
+		return em.createQuery(
+				"select i from InstitutionRegulatoryFramework i " +
+						"where i.permanent = true", InstitutionRegulatoryFramework.class)
+				.getResultList();
 	}
 
 	/**
 	 * Returns Regulatory Framework with given ID
-	 * 
+	 *
 	 * @param id
 	 * @return
 	 */
@@ -56,11 +48,11 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 	@Path("/{id:[0-9]+}")
 	public InstitutionRegulatoryFramework get(@PathParam("id") long id) {
 		try {
-			return (InstitutionRegulatoryFramework) em.createQuery(
-				"select i from InstitutionRegulatoryFramework i " +
-					"where i.id = :id")
-				.setParameter("id", id)
-				.getSingleResult();
+			return em.createQuery(
+					"select i from InstitutionRegulatoryFramework i " +
+							"where i.id = :id", InstitutionRegulatoryFramework.class)
+					.setParameter("id", id)
+					.getSingleResult();
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.institutionregulatoryframework.id");
 		}
@@ -68,7 +60,7 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 
 	/**
 	 * Creates a Regulatory Framework, not finalized
-	 * 
+	 *
 	 * @param authToken
 	 * @param newIRF
 	 * @return
@@ -89,11 +81,12 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 		}
 		// Validate
 		try {
-			em.createQuery("select irf from InstitutionRegulatoryFramework irf " +
-				"where irf.institution.id = :institutionId " +
-				"and irf.permanent = true ")
-				.setParameter("institutionId", institution.getId())
-				.getSingleResult();
+			em.createQuery(
+					"select irf from InstitutionRegulatoryFramework irf " +
+							"where irf.institution.id = :institutionId " +
+							"and irf.permanent = true ", InstitutionRegulatoryFramework.class)
+					.setParameter("institutionId", institution.getId())
+					.getSingleResult();
 			throw new RestException(Status.CONFLICT, "institutionrf.already.exists");
 		} catch (NoResultException ne) {
 		}
@@ -114,7 +107,7 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 
 	/**
 	 * Updates and finalizes Regulatory Frameowrk with given ID
-	 * 
+	 *
 	 * @param authToken
 	 * @param id
 	 * @param newIRF
@@ -149,7 +142,7 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 
 	/**
 	 * Removes Regulatory Framework with given ID
-	 * 
+	 *
 	 * @param authToken
 	 * @param id
 	 * @HTTP 403 X-Error-Code: insufficient.privileges

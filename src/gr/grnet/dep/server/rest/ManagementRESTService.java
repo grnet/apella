@@ -6,20 +6,15 @@ import gr.grnet.dep.service.ManagementService;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.logging.Logger;
-
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
+import java.util.Collection;
+import java.util.List;
+import java.util.logging.Logger;
 
 @Path("/management")
 @Stateless

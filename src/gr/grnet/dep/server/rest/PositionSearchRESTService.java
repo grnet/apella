@@ -1,19 +1,21 @@
 package gr.grnet.dep.server.rest;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.model.Candidacy;
-import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.Department;
-import gr.grnet.dep.service.model.Position;
+import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.Position.PublicPositionView;
-import gr.grnet.dep.service.model.PositionSearchCriteria;
 import gr.grnet.dep.service.model.PositionSearchCriteria.PositionSearchCriteriaView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
-import gr.grnet.dep.service.model.Sector;
-import gr.grnet.dep.service.model.User;
 
+import javax.ejb.Stateless;
+import javax.inject.Inject;
+import javax.persistence.NoResultException;
+import javax.persistence.TypedQuery;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.Status;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,23 +23,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
-
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.persistence.NoResultException;
-import javax.persistence.Query;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
-
-import org.codehaus.jackson.map.annotate.JsonView;
 
 @Path("/position/criteria")
 @Stateless
@@ -48,8 +33,8 @@ public class PositionSearchRESTService extends RESTService {
 
 	/**
 	 * Searches for Positions given specific criteria
-	 * 
-	 * @param authToken The authentication token
+	 *
+	 * @param authToken      The authentication token
 	 * @param criteriaString A JSON representation of query parameters
 	 * @return
 	 * @HTTP 400 X-Error-Code: bad.criteria.format
@@ -80,27 +65,26 @@ public class PositionSearchRESTService extends RESTService {
 				sectorIds.add(sector.getId());
 			}
 			String queryString = "from Position p " +
-				"left join fetch p.assistants asts " +
-				"left join fetch asts.roles astsr " +
-				"where p.permanent = true " +
-				"and p.phase.candidacies.closingDate >= :today ";
+					"left join fetch p.assistants asts " +
+					"left join fetch asts.roles astsr " +
+					"where p.permanent = true " +
+					"and p.phase.candidacies.closingDate >= :today ";
 			if (departmentIds.size() > 1 || sectorIds.size() > 1) {
 				queryString += "and (" +
-					"	p.department.id in (:departmentIds) " +
-					"	or p.sector.id in (:sectorIds) " +
-					")";
+						"	p.department.id in (:departmentIds) " +
+						"	or p.sector.id in (:sectorIds) " +
+						")";
 			}
-			Query query = em.createQuery(queryString)
-				.setParameter("today", today);
+			TypedQuery<Position> query = em.createQuery(queryString, Position.class)
+					.setParameter("today", today);
 			if (departmentIds.size() > 1 || sectorIds.size() > 1) {
 				query = query
-					.setParameter("departmentIds", departmentIds)
-					.setParameter("sectorIds", sectorIds);
+						.setParameter("departmentIds", departmentIds)
+						.setParameter("sectorIds", sectorIds);
 			}
 
 			// Execute Query
-			@SuppressWarnings("unchecked")
-			List<Position> positions = (List<Position>) query.getResultList();
+			List<Position> positions = query.getResultList();
 
 			// Calculate CanSubmitCandidacy => set false if already submitted
 			if (loggedOn.hasActiveRole(RoleDiscriminator.CANDIDATE)) {
@@ -131,7 +115,7 @@ public class PositionSearchRESTService extends RESTService {
 
 	/**
 	 * Returns saved search criteria of logged on User
-	 * 
+	 *
 	 * @param authToken
 	 * @return
 	 */
@@ -144,11 +128,11 @@ public class PositionSearchRESTService extends RESTService {
 		}
 		try {
 			Candidate candidate = (Candidate) loggedOnUser.getActiveRole(RoleDiscriminator.CANDIDATE);
-			PositionSearchCriteria criteria = (PositionSearchCriteria) em.createQuery(
-				"from PositionSearchCriteria c " +
-					"where c.candidate.id = :candidateId ")
-				.setParameter("candidateId", candidate.getId())
-				.getSingleResult();
+			PositionSearchCriteria criteria = em.createQuery(
+					"from PositionSearchCriteria c " +
+							"where c.candidate.id = :candidateId ", PositionSearchCriteria.class)
+					.setParameter("candidateId", candidate.getId())
+					.getSingleResult();
 			return criteria;
 		} catch (NoResultException e) {
 			PositionSearchCriteria criteria = new PositionSearchCriteria();
@@ -158,7 +142,7 @@ public class PositionSearchRESTService extends RESTService {
 
 	/**
 	 * Return saved search criteria of User with given id
-	 * 
+	 *
 	 * @param authToken
 	 * @param id
 	 * @return
@@ -184,7 +168,7 @@ public class PositionSearchRESTService extends RESTService {
 
 	/**
 	 * Creates search critera for logged user
-	 * 
+	 *
 	 * @param authToken
 	 * @param newCriteria
 	 * @return
@@ -202,10 +186,10 @@ public class PositionSearchRESTService extends RESTService {
 		Candidate candidate = (Candidate) loggedOnUser.getActiveRole(RoleDiscriminator.CANDIDATE);
 		try {
 			em.createQuery(
-				"from PositionSearchCriteria c " +
-					"where c.candidate.id = :candidateId ")
-				.setParameter("candidateId", candidate.getId())
-				.getSingleResult();
+					"from PositionSearchCriteria c " +
+							"where c.candidate.id = :candidateId ", PositionSearchCriteria.class)
+					.setParameter("candidateId", candidate.getId())
+					.getSingleResult();
 			throw new RestException(Status.CONFLICT, "already.exists");
 		} catch (NoResultException e) {
 			Collection<Department> departments = utilityService.supplementDepartments(newCriteria.getDepartments());
@@ -225,8 +209,8 @@ public class PositionSearchRESTService extends RESTService {
 
 	/**
 	 * Update search criteria of logged user with given criteria id
-	 * 
-	 * @param authToken The authentication token
+	 *
+	 * @param authToken   The authentication token
 	 * @param id
 	 * @param newCriteria
 	 * @return

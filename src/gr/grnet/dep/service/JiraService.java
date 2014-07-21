@@ -1,84 +1,54 @@
 package gr.grnet.dep.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import gr.grnet.dep.service.exceptions.ServiceException;
 import gr.grnet.dep.service.model.JiraIssue;
-import gr.grnet.dep.service.model.JiraIssue.IssueCall;
-import gr.grnet.dep.service.model.JiraIssue.IssueCustomField;
-import gr.grnet.dep.service.model.JiraIssue.IssueResolution;
-import gr.grnet.dep.service.model.JiraIssue.IssueStatus;
-import gr.grnet.dep.service.model.JiraIssue.IssueType;
+import gr.grnet.dep.service.model.JiraIssue.*;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
-
-import java.net.URLEncoder;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
+import javax.jms.*;
 import javax.jms.Queue;
-import javax.jms.QueueConnectionFactory;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ArrayNode;
-import org.codehaus.jackson.node.ObjectNode;
-import org.jboss.resteasy.client.ClientRequest;
-import org.jboss.resteasy.client.ClientResponse;
+import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Stateless(name = "jiraService")
 public class JiraService {
 
 	private static final Logger logger = Logger.getLogger(JiraService.class.getName());
-
-	@PersistenceContext(unitName = "apelladb")
-	protected EntityManager em;
-
-	@EJB
-	JiraService jiraService;
-
-	private ResourceBundle jiraResourceBundle = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-jira", new Locale("el"));
-
 	/**
 	 * username: apella
 	 * password: Test "!@#$%^&*()" || Production: "Pk%81:$/IES/"
 	 */
 
 	private static String PROJECT_KEY;
-
 	private static String REST_URL;
-
 	private static String USERNAME;
-
 	private static String PASSWORD;
-
 	private static String CONFIGURATION;
-
 	private static Configuration conf;
 
 	static {
@@ -95,6 +65,13 @@ public class JiraService {
 		}
 	}
 
+	private final ObjectMapper mapper = new ObjectMapper();
+	@PersistenceContext(unitName = "apelladb")
+	protected EntityManager em;
+	@EJB
+	JiraService jiraService;
+	private ResourceBundle jiraResourceBundle = ResourceBundle.getBundle("gr.grnet.dep.service.util.dep-jira", new Locale("el"));
+
 	public String getResourceBundleString(String key, String... args) {
 		String result = jiraResourceBundle.getString(key);
 		if (args != null && (args.length % 2 == 0)) {
@@ -107,37 +84,27 @@ public class JiraService {
 		return result;
 	}
 
-	private final ObjectMapper mapper = new ObjectMapper();
-
 	private JsonNode doGet(String path) throws Exception {
-		ClientRequest request = new ClientRequest(REST_URL + path);
-		request.accept(MediaType.APPLICATION_JSON);
-		request.header("Authorization", "Basic " + authenticationString());
+		Client client = ClientBuilder.newClient();
 		logger.info("GET REQUEST: " + path);
-		ClientResponse<String> response = request.get(String.class);
-		if (response.getStatus() < 200 || response.getStatus() > 299) {
-			throw new WebApplicationException(response.getStatus());
-		}
-		String json = response.getEntity();
-		JsonNode jsonNode = (json == null) ? mapper.createObjectNode() : mapper.readTree(json);
-		logger.info("GET RESPONSE: " + path + " " + jsonNode.toString());
+		JsonNode jsonNode = client.target(REST_URL + path)
+				.request(MediaType.APPLICATION_JSON)
+				.header("Authorization", "Basic " + authenticationString())
+				.get(JsonNode.class);
+		logger.info("GET RESPONSE: " + path + " SUCCESS");
+		client.close();
 		return jsonNode;
 	}
 
-	private JsonNode doPost(String path, JsonNode data) throws Exception {
-		ClientRequest request = new ClientRequest(REST_URL + path);
-		request.accept(MediaType.APPLICATION_JSON);
-		request.header("Authorization", "Basic " + authenticationString());
-		request.body("application/json", data);
+	private JsonNode doPost(String path, JsonNode data) {
+		Client client = ClientBuilder.newClient();
 		logger.info("POST REQUEST: " + path + " " + data.toString());
-		ClientResponse<String> response = request.post(String.class);
-		if (response.getStatus() < 200 || response.getStatus() > 299) {
-			throw new WebApplicationException(response.getStatus());
-		}
-		String json = response.getEntity();
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode jsonNode = (json == null) ? mapper.createObjectNode() : mapper.readTree(json);
-		logger.info("POST RESPONSE: " + path + " " + jsonNode.toString());
+		JsonNode jsonNode = client.target(REST_URL + path)
+				.request(MediaType.APPLICATION_JSON)
+				.header("Authorization", "Basic " + authenticationString())
+				.post(Entity.json(data), JsonNode.class);
+		logger.info("POST RESPONSE: " + path + " SUCCESS");
+		client.close();
 		return jsonNode;
 	}
 
@@ -273,10 +240,10 @@ public class JiraService {
 	public List<JiraIssue> getUserIssues(Long userId) {
 		@SuppressWarnings("unchecked")
 		List<JiraIssue> issues = em.createQuery(
-			"from JiraIssue issue " +
-				"where issue.user.id = :userId")
-			.setParameter("userId", userId)
-			.getResultList();
+				"from JiraIssue issue " +
+						"where issue.user.id = :userId")
+				.setParameter("userId", userId)
+				.getResultList();
 
 		return issues;
 	}
@@ -317,7 +284,9 @@ public class JiraService {
 
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	public int synchronizeIssues() throws Exception {
-		List<Long> localIssueIds = em.createQuery("select i.id from JiraIssue i").getResultList();
+		List<Long> localIssueIds = em.createQuery(
+				"select i.id from JiraIssue i", Long.class)
+				.getResultList();
 		List<JiraIssue> remoteIssues = getRemoteIssues(localIssueIds);
 		for (JiraIssue issue : remoteIssues) {
 			jiraService.updateIssue(issue);
@@ -466,7 +435,7 @@ public class JiraService {
 		}
 
 		if (jiraConfiguration.getIssueCustomFieldId(IssueCustomField.REPORTER).length() > 0 &&
-			jiraIssue.getReporter() != null) {
+				jiraIssue.getReporter() != null) {
 			fields.put(jiraConfiguration.getIssueCustomFieldId(IssueCustomField.REPORTER), jiraIssue.getReporter());
 		}
 

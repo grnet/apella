@@ -1,8 +1,7 @@
 package gr.grnet.dep.service.model;
 
-import java.util.logging.Logger;
-
 import javax.persistence.Embeddable;
+import java.util.logging.Logger;
 
 @Embeddable
 public class ShibbolethInformation {
@@ -67,18 +66,18 @@ public class ShibbolethInformation {
 
 	public boolean isMissingRequiredFields() {
 		return this.affiliation == null ||
-			this.remoteUser == null ||
-			this.givenName == null ||
-			this.sn == null ||
-			this.schacHomeOrganization == null;
+				this.remoteUser == null ||
+				this.givenName == null ||
+				this.sn == null ||
+				this.schacHomeOrganization == null;
 	}
 
 	@Override
 	public String toString() {
 		return "EduPersonAffiliation=" + getAffiliation() +
-			" REMOTE_USER=" + getRemoteUser() +
-			" GivenName=" + getGivenName() +
-			" SchacHomeOrganization=" + getSchacHomeOrganization() +
-			" Sn=" + getSn();
+				" REMOTE_USER=" + getRemoteUser() +
+				" GivenName=" + getGivenName() +
+				" SchacHomeOrganization=" + getSchacHomeOrganization() +
+				" Sn=" + getSn();
 	}
 }

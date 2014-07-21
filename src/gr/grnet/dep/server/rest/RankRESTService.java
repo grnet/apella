@@ -4,9 +4,6 @@ import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Rank;
 
-import java.util.Collection;
-import java.util.List;
-
 import javax.ejb.Stateless;
 import javax.persistence.NoResultException;
 import javax.ws.rs.GET;
@@ -14,6 +11,7 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response.Status;
+import java.util.Collection;
 
 @Path("/rank")
 @Stateless
@@ -21,7 +19,7 @@ public class RankRESTService extends RESTService {
 
 	/**
 	 * Returns all existing ranks
-	 * 
+	 *
 	 * @param authToken The authenticatio token
 	 * @return
 	 */
@@ -29,14 +27,14 @@ public class RankRESTService extends RESTService {
 	@SuppressWarnings("unchecked")
 	public Collection<Rank> getAll(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
 		getLoggedOn(authToken);
-		return (List<Rank>) em.createQuery(
-			"select distinct r from Rank r ")
-			.getResultList();
+		return em.createQuery(
+				"select distinct r from Rank r ", Rank.class)
+				.getResultList();
 	}
 
 	/**
 	 * Returns Rank with given id
-	 * 
+	 *
 	 * @param authToken
 	 * @param id
 	 * @return
@@ -46,11 +44,11 @@ public class RankRESTService extends RESTService {
 	public Rank get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		getLoggedOn(authToken);
 		try {
-			return (Rank) em.createQuery(
-				"select r from Rank r " +
-					"where r.id = :id")
-				.setParameter("id", id)
-				.getSingleResult();
+			return em.createQuery(
+					"select r from Rank r " +
+							"where r.id = :id", Rank.class)
+					.setParameter("id", id)
+					.getSingleResult();
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.rank.id");
 		}

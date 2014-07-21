@@ -7,17 +7,12 @@ import gr.grnet.dep.service.model.JiraIssue;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
-import java.util.List;
-import java.util.logging.Logger;
-
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Response.Status;
+import java.util.List;
+import java.util.logging.Logger;
 
 @Path("/jira")
 @Stateless
@@ -66,6 +61,7 @@ public class JiraRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
+			issue.sanitize();
 			issue.setUser(loggedOn);
 			issue.setReporter(null);
 			JiraIssue createdIssue = jiraService.createIssue(issue);
@@ -84,6 +80,7 @@ public class JiraRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		try {
+			issue.sanitize();
 			issue.setReporter(loggedOn.getUsername());
 			JiraIssue createdIssue = jiraService.createRemoteIssue(issue);
 			return createdIssue;
@@ -96,6 +93,7 @@ public class JiraRESTService extends RESTService {
 	@Path("/public")
 	public JiraIssue createPublicIssue(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, JiraIssue issue) {
 		try {
+			issue.sanitize();
 			issue.setReporter(null);
 			JiraIssue createdIssue = jiraService.createRemoteIssue(issue);
 			return createdIssue;

@@ -2,11 +2,7 @@ package gr.grnet.dep.service.model;
 
 import gr.grnet.dep.service.util.CompareUtil;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Version;
+import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @Entity

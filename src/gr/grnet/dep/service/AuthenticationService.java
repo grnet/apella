@@ -1,20 +1,24 @@
 package gr.grnet.dep.service;
 
 import gr.grnet.dep.service.exceptions.ServiceException;
-import gr.grnet.dep.service.model.AuthenticationType;
-import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.Institution;
-import gr.grnet.dep.service.model.InstitutionCategory;
-import gr.grnet.dep.service.model.ProfessorDomestic;
-import gr.grnet.dep.service.model.ProfessorDomesticData;
+import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
-import gr.grnet.dep.service.model.ShibbolethInformation;
-import gr.grnet.dep.service.model.Subject;
-import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
 
+import javax.annotation.Resource;
+import javax.crypto.Cipher;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import javax.ejb.*;
+import javax.inject.Inject;
+import javax.persistence.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.ext.Providers;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -23,28 +27,6 @@ import java.security.SecureRandom;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.annotation.Resource;
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.ext.Providers;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
 
 @Stateless
 public class AuthenticationService {
@@ -79,14 +61,30 @@ public class AuthenticationService {
 		}
 	}
 
+	public User findAccountByAuthenticationToken(String authToken) {
+		try {
+			User user = em.createQuery(
+					"from User u " +
+							"left join fetch u.roles " +
+							"where u.status = :status " +
+							"and u.authToken = :authToken", User.class)
+					.setParameter("status", UserStatus.ACTIVE)
+					.setParameter("authToken", authToken)
+					.getSingleResult();
+			return user;
+		} catch (NoResultException e) {
+			return null;
+		}
+	}
+
 	public User findAccountByUsername(String username) {
 		try {
-			return (User) em.createQuery(
-				"from User u " +
-					"left join fetch u.roles rls " +
-					"where u.username = :username")
-				.setParameter("username", username)
-				.getSingleResult();
+			return em.createQuery(
+					"from User u " +
+							"left join fetch u.roles rls " +
+							"where u.username = :username", User.class)
+					.setParameter("username", username)
+					.getSingleResult();
 		} catch (NoResultException e) {
 			return null;
 		}
@@ -94,12 +92,12 @@ public class AuthenticationService {
 
 	public User findAccountByShibbolethInfo(ShibbolethInformation shibbolethInfo) {
 		try {
-			return (User) em.createQuery(
-				"select u from User u " +
-					"left join fetch u.roles rls " +
-					"where u.shibbolethInfo.remoteUser = :remoteUser")
-				.setParameter("remoteUser", shibbolethInfo.getRemoteUser())
-				.getSingleResult();
+			return em.createQuery(
+					"select u from User u " +
+							"left join fetch u.roles rls " +
+							"where u.shibbolethInfo.remoteUser = :remoteUser", User.class)
+					.setParameter("remoteUser", shibbolethInfo.getRemoteUser())
+					.getSingleResult();
 		} catch (NoResultException e) {
 			return null;
 		}
@@ -107,12 +105,12 @@ public class AuthenticationService {
 
 	public User findAccountByPermanentAuthToken(String permanentAuthToken) {
 		try {
-			return (User) em.createQuery(
-				"select u from User u " +
-					"left join fetch u.roles " +
-					"where u.permanentAuthToken = :permanentAuthToken")
-				.setParameter("permanentAuthToken", permanentAuthToken)
-				.getSingleResult();
+			return em.createQuery(
+					"select u from User u " +
+							"left join fetch u.roles " +
+							"where u.permanentAuthToken = :permanentAuthToken", User.class)
+					.setParameter("permanentAuthToken", permanentAuthToken)
+					.getSingleResult();
 		} catch (NoResultException e) {
 			return null;
 		}
@@ -120,12 +118,12 @@ public class AuthenticationService {
 
 	public User findAccountByProfessorDomesticData(ProfessorDomesticData data) {
 		try {
-			User u = (User) em.createQuery(
-				"select u from User u " +
-					"left join fetch u.roles rls " +
-					"where u.contactInfo.email = :email")
-				.setParameter("email", data.getEmail())
-				.getSingleResult();
+			User u = em.createQuery(
+					"select u from User u " +
+							"left join fetch u.roles rls " +
+							"where u.contactInfo.email = :email", User.class)
+					.setParameter("email", data.getEmail())
+					.getSingleResult();
 			return u;
 		} catch (NoResultException e) {
 			return null;
@@ -133,7 +131,7 @@ public class AuthenticationService {
 	}
 
 	public User createProfessorDomesticAccount(ShibbolethInformation shibbolethInfo) {
-		// Create User from Shibboleth Fields 
+		// Create User from Shibboleth Fields
 		User u = new User();
 		u.setAuthenticationType(AuthenticationType.SHIBBOLETH);
 		u.setCreationDate(new Date());
@@ -158,7 +156,7 @@ public class AuthenticationService {
 
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public User createProfessorDomesticAccount(ProfessorDomesticData data) {
-		// Create User from Data 
+		// Create User from Data
 		User u = new User();
 		u.setAuthenticationType(AuthenticationType.EMAIL);
 
@@ -370,15 +368,41 @@ public class AuthenticationService {
 		}
 	}
 
+	public User getLoggedOn(String authToken) throws ServiceException {
+		if (authToken == null) {
+			throw new ServiceException("login.missing.token");
+		}
+		if (!isValidAuthenticationToken(authToken)) {
+			throw new ServiceException("login.invalid.token");
+		}
+		User user = findAccountByAuthenticationToken(authToken);
+		if (user == null) {
+			throw new ServiceException("login.invalid.token");
+		}
+		return user;
+
+	}
+
+	public void logout(String authToken) throws ServiceException {
+		if (authToken == null) {
+			throw new ServiceException("login.missing.token");
+		}
+		User user = findAccountByAuthenticationToken(authToken);
+		if (user == null) {
+			throw new ServiceException("login.invalid.token");
+		}
+		user.setAuthToken(null);
+	}
+
 	/////////////////////////////////////////////////////////////////
 
 	private Institution findInstitutionBySchacHomeOrganization(String schacHomeOrganization) {
 		try {
-			return (Institution) em.createQuery(
-				"from Institution i " +
-					"where i.schacHomeOrganization = :schacHomeOrganization ")
-				.setParameter("schacHomeOrganization", schacHomeOrganization)
-				.getSingleResult();
+			return em.createQuery(
+					"from Institution i " +
+							"where i.schacHomeOrganization = :schacHomeOrganization ", Institution.class)
+					.setParameter("schacHomeOrganization", schacHomeOrganization)
+					.getSingleResult();
 		} catch (NoResultException e) {
 			return null;
 		} catch (NonUniqueResultException e) {
@@ -428,29 +452,58 @@ public class AuthenticationService {
 		}
 	}
 
+	////////////////////////////////////////////////////////////////
+
+	private static final long MAX_AGE = 7200000L; //2 Hours  2*60*60*1000 = 7.200.000
+
+	private static byte[] tempAuthTokenSecretKey = {
+			0x76, 0x69, 0x59, 0x43, 0x68, 0x71, 0x40, 0x54, 0x62, 0x52, 0x12, 0x25, 0x54, 0x3b, 0x35, 0x39
+	};//"thisIsASecretKey";
+
 	/**
 	 * Generates the token used after each login
-	 * 
+	 *
 	 * @param userId
 	 * @return
 	 */
 	private String generateAuthenticationToken(Long userId) {
+		String strToEncrypt = userId + "/" + Long.toString(new SecureRandom().nextLong()) + "/" + System.currentTimeMillis();
 		try {
-			MessageDigest md = MessageDigest.getInstance("SHA");
-			byte[] hash = md.digest((userId.toString() + System.currentTimeMillis()).getBytes("ISO-8859-1"));
-			return new String(Base64.encodeBase64(hash), "ISO-8859-1");
-		} catch (NoSuchAlgorithmException nsae) {
-			throw new EJBException(nsae);
-		} catch (UnsupportedEncodingException uee) {
-			throw new EJBException(uee);
+			Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+			final SecretKeySpec secretKey = new SecretKeySpec(tempAuthTokenSecretKey, "AES");
+			cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+			final String encryptedString = new String(Base64.encodeBase64(cipher.doFinal(strToEncrypt.getBytes()), false, true), "ISO-8859-1");
+			return encryptedString;
+		} catch (Exception e) {
+			throw new IllegalStateException(e);
 		}
 	}
 
-	private static final SecretKeySpec secretKey = new SecretKeySpec("APELLA3EMAIL6LOGIN9SECRET2KEY8".getBytes(), "HmacSHA256");
+	private boolean isValidAuthenticationToken(String authToken) {
+		try {
+			Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5PADDING");
+			final SecretKeySpec secretKey = new SecretKeySpec(tempAuthTokenSecretKey, "AES");
+			cipher.init(Cipher.DECRYPT_MODE, secretKey);
+			final String decryptedString = new String(cipher.doFinal(Base64.decodeBase64(authToken)));
+			String[] tokens = decryptedString.split("/");
+			if (tokens.length < 3) {
+				return false;
+			}
+			long tokenTime = Long.parseLong(tokens[2]);
+			if (System.currentTimeMillis() - tokenTime > MAX_AGE) {
+				return false;
+			}
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	private static final SecretKeySpec permanentAuthTokenSecretKey = new SecretKeySpec("APELLA3EMAIL6LOGIN9SECRET2KEY8".getBytes(), "HmacSHA256");
 
 	/**
 	 * Generates the permanent login used for email-link-authentication
-	 * 
+	 *
 	 * @param userId
 	 * @param email
 	 * @return
@@ -459,9 +512,9 @@ public class AuthenticationService {
 		String unencoded = userId + "/" + email + "/" + System.currentTimeMillis();
 		try {
 			Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
-			sha256_HMAC.init(secretKey);
+			sha256_HMAC.init(permanentAuthTokenSecretKey);
 			byte[] hash = sha256_HMAC.doFinal(unencoded.getBytes());
-			String token = new String(Base64.encodeBase64(hash), "ISO-8859-1");
+			String token = new String(Base64.encodeBase64(hash, false, true), "ISO-8859-1");
 			return token;
 		} catch (NoSuchAlgorithmException e) {
 			throw new EJBException(e);

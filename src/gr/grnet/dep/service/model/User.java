@@ -1,53 +1,29 @@
 package gr.grnet.dep.service.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.util.IdentificationDeserializer;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.PostLoad;
-import javax.persistence.PostPersist;
-import javax.persistence.PostUpdate;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.persistence.Version;
+import javax.persistence.*;
 import javax.validation.Valid;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.map.annotate.JsonDeserialize;
-import org.codehaus.jackson.map.annotate.JsonView;
+import java.io.Serializable;
+import java.util.*;
 
 @Entity
 @XmlRootElement
 @Table(name = "Users")
 public class User implements Serializable {
 
-	/** Default value included to remove warning. Remove or modify at will. **/
+	/**
+	 * Default value included to remove warning. Remove or modify at will. *
+	 */
 	private static final long serialVersionUID = 1L;
 
 	public enum UserStatus {
@@ -318,24 +294,24 @@ public class User implements Serializable {
 	private void refreshLocalizedNames() {
 		firstname.put("el", this.basicInfo != null ? this.basicInfo.getFirstname() : null);
 		if (this.basicInfoLatin != null &&
-			this.basicInfoLatin.getFirstname() != null &&
-			!this.basicInfoLatin.getFirstname().isEmpty()) {
+				this.basicInfoLatin.getFirstname() != null &&
+				!this.basicInfoLatin.getFirstname().isEmpty()) {
 			firstname.put("en", this.basicInfoLatin != null ? this.basicInfoLatin.getFirstname() : null);
 		} else {
 			firstname.put("en", this.basicInfo != null ? this.basicInfo.getFirstname() : null);
 		}
 		lastname.put("el", this.basicInfo != null ? this.basicInfo.getLastname() : null);
 		if (this.basicInfoLatin != null &&
-			this.basicInfoLatin.getLastname() != null &&
-			!this.basicInfoLatin.getLastname().isEmpty()) {
+				this.basicInfoLatin.getLastname() != null &&
+				!this.basicInfoLatin.getLastname().isEmpty()) {
 			lastname.put("en", this.basicInfoLatin != null ? this.basicInfoLatin.getLastname() : null);
 		} else {
 			lastname.put("en", this.basicInfo != null ? this.basicInfo.getLastname() : null);
 		}
 		fathername.put("el", this.basicInfo != null ? this.basicInfo.getFathername() : null);
 		if (this.basicInfoLatin != null &&
-			this.basicInfoLatin.getFathername() != null &&
-			!this.basicInfoLatin.getFathername().isEmpty()) {
+				this.basicInfoLatin.getFathername() != null &&
+				!this.basicInfoLatin.getFathername().isEmpty()) {
 			fathername.put("en", this.basicInfoLatin != null ? this.basicInfoLatin.getFathername() : null);
 		} else {
 			fathername.put("en", this.basicInfo != null ? this.basicInfo.getFathername() : null);
@@ -369,9 +345,9 @@ public class User implements Serializable {
 	@JsonView({UserView.class})
 	public boolean isMissingRequiredFields() {
 		return (this.basicInfo == null || this.basicInfo.isMissingRequiredFields()) ||
-			(this.contactInfo == null || this.contactInfo.isMissingRequiredFields()) ||
-			(this.identification == null && !(this.getPrimaryRole().equals(RoleDiscriminator.PROFESSOR_DOMESTIC) || this.getPrimaryRole().equals(RoleDiscriminator.PROFESSOR_FOREIGN)
-			));
+				(this.contactInfo == null || this.contactInfo.isMissingRequiredFields()) ||
+				(this.identification == null && !(this.getPrimaryRole().equals(RoleDiscriminator.PROFESSOR_DOMESTIC) || this.getPrimaryRole().equals(RoleDiscriminator.PROFESSOR_FOREIGN)
+				));
 
 	}
 
@@ -385,15 +361,15 @@ public class User implements Serializable {
 		role.setUser(null);
 	}
 
-	private static final List<RoleDiscriminator> roleOrder = Arrays.asList(new RoleDiscriminator[] {
-		RoleDiscriminator.PROFESSOR_DOMESTIC,
-		RoleDiscriminator.PROFESSOR_FOREIGN,
-		RoleDiscriminator.CANDIDATE,
-		RoleDiscriminator.INSTITUTION_MANAGER,
-		RoleDiscriminator.INSTITUTION_ASSISTANT,
-		RoleDiscriminator.MINISTRY_MANAGER,
-		RoleDiscriminator.MINISTRY_ASSISTANT,
-		RoleDiscriminator.ADMINISTRATOR
+	private static final List<RoleDiscriminator> roleOrder = Arrays.asList(new RoleDiscriminator[]{
+			RoleDiscriminator.PROFESSOR_DOMESTIC,
+			RoleDiscriminator.PROFESSOR_FOREIGN,
+			RoleDiscriminator.CANDIDATE,
+			RoleDiscriminator.INSTITUTION_MANAGER,
+			RoleDiscriminator.INSTITUTION_ASSISTANT,
+			RoleDiscriminator.MINISTRY_MANAGER,
+			RoleDiscriminator.MINISTRY_ASSISTANT,
+			RoleDiscriminator.ADMINISTRATOR
 	});
 
 	@JsonView({UserView.class, DetailedRoleView.class, DetailedPositionView.class})
