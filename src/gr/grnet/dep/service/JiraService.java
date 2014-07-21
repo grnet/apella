@@ -92,6 +92,7 @@ public class JiraService {
 				.header("Authorization", "Basic " + authenticationString())
 				.get(JsonNode.class);
 		logger.info("GET RESPONSE: " + path + " SUCCESS");
+		client.close();
 		return jsonNode;
 	}
 
@@ -103,6 +104,7 @@ public class JiraService {
 				.header("Authorization", "Basic " + authenticationString())
 				.post(Entity.json(data), JsonNode.class);
 		logger.info("POST RESPONSE: " + path + " SUCCESS");
+		client.close();
 		return jsonNode;
 	}
 
