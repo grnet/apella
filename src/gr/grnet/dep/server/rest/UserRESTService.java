@@ -3,7 +3,6 @@ package gr.grnet.dep.server.rest;
 import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.AuthenticationService;
 import gr.grnet.dep.service.exceptions.ServiceException;
 import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
@@ -13,7 +12,6 @@ import gr.grnet.dep.service.model.User.UserView;
 import gr.grnet.dep.service.model.User.UserWithLoginDataView;
 import gr.grnet.dep.service.util.StringUtil;
 
-import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.inject.Inject;

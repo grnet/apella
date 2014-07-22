@@ -4236,26 +4236,24 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                     self.$('#uploader div.progress .bar').css('width', progress + '%');
                 },
                 done: function (e, data) {
-                    self.model.set(data.result, {
-                        silent: true
-                    });
                     self.$('div.progress').fadeOut('slow', function () {
                         self.$('#uploader div.progress .bar').css('width', '0%');
                         self.$("#uploader").modal("hide");
+                        if (!!data.result.error) {
+                            new Views.PopupView({
+                                type: "error",
+                                message: $.i18n.prop("error." + data.result.error)
+                            }).show();
+                        } else {
+                            self.model.set(data.result, {
+                                silent: true
+                            });
+                        }
                     });
+
                 },
                 fail: function (e, data) {
-                    var resp, popup;
-                    self.$('#uploader div.progress').fadeOut('slow', function () {
-                        self.$('div.progress .bar').css('width', '0%');
-                        self.$("#uploader").modal("hide");
-                    });
-                    resp = data.jqXHR;
-                    popup = new Views.PopupView({
-                        type: "error",
-                        message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-                    });
-                    popup.show();
+                    // Won't happen due to forceIframeTransport and response not being empty
                 }
             });
             return self;
@@ -4520,28 +4518,24 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                     self.$('#uploader div.progress .bar').css('width', progress + '%');
                 },
                 done: function (e, data) {
-                    self.$('#uploader div.progress').fadeOut('slow', function () {
-                        var newFile;
+                    self.$('div.progress').fadeOut('slow', function () {
                         self.$('#uploader div.progress .bar').css('width', '0%');
-                        newFile = new Models.File(data.result);
-                        newFile.urlRoot = self.collection.url;
-                        self.collection.add(newFile, {
-                            silent: true
-                        });
                         self.$("#uploader").modal("hide");
+                        if (!!data.result.error) {
+                            new Views.PopupView({
+                                type: "error",
+                                message: $.i18n.prop("error." + data.result.error)
+                            }).show();
+                        } else {
+                            self.model.set(data.result, {
+                                silent: true
+                            });
+                        }
                     });
+
                 },
                 fail: function (e, data) {
-                    var resp = data.jqXHR;
-                    var popup = new Views.PopupView({
-                        type: "error",
-                        message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-                    });
-                    popup.show();
-                    self.$('#uploader #progress.bar').hide('slow', function () {
-                        self.$('#uploader #progress .bar').css('width', '0%');
-                        self.$("#uploader").modal("hide");
-                    });
+                    // Won't happen due to forceIframeTransport and response not being empty
                 }
             });
 

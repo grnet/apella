@@ -6,6 +6,7 @@ import javax.ejb.ApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+
 @ApplicationException
 public class RestException extends NoLogWebApplicationException {
 
@@ -19,7 +20,9 @@ public class RestException extends NoLogWebApplicationException {
 
 	public RestException(Status status, String errorCode) {
 		super(Response.status(status)
+				.entity("{\"error\":\"" + errorCode + "\"}")
 				.header("X-Error-Code", errorCode)
 				.build());
 	}
+
 }

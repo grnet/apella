@@ -302,6 +302,8 @@ public class RoleRESTService extends RESTService {
 			newRole.setId(null);
 			newRole = em.merge(newRole);
 			em.flush();
+
+			newRole.getUser().getPrimaryRole();
 			return newRole;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
@@ -441,6 +443,7 @@ public class RoleRESTService extends RESTService {
 				jiraService.queueCreateIssue(issue);
 			}
 
+			existingRole.getUser().getPrimaryRole();
 			return existingRole;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
@@ -1163,6 +1166,7 @@ public class RoleRESTService extends RESTService {
 			}
 
 			// Return result
+			primaryRole.getUser().getPrimaryRole();
 			return primaryRole;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);

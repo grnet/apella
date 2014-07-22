@@ -10,7 +10,6 @@ import gr.grnet.dep.service.exceptions.ServiceException;
 import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
-import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
@@ -453,8 +452,8 @@ public class RESTService {
 		try {
 			DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
 			ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
-			servletFileUpload.setFileSizeMax(30 * 1024 * 1024);
-			servletFileUpload.setSizeMax(30 * 1024 * 1024);
+			servletFileUpload.setFileSizeMax(50 * 1024 * 1024); // 54.428.800
+			servletFileUpload.setSizeMax(50 * 1024 * 1024);
 			servletFileUpload.setHeaderEncoding("UTF-8");
 			@SuppressWarnings("unchecked")
 			List<FileItem> fileItems = servletFileUpload.parseRequest(request);
