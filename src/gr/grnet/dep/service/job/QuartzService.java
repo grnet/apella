@@ -127,9 +127,8 @@ public class QuartzService {
 
 	public int deletePositions() {
 		// Due to triggers (PositionPhase), cannot execute bulk delete
-		@SuppressWarnings("unchecked")
 		List<Position> positions = em.createQuery(
-				"from Position p where p.permanent is false")
+				"from Position p where p.permanent is false", Position.class)
 				.getResultList();
 		int i = 0;
 		for (Position position : positions) {
@@ -198,7 +197,6 @@ public class QuartzService {
 
 	public int notifyOnClosedPositions() {
 		Date toDate = DateUtil.removeTime(new Date());
-		@SuppressWarnings("unchecked")
 		List<Position> positions = em.createQuery(
 				"from Position p where " +
 						"p.permanent is true " +
@@ -208,7 +206,7 @@ public class QuartzService {
 						"	select n.referredEntityId " +
 						"	from Notification n " +
 						"	where n.type = 'position.closed' " +
-						") ")
+						") ", Position.class)
 				.setParameter("status", PositionStatus.ANOIXTI)
 				.setParameter("toDate", DateUtil.removeTime(toDate))
 				.getResultList();

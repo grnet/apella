@@ -144,7 +144,7 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.FORBIDDEN, "wrong.position.status");
 			}
 			try {
-				Candidacy existingCandidacy = (Candidacy) em.createQuery(
+				Candidacy existingCandidacy = em.createQuery(
 						"select c from Candidacy c " +
 								"where c.candidate.id = :candidateId " +
 								"and c.candidacies.position.id = :positionId", Candidacy.class)
@@ -701,7 +701,6 @@ public class CandidacyRESTService extends RESTService {
 			return new ArrayList<RegisterMember>();
 		}
 		// Run Query
-		@SuppressWarnings("unchecked")
 		List<RegisterMember> registerMembers = em.createQuery(
 				"select distinct m from Register r " +
 						"join r.members m " +

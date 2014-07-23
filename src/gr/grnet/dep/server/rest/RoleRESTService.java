@@ -1079,9 +1079,9 @@ public class RoleRESTService extends RESTService {
 				try {
 					InstitutionManager im = (InstitutionManager) primaryRole;
 					// Check if exists active IM for same Institution:
-					em.createQuery("select im from InstitutionManager im " +
+					em.createQuery("select im.id from InstitutionManager im " +
 							"where im.status = :status " +
-							"and im.institution.id = :institutionId", InstitutionManager.class)
+							"and im.institution.id = :institutionId", Long.class)
 							.setParameter("status", RoleStatus.ACTIVE)
 							.setParameter("institutionId", im.getInstitution().getId())
 							.setMaxResults(1)
@@ -1095,9 +1095,9 @@ public class RoleRESTService extends RESTService {
 		if (primaryRole instanceof ProfessorDomestic || primaryRole instanceof ProfessorForeign) {
 			if (!requestRole.getStatus().equals(RoleStatus.ACTIVE)) {
 				try {
-					em.createQuery("select pcm from PositionCommitteeMember pcm " +
+					em.createQuery("select pcm.id from PositionCommitteeMember pcm " +
 							"where pcm.committee.position.phase.status = :status " +
-							"and pcm.registerMember.professor.id = :professorId", PositionCommitteeMember.class)
+							"and pcm.registerMember.professor.id = :professorId", Long.class)
 							.setParameter("status", PositionStatus.EPILOGI)
 							.setParameter("professorId", primaryRole.getId())
 							.setMaxResults(1)
@@ -1108,7 +1108,7 @@ public class RoleRESTService extends RESTService {
 				try {
 					em.createQuery("select e.id from PositionEvaluator e " +
 							"where e.evaluation.position.phase.status = :status " +
-							"and e.registerMember.professor.id = :professorId", PositionEvaluator.class)
+							"and e.registerMember.professor.id = :professorId", Long.class)
 							.setParameter("status", PositionStatus.EPILOGI)
 							.setParameter("professorId", primaryRole.getId())
 							.setMaxResults(1)

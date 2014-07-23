@@ -246,9 +246,9 @@ public class RegisterRESTService extends RESTService {
 		// Validate removal
 		if (removedProfessorIds.size() > 0) {
 			try {
-				em.createQuery("select pcm from PositionCommitteeMember pcm " +
+				em.createQuery("select pcm.id from PositionCommitteeMember pcm " +
 						"where pcm.registerMember.register.id = :registerId " +
-						"and pcm.registerMember.professor.id in (:professorIds)", PositionCommitteeMember.class)
+						"and pcm.registerMember.professor.id in (:professorIds)", Long.class)
 						.setParameter("registerId", existingRegister.getId())
 						.setParameter("professorIds", removedProfessorIds)
 						.setMaxResults(1)
@@ -259,7 +259,7 @@ public class RegisterRESTService extends RESTService {
 			try {
 				em.createQuery("select e.id from PositionEvaluator e " +
 						"where e.registerMember.register.id = :registerId " +
-						"and e.registerMember.professor.id in (:professorIds)", PositionEvaluator.class)
+						"and e.registerMember.professor.id in (:professorIds)", Long.class)
 						.setParameter("registerId", existingRegister.getId())
 						.setParameter("professorIds", removedProfessorIds)
 						.setMaxResults(1)
@@ -270,7 +270,7 @@ public class RegisterRESTService extends RESTService {
 			try {
 				em.createQuery("select e.id from CandidacyEvaluator e " +
 						"where e.registerMember.register.id = :registerId " +
-						"and e.registerMember.professor.id in (:professorIds)", CandidacyEvaluator.class)
+						"and e.registerMember.professor.id in (:professorIds)", Long.class)
 						.setParameter("registerId", existingRegister.getId())
 						.setParameter("professorIds", removedProfessorIds)
 						.setMaxResults(1)
