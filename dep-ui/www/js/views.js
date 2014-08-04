@@ -9032,7 +9032,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                             sNext: $.i18n.prop("dataTable_sNext"),
                             sLast: $.i18n.prop("dataTable_sLast")
                         }
-                    }
+                    },
+                    "aoColumnDefs": [
+                        { "sType": "date-eu", "aTargets": [ 6, 7 ]  }
+                    ]
                 });
             }
             return self;
