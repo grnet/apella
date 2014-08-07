@@ -4519,6 +4519,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                 },
                 done: function (e, data) {
                     self.$('div.progress').fadeOut('slow', function () {
+                        var newFile;
                         self.$('#uploader div.progress .bar').css('width', '0%');
                         self.$("#uploader").modal("hide");
                         if (!!data.result.error) {
@@ -4527,7 +4528,9 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                                 message: $.i18n.prop("error." + data.result.error)
                             }).show();
                         } else {
-                            self.model.set(data.result, {
+                            newFile = new Models.File(data.result);
+                            newFile.urlRoot = self.collection.url;
+                            self.collection.add(newFile, {
                                 silent: true
                             });
                         }
