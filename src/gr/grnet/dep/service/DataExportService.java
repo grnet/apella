@@ -1,8 +1,19 @@
 package gr.grnet.dep.service;
 
 import gr.grnet.dep.service.dto.Statistics;
-import gr.grnet.dep.service.model.*;
+import gr.grnet.dep.service.model.Candidacy;
+import gr.grnet.dep.service.model.Candidate;
+import gr.grnet.dep.service.model.InstitutionAssistant;
+import gr.grnet.dep.service.model.InstitutionManager;
+import gr.grnet.dep.service.model.InstitutionRegulatoryFramework;
 import gr.grnet.dep.service.model.Position.PositionStatus;
+import gr.grnet.dep.service.model.PositionCommitteeMember;
+import gr.grnet.dep.service.model.PositionEvaluator;
+import gr.grnet.dep.service.model.ProfessorDomestic;
+import gr.grnet.dep.service.model.ProfessorForeign;
+import gr.grnet.dep.service.model.Rank;
+import gr.grnet.dep.service.model.Register;
+import gr.grnet.dep.service.model.RegisterMember;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User.UserStatus;
@@ -11,7 +22,12 @@ import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 import javax.ejb.EJBException;
@@ -23,7 +39,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 @Stateless
@@ -1495,12 +1517,27 @@ public class DataExportService {
 						"group by ph.status " +
 						"order by ph.status ", Object[].class)
 				.getResultList();
+		Long countClosed = em.createQuery(
+				"select count(pos.id) from Position pos " +
+						"join pos.phase ph " +
+						"where pos.permanent = true " +
+						"and ph.status = :status " +
+						"and ph.candidacies.closingDate < :today ", Long.class)
+				.setParameter("status", PositionStatus.ANOIXTI)
+				.setParameter("today", new Date())
+				.getSingleResult();
+
+		stats.getPositions().put("KLEISTI", countClosed);
 		for (PositionStatus status : PositionStatus.values()) {
-			stats.getPositions().put(status.toString(), 0l);
+			if (status.equals(PositionStatus.ANOIXTI)) {
+				stats.getPositions().put(status.toString(), 0l - countClosed);
+			} else {
+				stats.getPositions().put(status.toString(), 0l);
+			}
 		}
 		Long sum = 0L;
 		for (Object[] pos : positionStats) {
-			String status = ((PositionStatus) pos[0]).toString();
+			String status = pos[0].toString();
 			Long count = (Long) pos[1];
 			stats.getPositions().put(status, stats.getPositions().get(status) + count);
 			sum += count;
