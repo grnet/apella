@@ -16,6 +16,7 @@ import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.file.PositionCommitteeFile;
 import gr.grnet.dep.service.util.DateUtil;
+import gr.grnet.dep.service.util.StringUtil;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 
@@ -413,6 +414,7 @@ public class PositionCommitteeRESTService extends RESTService {
 								Collections.unmodifiableMap(new HashMap<String, String>() {
 
 									{
+										put("positionID", StringUtil.formatPositionID(savedCommittee.getPosition().getId()));
 										put("position", savedCommittee.getPosition().getName());
 
 										put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
@@ -436,6 +438,7 @@ public class PositionCommitteeRESTService extends RESTService {
 								Collections.unmodifiableMap(new HashMap<String, String>() {
 
 									{
+										put("positionID", StringUtil.formatPositionID(savedCommittee.getPosition().getId()));
 										put("position", savedCommittee.getPosition().getName());
 
 										put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
@@ -464,6 +467,7 @@ public class PositionCommitteeRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(savedCommittee.getPosition().getId()));
 									put("position", savedCommittee.getPosition().getName());
 
 									put("firstname_el", removedMember.getRegisterMember().getProfessor().getUser().getFirstname("el"));
@@ -487,6 +491,7 @@ public class PositionCommitteeRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(savedCommittee.getPosition().getId()));
 									put("position", savedCommittee.getPosition().getName());
 
 									put("firstname_el", removedMember.getRegisterMember().getProfessor().getUser().getFirstname("el"));
@@ -513,6 +518,7 @@ public class PositionCommitteeRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(savedCommittee.getPosition().getId()));
 									put("position", savedCommittee.getPosition().getName());
 
 									put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
@@ -539,6 +545,7 @@ public class PositionCommitteeRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(savedCommittee.getPosition().getId()));
 									put("position", savedCommittee.getPosition().getName());
 
 									put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
@@ -565,6 +572,7 @@ public class PositionCommitteeRESTService extends RESTService {
 								Collections.unmodifiableMap(new HashMap<String, String>() {
 
 									{
+										put("positionID", StringUtil.formatPositionID(savedCommittee.getPosition().getId()));
 										put("position", savedCommittee.getPosition().getName());
 
 										put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
@@ -590,6 +598,7 @@ public class PositionCommitteeRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(savedCommittee.getPosition().getId()));
 									put("position", savedCommittee.getPosition().getName());
 
 									put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
@@ -617,6 +626,7 @@ public class PositionCommitteeRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(savedCommittee.getPosition().getId()));
 									put("position", savedCommittee.getPosition().getName());
 
 									put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
@@ -641,6 +651,7 @@ public class PositionCommitteeRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(savedCommittee.getPosition().getId()));
 									put("position", savedCommittee.getPosition().getName());
 
 									put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
@@ -899,6 +910,7 @@ public class PositionCommitteeRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
+								put("positionID", StringUtil.formatPositionID(pcFile.getCommittee().getPosition().getId()));
 								put("position", pcFile.getCommittee().getPosition().getName());
 
 								put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
@@ -923,6 +935,7 @@ public class PositionCommitteeRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
+								put("positionID", StringUtil.formatPositionID(pcFile.getCommittee().getPosition().getId()));
 								put("position", pcFile.getCommittee().getPosition().getName());
 
 								put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
@@ -947,6 +960,7 @@ public class PositionCommitteeRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
+								put("positionID", StringUtil.formatPositionID(pcFile.getCommittee().getPosition().getId()));
 								put("position", pcFile.getCommittee().getPosition().getName());
 
 								put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));

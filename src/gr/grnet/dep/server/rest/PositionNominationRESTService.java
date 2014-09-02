@@ -13,6 +13,7 @@ import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.file.PositionNominationFile;
 import gr.grnet.dep.service.util.DateUtil;
+import gr.grnet.dep.service.util.StringUtil;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 
@@ -175,6 +176,7 @@ public class PositionNominationRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(existingNomination.getPosition().getPhase().getPosition().getId()));
 									put("position", existingNomination.getPosition().getPhase().getPosition().getName());
 
 									put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
@@ -199,6 +201,7 @@ public class PositionNominationRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(existingNomination.getPosition().getId()));
 									put("position", existingNomination.getPosition().getName());
 
 									put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
@@ -223,6 +226,7 @@ public class PositionNominationRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(existingNomination.getPosition().getId()));
 									put("position", existingNomination.getPosition().getName());
 
 									put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
@@ -249,6 +253,7 @@ public class PositionNominationRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
+								put("positionID", StringUtil.formatPositionID(existingNomination.getPosition().getId()));
 								put("position", existingNomination.getPosition().getName());
 
 								put("firstname_el", existingNomination.getNominatedCandidacy().getCandidate().getUser().getFirstname("el"));
@@ -273,6 +278,7 @@ public class PositionNominationRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
+								put("positionID", StringUtil.formatPositionID(existingNomination.getPosition().getId()));
 								put("position", existingNomination.getPosition().getName());
 
 								put("firstname_el", existingNomination.getSecondNominatedCandidacy().getCandidate().getUser().getFirstname("el"));
@@ -534,6 +540,7 @@ public class PositionNominationRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(nominationFile.getNomination().getPosition().getId()));
 									put("position", nominationFile.getNomination().getPosition().getName());
 
 									put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
@@ -558,6 +565,7 @@ public class PositionNominationRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(nominationFile.getNomination().getPosition().getId()));
 									put("position", nominationFile.getNomination().getPosition().getName());
 
 									put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
@@ -582,6 +590,7 @@ public class PositionNominationRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(nominationFile.getNomination().getPosition().getId()));
 									put("position", nominationFile.getNomination().getPosition().getName());
 
 									put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
@@ -607,6 +616,7 @@ public class PositionNominationRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(nominationFile.getNomination().getPosition().getId()));
 									put("position", nominationFile.getNomination().getPosition().getName());
 
 									put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
@@ -631,6 +641,7 @@ public class PositionNominationRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(nominationFile.getNomination().getPosition().getId()));
 									put("position", nominationFile.getNomination().getPosition().getName());
 
 									put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
@@ -655,6 +666,7 @@ public class PositionNominationRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(nominationFile.getNomination().getPosition().getId()));
 									put("position", nominationFile.getNomination().getPosition().getName());
 
 									put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));

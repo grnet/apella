@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.util;
 
+import java.text.DecimalFormat;
 import java.util.Locale;
 
 public class StringUtil {
@@ -27,6 +28,11 @@ public class StringUtil {
 						.replaceAll("Ύ", "Υ")
 						.replaceAll("Ό", "Ο")
 						.replaceAll("Ώ", "Ω");
+	}
+
+	public static String formatPositionID(Long positionID) {
+		DecimalFormat df = new DecimalFormat("00000000000");
+		return df.format(positionID);
 	}
 
 }

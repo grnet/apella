@@ -14,6 +14,7 @@ import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.User.UserView;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileType;
+import gr.grnet.dep.service.util.StringUtil;
 
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
@@ -289,6 +290,7 @@ public class PositionRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(existingPosition.getId()));
 									put("position", existingPosition.getName());
 
 									put("firstname_el", assistant.getFirstname("el"));
@@ -315,6 +317,7 @@ public class PositionRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(existingPosition.getId()));
 									put("position", existingPosition.getName());
 
 									put("firstname_el", im.getUser().getFirstname("el"));
@@ -336,6 +339,7 @@ public class PositionRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(existingPosition.getId()));
 									put("position", existingPosition.getName());
 
 									put("firstname_el", im.getAlternateFirstname("el"));
@@ -388,8 +392,9 @@ public class PositionRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
+								put("positionID", StringUtil.formatPositionID(position.getId()));
 								put("position", position.getName());
-								put("description", position.getDescription());
+								put("discipline", position.getSubject() != null ? position.getSubject().getName() : "");
 
 								put("firstname_el", c.getUser().getFirstname("el"));
 								put("lastname_el", c.getUser().getLastname("el"));

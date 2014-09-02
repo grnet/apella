@@ -16,6 +16,7 @@ import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.file.PositionEvaluatorFile;
+import gr.grnet.dep.service.util.StringUtil;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 
@@ -255,6 +256,7 @@ public class PositionEvaluationRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(existingEvaluation.getPosition().getId()));
 									put("position", existingEvaluation.getPosition().getName());
 
 									put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
@@ -284,6 +286,7 @@ public class PositionEvaluationRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(existingEvaluation.getPosition().getId()));
 									put("position", existingEvaluation.getPosition().getName());
 
 									put("firstname_el", removedEvaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
@@ -311,6 +314,7 @@ public class PositionEvaluationRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(existingEvaluation.getPosition().getId()));
 									put("position", existingEvaluation.getPosition().getName());
 
 									put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
@@ -335,6 +339,7 @@ public class PositionEvaluationRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(existingEvaluation.getPosition().getId()));
 									put("position", existingEvaluation.getPosition().getName());
 
 									put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
@@ -612,6 +617,7 @@ public class PositionEvaluationRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(eFile.getEvaluator().getEvaluation().getPosition().getId()));
 									put("position", eFile.getEvaluator().getEvaluation().getPosition().getName());
 
 									put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
@@ -636,6 +642,7 @@ public class PositionEvaluationRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(eFile.getEvaluator().getEvaluation().getPosition().getId()));
 									put("position", eFile.getEvaluator().getEvaluation().getPosition().getName());
 
 									put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
@@ -661,6 +668,7 @@ public class PositionEvaluationRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(eFile.getEvaluator().getEvaluation().getPosition().getId()));
 									put("position", eFile.getEvaluator().getEvaluation().getPosition().getName());
 
 									put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
@@ -685,6 +693,7 @@ public class PositionEvaluationRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(eFile.getEvaluator().getEvaluation().getPosition().getId()));
 									put("position", eFile.getEvaluator().getEvaluation().getPosition().getName());
 
 									put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));

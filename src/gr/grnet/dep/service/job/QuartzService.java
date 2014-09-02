@@ -11,6 +11,7 @@ import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.system.Notification;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 import gr.grnet.dep.service.util.DateUtil;
+import gr.grnet.dep.service.util.StringUtil;
 import org.apache.commons.configuration.ConfigurationException;
 import org.quartz.Scheduler;
 import org.quartz.impl.StdSchedulerFactory;
@@ -220,6 +221,7 @@ public class QuartzService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
+								put("positionID", StringUtil.formatPositionID(position.getId()));
 								put("position", position.getName());
 
 								put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));

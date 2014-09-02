@@ -12,6 +12,7 @@ import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.FileType;
+import gr.grnet.dep.service.util.StringUtil;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 
@@ -294,6 +295,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(cdFile.getComplementaryDocuments().getPosition().getId()));
 									put("position", cdFile.getComplementaryDocuments().getPosition().getName());
 
 									put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
@@ -319,6 +321,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 						Collections.unmodifiableMap(new HashMap<String, String>() {
 
 							{
+								put("positionID", StringUtil.formatPositionID(cdFile.getComplementaryDocuments().getPosition().getId()));
 								put("position", cdFile.getComplementaryDocuments().getPosition().getName());
 
 								put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
@@ -344,6 +347,7 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 							Collections.unmodifiableMap(new HashMap<String, String>() {
 
 								{
+									put("positionID", StringUtil.formatPositionID(cdFile.getComplementaryDocuments().getPosition().getId()));
 									put("position", cdFile.getComplementaryDocuments().getPosition().getName());
 
 									put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
