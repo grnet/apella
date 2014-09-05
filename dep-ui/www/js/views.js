@@ -5773,7 +5773,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                     },
                     closingDate: {
                         "required": true,
-                        "dateAfter": [ self.$("input[name=openingDate]"), 30 ]
+                        "dateAfter": [ self.$("input[name=openingDate]"), 29 ]
                     }
                 },
                 messages: {
