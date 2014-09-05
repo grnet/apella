@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.job;
 
+import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.JiraService;
 import gr.grnet.dep.service.MailService;
 import gr.grnet.dep.service.model.Candidacy;
@@ -24,6 +25,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
+import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -176,6 +178,7 @@ public class QuartzService {
 				PositionPhase newPhase = new PositionPhase();
 				newPhase.setStatus(PositionStatus.ANOIXTI);
 				newPhase.setCandidacies(existingPhase.getCandidacies());
+				newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
 				position.addPhase(newPhase);
 
 				i++;
