@@ -734,7 +734,10 @@ public class PositionRESTService extends RESTService {
 			institutionId = ((InstitutionAssistant) loggedOn.getActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)).getInstitution().getId();
 		}
 		try {
-			InputStream is = reportService.createPositionsExportExcel(institutionId);
+			//1. Get Data
+			List<Position> positionsData = reportService.getPositionsExportData(institutionId);
+			//2. Create XLS
+			InputStream is = reportService.createPositionsExportExcel(positionsData);
 			// Return response
 			return Response.ok(is)
 					.type(MediaType.APPLICATION_OCTET_STREAM)

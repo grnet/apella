@@ -4942,6 +4942,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                 self.$("input[name=lastnamelatin]").removeAttr("disabled");
                 self.$("input[name=fathernamelatin]").removeAttr("disabled");
                 self.$("input[name=identification]").removeAttr("disabled");
+                self.$("input[name=email]").removeAttr("disabled");
             }
             self.$("a#save").show();
             self.$("a#remove").hide();

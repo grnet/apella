@@ -18,20 +18,21 @@ import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.file.FileType;
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFDataFormat;
-import org.apache.poi.hssf.usermodel.HSSFFont;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.ByteArrayInputStream;
@@ -56,47 +57,51 @@ public class DataExportService {
 
 	private static final Logger logger = Logger.getLogger(DataExportService.class.getName());
 
-	/**
-	 * ***************************************************
-	 */
-
-	private void addCell(Row row, int col, CellStyle style, String value) {
-		Cell cell = row.createCell(col);
-		cell.setCellStyle(style);
-		if (value != null) {
-			cell.setCellValue(value);
-		}
-	}
-
-	private void addCell(Row row, int col, CellStyle style, Integer value) {
-		Cell cell = row.createCell(col);
-		cell.setCellStyle(style);
-		if (value != null) {
-			cell.setCellValue(value);
-		}
-	}
-
-	private void addCell(Row row, int col, CellStyle style, Long value) {
-		Cell cell = row.createCell(col);
-		cell.setCellStyle(style);
-		if (value != null) {
-			cell.setCellValue(value);
-		}
-	}
-
-	private void addCell(Row row, int col, CellStyle style, Date value) {
-		Cell cell = row.createCell(col);
-		cell.setCellStyle(style);
-		if (value != null) {
-			cell.setCellValue(value);
-		}
-	}
+	@EJB
+	DataExportService dataExportService;
 
 	/**
 	 * ***************************************************
 	 */
 
-	private Map<Long, Map<FileType, Long>> getProfessorFilesData() {
+	private static void addCell(Row row, int col, CellStyle style, String value) {
+		Cell cell = row.createCell(col);
+		cell.setCellStyle(style);
+		if (value != null) {
+			cell.setCellValue(value);
+		}
+	}
+
+	private static void addCell(Row row, int col, CellStyle style, Integer value) {
+		Cell cell = row.createCell(col);
+		cell.setCellStyle(style);
+		if (value != null) {
+			cell.setCellValue(value);
+		}
+	}
+
+	private static void addCell(Row row, int col, CellStyle style, Long value) {
+		Cell cell = row.createCell(col);
+		cell.setCellStyle(style);
+		if (value != null) {
+			cell.setCellValue(value);
+		}
+	}
+
+	private static void addCell(Row row, int col, CellStyle style, Date value) {
+		Cell cell = row.createCell(col);
+		cell.setCellStyle(style);
+		if (value != null) {
+			cell.setCellValue(value);
+		}
+	}
+
+	/**
+	 * ***************************************************
+	 */
+
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public Map<Long, Map<FileType, Long>> getProfessorFilesData() {
 		List<Object[]> files = em.createQuery(
 				"select p.id, pf.type, pf.id from ProfessorFile pf " +
 						"join pf.professor p " +
@@ -114,7 +119,8 @@ public class DataExportService {
 		return filesMap;
 	}
 
-	private List<ProfessorDomestic> getProfessorDomesticData() {
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public List<ProfessorDomestic> getProfessorDomesticData() {
 		List<ProfessorDomestic> data = em.createQuery(
 				"select distinct pd " +
 						"from ProfessorDomestic pd " +
@@ -129,18 +135,17 @@ public class DataExportService {
 		return data;
 	}
 
-	public InputStream createProfessorDomesticExcel() {
-		//1. Get Data
-		List<ProfessorDomestic> professors = getProfessorDomesticData();
-		Map<Long, Map<FileType, Long>> pFilesMap = getProfessorFilesData();
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+	public static InputStream createProfessorDomesticExcel(List<ProfessorDomestic> professors, Map<Long, Map<FileType, Long>> pFilesMap) {
 		//2. Create XLS
-		Workbook wb = new HSSFWorkbook();
+		Workbook wb = new SXSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");
+		DataFormat df = wb.createDataFormat();
 
 		CellStyle titleStyle = wb.createCellStyle();
 		Font font = wb.createFont();
-		font.setFontName(HSSFFont.FONT_ARIAL);
-		font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+		font.setFontName("Arial");
+		font.setBoldweight(Font.BOLDWEIGHT_BOLD);
 		titleStyle.setFont(font);
 		titleStyle.setWrapText(false);
 
@@ -148,14 +153,14 @@ public class DataExportService {
 		textStyle.setWrapText(false);
 
 		CellStyle floatStyle = wb.createCellStyle();
-		floatStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
-		floatStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
+		floatStyle.setAlignment(CellStyle.ALIGN_RIGHT);
+		floatStyle.setDataFormat(df.getFormat("0.00"));
 
 		CellStyle intStyle = wb.createCellStyle();
-		intStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+		intStyle.setAlignment(CellStyle.ALIGN_RIGHT);
 
 		CellStyle dateStyle = wb.createCellStyle();
-		dateStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("m/d/yy"));
+		dateStyle.setDataFormat(df.getFormat("m/d/yy"));
 
 		int rowNum = 0;
 		int colNum = 0;
@@ -260,7 +265,8 @@ public class DataExportService {
 		}
 	}
 
-	private List<ProfessorForeign> getProfessorForeignData() {
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public List<ProfessorForeign> getProfessorForeignData() {
 		List<ProfessorForeign> data = em.createQuery(
 				"select distinct pf " +
 						"from ProfessorForeign pf " +
@@ -271,18 +277,16 @@ public class DataExportService {
 		return data;
 	}
 
-	public InputStream createProfessorForeignExcel() {
-		//1. Get Data
-		List<ProfessorForeign> professors = getProfessorForeignData();
-		Map<Long, Map<FileType, Long>> pFilesMap = getProfessorFilesData();
-		//2. Create XLS
-		Workbook wb = new HSSFWorkbook();
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+	public static InputStream createProfessorForeignExcel(List<ProfessorForeign> professors, Map<Long, Map<FileType, Long>> pFilesMap) {
+		Workbook wb = new SXSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");
+		DataFormat df = wb.createDataFormat();
 
 		CellStyle titleStyle = wb.createCellStyle();
 		Font font = wb.createFont();
-		font.setFontName(HSSFFont.FONT_ARIAL);
-		font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+		font.setFontName("Arial");
+		font.setBoldweight(Font.BOLDWEIGHT_BOLD);
 		titleStyle.setFont(font);
 		titleStyle.setWrapText(false);
 
@@ -290,14 +294,14 @@ public class DataExportService {
 		textStyle.setWrapText(false);
 
 		CellStyle floatStyle = wb.createCellStyle();
-		floatStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
-		floatStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
+		floatStyle.setAlignment(CellStyle.ALIGN_RIGHT);
+		floatStyle.setDataFormat(df.getFormat("0.00"));
 
 		CellStyle intStyle = wb.createCellStyle();
-		intStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+		intStyle.setAlignment(CellStyle.ALIGN_RIGHT);
 
 		CellStyle dateStyle = wb.createCellStyle();
-		dateStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("m/d/yy"));
+		dateStyle.setDataFormat(df.getFormat("m/d/yy"));
 
 		int rowNum = 0;
 		int colNum = 0;
@@ -397,7 +401,8 @@ public class DataExportService {
 	 * ************************
 	 */
 
-	private Map<Long, Map<FileType, Set<Long>>> getCandidateFilesData() {
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public Map<Long, Map<FileType, Set<Long>>> getCandidateFilesData() {
 		List<Object[]> files = em.createQuery(
 				"select c.id, cf.type, cf.id from CandidateFile cf " +
 						"join cf.candidate c " +
@@ -422,7 +427,8 @@ public class DataExportService {
 		return filesMap;
 	}
 
-	private Map<Long, Long> getCandidateCandidaciesData() {
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public Map<Long, Long> getCandidateCandidaciesData() {
 		Map<Long, Long> result = new HashMap<Long, Long>();
 		List<Object[]> data = em.createQuery(
 				"select c.candidate.id, count(c.id) " +
@@ -437,7 +443,8 @@ public class DataExportService {
 		return result;
 	}
 
-	private List<Candidate> getCandidateData() {
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public List<Candidate> getCandidateData() {
 		List<Candidate> data = em.createQuery(
 				"select c " +
 						"from Candidate c " +
@@ -447,19 +454,16 @@ public class DataExportService {
 		return data;
 	}
 
-	public InputStream createCandidateExcel() {
-		//1. Get Data
-		List<Candidate> candidates = getCandidateData();
-		Map<Long, Map<FileType, Set<Long>>> filesMap = getCandidateFilesData();
-		Map<Long, Long> candidaciesMap = getCandidateCandidaciesData();
-		//2. Create XLS
-		Workbook wb = new HSSFWorkbook();
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+	public static InputStream createCandidateExcel(List<Candidate> candidates, Map<Long, Map<FileType, Set<Long>>> filesMap, Map<Long, Long> candidaciesMap) {
+		Workbook wb = new SXSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");
+		DataFormat df = wb.createDataFormat();
 
 		CellStyle titleStyle = wb.createCellStyle();
 		Font font = wb.createFont();
-		font.setFontName(HSSFFont.FONT_ARIAL);
-		font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+		font.setFontName("Arial");
+		font.setBoldweight(Font.BOLDWEIGHT_BOLD);
 		titleStyle.setFont(font);
 		titleStyle.setWrapText(false);
 
@@ -467,14 +471,14 @@ public class DataExportService {
 		textStyle.setWrapText(false);
 
 		CellStyle floatStyle = wb.createCellStyle();
-		floatStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
-		floatStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
+		floatStyle.setAlignment(CellStyle.ALIGN_RIGHT);
+		floatStyle.setDataFormat(df.getFormat("0.00"));
 
 		CellStyle intStyle = wb.createCellStyle();
-		intStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+		intStyle.setAlignment(CellStyle.ALIGN_RIGHT);
 
 		CellStyle dateStyle = wb.createCellStyle();
-		dateStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("m/d/yy"));
+		dateStyle.setDataFormat(df.getFormat("m/d/yy"));
 
 		int rowNum = 0;
 		int colNum = 0;
@@ -566,7 +570,8 @@ public class DataExportService {
 		}
 	}
 
-	private List<InstitutionManager> getInstitutionManagerData() {
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public List<InstitutionManager> getInstitutionManagerData() {
 		List<InstitutionManager> data = em.createQuery(
 				"select im from InstitutionManager im " +
 						"join fetch im.user u " +
@@ -575,17 +580,15 @@ public class DataExportService {
 		return data;
 	}
 
-	public InputStream createInstitutionManagerExcel() {
-		//1. Get Data
-		List<InstitutionManager> managers = getInstitutionManagerData();
-		//2. Create XLS
-		Workbook wb = new HSSFWorkbook();
+	public static InputStream createInstitutionManagerExcel(List<InstitutionManager> managers) {
+		Workbook wb = new SXSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");
+		DataFormat df = wb.createDataFormat();
 
 		CellStyle titleStyle = wb.createCellStyle();
 		Font font = wb.createFont();
-		font.setFontName(HSSFFont.FONT_ARIAL);
-		font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+		font.setFontName("Arial");
+		font.setBoldweight(Font.BOLDWEIGHT_BOLD);
 		titleStyle.setFont(font);
 		titleStyle.setWrapText(false);
 
@@ -593,14 +596,14 @@ public class DataExportService {
 		textStyle.setWrapText(false);
 
 		CellStyle floatStyle = wb.createCellStyle();
-		floatStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
-		floatStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
+		floatStyle.setAlignment(CellStyle.ALIGN_RIGHT);
+		floatStyle.setDataFormat(df.getFormat("0.00"));
 
 		CellStyle intStyle = wb.createCellStyle();
-		intStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+		intStyle.setAlignment(CellStyle.ALIGN_RIGHT);
 
 		CellStyle dateStyle = wb.createCellStyle();
-		dateStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("m/d/yy"));
+		dateStyle.setDataFormat(df.getFormat("m/d/yy"));
 
 		int rowNum = 0;
 		int colNum = 0;
@@ -697,7 +700,8 @@ public class DataExportService {
 		}
 	}
 
-	private List<InstitutionAssistant> getInstitutionAssistantData() {
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public List<InstitutionAssistant> getInstitutionAssistantData() {
 		List<InstitutionAssistant> data = em.createQuery(
 				"select ia from InstitutionAssistant ia " +
 						"join fetch ia.user u " +
@@ -708,17 +712,16 @@ public class DataExportService {
 		return data;
 	}
 
-	public InputStream createInstitutionAssistantExcel() {
-		//1. Get Data
-		List<InstitutionAssistant> assistants = getInstitutionAssistantData();
-		//2. Create XLS
-		Workbook wb = new HSSFWorkbook();
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+	public static InputStream createInstitutionAssistantExcel(List<InstitutionAssistant> assistants) {
+		Workbook wb = new SXSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");
+		DataFormat df = wb.createDataFormat();
 
 		CellStyle titleStyle = wb.createCellStyle();
 		Font font = wb.createFont();
-		font.setFontName(HSSFFont.FONT_ARIAL);
-		font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+		font.setFontName("Arial");
+		font.setBoldweight(Font.BOLDWEIGHT_BOLD);
 		titleStyle.setFont(font);
 		titleStyle.setWrapText(false);
 
@@ -726,14 +729,14 @@ public class DataExportService {
 		textStyle.setWrapText(false);
 
 		CellStyle floatStyle = wb.createCellStyle();
-		floatStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
-		floatStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
+		floatStyle.setAlignment(CellStyle.ALIGN_RIGHT);
+		floatStyle.setDataFormat(df.getFormat("0.00"));
 
 		CellStyle intStyle = wb.createCellStyle();
-		intStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+		intStyle.setAlignment(CellStyle.ALIGN_RIGHT);
 
 		CellStyle dateStyle = wb.createCellStyle();
-		dateStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("m/d/yy"));
+		dateStyle.setDataFormat(df.getFormat("m/d/yy"));
 
 		int rowNum = 0;
 		int colNum = 0;
@@ -807,24 +810,25 @@ public class DataExportService {
 		}
 	}
 
-	private List<InstitutionRegulatoryFramework> getInstitutionRegulatoryFrameworkData() {
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public List<InstitutionRegulatoryFramework> getInstitutionRegulatoryFrameworkData() {
 		List<InstitutionRegulatoryFramework> data = em.createQuery(
 				"select ia from InstitutionRegulatoryFramework ia ", InstitutionRegulatoryFramework.class)
 				.getResultList();
 		return data;
 	}
 
-	public InputStream createInstitutionRegulatoryFrameworkExcel() {
-		//1. Get Data
-		List<InstitutionRegulatoryFramework> frameworks = getInstitutionRegulatoryFrameworkData();
-		//2. Create XLS
-		Workbook wb = new HSSFWorkbook();
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+	public static InputStream createInstitutionRegulatoryFrameworkExcel(List<InstitutionRegulatoryFramework> frameworks) {
+
+		Workbook wb = new SXSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");
+		DataFormat df = wb.createDataFormat();
 
 		CellStyle titleStyle = wb.createCellStyle();
 		Font font = wb.createFont();
-		font.setFontName(HSSFFont.FONT_ARIAL);
-		font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+		font.setFontName("Arial");
+		font.setBoldweight(Font.BOLDWEIGHT_BOLD);
 		titleStyle.setFont(font);
 		titleStyle.setWrapText(false);
 
@@ -832,14 +836,14 @@ public class DataExportService {
 		textStyle.setWrapText(false);
 
 		CellStyle floatStyle = wb.createCellStyle();
-		floatStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
-		floatStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
+		floatStyle.setAlignment(CellStyle.ALIGN_RIGHT);
+		floatStyle.setDataFormat(df.getFormat("0.00"));
 
 		CellStyle intStyle = wb.createCellStyle();
-		intStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+		intStyle.setAlignment(CellStyle.ALIGN_RIGHT);
 
 		CellStyle dateStyle = wb.createCellStyle();
-		dateStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("m/d/yy"));
+		dateStyle.setDataFormat(df.getFormat("m/d/yy"));
 
 		int rowNum = 0;
 		int colNum = 0;
@@ -882,7 +886,8 @@ public class DataExportService {
 		}
 	}
 
-	private List<Register> getRegisterData() {
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public List<Register> getRegisterData() {
 		List<Register> data = em.createQuery(
 				"select r from Register r " +
 						"where permanent = true ", Register.class)
@@ -890,7 +895,8 @@ public class DataExportService {
 		return data;
 	}
 
-	private Map<Long, Long> getRegisterRegisterMemberData() {
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public Map<Long, Long> getRegisterRegisterMemberData() {
 		Map<Long, Long> result = new HashMap<Long, Long>();
 		List<Object[]> data = em.createQuery(
 				"select rm.register.id, count(rm.id) " +
@@ -905,18 +911,17 @@ public class DataExportService {
 		return result;
 	}
 
-	public InputStream createRegisterExcel() {
-		//1. Get Data
-		List<Register> registers = getRegisterData();
-		Map<Long, Long> membersMap = getRegisterRegisterMemberData();
-		//2. Create XLS
-		Workbook wb = new HSSFWorkbook();
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+	public static InputStream createRegisterExcel(List<Register> registers, Map<Long, Long> membersMap) {
+
+		Workbook wb = new SXSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");
+		DataFormat df = wb.createDataFormat();
 
 		CellStyle titleStyle = wb.createCellStyle();
 		Font font = wb.createFont();
-		font.setFontName(HSSFFont.FONT_ARIAL);
-		font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+		font.setFontName("Arial");
+		font.setBoldweight(Font.BOLDWEIGHT_BOLD);
 		titleStyle.setFont(font);
 		titleStyle.setWrapText(false);
 
@@ -924,14 +929,14 @@ public class DataExportService {
 		textStyle.setWrapText(false);
 
 		CellStyle floatStyle = wb.createCellStyle();
-		floatStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
-		floatStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
+		floatStyle.setAlignment(CellStyle.ALIGN_RIGHT);
+		floatStyle.setDataFormat(df.getFormat("0.00"));
 
 		CellStyle intStyle = wb.createCellStyle();
-		intStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+		intStyle.setAlignment(CellStyle.ALIGN_RIGHT);
 
 		CellStyle dateStyle = wb.createCellStyle();
-		dateStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("m/d/yy"));
+		dateStyle.setDataFormat(df.getFormat("m/d/yy"));
 
 		int rowNum = 0;
 		int colNum = 0;
@@ -976,7 +981,8 @@ public class DataExportService {
 		}
 	}
 
-	private List<RegisterMember> getRegisterMemberData() {
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public List<RegisterMember> getRegisterMemberData() {
 		List<RegisterMember> data = em.createQuery(
 				"select rm from RegisterMember rm " +
 						"join fetch rm.register r " +
@@ -992,17 +998,18 @@ public class DataExportService {
 		return data;
 	}
 
-	public InputStream createRegisterMemberExcel() {
+	public static InputStream createRegisterMemberExcel(List<RegisterMember> members) {
 		//1. Get Data
-		List<RegisterMember> members = getRegisterMemberData();
+		// List<RegisterMember> members = dataExportService.getRegisterMemberData();
 		//2. Create XLS
-		Workbook wb = new HSSFWorkbook();
+		Workbook wb = new SXSSFWorkbook(100);
 		Sheet sheet = wb.createSheet("Sheet1");
+		DataFormat df = wb.createDataFormat();
 
 		CellStyle titleStyle = wb.createCellStyle();
 		Font font = wb.createFont();
-		font.setFontName(HSSFFont.FONT_ARIAL);
-		font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+		font.setFontName("Arial");
+		font.setBoldweight(Font.BOLDWEIGHT_BOLD);
 		titleStyle.setFont(font);
 		titleStyle.setWrapText(false);
 
@@ -1010,14 +1017,14 @@ public class DataExportService {
 		textStyle.setWrapText(false);
 
 		CellStyle floatStyle = wb.createCellStyle();
-		floatStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
-		floatStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
+		floatStyle.setAlignment(CellStyle.ALIGN_RIGHT);
+		floatStyle.setDataFormat(df.getFormat("0.00"));
 
 		CellStyle intStyle = wb.createCellStyle();
-		intStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+		intStyle.setAlignment(CellStyle.ALIGN_RIGHT);
 
 		CellStyle dateStyle = wb.createCellStyle();
-		dateStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("m/d/yy"));
+		dateStyle.setDataFormat(df.getFormat("m/d/yy"));
 
 		int rowNum = 0;
 		int colNum = 0;
@@ -1094,7 +1101,8 @@ public class DataExportService {
 		}
 	}
 
-	private List<PositionCommitteeMember> getPositionCommitteeMemberData() {
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public List<PositionCommitteeMember> getPositionCommitteeMemberData() {
 		List<PositionCommitteeMember> data = em.createQuery(
 				"select pcm from PositionCommitteeMember pcm " +
 						"join fetch pcm.registerMember rm " +
@@ -1111,17 +1119,17 @@ public class DataExportService {
 		return data;
 	}
 
-	public InputStream createPositionCommitteeMemberExcel() {
-		//1. Get Data
-		List<PositionCommitteeMember> members = getPositionCommitteeMemberData();
-		//2. Create XLS
-		Workbook wb = new HSSFWorkbook();
+	public static InputStream createPositionCommitteeMemberExcel(List<PositionCommitteeMember> members) {
+
+		Workbook wb = new SXSSFWorkbook(100); // keep 100 rows in memory, exceeding rows will be flushed to disk
+		//Workbook wb = new SXSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");
+		DataFormat df = wb.createDataFormat();
 
 		CellStyle titleStyle = wb.createCellStyle();
 		Font font = wb.createFont();
-		font.setFontName(HSSFFont.FONT_ARIAL);
-		font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+		font.setFontName("Arial");
+		font.setBoldweight(Font.BOLDWEIGHT_BOLD);
 		titleStyle.setFont(font);
 		titleStyle.setWrapText(false);
 
@@ -1129,14 +1137,14 @@ public class DataExportService {
 		textStyle.setWrapText(false);
 
 		CellStyle floatStyle = wb.createCellStyle();
-		floatStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
-		floatStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
+		floatStyle.setAlignment(CellStyle.ALIGN_RIGHT);
+		floatStyle.setDataFormat(df.getFormat("0.00"));
 
 		CellStyle intStyle = wb.createCellStyle();
-		intStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+		intStyle.setAlignment(CellStyle.ALIGN_RIGHT);
 
 		CellStyle dateStyle = wb.createCellStyle();
-		dateStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("m/d/yy"));
+		dateStyle.setDataFormat(df.getFormat("m/d/yy"));
 
 		int rowNum = 0;
 		int colNum = 0;
@@ -1214,7 +1222,8 @@ public class DataExportService {
 		}
 	}
 
-	private List<PositionEvaluator> getPositionEvaluatorData() {
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public List<PositionEvaluator> getPositionEvaluatorData() {
 		List<PositionEvaluator> data = em.createQuery(
 				"select e from PositionEvaluator e " +
 						"join fetch e.registerMember rm " +
@@ -1231,17 +1240,16 @@ public class DataExportService {
 		return data;
 	}
 
-	public InputStream createPositionEvaluatorExcel() {
-		//1. Get Data
-		List<PositionEvaluator> members = getPositionEvaluatorData();
-		//2. Create XLS
-		Workbook wb = new HSSFWorkbook();
+	public static InputStream createPositionEvaluatorExcel(List<PositionEvaluator> members) {
+
+		Workbook wb = new SXSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");
+		DataFormat df = wb.createDataFormat();
 
 		CellStyle titleStyle = wb.createCellStyle();
 		Font font = wb.createFont();
-		font.setFontName(HSSFFont.FONT_ARIAL);
-		font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+		font.setFontName("Arial");
+		font.setBoldweight(Font.BOLDWEIGHT_BOLD);
 		titleStyle.setFont(font);
 		titleStyle.setWrapText(false);
 
@@ -1249,14 +1257,14 @@ public class DataExportService {
 		textStyle.setWrapText(false);
 
 		CellStyle floatStyle = wb.createCellStyle();
-		floatStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
-		floatStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
+		floatStyle.setAlignment(CellStyle.ALIGN_RIGHT);
+		floatStyle.setDataFormat(df.getFormat("0.00"));
 
 		CellStyle intStyle = wb.createCellStyle();
-		intStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+		intStyle.setAlignment(CellStyle.ALIGN_RIGHT);
 
 		CellStyle dateStyle = wb.createCellStyle();
-		dateStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("m/d/yy"));
+		dateStyle.setDataFormat(df.getFormat("m/d/yy"));
 
 		int rowNum = 0;
 		int colNum = 0;
@@ -1331,7 +1339,8 @@ public class DataExportService {
 		}
 	}
 
-	private List<Candidacy> getCandidacyData() {
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public List<Candidacy> getCandidacyData() {
 		List<Candidacy> data = em.createQuery(
 				"select cy from Candidacy cy " +
 						"join fetch cy.candidate c " +
@@ -1345,17 +1354,17 @@ public class DataExportService {
 		return data;
 	}
 
-	public InputStream createCandidacyExcel() {
-		//1. Get Data
-		List<Candidacy> members = getCandidacyData();
-		//2. Create XLS
-		Workbook wb = new HSSFWorkbook();
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+	public static InputStream createCandidacyExcel(List<Candidacy> members) {
+
+		Workbook wb = new SXSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");
+		DataFormat df = wb.createDataFormat();
 
 		CellStyle titleStyle = wb.createCellStyle();
 		Font font = wb.createFont();
-		font.setFontName(HSSFFont.FONT_ARIAL);
-		font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+		font.setFontName("Arial");
+		font.setBoldweight(Font.BOLDWEIGHT_BOLD);
 		titleStyle.setFont(font);
 		titleStyle.setWrapText(false);
 
@@ -1363,14 +1372,14 @@ public class DataExportService {
 		textStyle.setWrapText(false);
 
 		CellStyle floatStyle = wb.createCellStyle();
-		floatStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
-		floatStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
+		floatStyle.setAlignment(CellStyle.ALIGN_RIGHT);
+		floatStyle.setDataFormat(df.getFormat("0.00"));
 
 		CellStyle intStyle = wb.createCellStyle();
-		intStyle.setAlignment(HSSFCellStyle.ALIGN_RIGHT);
+		intStyle.setAlignment(CellStyle.ALIGN_RIGHT);
 
 		CellStyle dateStyle = wb.createCellStyle();
-		dateStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("m/d/yy"));
+		dateStyle.setDataFormat(df.getFormat("m/d/yy"));
 
 		int rowNum = 0;
 		int colNum = 0;

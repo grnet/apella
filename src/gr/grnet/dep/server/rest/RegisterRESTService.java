@@ -774,7 +774,10 @@ public class RegisterRESTService extends RESTService {
 		}
 		// Generate Document
 		try {
-			InputStream is = reportService.createProfessorDataExcel();
+			//1. Get Data
+			List<Professor> professors = reportService.getProfessorData();
+			//2. Create XLS
+			InputStream is = reportService.createProfessorDataExcel(professors);
 			String filename = "generic_register.xls";
 
 			// Return response
@@ -804,7 +807,10 @@ public class RegisterRESTService extends RESTService {
 		}
 		// Generate Document
 		try {
-			InputStream is = reportService.createRegisterExportExcel(registerId);
+			//1. Get Data
+			List<Object[]> registerData = reportService.getRegisterExportData(registerId);
+			//2. Create XLS
+			InputStream is = reportService.createRegisterExportExcel(register, registerData);
 			String filename = "register_" +
 					(register.getInstitution().getSchacHomeOrganization() == null ? register.getInstitution().getId() : register.getInstitution().getSchacHomeOrganization()) +
 					".xls";
