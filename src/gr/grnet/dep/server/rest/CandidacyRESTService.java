@@ -293,6 +293,12 @@ public class CandidacyRESTService extends RESTService {
 									put("positionID", StringUtil.formatPositionID(existingCandidacy.getCandidacies().getPosition().getId()));
 									put("position", existingCandidacy.getCandidacies().getPosition().getName());
 
+									put("candidate_firstname_el", existingCandidacy.getCandidate().getUser().getFirstname("el"));
+									put("candidate_lastname_el", existingCandidacy.getCandidate().getUser().getLastname("el"));
+
+									put("candidate_firstname_en", existingCandidacy.getCandidate().getUser().getFirstname("en"));
+									put("candidate_lastname_en", existingCandidacy.getCandidate().getUser().getLastname("en"));
+
 									put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
 									put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
 									put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
@@ -535,6 +541,12 @@ public class CandidacyRESTService extends RESTService {
 									put("positionID", StringUtil.formatPositionID(existingCandidacy.getCandidacies().getPosition().getId()));
 									put("position", existingCandidacy.getCandidacies().getPosition().getName());
 
+									put("candidate_firstname_el", existingCandidacy.getCandidate().getUser().getFirstname("el"));
+									put("candidate_lastname_el", existingCandidacy.getCandidate().getUser().getLastname("el"));
+
+									put("candidate_firstname_en", existingCandidacy.getCandidate().getUser().getFirstname("en"));
+									put("candidate_lastname_en", existingCandidacy.getCandidate().getUser().getLastname("en"));
+
 									put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
 									put("school_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("el"));
 									put("department_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("el"));
@@ -566,6 +578,7 @@ public class CandidacyRESTService extends RESTService {
 								put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 								put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
 								put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
+
 							}
 						}));
 				// 3. candidacy.remove@committee
@@ -579,6 +592,12 @@ public class CandidacyRESTService extends RESTService {
 									{
 										put("positionID", StringUtil.formatPositionID(existingCandidacy.getCandidacies().getPosition().getId()));
 										put("position", existingCandidacy.getCandidacies().getPosition().getName());
+
+										put("candidate_firstname_el", existingCandidacy.getCandidate().getUser().getFirstname("el"));
+										put("candidate_lastname_el", existingCandidacy.getCandidate().getUser().getLastname("el"));
+
+										put("candidate_firstname_en", existingCandidacy.getCandidate().getUser().getFirstname("en"));
+										put("candidate_lastname_en", existingCandidacy.getCandidate().getUser().getLastname("en"));
 
 										put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
 										put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
@@ -607,6 +626,12 @@ public class CandidacyRESTService extends RESTService {
 										put("positionID", StringUtil.formatPositionID(existingCandidacy.getCandidacies().getPosition().getId()));
 										put("position", existingCandidacy.getCandidacies().getPosition().getName());
 
+										put("candidate_firstname_el", existingCandidacy.getCandidate().getUser().getFirstname("el"));
+										put("candidate_lastname_el", existingCandidacy.getCandidate().getUser().getLastname("el"));
+
+										put("candidate_firstname_en", existingCandidacy.getCandidate().getUser().getFirstname("en"));
+										put("candidate_lastname_en", existingCandidacy.getCandidate().getUser().getLastname("en"));
+
 										put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
 										put("lastname_el", evaluator.getRegisterMember().getProfessor().getUser().getLastname("el"));
 										put("institution_el", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
@@ -633,6 +658,12 @@ public class CandidacyRESTService extends RESTService {
 									{
 										put("positionID", StringUtil.formatPositionID(existingCandidacy.getCandidacies().getPosition().getId()));
 										put("position", existingCandidacy.getCandidacies().getPosition().getName());
+
+										put("candidate_firstname_el", existingCandidacy.getCandidate().getUser().getFirstname("el"));
+										put("candidate_lastname_el", existingCandidacy.getCandidate().getUser().getLastname("el"));
+
+										put("candidate_firstname_en", existingCandidacy.getCandidate().getUser().getFirstname("en"));
+										put("candidate_lastname_en", existingCandidacy.getCandidate().getUser().getLastname("en"));
 
 										put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
 										put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
