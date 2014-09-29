@@ -49,7 +49,6 @@ public class DataExportRESTService extends RESTService {
 	DataExportService dataExportService;
 
 	@GET
-	@Produces("application/vnd.ms-excel")
 	@Path("/{type}")
 	public Response getPositionsExport(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("type") String type) {
 		User loggedOn = getLoggedOn(authToken);
@@ -124,11 +123,10 @@ public class DataExportRESTService extends RESTService {
 				throw new RestException(Status.NOT_FOUND);
 			}
 			// Return response
-			String string = ".xls";
 			return Response.ok(is)
-					.type("application/vnd.ms-excel")
+					.type("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 					.header("charset", "UTF-8")
-					.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(type + string, "UTF-8") + "\"")
+					.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(type + ".xlsx", "UTF-8") + "\"")
 					.build();
 		} catch (UnsupportedEncodingException e) {
 			logger.log(Level.SEVERE, "getDocument", e);

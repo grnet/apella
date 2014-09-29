@@ -250,10 +250,6 @@ public class DataExportService {
 			addCell(row, colNum++, textStyle, p.getHasAcceptedTerms() ? "NAI" : "OXI");
 		}
 
-		for (int i = 0; i < colNum; i++) {
-			sheet.autoSizeColumn(i);
-		}
-
 		try {
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			wb.write(output);
@@ -380,10 +376,6 @@ public class DataExportService {
 			addCell(row, colNum++, textStyle, p.getSubject() != null ? p.getSubject().getName() : null);
 			addCell(row, colNum++, textStyle, p.getSpeakingGreek() != null ? (p.getSpeakingGreek() ? "NAI" : "OXI") : null);
 			addCell(row, colNum++, textStyle, p.getHasAcceptedTerms() ? "NAI" : "OXI");
-		}
-
-		for (int i = 0; i < colNum; i++) {
-			sheet.autoSizeColumn(i);
 		}
 
 		try {
@@ -555,10 +547,6 @@ public class DataExportService {
 			addCell(row, colNum++, intStyle, candidaciesMap.containsKey(c.getId()) ? candidaciesMap.get(c.getId()) : null);
 		}
 
-		for (int i = 0; i < colNum; i++) {
-			sheet.autoSizeColumn(i);
-		}
-
 		try {
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			wb.write(output);
@@ -685,10 +673,6 @@ public class DataExportService {
 
 		}
 
-		for (int i = 0; i < colNum; i++) {
-			sheet.autoSizeColumn(i);
-		}
-
 		try {
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			wb.write(output);
@@ -795,10 +779,6 @@ public class DataExportService {
 			addCell(row, colNum++, textStyle, ia.getInstitution().getName().get("el"));
 		}
 
-		for (int i = 0; i < colNum; i++) {
-			sheet.autoSizeColumn(i);
-		}
-
 		try {
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			wb.write(output);
@@ -869,10 +849,6 @@ public class DataExportService {
 			addCell(row, colNum++, textStyle, irf.getInstitution().getName().get("el"));
 			addCell(row, colNum++, textStyle, irf.getOrganismosURL());
 			addCell(row, colNum++, textStyle, irf.getEswterikosKanonismosURL());
-		}
-
-		for (int i = 0; i < colNum; i++) {
-			sheet.autoSizeColumn(i);
 		}
 
 		try {
@@ -964,10 +940,6 @@ public class DataExportService {
 			addCell(row, colNum++, textStyle, r.getInstitution().getName().get("el"));
 			addCell(row, colNum++, textStyle, r.getSubject().getName());
 			addCell(row, colNum++, intStyle, membersCount);
-		}
-
-		for (int i = 0; i < colNum; i++) {
-			sheet.autoSizeColumn(i);
 		}
 
 		try {
@@ -1084,10 +1056,6 @@ public class DataExportService {
 			addCell(row, colNum++, textStyle, rm.isExternal() ? "ΕΞΩΤΕΡΙΚΟ" : "ΕΣΩΤΕΡΙΚΟ");
 
 			iterator.remove();
-		}
-
-		for (int i = 0; i < colNum; i++) {
-			sheet.autoSizeColumn(i);
 		}
 
 		try {
@@ -1207,10 +1175,6 @@ public class DataExportService {
 
 		}
 
-		for (int i = 0; i < colNum; i++) {
-			sheet.autoSizeColumn(i);
-		}
-
 		try {
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			wb.write(output);
@@ -1324,10 +1288,6 @@ public class DataExportService {
 
 		}
 
-		for (int i = 0; i < colNum; i++) {
-			sheet.autoSizeColumn(i);
-		}
-
 		try {
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			wb.write(output);
@@ -1416,10 +1376,6 @@ public class DataExportService {
 			addCell(row, colNum++, textStyle, rm.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
 			addCell(row, colNum++, textStyle, rm.getCandidacies().getPosition().getSubject().getName());
 			addCell(row, colNum++, textStyle, rm.getCandidacies().getPosition().getPhase().getClientStatusInGreek());
-		}
-
-		for (int i = 0; i < colNum; i++) {
-			sheet.autoSizeColumn(i);
 		}
 
 		try {

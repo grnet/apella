@@ -413,6 +413,8 @@ public class RESTService {
 				return "application/vnd.ms-excel";
 			else if (".ppt".equals(extension))
 				return "application/vnd.ms-powerpoint";
+			else if (".xlsx".equals(extension))
+				return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 			else if (".pdf".equals(extension))
 				return "application/pdf";
 			else if (".gif".equals(extension))

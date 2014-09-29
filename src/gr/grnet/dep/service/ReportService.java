@@ -209,10 +209,6 @@ public class ReportService {
 			}
 		}
 
-		for (int i = 0; i < colNum; i++) {
-			sheet.autoSizeColumn(i);
-		}
-
 		try {
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			wb.write(output);
@@ -434,10 +430,6 @@ public class ReportService {
 			cell = row.createCell(colNum++);
 			cell.setCellValue(allCommittees);
 			cell.setCellStyle(intStyle);
-		}
-
-		for (int i = 0; i < colNum; i++) {
-			sheet.autoSizeColumn(i);
 		}
 
 		try {
@@ -719,9 +711,6 @@ public class ReportService {
 
 		}
 
-		for (int i = 0; i < colNum; i++) {
-			sheet.autoSizeColumn(i);
-		}
 		try {
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			wb.write(output);

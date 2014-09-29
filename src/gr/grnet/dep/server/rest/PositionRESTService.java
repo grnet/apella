@@ -712,7 +712,6 @@ public class PositionRESTService extends RESTService {
 	}
 
 	@GET
-	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/export")
 	public Response getPositionsExport(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
 		User loggedOn = getLoggedOn(authToken);
@@ -740,9 +739,9 @@ public class PositionRESTService extends RESTService {
 			InputStream is = reportService.createPositionsExportExcel(positionsData);
 			// Return response
 			return Response.ok(is)
-					.type(MediaType.APPLICATION_OCTET_STREAM)
+					.type("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 					.header("charset", "UTF-8")
-					.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode("positions.xls", "UTF-8") + "\"")
+					.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode("positions.xlsx", "UTF-8") + "\"")
 					.build();
 		} catch (UnsupportedEncodingException e) {
 			logger.log(Level.SEVERE, "getDocument", e);

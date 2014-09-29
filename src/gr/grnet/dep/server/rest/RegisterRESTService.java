@@ -763,7 +763,6 @@ public class RegisterRESTService extends RESTService {
 	}
 
 	@GET
-	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/professorsexport")
 	public Response getProfessorsExport(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
 		User loggedOn = getLoggedOn(authToken);
@@ -778,11 +777,11 @@ public class RegisterRESTService extends RESTService {
 			List<Professor> professors = reportService.getProfessorData();
 			//2. Create XLS
 			InputStream is = reportService.createProfessorDataExcel(professors);
-			String filename = "generic_register.xls";
+			String filename = "generic_register.xlsx";
 
 			// Return response
 			return Response.ok(is)
-					.type(MediaType.APPLICATION_OCTET_STREAM)
+					.type("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 					.header("charset", "UTF-8")
 					.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(filename, "UTF-8") + "\"")
 					.build();
@@ -793,7 +792,6 @@ public class RegisterRESTService extends RESTService {
 	}
 
 	@GET
-	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/{id:[0-9]+}/export")
 	public Response getRegisterExport(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long registerId) {
 		User loggedOn = getLoggedOn(authToken);
@@ -813,11 +811,11 @@ public class RegisterRESTService extends RESTService {
 			InputStream is = reportService.createRegisterExportExcel(register, registerData);
 			String filename = "register_" +
 					(register.getInstitution().getSchacHomeOrganization() == null ? register.getInstitution().getId() : register.getInstitution().getSchacHomeOrganization()) +
-					".xls";
+					".xlsx";
 
 			// Return response
 			return Response.ok(is)
-					.type(MediaType.APPLICATION_OCTET_STREAM)
+					.type("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 					.header("charset", "UTF-8")
 					.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(filename, "UTF-8") + "\"")
 					.build();
