@@ -6809,28 +6809,31 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                         cache: true,
                         success: function (collection) {
                             var data = {
-                                aaData: collection.map(function (registerMember) {
-                                    var isMember = _.some(self.model.get("evaluators"), function (evaluator) {
-                                        return _.isEqual(evaluator.registerMember.professor.id, registerMember.get('professor').id);
-                                    });
-                                    return {
-                                        id: '<a href = "#user/' + registerMember.get('professor').user.id + '">' + registerMember.get('professor').user.id + '</a>',
-                                        external: registerMember.get('external') ? $.i18n.prop('RegisterMemberExternal') : $.i18n.prop('RegisterMemberInternal'),
-                                        firstname: registerMember.get('professor').user.firstname[App.locale],
-                                        lastname: registerMember.get('professor').user.lastname[App.locale],
-                                        role: $.i18n.prop(registerMember.get('professor').discriminator),
-                                        institution: registerMember.get('professor').discriminator === 'PROFESSOR_FOREIGN' ? registerMember.get('professor').institution : _.templates.department(registerMember.get('professor').department),
-                                        select: isMember ? '' :
-                                            '<div class="btn-group">' +
-                                            '<a class = "btn btn-small btn-success dropdown-toggle" data-toggle="dropdown" >' + $.i18n.prop('btn_select') + '<span class="caret"></span></a>' +
-                                            '<ul class="dropdown-menu">' +
-                                            '<li><a id="addMember" data-model-id="' + registerMember.get('id') + '" data-position="0"><i class="icon-plus"></i>' + $.i18n.prop('PositionEvaluatorFirst') + '</a></li>' +
-                                            '<li><a id="addMember" data-model-id="' + registerMember.get('id') + '" data-position="1"><i class="icon-plus"></i>' + $.i18n.prop('PositionEvaluatorSecond') + '</a></li>' +
-                                            '</ul>' +
-                                            '</div>'
-                                    };
-
-                                })
+                                aaData: _.map(collection.filter(function (registerMember) {
+                                        // Keep only external members
+                                        return registerMember.get('external');
+                                    }),
+                                    function (registerMember) {
+                                        var isMember = _.some(self.model.get("evaluators"), function (evaluator) {
+                                            return _.isEqual(evaluator.registerMember.professor.id, registerMember.get('professor').id);
+                                        });
+                                        return {
+                                            id: '<a href = "#user/' + registerMember.get('professor').user.id + '">' + registerMember.get('professor').user.id + '</a>',
+                                            external: registerMember.get('external') ? $.i18n.prop('RegisterMemberExternal') : $.i18n.prop('RegisterMemberInternal'),
+                                            firstname: registerMember.get('professor').user.firstname[App.locale],
+                                            lastname: registerMember.get('professor').user.lastname[App.locale],
+                                            role: $.i18n.prop(registerMember.get('professor').discriminator),
+                                            institution: registerMember.get('professor').discriminator === 'PROFESSOR_FOREIGN' ? registerMember.get('professor').institution : _.templates.department(registerMember.get('professor').department),
+                                            select: isMember ? '' :
+                                                '<div class="btn-group">' +
+                                                '<a class = "btn btn-small btn-success dropdown-toggle" data-toggle="dropdown" >' + $.i18n.prop('btn_select') + '<span class="caret"></span></a>' +
+                                                '<ul class="dropdown-menu">' +
+                                                '<li><a id="addMember" data-model-id="' + registerMember.get('id') + '" data-position="0"><i class="icon-plus"></i>' + $.i18n.prop('PositionEvaluatorFirst') + '</a></li>' +
+                                                '<li><a id="addMember" data-model-id="' + registerMember.get('id') + '" data-position="1"><i class="icon-plus"></i>' + $.i18n.prop('PositionEvaluatorSecond') + '</a></li>' +
+                                                '</ul>' +
+                                                '</div>'
+                                        };
+                                    })
                             };
                             fnCallback(data);
                         }
