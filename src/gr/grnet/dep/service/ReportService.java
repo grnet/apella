@@ -280,7 +280,7 @@ public class ReportService {
 		cell = row.createCell(0);
 		cell.setCellValue("Γνωστικό Αντικείμενο: " + (register.getSubject() != null ? register.getSubject().getName() : ""));
 		cell.setCellStyle(titleStyle);
-		sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
+		sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 6));
 
 		row = sheet.createRow(rowNum++);
 
@@ -673,7 +673,7 @@ public class ReportService {
 				cell.setCellStyle(dateStyle);
 			}
 
-			if (position.getPhase().getCommittee() != null) {
+			if (position.getPhase().getNomination() != null) {
 				cell = row.createCell(colNum++);
 				if (position.getPhase().getNomination().getNominationCommitteeConvergenceDate() != null) {
 					cell.setCellValue(position.getPhase().getNomination().getNominationCommitteeConvergenceDate());
