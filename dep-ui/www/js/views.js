@@ -1,5 +1,5 @@
 /*global define */
-define([ "jquery", "underscore", "backbone", "application", "models",
+define(["jquery", "underscore", "backbone", "application", "models",
     "text!tpl/announcement-list.html", "text!tpl/confirm.html", "text!tpl/file.html", "text!tpl/file-edit.html", "text!tpl/file-list.html", "text!tpl/file-list-edit.html",
     "text!tpl/home.html", "text!tpl/login-admin.html", "text!tpl/login-main.html", "text!tpl/popup.html", "text!tpl/professor-list.html", "text!tpl/register-edit.html",
     "text!tpl/register-list.html", "text!tpl/role-edit.html", "text!tpl/role-tabs.html", "text!tpl/role.html", "text!tpl/user-edit.html", "text!tpl/user-list.html",
@@ -181,7 +181,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         el: "ul#menu",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "highlightCurrent");
             this.model.bind('change', this.render);
 
@@ -296,7 +296,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         el: "div#language",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "selectLanguage");
             this.template = _.template(tpl_language);
         },
@@ -342,7 +342,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         el: "li#user-menu",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "logout");
 
             this.model.bind('change', this.render);
@@ -409,7 +409,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         validatorResendVerificationEmail: undefined,
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "showResetPassword", "showResendVerificationEmailForm", "resetPassword", "resendVerificationEmail", "login");
             this.template = _.template(tpl_login_main);
             this.model.bind('change', this.render);
@@ -631,7 +631,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         validator: undefined,
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "login");
             this.template = _.template(tpl_login_admin);
             this.model.bind('change', this.render);
@@ -742,7 +742,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         className: "alert alert-block alert-popup fade in",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "show", "handleKeyUp", "handleHistoryChange", "stopTimer", "startTimer");
             this.template = _.template(tpl_popup);
 
@@ -848,7 +848,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         className: "modal",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "show");
             this.template = _.template(tpl_confirm);
         },
@@ -894,7 +894,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         innerView: undefined,
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             this.template = _.template(tpl_overlay);
             this.innerView = this.options.innerView;
         },
@@ -927,7 +927,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
     Views.DepartmentSelectView = Views.BaseView.extend({
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "onToggleEdit", "onSelectDepartment", "toggleEdit", "select", "clear");
             this.template = _.template(tpl_department_select);
             this.collection.bind("reset", this.render, this);
@@ -1060,7 +1060,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         validator: undefined,
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             this.template = _.template(tpl_user_registration_select);
         },
 
@@ -1092,7 +1092,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         validator: undefined,
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "changeInstitution", "submit", "selectInstitution");
             this.template = _.template(tpl_user_registration);
             this.model.bind('change', this.render);
@@ -1399,7 +1399,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         tagName: "div",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             this.template = _.template(tpl_user_verification);
             this.model.bind('change', this.render);
         },
@@ -1429,7 +1429,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         className: "hero-unit",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             this.template = _.template(tpl_home);
             this.model.bind('change', this.render);
         },
@@ -1613,7 +1613,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         validator: undefined,
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "change", "submit", "remove", "status", "cancel", "applyRules", "validatorRules");
             this.template = _.template(tpl_user_edit);
             this.model.bind('change', this.render, this);
@@ -1997,7 +1997,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
      **************************************************************************/
     Views.IncompleteAccountView = Views.AccountView.extend({
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
         },
 
         applyRules: function () {
@@ -2028,7 +2028,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         render: function (eventName) {
             var self = this;
-            self._super('render', [ eventName ]);
+            self._super('render', [eventName]);
             self.$("span#accounthelpdesk").hide();
             return self;
         }
@@ -2039,7 +2039,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
      **************************************************************************/
     Views.AdminAccountView = Views.AccountView.extend({
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
         },
 
         applyRules: function () {
@@ -2157,7 +2157,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         render: function (eventName) {
             var self = this;
-            self._super('render', [ eventName ]);
+            self._super('render', [eventName]);
             self.$("span#accounthelpdesk").hide();
             return self;
         }
@@ -2174,7 +2174,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         },
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             this.template = _.template(tpl_user);
             this.model.bind("change", this.render, this);
         },
@@ -2220,7 +2220,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         initialize: function (options) {
             var self = this;
 
-            self._super('initialize', [ options ]);
+            self._super('initialize', [options]);
             _.bindAll(self, "openIssue", "resendLoginEmail", "resetIssue");
             self.template = _.template(tpl_user_helpdesk);
             self.issueModel = new Models.JiraIssue();
@@ -2373,7 +2373,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         className: "span12",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "search", "handleKeyUp");
             this.template = _.template(tpl_user_search);
             this.templateRoleInfo = _.template(tpl_user_role_info);
@@ -2506,13 +2506,13 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                     }
                 },
                 "aoColumns": [
-                    { "mData": "id", 'sWidth': '1px' },
-                    { "mData": "firstname" },
-                    { "mData": "lastname" },
-                    { "mData": "username" },
-                    { "mData": "status" },
-                    { "mData": "role", 'sWidth': '25%', "bSortable": false  },
-                    { "mData": "roleStatus", "bSortable": false }
+                    {"mData": "id", 'sWidth': '1px'},
+                    {"mData": "firstname"},
+                    {"mData": "lastname"},
+                    {"mData": "username"},
+                    {"mData": "status"},
+                    {"mData": "role", 'sWidth': '25%', "bSortable": false},
+                    {"mData": "roleStatus", "bSortable": false}
                 ],
                 "bProcessing": true,
                 "bServerSide": true,
@@ -2568,7 +2568,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         tagName: "p",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             this.template = _.template(tpl_user_role_info);
             this.model.bind('change', this.render, this);
         },
@@ -2599,7 +2599,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         tagName: "div",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "select", "highlightSelected");
             this.template = _.template(tpl_role_tabs);
             this.collection.bind("change", this.render, this);
@@ -2662,7 +2662,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         initialize: function (options) {
             this.template = _.template(tpl_role);
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             this.model.bind("change", this.render, this);
         },
 
@@ -2763,7 +2763,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         validator: undefined,
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "change", "isEditable", "validationRules", "beforeUpload", "beforeDelete", "submit", "cancel");
             this.template = _.template(tpl_role_edit);
             this.model.bind('change', this.render, this);
@@ -2811,23 +2811,23 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                     switch (field) {
                         case "department":
                             return _.isEqual(self.model.get("status"), "UNAPPROVED") && !(_.isEqual(self.model.get("user").authenticationType,
-                                "EMAIL") && !_.isUndefined(self.model.get("department").id)); // Not Completed from Manual Insertion
+                                    "EMAIL") && !_.isUndefined(self.model.get("department").id)); // Not Completed from Manual Insertion
                         case "rank":
                             return _.isEqual(self.model.get("status"), "UNAPPROVED") && !(_.isEqual(self.model.get("user").authenticationType,
-                                "EMAIL") && !_.isUndefined(self.model.get("rank").id)); // Not Completed from Manual Insertion
+                                    "EMAIL") && !_.isUndefined(self.model.get("rank").id)); // Not Completed from Manual Insertion
                         case "fek":
                             return _.isEqual(self.model.get("status"), "UNAPPROVED") && !(_.isEqual(self.model.get("user").authenticationType,
-                                "EMAIL") && !_.isUndefined(self.model.get("fek"))); // Not Completed from Manual Insertion
+                                    "EMAIL") && !_.isUndefined(self.model.get("fek"))); // Not Completed from Manual Insertion
                         case "fekCheckbox":
                             return _.isEqual(self.model.get("status"), "UNAPPROVED") && !(_.isEqual(self.model.get("user").authenticationType,
-                                "EMAIL") && !_.isUndefined(self.model.get("fekSubject"))); // Not Completed from Manual Insertion
+                                    "EMAIL") && !_.isUndefined(self.model.get("fekSubject"))); // Not Completed from Manual Insertion
                         case "fekSubject":
                             return _.isEqual(self.model.get("status"), "UNAPPROVED") && !(_.isEqual(self.model.get("user").authenticationType,
-                                "EMAIL") && !_.isUndefined(self.model.get("fekSubject"))) && // Not Completed from Manual
+                                    "EMAIL") && !_.isUndefined(self.model.get("fekSubject"))) && // Not Completed from Manual
                                 (_.isObject(self.model.get("fekSubject")) || (_.isUndefined(self.model.get("fekSubject")) && _.isUndefined(self.model.get("subject"))));  // subject is not defined
                         case "subject":
                             return _.isEqual(self.model.get("status"), "UNAPPROVED") && !(_.isEqual(self.model.get("user").authenticationType,
-                                "EMAIL") && !_.isUndefined(self.model.get("fekSubject"))) && !self.isEditable("fekSubject"); // fekSubject is not defined
+                                    "EMAIL") && !_.isUndefined(self.model.get("fekSubject"))) && !self.isEditable("fekSubject"); // fekSubject is not defined
                         case "hasOnlineProfile":
                             return _.isEqual(self.model.get("status"), "UNAPPROVED");
                         case "profileURL":
@@ -3887,7 +3887,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
      **************************************************************************/
     Views.AdminRoleEditView = Views.RoleEditView.extend({
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
         },
 
         isEditable: function (field) {
@@ -4092,7 +4092,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         render: function (eventName) {
             var self = this;
-            self._super('render', [ eventName ]);
+            self._super('render', [eventName]);
             if (self.isEditable("status")) {
                 self.$("a#status").removeClass("disabled");
             }
@@ -4110,7 +4110,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         className: "",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             this.template = _.template(tpl_file);
             this.model.bind('change', this.render, this);
         },
@@ -4155,7 +4155,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         uploader: undefined,
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "deleteFile", "toggleUpload");
             this.template = _.template(tpl_file_edit);
             this.model.bind('change', this.render, this);
@@ -4332,7 +4332,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         className: "",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             this.template = _.template(tpl_file_list);
             this.collection.bind('reset', this.render, this);
         },
@@ -4405,7 +4405,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         className: "",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "toggleUpload", "deleteFile");
             this.template = _.template(tpl_file_list_edit);
             this.collection.bind('reset', this.render, this);
@@ -4603,7 +4603,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         tagName: "div",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             this.template = _.template(tpl_user_list);
             this.roleInfoTemplate = _.template(tpl_user_role_info);
             this.collection.bind("add", this.render, this);
@@ -4662,8 +4662,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
             }
             // Add Actions:
             self.$("#actions").html('<div class="btn-group input-append">' +
-                '<a id="createAdministrator" class="btn btn-small add-on"><i class="icon-plus"></i> ' + $.i18n.prop('btn_create') + ' </a>' +
-                '</div>');
+            '<a id="createAdministrator" class="btn btn-small add-on"><i class="icon-plus"></i> ' + $.i18n.prop('btn_create') + ' </a>' +
+            '</div>');
             return self;
         },
 
@@ -4701,7 +4701,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         tagName: "div",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             this.template = _.template(tpl_user_list);
             this.roleInfoTemplate = _.template(tpl_user_role_info);
             this.collection.bind("add", this.render, this);
@@ -4799,7 +4799,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         tagName: "div",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             this.template = _.template(tpl_user_list);
             this.roleInfoTemplate = _.template(tpl_user_role_info);
             this.collection.bind("add", this.render, this);
@@ -4893,7 +4893,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
      **************************************************************************/
     Views.AdministratorAccountView = Views.AccountView.extend({
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
         },
 
         applyRules: function () {
@@ -4911,7 +4911,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         render: function (eventName) {
             var self = this;
-            self._super('render', [ eventName ]);
+            self._super('render', [eventName]);
             self.$("span#accounthelpdesk").hide();
             return self;
         }
@@ -4922,7 +4922,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
      **************************************************************************/
     Views.AssistantAccountView = Views.AccountView.extend({
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
         },
 
         applyRules: function () {
@@ -4950,7 +4950,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         render: function (eventName) {
             var self = this;
-            self._super('render', [ eventName ]);
+            self._super('render', [eventName]);
             self.$("span#accounthelpdesk").hide();
             return self;
         }
@@ -4963,7 +4963,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         tagName: "div",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "renderActions", "selectPosition", "createPosition");
             this.template = _.template(tpl_position_list);
             this.collection.bind("change", this.render, this);
@@ -5050,7 +5050,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                         create: false,
                         hideSelected: true,
                         sortField: 'lname',
-                        searchField: [ 'lname' ],
+                        searchField: ['lname'],
                         options: _.map(collection.filter(function (department) {
                             return App.loggedOnUser.isAssociatedWithDepartment(department);
                         }), function (department) {
@@ -5134,7 +5134,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         id: "positionview",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "renderCandidacies", "renderCommittee", "renderEvaluation", "renderNomination", "renderComplementaryDocuments");
             this.template = _.template(tpl_position);
             this.model.bind('change', this.render, this);
@@ -5298,17 +5298,17 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         tab: "main",
 
         phases: {
-            "ENTAGMENI": [ "ANOIXTI" ],
+            "ENTAGMENI": ["ANOIXTI"],
             "ANOIXTI": [],
-            "KLEISTI": [ "EPILOGI" ],
-            "EPILOGI": [ "ANAPOMPI", "STELEXOMENI", "CANCELLED" ],
-            "ANAPOMPI": [ "EPILOGI" ],
-            "STELEXOMENI": [ "CANCELLED" ],
-            "CANCELLED": [ "EPILOGI" ]
+            "KLEISTI": ["EPILOGI"],
+            "EPILOGI": ["ANAPOMPI", "STELEXOMENI", "CANCELLED"],
+            "ANAPOMPI": ["EPILOGI"],
+            "STELEXOMENI": ["CANCELLED"],
+            "CANCELLED": ["EPILOGI"]
         },
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "addPhase", "showTab", "showMainTab", "showCandidaciesTab", "showCommitteeTab", "showEvaluationTab", "showNominationTab",
                 "showComplementaryDocumentsTab");
             this.template = _.template(tpl_position_edit);
@@ -5333,8 +5333,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
             self.$("a#addPhase").each(function () {
                 var status = $(this).data("phaseStatus");
                 if (!_.any(self.phases[self.model.get("phase").clientStatus], function (nextStatus) {
-                    return _.isEqual(status, nextStatus);
-                })) {
+                        return _.isEqual(status, nextStatus);
+                    })) {
                     $(this).hide();
                 }
             });
@@ -5551,7 +5551,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         validator: undefined,
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "change", "isEditable", "submit", "cancel");
             this.template = _.template(tpl_position_main_edit);
             this.model.bind('change', this.render, this);
@@ -5688,8 +5688,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                             return assistant.id === user.get('id');
                         }) ? 'checked' : '';
                         $select.append('<label class="checkbox">' +
-                            '<input type = "checkbox" name="assistant" value="' + user.get('id') + '" ' + selected + '>' + user.getDisplayName() +
-                            '</label >');
+                        '<input type = "checkbox" name="assistant" value="' + user.get('id') + '" ' + selected + '>' + user.getDisplayName() +
+                        '</label >');
                     });
                     if (self.isEditable('assistant')) {
                         $select.find('input').removeAttr("disabled");
@@ -5770,11 +5770,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                     fekSentDate: "required",
                     openingDate: {
                         "required": true,
-                        "dateAfter": [ self.$("input[name=fekSentDate]"), 1 ]
+                        "dateAfter": [self.$("input[name=fekSentDate]"), 1]
                     },
                     closingDate: {
                         "required": true,
-                        "dateAfter": [ self.$("input[name=openingDate]"), 29 ]
+                        "dateAfter": [self.$("input[name=openingDate]"), 29]
                     }
                 },
                 messages: {
@@ -5847,7 +5847,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
             values.phase.candidacies.openingDate = self.$('form input[name=openingDate]').val();
             values.phase.candidacies.closingDate = self.$('form input[name=closingDate]').val();
             values.assistants = self.$('form input[name=assistant]:checked').map(function () {
-                return  {
+                return {
                     id: this.value
                 };
             }).get();
@@ -5934,7 +5934,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         uploader: undefined,
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             this.template = _.template(tpl_position_committee);
             this.model.bind('change', this.render, this);
             this.model.bind("destroy", this.close, this);
@@ -6002,7 +6002,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         initialize: function (options) {
             var self = this;
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "change", "renderCommitteeMembers", "isEditable", "toggleRegisterMembers", "addMembers", "removeMember", "submit", "cancel");
             self.template = _.template(tpl_position_committee_edit);
             self.templateRow = _.template(tpl_position_committee_member_edit);
@@ -6138,11 +6138,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
             var popup, i;
             // Search for duplicates
             if (_.some(self.model.get("members"), function (existingMember) {
-                return _.some(newCommitteeMembers, function (newCommitteeMember) {
-                    return _.isEqual(existingMember.registerMember.id, newCommitteeMember.registerMember.id);
-                });
+                    return _.some(newCommitteeMembers, function (newCommitteeMember) {
+                        return _.isEqual(existingMember.registerMember.id, newCommitteeMember.registerMember.id);
+                    });
 
-            })) {
+                })) {
                 popup = new Views.PopupView({
                     type: "error",
                     message: $.i18n.prop("error.member.already.exists")
@@ -6243,7 +6243,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         className: "span12 well",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "showRegisterMembers", "addMembers");
             this.template = _.template(tpl_position_committee_edit_register_member_list);
 
@@ -6294,14 +6294,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                     }
                 },
                 "aoColumns": [
-                    { "mData": "select"},
-                    { "mData": "id"},
-                    { "mData": "external" },
-                    { "mData": "firstname" },
-                    { "mData": "lastname" },
-                    { "mData": "role"},
-                    { "mData": "institution"},
-                    { "mData": "committees"}
+                    {"mData": "select"},
+                    {"mData": "id"},
+                    {"mData": "external"},
+                    {"mData": "firstname"},
+                    {"mData": "lastname"},
+                    {"mData": "role"},
+                    {"mData": "institution"},
+                    {"mData": "committees"}
                 ]
             });
             return self;
@@ -6334,14 +6334,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                     }
                 },
                 "aoColumns": [
-                    { "mData": "select"},
-                    { "mData": "id"},
-                    { "mData": "external" },
-                    { "mData": "firstname" },
-                    { "mData": "lastname" },
-                    { "mData": "role"},
-                    { "mData": "institution"},
-                    { "mData": "committees"}
+                    {"mData": "select"},
+                    {"mData": "id"},
+                    {"mData": "external"},
+                    {"mData": "firstname"},
+                    {"mData": "lastname"},
+                    {"mData": "role"},
+                    {"mData": "institution"},
+                    {"mData": "committees"}
                 ],
                 "bProcessing": true,
                 "sAjaxSource": self.model.url() + "/register/" + registerId + "/member",
@@ -6358,11 +6358,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                                     });
                                     return {
                                         select: isMember ? '' :
-                                            '<select name="selectMember" class="input-small">' +
-                                            '<option value="NONE">----</option>' +
-                                            '<option value="REGULAR" data-model-id="' + registerMember.get('id') + '" data-type="REGULAR">' + $.i18n.prop('PositionCommitteeMemberTypeREGULAR') + '</option>' +
-                                            '<option value="SUBSTITUTE" data-model-id="' + registerMember.get('id') + '" data-type="SUBSTITUTE">' + $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") + '</option>' +
-                                            '</select>',
+                                        '<select name="selectMember" class="input-small">' +
+                                        '<option value="NONE">----</option>' +
+                                        '<option value="REGULAR" data-model-id="' + registerMember.get('id') + '" data-type="REGULAR">' + $.i18n.prop('PositionCommitteeMemberTypeREGULAR') + '</option>' +
+                                        '<option value="SUBSTITUTE" data-model-id="' + registerMember.get('id') + '" data-type="SUBSTITUTE">' + $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") + '</option>' +
+                                        '</select>',
                                         id: '<a href = "#user/' + registerMember.get('professor').user.id + '">' + registerMember.get('professor').user.id + '</a>',
                                         external: registerMember.get('external') ? $.i18n.prop('RegisterMemberExternal') : $.i18n.prop('RegisterMemberInternal'),
                                         firstname: registerMember.get('professor').user.firstname[App.locale],
@@ -6423,7 +6423,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         initialize: function (options) {
             var self = this;
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             self.template = _.template(tpl_position_evaluation);
             self.model.bind('change', self.render, self);
             self.model.bind("destroy", self.close, self);
@@ -6483,7 +6483,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         initialize: function (options) {
             var self = this;
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "change", "renderEvaluators", "isEditable", "toggleRegisterMembers", "addMember", "removeMember", "submit", "cancel");
             self.template = _.template(tpl_position_evaluation_edit);
             self.templateRow = _.template(tpl_position_evaluation_evaluator_edit);
@@ -6601,8 +6601,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         addMember: function (evaluator) {
             var self = this;
             if (_.any(self.model.get("evaluators"), function (member) {
-                return _.isEqual(member.registerMember.professor.id, evaluator.registerMember.professor.id);
-            })) {
+                    return _.isEqual(member.registerMember.professor.id, evaluator.registerMember.professor.id);
+                })) {
                 var popup = new Views.PopupView({
                     type: "error",
                     message: $.i18n.prop("error.member.already.exists")
@@ -6702,7 +6702,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         tagName: "div",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "showRegisterMembers", "addMember");
             this.template = _.template(tpl_position_evaluation_edit_register_member_list);
 
@@ -6753,13 +6753,13 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                     }
                 },
                 "aoColumns": [
-                    { "mData": "id"},
-                    { "mData": "external" },
-                    { "mData": "firstname" },
-                    { "mData": "lastname" },
-                    { "mData": "role"},
-                    { "mData": "institution"},
-                    { "mData": "select"}
+                    {"mData": "id"},
+                    {"mData": "external"},
+                    {"mData": "firstname"},
+                    {"mData": "lastname"},
+                    {"mData": "role"},
+                    {"mData": "institution"},
+                    {"mData": "select"}
                 ]
             });
             return self;
@@ -6792,13 +6792,13 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                     }
                 },
                 "aoColumns": [
-                    { "mData": "id"},
-                    { "mData": "external" },
-                    { "mData": "firstname" },
-                    { "mData": "lastname" },
-                    { "mData": "role"},
-                    { "mData": "institution"},
-                    { "mData": "select"}
+                    {"mData": "id"},
+                    {"mData": "external"},
+                    {"mData": "firstname"},
+                    {"mData": "lastname"},
+                    {"mData": "role"},
+                    {"mData": "institution"},
+                    {"mData": "select"}
                 ],
                 "bProcessing": true,
                 "sAjaxSource": self.model.url() + "/register/" + registerId + "/member",
@@ -6825,13 +6825,13 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                                             role: $.i18n.prop(registerMember.get('professor').discriminator),
                                             institution: registerMember.get('professor').discriminator === 'PROFESSOR_FOREIGN' ? registerMember.get('professor').institution : _.templates.department(registerMember.get('professor').department),
                                             select: isMember ? '' :
-                                                '<div class="btn-group">' +
-                                                '<a class = "btn btn-small btn-success dropdown-toggle" data-toggle="dropdown" >' + $.i18n.prop('btn_select') + '<span class="caret"></span></a>' +
-                                                '<ul class="dropdown-menu">' +
-                                                '<li><a id="addMember" data-model-id="' + registerMember.get('id') + '" data-position="0"><i class="icon-plus"></i>' + $.i18n.prop('PositionEvaluatorFirst') + '</a></li>' +
-                                                '<li><a id="addMember" data-model-id="' + registerMember.get('id') + '" data-position="1"><i class="icon-plus"></i>' + $.i18n.prop('PositionEvaluatorSecond') + '</a></li>' +
-                                                '</ul>' +
-                                                '</div>'
+                                            '<div class="btn-group">' +
+                                            '<a class = "btn btn-small btn-success dropdown-toggle" data-toggle="dropdown" >' + $.i18n.prop('btn_select') + '<span class="caret"></span></a>' +
+                                            '<ul class="dropdown-menu">' +
+                                            '<li><a id="addMember" data-model-id="' + registerMember.get('id') + '" data-position="0"><i class="icon-plus"></i>' + $.i18n.prop('PositionEvaluatorFirst') + '</a></li>' +
+                                            '<li><a id="addMember" data-model-id="' + registerMember.get('id') + '" data-position="1"><i class="icon-plus"></i>' + $.i18n.prop('PositionEvaluatorSecond') + '</a></li>' +
+                                            '</ul>' +
+                                            '</div>'
                                         };
                                     })
                             };
@@ -6870,7 +6870,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         initialize: function (options) {
             var self = this;
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             self.template = _.template(tpl_position_candidacies);
             self.model.bind('change', self.render, self);
             self.model.bind("destroy", self.close, self);
@@ -6911,7 +6911,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         initialize: function (options) {
             var self = this;
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             self.template = _.template(tpl_position_candidacies_edit);
             self.model.bind('change', self.render, self);
             self.model.bind("destroy", self.close, self);
@@ -6980,7 +6980,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         initialize: function (options) {
             var self = this;
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             self.template = _.template(tpl_position_nomination);
             self.model.bind('change', self.render, self);
             self.model.bind("destroy", self.close, self);
@@ -7040,7 +7040,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         initialize: function (options) {
             var self = this;
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "change", "isEditable", "submit", "cancel");
             self.template = _.template(tpl_position_nomination_edit);
             self.model.bind('change', self.render, self);
@@ -7240,7 +7240,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         initialize: function (options) {
             var self = this;
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             self.template = _.template(tpl_position_complementaryDocuments);
             self.model.bind('change', self.render, self);
             self.model.bind("destroy", self.close, self);
@@ -7289,7 +7289,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         initialize: function (options) {
             var self = this;
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(self, "cancel");
             self.template = _.template(tpl_position_complementaryDocuments_edit);
             self.model.bind('change', self.render, self);
@@ -7300,7 +7300,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         isEditable: function () {
             var self = this;
-            return _.indexOf([ "ENTAGMENI", "ANOIXTI", "EPILOGI", "STELEXOMENI", "ANAPOMPI" ], self.model.get("position").phase.status) >= 0;
+            return _.indexOf(["ENTAGMENI", "ANOIXTI", "EPILOGI", "STELEXOMENI", "ANAPOMPI"], self.model.get("position").phase.status) >= 0;
         },
 
         render: function () {
@@ -7352,11 +7352,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         validator: undefined,
 
-        events: {
-        },
+        events: {},
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             this.template = _.template(tpl_position_helpdesk);
 
             this.model.bind('change', this.render, this);
@@ -7402,7 +7401,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         tagName: "div",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "renderActions", "selectRegister", "createRegister");
             this.template = _.template(tpl_register_list);
             this.collection.bind("change", this.render, this);
@@ -7554,7 +7553,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         validator: undefined,
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             this.template = _.template(tpl_register);
             this.model.bind('change', this.render, this);
             this.model.bind("destroy", this.close, this);
@@ -7628,7 +7627,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         initialize: function (options) {
             var self = this;
 
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "change", "renderMembers", "toggleAddMember", "submit", "remove", "cancel", "addMembers", "removeMember");
             self.template = _.template(tpl_register_edit);
             self.model.bind('change', self.render, self);
@@ -7755,15 +7754,15 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                     }
                 },
                 "aoColumns": [
-                    { "mData": "firstname" },
-                    { "mData": "lastname" },
-                    { "mData": "id", "sType": "html"},
-                    { "mData": "profile" },
-                    { "mData": "rank" },
-                    { "mData": "institution" },
-                    { "mData": "subject" },
-                    { "mData": "external" },
-                    { "mData": "options", "sType": "html"}
+                    {"mData": "firstname"},
+                    {"mData": "lastname"},
+                    {"mData": "id", "sType": "html"},
+                    {"mData": "profile"},
+                    {"mData": "rank"},
+                    {"mData": "institution"},
+                    {"mData": "subject"},
+                    {"mData": "external"},
+                    {"mData": "options", "sType": "html"}
                 ],
                 "aaData": _.map(self.model.get("members"), function (member) {
                     return {
@@ -7804,10 +7803,10 @@ define([ "jquery", "underscore", "backbone", "application", "models",
             var self = this;
             var popup;
             if (_.any(self.model.get("members"), function (existingMember) {
-                return professors.some(function (professor) {
-                    return _.isEqual(existingMember.professor.id, professor.get("id"));
-                });
-            })) {
+                    return professors.some(function (professor) {
+                        return _.isEqual(existingMember.professor.id, professor.get("id"));
+                    });
+                })) {
                 popup = new Views.PopupView({
                     type: "error",
                     message: $.i18n.prop("error.member.already.exists")
@@ -7945,7 +7944,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         tagName: "div",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "search", "selectProfessors", "handleKeyUp", "displaySelected");
             this.template = _.template(tpl_register_edit_professor_list);
             this.model.bind("change:members", this.render, this);
@@ -8065,14 +8064,14 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                     }
                 },
                 "aoColumns": [
-                    { "mData": "firstname" },
-                    { "mData": "lastname" },
-                    { "mData": "id", "sType": "html"},
-                    { "mData": "profile" },
-                    { "mData": "rank", "bSortable": false },
-                    { "mData": "institution", "bSortable": false },
-                    { "mData": "subject", "bSortable": false },
-                    { "mData": "options", "sType": "html", "bSortable": false}
+                    {"mData": "firstname"},
+                    {"mData": "lastname"},
+                    {"mData": "id", "sType": "html"},
+                    {"mData": "profile"},
+                    {"mData": "rank", "bSortable": false},
+                    {"mData": "institution", "bSortable": false},
+                    {"mData": "subject", "bSortable": false},
+                    {"mData": "options", "sType": "html", "bSortable": false}
                 ],
                 "bProcessing": true,
                 "bServerSide": true,
@@ -8169,7 +8168,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         tagName: "div",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "showDetails", "select");
             this.template = _.template(tpl_professor_list);
             this.collection.bind("change", this.render, this);
@@ -8251,7 +8250,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         initialize: function (options) {
             var self = this;
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(self, "select");
             self.template = _.template(tpl_professor_committees);
             self.collection.bind('reset', self.render, self);
@@ -8316,7 +8315,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         initialize: function (options) {
             var self = this;
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(self, "select");
             self.template = _.template(tpl_professor_evaluations);
             self.collection.bind('reset', self.render, self);
@@ -8381,7 +8380,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         initialize: function (options) {
             var self = this;
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(self, "renderActions", "select", "create");
             self.template = _.template(tpl_institution_regulatory_framework_list);
             self.collection.bind('reset', self.render, self);
@@ -8450,8 +8449,8 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                 return;
             }
             if (self.collection.any(function (register) {
-                return App.loggedOnUser.isAssociatedWithInstitution(register.get("institution"));
-            })) {
+                    return App.loggedOnUser.isAssociatedWithInstitution(register.get("institution"));
+                })) {
                 return;
             }
             self.$("#actions").append("<div class=\"btn-group\"><input type=\"hidden\" name=\"institution\" /><a id=\"createInstitutionRF\" class=\"btn\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_institutionrf') + " </a></div>");
@@ -8525,7 +8524,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         initialize: function (options) {
             var self = this;
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "change", "submit", "cancel", "remove");
             self.template = _.template(tpl_institution_regulatory_framework_edit);
             self.model.bind('change', self.render, self);
@@ -8693,7 +8692,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         initialize: function (options) {
             var self = this;
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             self.template = _.template(tpl_institution_regulatory_framework);
             self.model.bind('change', self.render, self);
         },
@@ -8725,7 +8724,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         initialize: function (options) {
             var self = this;
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(self, "change", "renderDepartments", "renderSectors", "readValues", "search", "submit");
             self.template = _.template(tpl_position_search_criteria);
             self.model.bind('change', self.render, self);
@@ -9005,7 +9004,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         initialize: function (options) {
             var self = this;
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             self.template = _.template(tpl_position_search_result);
             self.collection.bind('reset', self.render, self);
         },
@@ -9041,7 +9040,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
                         }
                     },
                     "aoColumnDefs": [
-                        { "sType": "date-eu", "aTargets": [ 6, 7 ]  }
+                        {"sType": "date-eu", "aTargets": [6, 7]}
                     ]
                 });
             }
@@ -9070,7 +9069,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         initialize: function (options) {
             var self = this;
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(self, "select");
             self.template = _.template(tpl_candidate_candidacy_list);
             self.collection.bind('reset', self.render, self);
@@ -9136,7 +9135,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         initialize: function (options) {
             var self = this;
 
-            self._super('initialize', [ options ]);
+            self._super('initialize', [options]);
             _.bindAll(this, "renderRegisterMembers", "change", "isEditable", "isEnabled", "submit", "cancel");
             self.template = _.template(tpl_candidacy_edit);
             self.model.bind('change', self.render, self);
@@ -9484,7 +9483,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         validator: undefined,
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             this.template = _.template(tpl_candidacy);
             this.model.bind('change', this.render, this);
             this.model.bind("destroy", this.close, this);
@@ -9574,7 +9573,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         className: "modal",
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "show");
             this.template = _.template(tpl_candidacy_update_confirm);
         },
@@ -9625,12 +9624,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         validator: undefined,
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             this.template = _.template(tpl_jira_issue);
         },
 
-        events: {
-        },
+        events: {},
 
         render: function () {
             var self = this;
@@ -9657,7 +9655,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         validator: undefined,
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "submit");
             this.template = _.template(tpl_jira_issue_edit);
             this.model.bind('change', this.render, this);
@@ -9807,7 +9805,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         validator: undefined,
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(this, "submit");
             this.template = _.template(tpl_jira_issue_public_edit);
             this.model.bind('change', this.render, this);
@@ -9949,7 +9947,7 @@ define([ "jquery", "underscore", "backbone", "application", "models",
 
         initialize: function (options) {
             var self = this;
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             _.bindAll(self, "showIssue", "showCreateIssue");
             self.template = _.template(tpl_jira_issue_list);
 
@@ -10051,12 +10049,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         validator: undefined,
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             this.template = _.template(tpl_data_exports);
         },
 
-        events: {
-        },
+        events: {},
 
         render: function () {
             var self = this;
@@ -10099,12 +10096,11 @@ define([ "jquery", "underscore", "backbone", "application", "models",
         validator: undefined,
 
         initialize: function (options) {
-            this._super('initialize', [ options ]);
+            this._super('initialize', [options]);
             this.template = _.template(tpl_statistics);
         },
 
-        events: {
-        },
+        events: {},
 
         render: function () {
             var self = this;

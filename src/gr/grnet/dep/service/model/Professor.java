@@ -5,7 +5,11 @@ import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.file.ProfessorFile;
 import gr.grnet.dep.service.util.CompareUtil;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlTransient;
 import java.util.HashSet;
 import java.util.Set;

@@ -3,7 +3,11 @@ package gr.grnet.dep.service.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.inject.Inject;
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlTransient;
 import java.util.logging.Logger;
 

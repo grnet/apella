@@ -1,20 +1,25 @@
-
 <form class="form" onsubmit="return false">
-	<fieldset>
-		<legend><%= $.i18n.prop('PositionSearchCriteria') %></legend>
-		<label class="control-label" for="departmentsTree"><%= $.i18n.prop('Department') %>: <span class="help-inline"></span></label>
-		<div id="departmentsTree" class="formInput" style="height:160px;">
-		</div>
-		<label class="control-label" for="sectorsTree"><%= $.i18n.prop('Sector') %>: <span class="help-inline"></span></label>
-		<div id="sectorsTree" class="formInput" style="height:160px;">
-		</div>
-		</div>
-	</fieldset>
-	<fieldset>
-		<div class="form-actions">
-			<a id="save" class="btn btn-success"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_position_interest') %></a>
-			<a id="search" class="btn btn-primary"><i class="icon-search icon-white"></i> <%= $.i18n.prop('btn_search') %></a>
-			<span class="help-block"><%= $.i18n.prop('PositionInterestInstructions') %></span>
-		</div>
-	</fieldset>
+    <fieldset>
+        <legend><%= $.i18n.prop('PositionSearchCriteria') %></legend>
+        <label class="control-label" for="departmentsTree"><%= $.i18n.prop('Department') %>: <span
+                class="help-inline"></span></label>
+
+        <div id="departmentsTree" class="formInput" style="height:160px;">
+        </div>
+        <label class="control-label" for="sectorsTree"><%= $.i18n.prop('Sector') %>: <span
+                class="help-inline"></span></label>
+
+        <div id="sectorsTree" class="formInput" style="height:160px;">
+        </div>
+        </div>
+    </fieldset>
+    <fieldset>
+        <div class="form-actions">
+            <a id="save" class="btn btn-success"><i class="icon-ok icon-white"></i> <%=
+                $.i18n.prop('btn_position_interest') %></a>
+            <a id="search" class="btn btn-primary"><i class="icon-search icon-white"></i> <%= $.i18n.prop('btn_search')
+                %></a>
+            <span class="help-block"><%= $.i18n.prop('PositionInterestInstructions') %></span>
+        </div>
+    </fieldset>
 </form>

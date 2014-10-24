@@ -8,7 +8,16 @@ import gr.grnet.dep.service.model.file.PositionNominationFile;
 import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import java.util.Date;

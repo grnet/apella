@@ -1,108 +1,108 @@
 <?xml version='1.0' encoding='utf-8'?>
 <job-scheduling-data xmlns="http://www.quartz-scheduler.org/xml/JobSchedulingData"
-					 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-					 xsi:schemaLocation="http://www.quartz-scheduler.org/xml/JobSchedulingData http://www.quartz-scheduler.org/xml/job_scheduling_data_1_8.xsd"
-					 version="1.8">
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="http://www.quartz-scheduler.org/xml/JobSchedulingData http://www.quartz-scheduler.org/xml/job_scheduling_data_1_8.xsd"
+                     version="1.8">
 
-	<schedule>
-		<job>
-			<name>RemoveNonPermanentJob</name>
-			<group>APELLA_JOBS</group>
-			<description>RemoveNonPermanentJob</description>
-			<job-class>gr.grnet.dep.service.job.RemoveNonPermanentJob</job-class>
-		</job>
+    <schedule>
+        <job>
+            <name>RemoveNonPermanentJob</name>
+            <group>APELLA_JOBS</group>
+            <description>RemoveNonPermanentJob</description>
+            <job-class>gr.grnet.dep.service.job.RemoveNonPermanentJob</job-class>
+        </job>
 
-		<job>
-			<name>OpenPositionsJob</name>
-			<group>APELLA_JOBS</group>
-			<description>OpenPositionsJob</description>
-			<job-class>gr.grnet.dep.service.job.OpenPositionsJob</job-class>
-		</job>
+        <job>
+            <name>OpenPositionsJob</name>
+            <group>APELLA_JOBS</group>
+            <description>OpenPositionsJob</description>
+            <job-class>gr.grnet.dep.service.job.OpenPositionsJob</job-class>
+        </job>
 
-		<job>
-			<name>SendEmailsJob</name>
-			<group>APELLA_JOBS</group>
-			<description>SendEmailsJob</description>
-			<job-class>gr.grnet.dep.service.job.SendEmailsJob</job-class>
-		</job>
+        <job>
+            <name>SendEmailsJob</name>
+            <group>APELLA_JOBS</group>
+            <description>SendEmailsJob</description>
+            <job-class>gr.grnet.dep.service.job.SendEmailsJob</job-class>
+        </job>
 
-		<job>
-			<name>NotifyOnClosedPositionsJob</name>
-			<group>APELLA_JOBS</group>
-			<description>NotifyOnClosedPositionsJob</description>
-			<job-class>gr.grnet.dep.service.job.NotifyOnClosedPositionsJob</job-class>
-		</job>
+        <job>
+            <name>NotifyOnClosedPositionsJob</name>
+            <group>APELLA_JOBS</group>
+            <description>NotifyOnClosedPositionsJob</description>
+            <job-class>gr.grnet.dep.service.job.NotifyOnClosedPositionsJob</job-class>
+        </job>
 
-		<job>
-			<name>SynchronizeJiraIssuesJob</name>
-			<group>APELLA_JOBS</group>
-			<description>SynchronizeJiraIssuesJob</description>
-			<job-class>gr.grnet.dep.service.job.SynchronizeJiraIssuesJob</job-class>
-		</job>
+        <job>
+            <name>SynchronizeJiraIssuesJob</name>
+            <group>APELLA_JOBS</group>
+            <description>SynchronizeJiraIssuesJob</description>
+            <job-class>gr.grnet.dep.service.job.SynchronizeJiraIssuesJob</job-class>
+        </job>
 
-		<trigger>
-			<cron>
-				<name>RemoveNonPermanentJobCronTrigger</name>
-				<group>EUDOXUS_TRIGGERS</group>
-				<job-name>RemoveNonPermanentJob</job-name>
-				<job-group>APELLA_JOBS</job-group>
-				<!-- trigger at 03:00 in the morning -->
-				<cron-expression>0 0 3 * * ?</cron-expression>
-			</cron>
-		</trigger>
+        <trigger>
+            <cron>
+                <name>RemoveNonPermanentJobCronTrigger</name>
+                <group>EUDOXUS_TRIGGERS</group>
+                <job-name>RemoveNonPermanentJob</job-name>
+                <job-group>APELLA_JOBS</job-group>
+                <!-- trigger at 03:00 in the morning -->
+                <cron-expression>0 0 3 * * ?</cron-expression>
+            </cron>
+        </trigger>
 
-		<trigger>
-			<cron>
-				<name>OpenPositionsJobCronTrigger</name>
-				<group>EUDOXUS_TRIGGERS</group>
-				<job-name>OpenPositionsJob</job-name>
-				<job-group>APELLA_JOBS</job-group>
-				<!-- trigger at 02:00 in the morning -->
-				<cron-expression>0 0 2 * * ?</cron-expression>
-				<!-- trigger every 5 min for testing -->
-				<!-- <cron-expression>0 0/5 * * * ?</cron-expression> -->
-			</cron>
-		</trigger>
+        <trigger>
+            <cron>
+                <name>OpenPositionsJobCronTrigger</name>
+                <group>EUDOXUS_TRIGGERS</group>
+                <job-name>OpenPositionsJob</job-name>
+                <job-group>APELLA_JOBS</job-group>
+                <!-- trigger at 02:00 in the morning -->
+                <cron-expression>0 0 2 * * ?</cron-expression>
+                <!-- trigger every 5 min for testing -->
+                <!-- <cron-expression>0 0/5 * * * ?</cron-expression> -->
+            </cron>
+        </trigger>
 
-		<trigger>
-			<cron>
-				<name>SendEmailsJobCronTrigger</name>
-				<group>EUDOXUS_TRIGGERS</group>
-				<job-name>SendEmailsJob</job-name>
-				<job-group>APELLA_JOBS</job-group>
-				<!-- trigger every 30 minutes -->
-				<cron-expression>0 0/30 * * * ?</cron-expression>
-				<!-- trigger every 15 sec for testing -->
-				<!-- <cron-expression>0/15 * * * * ?</cron-expression> -->
-			</cron>
-		</trigger>
+        <trigger>
+            <cron>
+                <name>SendEmailsJobCronTrigger</name>
+                <group>EUDOXUS_TRIGGERS</group>
+                <job-name>SendEmailsJob</job-name>
+                <job-group>APELLA_JOBS</job-group>
+                <!-- trigger every 30 minutes -->
+                <cron-expression>0 0/30 * * * ?</cron-expression>
+                <!-- trigger every 15 sec for testing -->
+                <!-- <cron-expression>0/15 * * * * ?</cron-expression> -->
+            </cron>
+        </trigger>
 
-		<trigger>
-			<cron>
-				<name>NotifyOnClosedPositionsJobTrigger</name>
-				<group>EUDOXUS_TRIGGERS</group>
-				<job-name>NotifyOnClosedPositionsJob</job-name>
-				<job-group>APELLA_JOBS</job-group>
-				<!-- trigger at 04:00 in the morning -->
-				<cron-expression>0 0 4 * * ?</cron-expression>
-				<!-- trigger every 5 min for testing -->
-				<!-- <cron-expression>0 0/5 * * * ?</cron-expression> -->
-			</cron>
-		</trigger>
+        <trigger>
+            <cron>
+                <name>NotifyOnClosedPositionsJobTrigger</name>
+                <group>EUDOXUS_TRIGGERS</group>
+                <job-name>NotifyOnClosedPositionsJob</job-name>
+                <job-group>APELLA_JOBS</job-group>
+                <!-- trigger at 04:00 in the morning -->
+                <cron-expression>0 0 4 * * ?</cron-expression>
+                <!-- trigger every 5 min for testing -->
+                <!-- <cron-expression>0 0/5 * * * ?</cron-expression> -->
+            </cron>
+        </trigger>
 
-		<trigger>
-			<cron>
-				<name>SynchronizeJiraIssuesJobTrigger</name>
-				<group>EUDOXUS_TRIGGERS</group>
-				<job-name>SynchronizeJiraIssuesJob</job-name>
-				<job-group>APELLA_JOBS</job-group>
-				<!-- trigger every 30 minutes -->
-				<cron-expression>0 0/30 * * * ?</cron-expression>
-				<!-- trigger every 15 sec for testing -->
-				<!-- <cron-expression>0/15 * * * * ?</cron-expression> -->
-			</cron>
-		</trigger>
+        <trigger>
+            <cron>
+                <name>SynchronizeJiraIssuesJobTrigger</name>
+                <group>EUDOXUS_TRIGGERS</group>
+                <job-name>SynchronizeJiraIssuesJob</job-name>
+                <job-group>APELLA_JOBS</job-group>
+                <!-- trigger every 30 minutes -->
+                <cron-expression>0 0/30 * * * ?</cron-expression>
+                <!-- trigger every 15 sec for testing -->
+                <!-- <cron-expression>0/15 * * * * ?</cron-expression> -->
+            </cron>
+        </trigger>
 
-	</schedule>
+    </schedule>
 
 </job-scheduling-data>

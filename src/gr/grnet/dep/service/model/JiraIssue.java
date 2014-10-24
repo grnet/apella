@@ -3,7 +3,12 @@ package gr.grnet.dep.service.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;

@@ -3,13 +3,21 @@ package gr.grnet.dep.server.rest;
 import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.model.*;
+import gr.grnet.dep.service.model.Candidacy;
+import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
+import gr.grnet.dep.service.model.PositionCommittee;
 import gr.grnet.dep.service.model.PositionCommittee.DetailedPositionCommitteeView;
+import gr.grnet.dep.service.model.PositionCommitteeMember;
 import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
 import gr.grnet.dep.service.model.PositionCommitteeMember.MemberType;
+import gr.grnet.dep.service.model.PositionEvaluator;
+import gr.grnet.dep.service.model.Professor;
+import gr.grnet.dep.service.model.Register;
+import gr.grnet.dep.service.model.RegisterMember;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
+import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
@@ -26,13 +34,29 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.TypedQuery;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -102,7 +126,12 @@ public class PositionCommitteeRESTService extends RESTService {
 	@GET
 	@Path("/{committeeId:[0-9]+}/register/{registerId:[0-9]+}/member")
 	@JsonView({DetailedPositionCommitteeMemberView.class})
-	public Collection<RegisterMember> getPositionCommiteeRegisterMembers(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId, @PathParam("registerId") Long registerId) {
+	public Collection<RegisterMember> getPositionCommiteeRegisterMembers(
+			@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken,
+			@PathParam("id") Long positionId,
+			@PathParam("committeeId") Long committeeId,
+			@PathParam("registerId") Long registerId) {
+
 		User loggedOn = getLoggedOn(authToken);
 		PositionCommittee existingCommittee = em.find(PositionCommittee.class, committeeId);
 		if (existingCommittee == null) {

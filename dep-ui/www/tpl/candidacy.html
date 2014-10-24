@@ -1,133 +1,145 @@
 <div class="row-fluid">
-	<div class="span12" id="candidacy_position">
-		<h3><%= $.i18n.prop('Position') %></h3>
-		<dl class="dl-glossary">
-			<dt><%= $.i18n.prop('PositionName') %></dt>
-			<dd><%- candidacies.position.name %></dd>
-			<dt><%= $.i18n.prop('Department') %></dt>
-			<dd><%= _.templates.department(candidacies.position.department) %></dd>
-			<dt><%= $.i18n.prop('Description') %></dt>
-			<dd><%- candidacies.position.description %></dd>
-			<dt><%= $.i18n.prop('Subject') %></dt>
-			<dd><% if (!_.isUndefined(candidacies.position.subject)) { %><%- candidacies.position.subject.name %><% } %></dd>
-			<dt><%= $.i18n.prop('FEK') %></dt>
-			<dd><a href="<%- candidacies.position.fek %>"><%= $.i18n.prop('ClickForMore') %></a></dd>
-			<dt><%= $.i18n.prop('FEKSentDate') %></dt>
-			<dd><%- candidacies.position.fekSentDate %></dd>
-			<dt><%= $.i18n.prop('PositionStatus') %></dt>
-			<dd><%= $.i18n.prop('PositionStatus_' + candidacies.position.phase.clientStatus) %></dd>
-			<dt><%= $.i18n.prop('PositionOpeningDate') %></dt>
-			<dd><%- candidacies.openingDate %></dd>
-			<dt><%= $.i18n.prop('PositionClosingDate') %></dt>
-			<dd><%- candidacies.closingDate %></dd>
-		</dl>
-	</div>
+    <div class="span12" id="candidacy_position">
+        <h3><%= $.i18n.prop('Position') %></h3>
+        <dl class="dl-glossary">
+            <dt><%= $.i18n.prop('PositionName') %></dt>
+            <dd><%- candidacies.position.name %></dd>
+            <dt><%= $.i18n.prop('Department') %></dt>
+            <dd><%= _.templates.department(candidacies.position.department) %></dd>
+            <dt><%= $.i18n.prop('Description') %></dt>
+            <dd><%- candidacies.position.description %></dd>
+            <dt><%= $.i18n.prop('Subject') %></dt>
+            <dd><% if (!_.isUndefined(candidacies.position.subject)) { %><%- candidacies.position.subject.name %><% }
+                %>
+            </dd>
+            <dt><%= $.i18n.prop('FEK') %></dt>
+            <dd><a href="<%- candidacies.position.fek %>"><%= $.i18n.prop('ClickForMore') %></a></dd>
+            <dt><%= $.i18n.prop('FEKSentDate') %></dt>
+            <dd><%- candidacies.position.fekSentDate %></dd>
+            <dt><%= $.i18n.prop('PositionStatus') %></dt>
+            <dd><%= $.i18n.prop('PositionStatus_' + candidacies.position.phase.clientStatus) %></dd>
+            <dt><%= $.i18n.prop('PositionOpeningDate') %></dt>
+            <dd><%- candidacies.openingDate %></dd>
+            <dt><%= $.i18n.prop('PositionClosingDate') %></dt>
+            <dd><%- candidacies.closingDate %></dd>
+        </dl>
+    </div>
 </div>
 <div class="row-fluid">
-	<div class="span12" id="candidacy_snapshot">
-		<h3><%= $.i18n.prop('Candidate') %></h3>
-		<dl class="dl-glossary">
-			<dt><%= $.i18n.prop('Name') %></dt>
-			<dd><%- snapshot.firstname[App.locale] %></dd>
-			<dt><%= $.i18n.prop('Surname') %></dt>
-			<dd><%- snapshot.lastname[App.locale] %></dd>
-			<dt><%= $.i18n.prop('FatherName') %></dt>
-			<dd><%- snapshot.fathername[App.locale] %></dd>
-			<% if (snapshot.institutionString) { %>
-			<dt><%= $.i18n.prop('Institution') %></dt>
-			<dd><%- snapshot.institutionString %></dd>
-			<% } %>
-			<% if (snapshot.department) { %>
-			<dt><%= $.i18n.prop('Department') %></dt>
-			<dd><%= _.templates.department(snapshot.department) %></dd>
-			<% } %>
-			<% if (snapshot.rank) { %>
-			<dt><%= $.i18n.prop('Rank') %></dt>
-			<dd><%- snapshot.rank.name[App.locale] %></dd>
-			<% } %>
-			<% if (snapshot.subject) { %>
-			<dt><%= $.i18n.prop('Subject') %></dt>
-			<dd><%- snapshot.subject.name %></dd>
-			<% } %>
-			<% if (snapshot.fek) { %>
-			<dt><%= $.i18n.prop('FEK') %></dt>
-           		<dd><%- snapshot.fek %></dd>
-			<% } %>
-			<% if (snapshot.fekSubject) { %>
-			<dt><%= $.i18n.prop('FEKSubject') %></dt>
-			<dd><%- snapshot.fekSubject.name %></dd>
-			<% } %>
-			<dt><%= $.i18n.prop('BiografikoFile') %></dt>
-			<dd>
-				<div id="biografikoFile"></div>
-			</dd>
-			<dt><%= $.i18n.prop('PtyxioFileList') %></dt>
-			<dd>
-				<div id="ptyxioFileList"></div>
-			</dd>
-			<dt><%= $.i18n.prop('DimosieusiFileList') %></dt>
-			<dd>
-				<div id="dimosieusiFileList"></div>
-			</dd>
-		</dl>
-	</div>
+    <div class="span12" id="candidacy_snapshot">
+        <h3><%= $.i18n.prop('Candidate') %></h3>
+        <dl class="dl-glossary">
+            <dt><%= $.i18n.prop('Name') %></dt>
+            <dd><%- snapshot.firstname[App.locale] %></dd>
+            <dt><%= $.i18n.prop('Surname') %></dt>
+            <dd><%- snapshot.lastname[App.locale] %></dd>
+            <dt><%= $.i18n.prop('FatherName') %></dt>
+            <dd><%- snapshot.fathername[App.locale] %></dd>
+            <% if (snapshot.institutionString) { %>
+            <dt><%= $.i18n.prop('Institution') %></dt>
+            <dd><%- snapshot.institutionString %></dd>
+            <% } %>
+            <% if (snapshot.department) { %>
+            <dt><%= $.i18n.prop('Department') %></dt>
+            <dd><%= _.templates.department(snapshot.department) %></dd>
+            <% } %>
+            <% if (snapshot.rank) { %>
+            <dt><%= $.i18n.prop('Rank') %></dt>
+            <dd><%- snapshot.rank.name[App.locale] %></dd>
+            <% } %>
+            <% if (snapshot.subject) { %>
+            <dt><%= $.i18n.prop('Subject') %></dt>
+            <dd><%- snapshot.subject.name %></dd>
+            <% } %>
+            <% if (snapshot.fek) { %>
+            <dt><%= $.i18n.prop('FEK') %></dt>
+            <dd><%- snapshot.fek %></dd>
+            <% } %>
+            <% if (snapshot.fekSubject) { %>
+            <dt><%= $.i18n.prop('FEKSubject') %></dt>
+            <dd><%- snapshot.fekSubject.name %></dd>
+            <% } %>
+            <dt><%= $.i18n.prop('BiografikoFile') %></dt>
+            <dd>
+                <div id="biografikoFile"></div>
+            </dd>
+            <dt><%= $.i18n.prop('PtyxioFileList') %></dt>
+            <dd>
+                <div id="ptyxioFileList"></div>
+            </dd>
+            <dt><%= $.i18n.prop('DimosieusiFileList') %></dt>
+            <dd>
+                <div id="dimosieusiFileList"></div>
+            </dd>
+        </dl>
+    </div>
 </div>
 <div class="row-fluid">
-	<div class="span12">
-		<h3><%= $.i18n.prop('ProposedEvaluators') %></h3>
-		<dl class="dl-glossary">
-			<dt><%= $.i18n.prop('ProposedEvaluator') %> 1</dt>
-			<dd>
-				<% if (proposedEvaluators[0]) { %>
-				<ul class="unstyled">
-					<li><%- proposedEvaluators[0].registerMember.professor.user.firstname[App.locale] %> <%-
-						proposedEvaluators[0].registerMember.professor.user.lastname[App.locale] %>
-					</li>
-					<li><%= $.i18n.prop(proposedEvaluators[0].registerMember.professor.discriminator) %></li>
-					<% if (proposedEvaluators[0].registerMember.professor.discriminator === "PROFESSOR_DOMESTIC") { %>
-					<li><%= $.i18n.prop('Department') %>: <%= _.templates.department(proposedEvaluators[0].registerMember.professor.department) %></li>
-					<% } else { %>
-					<li><%= $.i18n.prop('Institution') %>: <%- proposedEvaluators[0].registerMember.professor.institution %></li>
-					<% } %>
-				</ul>
-				<% } %>
-			</dd>
-			<% if (proposedEvaluators[0]) { %>
-			<dt><%= $.i18n.prop('EisigisiDEPYpopsifiouFileList') %> 1</dt>
-			<dd>
-				<div id="eisigisiDepYpopsifiouFileList" data-candidacy-evaluator-id='<%- proposedEvaluators[0].id %>'></div>
-			</dd>
-			<% } %>
-			<dt><%= $.i18n.prop('ProposedEvaluator') %> 2</dt>
-			<dd>
-				<% if (proposedEvaluators[1]) { %>
-				<ul class="unstyled">
-					<li><%- proposedEvaluators[1].registerMember.professor.user.firstname[App.locale] %> <%-
-						proposedEvaluators[1].registerMember.professor.user.lastname[App.locale]%>
-					</li>
-					<li><%= $.i18n.prop(proposedEvaluators[1].registerMember.professor.discriminator) %></li>
-					<% if (proposedEvaluators[1].registerMember.professor.discriminator === "PROFESSOR_DOMESTIC") { %>
-					<li><%= $.i18n.prop('Department') %>: <%= _.templates.department(proposedEvaluators[1].registerMember.professor.department) %></li>
-					<% } else { %>
-					<li><%= $.i18n.prop('Institution') %>: <%= $.i18n.prop(proposedEvaluators[1].registerMember.professor.institution) %></li>
-					<% } %>
-				</ul>
-				<% } %>
-			</dd>
-			<% if (proposedEvaluators[1]) { %>
-			<dt><%= $.i18n.prop('EisigisiDEPYpopsifiouFileList') %> 2</dt>
-			<dd>
-				<div id="eisigisiDepYpopsifiouFileList" data-candidacy-evaluator-id='<%- proposedEvaluators[1].id %>'></div>
-			</dd>
-			<% } %>
-			<dt><%= $.i18n.prop('EkthesiAutoaksiologisisFile') %></dt>
-			<dd>
-				<div id="ekthesiAutoaksiologisisFile"></div>
-			</dd>
-			<dt><%= $.i18n.prop('SympliromatikaEggrafaFileList') %></dt>
-			<dd>
-				<div id="sympliromatikaEggrafaFileList"></div>
-			</dd>
-		</dl>
-	</div>
+    <div class="span12">
+        <h3><%= $.i18n.prop('ProposedEvaluators') %></h3>
+        <dl class="dl-glossary">
+            <dt><%= $.i18n.prop('ProposedEvaluator') %> 1</dt>
+            <dd>
+                <% if (proposedEvaluators[0]) { %>
+                <ul class="unstyled">
+                    <li><%- proposedEvaluators[0].registerMember.professor.user.firstname[App.locale] %> <%-
+                        proposedEvaluators[0].registerMember.professor.user.lastname[App.locale] %>
+                    </li>
+                    <li><%= $.i18n.prop(proposedEvaluators[0].registerMember.professor.discriminator) %></li>
+                    <% if (proposedEvaluators[0].registerMember.professor.discriminator === "PROFESSOR_DOMESTIC") { %>
+                    <li><%= $.i18n.prop('Department') %>: <%=
+                        _.templates.department(proposedEvaluators[0].registerMember.professor.department) %>
+                    </li>
+                    <% } else { %>
+                    <li><%= $.i18n.prop('Institution') %>: <%-
+                        proposedEvaluators[0].registerMember.professor.institution %>
+                    </li>
+                    <% } %>
+                </ul>
+                <% } %>
+            </dd>
+            <% if (proposedEvaluators[0]) { %>
+            <dt><%= $.i18n.prop('EisigisiDEPYpopsifiouFileList') %> 1</dt>
+            <dd>
+                <div id="eisigisiDepYpopsifiouFileList"
+                     data-candidacy-evaluator-id='<%- proposedEvaluators[0].id %>'></div>
+            </dd>
+            <% } %>
+            <dt><%= $.i18n.prop('ProposedEvaluator') %> 2</dt>
+            <dd>
+                <% if (proposedEvaluators[1]) { %>
+                <ul class="unstyled">
+                    <li><%- proposedEvaluators[1].registerMember.professor.user.firstname[App.locale] %> <%-
+                        proposedEvaluators[1].registerMember.professor.user.lastname[App.locale]%>
+                    </li>
+                    <li><%= $.i18n.prop(proposedEvaluators[1].registerMember.professor.discriminator) %></li>
+                    <% if (proposedEvaluators[1].registerMember.professor.discriminator === "PROFESSOR_DOMESTIC") { %>
+                    <li><%= $.i18n.prop('Department') %>: <%=
+                        _.templates.department(proposedEvaluators[1].registerMember.professor.department) %>
+                    </li>
+                    <% } else { %>
+                    <li><%= $.i18n.prop('Institution') %>: <%=
+                        $.i18n.prop(proposedEvaluators[1].registerMember.professor.institution) %>
+                    </li>
+                    <% } %>
+                </ul>
+                <% } %>
+            </dd>
+            <% if (proposedEvaluators[1]) { %>
+            <dt><%= $.i18n.prop('EisigisiDEPYpopsifiouFileList') %> 2</dt>
+            <dd>
+                <div id="eisigisiDepYpopsifiouFileList"
+                     data-candidacy-evaluator-id='<%- proposedEvaluators[1].id %>'></div>
+            </dd>
+            <% } %>
+            <dt><%= $.i18n.prop('EkthesiAutoaksiologisisFile') %></dt>
+            <dd>
+                <div id="ekthesiAutoaksiologisisFile"></div>
+            </dd>
+            <dt><%= $.i18n.prop('SympliromatikaEggrafaFileList') %></dt>
+            <dd>
+                <div id="sympliromatikaEggrafaFileList"></div>
+            </dd>
+        </dl>
+    </div>
 </div>

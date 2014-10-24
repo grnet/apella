@@ -1,5 +1,5 @@
 /*global define */
-define([ "jquery",
+define(["jquery",
     "underscore",
     "backbone",
     "bootstrap",
@@ -274,14 +274,14 @@ define([ "jquery",
                 return object;
             }
 
-            _.each([ "Model", "Collection", "View", "Router" ], function (klass) {
+            _.each(["Model", "Collection", "View", "Router"], function (klass) {
                 Backbone[klass].prototype._super = _super;
             });
 
         })(Backbone);
 
         window.App = {
-            usernameRegistrationRoles: ["PROFESSOR_DOMESTIC", "PROFESSOR_FOREIGN", "CANDIDATE", "INSTITUTION_MANAGER" ],
+            usernameRegistrationRoles: ["PROFESSOR_DOMESTIC", "PROFESSOR_FOREIGN", "CANDIDATE", "INSTITUTION_MANAGER"],
 
             blockUI: function () {
                 $.blockUI({
@@ -322,7 +322,7 @@ define([ "jquery",
 
                 formatFileSize: function (bytes) {
                     var precision = 2;
-                    var sizes = [ 'Bytes', 'KB', 'MB', 'GB', 'TB' ];
+                    var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
                     var posttxt = 0;
                     if (bytes === undefined || bytes === 0) {
                         return 'n/a';

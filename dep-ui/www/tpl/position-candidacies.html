@@ -1,27 +1,28 @@
 <h3><%= $.i18n.prop('PositionCandidacyList') %></h3>
 <table class="table table-bordered">
-	<thead>
-		<tr>
-			<th><%= $.i18n.prop("Name") %></th>
-			<th><%= $.i18n.prop("Surname") %></th>
-			<th><%= $.i18n.prop("FatherName") %></th>
-			<th width="96px"></th>
-		</tr>
-	</thead>
-	<tbody>
-<% _.each(candidacies, function(candidacy) { %>
-		<tr>
-			<td><%- candidacy.snapshot.firstname[App.locale] %></td>
-			<td><%- candidacy.snapshot.lastname[App.locale] %></td>
-			<td><%- candidacy.snapshot.fathername[App.locale] %></td>
-			<td width="96px">
-			<% if (candidacy.allowedToSee) { %>
-				<p align="center">
-					<a id="viewCandidacy" href="#candidacy/<%- candidacy.id %>" data-candidacy-id="<%- candidacy.id %>"><%= $.i18n.prop('btn_view') %></a>
-				</p>
-			<% } %>
-			</td>
-		</tr>
-<% }); %>
-	</tbody>
+    <thead>
+    <tr>
+        <th><%= $.i18n.prop("Name") %></th>
+        <th><%= $.i18n.prop("Surname") %></th>
+        <th><%= $.i18n.prop("FatherName") %></th>
+        <th width="96px"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <% _.each(candidacies, function(candidacy) { %>
+    <tr>
+        <td><%- candidacy.snapshot.firstname[App.locale] %></td>
+        <td><%- candidacy.snapshot.lastname[App.locale] %></td>
+        <td><%- candidacy.snapshot.fathername[App.locale] %></td>
+        <td width="96px">
+            <% if (candidacy.allowedToSee) { %>
+            <p align="center">
+                <a id="viewCandidacy" href="#candidacy/<%- candidacy.id %>" data-candidacy-id="<%- candidacy.id %>"><%=
+                    $.i18n.prop('btn_view') %></a>
+            </p>
+            <% } %>
+        </td>
+    </tr>
+    <% }); %>
+    </tbody>
 </table>

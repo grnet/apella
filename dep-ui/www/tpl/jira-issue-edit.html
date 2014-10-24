@@ -1,68 +1,69 @@
 <form name="jira" onsubmit="return false">
-	<legend><%= $.i18n.prop('OpenIssue') %></legend>
-	<div class="row-fluid>">
-		<div class="span4">
-			<fieldset>
-				<label class="control-label" for="call"><%= $.i18n.prop('IssueCall') %>:</label>
-				<select name="call" class="input-large">
-					<option value="INCOMING"><%= $.i18n.prop('IssueCall_INCOMING') %></option>
-					<option value="OUTGOING"><%= $.i18n.prop('IssueCall_OUTGOING') %></option>
-				</select>
-				<label class="control-label" for="type"><%= $.i18n.prop('IssueType') %>:</label>
-				<select name="type" class="input-large">
-					<option value="">--</option>
-					<option value="REGISTRATION"><%= $.i18n.prop('IssueType_REGISTRATION') %></option>
-					<option value="GENERAL_INFORMATION"><%= $.i18n.prop('IssueType_GENERAL_INFORMATION') %></option>
-					<option value="LOGIN"><%= $.i18n.prop('IssueType_LOGIN') %></option>
-					<option value="ACCOUNT_MODIFICATION"><%= $.i18n.prop('IssueType_ACCOUNT_MODIFICATION') %></option>
-					<option value="ERROR"><%= $.i18n.prop('IssueType_ERROR') %></option>
-					<option value="COMPLAINT"><%= $.i18n.prop('IssueType_COMPLAINT') %></option>
-				</select>
-			</fieldset>
-		</div>
-		<div class="span4">
-			<fieldset>
-				<label class="control-label" for="fullname"><%= $.i18n.prop('Name') %>:</label>
-				<input type="text" name="fullname" class="input-large" value="<%- fullname %>"/>
-				<label class="control-label" for="role"><%= $.i18n.prop('Profile') %>:</label>
-				<select name="role" class="input-large">
-					<option value="">--</option>
-					<option value="CANDIDATE"><%= $.i18n.prop('CANDIDATE') %></option>
-					<option value="PROFESSOR_DOMESTIC"><%= $.i18n.prop('PROFESSOR_DOMESTIC') %></option>
-					<option value="PROFESSOR_FOREIGN"><%= $.i18n.prop('PROFESSOR_FOREIGN') %></option>
-					<option value="INSTITUTION_MANAGER"><%= $.i18n.prop('INSTITUTION_MANAGER') %></option>
-					<option value="INSTITUTION_ASSISTANT"><%= $.i18n.prop('INSTITUTION_ASSISTANT') %></option>
-					<option value="MINISTRY_MANAGER"><%= $.i18n.prop('MINISTRY_MANAGER') %></option>
-					<option value="MINISTRY_ASSISTANT"><%= $.i18n.prop('MINISTRY_ASSISTANT') %></option>
-				</select>
-			</fieldset>
-		</div>
-		<div class="span4">
-			<fieldset>
-				<label class="control-label" for="mobile"><%= $.i18n.prop('Mobile') %>:</label>
-				<input type="text" name="mobile" class="input-large" value="<%- mobile %>"/>
-				<label class="control-label" for="email"><%= $.i18n.prop('Email') %>:</label>
-				<input type="text" name="email" class="input-large" value="<%- email %>"/>
-			</fieldset>
-		</div>
-	</div>
-	<legend></legend>
-	<div class="row-fluid">
-		<div class="span12">
-			<fieldset>
-				<label class="control-label" for="summary"><%= $.i18n.prop('IssueSummary') %>:</label>
-				<input type="text" name="summary" class="input-xxlarge" value="<%- summary %>"/>
-			</fieldset>
-			<fieldset>
-				<label class="control-label" for="description"><%= $.i18n.prop('Description') %>:</label>
-				<textarea name="description" class="input-block-level" rows="10"><%- description %></textarea>
-			</fieldset>
-			<fieldset>
-				<div class="form-actions">
-					<a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_create') %></a>
-					<span class="help-inline"><%= $.i18n.prop('JiraIssuesContactHelpdesk') %></span>
-				</div>
-			</fieldset>
-		</div>
-	</div>
+    <legend><%= $.i18n.prop('OpenIssue') %></legend>
+    <div class="row-fluid>">
+        <div class="span4">
+            <fieldset>
+                <label class="control-label" for="call"><%= $.i18n.prop('IssueCall') %>:</label>
+                <select name="call" class="input-large">
+                    <option value="INCOMING"><%= $.i18n.prop('IssueCall_INCOMING') %></option>
+                    <option value="OUTGOING"><%= $.i18n.prop('IssueCall_OUTGOING') %></option>
+                </select>
+                <label class="control-label" for="type"><%= $.i18n.prop('IssueType') %>:</label>
+                <select name="type" class="input-large">
+                    <option value="">--</option>
+                    <option value="REGISTRATION"><%= $.i18n.prop('IssueType_REGISTRATION') %></option>
+                    <option value="GENERAL_INFORMATION"><%= $.i18n.prop('IssueType_GENERAL_INFORMATION') %></option>
+                    <option value="LOGIN"><%= $.i18n.prop('IssueType_LOGIN') %></option>
+                    <option value="ACCOUNT_MODIFICATION"><%= $.i18n.prop('IssueType_ACCOUNT_MODIFICATION') %></option>
+                    <option value="ERROR"><%= $.i18n.prop('IssueType_ERROR') %></option>
+                    <option value="COMPLAINT"><%= $.i18n.prop('IssueType_COMPLAINT') %></option>
+                </select>
+            </fieldset>
+        </div>
+        <div class="span4">
+            <fieldset>
+                <label class="control-label" for="fullname"><%= $.i18n.prop('Name') %>:</label>
+                <input type="text" name="fullname" class="input-large" value="<%- fullname %>"/>
+                <label class="control-label" for="role"><%= $.i18n.prop('Profile') %>:</label>
+                <select name="role" class="input-large">
+                    <option value="">--</option>
+                    <option value="CANDIDATE"><%= $.i18n.prop('CANDIDATE') %></option>
+                    <option value="PROFESSOR_DOMESTIC"><%= $.i18n.prop('PROFESSOR_DOMESTIC') %></option>
+                    <option value="PROFESSOR_FOREIGN"><%= $.i18n.prop('PROFESSOR_FOREIGN') %></option>
+                    <option value="INSTITUTION_MANAGER"><%= $.i18n.prop('INSTITUTION_MANAGER') %></option>
+                    <option value="INSTITUTION_ASSISTANT"><%= $.i18n.prop('INSTITUTION_ASSISTANT') %></option>
+                    <option value="MINISTRY_MANAGER"><%= $.i18n.prop('MINISTRY_MANAGER') %></option>
+                    <option value="MINISTRY_ASSISTANT"><%= $.i18n.prop('MINISTRY_ASSISTANT') %></option>
+                </select>
+            </fieldset>
+        </div>
+        <div class="span4">
+            <fieldset>
+                <label class="control-label" for="mobile"><%= $.i18n.prop('Mobile') %>:</label>
+                <input type="text" name="mobile" class="input-large" value="<%- mobile %>"/>
+                <label class="control-label" for="email"><%= $.i18n.prop('Email') %>:</label>
+                <input type="text" name="email" class="input-large" value="<%- email %>"/>
+            </fieldset>
+        </div>
+    </div>
+    <legend></legend>
+    <div class="row-fluid">
+        <div class="span12">
+            <fieldset>
+                <label class="control-label" for="summary"><%= $.i18n.prop('IssueSummary') %>:</label>
+                <input type="text" name="summary" class="input-xxlarge" value="<%- summary %>"/>
+            </fieldset>
+            <fieldset>
+                <label class="control-label" for="description"><%= $.i18n.prop('Description') %>:</label>
+                <textarea name="description" class="input-block-level" rows="10"><%- description %></textarea>
+            </fieldset>
+            <fieldset>
+                <div class="form-actions">
+                    <a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%=
+                        $.i18n.prop('btn_create') %></a>
+                    <span class="help-inline"><%= $.i18n.prop('JiraIssuesContactHelpdesk') %></span>
+                </div>
+            </fieldset>
+        </div>
+    </div>
 </form>

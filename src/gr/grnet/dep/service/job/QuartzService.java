@@ -1,6 +1,5 @@
 package gr.grnet.dep.service.job;
 
-import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.JiraService;
 import gr.grnet.dep.service.MailService;
 import gr.grnet.dep.service.model.Candidacy;
@@ -20,17 +19,27 @@ import org.quartz.impl.StdSchedulerFactory;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
-import javax.ejb.*;
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
+import javax.ejb.EJB;
+import javax.ejb.SessionContext;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
-import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

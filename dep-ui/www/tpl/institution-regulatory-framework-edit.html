@@ -1,31 +1,37 @@
 <form class="form-horizontal" onsubmit="return false">
-	<fieldset>
-		<div class="control-group">
-			<label class="control-label" for="institution"><%= $.i18n.prop('Institution') %>:</label>
-			<div class="controls">
-				<span><%- institution.name[App.locale] %></span>
-			</div>
-		</div>
-		<div class="control-group">
-			<label class="control-label" for="organismosURL"><%= $.i18n.prop('OrganismosURL') %>:</label>
-			<div class="controls">
-				<input class="input-xlarge" type="text" name="organismosURL" value="<%- organismosURL %>" />
-				<a href="<%- organismosURL %>" target="external"><%- organismosURL %></a>
-			</div>
-		</div>
-		<div class="control-group">
-			<label class="control-label" for="eswterikosKanonismosURL"><%= $.i18n.prop('EswterikosKanonismosURL') %>:</label>
-			<div class="controls">
-				<input class="input-xlarge" type="text" name="eswterikosKanonismosURL" value="<%- eswterikosKanonismosURL %>" />
-				<a href="<%- eswterikosKanonismosURL %>" target="external"><%- eswterikosKanonismosURL %></a>
-			</div>
-		</div>
-	</fieldset>
-	<fieldset>
-		<div class="form-actions">
-			<a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
-			<a id="remove" class="btn btn-danger"><i class="icon-remove icon-white"></i> <%= $.i18n.prop('btn_remove_institutionrf') %></a>
-			<span class="help-block"><%= $.i18n.prop('SaveInstructions') %></span>
-		</div>
-	</fieldset>
+    <fieldset>
+        <div class="control-group">
+            <label class="control-label" for="institution"><%= $.i18n.prop('Institution') %>:</label>
+
+            <div class="controls">
+                <span><%- institution.name[App.locale] %></span>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="organismosURL"><%= $.i18n.prop('OrganismosURL') %>:</label>
+
+            <div class="controls">
+                <input class="input-xlarge" type="text" name="organismosURL" value="<%- organismosURL %>"/>
+                <a href="<%- organismosURL %>" target="external"><%- organismosURL %></a>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="eswterikosKanonismosURL"><%= $.i18n.prop('EswterikosKanonismosURL')
+                %>:</label>
+
+            <div class="controls">
+                <input class="input-xlarge" type="text" name="eswterikosKanonismosURL"
+                       value="<%- eswterikosKanonismosURL %>"/>
+                <a href="<%- eswterikosKanonismosURL %>" target="external"><%- eswterikosKanonismosURL %></a>
+            </div>
+        </div>
+    </fieldset>
+    <fieldset>
+        <div class="form-actions">
+            <a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
+            <a id="remove" class="btn btn-danger"><i class="icon-remove icon-white"></i> <%=
+                $.i18n.prop('btn_remove_institutionrf') %></a>
+            <span class="help-block"><%= $.i18n.prop('SaveInstructions') %></span>
+        </div>
+    </fieldset>
 </form>

@@ -1,29 +1,32 @@
 <ul class="nav nav-tabs" id="optionsTab">
-	<li id="userTab" class="active"><a href="#userContent" data-toggle="tab"><%= $.i18n.prop('Account') %></a></li>
-	<li id="helpdeskTab"><a href="#helpdeskContent" data-toggle="tab"><%= $.i18n.prop('Options') %></a></li>
+    <li id="userTab" class="active"><a href="#userContent" data-toggle="tab"><%= $.i18n.prop('Account') %></a></li>
+    <li id="helpdeskTab"><a href="#helpdeskContent" data-toggle="tab"><%= $.i18n.prop('Options') %></a></li>
 </ul>
 <div class="tab-content" id="optionsContent">
-	<div class="tab-pane active" id="userContent">
-	</div>
-	<div class="tab-pane" id="helpdeskContent">
-		<div class="row-fluid">
-			<div class="span9" id="issue">
-			</div>
-			<div class="span3">
-				<form name="loginEmail" onsubmit="return false">
-					<fieldset>
-						<legend><%= $.i18n.prop('LoginEmail') %></legend>
-						<label><input type="checkbox" name="createLoginLink"/> <%= $.i18n.prop('CreateLoginLink') %> </label>
-						<a id="resendLoginEmail" class="btn btn-small btn-primary"><i class="icon-envelope icon-white"></i> <%= $.i18n.prop('btn_resendLoginEmail') %></a>
-					</fieldset>
-					<br/>
-					<br/>
-					<fieldset>
-						<legend><%= $.i18n.prop('ReminderLoginEmail') %></legend>
-						<a id="resendReminderLoginEmail" class="btn btn-small btn-primary"><i class="icon-envelope icon-white"></i> <%= $.i18n.prop('btn_resendReminderLoginEmail') %></a>
-					</fieldset>
-				</form>
-			</div>
-		</div>
-	</div>
+    <div class="tab-pane active" id="userContent">
+    </div>
+    <div class="tab-pane" id="helpdeskContent">
+        <div class="row-fluid">
+            <div class="span9" id="issue">
+            </div>
+            <div class="span3">
+                <form name="loginEmail" onsubmit="return false">
+                    <fieldset>
+                        <legend><%= $.i18n.prop('LoginEmail') %></legend>
+                        <label><input type="checkbox" name="createLoginLink"/> <%= $.i18n.prop('CreateLoginLink') %>
+                        </label>
+                        <a id="resendLoginEmail" class="btn btn-small btn-primary"><i
+                                class="icon-envelope icon-white"></i> <%= $.i18n.prop('btn_resendLoginEmail') %></a>
+                    </fieldset>
+                    <br/>
+                    <br/>
+                    <fieldset>
+                        <legend><%= $.i18n.prop('ReminderLoginEmail') %></legend>
+                        <a id="resendReminderLoginEmail" class="btn btn-small btn-primary"><i
+                                class="icon-envelope icon-white"></i> <%= $.i18n.prop('btn_resendReminderLoginEmail') %></a>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>

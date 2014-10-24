@@ -4,7 +4,16 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import gr.grnet.dep.service.util.CompareUtil;
 
 import javax.inject.Inject;
-import javax.persistence.*;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.ManyToOne;
+import javax.persistence.PostLoad;
+import javax.persistence.PostPersist;
+import javax.persistence.PostUpdate;
+import javax.persistence.Transient;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlTransient;
