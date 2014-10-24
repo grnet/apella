@@ -13,7 +13,6 @@ import gr.grnet.dep.service.model.PositionEvaluation;
 import gr.grnet.dep.service.model.PositionEvaluation.DetailedPositionEvaluationView;
 import gr.grnet.dep.service.model.PositionEvaluator;
 import gr.grnet.dep.service.model.PositionEvaluator.DetailedPositionEvaluatorView;
-import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.Register;
 import gr.grnet.dep.service.model.RegisterMember;
 import gr.grnet.dep.service.model.RegisterMember.DetailedRegisterMemberView;
@@ -980,11 +979,75 @@ public class PositionEvaluationRESTService extends RESTService {
 				.getResultList();
 
 		// Execute
-		for (RegisterMember r : registerMembers) {
-			Professor p = r.getProfessor();
-			p.setCommitteesCount(Professor.countActiveCommittees(p));
-			p.setEvaluationsCount(Professor.countActiveEvaluations(p));
-		}
+		addCommitteesCount(registerMembers);
+		addEvaluationsCount(registerMembers);
+
 		return registerMembers;
+	}
+
+	private void addCommitteesCount(List<RegisterMember> registerMembers) {
+		Map<Long, Long> countMap = new HashMap<Long, Long>();
+		for (RegisterMember rm : registerMembers) {
+			countMap.put(rm.getProfessor().getId(), 0L);
+		}
+		if (countMap.isEmpty()) {
+			return;
+		}
+
+		List<Object[]> result = em.createQuery(
+				"select prof.id, count(pcm.id) " +
+						"from PositionCommitteeMember pcm " +
+						"join pcm.registerMember.professor prof " +
+						"join pcm.committee pcom " +
+						"join pcom.position pos " +
+						"join pos.phase ph " +
+						"where ph.status =:epilogi and prof.id in (:professorIds)" +
+						"group by prof.id ",
+				Object[].class)
+				.setParameter("epilogi", PositionStatus.EPILOGI)
+				.setParameter("professorIds", countMap.keySet())
+				.getResultList();
+
+		for (Object[] count : result) {
+			Long professorId = (Long) count[0];
+			Long counter = (Long) count[1];
+			countMap.put(professorId, counter);
+		}
+		for (RegisterMember rm : registerMembers) {
+			rm.getProfessor().setCommitteesCount(countMap.get(rm.getProfessor().getId()));
+		}
+	}
+
+	private void addEvaluationsCount(List<RegisterMember> registerMembers) {
+		Map<Long, Long> countMap = new HashMap<Long, Long>();
+		for (RegisterMember rm : registerMembers) {
+			countMap.put(rm.getProfessor().getId(), 0L);
+		}
+		if (countMap.isEmpty()) {
+			return;
+		}
+
+		List<Object[]> result = em.createQuery(
+				"select prof.id, count(pe.id) " +
+						"from PositionEvaluator pe " +
+						"join pe.registerMember.professor prof " +
+						"join pe.evaluation peval " +
+						"join peval.position pos " +
+						"join pos.phase ph " +
+						"where ph.status =:epilogi and prof.id in (:professorIds)" +
+						"group by prof.id ",
+				Object[].class)
+				.setParameter("epilogi", PositionStatus.EPILOGI)
+				.setParameter("professorIds", countMap.keySet())
+				.getResultList();
+
+		for (Object[] count : result) {
+			Long professorId = (Long) count[0];
+			Long counter = (Long) count[1];
+			countMap.put(professorId, counter);
+		}
+		for (RegisterMember rm : registerMembers) {
+			rm.getProfessor().setCommitteesCount(countMap.get(rm.getProfessor().getId()));
+		}
 	}
 }

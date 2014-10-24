@@ -1,7 +1,6 @@
 package gr.grnet.dep.service.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.file.ProfessorFile;
 import gr.grnet.dep.service.util.CompareUtil;
 
@@ -31,10 +30,10 @@ public abstract class Professor extends Role {
 	private Set<RegisterMember> registerMemberships = new HashSet<RegisterMember>();
 
 	@Transient
-	private Integer committeesCount;
+	private Long committeesCount;
 
 	@Transient
-	private Integer evaluationsCount;
+	private Long evaluationsCount;
 
 	public Boolean hasOnlineProfile = true;
 
@@ -84,19 +83,19 @@ public abstract class Professor extends Role {
 		this.registerMemberships = registerMemberships;
 	}
 
-	public Integer getCommitteesCount() {
+	public Long getCommitteesCount() {
 		return committeesCount;
 	}
 
-	public void setCommitteesCount(Integer committeesCount) {
+	public void setCommitteesCount(Long committeesCount) {
 		this.committeesCount = committeesCount;
 	}
 
-	public Integer getEvaluationsCount() {
+	public Long getEvaluationsCount() {
 		return evaluationsCount;
 	}
 
-	public void setEvaluationsCount(Integer evaluationsCount) {
+	public void setEvaluationsCount(Long evaluationsCount) {
 		this.evaluationsCount = evaluationsCount;
 	}
 
@@ -162,29 +161,5 @@ public abstract class Professor extends Role {
 			return true;
 		}
 		return false;
-	}
-
-	public static int countActiveCommittees(Professor p) {
-		int count = 0;
-		for (RegisterMember professorMembership : p.getRegisterMemberships()) {
-			for (PositionCommitteeMember member : professorMembership.getCommittees()) {
-				if (member.getCommittee().getPosition().getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
-					count++;
-				}
-			}
-		}
-		return count;
-	}
-
-	public static int countActiveEvaluations(Professor p) {
-		int count = 0;
-		for (RegisterMember professorMembership : p.getRegisterMemberships()) {
-			for (PositionEvaluator evaluator : professorMembership.getEvaluations()) {
-				if (evaluator.getEvaluation().getPosition().getPhase().getStatus().equals(PositionStatus.EPILOGI)) {
-					count++;
-				}
-			}
-		}
-		return count;
 	}
 }
