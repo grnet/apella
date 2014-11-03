@@ -79,7 +79,7 @@ public class CandidacyRESTService extends RESTService {
 		PositionCommittee committee = c.getCandidacies().getPosition().getPhase().getCommittee();
 		return committee != null &&
 				committee.getMembers().size() > 0 &&
-				DateUtil.compareDates(new Date(), committee.getCandidacyEvalutionsDueDate()) < 0;
+				DateUtil.compareDates(new Date(), committee.getCandidacyEvalutionsDueDate()) <= 0;
 	}
 
 	private boolean hasNominationCommitteeConverged(Candidacy c) {
