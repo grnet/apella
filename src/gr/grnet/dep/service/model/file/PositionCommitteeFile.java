@@ -22,7 +22,7 @@ public class PositionCommitteeFile extends FileHeader {
 	public static final Map<FileType, Integer> fileTypes = Collections.unmodifiableMap(new HashMap<FileType, Integer>() {
 
 		{
-			put(FileType.APOFASI_SYSTASIS_EPITROPIS, 1);
+			put(FileType.APOFASI_SYSTASIS_EPITROPIS, Integer.MAX_VALUE);
 			put(FileType.PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES, 1);
 			put(FileType.AITIMA_EPITROPIS_PROS_AKSIOLOGITES, 1);
 		}

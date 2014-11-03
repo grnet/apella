@@ -5967,7 +5967,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 files.fetch({
                     cache: false,
                     success: function (collection) {
-                        self.addFile(collection, "APOFASI_SYSTASIS_EPITROPIS", self.$("#apofasiSystasisEpitropisFileList"), {
+                        self.addFileList(collection, "APOFASI_SYSTASIS_EPITROPIS", self.$("#apofasiSystasisEpitropisFileList"), {
                             withMetadata: true
                         });
                         self.addFile(collection, "PRAKTIKO_SYNEDRIASIS_EPITROPIS_GIA_AKSIOLOGITES", self.$("#praktikoSynedriasisEpitropisGiaAksiologitesFile"), {
@@ -6063,7 +6063,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 files.fetch({
                     cache: false,
                     success: function (collection) {
-                        self.addFileEdit(collection, "APOFASI_SYSTASIS_EPITROPIS", self.$("input[name=apofasiSystasisEpitropisFileList]"), {
+                        self.addFileListEdit(collection, "APOFASI_SYSTASIS_EPITROPIS", self.$("input[name=apofasiSystasisEpitropisFileList]"), {
                             withMetadata: true,
                             editable: self.isEditable("apofasiSystasisEpitropisFileList")
                         });
