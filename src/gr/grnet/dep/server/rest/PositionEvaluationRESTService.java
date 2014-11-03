@@ -968,7 +968,7 @@ public class PositionEvaluationRESTService extends RESTService {
 		}
 		// Prepare Query
 		List<RegisterMember> registerMembers = em.createQuery(
-				"select distinct m from RegisterMember m " +
+				"select distinct(m) from RegisterMember m " +
 						"where m.register.permanent = true " +
 						"and m.register.institution.id = :institutionId " +
 						"and m.register.id = :registerId " +
@@ -1047,7 +1047,7 @@ public class PositionEvaluationRESTService extends RESTService {
 			countMap.put(professorId, counter);
 		}
 		for (RegisterMember rm : registerMembers) {
-			rm.getProfessor().setCommitteesCount(countMap.get(rm.getProfessor().getId()));
+			rm.getProfessor().setEvaluationsCount(countMap.get(rm.getProfessor().getId()));
 		}
 	}
 }

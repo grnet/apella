@@ -146,7 +146,7 @@ public class PositionCommitteeRESTService extends RESTService {
 		}
 		// Prepare Query
 		List<RegisterMember> registerMembers = em.createQuery(
-				"select m from RegisterMember m  " +
+				"select distinct(m) from RegisterMember m  " +
 						"join m.professor prof " +
 						"join prof.user u " +
 						"join u.roles r " +
@@ -228,7 +228,7 @@ public class PositionCommitteeRESTService extends RESTService {
 			countMap.put(professorId, counter);
 		}
 		for (RegisterMember rm : registerMembers) {
-			rm.getProfessor().setCommitteesCount(countMap.get(rm.getProfessor().getId()));
+			rm.getProfessor().setEvaluationsCount(countMap.get(rm.getProfessor().getId()));
 		}
 	}
 
