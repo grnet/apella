@@ -5299,7 +5299,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
 
         phases: {
             "ENTAGMENI": ["ANOIXTI"],
-            "ANOIXTI": [],
+            "ANOIXTI": ["CANCELLED"],
             "KLEISTI": ["EPILOGI"],
             "EPILOGI": ["ANAPOMPI", "STELEXOMENI", "CANCELLED"],
             "ANAPOMPI": ["EPILOGI"],
@@ -5323,7 +5323,10 @@ define(["jquery", "underscore", "backbone", "application", "models",
 
         render: function () {
             var self = this;
+            var positionStatus = self.model.get("phase").clientStatus;
+            var previousStatus = self.model.get("phasesMap")[Math.max(_.size(self.model.get("phasesMap")) - 2, 0)];
             var tpl_data = self.model.toJSON();
+
             self.closeInnerViews();
             self.$el.empty();
             self.addTitle();
@@ -5331,12 +5334,18 @@ define(["jquery", "underscore", "backbone", "application", "models",
 
             // Phase:
             self.$("a#addPhase").each(function () {
-                var status = $(this).data("phaseStatus");
-                if (!_.any(self.phases[self.model.get("phase").clientStatus], function (nextStatus) {
-                        return _.isEqual(status, nextStatus);
-                    })) {
+                var linkStatus = $(this).data("phaseStatus");
+                var canBeNext = false;
+                //1. Check the special ANOIXTI->CANCELLED->nowhere case
+                canBeNext = canBeNext && !(positionStatus === 'CANCELLED' && previousStatus === 'ANOIXTI');
+                //2. Check the transitions map
+                canBeNext = canBeNext && _.any(self.phases[positionStatus], function (nextStatus) {
+                    return _.isEqual(linkStatus, nextStatus);
+                });
+                if (!canBeNext) {
                     $(this).hide();
                 }
+
             });
             // Tabs:
             if (_.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI")) {

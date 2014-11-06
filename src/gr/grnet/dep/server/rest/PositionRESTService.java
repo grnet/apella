@@ -591,8 +591,16 @@ public class PositionRESTService extends RESTService {
 							break;
 						case ANAPOMPI:
 						case STELEXOMENI:
-						case CANCELLED:
 							throw new RestException(Status.CONFLICT, "wrong.position.status");
+						case CANCELLED:
+							// Validate:
+							newPhase = new PositionPhase();
+							newPhase.setStatus(PositionStatus.CANCELLED);
+							newPhase.setCandidacies(existingPhase.getCandidacies());
+							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
+							// Add to Position
+							existingPosition.addPhase(newPhase);
+							break;
 					}
 					break;
 				case EPILOGI:
@@ -706,6 +714,12 @@ public class PositionRESTService extends RESTService {
 						case ANOIXTI:
 							throw new RestException(Status.CONFLICT, "wrong.position.status");
 						case EPILOGI:
+							// Validate: allow only if previous Status was not ANOIXTI
+							PositionPhase previousPhase = existingPosition.getPhases()
+									.get(Math.max(existingPosition.getPhases().size() - 2, 0));
+							if (previousPhase.getStatus().equals(PositionStatus.ANOIXTI)) {
+								throw new RestException(Status.CONFLICT, "wrong.position.status");
+							}
 							newPhase = new PositionPhase();
 							newPhase.setStatus(PositionStatus.EPILOGI);
 							newPhase.setCandidacies(existingPhase.getCandidacies());
