@@ -3646,8 +3646,11 @@ define(["jquery", "underscore", "backbone", "application", "models",
             // Disable Save Button until user changes a field,
             // roles do not have permanent field
             self.$("a#save").attr("disabled", true);
-
-            self.$('a[rel=popover]').popover();
+            //Tooltips
+            self.$("i[rel=popover]").popover({
+                html: 'true',
+                trigger: 'hover'
+            });
             return self;
         },
 

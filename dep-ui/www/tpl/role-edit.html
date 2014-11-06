@@ -518,7 +518,11 @@
             </div>
             <% if (primary) { %>
             <div class="control-group">
-                <label class="control-label" for="tautotitaFile"><%= $.i18n.prop('TautotitaFile') %>:</label>
+                <label class="control-label" for="tautotitaFile">
+                    <%= $.i18n.prop('TautotitaFile') %>
+                    <i class="icon-question-sign" rel="popover"
+                       data-content="<%= $.i18n.prop('tautotitaFileHelp') %>"></i>:
+                </label>
 
                 <div class="controls">
                     <input type="hidden" name="tautotitaFile"/>
@@ -526,16 +530,23 @@
             </div>
             <div class="control-group">
                 <label class="control-label" for="bebaiwsiStratiwtikisThitiasFile"><%=
-                    $.i18n.prop('BebaiwsiStratiwtikisThitiasFile') %>:</label>
+                    $.i18n.prop('BebaiwsiStratiwtikisThitiasFile') %>
+                    <i class="icon-question-sign" rel="popover"
+                       data-content="<%= $.i18n.prop('bebaiwsiStratiwtikisThitiasFileHelp') %>"></i>:
+                </label>
 
                 <div class="controls">
                     <input type="hidden" name="bebaiwsiStratiwtikisThitiasFile"/>
                 </div>
             </div>
             <div class="control-group">
-                <label class="control-label" for="formaSymmetoxisFile"><%= $.i18n.prop('FormaSymmetoxisFile') %> <a
-                        href="/dep/rest/role/<%- id %>/documents/CandidateCertification" target="documents"><%=
-                    $.i18n.prop('DownloadHere') %></a>:</label>
+                <label class="control-label" for="formaSymmetoxisFile"><%= $.i18n.prop('FormaSymmetoxisFile') %>
+                    <i class="icon-question-sign" rel="popover"
+                       data-content="<%= $.i18n.prop('formaSymmetoxisFileHelp') %>"></i>:
+                    <a href="/dep/rest/role/<%- id %>/documents/CandidateCertification" target="documents">
+                        <%= $.i18n.prop('DownloadHere') %>
+                    </a>
+                </label>
 
                 <div class="controls">
                     <input type="hidden" name="formaSymmetoxisFile"/>
@@ -543,21 +554,30 @@
             </div>
             <% } %>
             <div class="control-group">
-                <label class="control-label" for="biografikoFile"><%= $.i18n.prop('BiografikoFile') %>:</label>
+                <label class="control-label" for="biografikoFile"><%= $.i18n.prop('BiografikoFile') %>
+                    <i class="icon-question-sign" rel="popover"
+                       data-content="<%= $.i18n.prop('biografikoFileHelp') %>"></i>:
+                </label>
 
                 <div class="controls">
                     <input type="hidden" name="biografikoFile"/>
                 </div>
             </div>
             <div class="control-group">
-                <label class="control-label" for="ptyxioFileList"><%= $.i18n.prop('PtyxioFileList') %>:</label>
+                <label class="control-label" for="ptyxioFileList"><%= $.i18n.prop('PtyxioFileList') %>
+                    <i class="icon-question-sign" rel="popover"
+                       data-content="<%= $.i18n.prop('ptyxioFileListHelp') %>"></i>:
+                </label>
 
                 <div class="controls">
                     <input type="hidden" name="ptyxioFileList"/>
                 </div>
             </div>
             <div class="control-group">
-                <label class="control-label" for="dimosieusiFileList"><%= $.i18n.prop('DimosieusiFileList') %>:</label>
+                <label class="control-label" for="dimosieusiFileList"><%= $.i18n.prop('DimosieusiFileList') %>
+                    <i class="icon-question-sign" rel="popover"
+                       data-content="<%= $.i18n.prop('dimosieusiFileListHelp') %>"></i>:
+                </label>
 
                 <div class="controls">
                     <input type="hidden" name="dimosieusiFileList"/>

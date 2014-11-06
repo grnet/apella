@@ -233,11 +233,11 @@ div.popup {
 
 .file-table th, .file-table td, .file-table-edit th, .file-table-edit td {
     text-align: left;
-    vertical-align: middle;
+    vertical-align: top;
     padding-left: 4px;
     padding-right: 4px;
-    padding-top: 0px;
-    padding-bottom: 0px;
+    padding-top: 1px;
+    padding-bottom: 1px;
     border: none;
 }
 
