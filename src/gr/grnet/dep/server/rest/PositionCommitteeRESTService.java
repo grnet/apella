@@ -448,12 +448,6 @@ public class PositionCommitteeRESTService extends RESTService {
 		if (countSubstitute != PositionCommitteeMember.MAX_MEMBERS) {
 			throw new RestException(Status.CONFLICT, "max.substitute.members.failed");
 		}
-		if (countInternalRegular < PositionCommitteeMember.MIN_INTERNAL) {
-			throw new RestException(Status.CONFLICT, "min.internal.regular.members.failed");
-		}
-		if (countInternalSubstitute < PositionCommitteeMember.MIN_INTERNAL) {
-			throw new RestException(Status.CONFLICT, "min.internal.substitute.members.failed");
-		}
 		if (countExternalRegular < PositionCommitteeMember.MIN_EXTERNAL) {
 			throw new RestException(Status.CONFLICT, "min.external.regular.members.failed");
 		}
