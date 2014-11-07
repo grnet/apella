@@ -6279,7 +6279,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
             }
             if (warnings.length > 0) {
                 // Show warning confirmation
-                var confirm = new Views.ConfirmView({
+                var confirm = new Views.PositionCommitteeEditConfirmView({
                     messages: warnings,
                     yes: function () {
                         doSave(values);
@@ -6314,7 +6314,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
     /***************************************************************************
      * PositionCommitteeEditConfirmView ****************************************
      **************************************************************************/
-    Views.ConfirmView = Views.BaseView.extend({
+    Views.PositionCommitteeEditConfirmView = Views.BaseView.extend({
         tagName: "div",
 
         className: "modal",
