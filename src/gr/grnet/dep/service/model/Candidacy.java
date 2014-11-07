@@ -48,6 +48,9 @@ public class Candidacy {
 	public static interface CandidacyView {
 	}
 
+	public static interface EvaluatorCandidacyView extends CandidacyView {
+	}
+
 	public static interface MediumCandidacyView extends CandidacyView {
 	}
 
@@ -330,7 +333,7 @@ public class Candidacy {
 		this.openToOtherCandidates = openToOtherCandidates;
 	}
 
-	@JsonView({MediumCandidacyView.class})
+	@JsonView({MediumCandidacyView.class, EvaluatorCandidacyView.class})
 	public Candidate getCandidate() {
 		return candidate;
 	}
@@ -339,7 +342,7 @@ public class Candidacy {
 		this.candidate = candidate;
 	}
 
-	@JsonView({CandidacyEvaluator.DetailedCandidacyEvaluatorView.class, MediumCandidacyView.class})
+	@JsonView({CandidacyEvaluator.DetailedCandidacyEvaluatorView.class, MediumCandidacyView.class, EvaluatorCandidacyView.class})
 	public PositionCandidacies getCandidacies() {
 		return candidacies;
 	}
@@ -469,5 +472,14 @@ public class Candidacy {
 		snapshot.setInstitutionString(professor.getInstitution());
 		snapshot.setRank(professor.getRank());
 		snapshot.setSubject(professor.getSubject());
+	}
+
+	public boolean containsEvaluator(User user) {
+		for (CandidacyEvaluator evaluator : this.proposedEvaluators) {
+			if (evaluator.getRegisterMember().getProfessor().getUser().getId().equals(user.getId())) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

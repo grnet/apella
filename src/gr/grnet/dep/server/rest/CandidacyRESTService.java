@@ -5,9 +5,9 @@ import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
+import gr.grnet.dep.service.model.Candidacy.EvaluatorCandidacyView;
 import gr.grnet.dep.service.model.Candidacy.MediumCandidacyView;
 import gr.grnet.dep.service.model.CandidacyEvaluator;
-import gr.grnet.dep.service.model.CandidacyEvaluator.DetailedCandidacyEvaluatorView;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.InstitutionManager;
@@ -133,6 +133,11 @@ public class CandidacyRESTService extends RESTService {
 			if (candidacy.isOpenToOtherCandidates() && candidacy.getCandidacies().containsCandidate(loggedOn)) {
 				// Medium (without ContactInformation)
 				return toJSON(candidacy, MediumCandidacyView.class);
+			}
+			// Medium Access CANDIDACY EVALUATOR
+			if (candidacy.containsEvaluator(loggedOn)) {
+				// Medium (without ContactInformation)
+				return toJSON(candidacy, EvaluatorCandidacyView.class);
 			}
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		} catch (NoResultException e) {
@@ -823,7 +828,8 @@ public class CandidacyRESTService extends RESTService {
 				!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
 				(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
 				(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-				!candidacy.getCandidacies().containsCandidate(loggedOn)) {
+				!candidacy.getCandidacies().containsCandidate(loggedOn) &&
+				!candidacy.containsEvaluator(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
@@ -863,7 +869,8 @@ public class CandidacyRESTService extends RESTService {
 				!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
 				(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
 				(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-				!candidacy.getCandidacies().containsCandidate(loggedOn)) {
+				!candidacy.getCandidacies().containsCandidate(loggedOn) &&
+				!candidacy.containsEvaluator(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
@@ -908,7 +915,8 @@ public class CandidacyRESTService extends RESTService {
 				!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
 				(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
 				(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-				!candidacy.getCandidacies().containsCandidate(loggedOn)) {
+				!candidacy.getCandidacies().containsCandidate(loggedOn) &&
+				!candidacy.containsEvaluator(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
@@ -954,7 +962,8 @@ public class CandidacyRESTService extends RESTService {
 				!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
 				(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
 				(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-				!candidacy.getCandidacies().containsCandidate(loggedOn)) {
+				!candidacy.getCandidacies().containsCandidate(loggedOn) &&
+				!candidacy.containsEvaluator(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
@@ -993,7 +1002,8 @@ public class CandidacyRESTService extends RESTService {
 				!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
 				(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
 				(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-				!candidacy.getCandidacies().containsCandidate(loggedOn)) {
+				!candidacy.getCandidacies().containsCandidate(loggedOn) &&
+				!candidacy.containsEvaluator(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
@@ -1038,7 +1048,8 @@ public class CandidacyRESTService extends RESTService {
 				!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
 				(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
 				(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-				!candidacy.getCandidacies().containsCandidate(loggedOn)) {
+				!candidacy.getCandidacies().containsCandidate(loggedOn) &&
+				!candidacy.containsEvaluator(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
