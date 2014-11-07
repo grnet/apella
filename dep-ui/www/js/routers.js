@@ -275,7 +275,6 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
                 });
             });
             App.loggedOnUser.on("change", function () {
-                window.console.log("loggedOn:changed");
             });
             // Create Header, Menu, and other side content and
             // bind them to the same loggedOnUser model
@@ -932,18 +931,40 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
 
         showProfessorEvaluationsView: function () {
             var self = this;
-            var professorEvaluations = new Models.ProfessorEvaluations({}, {
+            // 1. Models and Views
+            // Collections:
+            var professorPositionEvaluations = new Models.ProfessorPositionEvaluations({}, {
                 professor: App.loggedOnUser.hasRole("PROFESSOR_DOMESTIC") ? App.loggedOnUser.getRole("PROFESSOR_DOMESTIC").id : App.loggedOnUser.getRole("PROFESSOR_FOREIGN").id
             });
-            var professorEvaluationsView = new Views.ProfessorEvaluationsView({
-                collection: professorEvaluations
+            var professorCandidacyEvaluations = new Models.ProfessorCandidacyEvaluations({}, {
+                professor: App.loggedOnUser.hasRole("PROFESSOR_DOMESTIC") ? App.loggedOnUser.getRole("PROFESSOR_DOMESTIC").id : App.loggedOnUser.getRole("PROFESSOR_FOREIGN").id
             });
+            // View
+            var professorEvaluationsView = new Views.ProfessorEvaluationsView({
+                positionEvaluations: professorPositionEvaluations,
+                candidacyEvaluations: professorCandidacyEvaluations
+            });
+            // 2. Init
             self.clear();
             self.refreshBreadcrumb([$.i18n.prop('menu_professorEvaluations')]);
             $("#content").html(professorEvaluationsView.el);
 
-            // Refresh professorCommittees from server
-            professorEvaluations.fetch({
+            // 3. Get Data
+            // Refresh professorPositionEvaluations from server
+            professorPositionEvaluations.fetch({
+                cache: false,
+                reset: true,
+                wait: true,
+                error: function (model, resp, options) {
+                    var popup = new Views.PopupView({
+                        type: "error",
+                        message: $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+                    });
+                    popup.show();
+                }
+            });
+            // Refresh professorCandidacyEvaluations from server
+            professorCandidacyEvaluations.fetch({
                 cache: false,
                 reset: true,
                 wait: true,
@@ -956,6 +977,7 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
                 }
             });
 
+            // 4. Return result
             self.currentView = professorEvaluationsView;
         },
 

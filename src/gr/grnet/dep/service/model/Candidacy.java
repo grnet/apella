@@ -339,7 +339,7 @@ public class Candidacy {
 		this.candidate = candidate;
 	}
 
-	@JsonView({MediumCandidacyView.class})
+	@JsonView({CandidacyEvaluator.DetailedCandidacyEvaluatorView.class, MediumCandidacyView.class})
 	public PositionCandidacies getCandidacies() {
 		return candidacies;
 	}

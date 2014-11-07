@@ -1724,14 +1724,14 @@ define([
         }
     });
 
-    Models.ProfessorEvaluations = Backbone.Collection.extend({
+    Models.ProfessorPositionEvaluations = Backbone.Collection.extend({
         professor: undefined,
         model: Models.PositionEvaluator,
         initialize: function (models, options) {
             this.professor = options.professor;
         },
         url: function () {
-            return "/dep/rest/professor/" + this.professor + "/evaluations";
+            return "/dep/rest/professor/" + this.professor + "/evaluations/position";
         }
     });
 
@@ -1768,6 +1768,39 @@ define([
                 basicInfoLatin: {},
                 contactInfo: {}
             }
+        }
+    });
+
+    Models.CandidacyEvaluator = Backbone.Model.extend({
+        urlRoot: function () {
+            return "/dep/rest/candidacy/" + this.attributes.candidacy.id + "/evaluator/" + this.attributes.id;
+        },
+        defaults: {
+            id: undefined,
+            candidacy: {
+                id: undefined,
+                snapshot: {},
+                candidacies: {
+                    position: {
+                        id: undefined,
+
+                    }
+                }
+            },
+            registerMember: {
+                id: undefined
+            }
+        }
+    });
+
+    Models.ProfessorCandidacyEvaluations = Backbone.Collection.extend({
+        professor: undefined,
+        model: Models.CandidacyEvaluator,
+        initialize: function (models, options) {
+            this.professor = options.professor;
+        },
+        url: function () {
+            return "/dep/rest/professor/" + this.professor + "/evaluations/candidacy";
         }
     });
 

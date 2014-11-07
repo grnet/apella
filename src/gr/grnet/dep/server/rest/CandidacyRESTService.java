@@ -752,7 +752,7 @@ public class CandidacyRESTService extends RESTService {
 	 */
 	@GET
 	@Path("/{id:[0-9]+}/register")
-	@JsonView({DetailedCandidacyEvaluatorView.class})
+	@JsonView({CandidacyEvaluator.CandidacyEvaluatorView.class})
 	public Collection<RegisterMember> getCandidacyRegisterMembers(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("id") Long candidacyId) {
 		getLoggedOn(authToken);
 		final Candidacy existingCandidacy = em.find(Candidacy.class, candidacyId);

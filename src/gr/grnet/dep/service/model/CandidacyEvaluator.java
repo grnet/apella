@@ -26,7 +26,10 @@ public class CandidacyEvaluator implements Serializable {
 
 	public static final int MAX_MEMBERS = 2;
 
-	public static interface DetailedCandidacyEvaluatorView {
+	public static interface CandidacyEvaluatorView {
+	}
+
+	public static interface DetailedCandidacyEvaluatorView extends CandidacyEvaluatorView {
 	}
 
 	@Id
@@ -53,7 +56,7 @@ public class CandidacyEvaluator implements Serializable {
 		this.id = id;
 	}
 
-	@JsonView({DetailedCandidacyEvaluatorView.class})
+	@JsonView({CandidacyEvaluatorView.class})
 	public Candidacy getCandidacy() {
 		return candidacy;
 	}
@@ -62,7 +65,7 @@ public class CandidacyEvaluator implements Serializable {
 		this.candidacy = candidacy;
 	}
 
-	@JsonView({MediumCandidacyView.class, DetailedCandidacyEvaluatorView.class, DetailedPositionCandidaciesView.class})
+	@JsonView({MediumCandidacyView.class, CandidacyEvaluatorView.class, DetailedPositionCandidaciesView.class})
 	public RegisterMember getRegisterMember() {
 		return this.registerMember;
 	}

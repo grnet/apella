@@ -8437,9 +8437,9 @@ define(["jquery", "underscore", "backbone", "application", "models",
         initialize: function (options) {
             var self = this;
             this._super('initialize', [options]);
-            _.bindAll(self, "select");
             self.template = _.template(tpl_professor_evaluations);
-            self.collection.bind('reset', self.render, self);
+            self.options.positionEvaluations.bind('reset', self.render, self);
+            self.options.candidacyEvaluations.bind('reset', self.render, self);
         },
 
         events: {
@@ -8451,9 +8451,12 @@ define(["jquery", "underscore", "backbone", "application", "models",
             self.closeInnerViews();
             self.$el.empty();
             self.addTitle();
+
             self.$el.append(self.template({
-                evaluations: self.collection.toJSON()
+                positionEvaluations: self.options.positionEvaluations.toJSON(),
+                candidacyEvaluations: self.options.candidacyEvaluations.toJSON()
             }));
+
             if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
                 self.$("table").dataTable({
                     "sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
@@ -8477,17 +8480,10 @@ define(["jquery", "underscore", "backbone", "application", "models",
             return self;
         },
 
-        select: function (event, positionEvaluator) {
-            var self = this;
-            var selectedModel = positionEvaluator || self.collection.get($(event.currentTarget).data('evaluatorId'));
-            if (selectedModel) {
-                self.collection.trigger("positionEvaluator:selected", selectedModel);
-            }
-        },
-
         close: function () {
             this.closeInnerViews();
-            this.collection.unbind('reset', this.render, this);
+            this.options.positionEvaluations.unbind('reset', self.render, self);
+            this.options.candidacyEvaluations.unbind('reset', self.render, self);
             this.$el.unbind();
             this.$el.remove();
         }

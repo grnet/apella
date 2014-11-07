@@ -76,7 +76,7 @@ public class PositionCandidacies {
 		this.id = id;
 	}
 
-	@JsonView({DetailedPositionCandidaciesView.class, CandidacyView.class})
+	@JsonView({CandidacyEvaluator.DetailedCandidacyEvaluatorView.class, DetailedPositionCandidaciesView.class, CandidacyView.class})
 	public Position getPosition() {
 		return position;
 	}

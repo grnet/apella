@@ -3,6 +3,7 @@ package gr.grnet.dep.server.rest;
 import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.model.CandidacyEvaluator;
 import gr.grnet.dep.service.model.PositionCommitteeMember;
 import gr.grnet.dep.service.model.PositionCommitteeMember.PositionCommitteeMemberView;
 import gr.grnet.dep.service.model.PositionEvaluator;
@@ -73,9 +74,9 @@ public class ProfessorRESTService extends RESTService {
 	 * @HTTP 404 X-Error-Code: wrong.professor.id
 	 */
 	@GET
-	@Path("/{id:[0-9]+}/evaluations")
+	@Path("/{id:[0-9]+}/evaluations/position")
 	@JsonView({PositionEvaluatorView.class})
-	public Collection<PositionEvaluator> getEvaluations(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long professorId) {
+	public Collection<PositionEvaluator> getPositionEvaluations(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long professorId) {
 		User loggedOn = getLoggedOn(authToken);
 		Professor professor = em.find(Professor.class, professorId);
 		if (professor == null) {
@@ -92,6 +93,40 @@ public class ProfessorRESTService extends RESTService {
 						"left join fetch po.phase ph " +
 						"left join fetch ph.candidacies pca " +
 						"where pe.registerMember.professor.id = :professorId ", PositionEvaluator.class)
+				.setParameter("professorId", professorId)
+				.getResultList();
+		return evaluations;
+	}
+
+	/**
+	 * Returns professor's participations as evaluator in candidacies
+	 *
+	 * @param authToken
+	 * @param professorId
+	 * @return
+	 * @HTTP 403 X-Error-Code: insufficient.privileges
+	 * @HTTP 404 X-Error-Code: wrong.professor.id
+	 */
+	@GET
+	@Path("/{id:[0-9]+}/evaluations/candidacy")
+	@JsonView({CandidacyEvaluator.DetailedCandidacyEvaluatorView.class})
+	public Collection<CandidacyEvaluator> getCandidacyEvaluations(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long professorId) {
+		User loggedOn = getLoggedOn(authToken);
+		Professor professor = em.find(Professor.class, professorId);
+		if (professor == null) {
+			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
+		}
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+				!professor.getUser().getId().equals(loggedOn.getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		List<CandidacyEvaluator> evaluations = em.createQuery(
+				"select ce from CandidacyEvaluator ce " +
+						"join ce.candidacy c " +
+						"join c.candidacies.position po " +
+						"join po.phase ph " +
+						"join ph.candidacies pca " +
+						"where ce.registerMember.professor.id = :professorId ", CandidacyEvaluator.class)
 				.setParameter("professorId", professorId)
 				.getResultList();
 		return evaluations;

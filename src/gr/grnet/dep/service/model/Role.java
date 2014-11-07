@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.service.model.Candidacy.MediumCandidacyView;
-import gr.grnet.dep.service.model.CandidacyEvaluator.DetailedCandidacyEvaluatorView;
 import gr.grnet.dep.service.model.Position.PositionView;
 import gr.grnet.dep.service.model.PositionCandidacies.DetailedPositionCandidaciesView;
 import gr.grnet.dep.service.model.PositionCommittee.DetailedPositionCommitteeView;
@@ -153,7 +152,7 @@ public abstract class Role implements Serializable {
 			DetailedPositionEvaluatorView.class,
 			DetailedPositionEvaluationView.class,
 			DetailedPositionCommitteeView.class,
-			DetailedCandidacyEvaluatorView.class})
+			CandidacyEvaluator.CandidacyEvaluatorView.class})
 	public User getUser() {
 		return user;
 	}

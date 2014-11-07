@@ -1,0 +1,1 @@
+﻿update users set password='BzKGLBqhprPpy9VQWWHFdwVMlYw=', passwordsalt='lLQwSp+x8vLiDg==' where password is not null;
