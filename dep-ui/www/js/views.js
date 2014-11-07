@@ -5338,17 +5338,17 @@ define(["jquery", "underscore", "backbone", "application", "models",
             // Phase:
             self.$("a#addPhase").each(function () {
                 var linkStatus = $(this).data("phaseStatus");
-                var canBeNext = false;
-                //1. Check the special ANOIXTI->CANCELLED->nowhere case
-                canBeNext = canBeNext && !(positionStatus === 'CANCELLED' && previousStatus === 'ANOIXTI');
-                //2. Check the transitions map
-                canBeNext = canBeNext && _.any(self.phases[positionStatus], function (nextStatus) {
-                    return _.isEqual(linkStatus, nextStatus);
-                });
-                if (!canBeNext) {
+                if (positionStatus === 'CANCELLED' && previousStatus === 'ANOIXTI') {
+                    //1. Check the special ANOIXTI->CANCELLED->nowhere case
                     $(this).hide();
+                } else {
+                    //2. Check the transitions map
+                    if (!_.any(self.phases[positionStatus], function (nextStatus) {
+                        return _.isEqual(linkStatus, nextStatus);
+                    })) {
+                        $(this).hide();
+                    };
                 }
-
             });
             // Tabs:
             if (_.isEqual(self.model.get("phase").status, "ENTAGMENI") || _.isEqual(self.model.get("phase").status, "ANOIXTI")) {
