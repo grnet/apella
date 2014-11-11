@@ -107,13 +107,20 @@ public class EvaluationServlet extends BaseHttpServlet {
 			for (Enumeration e = request.getParameterNames(); e.hasMoreElements(); ) {
 				String parameter = (String) e.nextElement();
 				if (parameter.matches("(question_(\\d)+)")) {
+					// Read question->answer
 					Long questionId = Long.parseLong(parameter.split("_")[1]);
-					String userAnswer = request.getParameter(parameter);
+					Long answerCode = Long.parseLong(request.getParameter(parameter));
+					EvaluationQuestion evaluationQuestion = service.getEvaluationQuestion(questionId);
 
+					// Fill Answer object
 					EvaluationAnswer answer = new EvaluationAnswer();
 					answer.setEvaluation(evaluation);
-					answer.setAnswer(userAnswer);
-					answer.setQuestion(service.getEvaluationQuestion(questionId));
+					answer.setEvaluationQuestion(evaluationQuestion);
+					answer.setQuestion(evaluationQuestion.getQuestion());
+					answer.setCode(answerCode);
+					answer.setAnswer(evaluationQuestion.getPossibleAnswers().get(answerCode));
+
+					// Add to evaluation
 					evaluation.getAnswers().add(answer);
 				}
 			}

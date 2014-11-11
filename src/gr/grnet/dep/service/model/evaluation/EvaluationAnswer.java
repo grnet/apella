@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.model.evaluation;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -16,9 +17,13 @@ public class EvaluationAnswer {
 	Evaluation evaluation;
 
 	@ManyToOne
-	EvaluationQuestion question;
+	EvaluationQuestion evaluationQuestion;
 
-	private String answer; // One of keys in EvaluationQuestion.possibleAnswers
+	private String question;
+
+	private Long code;
+
+	private String answer;
 
 	public Long getId() {
 		return id;
@@ -36,12 +41,28 @@ public class EvaluationAnswer {
 		this.evaluation = evaluation;
 	}
 
-	public EvaluationQuestion getQuestion() {
+	public EvaluationQuestion getEvaluationQuestion() {
+		return evaluationQuestion;
+	}
+
+	public void setEvaluationQuestion(EvaluationQuestion evaluationQuestion) {
+		this.evaluationQuestion = evaluationQuestion;
+	}
+
+	public String getQuestion() {
 		return question;
 	}
 
-	public void setQuestion(EvaluationQuestion question) {
+	public void setQuestion(String question) {
 		this.question = question;
+	}
+
+	public Long getCode() {
+		return code;
+	}
+
+	public void setCode(Long code) {
+		this.code = code;
 	}
 
 	public String getAnswer() {

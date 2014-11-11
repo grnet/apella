@@ -2,6 +2,8 @@ package gr.grnet.dep.service.model.evaluation;
 
 import gr.grnet.dep.service.model.Role;
 
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -26,8 +28,10 @@ public class EvaluationQuestion {
 	private String question;
 
 	@ElementCollection(fetch = FetchType.EAGER)
+	@CollectionTable(name = "evaluationquestion_answers")
 	@MapKeyColumn(name = "code")
-	private Map<String, String> possibleAnswers = new HashMap<String, String>();
+	@Column(name = "answer")
+	private Map<Long, String> possibleAnswers = new HashMap<Long, String>();
 
 	public Long getId() {
 		return id;
@@ -61,11 +65,11 @@ public class EvaluationQuestion {
 		this.question = question;
 	}
 
-	public Map<String, String> getPossibleAnswers() {
+	public Map<Long, String> getPossibleAnswers() {
 		return possibleAnswers;
 	}
 
-	public void setPossibleAnswers(Map<String, String> possibleAnswers) {
+	public void setPossibleAnswers(Map<Long, String> possibleAnswers) {
 		this.possibleAnswers = possibleAnswers;
 	}
 }
