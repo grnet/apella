@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Institution;
+import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.ProfessorDomestic;
 import gr.grnet.dep.service.model.Register;
@@ -18,6 +19,7 @@ import gr.grnet.dep.service.model.SearchData;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.util.CompareUtil;
 import gr.grnet.dep.service.util.StringUtil;
+import org.hibernate.Session;
 
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
@@ -78,8 +80,10 @@ public class RegisterRESTService extends RESTService {
 				.getResultList();
 
 		Collection<Long> loggedOnRegisterIds = em.createQuery(
-				"select distinct(rm.register.id) from RegisterMember rm " +
-						"where rm.professor.user.id = :userId", Long.class)
+				"select distinct(rm.register.id) " +
+						"from RegisterMember rm " +
+						"where rm.deleted = false " +
+						"and rm.professor.user.id = :userId", Long.class)
 				.setParameter("userId", loggedOn.getId())
 				.getResultList();
 
@@ -103,7 +107,14 @@ public class RegisterRESTService extends RESTService {
 	@JsonView({DetailedRegisterView.class})
 	public Register get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		getLoggedOn(authToken);
+		return getRegisterById(id);
+	}
+
+	public Register getRegisterById(Long id) {
 		try {
+			// A Hibernate specific solution, a JPA filtering mechanism does not exist
+			Session session = em.unwrap(Session.class);
+			session.enableFilter("filterDeleted");
 			Register r = em.createQuery(
 					"select r from Register r " +
 							"left join fetch r.members rm " +
@@ -119,7 +130,6 @@ public class RegisterRESTService extends RESTService {
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
 		}
-
 	}
 
 	private void addCanBeDeletedInfo(Register register) {
@@ -127,10 +137,23 @@ public class RegisterRESTService extends RESTService {
 				"select rm.id from RegisterMember rm " +
 						"where rm.register.id = :registerId " +
 						"and (" +
-						"	exists (select pcm.id from PositionCommitteeMember pcm where pcm.registerMember.id = rm.id ) " +
-						"	or exists (select pe.id from PositionEvaluator pe where pe.registerMember.id = rm.id ) " +
-						"	or exists (select ce.id from CandidacyEvaluator ce where ce.registerMember.id = rm.id ) " +
+						"	exists (" +
+						"		select pcm.id from PositionCommitteeMember pcm " +
+						"		where pcm.committee.position.phase.status = :activeStatus " +
+						"		and pcm.registerMember.id = rm.id " +
+						"	) " +
+						"	or exists (" +
+						"		select pe.id from PositionEvaluator pe " +
+						"		where pe.evaluation.position.phase.status = :activeStatus " +
+						"		and pe.registerMember.id = rm.id " +
+						"	) " +
+						"	or exists (" +
+						"		select ce.id from CandidacyEvaluator ce " +
+						"		where ce.candidacy.candidacies.position.phase.status = :activeStatus " +
+						"		and ce.registerMember.id = rm.id " +
+						"	) " +
 						")", Long.class)
+				.setParameter("activeStatus", Position.PositionStatus.EPILOGI)
 				.setParameter("registerId", register.getId())
 				.getResultList();
 
@@ -170,8 +193,7 @@ public class RegisterRESTService extends RESTService {
 			em.persist(newRegister);
 			em.flush();
 
-			addCanBeDeletedInfo(newRegister);
-			return newRegister;
+			return getRegisterById(newRegister.getId());
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
@@ -238,42 +260,45 @@ public class RegisterRESTService extends RESTService {
 			}
 		}
 
-		// Retrieve existing Members
+		// Retrieve existing Members (ProfessorID -> RegisterMember)
 		Map<Long, RegisterMember> existingMembersAsMap = new HashMap<Long, RegisterMember>();
 		for (RegisterMember existingMember : existingRegister.getMembers()) {
 			existingMembersAsMap.put(existingMember.getProfessor().getId(), existingMember);
 		}
 		// Retrieve new Member Professor Ids
-		Set<Long> newMemberIds = new HashSet<Long>();
+		Set<Long> allProfessorIDs = new HashSet<Long>();
+		List<Professor> allProfessors = new ArrayList<Professor>();
 		for (RegisterMember newCommitteeMember : register.getMembers()) {
-			newMemberIds.add(newCommitteeMember.getProfessor().getId());
+			allProfessorIDs.add(newCommitteeMember.getProfessor().getId());
 		}
-		List<Professor> newRegisterMembers = new ArrayList<Professor>();
-		if (!newMemberIds.isEmpty()) {
+		if (!allProfessorIDs.isEmpty()) {
 			TypedQuery<Professor> query = em.createQuery(
 					"select distinct p from Professor p " +
 							"where p.id in (:ids)", Professor.class)
-					.setParameter("ids", newMemberIds);
-			newRegisterMembers.addAll(query.getResultList());
+					.setParameter("ids", allProfessorIDs);
+			allProfessors.addAll(query.getResultList());
 		}
-		if (newMemberIds.size() != newRegisterMembers.size()) {
+		if (allProfessorIDs.size() != allProfessors.size()) {
 			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
 		}
 		// Calculate Added and Removed Professor IDs
-		Set<Long> addedProfessorIds = new HashSet<Long>();
-		addedProfessorIds.addAll(newMemberIds);
-		addedProfessorIds.removeAll(existingMembersAsMap.keySet());
-		Set<Long> removedProfessorIds = new HashSet<Long>();
-		removedProfessorIds.addAll(existingMembersAsMap.keySet());
-		removedProfessorIds.removeAll(newMemberIds);
+		Set<Long> additionProfessorIds = new HashSet<Long>();
+		additionProfessorIds.addAll(allProfessorIDs);
+		additionProfessorIds.removeAll(existingMembersAsMap.keySet());
+		Set<Long> removalProfessorIds = new HashSet<Long>();
+		removalProfessorIds.addAll(existingMembersAsMap.keySet());
+		removalProfessorIds.removeAll(allProfessorIDs);
+
 		// Validate removal
-		if (removedProfessorIds.size() > 0) {
+		if (removalProfessorIds.size() > 0) {
 			try {
 				em.createQuery("select pcm.id from PositionCommitteeMember pcm " +
-						"where pcm.registerMember.register.id = :registerId " +
+						"where pcm.committee.position.phase.status = :activeStatus " +
+						"and pcm.registerMember.register.id = :registerId " +
 						"and pcm.registerMember.professor.id in (:professorIds)", Long.class)
+						.setParameter("activeStatus", Position.PositionStatus.EPILOGI)
 						.setParameter("registerId", existingRegister.getId())
-						.setParameter("professorIds", removedProfessorIds)
+						.setParameter("professorIds", removalProfessorIds)
 						.setMaxResults(1)
 						.getSingleResult();
 				throw new RestException(Status.CONFLICT, "professor.is.committee.member");
@@ -281,10 +306,12 @@ public class RegisterRESTService extends RESTService {
 			}
 			try {
 				em.createQuery("select e.id from PositionEvaluator e " +
-						"where e.registerMember.register.id = :registerId " +
+						"where e.evaluation.position.phase.status = :activeStatus " +
+						"and e.registerMember.register.id = :registerId " +
 						"and e.registerMember.professor.id in (:professorIds)", Long.class)
+						.setParameter("activeStatus", Position.PositionStatus.EPILOGI)
 						.setParameter("registerId", existingRegister.getId())
-						.setParameter("professorIds", removedProfessorIds)
+						.setParameter("professorIds", removalProfessorIds)
 						.setMaxResults(1)
 						.getSingleResult();
 				throw new RestException(Status.CONFLICT, "professor.is.evaluator");
@@ -292,10 +319,12 @@ public class RegisterRESTService extends RESTService {
 			}
 			try {
 				em.createQuery("select e.id from CandidacyEvaluator e " +
-						"where e.registerMember.register.id = :registerId " +
+						"where e.candidacy.candidacies.position.phase.status = :activeStatus " +
+						"and e.registerMember.register.id = :registerId " +
 						"and e.registerMember.professor.id in (:professorIds)", Long.class)
+						.setParameter("activeStatus", Position.PositionStatus.EPILOGI)
 						.setParameter("registerId", existingRegister.getId())
-						.setParameter("professorIds", removedProfessorIds)
+						.setParameter("professorIds", removalProfessorIds)
 						.setMaxResults(1)
 						.getSingleResult();
 				throw new RestException(Status.CONFLICT, "professor.is.candidacy.evaluator");
@@ -303,41 +332,48 @@ public class RegisterRESTService extends RESTService {
 			}
 		}
 		// Validate addition
-		for (Professor p : newRegisterMembers) {
-			if (addedProfessorIds.contains(p.getId()) &&
-					!p.getStatus().equals(RoleStatus.ACTIVE)) {
+		for (Professor p : allProfessors) {
+			if (additionProfessorIds.contains(p.getId()) && !p.getStatus().equals(RoleStatus.ACTIVE)) {
 				throw new RestException(Status.CONFLICT, "professor.is.inactive");
 			}
 		}
-		// Create new list, without replacing existing members 
-		Map<Long, RegisterMember> newMembersAsMap = new HashMap<Long, RegisterMember>();
-		for (Professor existingProfessor : newRegisterMembers) {
-			if (existingMembersAsMap.containsKey(existingProfessor.getId())) {
-				newMembersAsMap.put(existingProfessor.getId(), existingMembersAsMap.get(existingProfessor.getId()));
-			} else {
-				RegisterMember newMember = new RegisterMember();
-				newMember.setRegister(existingRegister);
-				newMember.setProfessor(existingProfessor);
-				switch (existingProfessor.getDiscriminator()) {
-					case PROFESSOR_DOMESTIC:
-						newMember.setExternal(!existingRegister.getInstitution().getId().equals(((ProfessorDomestic) existingProfessor).getDepartment().getSchool().getInstitution().getId()));
-						break;
-					case PROFESSOR_FOREIGN:
-						newMember.setExternal(true);
-						break;
-					default:
-						break;
-				}
-				newMembersAsMap.put(existingProfessor.getId(), newMember);
-			}
-		}
 
+		// Update
 		try {
-			// Update
+			// Add new members to existingMembersMap
+			for (Professor professor : allProfessors) {
+				if (!existingMembersAsMap.containsKey(professor.getId())) {
+					// Create new member
+					RegisterMember newMember = new RegisterMember();
+					newMember.setRegister(existingRegister);
+					newMember.setProfessor(professor);
+					newMember.setDeleted(false);
+					switch (professor.getDiscriminator()) {
+						case PROFESSOR_DOMESTIC:
+							newMember.setExternal(!existingRegister.getInstitution().getId().equals(((ProfessorDomestic) professor).getDepartment().getSchool().getInstitution().getId()));
+							break;
+						case PROFESSOR_FOREIGN:
+							newMember.setExternal(true);
+							break;
+						default:
+							break;
+					}
+					existingMembersAsMap.put(professor.getId(), newMember);
+				}
+			}
+			// Set deleted flags based on removalProfessorIds
+			for (RegisterMember rm : existingMembersAsMap.values()) {
+				if (removalProfessorIds.contains(rm.getProfessor().getId())) {
+					rm.setDeleted(true);
+				} else {
+					rm.setDeleted(false);
+				}
+			}
+			// Save
 			existingRegister = existingRegister.copyFrom(register);
 			existingRegister.setSubject(utilityService.supplementSubject(register.getSubject()));
 			existingRegister.getMembers().clear();
-			for (RegisterMember member : newMembersAsMap.values()) {
+			for (RegisterMember member : existingMembersAsMap.values()) {
 				existingRegister.addMember(member);
 			}
 			existingRegister.setPermanent(true);
@@ -347,8 +383,9 @@ public class RegisterRESTService extends RESTService {
 
 			// Send E-Mails:
 			//1. To Added Members:
-			for (Long professorId : addedProfessorIds) {
-				final RegisterMember savedMember = newMembersAsMap.get(professorId);
+			for (Long professorId : additionProfessorIds) {
+				// No need to check deleted flag here, additionProfessorIds are all deleted=false
+				final RegisterMember savedMember = existingMembersAsMap.get(professorId);
 				if (savedMember.isExternal()) {
 					// register.create.register.member.external@member
 					mailService.postEmail(savedMember.getProfessor().getUser().getContactInfo().getEmail(),
@@ -390,7 +427,8 @@ public class RegisterRESTService extends RESTService {
 				}
 			}
 			//2. To Removed Members:
-			for (Long professorID : removedProfessorIds) {
+			for (Long professorID : removalProfessorIds) {
+				// No need to check deleted flag here, removalProfessorIds are all deleted=true
 				final RegisterMember removedMember = existingMembersAsMap.get(professorID);
 				if (removedMember.isExternal()) {
 					// register.remove.register.member.external@member
@@ -435,8 +473,8 @@ public class RegisterRESTService extends RESTService {
 			// End: Send E-Mails
 
 			// Return Result
-			addCanBeDeletedInfo(existingRegister);
-			return existingRegister;
+			em.clear(); // Necessary, the attached object will be returned otherwise
+			return getRegisterById(existingRegister.getId());
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();

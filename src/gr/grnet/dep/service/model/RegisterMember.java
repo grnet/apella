@@ -11,6 +11,7 @@ import gr.grnet.dep.service.model.PositionEvaluator.PositionEvaluatorView;
 import gr.grnet.dep.service.model.Register.DetailedRegisterView;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -54,6 +55,9 @@ public class RegisterMember implements Serializable {
 	private Professor professor;
 
 	private boolean external;
+
+	@Column(nullable = false, columnDefinition = "boolean default false")
+	private boolean deleted = false;
 
 	@Transient
 	private boolean canBeDeleted = true;
@@ -107,6 +111,14 @@ public class RegisterMember implements Serializable {
 
 	public void setExternal(boolean external) {
 		this.external = external;
+	}
+
+	public boolean isDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
 	}
 
 	@XmlTransient

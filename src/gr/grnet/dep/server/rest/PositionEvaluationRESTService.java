@@ -228,6 +228,7 @@ public class PositionEvaluationRESTService extends RESTService {
 							"join r.members rm " +
 							"where r.permanent = true " +
 							"and r.institution.id = :institutionId " +
+							"and m.deleted = false " +
 							"and rm.external = true " +
 							"and rm.professor.status = :status " +
 							"and rm.id in (:registerIds)", RegisterMember.class)
@@ -970,6 +971,7 @@ public class PositionEvaluationRESTService extends RESTService {
 		List<RegisterMember> registerMembers = em.createQuery(
 				"select distinct(m) from RegisterMember m " +
 						"where m.register.permanent = true " +
+						"and m.deleted = false " +
 						"and m.register.institution.id = :institutionId " +
 						"and m.register.id = :registerId " +
 						"and m.professor.status = :status ", RegisterMember.class)

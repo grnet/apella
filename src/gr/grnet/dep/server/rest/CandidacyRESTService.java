@@ -286,6 +286,7 @@ public class CandidacyRESTService extends RESTService {
 								"join r.members m " +
 								"where r.permanent = true " +
 								"and r.institution.id = :institutionId " +
+								"and m.deleted = false " +
 								"and m.professor.status = :status " +
 								"and m.id in (:registerIds)", RegisterMember.class)
 						.setParameter("institutionId", candidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getId())
@@ -787,6 +788,7 @@ public class CandidacyRESTService extends RESTService {
 						"join r.members m " +
 						"where r.permanent = true " +
 						"and r.institution.id = :institutionId " +
+						"and m.deleted = false " +
 						"and m.professor.status = :status " +
 						"and m.id not in (:committeeMemberIds)", RegisterMember.class)
 				.setParameter("institutionId", institution.getId())

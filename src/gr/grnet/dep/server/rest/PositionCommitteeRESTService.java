@@ -151,6 +151,7 @@ public class PositionCommitteeRESTService extends RESTService {
 						"join prof.user u " +
 						"join u.roles r " +
 						"where m.register.permanent = true " +
+						"and m.deleted = false " +
 						"and m.register.institution.id = :institutionId " +
 						"and m.register.id = :registerId " +
 						"and m.professor.status = :status ", RegisterMember.class)
@@ -384,6 +385,7 @@ public class PositionCommitteeRESTService extends RESTService {
 							"join r.members m " +
 							"where r.permanent = true " +
 							"and r.institution.id = :institutionId " +
+							"and m.deleted = false " +
 							"and m.professor.status = :status " +
 							"and m.id in (:registerIds)", RegisterMember.class)
 					.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())

@@ -2,6 +2,8 @@ package gr.grnet.dep.service.model;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -19,6 +21,7 @@ import java.util.Set;
 
 @Entity
 @XmlRootElement
+@FilterDef(name = "filterDeleted", defaultCondition = "deleted = 'false'", parameters = {})
 public class Register implements Serializable {
 
 	private static final long serialVersionUID = 6147648073392341863L;
@@ -44,6 +47,7 @@ public class Register implements Serializable {
 	@ManyToOne
 	private Subject subject;
 
+	@Filter(name="filterDeleted")
 	@OneToMany(mappedBy = "register", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<RegisterMember> members = new HashSet<RegisterMember>();
 

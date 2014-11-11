@@ -965,7 +965,8 @@ public class DataExportService {
 						"left join fetch dep.school sch " +
 						"left join fetch sch.institution inst " +
 						"left join fetch p.subject sub " +
-						"left join fetch p.fekSubject fsub ", RegisterMember.class)
+						"left join fetch p.fekSubject fsub " +
+						"where rm.deleted = false ", RegisterMember.class)
 				.getResultList();
 		return data;
 	}
