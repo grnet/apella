@@ -24,8 +24,10 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.logging.Logger;
 
 @Stateless
@@ -160,6 +162,61 @@ public class ManagementService {
 		logger.info("massSendReminderFinalizeRegistrationEmails: Sending to " + users.size() + " users");
 		for (Long userId : users) {
 			mailService.sendReminderFinalizeRegistrationEmail(userId, false);
+		}
+	}
+
+
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+	public void massSendEvaluationEmails() {
+		logger.info("massSendEvaluationEmails:");
+		Set<Long> users = new HashSet<>();
+
+		// 1. Candidates
+		users.addAll(em.createQuery(
+				"select u.id from Candidate r " +
+						"join r.user u " +
+						"where u.status = :userStatus " +
+						"and r.status = :roleStatus ", Long.class)
+				.setParameter("userStatus", UserStatus.ACTIVE)
+				.setParameter("roleStatus", RoleStatus.ACTIVE)
+				.getResultList());
+		// 2. Institution Managers
+		users.addAll(em.createQuery(
+				"select u.id from InstitutionManager r " +
+						"join r.user u " +
+						"where u.status = :userStatus " +
+						"and r.status = :roleStatus ", Long.class)
+				.setParameter("userStatus", UserStatus.ACTIVE)
+				.setParameter("roleStatus", RoleStatus.ACTIVE)
+				.getResultList());
+		// 3. Professor Domestic
+		users.addAll(em.createQuery(
+				"select u.id from ProfessorDomestic r " +
+						"join r.user u " +
+						"where u.status = :userStatus " +
+						"and r.status = :roleStatus ", Long.class)
+				.setParameter("userStatus", UserStatus.ACTIVE)
+				.setParameter("roleStatus", RoleStatus.ACTIVE)
+				.getResultList());
+		// 4. Professor Foreign, that speak greek
+		users.addAll(em.createQuery(
+				"select u.id from ProfessorForeign r " +
+						"join r.user u " +
+						"where u.status = :userStatus " +
+						"and r.status = :roleStatus " +
+						"and r.speakingGreek = true ", Long.class)
+				.setParameter("userStatus", UserStatus.ACTIVE)
+				.setParameter("roleStatus", RoleStatus.ACTIVE)
+				.getResultList());
+
+		// Remove already filled:
+		users.removeAll(em.createQuery(
+				"select e.user.id from Evaluation e ", Long.class)
+				.getResultList());
+
+		logger.info("massSendEvaluationEmails: Sending to " + users.size() + " users");
+		for (Long userId : users) {
+			mailService.sendEvaluationEmail(userId, false);
 		}
 	}
 

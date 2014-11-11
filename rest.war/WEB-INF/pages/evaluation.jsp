@@ -36,7 +36,7 @@
 			<ul class="unstyled">
 				<c:forEach var="question" items="${questions}">
 						<li>
-						${question.orderno}. ${question.question}
+						<b>${question.orderno}. ${question.question}</b>
 						<ol type="A">
 							<c:forEach var="answer" items="${question.possibleAnswers}">
 							<li>

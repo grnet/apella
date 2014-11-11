@@ -688,9 +688,9 @@ public class UserRESTService extends RESTService {
 	}
 
 	@PUT
-	@Path("/{id:[0-9][0-9]*}/sendReminderLoginEmail")
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	public Response sendReminderLoginEmail(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, @FormParam("createLoginLink") Boolean createLoginLink) {
+	 @Path("/{id:[0-9][0-9]*}/sendReminderLoginEmail")
+	 @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	 public Response sendReminderLoginEmail(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, @FormParam("createLoginLink") Boolean createLoginLink) {
 		User loggedOn = getLoggedOn(authToken);
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -710,6 +710,35 @@ public class UserRESTService extends RESTService {
 			mailService.sendReminderLoginEmail(u.getId(), true);
 
 			return Response.noContent().build();
+		} catch (NoResultException e) {
+			throw new RestException(Status.NOT_FOUND, "login.wrong.email");
+		}
+	}
+
+	@PUT
+	@Path("/{id:[0-9][0-9]*}/sendEvaluationEmail")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response sendEvaluationEmail(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+		User loggedOn = getLoggedOn(authToken);
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		try {
+			final User u = em.createQuery(
+					"from User u " +
+							"left join fetch u.roles " +
+							"where u.id = :id", User.class)
+					.setParameter("id", id)
+					.getSingleResult();
+
+			// Validate
+			if (u.getStatus().equals(UserStatus.ACTIVE) && u.getRole(u.getPrimaryRole()).getStatus().equals(RoleStatus.ACTIVE)) {
+				mailService.sendEvaluationEmail(u.getId(), true);
+				return Response.noContent().build();
+			} else {
+				throw new RestException(Status.FORBIDDEN, "user.status.not.active");
+			}
+
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "login.wrong.email");
 		}

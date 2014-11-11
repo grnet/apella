@@ -2214,14 +2214,15 @@ define(["jquery", "underscore", "backbone", "application", "models",
 
         events: {
             "click #resendLoginEmail": "resendLoginEmail",
-            "click #resendReminderLoginEmail": "resendReminderLoginEmail"
+            "click #resendReminderLoginEmail": "resendReminderLoginEmail",
+            "click #resendEvaluationEmail": "resendEvaluationEmail",
         },
 
         initialize: function (options) {
             var self = this;
 
             self._super('initialize', [options]);
-            _.bindAll(self, "openIssue", "resendLoginEmail", "resetIssue");
+            _.bindAll(self, "openIssue", "resendLoginEmail", "resendReminderLoginEmail", "resendEvaluationEmail", "resetIssue");
             self.template = _.template(tpl_user_helpdesk);
             self.issueModel = new Models.JiraIssue();
             self.issueModel.url = self.issueModel.urlRoot + "admin";
@@ -2338,6 +2339,28 @@ define(["jquery", "underscore", "backbone", "application", "models",
         resendReminderLoginEmail: function () {
             var self = this;
             self.model.resendReminderLoginEmail({}, {
+                wait: true,
+                success: function () {
+                    var popup;
+                    popup = new Views.PopupView({
+                        type: "success",
+                        message: $.i18n.prop("Success")
+                    });
+                    popup.show();
+                },
+                error: function (model, resp) {
+                    var popup = new Views.PopupView({
+                        type: "error",
+                        message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+                    });
+                    popup.show();
+                }
+            });
+        },
+
+        resendEvaluationEmail: function () {
+            var self = this;
+            self.model.resendEvaluationEmail({}, {
                 wait: true,
                 success: function () {
                     var popup;

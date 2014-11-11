@@ -2,6 +2,7 @@ package gr.grnet.dep.service;
 
 import gr.grnet.dep.service.model.AuthenticationType;
 import gr.grnet.dep.service.model.MailRecord;
+import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 import org.apache.commons.configuration.Configuration;
@@ -353,5 +354,44 @@ public class MailService {
 		return conf.getString("rest.url") +
 				"/email/login?nextURL=" + conf.getString("home.url") + "/apella.html" +
 				"&user=" + URLEncoder.encode(token, "UTF-8");
+	}
+
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	public void sendEvaluationEmail(Long userId, boolean sendNow) {
+		User u = em.find(User.class, userId);
+		if (u == null) {
+			logger.log(Level.WARNING, "Failed to sendEvaluationEmail, user with id " + userId + " not found");
+			return;
+		}
+		try {
+			// Double Check here:
+			if (u.getStatus().equals(User.UserStatus.ACTIVE) &&
+					u.getRole(u.getPrimaryRole()).getStatus().equals(Role.RoleStatus.ACTIVE)) {
+
+				String aToEmailAddr = u.getContactInfo().getEmail();
+				String aSubject = resources.getString("evaluation.email.subject");
+				String aBody = resources.getString("evaluation.email.body")
+						.replaceAll("\\[firstname_el\\]", u.getFirstname("el"))
+						.replaceAll("\\[lastname_el\\]", u.getLastname("el"))
+						.replaceAll("\\[firstname_en\\]", u.getFirstname("en"))
+						.replaceAll("\\[lastname_en\\]", u.getLastname("en"))
+						.replaceAll("\\[evaluationLink\\]", "<a href=\"" + getEvaluationLink(u.getId()) + "\">Συμπλήρωση Ερωτηματολογίου</a>");
+				if (sendNow) {
+					sendEmail(aToEmailAddr, aSubject, aBody);
+				} else {
+					pushEmail(aToEmailAddr, aSubject, aBody);
+				}
+				u.setLoginEmailSent(Boolean.TRUE);
+				logger.log(Level.INFO, "Sent sendEvaluationEmail email to user with id " + u.getId() + " " + getEvaluationLink(u.getId()));
+			} else {
+				logger.log(Level.INFO, "Skipped sendEvaluationEmail for user with id " + u.getId());
+			}
+		} catch (UnsupportedEncodingException e) {
+			logger.log(Level.WARNING, "Failed to send sendEvaluationEmail", e.getMessage());
+		}
+	}
+
+	private String getEvaluationLink(Long userId) throws UnsupportedEncodingException {
+		return conf.getString("rest.url") + "/evaluation/" + EvaluationService.encryptID(userId);
 	}
 }
