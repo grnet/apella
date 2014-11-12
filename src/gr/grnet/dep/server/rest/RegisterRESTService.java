@@ -106,11 +106,11 @@ public class RegisterRESTService extends RESTService {
 	@Path("/{id:[0-9][0-9]*}")
 	@JsonView({DetailedRegisterView.class})
 	public Register get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
-		getLoggedOn(authToken);
+		User loggedOn = getLoggedOn(authToken);
 		return getRegisterById(id);
 	}
 
-	public Register getRegisterById(Long id) {
+	private Register getRegisterById(Long id) {
 		try {
 			// A Hibernate specific solution, a JPA filtering mechanism does not exist
 			Session session = em.unwrap(Session.class);
@@ -528,7 +528,8 @@ public class RegisterRESTService extends RESTService {
 	@Path("/{id:[0-9]+}/members")
 	@JsonView({DetailedRegisterMemberView.class})
 	public Collection<RegisterMember> getRegisterMembers(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long registerId) {
-		getLoggedOn(authToken);
+		User loggedOn = getLoggedOn(authToken);
+		// TODO: Authorize
 		Register register = em.find(Register.class, registerId);
 		// Validate:
 		if (register == null) {
@@ -551,7 +552,8 @@ public class RegisterRESTService extends RESTService {
 	@Path("/{id:[0-9]+}/members/{memberId:[0-9]+}")
 	@JsonView({DetailedRegisterMemberView.class})
 	public RegisterMember getRegisterMember(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long registerId, @PathParam("memberId") Long memberId) {
-		getLoggedOn(authToken);
+		User loggedOn = getLoggedOn(authToken);
+		// TODO: Authorize
 		Register register = em.find(Register.class, registerId);
 		// Validate:
 		if (register == null) {

@@ -760,10 +760,14 @@ public class CandidacyRESTService extends RESTService {
 	@Path("/{id:[0-9]+}/register")
 	@JsonView({CandidacyEvaluator.CandidacyEvaluatorView.class})
 	public Collection<RegisterMember> getCandidacyRegisterMembers(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("id") Long candidacyId) {
-		getLoggedOn(authToken);
+		User loggedOn = getLoggedOn(authToken);
 		final Candidacy existingCandidacy = em.find(Candidacy.class, candidacyId);
 		if (existingCandidacy == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
+		}
+		Candidate candidate = existingCandidacy.getCandidate();
+		if (!candidate.getUser().getId().equals(loggedOn.getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return empty response while committee is not defined
 		if (!canAddEvaluators(existingCandidacy)) {

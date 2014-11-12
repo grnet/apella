@@ -85,7 +85,7 @@ public class CandidateRESTService extends RESTService {
 		return retv;
 	}
 
-	public List<Long> hasNominationCommitteeConverged(List<Candidacy> candidacies) {
+	private List<Long> hasNominationCommitteeConverged(List<Candidacy> candidacies) {
 		Set<Long> ids = new HashSet<Long>();
 		for (Candidacy c : candidacies) {
 			ids.add(c.getId());
@@ -105,7 +105,7 @@ public class CandidateRESTService extends RESTService {
 		return data;
 	}
 
-	public List<Long> canAddEvaluators(List<Candidacy> candidacies) {
+	private List<Long> canAddEvaluators(List<Candidacy> candidacies) {
 		Set<Long> ids = new HashSet<Long>();
 		for (Candidacy c : candidacies) {
 			ids.add(c.getId());

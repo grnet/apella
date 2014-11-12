@@ -180,7 +180,15 @@ public class RoleRESTService extends RESTService {
 	@GET
 	@JsonView({DetailedRoleView.class})
 	public Collection<Role> getAll(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @QueryParam("user") Long userID, @QueryParam("discriminator") String discriminators, @QueryParam("status") String statuses) {
-		getLoggedOn(authToken);
+		User loggedOn = getLoggedOn(authToken);
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.getId().equals(userID)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
 		// Prepare Query
 		StringBuilder sb = new StringBuilder();
 		sb.append("select r from Role r " +
@@ -270,7 +278,12 @@ public class RoleRESTService extends RESTService {
 				break;
 			}
 		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !roleBelongsToUser) {
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!roleBelongsToUser) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 

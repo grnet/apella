@@ -67,7 +67,7 @@ public class UserRESTService extends RESTService {
 
 	@GET
 	@JsonView({UserView.class})
-	public Collection<User> getAll(
+	public Collection<User> getAssistants(
 			@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken,
 			@QueryParam("user") Long userId,
 			@QueryParam("username") String username,
@@ -81,8 +81,33 @@ public class UserRESTService extends RESTService {
 			@QueryParam("im") Long imId,
 			@QueryParam("mm") Long mmId) {
 
-		getLoggedOn(authToken);
-
+		// Used in showAdministratorsView, showInstitutionAssistantsView, showMinistryAssistantsView
+		User loggedOn = getLoggedOn(authToken);
+		// Authorize
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		switch (loggedOn.getPrimaryRole()) {
+			case ADMINISTRATOR:
+				break;
+			case MINISTRY_MANAGER:
+				if (!loggedOn.getActiveRole(RoleDiscriminator.MINISTRY_MANAGER).getId().equals(mmId)) {
+					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+				}
+				;
+				break;
+			case INSTITUTION_MANAGER:
+				if (!loggedOn.getActiveRole(RoleDiscriminator.INSTITUTION_MANAGER).getId().equals(imId)) {
+					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+				}
+				;
+				break;
+			default:
+				// Will Not happen
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
 		// Prepare Query
 		StringBuilder sb = new StringBuilder();
 		sb.append("select usr from User usr " +
@@ -206,6 +231,12 @@ public class UserRESTService extends RESTService {
 							"where u.id=:id", User.class)
 					.setParameter("id", id)
 					.getSingleResult();
+			if (!loggedOn.getId().equals(id) &&
+					!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+					!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+					!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER)) {
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+			}
 			if (u.getId().equals(loggedOn.getId())) {
 				return toJSON(u, UserWithLoginDataView.class);
 			} else {
@@ -214,7 +245,6 @@ public class UserRESTService extends RESTService {
 		} catch (NoResultException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.id");
 		}
-
 	}
 
 	@POST
@@ -688,9 +718,9 @@ public class UserRESTService extends RESTService {
 	}
 
 	@PUT
-	 @Path("/{id:[0-9][0-9]*}/sendReminderLoginEmail")
-	 @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	 public Response sendReminderLoginEmail(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, @FormParam("createLoginLink") Boolean createLoginLink) {
+	@Path("/{id:[0-9][0-9]*}/sendReminderLoginEmail")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response sendReminderLoginEmail(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, @FormParam("createLoginLink") Boolean createLoginLink) {
 		User loggedOn = getLoggedOn(authToken);
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
@@ -848,7 +878,11 @@ public class UserRESTService extends RESTService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public SearchData<User> search(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @Context HttpServletRequest request) {
 		User loggedOn = getLoggedOn(authToken);
-
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
 		// 1. Read parameters:
 		Long userId = request.getParameter("user").matches("\\d+") ? Long.valueOf(request.getParameter("user")) : null;
 		String username = request.getParameter("username");

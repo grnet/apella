@@ -69,7 +69,7 @@ public class PositionRESTService extends RESTService {
 	@Inject
 	private Logger log;
 
-	private Position getAndCheckPosition(User loggedOn, long positionId) {
+	private Position getPosition(Long positionId) {
 		Position position = null;
 		try {
 			position = em.createQuery(
@@ -176,7 +176,8 @@ public class PositionRESTService extends RESTService {
 	@Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
 	public String get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @QueryParam("order") Integer order) {
 		User loggedOn = getLoggedOn(authToken);
-		Position p = getAndCheckPosition(loggedOn, positionId);
+		// All logged in users can see the positions
+		Position p = getPosition(positionId);
 		String result = toJSON(order == null ? p : p.as(order), DetailedPositionView.class);
 		return result;
 	}
@@ -228,7 +229,7 @@ public class PositionRESTService extends RESTService {
 			position = em.merge(position);
 			em.flush();
 
-			position = getAndCheckPosition(loggedOn, position.getId());
+			position = getPosition(position.getId());
 			return position;
 		} catch (PersistenceException e) {
 			log.log(Level.WARNING, e.getMessage(), e);
@@ -254,7 +255,7 @@ public class PositionRESTService extends RESTService {
 	public Position update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, Position position) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
-			final Position existingPosition = getAndCheckPosition(loggedOn, id);
+			final Position existingPosition = getPosition(id);
 			if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
@@ -458,7 +459,7 @@ public class PositionRESTService extends RESTService {
 	public void delete(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
-			Position position = getAndCheckPosition(loggedOn, id);
+			Position position = getPosition(id);
 			if (!position.isUserAllowedToEdit(loggedOn)) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
@@ -479,11 +480,10 @@ public class PositionRESTService extends RESTService {
 	@JsonView({UserView.class})
 	public Collection<User> getPositionAssistants(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long positionId) {
 		User loggedOn = getLoggedOn(authToken);
-		Position existingPosition = getAndCheckPosition(loggedOn, positionId);
+		Position existingPosition = getPosition(positionId);
 		if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		@SuppressWarnings("unchecked")
 		List<User> managers = em.createQuery(
 				"select usr from User usr " +
 						"left join fetch usr.roles rls " +
@@ -526,7 +526,7 @@ public class PositionRESTService extends RESTService {
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			PositionStatus newStatus = position.getPhase().getStatus();
-			Position existingPosition = getAndCheckPosition(loggedOn, positionId);
+			Position existingPosition = getPosition(positionId);
 			if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
