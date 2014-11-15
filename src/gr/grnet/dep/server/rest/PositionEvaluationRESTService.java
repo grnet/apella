@@ -228,7 +228,7 @@ public class PositionEvaluationRESTService extends RESTService {
 							"join r.members rm " +
 							"where r.permanent = true " +
 							"and r.institution.id = :institutionId " +
-							"and m.deleted = false " +
+							"and rm.deleted = false " +
 							"and rm.external = true " +
 							"and rm.professor.status = :status " +
 							"and rm.id in (:registerIds)", RegisterMember.class)
