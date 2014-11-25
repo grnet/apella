@@ -33,7 +33,7 @@ public class RemoveNonPermanentJob implements Job {
 		long duration = System.currentTimeMillis();
 		int removed = 0;
 		// 1. Remove Candidacy
-		removed = service().deleteCandidacies();
+		//removed = service().deleteCandidacies();
 		log.info("RemoveNonPermanentJob: Removed " + removed + " Candidacies");
 		// 2. Remove InstitutionRegulatoryFramework
 		removed = service().deleteInstitutionRegulatoryFrameworks();

@@ -299,7 +299,9 @@ public class JiraService {
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	public int synchronizeIssues() throws Exception {
 		List<Long> localIssueIds = em.createQuery(
-				"select i.id from JiraIssue i", Long.class)
+				"select i.id from JiraIssue i " +
+						"where i.status != :statusClosed", Long.class)
+				.setParameter("statusClosed", IssueStatus.CLOSED)
 				.getResultList();
 		List<JiraIssue> remoteIssues = getRemoteIssues(localIssueIds);
 		for (JiraIssue issue : remoteIssues) {

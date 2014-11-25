@@ -120,5 +120,6 @@ public class EvaluationService {
 
 	public static void main(String[] args) {
 		System.out.println("32 : " + encryptID(32l));
+		System.out.println("30a4d55a9f44845a0b7271fc : " + decryptID("30a4d55a9f44845a0b7271fc"));
 	}
 }
