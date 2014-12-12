@@ -83,7 +83,7 @@ public class PdfUtil {
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
-			p = new Paragraph("FAX: 210-7724396, 210-7724397", boldFont);
+			p = new Paragraph("FAX: 215 215 7856", boldFont);
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
@@ -281,7 +281,7 @@ public class PdfUtil {
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
-			p = new Paragraph("FAX: 210-7724396, 210-7724397", boldFont);
+			p = new Paragraph("FAX: 215 215 7856", boldFont);
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
