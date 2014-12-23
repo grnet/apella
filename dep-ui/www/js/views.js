@@ -2215,7 +2215,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
         events: {
             "click #resendLoginEmail": "resendLoginEmail",
             "click #resendReminderLoginEmail": "resendReminderLoginEmail",
-            "click #resendEvaluationEmail": "resendEvaluationEmail",
+            "click #resendEvaluationEmail": "resendEvaluationEmail"
         },
 
         initialize: function (options) {

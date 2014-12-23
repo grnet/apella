@@ -1890,7 +1890,7 @@ define([
                 snapshot: {},
                 candidacies: {
                     position: {
-                        id: undefined,
+                        id: undefined
 
                     }
                 }
