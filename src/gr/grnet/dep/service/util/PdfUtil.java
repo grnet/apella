@@ -249,7 +249,7 @@ public class PdfUtil {
 			logoApella.setAlignment(Element.ALIGN_RIGHT);
 			doc.add(logoApella);
 
-			Paragraph p = new Paragraph("Αριθμός Βεβαίωσης:  " + candidate.getUser().getId() + " / " + sdf.format(now), boldFont);
+			Paragraph p = new Paragraph("Αριθμός Αίτησης:  " + candidate.getUser().getId() + " / " + sdf.format(now), boldFont);
 			p.setAlignment(Element.ALIGN_RIGHT);
 			doc.add(p);
 
@@ -305,7 +305,7 @@ public class PdfUtil {
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
-			p = new Paragraph("Βεβαίωση Συμμετοχής Υποψηφίου στην Απέλλα", largerBoldFont);
+			p = new Paragraph("Αίτηση Συμμετοχής Υποψηφίου", largerBoldFont);
 			p.setAlignment(Element.ALIGN_CENTER);
 			doc.add(p);
 
@@ -321,7 +321,7 @@ public class PdfUtil {
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
-			p = new Paragraph("Βεβαιώνεται ότι ο " +
+			p = new Paragraph("Με την παρούσα αίτηση ο/η  " +
 					candidate.getUser().getBasicInfo().getFirstname() +
 					" (" +
 					candidate.getUser().getBasicInfoLatin().getFirstname() +
@@ -330,13 +330,14 @@ public class PdfUtil {
 					" (" +
 					candidate.getUser().getBasicInfoLatin().getLastname() +
 					") " +
-					" με Α.Δ.Τ. "
-					+ candidate.getUser().getIdentification() +
-					", e-mail "
-					+ candidate.getUser().getContactInfo().getEmail() +
+					" με Αριθμό Ταυτότητας/Διαβατηρίου " +
+					candidate.getUser().getIdentification() +
+					", e-mail " +
+					candidate.getUser().getContactInfo().getEmail() +
 					" και τηλέφωνο " +
 					candidate.getUser().getContactInfo().getMobile() +
-					" συμμετέχει στο πρόγραμμα \"Απέλλα - Σύστημα Εκλογής και Εξέλιξης Μελών ΔΕΠ\" με το Όνομα Χρήστη "
+					" δηλώνω ότι επιθυμώ να συμμετάσχω στο πρόγραμμα «ΑΠΕΛΛΑ - Εκλογή και Εξέλιξη Καθηγητών ΑΕΙ»" +
+					" ως υποψήφιος με Όνομα Χρήστη "
 					+ candidate.getUser().getUsername()
 					+ ".",
 					normalFont);
@@ -347,8 +348,8 @@ public class PdfUtil {
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
-			p = new Paragraph("O συμμετέχων δηλώνει υπεύθυνα ότι αποδέχεται τους όρους και τις προϋποθέσεις του προγράμματος " +
-					"\"Απέλλα - Σύστημα Εκλογής και Εξέλιξης Μελών ΔΕΠ\", όπως κάθε φορά ισχύουν.", normalFont);
+			p = new Paragraph("Δηλώνω υπεύθυνα ότι αποδέχομαι τους όρους και τις προϋποθέσεις του προγράμματος " +
+					"«ΑΠΕΛΛΑ - Εκλογή και Εξέλιξη Καθηγητών ΑΕΙ», όπως κάθε φορά ισχύουν.", normalFont);
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
@@ -372,7 +373,7 @@ public class PdfUtil {
 			signTable.setWidthPercentage(100);
 			signTable.setWidths(new float[]{50, 50});
 			signTable.addCell(createCell(new Phrase(" ", normalFont), Element.ALIGN_CENTER, 0));
-			signTable.addCell(createCell(new Phrase("Ο/Η Συμμετέχων", normalFont), Element.ALIGN_CENTER, 0));
+			signTable.addCell(createCell(new Phrase("Ο/Η Αιτών/ούσα", normalFont), Element.ALIGN_CENTER, 0));
 			signTable.addCell(createCell(new Phrase("__/__/____", normalFont), Element.ALIGN_CENTER, 0));
 			signTable.addCell(createCell(new Phrase(" ", normalFont), Element.ALIGN_CENTER, 0));
 			signTable.addCell(createCell(new Phrase("ΗΜΕΡΟΜΗΝΙΑ", normalFont), Element.ALIGN_CENTER, 0));

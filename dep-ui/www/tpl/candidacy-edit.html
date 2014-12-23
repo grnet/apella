@@ -1,8 +1,9 @@
 <div class="row-fluid">
     <div class="span12">
-        <h2><%= $.i18n.prop('Candidacy') %>
-            <small><%- permanent ? "" : $.i18n.prop('Unsaved') %></small>
-        </h2>
+        <h2><%= $.i18n.prop('Candidacy') %></h2>
+        <p class="text-error">
+            <b><%- permanent ? "" : $.i18n.prop('UnsavedCandidacy') %></b>
+        </p>
     </div>
 </div>
 <div class="row-fluid">

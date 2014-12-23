@@ -503,7 +503,7 @@ public class RoleRESTService extends RESTService {
 	public enum DocumentDiscriminator {
 		InstitutionManagerCertificationDean,
 		InstitutionManagerCertificationPresident,
-		CandidateCertification
+		CandidateRegistrationForm
 	}
 
 	/**
@@ -535,7 +535,7 @@ public class RoleRESTService extends RESTService {
 					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 				}
 				break;
-			case CandidateCertification:
+			case CandidateRegistrationForm:
 				if (!(role instanceof Candidate)) {
 					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 				}
@@ -549,7 +549,7 @@ public class RoleRESTService extends RESTService {
 				case InstitutionManagerCertificationPresident:
 					is = PdfUtil.generateFormaAllagisIM((InstitutionManager) role);
 					break;
-				case CandidateCertification:
+				case CandidateRegistrationForm:
 					is = PdfUtil.generateFormaYpopsifiou((Candidate) role);
 					break;
 			}

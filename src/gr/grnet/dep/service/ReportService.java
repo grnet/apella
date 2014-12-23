@@ -222,13 +222,18 @@ public class ReportService {
 
 	public List<Object[]> getRegisterExportData(Long registerId) {
 		List<Object[]> data = em.createQuery(
-				"select rm, " +
-						"(select count(pcm.id) from PositionCommitteeMember pcm where pcm.registerMember.professor.id = rm.professor.id " +
-						"	and pcm.committee.position.phase.status = :statusEPILOGI), " +
-						"(select count(pcm.id) from PositionCommitteeMember pcm where pcm.registerMember.professor.id = rm.professor.id) " +
+				"select rm, ( " +
+						"	select count(pcm.id) from PositionCommitteeMember pcm" +
+						"	where pcm.registerMember.professor.id = rm.professor.id " +
+						"	and pcm.committee.position.phase.status = :statusEPILOGI " +
+						"), ( " +
+						"	select count(pcm.id) from PositionCommitteeMember pcm " +
+						"	where pcm.registerMember.professor.id = rm.professor.id " +
+						") " +
 						"from RegisterMember rm " +
 						"join fetch rm.professor p " +
-						"where rm.register.id = :registerId ", Object[].class)
+						"where rm.register.id = :registerId " +
+						"and rm.deleted = false ", Object[].class)
 				.setParameter("registerId", registerId)
 				.setParameter("statusEPILOGI", PositionStatus.EPILOGI)
 				.getResultList();

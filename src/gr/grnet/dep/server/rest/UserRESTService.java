@@ -223,6 +223,7 @@ public class UserRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
 	public String get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id) throws RestException {
+		// This is used mainly in user management, not in candidacies or registers
 		User loggedOn = getLoggedOn(authToken);
 		try {
 			User u = em.createQuery(
@@ -233,10 +234,42 @@ public class UserRESTService extends RESTService {
 					.getSingleResult();
 			if (!loggedOn.getId().equals(id) &&
 					!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-					!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-					!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER)) {
-				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+					!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER)) {
+				// Check if other user can view this one
+				switch (u.getPrimaryRole()) {
+					case ADMINISTRATOR:
+						// Only other admins:
+						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+					case MINISTRY_MANAGER:
+					case MINISTRY_ASSISTANT:
+						// Other ministry managers:
+						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+					case INSTITUTION_MANAGER:
+					case INSTITUTION_ASSISTANT:
+						// Other institution managers:
+						if (!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER)) {
+							throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+						}
+						break;
+					case CANDIDATE:
+					case PROFESSOR_DOMESTIC:
+					case PROFESSOR_FOREIGN:
+						if (loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT)) {
+							// Allowed
+							break;
+						}
+						if (loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) ||
+								loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+							// Allowed Only for verified users:
+							if (u.getStatus().equals(UserStatus.UNVERIFIED) ||
+									u.getRole(u.getPrimaryRole()).getStatus().equals(RoleStatus.UNAPPROVED)) {
+								throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+							}
+						}
+						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+				}
 			}
+
 			if (u.getId().equals(loggedOn.getId())) {
 				return toJSON(u, UserWithLoginDataView.class);
 			} else {
