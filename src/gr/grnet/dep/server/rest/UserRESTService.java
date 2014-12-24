@@ -255,18 +255,16 @@ public class UserRESTService extends RESTService {
 					case PROFESSOR_DOMESTIC:
 					case PROFESSOR_FOREIGN:
 						if (loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT)) {
-							// Allowed
-							break;
-						}
-						if (loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) ||
+							// Do Nothing, allow
+						} else if (loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) ||
 								loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
-							// Allowed Only for verified users:
+							// Check if verified users:
 							if (u.getStatus().equals(UserStatus.UNVERIFIED) ||
 									u.getRole(u.getPrimaryRole()).getStatus().equals(RoleStatus.UNAPPROVED)) {
 								throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 							}
 						}
-						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+						break;
 				}
 			}
 

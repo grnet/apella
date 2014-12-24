@@ -281,14 +281,6 @@ public class PdfUtil {
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
 
-			p = new Paragraph("FAX: 215 215 7856", boldFont);
-			p.setAlignment(Element.ALIGN_LEFT);
-			doc.add(p);
-
-			p = new Paragraph(" ", boldFont);
-			p.setAlignment(Element.ALIGN_LEFT);
-			doc.add(p);
-
 			p = new Paragraph(" ", boldFont);
 			p.setAlignment(Element.ALIGN_LEFT);
 			doc.add(p);
