@@ -561,9 +561,8 @@ public class CandidacyRESTService extends RESTService {
 					&& (!position.getPhase().getStatus().equals(PositionStatus.EPILOGI))) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
-			if (position.getPhase().getStatus().equals(PositionStatus.EPILOGI) &&
-					position.getPhase().getNomination().getNominationCommitteeConvergenceDate() != null
-					&& DateUtil.compareDates(position.getPhase().getNomination().getNominationCommitteeConvergenceDate(), new Date()) <= 0) {
+			// NominationCommitteeConvergenceDate
+			if (hasNominationCommitteeConverged(existingCandidacy)) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status.committee.converged");
 			}
 
@@ -1123,11 +1122,8 @@ public class CandidacyRESTService extends RESTService {
 				DateUtil.compareDates(new Date(), candidacy.getCandidacies().getClosingDate()) >= 0) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
-		//SYMPLIROMATIKA EGGRAFA until CommitteeMeetingDate
-		PositionCommittee committee = candidacy.getCandidacies().getPosition().getPhase().getCommittee();
-		if (type.equals(FileType.SYMPLIROMATIKA_EGGRAFA) &&
-				committee != null && committee.getCommitteeMeetingDate() != null &&
-				DateUtil.compareDates(new Date(), committee.getCommitteeMeetingDate()) > 0) {
+		//SYMPLIROMATIKA EGGRAFA until getNominationCommitteeConvergenceDate
+		if (hasNominationCommitteeConverged(candidacy)) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status.committee.converged");
 		}
 		// Check number of file types
@@ -1200,11 +1196,8 @@ public class CandidacyRESTService extends RESTService {
 				DateUtil.compareDates(new Date(), candidacy.getCandidacies().getClosingDate()) >= 0) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status");
 		}
-		//SYMPLIROMATIKA EGGRAFA until CommitteeMeetingDate
-		PositionCommittee committee = candidacy.getCandidacies().getPosition().getPhase().getCommittee();
-		if (type.equals(FileType.SYMPLIROMATIKA_EGGRAFA) &&
-				committee != null && committee.getCommitteeMeetingDate() != null &&
-				DateUtil.compareDates(new Date(), committee.getCommitteeMeetingDate()) > 0) {
+		//SYMPLIROMATIKA EGGRAFA until getNominationCommitteeConvergenceDate
+		if (hasNominationCommitteeConverged(candidacy)) {
 			throw new RestException(Status.CONFLICT, "wrong.position.status.committee.converged");
 		}
 		if (!CandidacyFile.fileTypes.containsKey(type)) {
@@ -1269,11 +1262,8 @@ public class CandidacyRESTService extends RESTService {
 					DateUtil.compareDates(new Date(), candidacy.getCandidacies().getClosingDate()) >= 0) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
-			//SYMPLIROMATIKA EGGRAFA until CommitteeMeetingDate
-			PositionCommittee committee = candidacy.getCandidacies().getPosition().getPhase().getCommittee();
-			if (type.equals(FileType.SYMPLIROMATIKA_EGGRAFA) &&
-					committee != null && committee.getCommitteeMeetingDate() != null &&
-					DateUtil.compareDates(new Date(), committee.getCommitteeMeetingDate()) > 0) {
+			//SYMPLIROMATIKA EGGRAFA until getNominationCommitteeConvergenceDate
+			if (hasNominationCommitteeConverged(candidacy)) {
 				throw new RestException(Status.CONFLICT, "wrong.position.status.committee.converged");
 			}
 			CandidacyFile cf = deleteAsMuchAsPossible(candidacyFile);
