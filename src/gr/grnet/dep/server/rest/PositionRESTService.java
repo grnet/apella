@@ -398,7 +398,7 @@ public class PositionRESTService extends RESTService {
 
 	private void sendNotificationsToInterestedCandidates(final Position position) {
 		try {
-			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+			final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 			Date today = sdf.parse(sdf.format(new Date()));
 			// Execute Query
 			@SuppressWarnings("unchecked")
@@ -424,6 +424,8 @@ public class PositionRESTService extends RESTService {
 								put("positionID", StringUtil.formatPositionID(position.getId()));
 								put("position", position.getName());
 								put("discipline", position.getSubject() != null ? position.getSubject().getName() : "");
+								put("openingDate", sdf.format(position.getPhase().getCandidacies().getOpeningDate()));
+								put("closingDate", sdf.format(position.getPhase().getCandidacies().getClosingDate()));
 
 								put("firstname_el", c.getUser().getFirstname("el"));
 								put("lastname_el", c.getUser().getLastname("el"));
