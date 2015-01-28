@@ -1328,7 +1328,7 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
             });
 
             self.clear();
-            self.refreshBreadcrumb([$.i18n.prop('menu_incomplete_candidacies')]);
+            self.refreshBreadcrumb([$.i18n.prop('menu_incompleteCandidacies')]);
             $("#content").html(incompleteCandidacyListView.el);
             candidacies.fetch({
                 cache: false,
