@@ -14,8 +14,8 @@ define(["jquery", "underscore", "backbone", "application", "models",
     "text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-candidacies.html", "text!tpl/position-committee.html",
     "text!tpl/position-evaluation.html", "text!tpl/position-nomination.html", "text!tpl/position-complementaryDocuments.html", "text!tpl/position-nomination-edit.html",
     "text!tpl/position-complementaryDocuments-edit.html", "text!tpl/department-select.html", "text!tpl/department.html", "text!tpl/user-helpdesk.html",
-    "text!tpl/position-helpdesk.html", "text!tpl/jira-issue-edit.html", "text!tpl/jira-issue-list.html", "text!tpl/jira-issue.html", "text!tpl/jira-issue-public-edit.html", "text!tpl/data-exports.html", "text!tpl/statistics.html", "text!tpl/position-committee-edit-confirm.html"
-], function ($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit, tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_edit_professor_list, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation, tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit, tpl_department_select, tpl_department, tpl_user_helpdesk, tpl_position_helpdesk, tpl_jira_issue_edit, tpl_jira_issue_list, tpl_jira_issue, tpl_jira_issue_public_edit, tpl_data_exports, tpl_statistics, tpl_position_committee_edit_confirm) {
+    "text!tpl/position-helpdesk.html", "text!tpl/jira-issue-edit.html", "text!tpl/jira-issue-list.html", "text!tpl/jira-issue.html", "text!tpl/jira-issue-public-edit.html", "text!tpl/data-exports.html", "text!tpl/statistics.html", "text!tpl/position-committee-edit-confirm.html", "text!tpl/incomplete-candidacy-list.html"
+], function ($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit, tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_edit_professor_list, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation, tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit, tpl_department_select, tpl_department, tpl_user_helpdesk, tpl_position_helpdesk, tpl_jira_issue_edit, tpl_jira_issue_list, tpl_jira_issue, tpl_jira_issue_public_edit, tpl_data_exports, tpl_statistics, tpl_position_committee_edit_confirm, tpl_incomplete_candidacy_list) {
 
     "use strict";
     /** ****************************************************************** */
@@ -259,6 +259,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 menuItems.push("regulatoryframeworks");
                 menuItems.push("registers");
                 menuItems.push("positions");
+                menuItems.push("incompleteCandidacies");
             }
 
             self.$el.append('<li><a href="#">' + $.i18n.prop('menu_home') + '</a></li>');
@@ -1570,6 +1571,9 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 });
                 tiles.push({
                     link: "positions"
+                });
+                tiles.push({
+                    link: "incompleteCandidacies"
                 });
             }
 
@@ -5367,10 +5371,11 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 } else {
                     //2. Check the transitions map
                     if (!_.any(self.phases[positionStatus], function (nextStatus) {
-                        return _.isEqual(linkStatus, nextStatus);
-                    })) {
+                            return _.isEqual(linkStatus, nextStatus);
+                        })) {
                         $(this).hide();
-                    };
+                    }
+                    ;
                 }
             });
             // Tabs:
@@ -10255,6 +10260,56 @@ define(["jquery", "underscore", "backbone", "application", "models",
             this.closeInnerViews();
             $(this.el).unbind();
             $(this.el).remove();
+        }
+    });
+
+    /***************************************************************************
+     * IncompleteCandidaciesListView *******************************************
+     **************************************************************************/
+    Views.IncompleteCandidacyListView = Views.BaseView.extend({
+        tagName: "div",
+
+        initialize: function (options) {
+            this._super('initialize', [options]);
+            this.template = _.template(tpl_incomplete_candidacy_list);
+        },
+
+        events: {},
+
+        render: function () {
+            var self = this;
+            self.closeInnerViews();
+            self.$el.empty();
+            self.$el.append(self.template({
+                candidacies: self.collection.toJSON()
+            }));
+            if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
+                self.$("table").dataTable({
+                    "sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+                    "sPaginationType": "bootstrap",
+                    "oLanguage": {
+                        "sSearch": $.i18n.prop("dataTable_sSearch"),
+                        "sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+                        "sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+                        "sInfo": $.i18n.prop("dataTable_sInfo"),
+                        "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+                        "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+                        "oPaginate": {
+                            sFirst: $.i18n.prop("dataTable_sFirst"),
+                            sPrevious: $.i18n.prop("dataTable_sPrevious"),
+                            sNext: $.i18n.prop("dataTable_sNext"),
+                            sLast: $.i18n.prop("dataTable_sLast")
+                        }
+                    }
+                });
+            }
+            return self;
+        },
+
+        close: function () {
+            this.closeInnerViews();
+            this.$el.unbind();
+            this.$el.remove();
         }
     });
 

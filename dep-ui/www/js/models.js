@@ -1939,6 +1939,14 @@ define([
         }
     });
 
+    Models.IncompleteCandidacies = Backbone.Collection.extend({
+        candidate: undefined,
+        model: Models.Candidacy,
+        url: function () {
+            return "/dep/rest/candidacy/incompletecandidacies";
+        }
+    });
+
     Models.Subject = Backbone.Model.extend({
         urlRoot: "/dep/rest/subject/",
         defaults: {
