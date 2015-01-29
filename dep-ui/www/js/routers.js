@@ -191,7 +191,7 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
             _.bindAll(self, "setTitle", "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showUserView", "showInstitutionAssistantsView",
                 "showMinistryAssistantsView", "showPositionView", "showPositionsView", "showRegistersView", "showProfessorCommitteesView", "showProfessorEvaluationsView",
                 "showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "showCandidacyView", "showUserSearchView", "showIssueListView", "showDataExportsView",
-                "showStatisticsView", "start");
+                "showStatisticsView", "showIncompleteCandidacyView", "start");
 
             self.on("route", function (routefn) {
                 self.setTitle(routefn);
@@ -252,7 +252,8 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
             "administrators": "showAdministratorsView",
             "administrators/:userId": "showAdministratorsView",
             "dataExports": "showDataExportsView",
-            "statistics": "showStatisticsView"
+            "statistics": "showStatisticsView",
+            "incompleteCandidacies": "showIncompleteCandidacyView"
         },
 
         start: function (eventName, authToken) {
@@ -1317,6 +1318,26 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
             });
 
             self.currentView = [statisticsView];
+        },
+
+        showIncompleteCandidacyView: function () {
+            var self = this;
+            var candidacies = new Models.IncompleteCandidacies();
+            var incompleteCandidacyListView = new Views.IncompleteCandidacyListView({
+                collection: candidacies
+            });
+
+            self.clear();
+            self.refreshBreadcrumb([$.i18n.prop('menu_incompleteCandidacies')]);
+            $("#content").html(incompleteCandidacyListView.el);
+            candidacies.fetch({
+                cache: false,
+                wait: true,
+                success: function (model, response, options) {
+                    incompleteCandidacyListView.render();
+                }
+            });
+            self.currentView = incompleteCandidacyListView;
         }
 
     });

@@ -1437,4 +1437,25 @@ public class CandidacyRESTService extends RESTService {
 		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 	}
 
+	@GET
+	@Path("/incompletecandidacies")
+	@JsonView({MediumCandidacyView.class})
+	public Collection<Candidacy> getIncompleteCandidacies(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
+		User loggedOn = getLoggedOn(authToken);
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+
+		String queryString = "from Candidacy c " +
+				"left join fetch c.candidate.user.roles cerls " +
+				"left join fetch c.candidacies ca " +
+				"left join fetch ca.position po " +
+				"where c.permanent = false ";
+
+		TypedQuery<Candidacy> query = em.createQuery(queryString, Candidacy.class);
+		List<Candidacy> retv = query.getResultList();
+
+		return retv;
+	}
+
 }
