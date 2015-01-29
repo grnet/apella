@@ -10267,51 +10267,161 @@ define(["jquery", "underscore", "backbone", "application", "models",
      * IncompleteCandidaciesListView *******************************************
      **************************************************************************/
     Views.IncompleteCandidacyListView = Views.BaseView.extend({
-        tagName: "div",
+            tagName: "div",
 
-        initialize: function (options) {
-            this._super('initialize', [options]);
-            this.template = _.template(tpl_incomplete_candidacy_list);
-        },
+            validator: undefined,
 
-        events: {},
+            initialize: function (options) {
+                var self = this;
+                self._super('initialize', [options]);
+                _.bindAll(self, "submitCandidacy", "toggleDisplayForm");
+                self.template = _.template(tpl_incomplete_candidacy_list);
+            },
 
-        render: function () {
-            var self = this;
-            self.closeInnerViews();
-            self.$el.empty();
-            self.$el.append(self.template({
-                candidacies: self.collection.toJSON()
-            }));
-            if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
-                self.$("table").dataTable({
-                    "sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
-                    "sPaginationType": "bootstrap",
-                    "oLanguage": {
-                        "sSearch": $.i18n.prop("dataTable_sSearch"),
-                        "sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
-                        "sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
-                        "sInfo": $.i18n.prop("dataTable_sInfo"),
-                        "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
-                        "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
-                        "oPaginate": {
-                            sFirst: $.i18n.prop("dataTable_sFirst"),
-                            sPrevious: $.i18n.prop("dataTable_sPrevious"),
-                            sNext: $.i18n.prop("dataTable_sNext"),
-                            sLast: $.i18n.prop("dataTable_sLast")
+            events: {
+                "click a#displayForm": "toggleDisplayForm",
+                "click a#save": function (event) {
+                    $("form", this.el).submit();
+                },
+                "click a#submit": "submitCandidacy",
+                "submit form": "submit"
+
+            },
+
+            render: function () {
+                var self = this;
+                self.closeInnerViews();
+                self.$el.empty();
+                self.$el.append(self.template({
+                    candidacies: self.collection.toJSON()
+                }));
+                if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
+                    self.$("table").dataTable({
+                        "sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+                        "sPaginationType": "bootstrap",
+                        "oLanguage": {
+                            "sSearch": $.i18n.prop("dataTable_sSearch"),
+                            "sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+                            "sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+                            "sInfo": $.i18n.prop("dataTable_sInfo"),
+                            "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+                            "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+                            "oPaginate": {
+                                sFirst: $.i18n.prop("dataTable_sFirst"),
+                                sPrevious: $.i18n.prop("dataTable_sPrevious"),
+                                sNext: $.i18n.prop("dataTable_sNext"),
+                                sLast: $.i18n.prop("dataTable_sLast")
+                            }
                         }
+                    });
+                }
+                self.validator = $("form#createCandidacyForm", this.el).validate({
+                    errorElement: "span",
+                    errorClass: "help-inline",
+                    highlight: function (element) {
+                        // $(element).addClass("error");
+                        $(element).parent(".controls").parent(".control-group").addClass("error");
+                    },
+                    unhighlight: function (element) {
+                        //$(element).removeClass("error");
+                        $(element).parent(".controls").parent(".control-group").removeClass("error");
+                    },
+                    rules: {
+                        userId: "required",
+                        positionId: "required"
+                    },
+                    messages: {
+                        userId: $.i18n.prop('validation_required'),
+                        positionId: $.i18n.prop('validation_required')
                     }
                 });
-            }
-            return self;
-        },
 
-        close: function () {
-            this.closeInnerViews();
-            this.$el.unbind();
-            this.$el.remove();
+                if (self.validator) {
+                    var propName;
+                    for (propName in self.validator.settings.rules) {
+                        if (self.validator.settings.rules.hasOwnProperty(propName)) {
+                            if (self.validator.settings.rules[propName].required) {
+                                self.$("label[for=" + propName + "]").addClass("strong");
+                            }
+                        }
+                    }
+                }
+
+                return self;
+            },
+
+            toggleDisplayForm: function () {
+                if($('form#createCandidacyForm').hasClass('hidden')){
+                    $('form#createCandidacyForm').removeClass('hidden');
+                }else{
+                    $('form#createCandidacyForm').addClass('hidden');
+                }
+            },
+
+            submitCandidacy: function (event) {
+                debugger;
+                var self = this;
+                var selectedCandidacy = new Models.Candidacy();
+                selectedCandidacy.url = selectedCandidacy.url() + '/newcandidacy';
+                var positionId = $(event.currentTarget).data('positionId');
+                var userId = $(event.currentTarget).data('userId');
+
+                if (positionId === null) {
+                    positionId = self.$('form input[name=positionId]').val();
+                }
+
+                if (userId === null) {
+                    userId = self.$('form input[name=userId]').val();
+                }
+                selectedCandidacy.save({
+                        candidacies: {
+                            position: {
+                                id: positionId
+                            }
+                        },
+                        candidate: {
+                            discriminator: "CANDIDATE",
+                            user: {
+                                id: userId
+                            }
+                        }
+                    },
+                    {
+                        wait: true,
+                        success: function (model, resp) {
+                            var popup = new Views.PopupView({
+                                type: "success",
+                                message: $.i18n.prop("Success")
+                            });
+                            popup.show();
+                            var rowId = resp.candidate.user.id + '_' + resp.candidacies.position.id;
+                            var row = $('#incompleteCandidaciesTable').find('#' + rowId);
+                            if (row.length > 0) {
+                                row.remove();
+                            }
+                        },
+                        error: function (model, resp) {
+                            var popup = new Views.PopupView({
+                                type: "error",
+                                message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+                            });
+                            popup.show();
+                        }
+                    });
+
+            },
+
+            submit: function (event) {
+                this.submitCandidacy(event);
+            },
+
+            close: function () {
+                this.closeInnerViews();
+                this.$el.unbind();
+                this.$el.remove();
+            }
         }
-    });
+    );
 
     return Views;
 

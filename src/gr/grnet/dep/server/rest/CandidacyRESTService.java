@@ -40,16 +40,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
 import javax.persistence.TypedQuery;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -1457,5 +1448,69 @@ public class CandidacyRESTService extends RESTService {
 
 		return retv;
 	}
+
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @JsonView({Candidacy.DetailedCandidacyView.class})
+    @Path("/newcandidacy")
+    public Candidacy createCandidacy(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, Candidacy candidacy) {
+        User loggedOn = getLoggedOn(authToken);
+        // Authenticate
+        if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+            throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+        }
+        try {
+            User user = em.find(User.class, candidacy.getCandidate().getUser().getId());
+            if (user == null) {
+                throw new RestException(Status.NOT_FOUND, "wrong.user.id");
+            }
+            // Validate
+            Candidate candidate = em.find(Candidate.class, user.getRole(RoleDiscriminator.CANDIDATE).getId());
+            if (candidate == null) {
+                throw new RestException(Status.NOT_FOUND, "wrong.candidate.id");
+            }
+            Position position = em.find(Position.class, candidacy.getCandidacies().getPosition().getId());
+            if (position == null) {
+                throw new RestException(Status.NOT_FOUND, "wrong.position.id");
+            }
+            Candidacy existingCandidacy = null;
+            try {
+                existingCandidacy = em.createQuery(
+                        "select c from Candidacy c " +
+                                "where c.candidate.id = :candidateId " +
+                                "and c.candidacies.position.id = :positionId", Candidacy.class)
+                        .setParameter("candidateId", candidate.getId())
+                        .setParameter("positionId", position.getId())
+                        .getSingleResult();
+            } catch (NoResultException e) {
+            }
+
+            if (existingCandidacy != null) {
+                if(existingCandidacy.isPermanent()){
+                    throw new RestException(Status.CONFLICT, "candidacy.already.submitted");
+                }
+                existingCandidacy.setPermanent(true);
+                candidacy = existingCandidacy;
+            } else {
+                candidacy.setCandidate(candidate);
+                candidacy.setCandidacies(position.getPhase().getCandidacies());
+                candidacy.setDate(new Date());
+                candidacy.setOpenToOtherCandidates(false);
+                candidacy.setPermanent(true);
+                candidacy.getProposedEvaluators().clear();
+                validateCandidacy(candidacy, candidate, true); // isNew
+                updateSnapshot(candidacy, candidate);
+            }
+
+            candidacy = em.merge(candidacy);
+            em.flush();
+
+            return candidacy;
+        } catch (PersistenceException e) {
+            sc.setRollbackOnly();
+            throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+        }
+    }
 
 }
