@@ -713,18 +713,10 @@ public class CandidacyRESTService extends RESTService {
 				}
 				// End: Send E-Mails
 			}
-
 			// Update
-			for (FileHeader fh : existingCandidacy.getFiles()) {
-				deleteCompletely(fh);
-			}
-			for (CandidacyEvaluator eval : existingCandidacy.getProposedEvaluators()) {
-				for (FileHeader fh : eval.getFiles()) {
-					deleteCompletely(fh);
-				}
-			}
-			existingCandidacy.getCandidacies().getCandidacies().remove(existingCandidacy);
-			em.remove(existingCandidacy);
+			existingCandidacy.setWithdrawn(true);
+
+			em.merge(existingCandidacy);
 			em.flush();
 
 		} catch (PersistenceException e) {

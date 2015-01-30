@@ -66,6 +66,9 @@ public class CandidateRESTService extends RESTService {
 		if (open != null) {
 			queryString += " and c.candidacies.closingDate >= :now";
 		}
+        if (candidate.getUser().getId().equals(loggedOn.getId())) {
+            queryString += " and c.withdrawn = false";
+        }
 		TypedQuery<Candidacy> query = em.createQuery(queryString, Candidacy.class)
 				.setParameter("candidate", candidate);
 
@@ -97,8 +100,8 @@ public class CandidateRESTService extends RESTService {
 				"select c.id from Candidacy c " +
 						"join c.candidacies.position.phase.nomination no " +
 						"where no.nominationCommitteeConvergenceDate IS NOT NULL " +
-						"and no.nominationCommitteeConvergenceDate < :now " +
-						"and c.id in (:ids) ", Long.class)
+                        "and no.nominationCommitteeConvergenceDate < :now " +
+                        "and c.id in (:ids) ", Long.class)
 				.setParameter("ids", ids)
 				.setParameter("now", new Date())
 				.getResultList();
@@ -118,7 +121,7 @@ public class CandidateRESTService extends RESTService {
 						"join c.candidacies.position.phase.committee co " +
 						"where co.members IS NOT EMPTY " +
 						"and co.candidacyEvalutionsDueDate >= :now " +
-						"and c.id in (:ids) ", Long.class)
+                        "and c.id in (:ids) ", Long.class)
 				.setParameter("ids", ids)
 				.setParameter("now", new Date())
 				.getResultList();

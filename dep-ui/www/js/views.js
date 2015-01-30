@@ -1573,7 +1573,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     link: "positions"
                 });
                 tiles.push({
-                    link: "incompleteCandidacies"
+                    link: "adminCandidacies"
                 });
             }
 
@@ -7039,7 +7039,27 @@ define(["jquery", "underscore", "backbone", "application", "models",
             self.$el.empty();
             self.addTitle();
             self.$el.append(self.template(tpl_data));
-
+            if (!$.fn.DataTable.fnIsDataTable(self.$("table#positionCandidatesTable"))) {
+                self.$("table#positionCandidatesTable").dataTable({
+                    "aaSorting": [[3, "desc"]],
+                    "sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+                    "sPaginationType": "bootstrap",
+                    "oLanguage": {
+                        "sSearch": $.i18n.prop("dataTable_sSearch"),
+                        "sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+                        "sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+                        "sInfo": $.i18n.prop("dataTable_sInfo"),
+                        "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+                        "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+                        "oPaginate": {
+                            sFirst: $.i18n.prop("dataTable_sFirst"),
+                            sPrevious: $.i18n.prop("dataTable_sPrevious"),
+                            sNext: $.i18n.prop("dataTable_sNext"),
+                            sLast: $.i18n.prop("dataTable_sLast")
+                        }
+                    }
+                });
+            }
             return self;
         },
 

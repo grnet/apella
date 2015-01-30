@@ -1,10 +1,11 @@
 <h3><%= $.i18n.prop('PositionCandidacyList') %></h3>
-<table class="table table-bordered">
+<table class="table table-bordered" id="positionCandidatesTable">
     <thead>
     <tr>
         <th><%= $.i18n.prop("Name") %></th>
         <th><%= $.i18n.prop("Surname") %></th>
         <th><%= $.i18n.prop("FatherName") %></th>
+        <th><%= $.i18n.prop("Candidacy") %></th>
         <th width="96px"></th>
     </tr>
     </thead>
@@ -14,6 +15,11 @@
         <td><%- candidacy.snapshot.firstname[App.locale] %></td>
         <td><%- candidacy.snapshot.lastname[App.locale] %></td>
         <td><%- candidacy.snapshot.fathername[App.locale] %></td>
+        <% if (candidacy.withdrawn) { %>
+        <th class="text-error"><%- $.i18n.prop('removeCandidacy') %></th>
+        <% } else { %>
+        <th><%- $.i18n.prop('currentCandidacy') %></th>
+        <% } %>
         <td width="96px">
             <% if (candidacy.allowedToSee) { %>
             <p align="center">

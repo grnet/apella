@@ -71,7 +71,10 @@ public class Candidacy {
 
 	boolean openToOtherCandidates = false;
 
-	@ManyToOne
+	@Column(name = "withdrawn", columnDefinition = "boolean default false")
+	private boolean withdrawn;
+
+    @ManyToOne
 	private Candidate candidate;
 
 	@ManyToOne
@@ -316,6 +319,14 @@ public class Candidacy {
 	public void setPermanent(boolean permanent) {
 		this.permanent = permanent;
 	}
+
+    public boolean isWithdrawn() {
+        return withdrawn;
+    }
+
+    public void setWithdrawn(boolean withdrawn) {
+        this.withdrawn = withdrawn;
+    }
 
 	public Date getDate() {
 		return date;
