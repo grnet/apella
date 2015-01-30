@@ -259,7 +259,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 menuItems.push("regulatoryframeworks");
                 menuItems.push("registers");
                 menuItems.push("positions");
-                menuItems.push("incompleteCandidacies");
+                menuItems.push("adminCandidacies");
             }
 
             self.$el.append('<li><a href="#">' + $.i18n.prop('menu_home') + '</a></li>');
@@ -10264,9 +10264,9 @@ define(["jquery", "underscore", "backbone", "application", "models",
     });
 
     /***************************************************************************
-     * IncompleteCandidaciesListView *******************************************
+     * CandidaciesAdminListView ************************************************
      **************************************************************************/
-    Views.IncompleteCandidacyListView = Views.BaseView.extend({
+    Views.AdminCandidacyListView = Views.BaseView.extend({
             tagName: "div",
 
             validator: undefined,
@@ -10285,7 +10285,6 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 },
                 "click a#submit": "submitCandidacy",
                 "submit form": "submit"
-
             },
 
             render: function () {
@@ -10351,26 +10350,25 @@ define(["jquery", "underscore", "backbone", "application", "models",
             },
 
             toggleDisplayForm: function () {
-                if($('form#createCandidacyForm').hasClass('hidden')){
+                if ($('form#createCandidacyForm').hasClass('hidden')) {
                     $('form#createCandidacyForm').removeClass('hidden');
-                }else{
+                } else {
                     $('form#createCandidacyForm').addClass('hidden');
                 }
             },
 
             submitCandidacy: function (event) {
-                debugger;
                 var self = this;
                 var selectedCandidacy = new Models.Candidacy();
-                selectedCandidacy.url = selectedCandidacy.url() + '/newcandidacy';
+                selectedCandidacy.url = selectedCandidacy.url() + '/submitcandidacy';
                 var positionId = $(event.currentTarget).data('positionId');
                 var userId = $(event.currentTarget).data('userId');
 
-                if (positionId === null) {
+                if (positionId === null || positionId === undefined) {
                     positionId = self.$('form input[name=positionId]').val();
                 }
 
-                if (userId === null) {
+                if (userId === null || userId === undefined) {
                     userId = self.$('form input[name=userId]').val();
                 }
                 selectedCandidacy.save({
@@ -10395,9 +10393,9 @@ define(["jquery", "underscore", "backbone", "application", "models",
                             });
                             popup.show();
                             var rowId = resp.candidate.user.id + '_' + resp.candidacies.position.id;
-                            var row = $('#incompleteCandidaciesTable').find('#' + rowId);
-                            if (row.length > 0) {
-                                row.remove();
+                            if (($('#incompleteCandidaciesTable').find('#' + rowId)).length > 0) {
+                                self.collection.remove($('#incompleteCandidaciesTable').find('#' + rowId).data('candidacyId'));
+                                self.render();
                             }
                         },
                         error: function (model, resp) {
@@ -10408,7 +10406,6 @@ define(["jquery", "underscore", "backbone", "application", "models",
                             popup.show();
                         }
                     });
-
             },
 
             submit: function (event) {

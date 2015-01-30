@@ -191,7 +191,7 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
             _.bindAll(self, "setTitle", "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showUserView", "showInstitutionAssistantsView",
                 "showMinistryAssistantsView", "showPositionView", "showPositionsView", "showRegistersView", "showProfessorCommitteesView", "showProfessorEvaluationsView",
                 "showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "showCandidacyView", "showUserSearchView", "showIssueListView", "showDataExportsView",
-                "showStatisticsView", "showIncompleteCandidacyView", "start");
+                "showStatisticsView", "showAdminCandidaciesView", "start");
 
             self.on("route", function (routefn) {
                 self.setTitle(routefn);
@@ -253,7 +253,7 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
             "administrators/:userId": "showAdministratorsView",
             "dataExports": "showDataExportsView",
             "statistics": "showStatisticsView",
-            "incompleteCandidacies": "showIncompleteCandidacyView"
+            "adminCandidacies": "showAdminCandidaciesView"
         },
 
         start: function (eventName, authToken) {
@@ -1320,15 +1320,15 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
             self.currentView = [statisticsView];
         },
 
-        showIncompleteCandidacyView: function () {
+        showAdminCandidaciesView: function () {
             var self = this;
             var candidacies = new Models.IncompleteCandidacies();
-            var incompleteCandidacyListView = new Views.IncompleteCandidacyListView({
+            var incompleteCandidacyListView = new Views.AdminCandidacyListView({
                 collection: candidacies
             });
 
             self.clear();
-            self.refreshBreadcrumb([$.i18n.prop('menu_incompleteCandidacies')]);
+            self.refreshBreadcrumb([$.i18n.prop('menu_adminCandidacies')]);
             $("#content").html(incompleteCandidacyListView.el);
             candidacies.fetch({
                 cache: false,

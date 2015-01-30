@@ -1453,7 +1453,7 @@ public class CandidacyRESTService extends RESTService {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @JsonView({Candidacy.DetailedCandidacyView.class})
-    @Path("/newcandidacy")
+    @Path("/submitcandidacy")
     public Candidacy createCandidacy(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, Candidacy candidacy) {
         User loggedOn = getLoggedOn(authToken);
         // Authenticate
