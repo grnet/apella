@@ -79,7 +79,7 @@ public class RegisterMember implements Serializable {
 		this.id = id;
 	}
 
-	@JsonView({RegisterMemberView.class, PositionCommitteeView.class, PositionCommitteeMemberView.class, PositionEvaluatorView.class, PositionEvaluationView.class})
+	@JsonView({RegisterMemberView.class, PositionCommitteeView.class, PositionCommitteeMemberView.class, PositionEvaluatorView.class, PositionEvaluationView.class, CandidacyEvaluator.CandidacyEvaluatorView.class})
 	public Register getRegister() {
 		return register;
 	}

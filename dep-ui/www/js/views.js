@@ -14,8 +14,8 @@ define(["jquery", "underscore", "backbone", "application", "models",
     "text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-candidacies.html", "text!tpl/position-committee.html",
     "text!tpl/position-evaluation.html", "text!tpl/position-nomination.html", "text!tpl/position-complementaryDocuments.html", "text!tpl/position-nomination-edit.html",
     "text!tpl/position-complementaryDocuments-edit.html", "text!tpl/department-select.html", "text!tpl/department.html", "text!tpl/user-helpdesk.html",
-    "text!tpl/position-helpdesk.html", "text!tpl/jira-issue-edit.html", "text!tpl/jira-issue-list.html", "text!tpl/jira-issue.html", "text!tpl/jira-issue-public-edit.html", "text!tpl/data-exports.html", "text!tpl/statistics.html", "text!tpl/position-committee-edit-confirm.html", "text!tpl/incomplete-candidacy-list.html"
-], function ($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit, tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_edit_professor_list, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation, tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit, tpl_department_select, tpl_department, tpl_user_helpdesk, tpl_position_helpdesk, tpl_jira_issue_edit, tpl_jira_issue_list, tpl_jira_issue, tpl_jira_issue_public_edit, tpl_data_exports, tpl_statistics, tpl_position_committee_edit_confirm, tpl_incomplete_candidacy_list) {
+    "text!tpl/position-helpdesk.html", "text!tpl/jira-issue-edit.html", "text!tpl/jira-issue-list.html", "text!tpl/jira-issue.html", "text!tpl/jira-issue-public-edit.html", "text!tpl/data-exports.html", "text!tpl/statistics.html", "text!tpl/position-committee-edit-confirm.html", "text!tpl/incomplete-candidacy-list.html", "text!tpl/evaluator-select.html", "text!tpl/evaluator.html"
+], function ($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit, tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_edit_professor_list, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation, tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit, tpl_department_select, tpl_department, tpl_user_helpdesk, tpl_position_helpdesk, tpl_jira_issue_edit, tpl_jira_issue_list, tpl_jira_issue, tpl_jira_issue_public_edit, tpl_data_exports, tpl_statistics, tpl_position_committee_edit_confirm, tpl_incomplete_candidacy_list, tpl_evaluator_select, tpl_evaluator) {
 
     "use strict";
     /** ****************************************************************** */
@@ -26,7 +26,8 @@ define(["jquery", "underscore", "backbone", "application", "models",
     // other templates
     _.extend(_, {
         templates: {
-            department: _.template(tpl_department)
+            department: _.template(tpl_department),
+            evaluator: _.template(tpl_evaluator)
         }
     });
 
@@ -9345,7 +9346,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 default:
                     break;
             }
-            return false;
+            return true;
         },
 
         isEnabled: function (buttonType) {
@@ -9356,6 +9357,10 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 case "remove":
                     return _.isEqual(self.model.get("candidacies").position.phase.status, "ANOIXTI") ||
                         _.isEqual(self.model.get("candidacies").position.phase.status, "EPILOGI");
+                case "toggleEdit":
+                case "clear":
+                case "selectEvaluator":
+                    return self.model.get("canAddEvaluators");
                 default:
                     break;
             }
@@ -9466,72 +9471,33 @@ define(["jquery", "underscore", "backbone", "application", "models",
 
         renderRegisterMembers: function () {
             var self = this;
+            var evaluator0_SelectView = new Views.EvaluatorSelectView({
+                el: self.$("input[name=evaluator_0]"),
+                collection: self.registerMembers,
+                editable: self.isEditable("evaluator"),
+                specificEvaluator: self.model.get("proposedEvaluators")[0]
+            });
+            var evaluator1_SelectView = new Views.EvaluatorSelectView({
+                el: self.$("input[name=evaluator_1]"),
+                collection: self.registerMember,
+                editable: self.isEditable("evaluator"),
+                proposedEvaluators: self.model.get("proposedEvaluators"),
+                specificEvaluator: self.model.get("proposedEvaluators")[1]
+            });
 
             self.registerMembers.fetch({
                 cache: true,
                 reset: true,
                 wait: true,
                 success: function (collection) {
-                    _.each(self.$selectize, function (element) {
-                        element.selectize.destroy();
-                    });
                     // Collection can be empty depending on CanAddEvaluators, add selected evaluators if this is the case
                     if (collection.length === 0 && self.model.get("proposedEvaluators").length > 0) {
                         collection.add(_.map(self.model.get("proposedEvaluators"), function (candidacyEvalutor) {
                             return candidacyEvalutor.registerMember;
                         }));
                     }
-                    self.$selectize = self.$("select[name^=evaluator_]").selectize({
-                        valueField: 'id',
-                        diacritics: true,
-                        create: false,
-                        hideSelected: true,
-                        sortField: 'professor.user.firstname.' + App.locale,
-                        options: collection.toJSON(),
-                        render: {
-                            item: function (item, escape) { // Shows when
-                                // selected
-                                return '<div>' +
-                                    '<strong>' + escape(item.professor.user.firstname[App.locale]) + " " + escape(item.professor.user.lastname[App.locale]) + '</strong><br/>' +
-                                    $.i18n.prop(item.professor.discriminator) + '<br/>' +
-                                    (item.professor.discriminator === "PROFESSOR_DOMESTIC" ?
-                                        ($.i18n.prop('Institution') + ': ' + escape(item.professor.department.school.institution.name[App.locale]) + "<br/>" + $.i18n.prop('School') + ': ' + escape(item.professor.department.school.name[App.locale]) + "<br/>" + $.i18n.prop('Department') + ": " + escape(item.professor.department.name[App.locale])) :
-                                        ($.i18n.prop('Institution') + ': ' + escape(item.professor.institution) + '<br/>')) +
-                                    '</div>';
-                            },
-                            option: function (item, escape) { // Shows in
-                                // dropddown
-                                return '<div>' +
-                                    '<strong>' + escape(item.professor.user.firstname[App.locale]) + " " + escape(item.professor.user.lastname[App.locale]) + '</strong><br/>' +
-                                    $.i18n.prop(item.professor.discriminator) + '<br/>' +
-                                    (item.professor.discriminator === "PROFESSOR_DOMESTIC" ?
-                                        ($.i18n.prop('Institution') + ': ' + escape(item.professor.department.school.institution.name[App.locale]) + "<br/>" + $.i18n.prop('School') + ': ' + escape(item.professor.department.school.name[App.locale]) + "<br/>" + $.i18n.prop('Department') + ": " + escape(item.professor.department.name[App.locale])) :
-                                        ($.i18n.prop('Institution') + ': ' + escape(item.professor.institution) + '<br/>')) +
-                                    '</div>';
-                            }
-                        },
-                        score: function (search) {
-                            return function (item) {
-                                var concat = item.professor.user.firstname[App.locale] + " " + item.professor.user.lastname[App.locale];
-                                var pos = concat.indexOf(search);
-                                return pos >= 0 ? 1000 - pos : 0;
-                            };
-                        }
-                    });
-                    // Set Value
-                    _.each(self.model.get("proposedEvaluators"), function (evaluator, index) {
-                        self.$("select[name=evaluator_" + index + "]")[0].selectize.setValue(evaluator.registerMember.id);
-                    });
-                    // Enable/Disable
-                    if (!self.isEditable("evaluator")) {
-                        _.each(self.$selectize, function (element) {
-                            element.selectize.disable();
-                        });
-                    } else {
-                        _.each(self.$selectize, function (element) {
-                            element.selectize.enable();
-                        });
-                    }
+                    evaluator0_SelectView.render();
+                    evaluator1_SelectView.render();
                 },
                 error: function (model, resp) {
                     var popup = new Views.PopupView({
@@ -9559,12 +9525,12 @@ define(["jquery", "underscore", "backbone", "application", "models",
             values.proposedEvaluators = [
                 {
                     registerMember: {
-                        id: self.$('form select[name=evaluator_0]').val()
+                        id: self.$('form input[name=evaluator_0]').val()
                     }
                 },
                 {
                     registerMember: {
-                        id: self.$('form select[name=evaluator_1]').val()
+                        id: self.$('form input[name=evaluator_1]').val()
                     }
                 }
             ];
@@ -10439,6 +10405,166 @@ define(["jquery", "underscore", "backbone", "application", "models",
             }
         }
     );
+
+    /***************************************************************************
+     * EvaluatorSelectView ****************************************************
+     **************************************************************************/
+    Views.EvaluatorSelectView = Views.BaseView.extend({
+
+        initialize: function (options) {
+            var self = this;
+            self._super('initialize', [options]);
+            _.bindAll(self, "onToggleEdit", "onSelectEvaluator", "toggleEdit", "select", "clear");
+            self.template = _.template(tpl_evaluator_select);
+            //self.collection.bind("reset", self.render, self);
+
+            self.$input = $(self.el);
+            self.$input.before("<div id=\"" + self.$input.attr("name") + "\"></div>");
+            self.setElement(self.$input.prev("#" + self.$input.attr("name")));
+
+            self.emptyModel = new Models.RegisterMember({
+                id: undefined,
+                professor: {
+                    user: {
+                        firstname: {
+                            el: '',
+                            en: ''
+                        },
+                        lastname: {
+                            el: '',
+                            en: ''
+                        }
+                    },
+                    discriminator: '',
+                    institution: ''
+                }
+            });
+
+            // Set Value
+            if (self.options.specificEvaluator === undefined) {
+                $("input[name=" + self.$input.attr("name") + "]").val('');
+            } else {
+                $("input[name=" + self.$input.attr("name") + "]").val(self.options.specificEvaluator.registerMember.id);
+            }
+        },
+
+        events: {
+            "click a#selectEvaluator": "onSelectEvaluator",
+            "click a#toggleEdit": "onToggleEdit",
+            "click a#clear": "clear"
+        },
+
+        render: function () {
+            var self = this;
+            var tpl_data;
+
+            // Prepare Data
+            tpl_data = {
+                editable: self.options.editable,
+                evaluators: (function () {
+                    var result = [];
+                    if (self.options.specificEvaluator === undefined) {
+                        return self.collection.toJSON();
+                    } else {
+                        self.collection.each(function (model) {
+                            if (model.id != self.options.specificEvaluator.registerMember.id) {
+                                result.push(model.toJSON());
+                            }
+                        });
+                        return result;
+                    }
+                }())
+            };
+            // Render
+            self.closeInnerViews();
+            self.$el.empty();
+            self.$el.append(this.template(tpl_data));
+            self.select(self.$input.val());
+            self.$("#evaluatorDescription").html(_.templates.evaluator(self.model.toJSON()));
+
+            // Initialize Plugins
+            if (!$.fn.DataTable.fnIsDataTable(self.$("table#evaluators-table"))) {
+                self.$("table#evaluators-table").dataTable({
+                    "sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+                    "sPaginationType": "bootstrap",
+                    "aaSorting": [[1, "asc"]],
+                    "oLanguage": {
+                        "sSearch": $.i18n.prop("dataTable_sSearch"),
+                        "sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+                        "sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+                        "sInfo": $.i18n.prop("dataTable_sInfo"),
+                        "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+                        "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+                        "oPaginate": {
+                            sFirst: $.i18n.prop("dataTable_sFirst"),
+                            sPrevious: $.i18n.prop("dataTable_sPrevious"),
+                            sNext: $.i18n.prop("dataTable_sNext"),
+                            sLast: $.i18n.prop("dataTable_sLast")
+                        }
+                    }
+                });
+            }
+            self.$("div#evaluators-table_wrapper").hide();
+
+            // Return result
+            return self;
+        },
+
+        onToggleEdit: function () {
+            var self = this;
+            self.toggleEdit();
+        },
+
+        onSelectEvaluator: function (event) {
+            var self = this;
+            var id = $(event.currentTarget).attr('data-evaluator-id');
+            self.select(id);
+        },
+
+        toggleEdit: function (show) {
+            ;
+            var self = this;
+            if (_.isUndefined(show)) {
+                $(event.currentTarget).find('.dataTables_wrapper').toggle(400);
+            } else if (show) {
+                $(event.currentTarget).find('.dataTables_wrapper').show(400);
+            } else {
+                self.closest('div').find("div#evaluators-table_wrapper").hide(400);
+            }
+        },
+
+        clear: function () {
+            var self = this;
+            self.model = self.emptyModel;
+            self.$input.val('').trigger("change").trigger("input");
+            self.$("#evaluatorDescription").html(_.templates.evaluator(self.model.toJSON()));
+            self.$input.parent().find('a#clear').hide();
+            self.$("div#evaluators-table_wrapper").hide(400);
+        },
+
+        select: function (evaluatorId) {
+            var self = this;
+            var selectedModel;
+            if (evaluatorId) {
+                selectedModel = self.collection.get(evaluatorId);
+                if (selectedModel && !_.isEqual(selectedModel.id, self.$input.val())) {
+                    self.model = selectedModel;
+                    self.$input.val(selectedModel.id).trigger("change").trigger("input");
+                    self.$("#evaluatorDescription").html(_.templates.evaluator(self.model.toJSON()));
+                    self.$input.parent().find('a#clear').show();
+                    self.$("div#evaluators-table_wrapper").hide(400);
+                }
+            } else {
+                self.clear();
+            }
+        },
+
+        close: function () {
+            this.closeInnerViews();
+            $(this.el).unbind();
+            $(this.el).remove();
+        }
+    });
 
     return Views;
 
