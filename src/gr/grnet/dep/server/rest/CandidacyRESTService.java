@@ -251,13 +251,11 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.CONFLICT, "wrong.position.candidacies.closingDate");
 			}
 			Set<Long> newRegisterMemberIds = new HashSet<Long>();
-			long prevEvaluatorId = 0L;
 			for (CandidacyEvaluator newEvaluator : candidacy.getProposedEvaluators()) {
 				if (newEvaluator.getRegisterMember() != null && newEvaluator.getRegisterMember().getId() != null) {
-					if(prevEvaluatorId == newEvaluator.getRegisterMember().getId()){
+					if(newRegisterMemberIds.contains(newEvaluator.getRegisterMember().getId())){
 						throw new RestException(Status.CONFLICT, "duplicate.evaluators");
 					}
-					prevEvaluatorId = newEvaluator.getRegisterMember().getId();
 					newRegisterMemberIds.add(newEvaluator.getRegisterMember().getId());
 				}
 			}

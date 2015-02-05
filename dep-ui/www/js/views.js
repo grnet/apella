@@ -9346,6 +9346,8 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 default:
                     break;
             }
+            // We return true by default here, so that input elements in datatable are not disables
+            // This requires that all fields in form are listed in the switch above
             return true;
         },
 
