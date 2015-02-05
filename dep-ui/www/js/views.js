@@ -9479,7 +9479,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
             });
             var evaluator1_SelectView = new Views.EvaluatorSelectView({
                 el: self.$("input[name=evaluator_1]"),
-                collection: self.registerMember,
+                collection: self.registerMembers,
                 editable: self.isEditable("evaluator"),
                 proposedEvaluators: self.model.get("proposedEvaluators"),
                 specificEvaluator: self.model.get("proposedEvaluators")[1]
@@ -9496,8 +9496,6 @@ define(["jquery", "underscore", "backbone", "application", "models",
                             return candidacyEvalutor.registerMember;
                         }));
                     }
-                    evaluator0_SelectView.render();
-                    evaluator1_SelectView.render();
                 },
                 error: function (model, resp) {
                     var popup = new Views.PopupView({
@@ -10416,7 +10414,8 @@ define(["jquery", "underscore", "backbone", "application", "models",
             self._super('initialize', [options]);
             _.bindAll(self, "onToggleEdit", "onSelectEvaluator", "toggleEdit", "select", "clear");
             self.template = _.template(tpl_evaluator_select);
-            //self.collection.bind("reset", self.render, self);
+            self.collection.bind("reset", self.render, self);
+            self.collection.bind("add", self.render, self);
 
             self.$input = $(self.el);
             self.$input.before("<div id=\"" + self.$input.attr("name") + "\"></div>");
@@ -10458,6 +10457,9 @@ define(["jquery", "underscore", "backbone", "application", "models",
             var self = this;
             var tpl_data;
 
+            if (self.$input.val() !== '' && self.collection.get(self.$input.val()) === undefined) {
+                return self;
+            }
             // Prepare Data
             tpl_data = {
                 editable: self.options.editable,
@@ -10483,8 +10485,8 @@ define(["jquery", "underscore", "backbone", "application", "models",
             self.$("#evaluatorDescription").html(_.templates.evaluator(self.model.toJSON()));
 
             // Initialize Plugins
-            if (!$.fn.DataTable.fnIsDataTable(self.$("table#evaluators-table"))) {
-                self.$("table#evaluators-table").dataTable({
+            if (!$.fn.DataTable.fnIsDataTable(self.$("table.evaluators-table"))) {
+                self.$("table.evaluators-table").dataTable({
                     "sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
                     "sPaginationType": "bootstrap",
                     "aaSorting": [[1, "asc"]],
@@ -10504,7 +10506,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     }
                 });
             }
-            self.$("div#evaluators-table_wrapper").hide();
+            self.$("div.dataTables_wrapper").hide();
 
             // Return result
             return self;
@@ -10525,11 +10527,11 @@ define(["jquery", "underscore", "backbone", "application", "models",
             ;
             var self = this;
             if (_.isUndefined(show)) {
-                $(event.currentTarget).find('.dataTables_wrapper').toggle(400);
+                self.$("div.dataTables_wrapper").toggle(400);
             } else if (show) {
-                $(event.currentTarget).find('.dataTables_wrapper').show(400);
+                self.$("div.dataTables_wrapper").show(400);
             } else {
-                self.closest('div').find("div#evaluators-table_wrapper").hide(400);
+                self.$("div.dataTables_wrapper").hide(400);
             }
         },
 
@@ -10539,7 +10541,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
             self.$input.val('').trigger("change").trigger("input");
             self.$("#evaluatorDescription").html(_.templates.evaluator(self.model.toJSON()));
             self.$input.parent().find('a#clear').hide();
-            self.$("div#evaluators-table_wrapper").hide(400);
+            self.$("div.dataTables_wrapper").hide(400);
         },
 
         select: function (evaluatorId) {
@@ -10552,7 +10554,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     self.$input.val(selectedModel.id).trigger("change").trigger("input");
                     self.$("#evaluatorDescription").html(_.templates.evaluator(self.model.toJSON()));
                     self.$input.parent().find('a#clear').show();
-                    self.$("div#evaluators-table_wrapper").hide(400);
+                    self.$("div.dataTables_wrapper").hide(400);
                 }
             } else {
                 self.clear();
