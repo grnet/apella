@@ -211,10 +211,12 @@ public class QuartzService {
 	public int notifyOnClosedPositions() {
 		Date toDate = DateUtil.removeTime(new Date());
 		List<Position> positions = em.createQuery(
-				"from Position p where " +
+				"from Position p left join fetch p.phase.candidacies.candidacies cs where " +
 						"p.permanent is true " +
 						"and p.phase.status = :status " +
 						"and p.phase.candidacies.closingDate < :toDate " +
+						"and cs.withdrawn is false " +
+						"and cs.permanent is true " +
 						"and p.id not in ( " +
 						"	select n.referredEntityId " +
 						"	from Notification n " +

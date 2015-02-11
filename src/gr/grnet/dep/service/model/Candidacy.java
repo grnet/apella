@@ -2,12 +2,14 @@ package gr.grnet.dep.service.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import gr.grnet.dep.service.model.PositionCandidacies.DetailedPositionCandidaciesView;
 import gr.grnet.dep.service.model.file.CandidacyFile;
 import gr.grnet.dep.service.model.file.CandidateFile;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
+import gr.grnet.dep.service.util.SimpleDateDeserializer;
 import gr.grnet.dep.service.util.SimpleDateSerializer;
 import org.hibernate.annotations.FilterDef;
 
@@ -66,13 +68,16 @@ public class Candidacy {
 
 	private boolean permanent;
 
-	@Temporal(TemporalType.TIMESTAMP)
+	@Temporal(TemporalType.DATE)
 	Date date;
 
 	boolean openToOtherCandidates = false;
 
 	@Column(name = "withdrawn", columnDefinition = "boolean default false")
 	private boolean withdrawn;
+
+	@Temporal(TemporalType.DATE)
+	private Date withdrawnDate;
 
     @ManyToOne
 	private Candidate candidate;
@@ -328,10 +333,15 @@ public class Candidacy {
         this.withdrawn = withdrawn;
     }
 
+	@JsonSerialize(using = SimpleDateSerializer.class)
+	public Date getWithdrawnDate() { return withdrawnDate; }
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
+	public void setWithdrawnDate(Date withdrawnDate) { this.withdrawnDate = withdrawnDate; }
+	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getDate() {
 		return date;
 	}
-
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setDate(Date date) {
 		this.date = date;
 	}

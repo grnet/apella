@@ -332,29 +332,30 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 			}
 			// position.upload@candidates
 			for (final Candidacy candidacy : cdFile.getComplementaryDocuments().getPosition().getPhase().getCandidacies().getCandidacies()) {
-				mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"position.upload@candidates",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+                if (!candidacy.isWithdrawn() && candidacy.isPermanent()) {
+                    mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+                            "default.subject",
+                            "position.upload@candidates",
+                            Collections.unmodifiableMap(new HashMap<String, String>() {
+                                {
+                                    put("positionID", StringUtil.formatPositionID(cdFile.getComplementaryDocuments().getPosition().getId()));
+                                    put("position", cdFile.getComplementaryDocuments().getPosition().getName());
 
-							{
-								put("positionID", StringUtil.formatPositionID(cdFile.getComplementaryDocuments().getPosition().getId()));
-								put("position", cdFile.getComplementaryDocuments().getPosition().getName());
+                                    put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
+                                    put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
+                                    put("institution_el", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+                                    put("school_el", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getName().get("el"));
+                                    put("department_el", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName().get("el"));
 
-								put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
-								put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
-								put("institution_el", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department_el", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName().get("el"));
-
-								put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
-								put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
-								put("institution_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getName().get("en"));
-								put("department_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName().get("en"));
-							}
-						}));
-			}
+                                    put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
+                                    put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
+                                    put("institution_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+                                    put("school_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getName().get("en"));
+                                    put("department_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName().get("en"));
+                                }
+                            }));
+                }
+            }
 			// position.upload@evaluators
 			if (cdFile.getComplementaryDocuments().getPosition().getPhase().getEvaluation() != null) {
 				for (final PositionEvaluator evaluator : cdFile.getComplementaryDocuments().getPosition().getPhase().getEvaluation().getEvaluators()) {

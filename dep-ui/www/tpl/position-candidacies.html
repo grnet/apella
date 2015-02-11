@@ -16,15 +16,16 @@
         <td><%- candidacy.snapshot.lastname[App.locale] %></td>
         <td><%- candidacy.snapshot.fathername[App.locale] %></td>
         <% if (candidacy.withdrawn) { %>
-        <th class="text-error"><%- $.i18n.prop('removeCandidacy') %></th>
+        <td class="text-error"><%- $.i18n.prop('removeCandidacy') + ' ' + candidacy.withdrawnDate %></td>
         <% } else { %>
-        <th><%- $.i18n.prop('currentCandidacy') %></th>
+        <td><%- $.i18n.prop('currentCandidacy') + ' ' + candidacy.date %></td>
         <% } %>
         <td width="96px">
             <% if (candidacy.allowedToSee) { %>
             <p align="center">
-                <a id="viewCandidacy" href="#candidacy/<%- candidacy.id %>" data-candidacy-id="<%- candidacy.id %>"><%=
-                    $.i18n.prop('btn_view') %></a>
+                <a id="viewCandidacy" href="#candidacy/<%- candidacy.id %>" data-candidacy-id="<%- candidacy.id %>"
+                   class="btn btn-mini">
+                    <i class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>
             </p>
             <% } %>
         </td>

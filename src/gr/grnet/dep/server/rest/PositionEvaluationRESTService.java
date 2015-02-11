@@ -358,28 +358,30 @@ public class PositionEvaluationRESTService extends RESTService {
 				}
 				// positionEvaluation.update@candidates
 				for (final Candidacy candidacy : existingEvaluation.getPosition().getPhase().getCandidacies().getCandidacies()) {
-					mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
-							"default.subject",
-							"positionEvaluation.update@candidates",
-							Collections.unmodifiableMap(new HashMap<String, String>() {
+					if (!candidacy.isWithdrawn() && candidacy.isPermanent()) {
+						mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+								"default.subject",
+								"positionEvaluation.update@candidates",
+								Collections.unmodifiableMap(new HashMap<String, String>() {
 
-								{
-									put("positionID", StringUtil.formatPositionID(existingEvaluation.getPosition().getId()));
-									put("position", existingEvaluation.getPosition().getName());
+									{
+										put("positionID", StringUtil.formatPositionID(existingEvaluation.getPosition().getId()));
+										put("position", existingEvaluation.getPosition().getName());
 
-									put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
-									put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
-									put("institution_el", existingEvaluation.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-									put("school_el", existingEvaluation.getPosition().getDepartment().getSchool().getName().get("el"));
-									put("department_el", existingEvaluation.getPosition().getDepartment().getName().get("el"));
+										put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
+										put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
+										put("institution_el", existingEvaluation.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+										put("school_el", existingEvaluation.getPosition().getDepartment().getSchool().getName().get("el"));
+										put("department_el", existingEvaluation.getPosition().getDepartment().getName().get("el"));
 
-									put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
-									put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
-									put("institution_en", existingEvaluation.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-									put("school_en", existingEvaluation.getPosition().getDepartment().getSchool().getName().get("en"));
-									put("department_en", existingEvaluation.getPosition().getDepartment().getName().get("en"));
-								}
-							}));
+										put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
+										put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
+										put("institution_en", existingEvaluation.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+										put("school_en", existingEvaluation.getPosition().getDepartment().getSchool().getName().get("en"));
+										put("department_en", existingEvaluation.getPosition().getDepartment().getName().get("en"));
+									}
+								}));
+					}
 				}
 
 			}

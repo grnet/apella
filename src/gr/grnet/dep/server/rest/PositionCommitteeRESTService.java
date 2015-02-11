@@ -602,55 +602,59 @@ public class PositionCommitteeRESTService extends RESTService {
 			if (!addedMemberIds.isEmpty() && removedMemberIds.isEmpty()) {
 				// positionCommittee.create.members@candidates
 				for (final Candidacy candidacy : savedCommittee.getPosition().getPhase().getCandidacies().getCandidacies()) {
-					mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
-							"default.subject",
-							"positionCommittee.create.members@candidates",
-							Collections.unmodifiableMap(new HashMap<String, String>() {
+					if(!candidacy.isWithdrawn() && candidacy.isPermanent()) {
+						mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+								"default.subject",
+								"positionCommittee.create.members@candidates",
+								Collections.unmodifiableMap(new HashMap<String, String>() {
 
-								{
-									put("positionID", StringUtil.formatPositionID(savedCommittee.getPosition().getId()));
-									put("position", savedCommittee.getPosition().getName());
+									{
+										put("positionID", StringUtil.formatPositionID(savedCommittee.getPosition().getId()));
+										put("position", savedCommittee.getPosition().getName());
 
-									put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
-									put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
-									put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-									put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
-									put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
+										put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
+										put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
+										put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+										put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
+										put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
 
-									put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
-									put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
-									put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-									put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
-									put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
-								}
-							}));
+										put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
+										put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
+										put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+										put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
+										put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
+									}
+								}));
+					}
 				}
 			}
 			if (!removedMemberIds.isEmpty()) {
 				//positionCommittee.remove.members@candidates
 				for (final Candidacy candidacy : savedCommittee.getPosition().getPhase().getCandidacies().getCandidacies()) {
-					mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
-							"default.subject",
-							"positionCommittee.remove.members@candidates",
-							Collections.unmodifiableMap(new HashMap<String, String>() {
+					if (!candidacy.isWithdrawn() && candidacy.isPermanent()) {
+						mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+								"default.subject",
+								"positionCommittee.remove.members@candidates",
+								Collections.unmodifiableMap(new HashMap<String, String>() {
 
-								{
-									put("positionID", StringUtil.formatPositionID(savedCommittee.getPosition().getId()));
-									put("position", savedCommittee.getPosition().getName());
+									{
+										put("positionID", StringUtil.formatPositionID(savedCommittee.getPosition().getId()));
+										put("position", savedCommittee.getPosition().getName());
 
-									put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
-									put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
-									put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-									put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
-									put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
+										put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
+										put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
+										put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+										put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
+										put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
 
-									put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
-									put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
-									put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-									put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
-									put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
-								}
-							}));
+										put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
+										put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
+										put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+										put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
+										put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
+									}
+								}));
+					}
 				}
 				//positionCommittee.remove.members@evaluators
 				if (savedCommittee.getPosition().getPhase().getEvaluation() != null) {
@@ -735,28 +739,30 @@ public class PositionCommitteeRESTService extends RESTService {
 				}
 				// positionCommittee.update.committeeMeetingDate@candidates
 				for (final Candidacy candidacy : savedCommittee.getPosition().getPhase().getCandidacies().getCandidacies()) {
-					mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
-							"default.subject",
-							"positionCommittee.update.committeeMeetingDate@candidates",
-							Collections.unmodifiableMap(new HashMap<String, String>() {
+					if (!candidacy.isWithdrawn() && candidacy.isPermanent()) {
+						mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+								"default.subject",
+								"positionCommittee.update.committeeMeetingDate@candidates",
+								Collections.unmodifiableMap(new HashMap<String, String>() {
 
-								{
-									put("positionID", StringUtil.formatPositionID(savedCommittee.getPosition().getId()));
-									put("position", savedCommittee.getPosition().getName());
+									{
+										put("positionID", StringUtil.formatPositionID(savedCommittee.getPosition().getId()));
+										put("position", savedCommittee.getPosition().getName());
 
-									put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
-									put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
-									put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-									put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
-									put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
+										put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
+										put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
+										put("institution_el", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+										put("school_el", savedCommittee.getPosition().getDepartment().getSchool().getName().get("el"));
+										put("department_el", savedCommittee.getPosition().getDepartment().getName().get("el"));
 
-									put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
-									put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
-									put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-									put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
-									put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
-								}
-							}));
+										put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
+										put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
+										put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+										put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
+										put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
+									}
+								}));
+					}
 				}
 			}
 
@@ -1019,28 +1025,29 @@ public class PositionCommitteeRESTService extends RESTService {
 			}
 			// position.upload@candidates
 			for (final Candidacy candidacy : pcFile.getCommittee().getPosition().getPhase().getCandidacies().getCandidacies()) {
-				mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"position.upload@candidates",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
+				if (!candidacy.isWithdrawn() && candidacy.isPermanent()) {
+					mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
+							"default.subject",
+							"position.upload@candidates",
+							Collections.unmodifiableMap(new HashMap<String, String>() {
+								{
+									put("positionID", StringUtil.formatPositionID(pcFile.getCommittee().getPosition().getId()));
+									put("position", pcFile.getCommittee().getPosition().getName());
 
-							{
-								put("positionID", StringUtil.formatPositionID(pcFile.getCommittee().getPosition().getId()));
-								put("position", pcFile.getCommittee().getPosition().getName());
+									put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
+									put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
+									put("institution_el", pcFile.getCommittee().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
+									put("school_el", pcFile.getCommittee().getPosition().getDepartment().getSchool().getName().get("el"));
+									put("department_el", pcFile.getCommittee().getPosition().getDepartment().getName().get("el"));
 
-								put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
-								put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
-								put("institution_el", pcFile.getCommittee().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", pcFile.getCommittee().getPosition().getDepartment().getSchool().getName().get("el"));
-								put("department_el", pcFile.getCommittee().getPosition().getDepartment().getName().get("el"));
-
-								put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
-								put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
-								put("institution_en", pcFile.getCommittee().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", pcFile.getCommittee().getPosition().getDepartment().getSchool().getName().get("en"));
-								put("department_en", pcFile.getCommittee().getPosition().getDepartment().getName().get("en"));
-							}
-						}));
+									put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
+									put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
+									put("institution_en", pcFile.getCommittee().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
+									put("school_en", pcFile.getCommittee().getPosition().getDepartment().getSchool().getName().get("en"));
+									put("department_en", pcFile.getCommittee().getPosition().getDepartment().getName().get("en"));
+								}
+							}));
+				}
 			}
 			// position.upload@evaluators
 			for (final PositionEvaluator evaluator : pcFile.getCommittee().getPosition().getPhase().getEvaluation().getEvaluators()) {

@@ -296,6 +296,7 @@ public class CandidacyRESTService extends RESTService {
 				updateSnapshot(existingCandidacy, candidate);
 			}
 			existingCandidacy.setPermanent(true);
+			existingCandidacy.setWithdrawn(false);
 			existingCandidacy.setOpenToOtherCandidates(candidacy.isOpenToOtherCandidates());
 			existingCandidacy.getProposedEvaluators().clear();
 			for (RegisterMember newRegisterMember : newRegisterMembers) {
@@ -718,6 +719,10 @@ public class CandidacyRESTService extends RESTService {
 			}
 			// Update
 			existingCandidacy.setWithdrawn(true);
+			existingCandidacy.setWithdrawnDate(new Date());
+			if(existingCandidacy.getCandidacies().getClosingDate().after(new Date())){
+				existingCandidacy.setPermanent(false);
+			}
 
 			em.merge(existingCandidacy);
 			em.flush();

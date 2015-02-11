@@ -7042,7 +7042,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
             self.$el.append(self.template(tpl_data));
             if (!$.fn.DataTable.fnIsDataTable(self.$("table#positionCandidatesTable"))) {
                 self.$("table#positionCandidatesTable").dataTable({
-                    "aaSorting": [[3, "desc"]],
+                    "aaSorting": [[3, "asc"]],
                     "sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
                     "sPaginationType": "bootstrap",
                     "oLanguage": {
@@ -7105,6 +7105,29 @@ define(["jquery", "underscore", "backbone", "application", "models",
             self.$el.empty();
             self.addTitle();
             self.$el.append(self.template(self.model.toJSON()));
+
+            // Init jQuery.widgets
+            if (!$.fn.DataTable.fnIsDataTable(self.$("table#candidaciesTable"))) {
+                self.$("table#candidaciesTable").dataTable({
+                    "sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+                    "sPaginationType": "bootstrap",
+                    "aaSorting": [[3, "asc"]],
+                    "oLanguage": {
+                        "sSearch": $.i18n.prop("dataTable_sSearch"),
+                        "sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+                        "sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+                        "sInfo": $.i18n.prop("dataTable_sInfo"),
+                        "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+                        "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+                        "oPaginate": {
+                            sFirst: $.i18n.prop("dataTable_sFirst"),
+                            sPrevious: $.i18n.prop("dataTable_sPrevious"),
+                            sNext: $.i18n.prop("dataTable_sNext"),
+                            sLast: $.i18n.prop("dataTable_sLast")
+                        }
+                    }
+                });
+            }
 
             // Add files
             if (self.model.has("id")) {
@@ -9240,6 +9263,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
             self.template = _.template(tpl_candidate_candidacy_list);
             self.collection.bind('reset', self.render, self);
             self.collection.bind('remove', self.render, self);
+            self.collection.bind('add', self.render, self);
         },
 
         events: {

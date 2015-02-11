@@ -54,6 +54,7 @@
                 <th><%= $.i18n.prop("Subject") %></th>
                 <th><%= $.i18n.prop("FEK") %></th>
                 <th><%= $.i18n.prop("PositionStatus") %></th>
+                <th><%= $.i18n.prop("Candidacy") %></th>
             </tr>
             </thead>
             <tbody>
@@ -80,6 +81,11 @@
                 <td>
                     <%= $.i18n.prop('PositionStatus_' + evaluator.candidacy.candidacies.position.phase.clientStatus) %>
                 </td>
+                <% if (evaluator.candidacy.withdrawn) { %>
+                <td class="text-error"><%- $.i18n.prop('removeCandidacy') + ' ' + evaluator.candidacy.withdrawnDate %></td>
+                <% } else { %>
+                <td><%- $.i18n.prop('currentCandidacy') + ' ' + evaluator.candidacy.date %></td>
+                <% } %>
             </tr>
             <% } %>
             <% }); %>
