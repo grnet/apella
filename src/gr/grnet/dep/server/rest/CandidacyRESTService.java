@@ -1441,7 +1441,8 @@ public class CandidacyRESTService extends RESTService {
 				"left join fetch c.candidate.user.roles cerls " +
 				"left join fetch c.candidacies ca " +
 				"left join fetch ca.position po " +
-				"where c.permanent = false ";
+				"where c.permanent = false " +
+				"or c.withdrawn = true ";
 
 		TypedQuery<Candidacy> query = em.createQuery(queryString, Candidacy.class);
 		List<Candidacy> retv = query.getResultList();
@@ -1487,17 +1488,21 @@ public class CandidacyRESTService extends RESTService {
             }
 
             if (existingCandidacy != null) {
-                if(existingCandidacy.isPermanent()){
+                if(existingCandidacy.isPermanent() &&  !existingCandidacy.isWithdrawn()){
                     throw new RestException(Status.CONFLICT, "candidacy.already.submitted");
                 }
                 existingCandidacy.setPermanent(true);
+				existingCandidacy.setWithdrawn(false);
+				existingCandidacy.setWithdrawnDate(null);
                 candidacy = existingCandidacy;
             } else {
                 candidacy.setCandidate(candidate);
                 candidacy.setCandidacies(position.getPhase().getCandidacies());
                 candidacy.setDate(new Date());
                 candidacy.setOpenToOtherCandidates(false);
-                candidacy.setPermanent(true);
+				candidacy.setPermanent(true);
+				candidacy.setWithdrawn(false);
+				candidacy.setWithdrawnDate(null);
                 candidacy.getProposedEvaluators().clear();
                 validateCandidacy(candidacy, candidate, true); // isNew
                 updateSnapshot(candidacy, candidate);

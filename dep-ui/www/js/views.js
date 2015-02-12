@@ -10309,6 +10309,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     self.$("table").dataTable({
                         "sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
                         "sPaginationType": "bootstrap",
+                        "aaSorting": [[6, "asc"]],
                         "oLanguage": {
                             "sSearch": $.i18n.prop("dataTable_sSearch"),
                             "sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),

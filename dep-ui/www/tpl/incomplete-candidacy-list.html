@@ -33,7 +33,7 @@
             <th><%= $.i18n.prop("UserID") %></th>
             <th><%= $.i18n.prop("Surname") %></th>
             <th><%= $.i18n.prop("Name") %></th>
-            <th><%= $.i18n.prop("submitCandidacyDate") %></th>
+            <th><%= $.i18n.prop("Candidacy") %></th>
             <th width="120px"></th>
         </tr>
         </thead>
@@ -48,7 +48,11 @@
             </td>
             <td><%= candidacy.candidate.user.lastname[App.locale] %></td>
             <td><%= candidacy.candidate.user.firstname[App.locale] %></td>
-            <td><%= candidacy.date %></td>
+            <% if (candidacy.withdrawn) { %>
+            <td class="text-error"><%- $.i18n.prop('removeCandidacy') + ' ' + candidacy.withdrawnDate %></td>
+            <% } else { %>
+            <td><%- $.i18n.prop('currentCandidacy') + ' ' + candidacy.date %></td>
+            <% } %>
             <td width="120px">
                 <p align="center">
                     <a id="submit" data-user-id="<%- candidacy.candidate.user.id  %>"
