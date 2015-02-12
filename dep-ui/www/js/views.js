@@ -14,8 +14,8 @@ define(["jquery", "underscore", "backbone", "application", "models",
     "text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-candidacies.html", "text!tpl/position-committee.html",
     "text!tpl/position-evaluation.html", "text!tpl/position-nomination.html", "text!tpl/position-complementaryDocuments.html", "text!tpl/position-nomination-edit.html",
     "text!tpl/position-complementaryDocuments-edit.html", "text!tpl/department-select.html", "text!tpl/department.html", "text!tpl/user-helpdesk.html",
-    "text!tpl/position-helpdesk.html", "text!tpl/jira-issue-edit.html", "text!tpl/jira-issue-list.html", "text!tpl/jira-issue.html", "text!tpl/jira-issue-public-edit.html", "text!tpl/data-exports.html", "text!tpl/statistics.html", "text!tpl/position-committee-edit-confirm.html", "text!tpl/incomplete-candidacy-list.html", "text!tpl/evaluator-select.html", "text!tpl/evaluator.html"
-], function ($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit, tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_edit_professor_list, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation, tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit, tpl_department_select, tpl_department, tpl_user_helpdesk, tpl_position_helpdesk, tpl_jira_issue_edit, tpl_jira_issue_list, tpl_jira_issue, tpl_jira_issue_public_edit, tpl_data_exports, tpl_statistics, tpl_position_committee_edit_confirm, tpl_incomplete_candidacy_list, tpl_evaluator_select, tpl_evaluator) {
+    "text!tpl/position-helpdesk.html", "text!tpl/jira-issue-edit.html", "text!tpl/jira-issue-list.html", "text!tpl/jira-issue.html", "text!tpl/jira-issue-public-edit.html", "text!tpl/data-exports.html", "text!tpl/statistics.html", "text!tpl/position-committee-edit-confirm.html", "text!tpl/incomplete-candidacy-list.html", "text!tpl/evaluator-select.html", "text!tpl/evaluator.html", "text!tpl/confirm-withdraw-candidacy.html"
+], function ($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit, tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_edit_professor_list, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation, tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit, tpl_department_select, tpl_department, tpl_user_helpdesk, tpl_position_helpdesk, tpl_jira_issue_edit, tpl_jira_issue_list, tpl_jira_issue, tpl_jira_issue_public_edit, tpl_data_exports, tpl_statistics, tpl_position_committee_edit_confirm, tpl_incomplete_candidacy_list, tpl_evaluator_select, tpl_evaluator, tpl_confirm_withdraw_candidacy) {
 
     "use strict";
     /** ****************************************************************** */
@@ -9591,9 +9591,10 @@ define(["jquery", "underscore", "backbone", "application", "models",
 
         remove: function () {
             var self = this;
-            var confirm = new Views.ConfirmView({
+            var confirm = new Views.ConfirmWithdrawCandidacyView({
                 title: $.i18n.prop('Confirm'),
-                message: $.i18n.prop('AreYouSure'),
+                message: $.i18n.prop('AreYouSureToWithdrawCandidacyMessage'),
+                messageDetails: $.i18n.prop('AreYouSureToWithdrawCandidacyMessageDetails'),
                 yes: function () {
                     self.model.destroy({
                         wait: true,
@@ -10585,6 +10586,51 @@ define(["jquery", "underscore", "backbone", "application", "models",
             } else {
                 self.clear();
             }
+        },
+
+        close: function () {
+            this.closeInnerViews();
+            $(this.el).unbind();
+            $(this.el).remove();
+        }
+    });
+
+    /***************************************************************************
+     * ConfirmWithdrawCandidacyView ********************************************
+     **************************************************************************/
+    Views.ConfirmWithdrawCandidacyView = Views.BaseView.extend({
+        tagName: "div",
+
+        className: "modal",
+
+        initialize: function (options) {
+            this._super('initialize', [options]);
+            _.bindAll(this, "show");
+            this.template = _.template(tpl_confirm_withdraw_candidacy);
+        },
+
+        events: {
+            "click a#yes": function () {
+                this.$el.modal('hide');
+                if (_.isFunction(this.options.yes)) {
+                    this.options.yes();
+                }
+            }
+        },
+
+        render: function () {
+            var self = this;
+            self.$el.empty();
+            self.$el.append(self.template({
+                title: self.options.title,
+                message: self.options.message,
+                messageDetails: self.options.messageDetails
+            }));
+        },
+        show: function () {
+            var self = this;
+            self.render();
+            self.$el.modal();
         },
 
         close: function () {
