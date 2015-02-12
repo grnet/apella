@@ -3,22 +3,14 @@ package gr.grnet.dep.server.rest;
 import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.model.Candidacy;
-import gr.grnet.dep.service.model.CandidacyEvaluator;
-import gr.grnet.dep.service.model.Position;
+import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.Position.PositionStatus;
-import gr.grnet.dep.service.model.PositionCommitteeMember;
 import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
-import gr.grnet.dep.service.model.PositionEvaluation;
 import gr.grnet.dep.service.model.PositionEvaluation.DetailedPositionEvaluationView;
-import gr.grnet.dep.service.model.PositionEvaluator;
 import gr.grnet.dep.service.model.PositionEvaluator.DetailedPositionEvaluatorView;
-import gr.grnet.dep.service.model.Register;
-import gr.grnet.dep.service.model.RegisterMember;
 import gr.grnet.dep.service.model.RegisterMember.DetailedRegisterMemberView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
-import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
@@ -295,6 +287,48 @@ public class PositionEvaluationRESTService extends RESTService {
 									put("institution_en", existingEvaluation.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 									put("school_en", existingEvaluation.getPosition().getDepartment().getSchool().getName().get("en"));
 									put("department_en", existingEvaluation.getPosition().getDepartment().getName().get("en"));
+
+									put("assistants_el", extractAssistantsInfo(existingEvaluation.getPosition(), "el"));
+									put("assistants_en", extractAssistantsInfo(existingEvaluation.getPosition(), "en"));
+								}
+
+								private String extractAssistantsInfo(Position position, String locale) {
+									StringBuilder info = new StringBuilder();
+									info.append("<ul>");
+
+									InstitutionManager manager = position.getManager();
+									String im_firstname = manager.getUser().getFirstname(locale);
+									String im_lastname = manager.getUser().getLastname(locale);
+									String im_email = manager.getUser().getContactInfo().getEmail();
+									String im_phone = manager.getUser().getContactInfo().getPhone();
+									info.append("<li>" + im_firstname + " " + im_lastname + ", " + im_email + ", " + im_phone + "</li>");
+
+									im_firstname = manager.getAlternateFirstname(locale);
+									im_lastname = manager.getAlternateLastname(locale);
+									im_email = manager.getAlternateContactInfo().getEmail();
+									im_phone = manager.getAlternateContactInfo().getPhone();
+									info.append("<li>" + im_firstname + " " + im_lastname + ", " + im_email + ", " + im_phone + "</li>");
+
+									info.append("<li><ul>");
+									Set<User> assistants = new HashSet<User>();
+									assistants.addAll(position.getAssistants());
+									if (position.getCreatedBy().getPrimaryRole().equals(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+										assistants.add(position.getCreatedBy());
+									}
+									for (User u : assistants) {
+										if (u.getId().equals(manager.getUser().getId())) {
+											continue;
+										}
+										im_firstname = u.getFirstname(locale);
+										im_lastname = u.getLastname(locale);
+										im_email = u.getContactInfo().getEmail();
+										im_phone = u.getContactInfo().getPhone();
+										info.append("<li>" + im_firstname + " " + im_lastname + ", " + im_email + ", " + im_phone + "</li>");
+									}
+									info.append("</ul></li>");
+
+									info.append("</ul>");
+									return info.toString();
 								}
 							}));
 				}
