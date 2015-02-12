@@ -334,13 +334,20 @@ public class Candidacy {
     }
 
 	@JsonSerialize(using = SimpleDateSerializer.class)
-	public Date getWithdrawnDate() { return withdrawnDate; }
+	public Date getWithdrawnDate() {
+		return withdrawnDate;
+	}
+
 	@JsonDeserialize(using = SimpleDateDeserializer.class)
-	public void setWithdrawnDate(Date withdrawnDate) { this.withdrawnDate = withdrawnDate; }
+	public void setWithdrawnDate(Date withdrawnDate) {
+		this.withdrawnDate = withdrawnDate;
+	}
+
 	@JsonSerialize(using = SimpleDateSerializer.class)
 	public Date getDate() {
 		return date;
 	}
+
 	@JsonDeserialize(using = SimpleDateDeserializer.class)
 	public void setDate(Date date) {
 		this.date = date;

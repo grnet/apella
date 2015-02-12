@@ -720,7 +720,7 @@ public class CandidacyRESTService extends RESTService {
 			// Update
 			existingCandidacy.setWithdrawn(true);
 			existingCandidacy.setWithdrawnDate(new Date());
-			if(existingCandidacy.getCandidacies().getClosingDate().after(new Date())){
+			if (DateUtil.compareDates(new Date(), existingCandidacy.getCandidacies().getClosingDate()) <= 0) {
 				existingCandidacy.setPermanent(false);
 			}
 

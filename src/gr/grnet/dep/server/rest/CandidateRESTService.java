@@ -66,6 +66,8 @@ public class CandidateRESTService extends RESTService {
 		if (open != null) {
 			queryString += " and c.candidacies.closingDate >= :now";
 		}
+
+		// Hide withdrawn from candidate
         if (candidate.getUser().getId().equals(loggedOn.getId())) {
             queryString += " and c.withdrawn = false";
         }

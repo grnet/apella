@@ -169,7 +169,8 @@ public class PositionCandidacies {
 
 	public boolean containsCandidate(User user) {
 		for (Candidacy candidacy : this.candidacies) {
-			if (candidacy.getCandidate().getUser().getId().equals(user.getId())) {
+			if (candidacy.isPermanent() && !candidacy.isWithdrawn() &&
+					candidacy.getCandidate().getUser().getId().equals(user.getId())) {
 				return true;
 			}
 		}

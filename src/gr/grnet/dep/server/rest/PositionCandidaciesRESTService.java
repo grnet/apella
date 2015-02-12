@@ -96,7 +96,7 @@ public class PositionCandidaciesRESTService extends RESTService {
 
 		Set<Candidacy> result = new HashSet<Candidacy>();
 		for (Candidacy candidacy : position.getPhase().getCandidacies().getCandidacies()) {
-			if (candidacy.isPermanent() && !candidacy.isWithdrawn()) {
+			if (candidacy.isPermanent()) {
 				result.add(candidacy);
 			}
 		}
