@@ -418,19 +418,20 @@ public class PdfUtil {
 		// Load resources
 		Font normalFont = FontFactory.getFont("Arial", BaseFont.IDENTITY_H, BASE_FONT_SIZE);
 		Image logoMinedu = Image.getInstance(loadImage("logo_minedu.png"));
-		logoMinedu.scaleToFit(1200, 36);
+		logoMinedu.scaleToFit(1200, 30);
 		Image logoGRnet = Image.getInstance(loadImage("logo_grnet.png"));
-		logoGRnet.scaleToFit(1200, 36);
+		logoGRnet.scaleToFit(1200, 30);
 		Image logoEU = Image.getInstance(loadImage("logo_eu.jpg"));
-		logoEU.scaleToFit(1200, 36);
+		logoEU.scaleToFit(1200, 30);
 		Image logoEspa = Image.getInstance(loadImage("logo_espa.jpg"));
-		logoEspa.scaleToFit(1200, 36);
+		logoEspa.scaleToFit(1200, 30);
 		Image logoDM = Image.getInstance(loadImage("logo_ep.jpg"));
-		logoDM.scaleToFit(1200, 36);
+		logoDM.scaleToFit(1200, 30);
 		// Create table
 		PdfPTable logoTable = new PdfPTable(5);
 		logoTable.setHorizontalAlignment(Element.ALIGN_CENTER);
-		logoTable.setWidths(new float[]{27, 28, 12, 15, 18});
+		float [] rows = {240f,80f,30f,40f,30f};
+		logoTable.setTotalWidth(rows);
 
 		logoTable.addCell(createImageCell(logoMinedu, Element.ALIGN_CENTER, 0));
 		logoTable.addCell(createImageCell(logoGRnet, Element.ALIGN_CENTER, 0));
