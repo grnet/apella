@@ -1499,6 +1499,11 @@ public class CandidacyRESTService extends RESTService {
                 existingCandidacy.setPermanent(true);
 				existingCandidacy.setWithdrawn(false);
 				existingCandidacy.setWithdrawnDate(null);
+                existingCandidacy.setDate(new Date());
+                CandidacyStatus status = new CandidacyStatus();
+                status.setAction(CandidacyStatus.ACTIONS.SUBMIT);
+                status.setDate(new Date());
+                existingCandidacy.addCandidacyStatus(status);
                 candidacy = existingCandidacy;
             } else {
                 candidacy.setCandidate(candidate);
@@ -1508,6 +1513,11 @@ public class CandidacyRESTService extends RESTService {
 				candidacy.setPermanent(true);
 				candidacy.setWithdrawn(false);
 				candidacy.setWithdrawnDate(null);
+                CandidacyStatus status = new CandidacyStatus();
+                status.setAction(CandidacyStatus.ACTIONS.SUBMIT);
+                status.setDate(new Date());
+                candidacy.addCandidacyStatus(status);
+
                 candidacy.getProposedEvaluators().clear();
                 validateCandidacy(candidacy, candidate, true); // isNew
                 updateSnapshot(candidacy, candidate);

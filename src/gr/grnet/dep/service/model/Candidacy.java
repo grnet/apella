@@ -419,6 +419,8 @@ public class Candidacy {
 		file.setCandidacy(this);
 	}
 
+    @XmlTransient
+    @JsonIgnore
 	public Set<CandidacyStatus> getCandidacyStatuses() {
 		return candidacyStatuses;
 	}
