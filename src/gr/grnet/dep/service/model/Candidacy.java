@@ -91,6 +91,9 @@ public class Candidacy {
 	@OneToMany(mappedBy = "candidacy", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<CandidacyEvaluator> proposedEvaluators = new HashSet<CandidacyEvaluator>();
 
+	@OneToMany(mappedBy = "candidacy", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	private Set<CandidacyStatus> candidacyStatuses = new HashSet<CandidacyStatus>();
+
 	@Transient
 	Boolean allowedToSee;
 
@@ -414,6 +417,19 @@ public class Candidacy {
 	public void addFile(CandidacyFile file) {
 		this.files.add(file);
 		file.setCandidacy(this);
+	}
+
+	public Set<CandidacyStatus> getCandidacyStatuses() {
+		return candidacyStatuses;
+	}
+
+	public void setCandidacyStatuses(Set<CandidacyStatus> candidacyStatuses) {
+		this.candidacyStatuses = candidacyStatuses;
+	}
+
+	public void addCandidacyStatus(CandidacyStatus candidacyStatus) {
+		this.candidacyStatuses.add(candidacyStatus);
+		candidacyStatus.setCandidacy(this);
 	}
 
 	// Transient

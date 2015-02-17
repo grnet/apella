@@ -3,25 +3,13 @@ package gr.grnet.dep.server.rest;
 import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.model.Candidacy;
+import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
 import gr.grnet.dep.service.model.Candidacy.EvaluatorCandidacyView;
 import gr.grnet.dep.service.model.Candidacy.MediumCandidacyView;
-import gr.grnet.dep.service.model.CandidacyEvaluator;
-import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.Institution;
-import gr.grnet.dep.service.model.InstitutionManager;
-import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
-import gr.grnet.dep.service.model.PositionCandidacies;
-import gr.grnet.dep.service.model.PositionCommittee;
-import gr.grnet.dep.service.model.PositionCommitteeMember;
-import gr.grnet.dep.service.model.PositionEvaluator;
-import gr.grnet.dep.service.model.PositionNomination;
-import gr.grnet.dep.service.model.RegisterMember;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
-import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.CandidacyFile;
 import gr.grnet.dep.service.model.file.CandidateFile;
 import gr.grnet.dep.service.model.file.FileBody;
@@ -185,6 +173,15 @@ public class CandidacyRESTService extends RESTService {
 						.getSingleResult();
 				// Return Results
 				existingCandidacy.getCandidacyEvalutionsDueDate();
+				existingCandidacy.setDate(new Date());
+				CandidacyStatus status = new CandidacyStatus();
+				status.setAction(CandidacyStatus.ACTIONS.SUBMIT);
+				status.setDate(new Date());
+				existingCandidacy.addCandidacyStatus(status);
+
+				em.merge(existingCandidacy);
+				em.flush();
+
 				return existingCandidacy;
 			} catch (NoResultException e) {
 			}
@@ -192,6 +189,10 @@ public class CandidacyRESTService extends RESTService {
 			candidacy.setCandidate(candidate);
 			candidacy.setCandidacies(position.getPhase().getCandidacies());
 			candidacy.setDate(new Date());
+			CandidacyStatus status = new CandidacyStatus();
+			status.setAction(CandidacyStatus.ACTIONS.SUBMIT);
+			status.setDate(new Date());
+			candidacy.addCandidacyStatus(status);
 			candidacy.setOpenToOtherCandidates(false);
 			candidacy.setPermanent(false);
 			candidacy.getProposedEvaluators().clear();
@@ -723,6 +724,10 @@ public class CandidacyRESTService extends RESTService {
 			if (DateUtil.compareDates(new Date(), existingCandidacy.getCandidacies().getClosingDate()) <= 0) {
 				existingCandidacy.setPermanent(false);
 			}
+			CandidacyStatus status = new CandidacyStatus();
+			status.setAction(CandidacyStatus.ACTIONS.WITHDRAW);
+			status.setDate(new Date());
+			existingCandidacy.addCandidacyStatus(status);
 
 			em.merge(existingCandidacy);
 			em.flush();
