@@ -12,7 +12,8 @@ define(["jquery",
     "jquery.iframe-transport",
     "jquery.dynatree",
     "jquery.selectize",
-    "backbone.cache"
+    "backbone.cache",
+    "chosen"
 ], function ($, _, Backbone) {
 
     "use strict";

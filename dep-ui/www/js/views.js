@@ -6424,6 +6424,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     collection.each(function (register) {
                         $select.append('<option value="' + register.get('id') + '">' + register.get("subject").name + '</option>');
                     });
+                    $select.chosen({width: "100%"});
                 }
             });
             self.$("table").dataTable({
@@ -6883,6 +6884,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     collection.each(function (register) {
                         $select.append('<option value="' + register.get('id') + '">' + register.get("subject").name + '</option>');
                     });
+                    $select.chosen({width: "100%"});
                 }
             });
             self.$("table").dataTable({

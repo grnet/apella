@@ -25,6 +25,8 @@ require.config({
 
 		"backbone.cache" : "lib/backbone/backbone.cache",
 
+        "chosen" : "lib/chosen/chosen.jquery",
+
 		// Apella Application
 		"application" : "js/application",
 		"models" : "js/models",
@@ -50,7 +52,9 @@ require.config({
 		"jquery.dynatree" : [ "jquery", "jquery.ui" ],
 		"jquery.selectize" : [ "jquery", "microplugin", "sifter", "jquery.ui", "bootstrap" ],
 
-		"backbone.cache" : [ "backbone" ]
+		"backbone.cache" : [ "backbone" ],
+
+        "chosen" : ["jquery","underscore"]
 	}
 
 });
