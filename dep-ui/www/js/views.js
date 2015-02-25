@@ -955,7 +955,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 editable: self.options.editable,
                 departments: (function () {
                     var result = [];
-                    _.each(self.collection.filter(self.options.filter), function (model) {
+                    _.each(self.collection.models, function (model) {
                         var item;
                         if (model.has("id")) {
                             item = model.toJSON();
@@ -1030,6 +1030,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 if (selectedModel && !_.isEqual(selectedModel.id, self.$input.val())) {
                     self.model = selectedModel;
                     self.$input.val(selectedModel.id).trigger("change").trigger("input");
+                    $('input[name=institution]').val(selectedModel.attributes.school.institution.id);
                     self.$("#departmentDescription").html(_.templates.department(self.model.toJSON()));
                     self.$("div#departments-table_wrapper").hide(400);
                 }
@@ -3321,15 +3322,11 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 case "PROFESSOR_DOMESTIC":
                     App.departments = App.departments || new Models.Departments();
                     App.ranks = App.ranks || new Models.Ranks();
-
                     // Create Selector for departments
                     departmentSelectView = new Views.DepartmentSelectView({
                         el: self.$("input[name=department]"),
                         collection: App.departments,
-                        editable: self.isEditable("department"),
-                        filter: function (departmentModel) {
-                            return _.isEqual(departmentModel.get("school").institution.id, self.model.get("institution").id);
-                        }
+                        editable: self.isEditable("department")
                     });
                     // Fetch Extra data
                     App.departments.fetch({
@@ -3725,6 +3722,9 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     values.department = {
                         "id": self.$('form input[name=department]').val()
                     };
+                    values.institution = {
+                        "id": self.$('input[name=institution]').val()
+                    }
                     values.rank = {
                         "id": self.$('form select[name=rank]').val()
                     };
