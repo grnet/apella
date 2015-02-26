@@ -191,7 +191,7 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
             _.bindAll(self, "setTitle", "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showUserView", "showInstitutionAssistantsView",
                 "showMinistryAssistantsView", "showPositionView", "showPositionsView", "showRegistersView", "showProfessorCommitteesView", "showProfessorEvaluationsView",
                 "showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "showCandidacyView", "showUserSearchView", "showIssueListView", "showDataExportsView",
-                "showStatisticsView", "showAdminCandidaciesView", "start");
+                "showStatisticsView", "showAdminCandidaciesView", "showDomesticProfessorsCreateAccountsView", "start");
 
             self.on("route", function (routefn) {
                 self.setTitle(routefn);
@@ -253,7 +253,8 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
             "administrators/:userId": "showAdministratorsView",
             "dataExports": "showDataExportsView",
             "statistics": "showStatisticsView",
-            "adminCandidacies": "showAdminCandidaciesView"
+            "adminCandidacies": "showAdminCandidaciesView",
+            "createDomesticProfessorAccounts": "showDomesticProfessorsCreateAccountsView"
         },
 
         start: function (eventName, authToken) {
@@ -1338,7 +1339,21 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
                 }
             });
             self.currentView = incompleteCandidacyListView;
-        }
+        },
+
+        showDomesticProfessorsCreateAccountsView: function () {
+            var self = this;
+            var showDomesticProfessorsCreateAccountsView;
+
+            self.clear();
+            showDomesticProfessorsCreateAccountsView = new Views.showDomesticProfessorsCreateAccountsView({
+                'searchURL': (new Models.Users()).url + "/search"
+            });
+            self.refreshBreadcrumb([$.i18n.prop('menu_createDomesticProfessorAccounts')]);
+            $("#content").html(showDomesticProfessorsCreateAccountsView.render().el);
+
+            self.currentView = [showDomesticProfessorsCreateAccountsView];
+        },
 
     });
 

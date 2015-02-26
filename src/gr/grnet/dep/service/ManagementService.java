@@ -22,12 +22,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 @Stateless
@@ -57,29 +52,39 @@ public class ManagementService {
 		}
 	}
 
-	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-	public void massCreateProfessorDomesticAccounts() {
-		@SuppressWarnings("unchecked")
-		List<ProfessorDomesticData> pdData = em.createQuery(
-				"select pdd from ProfessorDomesticData pdd " +
-						"where NOT EXISTS ( " +
-						"	select u.id from User u where u.contactInfo.email = pdd.email " +
-						") " +
-						"order by pdd.email ")
-				.getResultList();
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public void massCreateProfessorDomesticAccounts() {
+        @SuppressWarnings("unchecked")
+        List<ProfessorDomesticData> pdData = em.createQuery(
+                "select pdd from ProfessorDomesticData pdd " +
+                        "where NOT EXISTS ( " +
+                        "	select u.id from User u where u.contactInfo.email = pdd.email " +
+                        ") " +
+                        "order by pdd.email ")
+                .getResultList();
 
-		logger.info("CREATING " + pdData.size() + " PROFESSOR DOMESTIC ACCOUNTS");
-		for (ProfessorDomesticData data : pdData) {
-			User u = authenticationService.findAccountByProfessorDomesticData(data);
-			if (u == null) {
-				logger.info("CREATING PROFESSOR DOMESTIC: " + data.getEmail());
-				u = authenticationService.createProfessorDomesticAccount(data);
-				logger.info("CREATING PROFESSOR DOMESTIC: " + u.getId() + " " + u.getPrimaryRole() + " " + u.getRoles().size());
-			} else {
-				logger.info("SKIPPING PROFESSOR DOMESTIC: " + data.getEmail());
-			}
-		}
-	}
+        massCreateProfessorDomesticAccounts(pdData);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public List<ProfessorDomesticData> massCreateProfessorDomesticAccounts(List<ProfessorDomesticData> pdData) {
+
+        List<ProfessorDomesticData> createdAccountsList = new ArrayList<>();
+
+        logger.info("CREATING " + pdData.size() + " PROFESSOR DOMESTIC ACCOUNTS");
+        for (ProfessorDomesticData data : pdData) {
+            User u = authenticationService.findAccountByProfessorDomesticData(data);
+            if (u == null) {
+                logger.info("CREATING PROFESSOR DOMESTIC: " + data.getEmail());
+                u = authenticationService.createProfessorDomesticAccount(data);
+                createdAccountsList.add(data);
+                logger.info("CREATING PROFESSOR DOMESTIC: " + u.getId() + " " + u.getPrimaryRole() + " " + u.getRoles().size());
+            } else {
+                logger.info("SKIPPING PROFESSOR DOMESTIC: " + data.getEmail());
+            }
+        }
+        return createdAccountsList;
+    }
 
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	public void massSendLoginEmails() {
