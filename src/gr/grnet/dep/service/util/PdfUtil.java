@@ -430,7 +430,7 @@ public class PdfUtil {
 		// Create table
 		PdfPTable logoTable = new PdfPTable(5);
 		logoTable.setHorizontalAlignment(Element.ALIGN_CENTER);
-		float [] rows = {240f,80f,30f,40f,30f};
+		float [] rows = {170f,100f,40f,50f,40f};
 		logoTable.setTotalWidth(rows);
 
 		logoTable.addCell(createImageCell(logoMinedu, Element.ALIGN_CENTER, 0));
