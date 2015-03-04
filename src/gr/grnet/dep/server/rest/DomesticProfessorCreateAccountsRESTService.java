@@ -43,6 +43,7 @@ public class DomesticProfessorCreateAccountsRESTService extends RESTService {
 
     private static final char CSV_DELIMITER = ';';
     private static final char DOUBLE_QUOTE = '"';
+    private static final char FULL_STOP = '.';
 
     @POST
     @Path("/createaccount")
@@ -61,7 +62,9 @@ public class DomesticProfessorCreateAccountsRESTService extends RESTService {
         List<FileItem> fileItems = readMultipartFormData(request);
 
         //In our case the fileΙtems list has always has one upload file
-        if (!fileItems.get(0).getContentType().equals("text/csv")) {
+        String name = fileItems.get(0).getName();
+        int index = name.lastIndexOf(FULL_STOP);
+        if (index == -1 || !name.substring(index + 1).equalsIgnoreCase("csv")) {
             throw new RestException(Response.Status.CONFLICT, "file.notCSVFile");
         }
         try {
