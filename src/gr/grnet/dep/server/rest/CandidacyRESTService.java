@@ -1441,6 +1441,10 @@ public class CandidacyRESTService extends RESTService {
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+        Administrator admin = (Administrator) loggedOn.getActiveRole(RoleDiscriminator.ADMINISTRATOR);
+        if (!admin.isSuperAdministrator()) {
+            throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+        }
 
 		String queryString = "from Candidacy c " +
 				"left join fetch c.candidate.user.roles cerls " +

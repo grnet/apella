@@ -55,6 +55,11 @@ public class DomesticProfessorCreateAccountsRESTService extends RESTService {
             throw new RestException(Response.Status.FORBIDDEN, "insufficient.privileges");
         }
 
+        Administrator admin = (Administrator) loggedOn.getActiveRole(Role.RoleDiscriminator.ADMINISTRATOR);
+        if (!admin.isSuperAdministrator()) {
+            throw new RestException(Response.Status.FORBIDDEN, "insufficient.privileges");
+        }
+
         Reader reader = null;
         CSVParser csvParser = null;
 

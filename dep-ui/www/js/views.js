@@ -254,13 +254,13 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 if (self.model.getRole('ADMINISTRATOR').superAdministrator) {
                     menuItems.push("administrators");
                     menuItems.push("dataExports");
+                    menuItems.push("adminCandidacies");
                 }
                 menuItems.push("searchusers");
                 menuItems.push("statistics");
                 menuItems.push("regulatoryframeworks");
                 menuItems.push("registers");
                 menuItems.push("positions");
-                menuItems.push("adminCandidacies");
             }
 
             self.$el.append('<li><a href="#">' + $.i18n.prop('menu_home') + '</a></li>');
@@ -1556,7 +1556,13 @@ define(["jquery", "underscore", "backbone", "application", "models",
                         link: "administrators"
                     });
                     tiles.push({
+                        link: "adminCandidacies"
+                    });
+                    tiles.push({
                         link: "dataExports"
+                    });
+                    tiles.push({
+                        link: "createDomesticProfessorAccounts"
                     });
                 }
                 tiles.push({
@@ -1573,9 +1579,6 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 });
                 tiles.push({
                     link: "positions"
-                });
-                tiles.push({
-                    link: "adminCandidacies"
                 });
             }
 
@@ -2415,10 +2418,13 @@ define(["jquery", "underscore", "backbone", "application", "models",
 
         render: function () {
             var self = this;
+            var tpl_data = {
+                displayCreateDomesticButton : App.loggedOnUser.getRole("ADMINISTRATOR").superAdministrator
+            }
             self.closeInnerViews();
             self.$el.empty();
             self.addTitle();
-            self.$el.html(self.template({}));
+            self.$el.html(self.template(tpl_data));
 
             // Fill Institutions
             App.institutions = App.institutions || new Models.Institutions();

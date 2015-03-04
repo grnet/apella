@@ -1,12 +1,14 @@
-<div class="row-fluid">
-    <div class="span6">
-        <a href="#createDomesticProfessorAccounts" class="btn">
-            <i class="icon-ok icon-white"></i>
-            <%= $.i18n.prop('btn_createDomesticProfessorAccounts')%>
-        </a>
+<% if(displayCreateDomesticButton) { %>
+    <div class="row-fluid">
+        <div class="span6">
+            <a href="#createDomesticProfessorAccounts" class="btn">
+                <i class="icon-ok icon-white"></i>
+                <%= $.i18n.prop('btn_createDomesticProfessorAccounts')%>
+            </a>
+        </div>
     </div>
-</div>
-<hr/>
+    <hr/>
+<% } %>
 <div class="row-fluid">
     <form>
         <div class="span3">
