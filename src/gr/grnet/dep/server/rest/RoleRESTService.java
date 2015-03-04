@@ -3,20 +3,11 @@ package gr.grnet.dep.server.rest;
 import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.model.AuthenticationType;
-import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.InstitutionAssistant;
-import gr.grnet.dep.service.model.InstitutionManager;
-import gr.grnet.dep.service.model.JiraIssue;
+import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.Position.PositionStatus;
-import gr.grnet.dep.service.model.Professor;
-import gr.grnet.dep.service.model.ProfessorDomestic;
-import gr.grnet.dep.service.model.ProfessorForeign;
-import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
-import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.CandidateFile;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
@@ -432,13 +423,23 @@ public class RoleRESTService extends RESTService {
 		}
 
 		// Update
-		try {
-			existingRole = existingRole.copyFrom(role);
-			switch (existingRole.getDiscriminator()) {
-				case PROFESSOR_DOMESTIC:
-					ProfessorDomestic professorDomestic = (ProfessorDomestic) existingRole;
-					professorDomestic.setSubject(utilityService.supplementSubject(((ProfessorDomestic) role).getSubject()));
-					professorDomestic.setFekSubject(utilityService.supplementSubject(((ProfessorDomestic) role).getFekSubject()));
+        try {
+            boolean institutionHasChanged = false;
+            if (existingRole.getDiscriminator() == RoleDiscriminator.PROFESSOR_DOMESTIC) {
+                institutionHasChanged = ((ProfessorDomestic) existingRole).getInstitution().getId().compareTo(((ProfessorDomestic) role).getInstitution().getId()) != 0;
+            }
+            existingRole = existingRole.copyFrom(role);
+            switch (existingRole.getDiscriminator()) {
+                case PROFESSOR_DOMESTIC:
+                    ProfessorDomestic professorDomestic = (ProfessorDomestic) existingRole;
+                    professorDomestic.setSubject(utilityService.supplementSubject(((ProfessorDomestic) role).getSubject()));
+                    professorDomestic.setFekSubject(utilityService.supplementSubject(((ProfessorDomestic) role).getFekSubject()));
+
+                    if (institutionHasChanged) {
+                        for (RegisterMember member : professorDomestic.getRegisterMemberships()) {
+                            member.setExternal(professorDomestic.getInstitution().getId().compareTo(member.getRegister().getInstitution().getId()) != 0);
+                        }
+                    }
 
 					// Activate if !misingRequiredFields and is not authenticated by username (needs helpdesk approval)
 					if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
