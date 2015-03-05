@@ -1879,6 +1879,29 @@ define([
         }
     });
 
+    Models.CandidacyStatus = Backbone.Model.extend({
+        urlRoot: "/dep/rest/candidacy",
+        defaults: {
+            id: undefined,
+            date: undefined,
+            action: undefined,
+            candidacy: {
+                "id": undefined
+            }
+        }
+    });
+
+    Models.CandidacyStatusList = Backbone.Collection.extend({
+        candidacyId: undefined,
+        model: Models.CandidacyStatus,
+        initialize: function (models, options) {
+            this.candidacyId = options.candidacyId;
+        },
+        url: function () {
+            return "/dep/rest/candidacy/" + this.candidacyId + "/statushistory";
+        }
+    });
+
     Models.CandidacyEvaluator = Backbone.Model.extend({
         urlRoot: function () {
             return "/dep/rest/candidacy/" + this.attributes.candidacy.id + "/evaluator/" + this.attributes.id;

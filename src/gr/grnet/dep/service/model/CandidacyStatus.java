@@ -1,6 +1,8 @@
 package gr.grnet.dep.service.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Date;
@@ -21,6 +23,7 @@ public class CandidacyStatus {
     @Enumerated(EnumType.STRING)
     private ACTIONS action;
 
+    @JsonIgnore
     @ManyToOne
     private Candidacy candidacy;
 

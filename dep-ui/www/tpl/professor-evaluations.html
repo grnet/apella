@@ -55,6 +55,7 @@
                 <th><%= $.i18n.prop("FEK") %></th>
                 <th><%= $.i18n.prop("PositionStatus") %></th>
                 <th><%= $.i18n.prop("Candidacy") %></th>
+                <th width="126px"></th>
             </tr>
             </thead>
             <tbody>
@@ -86,6 +87,13 @@
                 <% } else { %>
                 <td><%- $.i18n.prop('currentCandidacy') + ' ' + evaluator.candidacy.date %></td>
                 <% } %>
+                <td width="126px">
+                    <p align="center">
+                        <a id="candidacyStatusActionsHistory"
+                           data-candidacy-id="<%- evaluator.candidacy.id %>" class="btn btn-mini"><i class="icon-eye-open"></i>
+                            <%= $.i18n.prop('btn_actionsHistory') %></a>
+                    </p>
+                </td>
             </tr>
             <% } %>
             <% }); %>
