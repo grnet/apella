@@ -3172,13 +3172,21 @@ INSERT INTO sector (id, areaid, subjectid) VALUES (413, 25, 45);
 INSERT INTO sector (id, areaid, subjectid) VALUES (414, 25, 46);
 INSERT INTO sector (id, areaid, subjectid) VALUES (415, 25, 47);
 INSERT INTO sector (id, areaid, subjectid) VALUES (416, 25, 99);
-
-
---
--- TOC entry 2447 (class 0 OID 135552)
--- Dependencies: 236
--- Data for Name: sector_name; Type: TABLE DATA; Schema: public; Owner: apella
---
+INSERT INTO sector (id, areaid, subjectid) VALUES (417, 10, 16);
+INSERT INTO sector (id, areaid, subjectid) VALUES (418, 26, 1);
+INSERT INTO sector (id, areaid, subjectid) VALUES (419, 26, 2);
+INSERT INTO sector (id, areaid, subjectid) VALUES (420, 26, 3);
+INSERT INTO sector (id, areaid, subjectid) VALUES (421, 26, 4);
+INSERT INTO sector (id, areaid, subjectid) VALUES (422, 26, 5);
+INSERT INTO sector (id, areaid, subjectid) VALUES (423, 26, 6);
+INSERT INTO sector (id, areaid, subjectid) VALUES (424, 26, 7);
+INSERT INTO sector (id, areaid, subjectid) VALUES (425, 26, 8);
+INSERT INTO sector (id, areaid, subjectid) VALUES (426, 26, 9);
+INSERT INTO sector (id, areaid, subjectid) VALUES (427, 26, 10);
+INSERT INTO sector (id, areaid, subjectid) VALUES (428, 26, 11);
+INSERT INTO sector (id, areaid, subjectid) VALUES (429, 26, 12);
+INSERT INTO sector (id, areaid, subjectid) VALUES (430, 26, 13);
+INSERT INTO sector (id, areaid, subjectid) VALUES (431, 26, 14);
 
 INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (1, 'ΛΟΓΙΚΗ', 'ΓΕΝΙΚΗ ΛΟΓΙΚΗ ', 'el');
 INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (2, 'ΛΟΓΙΚΗ', 'ΠΑΡΑΓΩΓΙΚΗ ΛΟΓΙΚΗ                 ', 'el');
@@ -4012,7 +4020,37 @@ INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (413, 'THEOLOG
 INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (414, 'THEOLOGY', 'CATECHETICS', 'en');
 INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (415, 'THEOLOGY', 'APOLOGETICS', 'en');
 INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (416, 'THEOLOGY', 'OTHER THEOLOGICAL SPECIALTIES', 'en');
-
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (417, 'ΙΑΤΡΙΚΕΣ ΕΠΙΣΤΗΜΕΣ
+', 'ΕΠΙΣΤΗΜΕΣ ΥΓΕΙΑΣ ΚΑΙ ΠΡΟΝΟΙΑΣ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (417, 'MEDICAL SCIENCES', 'HEALTH AND MEDICAL CARE SCIENCES', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (418, 'ΦΙΛΟΛΟΓΙΑ', 'ΜΥΚΗΝΑΪΚΗ ΦΙΛΟΛΟΓΙΑ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (419, 'ΦΙΛΟΛΟΓΙΑ', 'ΑΡΧΑΙΑ ΕΛΛΗΝΙΚΗ ΦΙΛΟΛΟΓΙΑ ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (420, 'ΦΙΛΟΛΟΓΙΑ', 'ΛΑΤΙΝΙΚΗ ΦΙΛΟΛΟΓΙΑ ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (421, 'ΦΙΛΟΛΟΓΙΑ', 'ΠΑΠΥΡΟΛΟΓΙΑ ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (422, 'ΦΙΛΟΛΟΓΙΑ', 'ΠΑΛΑΙΟΓΡΑΦΙΑ ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (423, 'ΦΙΛΟΛΟΓΙΑ', 'ΒΥΖΑΝΤΙΝΗ ΦΙΛΟΛΟΓΙΑ ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (424, 'ΦΙΛΟΛΟΓΙΑ', 'ΜΕΣΑΙΩΝΙΚΗ ΕΛΛΗΝΙΚΗ ΦΙΛΟΛΟΓΙΑ ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (425, 'ΦΙΛΟΛΟΓΙΑ', 'ΛΟΓΙΑ ΒΥΖΑΝΤΙΝΗ ΦΙΛΟΛΟΓΙΑ ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (426, 'ΦΙΛΟΛΟΓΙΑ', 'ΔΗΜΩΔΗΣ ΒΥΖΑΝΤΙΝΗ ΦΙΛΟΛΟΓΙΑ ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (427, 'ΦΙΛΟΛΟΓΙΑ', 'ΜΕΤΑΒΥΖΑΝΤΙΝΗ ΦΙΛΟΛΟΓΙΑ ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (428, 'ΦΙΛΟΛΟΓΙΑ', 'ΔΗΜΩΔΗΣ ΕΛΛΗΝΙΚΗ ΦΙΛΟΛΟΓΙΑ ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (429, 'ΦΙΛΟΛΟΓΙΑ', 'ΝΕΑ ΕΛΛΗΝΙΚΗ ΦΙΛΟΛΟΓΙΑ ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (430, 'ΦΙΛΟΛΟΓΙΑ', 'ΣΥΓΚΡΙΤΙΚΗ ΦΙΛΟΛΟΓΙΑ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (431, 'ΦΙΛΟΛΟΓΙΑ', 'AΛΛΕΣ ΕΙΔΙΚΟΤΗΤΕΣ ΦΙΛΟΛΟΓΙΑΣ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (418, 'PHILOLOGY', 'MYCENAEAN PHILOLOGY', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (419, 'PHILOLOGY', 'ANCIENT GREEK PHILOLOGY', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (420, 'PHILOLOGY', 'LATIN PHILOLOGY', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (421, 'PHILOLOGY', 'PAPYROLOGY', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (422, 'PHILOLOGY', 'PALEOGRAPHY', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (423, 'PHILOLOGY', 'BYZANTINE PHILOLOGY', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (424, 'PHILOLOGY', 'MEDIEVAL GREEK PHILOLOGY', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (425, 'PHILOLOGY', 'LEARNED BYZANTINE PHILOLOGY', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (426, 'PHILOLOGY', 'VERNACULAR BYZANTINE PHILOLOGY', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (427, 'PHILOLOGY', 'POST BYZANTINE PHILOLOGY', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (428, 'PHILOLOGY', 'VERNACULAR/DEMOTIC GREEK PHILOLOGY', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (429, 'PHILOLOGY', 'MODERN GREEK PHILOLOGY', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (430, 'PHILOLOGY', 'COMPARATIVE PHILOLOGY', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (431, 'PHILOLOGY', 'OTHER SPECIALTIES OF PHILOLOGY', 'en');
 
 INSERT INTO country (code, name, alpha3, alpha2, region, subregion) VALUES (4, 'Afghanistan', 'AF', 'AFG', 'Asia', 'Southern Asia');
 INSERT INTO country (code, name, alpha3, alpha2, region, subregion) VALUES (248, 'Åland Islands', 'AX', 'ALA', 'Europe', 'Northern Europe');

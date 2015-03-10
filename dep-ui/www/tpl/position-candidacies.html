@@ -31,11 +31,13 @@
             <% } %>
         </td>
         <td width="126px">
+            <% if (candidacy.allowedToSee) { %>
             <p align="center">
                 <a id="candidacyStatusActionsHistory"
                    data-candidacy-id="<%- candidacy.id %>" class="btn btn-mini"><i class="icon-eye-open"></i>
                     <%= $.i18n.prop('btn_actionsHistory') %></a>
             </p>
+            <% } %>
         </td>
     </tr>
     <% }); %>

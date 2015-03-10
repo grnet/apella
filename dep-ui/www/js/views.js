@@ -2416,7 +2416,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
         render: function () {
             var self = this;
             var tpl_data = {
-                displayCreateDomesticButton : App.loggedOnUser.getRole("ADMINISTRATOR").superAdministrator
+                displayCreateDomesticButton : App.loggedOnUser.hasRole("ADMINISTRATOR") ? App.loggedOnUser.getRole("ADMINISTRATOR").superAdministrator : false
             }
             self.closeInnerViews();
             self.$el.empty();

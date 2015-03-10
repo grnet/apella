@@ -1542,24 +1542,26 @@ public class CandidacyRESTService extends RESTService {
     @Path("/{id:[0-9]+}/statushistory")
     public Response getCandidacyStatusHistoryList (@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId) {
         User loggedOn = getLoggedOn(authToken);
-
         Candidacy candidacy = em.find(Candidacy.class, candidacyId);
         if(candidacy == null){
             throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
         }
-        Position position = candidacy.getCandidacies().getPosition();
-        Set<Long> userIds = new HashSet<>();
-
-        for(CandidacyEvaluator candidacyEvaluator : candidacy.getProposedEvaluators()){
-            userIds.add(candidacyEvaluator.getRegisterMember().getProfessor().getUser().getId());
-        }
-        if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-                !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-                !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-                !loggedOn.isAssociatedWithDepartment(position.getDepartment()) &&
-                !userIds.contains(loggedOn.getId())) {
-            throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-        }
+		// Validate:
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+				!loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
+				(candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
+				(candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+				!candidacy.getCandidacies().containsCandidate(loggedOn) &&
+				!candidacy.containsEvaluator(loggedOn)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
+				!candidacy.isOpenToOtherCandidates() &&
+				!candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
         List<CandidacyStatus> statusList = em.createQuery("Select u from CandidacyStatus u where u.candidacy.id=:candidacyId order by u.date desc")
                 .setParameter("candidacyId", candidacyId)
                 .getResultList();

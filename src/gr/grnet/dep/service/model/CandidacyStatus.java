@@ -2,6 +2,10 @@ package gr.grnet.dep.service.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import gr.grnet.dep.service.util.SimpleDateDeserializer;
+import gr.grnet.dep.service.util.SimpleDateSerializer;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -17,7 +21,7 @@ public class CandidacyStatus {
     @GeneratedValue
     private Long id;
 
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date date;
 
     @Enumerated(EnumType.STRING)
@@ -27,10 +31,12 @@ public class CandidacyStatus {
     @ManyToOne
     private Candidacy candidacy;
 
+	@JsonSerialize(using = SimpleDateSerializer.class)
     public Date getDate() {
         return date;
     }
 
+	@JsonDeserialize(using = SimpleDateDeserializer.class)
     public void setDate(Date date) {
         this.date = date;
     }
