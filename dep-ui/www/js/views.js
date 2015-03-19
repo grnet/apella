@@ -9449,6 +9449,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                         _.isEqual(self.model.get("candidacies").position.phase.status, "EPILOGI");
                 case "toggleEdit":
                 case "clear":
+                case "searchEvaluator":
                 case "selectEvaluator":
                     return self.model.get("canAddEvaluators");
                 default:
@@ -9575,26 +9576,8 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 specificEvaluator: self.model.get("proposedEvaluators")[1]
             });
 
-            self.registerMembers.fetch({
-                cache: true,
-                reset: true,
-                wait: true,
-                success: function (collection) {
-                    // Collection can be empty depending on CanAddEvaluators, add selected evaluators if this is the case
-                    if (collection.length === 0 && self.model.get("proposedEvaluators").length > 0) {
-                        collection.add(_.map(self.model.get("proposedEvaluators"), function (candidacyEvalutor) {
-                            return candidacyEvalutor.registerMember;
-                        }));
-                    }
-                },
-                error: function (model, resp) {
-                    var popup = new Views.PopupView({
-                        type: "error",
-                        message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-                    });
-                    popup.show();
-                }
-            });
+            evaluator0_SelectView.render();
+            evaluator1_SelectView.render();
         },
 
         change: function (event, data) {
@@ -10509,6 +10492,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
             self.collection.bind("reset", self.render, self);
             self.collection.bind("add", self.render, self);
 
+            self.specificEvaluator = self.options.specificEvaluator;
             self.$input = $(self.el);
             self.$input.before("<div id=\"" + self.$input.attr("name") + "\"></div>");
             self.setElement(self.$input.prev("#" + self.$input.attr("name")));
@@ -10532,49 +10516,45 @@ define(["jquery", "underscore", "backbone", "application", "models",
             });
 
             // Set Value
-            if (self.options.specificEvaluator === undefined) {
+            if (self.specificEvaluator === undefined) {
                 $("input[name=" + self.$input.attr("name") + "]").val('');
             } else {
-                $("input[name=" + self.$input.attr("name") + "]").val(self.options.specificEvaluator.registerMember.id);
+                $("input[name=" + self.$input.attr("name") + "]").val(self.specificEvaluator.registerMember.id);
+                self.model = self.specificEvaluator.registerMember;
             }
         },
 
         events: {
             "click a#selectEvaluator": "onSelectEvaluator",
             "click a#toggleEdit": "onToggleEdit",
-            "click a#clear": "clear"
+            "click a#clear": "clear",
+            "click #searchEvaluator": "searchEvaluator"
         },
 
         render: function () {
             var self = this;
             var tpl_data;
 
-            if (self.$input.val() !== '' && self.collection.get(self.$input.val()) === undefined) {
+            if (self.$input.val() !== '' && self.model === undefined) {
                 return self;
             }
+
             // Prepare Data
             tpl_data = {
-                editable: self.options.editable,
-                evaluators: (function () {
-                    var result = [];
-                    if (self.options.specificEvaluator === undefined) {
-                        return self.collection.toJSON();
-                    } else {
-                        self.collection.each(function (model) {
-                            if (model.id != self.options.specificEvaluator.registerMember.id) {
-                                result.push(model.toJSON());
-                            }
-                        });
-                        return result;
-                    }
-                }())
+                editable: self.options.editable
             };
             // Render
             self.closeInnerViews();
             self.$el.empty();
             self.$el.append(this.template(tpl_data));
             self.select(self.$input.val());
-            self.$("#evaluatorDescription").html(_.templates.evaluator(self.model.toJSON()));
+            self.$("#evaluatorDescription").html(_.templates.evaluator(self.model));
+
+            var localeData = [];
+            localeData.push({
+                name: "locale",
+                value: App.locale
+            })
 
             // Initialize Plugins
             if (!$.fn.DataTable.fnIsDataTable(self.$("table.evaluators-table"))) {
@@ -10589,19 +10569,70 @@ define(["jquery", "underscore", "backbone", "application", "models",
                         "sInfo": $.i18n.prop("dataTable_sInfo"),
                         "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
                         "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+                        "iDeferLoading": 0,
                         "oPaginate": {
                             sFirst: $.i18n.prop("dataTable_sFirst"),
                             sPrevious: $.i18n.prop("dataTable_sPrevious"),
                             sNext: $.i18n.prop("dataTable_sNext"),
                             sLast: $.i18n.prop("dataTable_sLast")
                         }
+                    },
+                    "aoColumns": [
+                        {"mData": "register"},
+                        {"mData": "lastname"},
+                        {"mData": "firstname"},
+                        {"mData": "discriminator"},
+                        {"mData": "institution", "bSortable": false},
+                        {"mData": "options", "sType": "html", "bSortable": false}
+                    ],
+                    "bProcessing": true,
+                    "bServerSide": true,
+                    "sAjaxSource": self.collection.url + '/search',
+                    "fnServerData": function (sSource, aoData, fnCallback) {
+                        $.ajax({
+                            "type": "POST",
+                            "url": sSource,
+                            "data": aoData.concat(localeData),
+                            "success": function (json) {
+                                // Read Data
+                                self.collection = json.records;
+                                json.aaData = _.map(json.records, function (evaluator) {
+                                    return {
+                                        register: evaluator.register.subject.name,
+                                        lastname: evaluator.professor.user.lastname[App.locale],
+                                        firstname: evaluator.professor.user.firstname[App.locale],
+                                        discriminator: $.i18n.prop(evaluator.professor.discriminator),
+                                        institution: _.isEqual(evaluator.professor.discriminator,
+                                            'PROFESSOR_FOREIGN') ? evaluator.professor.institution : _.templates.department(evaluator.professor.department),
+                                        options: '<p align="center"><a id="selectEvaluator" class="btn btn-mini" data-evaluator-id="' + evaluator.id + '"><i class="icon-eye-open"></i>' + $.i18n.prop('btn_select') + '</a></p>'
+                                    };
+                                });
+                                fnCallback(json);
+                            }
+                        });
+                    }
+                });
+
+                var filter = self.$('div.dataTables_filter');
+                $('<label>&nbsp;<a id="searchEvaluator" class="btn btn-mini" style="float: right; margin-left: 5px"><i class="icon-search"></i>' + $.i18n.prop("btn_search") + '</a></label>').prependTo(filter);
+
+                self.$(".dataTables_filter input").unbind();
+                self.$(".dataTables_filter input").bind('keyup', function (e) {
+                    if (e.keyCode == 13) {
+                        self.$("table.evaluators-table").dataTable().fnFilter($(this).val());
                     }
                 });
             }
+
             self.$("div.dataTables_wrapper").hide();
 
             // Return result
             return self;
+        },
+
+        searchEvaluator: function () {
+            var self = this;
+            self.$("table.evaluators-table").dataTable().fnFilter(self.$(".dataTables_filter input").val());
         },
 
         onToggleEdit: function () {
@@ -10616,7 +10647,6 @@ define(["jquery", "underscore", "backbone", "application", "models",
         },
 
         toggleEdit: function (show) {
-            ;
             var self = this;
             if (_.isUndefined(show)) {
                 self.$("div.dataTables_wrapper").toggle(400);
@@ -10640,11 +10670,17 @@ define(["jquery", "underscore", "backbone", "application", "models",
             var self = this;
             var selectedModel;
             if (evaluatorId) {
-                selectedModel = self.collection.get(evaluatorId);
+                var counter;
+                //selectedModel = self.collection.get(evaluatorId);
+                for (counter in self.collection) {
+                    if (self.collection[counter].id === parseInt(evaluatorId)) {
+                        selectedModel = self.collection[counter];
+                    }
+                }
                 if (selectedModel && !_.isEqual(selectedModel.id, self.$input.val())) {
                     self.model = selectedModel;
                     self.$input.val(selectedModel.id).trigger("change").trigger("input");
-                    self.$("#evaluatorDescription").html(_.templates.evaluator(self.model.toJSON()));
+                    self.$("#evaluatorDescription").html(_.templates.evaluator(self.model));
                     self.$input.parent().find('a#clear').show();
                     self.$("div.dataTables_wrapper").hide(400);
                 }

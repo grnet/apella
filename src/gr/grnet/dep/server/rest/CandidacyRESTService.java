@@ -21,11 +21,13 @@ import gr.grnet.dep.service.util.DateUtil;
 import gr.grnet.dep.service.util.StringUtil;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -783,13 +785,13 @@ public class CandidacyRESTService extends RESTService {
 		}
 		// Run Query
 		List<RegisterMember> registerMembers = em.createQuery(
-				"select distinct m from Register r " +
-						"join r.members m " +
-						"where r.permanent = true " +
-						"and r.institution.id = :institutionId " +
-						"and m.deleted = false " +
-						"and m.professor.status = :status " +
-						"and m.id not in (:committeeMemberIds)", RegisterMember.class)
+                "select distinct m from Register r " +
+                        "join r.members m " +
+                        "where r.permanent = true " +
+                        "and r.institution.id = :institutionId " +
+                        "and m.deleted = false " +
+                        "and m.professor.status = :status " +
+                        "and m.id not in (:committeeMemberIds)", RegisterMember.class)
 				.setParameter("institutionId", institution.getId())
 				.setParameter("status", RoleStatus.ACTIVE)
 				.setParameter("committeeMemberIds", committeeMemberIds)
@@ -798,6 +800,151 @@ public class CandidacyRESTService extends RESTService {
 		// Return result
 		return registerMembers;
 	}
+
+
+    @POST
+    @Path("/{id:[0-9]+}/register/search")
+    @JsonView({CandidacyEvaluator.CandidacyEvaluatorView.class})
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public SearchData<RegisterMember> search(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("id") Long candidacyId, @Context HttpServletRequest request) {
+        User loggedOn = getLoggedOn(authToken);
+        final Candidacy existingCandidacy = em.find(Candidacy.class, candidacyId);
+        if (existingCandidacy == null) {
+            throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
+        }
+        Candidate candidate = existingCandidacy.getCandidate();
+        if (!candidate.getUser().getId().equals(loggedOn.getId())) {
+            throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+        }
+        // Return empty response while committee is not defined
+        if (!canAddEvaluators(existingCandidacy)) {
+            return new SearchData<>();
+        }
+        // Prepare Data for Query
+        Institution institution = existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution();
+        Set<Long> committeeMemberIds = new HashSet<Long>();
+        if (existingCandidacy.getCandidacies().getPosition().getPhase().getCommittee() != null) {
+            PositionCommittee committee = existingCandidacy.getCandidacies().getPosition().getPhase().getCommittee();
+            for (PositionCommitteeMember member : committee.getMembers()) {
+                committeeMemberIds.add(member.getRegisterMember().getId());
+            }
+        }
+        if (committeeMemberIds.isEmpty()) {
+            // This should not happen, but just to avoid exceptions in case it does
+            return new SearchData<>();
+        }
+
+        String filterText = request.getParameter("sSearch");
+        String locale = request.getParameter("locale");
+        String sEcho = request.getParameter("sEcho");
+        // Ordering
+        String orderNo = request.getParameter("iSortCol_0");
+        String orderField = request.getParameter("mDataProp_" + orderNo);
+        String orderDirection = request.getParameter("sSortDir_0");
+        // Pagination
+        int iDisplayStart = Integer.valueOf(request.getParameter("iDisplayStart"));
+        int iDisplayLength = Integer.valueOf(request.getParameter("iDisplayLength"));
+
+        // Prepare Query
+        StringBuilder searchQueryString = new StringBuilder();
+        searchQueryString.append("from RegisterMember m " +
+                "join m.professor p " +
+                "where m.register.permanent = true " +
+                "and m.register.institution.id = :institutionId " +
+                "and m.deleted = false " +
+                "and p.status = :status " +
+                "and m.id not in (:committeeMemberIds) ");
+
+        if (StringUtils.isNotEmpty(filterText)) {
+            searchQueryString.append(" and ( UPPER(m.professor.user.basicInfo.lastname) like :filterText ");
+            searchQueryString.append(" or UPPER(m.professor.user.basicInfoLatin.lastname) like :filterText ");
+            searchQueryString.append(" or UPPER(m.professor.user.basicInfo.firstname) like :filterText ");
+            searchQueryString.append(" or UPPER(m.professor.user.basicInfoLatin.firstname) like :filterText ");
+            searchQueryString.append(" or (" +
+                    "	exists (" +
+                    "		select pd.id from ProfessorDomestic pd " +
+                    "		join pd.department.name dname " +
+                    "		join pd.department.school.name sname " +
+                    "		join pd.department.school.institution.name iname " +
+                    "		where pd.id = p.id " +
+                    "		and ( dname like :filterText " +
+                    "			or sname like :filterText " +
+                    "			or iname like :filterText " +
+                    "		)" +
+                    "	) " +
+                    "	or exists (" +
+                    "		select pf.id from ProfessorForeign pf " +
+                    "		where pf.id = p.id " +
+                    "		and UPPER(pf.foreignInstitution) like :filterText " +
+                    "	) " +
+                    ") ) ");
+        }
+
+        Query countQuery = em.createQuery(
+                "select count(distinct m.id) " +
+                        searchQueryString.toString());
+
+        countQuery.setParameter("institutionId", institution.getId());
+        countQuery.setParameter("status", RoleStatus.ACTIVE);
+        countQuery.setParameter("committeeMemberIds", committeeMemberIds);
+
+        if (StringUtils.isNotEmpty(filterText)) {
+            countQuery.setParameter("filterText", filterText.toUpperCase() + "%");
+        }
+
+        //get Result
+        Long totalRecords = (Long) countQuery.getSingleResult();
+
+        StringBuilder orderByClause = new StringBuilder();
+
+        if (StringUtils.isNotEmpty(orderField)) {
+            if (orderField.equals("register")) {
+                orderByClause.append(" order by m.register.subject.name " + orderDirection);
+            } else if (orderField.equals("lastname")) {
+                if (locale.equals("el")) {
+                    orderByClause.append(" order by m.professor.user.basicInfo.lastname " + orderDirection);
+                } else {
+                    orderByClause.append(" order by m.professor.user.basicInfoLatin.lastname " + orderDirection);
+                }
+            } else if (orderField.equals("firstname")) {
+                if (locale.equals("el")) {
+                    orderByClause.append(" order by m.professor.user.basicInfo.firstname " + orderDirection);
+                } else {
+                    orderByClause.append(" order by m.professor.user.basicInfoLatin.firstname " + orderDirection);
+                }
+            } else if (orderField.equals("discriminator")) {
+                orderByClause.append(" order by m.professor.discriminator " + orderDirection);
+            }
+        }
+
+        TypedQuery<RegisterMember> searchQuery = em.createQuery(
+                " select m from RegisterMember m " +
+                        "where m.id in ( " +
+                        "select distinct m.id " +
+                        searchQueryString.toString() + ") " + orderByClause.toString(), RegisterMember.class);
+
+        searchQuery.setParameter("institutionId", institution.getId());
+        searchQuery.setParameter("status", RoleStatus.ACTIVE);
+        searchQuery.setParameter("committeeMemberIds", committeeMemberIds);
+        if (StringUtils.isNotEmpty(filterText)) {
+            searchQuery.setParameter("filterText", filterText.toUpperCase() + "%");
+        }
+
+        List<RegisterMember> registerMembers = searchQuery
+                .setFirstResult(iDisplayStart)
+                .setMaxResults(iDisplayLength)
+                .getResultList();
+
+        SearchData<RegisterMember> result = new SearchData<>();
+        result.setiTotalRecords(totalRecords);
+        result.setiTotalDisplayRecords(totalRecords);
+        result.setsEcho(Integer.valueOf(sEcho));
+        result.setRecords(registerMembers);
+
+        // Return result
+        return result;
+    }
+
 
 	/*******************************
 	 * Snapshot File Functions *****
