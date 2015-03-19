@@ -297,6 +297,10 @@ public class ReportService {
 		cell.setCellValue("Επώνυμο");
 		cell.setCellStyle(titleStyle);
 
+        cell = row.createCell(colNum++);
+        cell.setCellValue("Κωδικός");
+        cell.setCellStyle(titleStyle);
+
 		cell = row.createCell(colNum++);
 		cell.setCellValue("Προφίλ Χρήστη");
 		cell.setCellStyle(titleStyle);
@@ -352,6 +356,10 @@ public class ReportService {
 			cell = row.createCell(colNum++);
 			cell.setCellValue(member.getProfessor().getUser().getLastname("el"));
 			cell.setCellStyle(textStyle);
+
+            cell = row.createCell(colNum++);
+            cell.setCellValue(member.getProfessor().getUser().getId());
+            cell.setCellStyle(textStyle);
 
 			switch (member.getProfessor().getDiscriminator()) {
 				case PROFESSOR_DOMESTIC:
