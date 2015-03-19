@@ -26,7 +26,7 @@
             <%- App.utils.formatFileSize(file.currentBody.fileSize) %>
         </td>
         <td>
-            <%- file.currentBody.date %>
+            <span style="display: none"><%- App.utils.dateFromString(file.currentBody.date).getTime() %></span> <%- file.currentBody.date %>
         </td>
         <% if (withMetadata) { %>
         <td><%- file.description %></td>
