@@ -27,6 +27,7 @@ import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.User.UserView;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileType;
+import gr.grnet.dep.service.util.DateUtil;
 import gr.grnet.dep.service.util.StringUtil;
 
 import javax.ejb.EJBException;
@@ -264,6 +265,10 @@ public class PositionRESTService extends RESTService {
 			Sector sector = em.find(Sector.class, position.getSector().getId());
 			if (sector == null) {
 				throw new RestException(Status.NOT_FOUND, "wrong.sector.id");
+			}
+			// Validate that openingDate is greater than today for new position
+			if (isNew && DateUtil.compareDates(position.getPhase().getCandidacies().getOpeningDate(), new Date())  < 0) {
+				throw new RestException(Status.NOT_FOUND, "position.opening.date.greater.today");
 			}
 			// Only admin can change positionCandidacies dates if permanent, just ignore changes otherwise
 			if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && existingPosition.isPermanent()) {
