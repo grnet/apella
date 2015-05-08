@@ -2417,7 +2417,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
             var self = this;
             var tpl_data = {
                 displayCreateDomesticButton : App.loggedOnUser.hasRole("ADMINISTRATOR") ? App.loggedOnUser.getRole("ADMINISTRATOR").superAdministrator : false
-            }
+            };
             self.closeInnerViews();
             self.$el.empty();
             self.addTitle();
@@ -3727,7 +3727,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     };
                     values.institution = {
                         "id": self.$('input[name=institution]').val()
-                    }
+                    };
                     values.rank = {
                         "id": self.$('form select[name=rank]').val()
                     };
@@ -5379,7 +5379,6 @@ define(["jquery", "underscore", "backbone", "application", "models",
                         })) {
                         $(this).hide();
                     }
-                    ;
                 }
             });
             // Tabs:
@@ -8618,8 +8617,8 @@ define(["jquery", "underscore", "backbone", "application", "models",
 
         close: function () {
             this.closeInnerViews();
-            this.options.positionEvaluations.unbind('reset', self.render, self);
-            this.options.candidacyEvaluations.unbind('reset', self.render, self);
+            this.options.positionEvaluations.unbind('reset', this.render, this);
+            this.options.candidacyEvaluations.unbind('reset', this.render, this);
             this.$el.unbind();
             this.$el.remove();
         }
@@ -10554,7 +10553,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
             localeData.push({
                 name: "locale",
                 value: App.locale
-            })
+            });
 
             // Initialize Plugins
             if (!$.fn.DataTable.fnIsDataTable(self.$("table.evaluators-table"))) {
@@ -10618,7 +10617,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
 
                 self.$(".dataTables_filter input").unbind();
                 self.$(".dataTables_filter input").bind('keyup', function (e) {
-                    if (e.keyCode == 13) {
+                    if (e.keyCode === 13) {
                         self.$("table.evaluators-table").dataTable().fnFilter($(this).val());
                     }
                 });
@@ -10781,8 +10780,8 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 },
                 done: function (e, data) {
                     self.$("#domesticProfessors").empty();
-                    if (!!data.result.error || data.result.length == 0) {
-                        var message = data.result.length == 0 ? "error.csvFile.already.existing.accounts" : "error." + data.result.error;
+                    if (!!data.result.error || data.result.length === 0) {
+                        var message = data.result.length === 0 ? "error.csvFile.already.existing.accounts" : "error." + data.result.error;
                         new Views.PopupView({
                             type: "error",
                             message: $.i18n.prop(message)
@@ -10794,7 +10793,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                         }).show();
                         var result = {
                             domesticProfessors: data.result
-                        }
+                        };
                         self.$("#domesticProfessors").html(self.createdProfessorsTemplate(result));
                     }
                 },

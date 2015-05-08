@@ -259,19 +259,23 @@ public class RESTService {
 					}
 				} else {
 					FileBody body = new FileBody();
-					header.addBody(body);
-					em.persist(header);
 					em.persist(body);
 					em.flush(); // Get an id
 
 					String filename = fileItem.getName();
 					String newFilename = suggestFilename(body.getId(), "upl", filename);
 					file = new File(WebConstants.FILES_PATH + newFilename);
+					fileItem.write(file);
 
+					// Now add metadata in database,
+					// up to now only an empty body is stored, no reference to header
 					String mimeType = fileItem.getContentType();
-					if (StringUtils.isEmpty(mimeType) || "application/octet-stream".equals(mimeType)
-							|| "application/download".equals(mimeType) || "application/force-download".equals(mimeType)
-							|| "octet/stream".equals(mimeType) || "application/unknown".equals(mimeType)) {
+					if (StringUtils.isEmpty(mimeType)
+							|| "application/octet-stream".equals(mimeType)
+							|| "application/download".equals(mimeType)
+							|| "application/force-download".equals(mimeType)
+							|| "octet/stream".equals(mimeType)
+							|| "application/unknown".equals(mimeType)) {
 						body.setMimeType(identifyMimeType(filename));
 					} else {
 						body.setMimeType(mimeType);
@@ -281,7 +285,9 @@ public class RESTService {
 					body.setFileSize(fileItem.getSize());
 					body.setDate(new Date());
 
-					fileItem.write(file);
+					header.addBody(body);
+					em.persist(header);
+					em.flush();
 				}
 			}
 

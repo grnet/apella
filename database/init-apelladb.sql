@@ -357,12 +357,12 @@ INSERT INTO institution_name (institution_id, name, locale) VALUES (45, 'ΔΙΕ�
 INSERT INTO institution_name (institution_id, name, locale) VALUES (101, 'ΑΚΑΔΗΜΙΑ ΑΘΗΝΩΝ', 'el');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (102, 'ΕΘΝΙΚΟ ΚΕΝΤΡΟ ΔΗΜΟΣΙΑΣ ΔΙΟΙΚΗΣΗΣ & ΑΥΤΟΔΙΟΙΚΗΣΗΣ', 'el');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (103, 'ΕΘΝΙΚΟ ΑΣΤΕΡΟΣΚΟΠΕΙΟ ΑΘΗΝΩΝ - ΕΑΑ ', 'el');
-INSERT INTO institution_name (institution_id, name, locale) VALUES (104, 'ΕΘΝΙΚΟ ΚΕΝΤΡΟ ΕΡΕΥΝΑΣ ΦΥΣΙΚΩΝ ΕΠΙΣΤΗΜΩΝ "ΔΗΜΟΚΡΙΤΟΣ"', 'el');
+INSERT INTO institution_name (institution_id, name, locale) VALUES (104, 'ΕΘΝΙΚΟ ΚΕΝΤΡΟ ΕΡΕΥΝΑΣ ΦΥΣΙΚΩΝ ΕΠΙΣΤΗΜΩΝ 'ΔΗΜΟΚΡΙΤΟΣ'', 'el');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (105, 'ΕΘΝΙΚΟ ΚΕΝΤΡΟ ΚΟΙΝΩΝΙΚΩΝ ΕΡΕΥΝΩΝ - ΕΚΚΕ', 'el');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (106, 'ΕΛΛΗΝΙΚΟ ΚΕΝΤΡΟ ΘΑΛΑΣΣΙΩΝ ΕΡΕΥΝΩΝ - ΕΛΚΕΘΕ ', 'el');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (107, 'ΙΝΣΤΙΤΟΥΤΟ ΤΕΧΝΙΚΗΣ ΣΕΙΣΜΟΛΟΓΙΑΣ & ΑΝΤΙΣΕΙΣΜΙΚΩΝ ΚΑΤΑΣΚΕΥΩΝ – ΙΤΣΑΚ ', 'el');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (108, 'ΓΕΩΡΓΙΚΗ ΚΑΙ ΒΙΟΤΕΧΝΙΚΗ ΣΧΟΛΗ ', 'el');
-INSERT INTO institution_name (institution_id, name, locale) VALUES (109, 'Ε.Π.Ι. " ΝΕΥΡΟΧΕΙΡΟΥΡΓΙΚΟ "  - ΠΑΝΕΠΙΣΤΗΜΙΟ ΙΩΑΝΝΙΝΩΝ', 'el');
+INSERT INTO institution_name (institution_id, name, locale) VALUES (109, 'Ε.Π.Ι. ' ΝΕΥΡΟΧΕΙΡΟΥΡΓΙΚΟ '  - ΠΑΝΕΠΙΣΤΗΜΙΟ ΙΩΑΝΝΙΝΩΝ', 'el');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (110, 'Ε.Π.Ι. ΑΣΤΙΚΟΥ ΠΕΡΙΒΑΛΛΟΝΤΟΣ ΚΑΙ ΑΝΘΡΩΠΙΝΟΥ ΔΥΝΑΜΙΚΟΥ - ΠΑΝΤΕΙΟ ΠΑΝΕΠΙΣΤΗΜΙΟ', 'el');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (111, 'Ε.Π.Ι. ΔΙΕΘΝΩΝ ΣΧΕΣΕΩΝ  -  ΠΑΝΤΕΙΟ ΠΑΝΕΠΙΣΤΗΜΙΟ', 'el');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (112, 'Ε.Π.Ι. ΔΙΚΟΝΟΜΙΚΩΝ ΜΕΛΕΤΩΝ  - ΕΚΠΑ', 'el');
@@ -384,8 +384,8 @@ INSERT INTO institution_name (institution_id, name, locale) VALUES (127, 'ΕΘΝ
 INSERT INTO institution_name (institution_id, name, locale) VALUES (128, 'ΕΛΛΗΝΙΚΟ ΙΝΣΤΙΤΟΥΤΟ ΠΑΣΤΕΡ - ΕΙΠ ', 'el');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (129, 'ΕΛΛΗΝΙΚΟ ΙΝΣΤΙΤΟΥΤΟ ΥΓΙΕΙΝΗΣ & ΑΣΦΑΛΕΙΑΣ ΤΗΣ ΕΡΓΑΣΙΑΣ ', 'el');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (130, 'ΕΛΛΗΝΙΚΟΣ ΟΡΓΑΝΙΣΜΟΣ ΤΥΠΟΠΟΙΗΣΗΣ ', 'el');
-INSERT INTO institution_name (institution_id, name, locale) VALUES (132, 'ΕΡΕΥΝΗΤΙΚΟ ΚΕΝΤΡΟ ΒΙΟΙΑΤΡΙΚΩΝ ΕΠΙΣΤΗΜΩΝ - ΕΚEΒΕ "ΑΛΕΞΑΝΔΡΟΣ ΦΛΕΜΙΓΚ"', 'el');
-INSERT INTO institution_name (institution_id, name, locale) VALUES (133, 'ΕΡΕΥΝΗΤΙΚΟ ΚΕΝΤΡΟ ΚΑΙΝΟΤΟΜΙΑΣ ΣΤΙΣ ΤΕΧΝΟΛΟΓΙΕΣ ΤΗΣ ΠΛΗΡΟΦΟΡΙΑΣ, ΤΩΝ ΕΠΙΚΟΙΝΩΝΙΩΝ & ΤΗΣ ΓΝΩΣΗΣ - "ΑΘΗΝΑ" ', 'el');
+INSERT INTO institution_name (institution_id, name, locale) VALUES (132, 'ΕΡΕΥΝΗΤΙΚΟ ΚΕΝΤΡΟ ΒΙΟΙΑΤΡΙΚΩΝ ΕΠΙΣΤΗΜΩΝ - ΕΚEΒΕ 'ΑΛΕΞΑΝΔΡΟΣ ΦΛΕΜΙΓΚ'', 'el');
+INSERT INTO institution_name (institution_id, name, locale) VALUES (133, 'ΕΡΕΥΝΗΤΙΚΟ ΚΕΝΤΡΟ ΚΑΙΝΟΤΟΜΙΑΣ ΣΤΙΣ ΤΕΧΝΟΛΟΓΙΕΣ ΤΗΣ ΠΛΗΡΟΦΟΡΙΑΣ, ΤΩΝ ΕΠΙΚΟΙΝΩΝΙΩΝ & ΤΗΣ ΓΝΩΣΗΣ - 'ΑΘΗΝΑ' ', 'el');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (134, 'ΙΔΡΥΜΑ ΕΥΓΕΝΙΔΟΥ', 'el');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (135, 'ΙΔΡΥΜΑ ΙΑΤΡΟΒΙΟΛΟΓΙΚΗΣ ΕΡΕΥΝΑΣ ΑΚΑΔΗΜΙΑΣ ΑΘΗΝΩΝ', 'el');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (136, 'ΙΔΡΥΜΑ ΜΕΙΖΟΝΟΣ ΕΛΛΗΝΙΣΜΟΥ', 'el');
@@ -400,7 +400,7 @@ INSERT INTO institution_name (institution_id, name, locale) VALUES (143, 'ΚΕΝ
 INSERT INTO institution_name (institution_id, name, locale) VALUES (144, 'ΚΕΝΤΡΟ ΕΡΕΥΝΑΣ ΓΙΑ ΘΕΜΑΤΑ ΙΣΟΤΗΤΑΣ ', 'el');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (146, 'ΕΘΝΙΚΟ ΚΕΝΤΡΟ ΤΕΚΜΗΡΙΩΣΗΣ (ΕΚΤ)', 'el');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (147, 'ΕΥΡΩΠΑΪΚΟ ΚΕΝΤΡΟ ΓΙΑ ΤΗΝ ΑΝΑΠΤΥΞΗ ΤΗΣ ΕΠΑΓΓΕΛΜΑΤΙΚΗΣ ΚΑΤΑΡΤΙΣΗΣ', 'el');
-INSERT INTO institution_name (institution_id, name, locale) VALUES (148, 'ΙΝΣΤΙΤΟΥΤΟ ΤΕΧΝΟΛΟΓΙΑΣ ΥΠΟΛΟΓΙΣΤΩΝ & ΕΚΔΟΣΕΩΝ (ΙΤΥΕ "ΔΙΟΦΑΝΤΟΣ")', 'el');
+INSERT INTO institution_name (institution_id, name, locale) VALUES (148, 'ΙΝΣΤΙΤΟΥΤΟ ΤΕΧΝΟΛΟΓΙΑΣ ΥΠΟΛΟΓΙΣΤΩΝ & ΕΚΔΟΣΕΩΝ (ΙΤΥΕ 'ΔΙΟΦΑΝΤΟΣ')', 'el');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (1, 'TECHNOLOGICAL EDUCATIONAL INSTITUTE OF THESSALONIKI', 'en');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (6, 'ATHENS SCHOOL OF FINE ARTS', 'en');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (8, 'ARISTOTLE UNIVERSITY OF THESSALONIKI', 'en');
@@ -440,7 +440,7 @@ INSERT INTO institution_name (institution_id, name, locale) VALUES (45, 'INTERNA
 INSERT INTO institution_name (institution_id, name, locale) VALUES (101, 'ACADEMY OF ATHENS', 'en');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (102, 'NATIONAL SCHOOL OF PUBLIC ADMINISTRATION AND LOCAL GOVERNMENT', 'en');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (103, 'NATIONAL OBSERVATORY OF ATHENS - NOA', 'en');
-INSERT INTO institution_name (institution_id, name, locale) VALUES (104, 'NATIONAL CENTRE OF SCIENTIFIC RESEARCH "DEMOKRITOS"', 'en');
+INSERT INTO institution_name (institution_id, name, locale) VALUES (104, 'NATIONAL CENTRE OF SCIENTIFIC RESEARCH 'DEMOKRITOS'', 'en');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (105, 'NATIONAL CENTRE FOR SOCIAL RESEARCH (EKKE)', 'en');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (106, 'HELLENIC CENTRE FOR MARINE RESEARCH - HCMR', 'en');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (107, 'INSTITUTE OF ENGINEERING SEISMOLOGY & EARTHQUAKE ENGINEERING (ITSAK)', 'en');
@@ -467,7 +467,7 @@ INSERT INTO institution_name (institution_id, name, locale) VALUES (127, 'CENTRE
 INSERT INTO institution_name (institution_id, name, locale) VALUES (128, 'HELLENIC PASTEUR INSTITUTE (HPI)', 'en');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (129, 'HELLENIC INSTITUTE FOR OCCUPATIONAL HEALTH AND SAFETY ', 'en');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (130, 'HELLENIC ORGANIZATION FOR STANDARDIZATION (ELOT)', 'en');
-INSERT INTO institution_name (institution_id, name, locale) VALUES (132, 'BIOMEDICAL SCIENCES RESEARCH CENTER "ALEXANDER FLEMING"', 'en');
+INSERT INTO institution_name (institution_id, name, locale) VALUES (132, 'BIOMEDICAL SCIENCES RESEARCH CENTER 'ALEXANDER FLEMING'', 'en');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (133, 'ATHENA RESEARCH AND INNOVATION CENTER IN INFORMATION, COMMUNICATION AND KNOWLEDGE TECHNOLOGIES', 'en');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (134, 'EUGENIDES FOUNDATION', 'en');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (135, 'BIOMEDICAL RESEARCH FOUNDATION OF THE ACADEMY OF ATHENS (BRFAA)', 'en');
@@ -481,7 +481,7 @@ INSERT INTO institution_name (institution_id, name, locale) VALUES (142, 'INSTIT
 INSERT INTO institution_name (institution_id, name, locale) VALUES (143, 'CENTRE FOR THE GREEK LANGUAGE', 'en');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (146, 'NATIONAL DOCUMENTATION CENTRE', 'en');
 INSERT INTO institution_name (institution_id, name, locale) VALUES (147, 'EUROPEAN CENTRE FOR THE DEVELOPMENT OF VOCATIONAL TRAINING', 'en');
-INSERT INTO institution_name (institution_id, name, locale) VALUES (148, 'COMPUTER TECHNOLOGY INSTITUTE AND PRESS "DIOPHANTUS"', 'en');
+INSERT INTO institution_name (institution_id, name, locale) VALUES (148, 'COMPUTER TECHNOLOGY INSTITUTE AND PRESS 'DIOPHANTUS'', 'en');
 
 
 INSERT INTO school (id, institution_id) VALUES (1, 1);
@@ -2144,7 +2144,7 @@ INSERT INTO department_name (department_id, name, locale) VALUES (20015, 'ΕΘΝ
 INSERT INTO department_name (department_id, name, locale) VALUES (20016, 'ΓΕΩΔΥΝΑΜΙΚΟ ΙΝΣΤΙΤΟΥΤΟ ', 'el');
 INSERT INTO department_name (department_id, name, locale) VALUES (20017, 'ΙΝΣΤΙΤΟΥΤΟ ΑΣΤΡΟΝΟΜΙΑΣ, ΑΣΤΡΟΦΥΣΙΚΗΣ, ΔΙΑΣΤΗΜΙΚΩΝ ΕΦΑΡΜΟΓΩΝ ΚΑΙ ΤΗΛΕΠΙΣΚΟΠΗΣΗΣ', 'el');
 INSERT INTO department_name (department_id, name, locale) VALUES (20018, 'ΙΝΣΤΙΤΟΥΤΟ ΕΡΕΥΝΩΝ ΠΕΡΙΒΑΛΛΟΝΤΟΣ ΚΑΙ ΒΙΩΣΙΜΗΣ ΑΝΑΠΤΥΞΗΣ ', 'el');
-INSERT INTO department_name (department_id, name, locale) VALUES (20019, 'ΙΝΣΤΙΤΟΥΤΟ ΤΕΧΝΟΛΟΓΙΩΝ & ΕΡΕΥΝΩΝ ΒΑΘΕΙΑΣ ΘΑΛΑΣΣΗΣ & ΑΣΤΡΟΣΩΜΑΤΙΔΙΑΚΗΣ ΦΥΣΙΚΗΣ ΝΕΤΡΙΝΩΝ "ΝΕΣΤΩΡ"', 'el');
+INSERT INTO department_name (department_id, name, locale) VALUES (20019, 'ΙΝΣΤΙΤΟΥΤΟ ΤΕΧΝΟΛΟΓΙΩΝ & ΕΡΕΥΝΩΝ ΒΑΘΕΙΑΣ ΘΑΛΑΣΣΗΣ & ΑΣΤΡΟΣΩΜΑΤΙΔΙΑΚΗΣ ΦΥΣΙΚΗΣ ΝΕΤΡΙΝΩΝ 'ΝΕΣΤΩΡ'', 'el');
 INSERT INTO department_name (department_id, name, locale) VALUES (20020, 'ΙΝΣΤΙΤΟΥΤΟ ΒΙΟΕΠΙΣΤΗΜΩΝ ΚΑΙ ΕΦΑΡΜΟΓΩΝ ', 'el');
 INSERT INTO department_name (department_id, name, locale) VALUES (20021, 'ΙΝΣΤΙΤΟΥΤΟ ΠΛΗΡΟΦΟΡΙΚΗΣ ΚΑΙ ΤΗΛΕΠΙΚΟΙΝΩΝΙΩΝ', 'el');
 INSERT INTO department_name (department_id, name, locale) VALUES (20022, 'ΙΝΣΤΙΤΟΥΤΟ ΠΡΟΗΓΜΕΝΩΝ ΥΛΙΚΩΝ, ΦΥΣΙΚΟΧΗΜΙΚΩΝ ΔΙΕΡΓΑΣΙΩΝ, ΝΑΝΟΤΕΧΝΟΛΟΓΙΑΣ ΚΑΙ ΜΙΚΡΟΣΥΣΤΗΜΑΤΩΝ', 'el');
@@ -2160,7 +2160,7 @@ INSERT INTO department_name (department_id, name, locale) VALUES (20031, 'ΙΝΣ
 INSERT INTO department_name (department_id, name, locale) VALUES (20032, 'ΙΝΣΤΙΤΟΥΤΟ ΩΚΕΑΝΟΓΡΑΦΙΑΣ ', 'el');
 INSERT INTO department_name (department_id, name, locale) VALUES (20033, 'ΙΝΣΤΙΤΟΥΤΟ ΤΕΧΝΙΚΗΣ ΣΕΙΣΜΟΛΟΓΙΑΣ & ΑΝΤΙΣΕΙΣΜΙΚΩΝ ΚΑΤΑΣΚΕΥΩΝ – ΙΤΣΑΚ ', 'el');
 INSERT INTO department_name (department_id, name, locale) VALUES (20034, 'ΓΕΩΡΓΙΚΗ ΚΑΙ ΒΙΟΤΕΧΝΙΚΗ ΣΧΟΛΗ ', 'el');
-INSERT INTO department_name (department_id, name, locale) VALUES (20035, 'Ε.Π.Ι. " ΝΕΥΡΟΧΕΙΡΟΥΡΓΙΚΟ "  - ΠΑΝΕΠΙΣΤΗΜΙΟ ΙΩΑΝΝΙΝΩΝ', 'el');
+INSERT INTO department_name (department_id, name, locale) VALUES (20035, 'Ε.Π.Ι. ' ΝΕΥΡΟΧΕΙΡΟΥΡΓΙΚΟ '  - ΠΑΝΕΠΙΣΤΗΜΙΟ ΙΩΑΝΝΙΝΩΝ', 'el');
 INSERT INTO department_name (department_id, name, locale) VALUES (20036, 'Ε.Π.Ι. ΑΣΤΙΚΟΥ ΠΕΡΙΒΑΛΛΟΝΤΟΣ ΚΑΙ ΑΝΘΡΩΠΙΝΟΥ ΔΥΝΑΜΙΚΟΥ - ΠΑΝΤΕΙΟ ΠΑΝΕΠΙΣΤΗΜΙΟ', 'el');
 INSERT INTO department_name (department_id, name, locale) VALUES (20037, 'Ε.Π.Ι. ΔΙΕΘΝΩΝ ΣΧΕΣΕΩΝ  -  ΠΑΝΤΕΙΟ ΠΑΝΕΠΙΣΤΗΜΙΟ', 'el');
 INSERT INTO department_name (department_id, name, locale) VALUES (20038, 'Ε.Π.Ι. ΔΙΚΟΝΟΜΙΚΩΝ ΜΕΛΕΤΩΝ  - ΕΚΠΑ', 'el');
@@ -3188,6 +3188,25 @@ INSERT INTO sector (id, areaid, subjectid) VALUES (429, 26, 12);
 INSERT INTO sector (id, areaid, subjectid) VALUES (430, 26, 13);
 INSERT INTO sector (id, areaid, subjectid) VALUES (431, 26, 14);
 
+INSERT INTO sector(id, areaid, subjectid) VALUES (432,27,1);
+INSERT INTO sector(id, areaid, subjectid) VALUES (433,27,2);
+INSERT INTO sector(id, areaid, subjectid) VALUES (434,27,3);
+INSERT INTO sector(id, areaid, subjectid) VALUES (435,27,4);
+INSERT INTO sector(id, areaid, subjectid) VALUES (436,27,5);
+INSERT INTO sector(id, areaid, subjectid) VALUES (437,27,6);
+INSERT INTO sector(id, areaid, subjectid) VALUES (438,27,7);
+INSERT INTO sector(id, areaid, subjectid) VALUES (439,27,8);
+INSERT INTO sector(id, areaid, subjectid) VALUES (440,27,9);
+INSERT INTO sector(id, areaid, subjectid) VALUES (441,27,10);
+INSERT INTO sector(id, areaid, subjectid) VALUES (442,27,11);
+INSERT INTO sector(id, areaid, subjectid) VALUES (443,27,12);
+INSERT INTO sector(id, areaid, subjectid) VALUES (444,27,13);
+INSERT INTO sector(id, areaid, subjectid) VALUES (445,27,14);
+INSERT INTO sector(id, areaid, subjectid) VALUES (446,27,15);
+INSERT INTO sector(id, areaid, subjectid) VALUES (447,27,16);
+INSERT INTO sector (id, areaid, subjectid) VALUES (448, 11, 25);
+
+
 INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (1, 'ΛΟΓΙΚΗ', 'ΓΕΝΙΚΗ ΛΟΓΙΚΗ ', 'el');
 INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (2, 'ΛΟΓΙΚΗ', 'ΠΑΡΑΓΩΓΙΚΗ ΛΟΓΙΚΗ                 ', 'el');
 INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (3, 'ΛΟΓΙΚΗ', 'ΜΑΘΗΜΑΤΙΚΗ (ΣΥΜΒΟΛΙΚΗ) ΛΟΓΙΚΗ', 'el');
@@ -4051,6 +4070,41 @@ INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (428, 'PHILOLO
 INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (429, 'PHILOLOGY', 'MODERN GREEK PHILOLOGY', 'en');
 INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (430, 'PHILOLOGY', 'COMPARATIVE PHILOLOGY', 'en');
 INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (431, 'PHILOLOGY', 'OTHER SPECIALTIES OF PHILOLOGY', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (432, 'ΕΠΙΣΤΗΜΗ ΤΩΝ ΥΛΙΚΩΝ', 'ΜΙΚΡΟΦΑΣΙΚΑ ΚΑΙ ΝΑΝΟΦΑΣΙΚΑ ΥΛΙΚΑ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (433, 'ΕΠΙΣΤΗΜΗ ΤΩΝ ΥΛΙΚΩΝ', 'ΜΟΡΙΑΚΑ ΥΛΙΚΑ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (434, 'ΕΠΙΣΤΗΜΗ ΤΩΝ ΥΛΙΚΩΝ', 'ΒΙΟΫΛΙΚΑ ΚΑΙ ΕΠΙΣΤΗΜΗ ΤΩΝ ΥΛΙΚΩΝ ΣΕ ΒΙΟΜΟΡΙΑΚΑ ΣΥΣΤΗΜΑΤΑ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (435, 'ΕΠΙΣΤΗΜΗ ΤΩΝ ΥΛΙΚΩΝ', 'ΦΩΤΟΝΙΚΑ ΚΑΙ ΟΠΤΟΗΛΕΚΤΡΟΝΙΚΑ ΥΛΙΚΑ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (436, 'ΕΠΙΣΤΗΜΗ ΤΩΝ ΥΛΙΚΩΝ', 'ΜΑΓΝΗΤΙΚΑ ΥΛΙΚΑ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (437, 'ΕΠΙΣΤΗΜΗ ΤΩΝ ΥΛΙΚΩΝ', 'ΗΛΕΚΤΡΟΝΙΚΑ ΥΛΙΚΑ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (438, 'ΕΠΙΣΤΗΜΗ ΤΩΝ ΥΛΙΚΩΝ', 'ΣΥΝΘΕΤΑ ΚΑΙ ΥΒΡΙΔΙΚΑ ΥΛΙΚΑ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (439, 'ΕΠΙΣΤΗΜΗ ΤΩΝ ΥΛΙΚΩΝ', 'ΠΟΛΥΜΕΡΙΚΑ ΥΛΙΚΑ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (440, 'ΕΠΙΣΤΗΜΗ ΤΩΝ ΥΛΙΚΩΝ', 'ΚΕΡΑΜΙΚΑ ΥΛΙΚΑ ΚΑΙ ΥΑΛΟΙ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (441, 'ΕΠΙΣΤΗΜΗ ΤΩΝ ΥΛΙΚΩΝ', 'ΜΕΤΑΛΛΙΚΑ ΥΛΙΚΑ ΚΑΙ ΚΡΑΜΑΤΑ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (442, 'ΕΠΙΣΤΗΜΗ ΤΩΝ ΥΛΙΚΩΝ', 'ΔΙΗΛΕΚΤΡΙΚΑ ΥΛΙΚΑ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (443, 'ΕΠΙΣΤΗΜΗ ΤΩΝ ΥΛΙΚΩΝ', 'ΕΥΦΥΗ ΥΛΙΚΑ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (444, 'ΕΠΙΣΤΗΜΗ ΤΩΝ ΥΛΙΚΩΝ', 'ΥΓΡΟΚΡΥΣΤΑΛΛΙΚΑ ΥΛΙΚΑ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (445, 'ΕΠΙΣΤΗΜΗ ΤΩΝ ΥΛΙΚΩΝ', 'ΥΛΙΚΑ ΓΙΑ ΒΙΟΪΑΤΡΙΚΕΣ ΕΦΑΡΜΟΓΕΣ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (446, 'ΕΠΙΣΤΗΜΗ ΤΩΝ ΥΛΙΚΩΝ', 'ΤΕΧΝΟΛΟΓΙΚΕΣ ΕΦΑΡΜΟΓΕΣ ΤΗΣ ΕΠΙΣΤΗΜΗΣ ΤΩΝ ΥΛΙΚΩΝ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (447, 'ΕΠΙΣΤΗΜΗ ΤΩΝ ΥΛΙΚΩΝ', 'ΔΙΑΘΕΜΑΤΙΚΕΣ ΠΕΡΙΟΧΕΣ ΤΗΣ ΕΠΙΣΤΗΜΗΣ ΤΩΝ ΥΛΙΚΩΝ', 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (448, 'ΤΕΧΝΟΛΟΓΙΑ KAI ΕΠΙΣΤΗΜΕΣ ΜΗΧΑΝΙΚΩΝ', 'ΕΠΙΣΤΗΜΕΣ ΠΟΛΙΤΙΚΟΥ ΜΗΧΑΝΙΚΟΥ'
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (432, 'MATERIALS SCIENCE', 'MICROMATERIALS AND NANOMATERIALS', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (433, 'MATERIALS SCIENCE', 'MOLECULAR MATERIALS', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (434, 'MATERIALS SCIENCE', 'BIOMATERIALS AND MATERIALS SCIENCE IN BIOMOLECULE SYSTEMS', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (435, 'MATERIALS SCIENCE', 'PHOTONIC AND OPTOELECTRONIC MATERIALS', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (436, 'MATERIALS SCIENCE', 'MAGNETIC MATERIALS', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (437, 'MATERIALS SCIENCE', 'ELECTRONIC MATERIALS', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (438, 'MATERIALS SCIENCE', 'COMPOSITE AND HYBRID MATERIALS', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (439, 'MATERIALS SCIENCE', 'POLYMERIC MATERIALS', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (440, 'MATERIALS SCIENCE', 'CERAMIC AND GLASS MATERIALS', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (441, 'MATERIALS SCIENCE', 'METAL MATERIALS AND ALLOYS', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (442, 'MATERIALS SCIENCE', 'DIELECTRIC MATERIALS', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (443, 'MATERIALS SCIENCE', 'INTELLIGENT MATERIALS', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (444, 'MATERIALS SCIENCE', 'LIQUID CRYSTAL MATERIALS', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (445, 'MATERIALS SCIENCE', 'MATERIALS FOR BIOMEDICAL APPLICATIONS', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (446, 'MATERIALS SCIENCE', 'MATERIALS SCIENCE AND APPLICATIONS', 'en');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (447, 'MATERIALS SCIENCE', 'INTERDISCIPLINARY MATERIALS SCIENCE', 'en');, 'el');
+INSERT INTO sector_name (sector_id, area, subject, locale) VALUES (448, 'TECHNOLOGICAL SCIENCES AND ENGINEERING', 'CIVIL ENGINEERING', 'en');
+
 
 INSERT INTO country (code, name, alpha3, alpha2, region, subregion) VALUES (4, 'Afghanistan', 'AF', 'AFG', 'Asia', 'Southern Asia');
 INSERT INTO country (code, name, alpha3, alpha2, region, subregion) VALUES (248, 'Åland Islands', 'AX', 'ALA', 'Europe', 'Northern Europe');

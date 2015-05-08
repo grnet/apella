@@ -1353,7 +1353,7 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
             $("#content").html(showDomesticProfessorsCreateAccountsView.render().el);
 
             self.currentView = [showDomesticProfessorsCreateAccountsView];
-        },
+        }
 
     });
 
