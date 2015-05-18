@@ -541,4 +541,18 @@ public class AuthenticationService {
 			throw new EJBException(e);
 		}
 	}
+
+
+	/////////
+	public static void main(String[] args) {
+		String passwd = "anglen";
+		String passwordsalt="Smn8RBDY5lWHHQ==";
+
+
+		AuthenticationService as = new AuthenticationService();
+		String endoded = as.encodePassword(passwd, passwordsalt);
+
+		System.out.println("" + endoded);
+
+	}
 }

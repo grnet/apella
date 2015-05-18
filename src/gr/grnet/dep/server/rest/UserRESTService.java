@@ -1007,7 +1007,6 @@ public class UserRESTService extends RESTService {
 
 		TypedQuery<User> searchQuery = em.createQuery(
 				"select usr from User usr " +
-						"join fetch usr.roles rls " +
 						"where usr.id in ( " +
 						searchQueryString.toString() +
 						" ) " +
@@ -1065,6 +1064,11 @@ public class UserRESTService extends RESTService {
 				.setFirstResult(iDisplayStart)
 				.setMaxResults(iDisplayLength)
 				.getResultList();
+		// Lazily load all Roles of Users,
+		// with join fetch, hibernate will bring all Users to memory and then apply ordering
+		for (User u : paginatedUsers) {
+			u.getRoles().size();
+		}
 		// Fill result
 		SearchData<User> result = new SearchData<User>();
 		result.setiTotalRecords(totalRecords);
