@@ -6516,6 +6516,13 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 self.$("table").dataTable().fnClearTable();
                 return;
             }
+
+            var localeData = [];
+            localeData.push({
+                name: "locale",
+                value: App.locale
+            });
+
             self.$("table").dataTable().fnDestroy();
             self.$("table").dataTable({
                 "sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
@@ -6527,6 +6534,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     "sInfo": $.i18n.prop("dataTable_sInfo"),
                     "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
                     "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+                    "iDeferLoading": 0,
                     "oPaginate": {
                         sFirst: $.i18n.prop("dataTable_sFirst"),
                         sPrevious: $.i18n.prop("dataTable_sPrevious"),
@@ -6535,25 +6543,27 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     }
                 },
                 "aoColumns": [
-                    {"mData": "select"},
+                    {"mData": "select", "bSortable": false},
                     {"mData": "id"},
-                    {"mData": "external"},
+                    {"mData": "external",  "bSortable": false},
                     {"mData": "firstname"},
                     {"mData": "lastname"},
-                    {"mData": "role"},
-                    {"mData": "institution"},
-                    {"mData": "committees"}
+                    {"mData": "role", "bSortable": false},
+                    {"mData": "institution", "bSortable": false},
+                    {"mData": "committees", "bSortable": false}
                 ],
                 "bProcessing": true,
+                "bServerSide": true,
                 "sAjaxSource": self.model.url() + "/register/" + registerId + "/member",
                 "fnServerData": function (sSource, aoData, fnCallback) {
-                    self.collection.url = sSource;
-                    self.collection.fetch({
-                        reset: true,
-                        cache: true,
-                        success: function (collection) {
-                            var data = {
-                                aaData: collection.map(function (registerMember) {
+                    $.ajax({
+                        "type": "GET",
+                        "url": sSource, 
+                        "data": aoData.concat(localeData),
+                        success: function (json) {
+                            // Read Data
+                            self.collection.set(json.records);
+                            json.aaData = self.collection.map(function (registerMember) {
                                     var isMember = _.some(self.model.get("members"), function (member) {
                                         return _.isEqual(member.registerMember.professor.id, registerMember.get('professor').id);
                                     });
@@ -6561,25 +6571,37 @@ define(["jquery", "underscore", "backbone", "application", "models",
                                         select: isMember ? '' :
                                         '<select name="selectMember" class="input-small">' +
                                         '<option value="NONE">----</option>' +
-                                        '<option value="REGULAR" data-model-id="' + registerMember.get('id') + '" data-type="REGULAR">' + $.i18n.prop('PositionCommitteeMemberTypeREGULAR') + '</option>' +
-                                        '<option value="SUBSTITUTE" data-model-id="' + registerMember.get('id') + '" data-type="SUBSTITUTE">' + $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") + '</option>' +
+                                        '<option value="REGULAR" data-model-id="' + registerMember.id + '" data-type="REGULAR">' + $.i18n.prop('PositionCommitteeMemberTypeREGULAR') + '</option>' +
+                                        '<option value="SUBSTITUTE" data-model-id="' + registerMember.id + '" data-type="SUBSTITUTE">' + $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") + '</option>' +
                                         '</select>',
-                                        id: '<a href = "#user/' + registerMember.get('professor').user.id + '">' + registerMember.get('professor').user.id + '</a>',
-                                        external: registerMember.get('external') ? $.i18n.prop('RegisterMemberExternal') : $.i18n.prop('RegisterMemberInternal'),
-                                        firstname: registerMember.get('professor').user.firstname[App.locale],
-                                        lastname: registerMember.get('professor').user.lastname[App.locale],
-                                        role: $.i18n.prop(registerMember.get('professor').discriminator),
-                                        institution: registerMember.get('professor').discriminator === 'PROFESSOR_FOREIGN' ? registerMember.get('professor').institution : _.templates.department(registerMember.get('professor').department),
-                                        committees: registerMember.get('professor').committeesCount
+                                        id: '<a href = "#user/' + registerMember.get("professor").user.id + '">' + registerMember.get("professor").user.id + '</a>',
+                                        external: registerMember.external ? $.i18n.prop('RegisterMemberExternal') : $.i18n.prop('RegisterMemberInternal'),
+                                        firstname: registerMember.get("professor").user.firstname[App.locale],
+                                        lastname: registerMember.get("professor").user.lastname[App.locale],
+                                        role: $.i18n.prop(registerMember.get("professor").discriminator),
+                                        institution: registerMember.get("professor").discriminator === 'PROFESSOR_FOREIGN' ? registerMember.get("professor").institution : _.templates.department(registerMember.get("professor").department),
+                                        committees: registerMember.get("professor").committeesCount
                                     };
-
-                                })
-                            };
-                            fnCallback(data);
+                            });
+                            fnCallback(json);
+                        },
+                        "error": function ( xhr, textStatus, error ) {
+                            var popup = new Views.PopupView({
+                                type: "error",
+                                message: $.i18n.prop("Error") + " (" + xhr.status + ") : " + $.i18n.prop("error." + xhr.getResponseHeader("X-Error-Code"))
+                            });
+                            popup.show();
                         }
                     });
                 }
 
+            });
+
+            self.$(".dataTables_filter input").unbind();
+            self.$(".dataTables_filter input").bind('keyup', function (e) {
+                if (e.keyCode == 13) {
+                    self.$("table").dataTable().fnFilter($(this).val());
+                }
             });
         },
 
@@ -6597,7 +6619,9 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     return;
                 }
                 type = selectedOption.data('type');
+                
                 model = self.collection.get(id);
+
                 committeeMember = {
                     type: type,
                     registerMember: model.toJSON()

@@ -3,20 +3,13 @@ package gr.grnet.dep.server.rest;
 import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.model.Candidacy;
-import gr.grnet.dep.service.model.Position;
+import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.Position.PositionStatus;
-import gr.grnet.dep.service.model.PositionCommittee;
 import gr.grnet.dep.service.model.PositionCommittee.DetailedPositionCommitteeView;
-import gr.grnet.dep.service.model.PositionCommitteeMember;
 import gr.grnet.dep.service.model.PositionCommitteeMember.DetailedPositionCommitteeMemberView;
 import gr.grnet.dep.service.model.PositionCommitteeMember.MemberType;
-import gr.grnet.dep.service.model.PositionEvaluator;
-import gr.grnet.dep.service.model.Register;
-import gr.grnet.dep.service.model.RegisterMember;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
-import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
@@ -26,11 +19,13 @@ import gr.grnet.dep.service.util.DateUtil;
 import gr.grnet.dep.service.util.StringUtil;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -125,46 +120,144 @@ public class PositionCommitteeRESTService extends RESTService {
 	@GET
 	@Path("/{committeeId:[0-9]+}/register/{registerId:[0-9]+}/member")
 	@JsonView({DetailedPositionCommitteeMemberView.class})
-	public Collection<RegisterMember> getPositionCommiteeRegisterMembers(
+	public SearchData<RegisterMember> getPositionCommiteeRegisterMembers(
 			@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken,
 			@PathParam("id") Long positionId,
 			@PathParam("committeeId") Long committeeId,
-			@PathParam("registerId") Long registerId) {
+			@PathParam("registerId") Long registerId,
+			@Context HttpServletRequest request) {
 
 		User loggedOn = getLoggedOn(authToken);
 		PositionCommittee existingCommittee = em.find(PositionCommittee.class, committeeId);
+
 		if (existingCommittee == null) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.committee.id");
 		}
 		Position existingPosition = existingCommittee.getPosition();
+
 		if (!existingPosition.getId().equals(positionId)) {
 			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
 		}
+
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)
 				&& !loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment())) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		// Prepare Query
-		List<RegisterMember> registerMembers = em.createQuery(
-				"select distinct(m) from RegisterMember m  " +
-						"join m.professor prof " +
-						"join prof.user u " +
-						"join u.roles r " +
-						"where m.register.permanent = true " +
-						"and m.deleted = false " +
-						"and m.register.institution.id = :institutionId " +
-						"and m.register.id = :registerId " +
-						"and m.professor.status = :status ", RegisterMember.class)
+
+		String filterText = request.getParameter("sSearch");
+		String locale = request.getParameter("locale");
+		String sEcho = request.getParameter("sEcho");
+		// Ordering
+		String orderNo = request.getParameter("iSortCol_0");
+		String orderField = request.getParameter("mDataProp_" + orderNo);
+		String orderDirection = request.getParameter("sSortDir_0");
+		// Pagination
+		int iDisplayStart = Integer.valueOf(request.getParameter("iDisplayStart"));
+		int iDisplayLength = Integer.valueOf(request.getParameter("iDisplayLength"));
+
+
+		StringBuilder searchQueryString = new StringBuilder();
+		searchQueryString.append("from RegisterMember m " +
+				"join m.professor prof " +
+				"join prof.user u " +
+				"join u.roles r " +
+				"where m.register.permanent = true " +
+				"and m.deleted = false " +
+				"and m.register.institution.id = :institutionId " +
+				"and m.register.id = :registerId " +
+				"and m.professor.status = :status ");
+
+		if (StringUtils.isNotEmpty(filterText)) {
+			searchQueryString.append(" and ( UPPER(m.professor.user.basicInfo.lastname) like :filterText ");
+			searchQueryString.append(" or UPPER(m.professor.user.basicInfoLatin.lastname) like :filterText ");
+			searchQueryString.append(" or UPPER(m.professor.user.basicInfo.firstname) like :filterText ");
+			searchQueryString.append(" or UPPER(m.professor.user.basicInfoLatin.firstname) like :filterText ");
+			// treat the professor user is as text in order to filter it
+			searchQueryString.append(" or CAST(m.professor.user.id AS text) like :filterText ");
+			searchQueryString.append(" or (" +
+					"	exists (" +
+					"		select pd.id from ProfessorDomestic pd " +
+					"		join pd.department.name dname " +
+					"		join pd.department.school.name sname " +
+					"		join pd.department.school.institution.name iname " +
+					"		where pd.id = prof.id " +
+					"		and ( dname like  :filterText " +
+					"			or sname like :filterText " +
+					"			or iname like :filterText " +
+					"		)" +
+					"	) " +
+					"	or exists (" +
+					"		select pf.id from ProfessorForeign pf " +
+					"		where pf.id = prof.id " +
+					"		and UPPER(pf.foreignInstitution) like :filterText " +
+					"	) " +
+					") ) ");
+		}
+
+		Query countQuery = em.createQuery(" select count(distinct m.id) " +
+				searchQueryString.toString())
 				.setParameter("registerId", registerId)
 				.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
-				.setParameter("status", RoleStatus.ACTIVE)
-				.getResultList();
+				.setParameter("status", RoleStatus.ACTIVE);
+
+		if (StringUtils.isNotEmpty(filterText)) {
+			countQuery.setParameter("filterText", filterText.toUpperCase() + "%");
+		}
+
+		// find the total records
+		Long totalRecords = (Long) countQuery.getSingleResult();
+
+		StringBuilder orderByClause = new StringBuilder();
+
+		if (StringUtils.isNotEmpty(orderField)) {
+			if (orderField.equals("id")) {
+				orderByClause.append(" order by m.professor.user.id " + orderDirection);
+			} else if (orderField.equals("firstname")) {
+				if (locale.equals("el")) {
+					orderByClause.append(" order by m.professor.user.basicInfo.firstname " + orderDirection);
+				} else {
+					orderByClause.append(" order by m.professor.user.basicInfoLatin.firstname " + orderDirection);
+				}
+			} else if (orderField.equals("lastname")) {
+				if (locale.equals("el")) {
+					orderByClause.append(" order by m.professor.user.basicInfo.lastname " + orderDirection);
+				} else {
+					orderByClause.append(" order by m.professor.user.basicInfoLatin.lastname " + orderDirection);
+				}
+			}
+		}
+
+		TypedQuery<RegisterMember> searchQuery = em.createQuery(
+				" select m from RegisterMember m " +
+						"where m.id in ( " +
+						"select distinct m.id " +
+						searchQueryString.toString() + ") " + orderByClause.toString(), RegisterMember.class);
+
+		searchQuery.setParameter("registerId", registerId);
+		searchQuery.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId());
+		searchQuery.setParameter("status", RoleStatus.ACTIVE);
+
+		if (StringUtils.isNotEmpty(filterText)) {
+			searchQuery.setParameter("filterText", filterText.toUpperCase() + "%");
+		}
 
 		// Execute
+		List<RegisterMember> registerMembers = searchQuery
+				.setFirstResult(iDisplayStart)
+				.setMaxResults(iDisplayLength)
+				.getResultList();
+
+		// Additional actions
 		addCommitteesCount(registerMembers);
 		addEvaluationsCount(registerMembers);
 
-		return registerMembers;
+		SearchData<RegisterMember> result = new SearchData<>();
+		result.setiTotalRecords(totalRecords);
+		result.setiTotalDisplayRecords(totalRecords);
+		result.setsEcho(Integer.valueOf(sEcho));
+		result.setRecords(registerMembers);
+
+		return result;
 	}
 
 	private void addCommitteesCount(List<RegisterMember> registerMembers) {
