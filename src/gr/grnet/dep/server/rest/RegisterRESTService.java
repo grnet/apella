@@ -19,6 +19,7 @@ import gr.grnet.dep.service.model.SearchData;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.util.CompareUtil;
 import gr.grnet.dep.service.util.StringUtil;
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.Session;
 
 import javax.ejb.EJBException;
@@ -72,12 +73,73 @@ public class RegisterRESTService extends RESTService {
 	 */
 	@GET
 	@JsonView({RegisterView.class})
-	public Collection<Register> getAll(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
+	public SearchData<Register> getAll(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @Context HttpServletRequest request) {
 		User loggedOn = getLoggedOn(authToken);
-		Collection<Register> registers = em.createQuery(
-				"select r from Register r " +
-						"where r.permanent = true", Register.class)
+
+		String institutionFilterText = request.getParameter("sSearch_0");
+		String subjectFilterText = request.getParameter("sSearch_1");
+		String sEcho = request.getParameter("sEcho");
+		// Ordering
+		String orderNo = request.getParameter("iSortCol_0");
+		String orderField = request.getParameter("mDataProp_" + orderNo);
+		String orderDirection = request.getParameter("sSortDir_0");
+		// Pagination
+		int iDisplayStart = Integer.valueOf(request.getParameter("iDisplayStart"));
+		int iDisplayLength = Integer.valueOf(request.getParameter("iDisplayLength"));
+
+
+		StringBuilder searchQueryString = new StringBuilder();
+		searchQueryString.append("from Register r " +
+				" join r.institution.name iname " +
+				" where r.permanent = true ");
+
+		if (StringUtils.isNotEmpty(institutionFilterText)) {
+			searchQueryString.append(" and iname like  :institutionFilterText ");
+		}
+
+		if (StringUtils.isNotEmpty(subjectFilterText)) {
+			searchQueryString.append(" and UPPER(r.subject.name) like :subjectFilterText ");
+		}
+
+		Query countQuery =  em.createQuery(" select count(distinct r.id) " +
+				searchQueryString.toString());
+
+		if (StringUtils.isNotEmpty(institutionFilterText)) {
+			countQuery.setParameter("institutionFilterText", "%" + institutionFilterText.toUpperCase() + "%");
+		}
+		if (StringUtils.isNotEmpty(subjectFilterText)) {
+			countQuery.setParameter("subjectFilterText", "%" + subjectFilterText.toUpperCase() + "%");
+		}
+
+		Long totalRecords = (Long) countQuery.getSingleResult();
+
+		StringBuilder orderByClause = new StringBuilder();
+
+		if (StringUtils.isNotEmpty(orderField)) {
+			if (orderField.equals("subject")) {
+				orderByClause.append(" order by r.subject.name " + orderDirection);
+			}
+		}
+
+		TypedQuery<Register> searchQuery = em.createQuery(
+				" select r from Register r " +
+						" where r.id in ( " +
+						" select distinct r.id " +
+						searchQueryString.toString() + ") " + orderByClause.toString(), Register.class);
+
+		if (StringUtils.isNotEmpty(institutionFilterText)) {
+			searchQuery.setParameter("institutionFilterText",  "%" + institutionFilterText.toUpperCase() + "%");
+		}
+		if (StringUtils.isNotEmpty(subjectFilterText)) {
+			searchQuery.setParameter("subjectFilterText", "%" + subjectFilterText.toUpperCase() + "%");
+		}
+
+		// Prepare Query
+		List<Register> registers = searchQuery
+				.setFirstResult(iDisplayStart)
+				.setMaxResults(iDisplayLength)
 				.getResultList();
+
 
 		Collection<Long> loggedOnRegisterIds = em.createQuery(
 				"select distinct(rm.register.id) " +
@@ -91,7 +153,13 @@ public class RegisterRESTService extends RESTService {
 			r.setAmMember(loggedOnRegisterIds.contains(r.getId()));
 		}
 
-		return registers;
+		SearchData<Register> result = new SearchData<>();
+		result.setiTotalRecords(totalRecords);
+		result.setiTotalDisplayRecords(totalRecords);
+		result.setsEcho(Integer.valueOf(sEcho));
+		result.setRecords(registers);
+
+		return result;
 	}
 
 	/**

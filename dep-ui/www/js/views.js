@@ -7641,10 +7641,6 @@ define(["jquery", "underscore", "backbone", "application", "models",
             this._super('initialize', [options]);
             _.bindAll(this, "renderActions", "selectRegister", "createRegister");
             this.template = _.template(tpl_register_list);
-            this.collection.bind("change", this.render, this);
-            this.collection.bind("reset", this.render, this);
-            this.collection.bind("add", this.render, this);
-            this.collection.bind("remove", this.render, this);
         },
 
         events: {
@@ -7657,30 +7653,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
             var tpl_data = {
                 canExportGeneric: App.loggedOnUser.hasRole("INSTITUTION_MANAGER") || App.loggedOnUser.hasRole("ADMINISTRATOR"),
                 exportGenericUrl: (new Models.Register()).urlRoot + "/professorsexport?X-Auth-Token=" + encodeURIComponent(App.authToken),
-                showAmMember: App.loggedOnUser.hasRole("PROFESSOR_DOMESTIC") || App.loggedOnUser.hasRole("PROFESSOR_FOREIGN"),
-                registries: (function () {
-                    var result = [];
-                    var gCanExport =
-                        App.loggedOnUser.hasRole("MINISTRY_MANAGER") ||
-                        App.loggedOnUser.hasRole("MINISTRY_ASSISTANT") ||
-                        App.loggedOnUser.hasRole("ADMINISTRATOR");
-
-                    self.collection.each(function (model) {
-                        var canEdit = model.isEditableBy(App.loggedOnUser);
-                        var canExport = App.loggedOnUser.isAssociatedWithInstitution(model.get("institution"));
-                        var item;
-                        if (model.has("id")) {
-                            item = model.toJSON();
-                            item.cid = model.cid;
-                            item.canExport = gCanExport || canExport;
-                            item.exportUrl = model.url() + "/export?X-Auth-Token=" + encodeURIComponent(App.authToken);
-                            item.canEdit = canEdit;
-
-                            result.push(item);
-                        }
-                    });
-                    return result;
-                }())
+                showAmMember: App.loggedOnUser.hasRole("PROFESSOR_DOMESTIC") || App.loggedOnUser.hasRole("PROFESSOR_FOREIGN")
             };
             self.closeInnerViews();
             self.$el.empty();
@@ -7698,17 +7671,92 @@ define(["jquery", "underscore", "backbone", "application", "models",
                         "sInfo": $.i18n.prop("dataTable_sInfo"),
                         "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
                         "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+                        "iDeferLoading": 0,
                         "oPaginate": {
                             sFirst: $.i18n.prop("dataTable_sFirst"),
                             sPrevious: $.i18n.prop("dataTable_sPrevious"),
                             sNext: $.i18n.prop("dataTable_sNext"),
                             sLast: $.i18n.prop("dataTable_sLast")
                         }
+                    },
+                    "aoColumns": [
+                        {"mData": "institution", "bSortable": false},
+                        {"mData": "subject"},
+                        {"mData": 'amMember', bVisible : tpl_data.showAmMember, "bSortable": false},
+                        {"mData": "actions", "bSortable": false}
+                    ],
+                    "bProcessing": true,
+                    "bServerSide": true,
+                    "sAjaxSource": self.collection.url,
+                    "fnServerData": function (sSource, aoData, fnCallback) {
+                        $.ajax({
+                            "type": "GET",
+                            "url": sSource,
+                            "data": aoData,
+                            success: function (json) {
+                                self.collection.set(json.records);
+                                json.aaData = self.collection.map(function (register) {
+
+                                    function canEdit(register) {
+                                        return register.isEditableBy(App.loggedOnUser);
+                                    }
+
+                                    function canExport(register) {
+                                        return App.loggedOnUser.isAssociatedWithInstitution(register.get("institution")) ||
+                                            App.loggedOnUser.hasRole("MINISTRY_MANAGER") ||
+                                            App.loggedOnUser.hasRole("MINISTRY_ASSISTANT") ||
+                                            App.loggedOnUser.hasRole("ADMINISTRATOR");
+                                    }
+
+                                    function getExportUrl(register) {
+                                        return register.url() + "/export?X-Auth-Token=" + encodeURIComponent(App.authToken);
+                                    }
+
+                                    function getActions(register) {
+                                        var actions;
+                                        if (canEdit(register)) {
+                                            actions = '<a id="select" data-register-cid="' + register.cid + '" class="btn btn-success btn-small">' +
+                                                '<i class="icon-edit icon-white"></i>' + $.i18n.prop('btn_edit') + '</a>';
+                                        } else {
+                                            actions = '<a id="select" data-register-cid="' + register.cid + '" class="btn btn-primary btn-small">' +
+                                                '<i class="icon-eye-open icon-white"></i>' + $.i18n.prop('btn_view') + '</a>';
+                                        }
+
+                                        if (canExport(register)) {
+                                            actions += '<a href="' + getExportUrl(register) + '" target="export" class="btn btn-small">' +
+                                                '<i class="icon-download"></i> ' + $.i18n.prop('btn_register_export') + '</a>';
+                                        }
+                                        return actions;
+                                    }
+
+                                    return {
+                                        institution: register.get("institution").name[App.locale],
+                                        subject: register.get("subject").name,
+                                        amMember: $.i18n.prop(register.get("amMember") ? 'Yes' : 'No'),
+                                        actions: getActions(register)
+                                    };
+                                });
+                                fnCallback(json);
+                            },
+                            "error": function ( xhr, textStatus, error ) {
+                                var popup = new Views.PopupView({
+                                    type: "error",
+                                    message: $.i18n.prop("Error") + " (" + xhr.status + ") : " + $.i18n.prop("error." + xhr.getResponseHeader("X-Error-Code"))
+                                });
+                                popup.show();
+                            }
+                        });
+                    }
+            });
+
+                self.$("table thead input").unbind();
+                self.$("table thead input").bind('keyup', function (e) {
+                    // trigger filtering when pressing enter
+                    if (e.keyCode == 13) {
+                        self.$("table").dataTable().fnFilter(this.value, self.$("table thead input").index(this));
                     }
                 });
-                self.$("table thead input").keyup(function () {
-                    self.$("table").dataTable().fnFilter(this.value, self.$("table thead input").index(this));
-                });
+
             }
             // Add Actions
             self.renderActions();

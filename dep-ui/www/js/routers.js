@@ -850,55 +850,7 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
             self.clear();
             self.refreshBreadcrumb([$.i18n.prop('menu_registers')]);
             $("#featured").html(registerListView.el);
-            // Refresh registries from server
-            registries.fetch({
-                cache: false,
-                reset: true,
-                wait: true,
-                data: {
-                    institution: (function () {
-                        var institutions = App.loggedOnUser.getAssociatedInstitutions();
-                        if (institutions) {
-                            return institutions[0];
-                        }
-                    }())
-                },
-                success: function () {
-                    if (!_.isUndefined(registerId)) {
-                        var selectedRegister = registries.get(registerId);
-                        if (!selectedRegister) {
-                            selectedRegister = new Models.Register({
-                                id: registerId
-                            });
-                            selectedRegister.fetch({
-                                cache: false,
-                                wait: true,
-                                success: function () {
-                                    registries.add(selectedRegister);
-                                    registries.trigger("register:selected", selectedRegister);
-                                },
-                                error: function (model, resp, options) {
-                                    var popup = new Views.PopupView({
-                                        type: "error",
-                                        message: $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-                                    });
-                                    popup.show();
-                                }
-                            });
-                        } else {
-                            registries.trigger("register:selected", selectedRegister);
-                        }
-                    }
-                },
-                error: function (model, resp, options) {
-                    var popup = new Views.PopupView({
-                        type: "error",
-                        message: $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-                    });
-                    popup.show();
-                }
-            });
-
+            registerListView.render();
             this.currentView = registerListView;
         },
 
