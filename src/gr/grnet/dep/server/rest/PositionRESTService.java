@@ -3,38 +3,29 @@ package gr.grnet.dep.server.rest;
 import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.Department;
-import gr.grnet.dep.service.model.Institution;
-import gr.grnet.dep.service.model.InstitutionAssistant;
-import gr.grnet.dep.service.model.InstitutionManager;
-import gr.grnet.dep.service.model.Position;
+import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.Position.PositionView;
 import gr.grnet.dep.service.model.Position.PublicPositionView;
-import gr.grnet.dep.service.model.PositionCandidacies;
-import gr.grnet.dep.service.model.PositionCommittee;
-import gr.grnet.dep.service.model.PositionComplementaryDocuments;
-import gr.grnet.dep.service.model.PositionEvaluation;
-import gr.grnet.dep.service.model.PositionNomination;
-import gr.grnet.dep.service.model.PositionPhase;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
-import gr.grnet.dep.service.model.Sector;
-import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.User.UserView;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.util.DateUtil;
 import gr.grnet.dep.service.util.StringUtil;
+import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -44,6 +35,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -103,38 +95,166 @@ public class PositionRESTService extends RESTService {
 	 */
 	@GET
 	@JsonView({PositionView.class})
-	public Collection<Position> getAll(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
+	public SearchData<Position> getAll(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @Context HttpServletRequest request) {
 		User loggedOnUser = getLoggedOn(authToken);
+
+		if (!loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) && !loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
+				!loggedOnUser.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOnUser.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+				!loggedOnUser.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT)) {
+
+			throw new RestException(Status.UNAUTHORIZED, "insufficient.privileges");
+		}
+
+		String positionIdFilterText = request.getParameter("sSearch_0");
+		String positionTitleFilterText = request.getParameter("sSearch_1");
+		String institutionFilterText = request.getParameter("sSearch_2");
+		String statusFilterText = request.getParameter("sSearch_3");
+		String locale = request.getParameter("locale");
+		String sEcho = request.getParameter("sEcho");
+		// Ordering
+		String orderNo = request.getParameter("iSortCol_0");
+		String orderField = request.getParameter("mDataProp_" + orderNo);
+		String orderDirection = request.getParameter("sSortDir_0");
+		// Pagination
+		int iDisplayStart = Integer.valueOf(request.getParameter("iDisplayStart"));
+		int iDisplayLength = Integer.valueOf(request.getParameter("iDisplayLength"));
+
+		List<Institution> institutions = new ArrayList<Institution>();
+		institutions.addAll(loggedOnUser.getAssociatedInstitutions());
+
+		PositionStatus status = null;
+
+		StringBuilder searchQueryString = new StringBuilder();
+		searchQueryString.append(" from Position p " +
+				"join  p.phase ph " +
+				"join  ph.candidacies cs " +
+				"left join  p.assistants " +
+				"where p.permanent = true ");
+
 		if (loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) ||
 				loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
-
-			List<Institution> institutions = new ArrayList<Institution>();
-			institutions.addAll(loggedOnUser.getAssociatedInstitutions());
-			List<Position> positions = em.createQuery(
-					"select distinct p from Position p " +
-							"join fetch p.phase ph " +
-							"join fetch ph.candidacies cs " +
-							"left join fetch p.assistants " +
-							"where p.permanent = true " +
-							"and p.department.school.institution in (:institutions)", Position.class)
-					.setParameter("institutions", institutions)
-					.getResultList();
-
-			return positions;
-		} else if (loggedOnUser.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) ||
-				loggedOnUser.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) ||
-				loggedOnUser.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT)) {
-
-			List<Position> positions = em.createQuery(
-					"select p from Position p " +
-							"join fetch p.phase ph " +
-							"join fetch ph.candidacies cs " +
-							"left join fetch p.assistants " +
-							"where p.permanent = true ", Position.class)
-					.getResultList();
-			return positions;
+			searchQueryString.append(" and p.department.school.institution in (:institutions) ");
 		}
-		throw new RestException(Status.UNAUTHORIZED, "insufficient.privileges");
+
+		if (StringUtils.isNotEmpty(positionIdFilterText)) {
+			searchQueryString.append(" and CAST(p.id AS text) like  :positionIdFilterText ");
+		}
+
+		if (StringUtils.isNotEmpty(positionTitleFilterText)) {
+			searchQueryString.append(" and UPPER(p.name) like :positionTitleFilterText ");
+		}
+		if (StringUtils.isNotEmpty(institutionFilterText)) {
+			searchQueryString.append(" and (" +
+					"	exists ( " +
+					"       select d from Department d" +
+					" join d.name dname " +
+					" join d.school.name sname " +
+					" join d.school.institution.name iname " +
+					" where p.department.id = d.id " +
+					" and ( dname like :institutionFilterText " +
+					" or sname like :institutionFilterText " +
+					" or iname like :institutionFilterText ) " +
+					"	) " +
+					" ) ");
+		}
+
+		// for back end there is one status for open and closed positions. The difference is that for closed positions
+		// the closing date has passed
+		if (StringUtils.isNotEmpty(statusFilterText)) {
+			// convert closed status to open
+			if (statusFilterText.equals("KLEISTI")) {
+				status = PositionStatus.ANOIXTI;
+				searchQueryString.append(" and ph.status = :status and now() > ph.candidacies.closingDate ");
+			} else {
+				// find if the input value is one of the position statuses
+				for (PositionStatus positionStatus : PositionStatus.values()) {
+					if (positionStatus.toString().equals(statusFilterText)) {
+						status = positionStatus;
+						searchQueryString.append(" and ph.status  = :status ");
+						if (status == PositionStatus.ANOIXTI) {
+							searchQueryString.append(" and now() <= ph.candidacies.closingDate ");
+						}
+						break;
+					}
+				}
+			}
+		}
+
+		Query countQuery = em.createQuery(" select count(distinct p.id) " +
+				searchQueryString.toString());
+
+		if (loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) ||
+				loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+			countQuery.setParameter("institutions", institutions);
+		}
+
+		if (StringUtils.isNotEmpty(positionIdFilterText)) {
+			countQuery.setParameter("positionIdFilterText", positionIdFilterText.toUpperCase() + "%");
+		}
+
+		if (StringUtils.isNotEmpty(positionTitleFilterText)) {
+			countQuery.setParameter("positionTitleFilterText", "%" + positionTitleFilterText.toUpperCase() + "%");
+		}
+
+		if (StringUtils.isNotEmpty(institutionFilterText)) {
+			countQuery.setParameter("institutionFilterText", "%" + institutionFilterText.toUpperCase() + "%");
+		}
+
+		if (status != null) {
+			countQuery.setParameter("status", status);
+		}
+
+		Long totalRecords = (Long) countQuery.getSingleResult();
+
+		StringBuilder orderByClause = new StringBuilder();
+
+		if (StringUtils.isNotEmpty(orderField)) {
+			if (orderField.equals("positionId")) {
+				orderByClause.append(" order by p.id " + orderDirection);
+			} else if (orderField.equals("positionName")) {
+				orderByClause.append(" order by p.name " + orderDirection);
+			}
+		}
+
+		TypedQuery<Position> searchQuery = em.createQuery(
+				" select p from Position p " +
+						"where p.id in ( " +
+						"select distinct p.id " +
+						searchQueryString.toString() + ") " + orderByClause.toString(), Position.class);
+
+		if (loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) ||
+				loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+			searchQuery.setParameter("institutions", institutions);
+		}
+
+		if (StringUtils.isNotEmpty(positionIdFilterText)) {
+			searchQuery.setParameter("positionIdFilterText", positionIdFilterText.toUpperCase() + "%");
+		}
+
+		if (StringUtils.isNotEmpty(positionTitleFilterText)) {
+			searchQuery.setParameter("positionTitleFilterText", "%" + positionTitleFilterText.toUpperCase() + "%");
+		}
+
+		if (StringUtils.isNotEmpty(institutionFilterText)) {
+			searchQuery.setParameter("institutionFilterText", "%" + institutionFilterText.toUpperCase() + "%");
+		}
+
+		if (status != null) {
+			searchQuery.setParameter("status", status);
+		}
+
+		List<Position> positions = searchQuery
+				.setFirstResult(iDisplayStart)
+				.setMaxResults(iDisplayLength)
+				.getResultList();
+
+		SearchData<Position> result = new SearchData<>();
+		result.setiTotalRecords(totalRecords);
+		result.setiTotalDisplayRecords(totalRecords);
+		result.setsEcho(Integer.valueOf(sEcho));
+		result.setRecords(positions);
+
+		return result;
 	}
 
 	/**

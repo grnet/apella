@@ -5000,10 +5000,6 @@ define(["jquery", "underscore", "backbone", "application", "models",
             this._super('initialize', [options]);
             _.bindAll(this, "renderActions", "selectPosition", "createPosition");
             this.template = _.template(tpl_position_list);
-            this.collection.bind("change", this.render, this);
-            this.collection.bind("reset", this.render, this);
-            this.collection.bind("add", this.render, this);
-            this.collection.bind("remove", this.render, this);
         },
 
         events: {
@@ -5014,19 +5010,6 @@ define(["jquery", "underscore", "backbone", "application", "models",
         render: function () {
             var self = this;
             var tpl_data = {
-                positions: (function () {
-                    var result = [];
-                    self.collection.each(function (model) {
-                        var item;
-                        if (model.has("id")) {
-                            item = model.toJSON();
-                            item.cid = model.cid;
-                            item.canEdit = model.isEditableBy(App.loggedOnUser);
-                            result.push(item);
-                        }
-                    });
-                    return result;
-                }()),
                 exportUrl: self.collection.url + "/export?X-Auth-Token=" + encodeURIComponent(App.authToken)
             };
             self.closeInnerViews();
@@ -5044,18 +5027,85 @@ define(["jquery", "underscore", "backbone", "application", "models",
                         "sInfo": $.i18n.prop("dataTable_sInfo"),
                         "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
                         "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+                        "iDeferLoading": 0,
                         "oPaginate": {
                             sFirst: $.i18n.prop("dataTable_sFirst"),
                             sPrevious: $.i18n.prop("dataTable_sPrevious"),
                             sNext: $.i18n.prop("dataTable_sNext"),
                             sLast: $.i18n.prop("dataTable_sLast")
                         }
+                    },
+                    "aoColumns": [
+                        {"mData": "positionId"},
+                        {"mData": "positionName"},
+                        {"mData": "institution", "bSortable": false},
+                        {"mData": "status", "bSortable": false},
+                        {"mData": "actions", "bSortable": false}
+                    ],
+                    "bProcessing": true,
+                    "bServerSide": true,
+                    "sAjaxSource": self.collection.url,
+                    "fnServerData": function (sSource, aoData, fnCallback) {
+                        $.ajax({
+                            "type": "GET",
+                            "url": sSource,
+                            "data": aoData,
+                            success: function (json) {
+                                self.collection.set(json.records);
+
+                                json.aaData = self.collection.map(function (position) {
+                                    function canEdit(position) {
+                                        return position.isEditableBy(App.loggedOnUser);
+                                    }
+
+                                    function getActions(position) {
+                                        var actions;
+                                        if (canEdit(position)) {
+                                            actions = '<a id="selectPosition" data-position-cid="' + position.cid + '" class="btn btn-primary btn-mini">' +
+                                                '<i class="icon-edit icon-white"></i>' + $.i18n.prop('btn_edit') + '</a>';
+                                        } else {
+                                            actions = '<a id="selectPosition" data-position-cid="' + position.cid + '" class="btn btn-mini">' +
+                                                '<i class="icon-eye-open"></i>' + $.i18n.prop('btn_view') + '</a>';
+                                        }
+
+                                        return actions;
+                                    }
+
+                                    return {
+                                        positionId: position.id,
+                                        positionName: position.get("name"),
+                                        institution: position.get("department") ? _.templates.department(position.get("department")) : '',
+                                        status:  $.i18n.prop('PositionStatus_' + position.get("phase").clientStatus),
+                                        actions: getActions(position)
+                                    };
+                                });
+                                fnCallback(json);
+                            },
+                            "error": function ( xhr, textStatus, error ) {
+                                var popup = new Views.PopupView({
+                                    type: "error",
+                                    message: $.i18n.prop("Error") + " (" + xhr.status + ") : " + $.i18n.prop("error." + xhr.getResponseHeader("X-Error-Code"))
+                                });
+                                popup.show();
+                            }
+
+                        });
                     }
                 });
-                self.$("table thead input").keyup(function () {
-                    self.$("table").dataTable().fnFilter(this.value, self.$("table thead input").index(this));
-                });
             }
+
+            self.$("table thead input").unbind();
+            self.$("table thead input").bind('keyup', function (e) {
+                // trigger filtering when pressing enter
+                if (e.keyCode == 13) {
+                    self.$("table").dataTable().fnFilter(this.value, self.$("table thead input").index(this));
+                }
+            });
+
+            self.$("table thead select").change(function () {
+                self.$("table").dataTable().fnFilter(this.value,3);
+            });
+
             // Actions
             self.renderActions();
             return self;
@@ -5346,8 +5396,6 @@ define(["jquery", "underscore", "backbone", "application", "models",
             _.bindAll(this, "addPhase", "showTab", "showMainTab", "showCandidaciesTab", "showCommitteeTab", "showEvaluationTab", "showNominationTab",
                 "showComplementaryDocumentsTab");
             this.template = _.template(tpl_position_edit);
-            this.model.bind('change', this.render, this);
-            this.model.bind("destroy", this.close, this);
         },
 
         events: {

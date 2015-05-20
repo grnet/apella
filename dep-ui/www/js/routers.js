@@ -719,51 +719,9 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
 
             self.clear();
             self.refreshBreadcrumb([$.i18n.prop('menu_positions')]);
+
+            positionListView.render();
             $("#featured").html(positionListView.el);
-
-            // Refresh positions from server
-            positions.fetch({
-                cache: false,
-                reset: true,
-                wait: true,
-                success: function () {
-                    var selectedPosition;
-                    if (!_.isUndefined(positionId)) {
-                        selectedPosition = positions.get(positionId);
-                        if (!selectedPosition) {
-                            // Not permanent, so fetch it
-                            selectedPosition = new Models.Position({
-                                id: positionId
-                            });
-                            selectedPosition.fetch({
-                                cache: false,
-                                wait: true,
-                                success: function () {
-                                    positions.add(selectedPosition);
-                                    positions.trigger("position:selected", selectedPosition, tab);
-                                },
-                                error: function (model, resp, options) {
-                                    var popup = new Views.PopupView({
-                                        type: "error",
-                                        message: $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-                                    });
-                                    popup.show();
-                                }
-                            });
-                        } else {
-                            positions.trigger("position:selected", selectedPosition, tab);
-                        }
-                    }
-                },
-                error: function (model, resp, options) {
-                    var popup = new Views.PopupView({
-                        type: "error",
-                        message: $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-                    });
-                    popup.show();
-                }
-            });
-
             this.currentView = positionListView;
         },
 
