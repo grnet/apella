@@ -7840,8 +7840,6 @@ define(["jquery", "underscore", "backbone", "application", "models",
         initialize: function (options) {
             this._super('initialize', [options]);
             this.template = _.template(tpl_register);
-            this.model.bind('change', this.render, this);
-            this.model.bind("destroy", this.close, this);
         },
 
         events: {},
@@ -7854,17 +7852,15 @@ define(["jquery", "underscore", "backbone", "application", "models",
 
             // Prepare tpl_data
             tpl_data = self.model.toJSON();
-            if (App.loggedOnUser.isAssociatedWithInstitution(self.model.get("institution")) ||
-                App.loggedOnUser.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE") ||
-                App.loggedOnUser.hasRoleWithStatus("MINISTRY_ASSISTANT", "ACTIVE") ||
-                App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
-                _.each(tpl_data.members, function (member) {
-                    member.access = "READ_FULL";
-                });
-            }
 
             // Add to element
             self.$el.append(self.template(tpl_data));
+
+            var localeData = [];
+            localeData.push({
+                name: "locale",
+                value: App.locale
+            });
 
             // Init jQuery.widgets
             if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
@@ -7878,22 +7874,78 @@ define(["jquery", "underscore", "backbone", "application", "models",
                         "sInfo": $.i18n.prop("dataTable_sInfo"),
                         "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
                         "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+                        "iDeferLoading": 0,
                         "oPaginate": {
                             sFirst: $.i18n.prop("dataTable_sFirst"),
                             sPrevious: $.i18n.prop("dataTable_sPrevious"),
                             sNext: $.i18n.prop("dataTable_sNext"),
                             sLast: $.i18n.prop("dataTable_sLast")
                         }
+                    },
+                    "aoColumns": [
+                        {"mData": "registerMemberExternal", "bSortable": false},
+                        {"mData": "id"},
+                        {"mData": "firstName"},
+                        {"mData": "lastName"},
+                        {"mData": "profile", "bSortable": false},
+                        {"mData": 'rank', "bVisible": tpl_data.showAmMember, "bSortable": false},
+                        {"mData": "institution", "bSortable": false},
+                        {"mData": "subject", "bSortable": false}
+
+                    ],
+                    "bProcessing": true,
+                    "bServerSide": true,
+                    "sAjaxSource": self.collection.url(),
+                    "fnServerData": function (sSource, aoData, fnCallback) {
+                        $.ajax({
+                            "type": "GET",
+                            "url": sSource,
+                            "data": aoData.concat(localeData),
+                            success: function (json) {
+                                self.collection.set(json.records);
+                                json.aaData = self.collection.map(function (member) {
+
+                                    function getMemberAccess() {
+                                        if (App.loggedOnUser.isAssociatedWithInstitution(self.model.get("institution")) ||
+                                            App.loggedOnUser.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE") ||
+                                            App.loggedOnUser.hasRoleWithStatus("MINISTRY_ASSISTANT", "ACTIVE") ||
+                                            App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
+
+                                            return "READ_FULL";
+                                        }
+                                    }
+
+                                    return {
+                                        registerMemberExternal: $.i18n.prop(member.external ? "Yes" : "No"),
+                                        id: _.isEqual(getMemberAccess(), "READ_FULL") ? '<a data-committee-member-id="' + member.id + '" href="#user/' + member.get("professor").user.id +
+                                        '" target="user">' + member.get("professor").user.id + '</a>' : member.get("professor").user.id,
+                                        firstName: member.get("professor").user.firstname[App.locale],
+                                        lastName: member.get("professor").user.lastname[App.locale],
+                                        profile: $.i18n.prop(member.get("professor").discriminator),
+                                        rank: member.get("professor").rank.name[App.locale],
+                                        institution: _.isEqual(member.get("professor").discriminator, 'PROFESSOR_FOREIGN') ? member.get("professor").institution : _.templates.department(member.get("professor").department),
+                                        subject: _.isObject(member.get("professor").subject) ? member.get("professor").subject.name : member.get("professor").fekSubject.name
+                                    };
+                                });
+                                fnCallback(json);
+                            }
+
+                        });
                     }
                 });
-            }
+
+                self.$(".dataTables_filter input").unbind();
+                self.$(".dataTables_filter input").bind('keyup', function (e) {
+                    if (e.keyCode == 13) {
+                        self.$("table").dataTable().fnFilter($(this).val());
+                    }
+                });
+                }
 
             return self;
         },
 
         close: function () {
-            this.model.unbind("change");
-            this.model.unbind("destroy");
             $(this.el).unbind();
             $(this.el).remove();
         }

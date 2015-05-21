@@ -164,6 +164,7 @@ public class RegisterRESTService extends RESTService {
 
 	/**
 	 * Returns register with given ID
+	 * without the lazy collections!
 	 *
 	 * @param authToken
 	 * @param id
@@ -175,7 +176,23 @@ public class RegisterRESTService extends RESTService {
 	@JsonView({DetailedRegisterView.class})
 	public Register get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		User loggedOn = getLoggedOn(authToken);
-		return getRegisterById(id);
+
+		try {
+			// A Hibernate specific solution, a JPA filtering mechanism does not exist
+			Session session = em.unwrap(Session.class);
+			session.enableFilter("filterDeleted");
+			// do not fetch the lazy collections - not same to getRegisterById
+			Register r = em.createQuery(
+					"select r from Register r " +
+							"where r.id=:id", Register.class)
+					.setParameter("id", id)
+					.getSingleResult();
+
+			return r;
+		} catch (NoResultException e) {
+			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
+		}
+
 	}
 
 	private Register getRegisterById(Long id) {
@@ -595,15 +612,148 @@ public class RegisterRESTService extends RESTService {
 	@GET
 	@Path("/{id:[0-9]+}/members")
 	@JsonView({DetailedRegisterMemberView.class})
-	public Collection<RegisterMember> getRegisterMembers(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long registerId) {
+	public SearchData<RegisterMember> getRegisterMembers(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long registerId, @Context HttpServletRequest request) {
 		User loggedOn = getLoggedOn(authToken);
-		// TODO: Authorize
-		Register register = em.find(Register.class, registerId);
-		// Validate:
-		if (register == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.register.id");
+
+		String filterText = request.getParameter("sSearch");
+		String locale = request.getParameter("locale");
+		String sEcho = request.getParameter("sEcho");
+		// Ordering
+		String orderNo = request.getParameter("iSortCol_0");
+		String orderField = request.getParameter("mDataProp_" + orderNo);
+		String orderDirection = request.getParameter("sSortDir_0");
+		// Pagination
+		int iDisplayStart = Integer.valueOf(request.getParameter("iDisplayStart"));
+		int iDisplayLength = Integer.valueOf(request.getParameter("iDisplayLength"));
+
+		StringBuilder searchQueryString = new StringBuilder();
+
+		searchQueryString.append(" from RegisterMember rm " +
+				"left join rm.professor p " +
+				"left join p.user u " +
+				"left join u.roles rls " +
+				"where rm.register.id=:id");
+
+		if (StringUtils.isNotEmpty(filterText)) {
+			searchQueryString.append(" and ( UPPER(u.basicInfo.lastname) like :filterText ");
+			searchQueryString.append(" or UPPER(u.basicInfoLatin.lastname) like :filterText ");
+			searchQueryString.append(" or UPPER(u.basicInfo.firstname) like :filterText ");
+			searchQueryString.append(" or UPPER(u.basicInfoLatin.firstname) like :filterText ");
+			searchQueryString.append(" or CAST(u.id AS text) like :filterText ");
+			searchQueryString.append(" or (" +
+					"	exists (" +
+					"		select pd.id from ProfessorDomestic pd " +
+					"		join pd.department.name dname " +
+					"		join pd.department.school.name sname " +
+					"		join pd.department.school.institution.name iname " +
+					"		where pd.id = p.id " +
+					"		and ( dname like :filterText " +
+					"			or sname like :filterText " +
+					"			or iname like :filterText " +
+					"		)" +
+					"	) " +
+					"	or exists (" +
+					"		select pf.id from ProfessorForeign pf " +
+					"		where pf.id = p.id " +
+					"		and UPPER(pf.foreignInstitution) like :filterText " +
+					"	) " +
+					") ) ");
 		}
-		return register.getMembers();
+
+		Query countQuery =  em.createQuery(" select count(distinct rm.id) " +
+				searchQueryString.toString())
+				.setParameter("id", registerId);
+
+		if (StringUtils.isNotEmpty(filterText)) {
+			countQuery.setParameter("filterText", filterText.toUpperCase() + "%");
+		}
+
+		// A Hibernate specific solution, a JPA filtering mechanism does not exist
+		Session session = em.unwrap(Session.class);
+		session.enableFilter("filterDeleted");
+
+		Long totalRecords = (Long) countQuery.getSingleResult();
+
+		StringBuilder orderByClause = new StringBuilder();
+
+		if (StringUtils.isNotEmpty(orderField)) {
+			if (orderField.equals("id")) {
+				orderByClause.append(" order by u.id " + orderDirection);
+			} else if (orderField.equals("firstName")) {
+				if (locale.equals("el")) {
+					orderByClause.append(" order by u.basicInfo.firstname " + orderDirection);
+				} else {
+					orderByClause.append(" order by u.basicInfoLatin.firstname " + orderDirection);
+				}
+			} else if (orderField.equals("lastName")) {
+				if (locale.equals("el")) {
+					orderByClause.append(" order by u.basicInfo.lastname " + orderDirection);
+				} else {
+					orderByClause.append(" order by u.basicInfoLatin.lastname " + orderDirection);
+				}
+			} else if (orderField.equals("rank")) {
+				orderByClause.append(" order by p.rank.name " + orderDirection);
+			}
+		}
+
+		TypedQuery<RegisterMember> searchQuery = em.createQuery(
+				" select rm from RegisterMember  rm " +
+						"left join rm.professor p " +
+						"left join p.user u " +
+						"left join u.roles rls " +
+						"where rm.id in ( " +
+						"select distinct rm.id " +
+						searchQueryString.toString() + ") " + orderByClause.toString(), RegisterMember.class);
+
+		searchQuery.setParameter("id", registerId);
+
+		if (StringUtils.isNotEmpty(filterText)) {
+			searchQuery.setParameter("filterText", filterText.toUpperCase() + "%");
+		}
+
+		// Prepare Query
+		List<RegisterMember> registerMemberList = searchQuery
+				.setFirstResult(iDisplayStart)
+				.setMaxResults(iDisplayLength)
+				.getResultList();
+
+
+		List<Long> nonRemovableMemberIds = em.createQuery(
+				"select rm.id from RegisterMember rm " +
+						"where rm.register.id = :registerId " +
+						"and (" +
+						"	exists (" +
+						"		select pcm.id from PositionCommitteeMember pcm " +
+						"		where pcm.committee.position.phase.status = :activeStatus " +
+						"		and pcm.registerMember.id = rm.id " +
+						"	) " +
+						"	or exists (" +
+						"		select pe.id from PositionEvaluator pe " +
+						"		where pe.evaluation.position.phase.status = :activeStatus " +
+						"		and pe.registerMember.id = rm.id " +
+						"	) " +
+						"	or exists (" +
+						"		select ce.id from CandidacyEvaluator ce " +
+						"		where ce.candidacy.candidacies.position.phase.status = :activeStatus " +
+						"		and ce.registerMember.id = rm.id " +
+						"	) " +
+						")", Long.class)
+				.setParameter("activeStatus", Position.PositionStatus.EPILOGI)
+				.setParameter("registerId", registerId)
+				.getResultList();
+
+		for (RegisterMember member : registerMemberList) {
+			boolean cannotBeDeleted = nonRemovableMemberIds.contains(member.getId());
+			member.setCanBeDeleted(!cannotBeDeleted);
+		}
+
+		SearchData<RegisterMember> result = new SearchData<>();
+		result.setiTotalRecords(totalRecords);
+		result.setiTotalDisplayRecords(totalRecords);
+		result.setsEcho(Integer.valueOf(sEcho));
+		result.setRecords(registerMemberList);
+
+		return result;
 	}
 
 	/**

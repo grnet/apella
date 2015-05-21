@@ -21,40 +21,6 @@
                 </tr>
                 </thead>
                 <tbody>
-                <% _.each(members, function(member) { %>
-                <tr>
-                    <td><%= $.i18n.prop(member.external ? "Yes" : "No") %></td>
-                    <td>
-                        <% if (_.isEqual(member.access, "READ_FULL")) { %>
-                        <a data-committee-member-id="<%- member.id %>" href="#user/<%- member.professor.user.id %>"
-                           target="user"><%- member.professor.user.id %> </a>
-                        <% } else { %>
-                        <%- member.professor.user.id %>
-                        <% } %>
-                    </td>
-                    <td><%- member.professor.user.firstname[App.locale] %></td>
-                    <td><%- member.professor.user.lastname[App.locale]%></td>
-                    <td><%= $.i18n.prop(member.professor.discriminator) %></td>
-                    <td><%- member.professor.rank.name[App.locale] %></td>
-                    <td>
-                        <% if (_.isEqual(member.professor.discriminator, 'PROFESSOR_FOREIGN')) { %>
-                        <%- member.professor.institution %>
-                        <% } else { %>
-                        <%= _.templates.department(member.professor.department) %>
-                        <% } %>
-                    </td>
-                    <td>
-                        <ul>
-                            <% if (_.isObject(member.professor.subject)) { %>
-                            <li><%- member.professor.subject.name %></li>
-                            <% } %>
-                            <% if (_.isObject(member.professor.fekSubject)) { %>
-                            <li><%- member.professor.fekSubject.name %></li>
-                            <% } %>
-                        </ul>
-                    </td>
-                </tr>
-                <% }); %>
                 </tbody>
                 <tfoot>
                 </tfoot>

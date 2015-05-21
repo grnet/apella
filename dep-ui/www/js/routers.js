@@ -810,16 +810,6 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
                 if (registerView) {
                     registerView.close();
                 }
-                // Select Edit or Simple View based on loggedOnUser
-                if (register.isEditableBy(App.loggedOnUser)) {
-                    registerView = new Views.RegisterEditView({
-                        model: register
-                    });
-                } else {
-                    registerView = new Views.RegisterView({
-                        model: register
-                    });
-                }
                 // Update history
                 if (register.id) {
                     App.router.navigate("registers/" + register.id, {
@@ -839,12 +829,28 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
                         $("#content").unbind();
                         $("#content").empty();
                         $("#content").html(registerView.el);
-                        registerView.render();
 
                         self.refreshBreadcrumb([$.i18n.prop('menu_registers'), register.get("title")]);
                         App.utils.scrollTo(registerView.$el);
                     }
                 });
+
+                // Select Edit or Simple View based on loggedOnUser
+                if (register.isEditableBy(App.loggedOnUser)) {
+                    registerView = new Views.RegisterEditView({
+                        model: register
+                    });
+                } else {
+                    registerView = new Views.RegisterView({
+                        model: register,
+                        collection: new Models.RegisterMembers({},{
+                            register: register.id
+                        })
+                    });
+                }
+
+
+                registerView.render();
             });
 
             self.clear();
