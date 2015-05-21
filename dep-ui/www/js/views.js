@@ -7928,9 +7928,17 @@ define(["jquery", "underscore", "backbone", "application", "models",
                                     };
                                 });
                                 fnCallback(json);
-                            }
+                            },
+                            "error": function ( xhr, textStatus, error ) {
+                            var popup = new Views.PopupView({
+                                type: "error",
+                                message: $.i18n.prop("Error") + " (" + xhr.status + ") : " + $.i18n.prop("error." + xhr.getResponseHeader("X-Error-Code"))
+                            });
+                            popup.show();
+                        }
 
-                        });
+
+                    });
                     }
                 });
 
@@ -8070,6 +8078,14 @@ define(["jquery", "underscore", "backbone", "application", "models",
 
         renderMembers: function () {
             var self = this;
+
+            var localeData = [];
+            localeData.push({
+                name: "locale",
+                value: App.locale
+            });
+
+
             if ($.fn.DataTable.fnIsDataTable(self.$("div#registerMembers table")[0])) {
                 self.$("div#registerMembers table").dataTable().fnDestroy();
             }
@@ -8083,6 +8099,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     "sInfo": $.i18n.prop("dataTable_sInfo"),
                     "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
                     "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+                    "iDeferLoading": 0,
                     "oPaginate": {
                         sFirst: $.i18n.prop("dataTable_sFirst"),
                         sPrevious: $.i18n.prop("dataTable_sPrevious"),
@@ -8091,31 +8108,60 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     }
                 },
                 "aoColumns": [
-                    {"mData": "firstname"},
-                    {"mData": "lastname"},
+                    {"mData": "firstName"},
+                    {"mData": "lastName"},
                     {"mData": "id", "sType": "html"},
-                    {"mData": "profile"},
-                    {"mData": "rank"},
-                    {"mData": "institution"},
-                    {"mData": "subject"},
-                    {"mData": "external"},
-                    {"mData": "options", "sType": "html"}
+                    {"mData": "profile", "bSortable": false},
+                    {"mData": "rank", "bSortable": false},
+                    {"mData": "institution", "bSortable": false},
+                    {"mData": "subject", "bSortable": false},
+                    {"mData": "external", "bSortable": false},
+                    {"mData": "options", "sType": "html", "bSortable": false}
                 ],
-                "aaData": _.map(self.model.get("members"), function (member) {
-                    return {
-                        external: $.i18n.prop(member.external ? "Yes" : "No"),
-                        id: '<a href="#user/' + member.professor.user.id + '" target="user">' + member.professor.user.id + '</a>',
-                        firstname: member.professor.user.firstname[App.locale],
-                        lastname: member.professor.user.lastname[App.locale],
-                        profile: $.i18n.prop(member.professor.discriminator),
-                        rank: member.professor.rank ? member.professor.rank.name[App.locale] : '',
-                        institution: _.isEqual(member.professor.discriminator,
-                            'PROFESSOR_FOREIGN') ? member.professor.institution : _.templates.department(member.professor.department),
-                        subject: ((_.isObject(member.professor.subject) ? member.professor.subject.name : '') + ' ' + (_.isObject(member.professor.fekSubject) ? member.professor.fekSubject.name : '')).trim(),
-                        options: member.canBeDeleted ? '<a id="removeMember" class="btn btn-mini btn-danger" data-professor-id="' + member.professor.id + '" data-toggle="tooltip" title="' + $.i18n.prop('btn_remove_member') + '"><i class="icon-remove icon-white"></i></a>' : ''
-                    };
-                })
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": self.collection.url(),
+                "fnServerData": function (sSource, aoData, fnCallback) {
+                    $.ajax({
+                        "type": "GET",
+                        "url": sSource,
+                        "data": aoData.concat(localeData),
+                        success: function (json) {
+                            self.collection.set(json.records);
+                            json.aaData = self.collection.map(function (member) {
+                                return {
+                                    external: $.i18n.prop(member.external ? "Yes" : "No"),
+                                    id: '<a href="#user/' + member.get("professor").user.id + '" target="user">' + member.get("professor").user.id + '</a>',
+                                    firstName: member.get("professor").user.firstname[App.locale],
+                                    lastName: member.get("professor").user.lastname[App.locale],
+                                    profile: $.i18n.prop(member.get("professor").discriminator),
+                                    rank: member.get("professor").rank ? member.get("professor").rank.name[App.locale] : '',
+                                    institution: _.isEqual(member.get("professor").discriminator,
+                                        'PROFESSOR_FOREIGN') ? member.get("professor").institution : _.templates.department(member.get("professor").department),
+                                    subject: ((_.isObject(member.get("professor").subject) ? member.get("professor").subject.name : '') + ' ' + (_.isObject(member.get("professor").fekSubject) ? member.get("professor").fekSubject.name : '')).trim(),
+                                    options: member.canBeDeleted ? '<a id="removeMember" class="btn btn-mini btn-danger" data-professor-id="' + member.get("professor").id + '" data-toggle="tooltip" title="' + $.i18n.prop('btn_remove_member') + '"><i class="icon-remove icon-white"></i></a>' : ''
+                                };
+                            });
+                            fnCallback(json);
+                        },
+                        "error": function ( xhr, textStatus, error ) {
+                            var popup = new Views.PopupView({
+                                type: "error",
+                                message: $.i18n.prop("Error") + " (" + xhr.status + ") : " + $.i18n.prop("error." + xhr.getResponseHeader("X-Error-Code"))
+                            });
+                            popup.show();
+                        }
+                    });
+                }
             });
+
+            self.$(".dataTables_filter input").unbind();
+            self.$(".dataTables_filter input").bind('keyup', function (e) {
+                if (e.keyCode == 13) {
+                    self.$("table").dataTable().fnFilter($(this).val());
+                }
+            });
+
         },
 
         change: function (event, data) {

@@ -838,7 +838,10 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
                 // Select Edit or Simple View based on loggedOnUser
                 if (register.isEditableBy(App.loggedOnUser)) {
                     registerView = new Views.RegisterEditView({
-                        model: register
+                        model: register,
+                        collection: new Models.RegisterMembers({},{
+                            register: register.id
+                        })
                     });
                 } else {
                     registerView = new Views.RegisterView({
@@ -848,7 +851,6 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
                         })
                     });
                 }
-
 
                 registerView.render();
             });
