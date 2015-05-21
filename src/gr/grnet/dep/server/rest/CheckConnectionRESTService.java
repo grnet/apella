@@ -27,7 +27,7 @@ public class CheckConnectionRESTService extends RESTService {
 
             return Response.ok().build();
         } catch (NoResultException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            return Response.status(Response.Status.SERVICE_UNAVAILABLE).build();
         }
     }
 
