@@ -28,32 +28,6 @@
             </tr>
             </thead>
             <tbody>
-            <% _.each(registries, function(register) { %>
-            <tr>
-                <td><%- register.institution.name[App.locale] %></td>
-                <td><%- register.subject.name %></td>
-                <% if (showAmMember) { %>
-                <td><%= $.i18n.prop(register.amMember ? 'Yes' : 'No') %></td>
-                <% } %>
-                <td width="1px">
-                    <div class="btn-group btn-group-vertical btn-block">
-                        <% if (register.canEdit) { %>
-                        <a id="select" data-register-cid="<%- register.cid %>" class="btn btn-success btn-small"><i
-                                class="icon-edit icon-white"></i> <%= $.i18n.prop('btn_edit') %></a>
-                        <% } else { %>
-                        <a id="select" data-register-cid="<%- register.cid %>" class="btn btn-primary btn-small"><i
-                                class="icon-eye-open icon-white"></i> <%-
-                            $.i18n.prop('btn_view') %></a>
-                        <% } %>
-                        <% if (register.canExport) { %>
-                        <a href="<%- register.exportUrl %>" target="export" class="btn btn-small"><i
-                                class="icon-download"></i> <%= $.i18n.prop('btn_register_export') %></a>
-                        <% } %>
-                    </div>
-                </td>
-
-            </tr>
-            <% }); %>
             </tbody>
             <tfoot>
             <tr>

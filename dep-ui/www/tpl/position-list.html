@@ -12,7 +12,18 @@
                 <th><input name="f-id" class="input-block-level" type="text"/></th>
                 <th><input name="f-name" class="input-block-level" type="text"/></th>
                 <th><input name="f-institution" class="input-block-level" type="text"/></th>
-                <th><input name="f-status" class="input-block-level" type="text"/></th>
+                <th>
+                    <select name="f-status" class="input-block-level" type="text">
+                        <option value="">----</option>
+                        <option value="CANCELLED"><%= $.i18n.prop("PositionStatus_CANCELLED") %></option>
+                        <option value="ANAPOMPI"><%= $.i18n.prop("PositionStatus_ANAPOMPI") %></option>
+                        <option value="ANOIXTI"><%= $.i18n.prop("PositionStatus_ANOIXTI") %></option>
+                        <option value="ENTAGMENI"><%= $.i18n.prop("PositionStatus_ENTAGMENI") %></option>
+                        <option value="EPILOGI"><%= $.i18n.prop("PositionStatus_EPILOGI") %></option>
+                        <option value="KLEISTI"><%= $.i18n.prop("PositionStatus_KLEISTI") %></option>
+                        <option value="STELEXOMENI"><%= $.i18n.prop("PositionStatus_STELEXOMENI") %></option>
+                    </select>
+                </th>
                 <th width="96px"></th>
             </tr>
             <tr>
@@ -24,25 +35,6 @@
             </tr>
             </thead>
             <tbody>
-            <% _.each(positions, function(position) { %>
-            <tr>
-                <td><%- App.utils.formatPositionID(position.id) %></td>
-                <td><%- position.name %></td>
-                <td><%= position.department ? _.templates.department(position.department) : "" %></td>
-                <td><%= $.i18n.prop('PositionStatus_' + position.phase.clientStatus) %></td>
-                <td width="96px">
-                    <p align="center">
-                        <% if (position.canEdit) { %>
-                        <a id="selectPosition" data-position-cid="<%- position.cid %>" class="btn btn-primary btn-mini"><i
-                                class="icon-edit icon-white"></i> <%= $.i18n.prop('btn_edit') %></a>
-                        <% } else { %>
-                        <a id="selectPosition" data-position-cid="<%- position.cid %>" class="btn btn-mini"><i
-                                class="icon-eye-open"></i> <%= $.i18n.prop('btn_view') %></a>
-                        <% } %>
-                    </p>
-                </td>
-            </tr>
-            <% }); %>
             </tbody>
             <tfoot>
             <tr>

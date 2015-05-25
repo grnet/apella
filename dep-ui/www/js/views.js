@@ -5000,10 +5000,6 @@ define(["jquery", "underscore", "backbone", "application", "models",
             this._super('initialize', [options]);
             _.bindAll(this, "renderActions", "selectPosition", "createPosition");
             this.template = _.template(tpl_position_list);
-            this.collection.bind("change", this.render, this);
-            this.collection.bind("reset", this.render, this);
-            this.collection.bind("add", this.render, this);
-            this.collection.bind("remove", this.render, this);
         },
 
         events: {
@@ -5014,19 +5010,6 @@ define(["jquery", "underscore", "backbone", "application", "models",
         render: function () {
             var self = this;
             var tpl_data = {
-                positions: (function () {
-                    var result = [];
-                    self.collection.each(function (model) {
-                        var item;
-                        if (model.has("id")) {
-                            item = model.toJSON();
-                            item.cid = model.cid;
-                            item.canEdit = model.isEditableBy(App.loggedOnUser);
-                            result.push(item);
-                        }
-                    });
-                    return result;
-                }()),
                 exportUrl: self.collection.url + "/export?X-Auth-Token=" + encodeURIComponent(App.authToken)
             };
             self.closeInnerViews();
@@ -5044,18 +5027,85 @@ define(["jquery", "underscore", "backbone", "application", "models",
                         "sInfo": $.i18n.prop("dataTable_sInfo"),
                         "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
                         "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+                        "iDeferLoading": 0,
                         "oPaginate": {
                             sFirst: $.i18n.prop("dataTable_sFirst"),
                             sPrevious: $.i18n.prop("dataTable_sPrevious"),
                             sNext: $.i18n.prop("dataTable_sNext"),
                             sLast: $.i18n.prop("dataTable_sLast")
                         }
+                    },
+                    "aoColumns": [
+                        {"mData": "positionId"},
+                        {"mData": "positionName"},
+                        {"mData": "institution", "bSortable": false},
+                        {"mData": "status", "bSortable": false},
+                        {"mData": "actions", "bSortable": false}
+                    ],
+                    "bProcessing": true,
+                    "bServerSide": true,
+                    "sAjaxSource": self.collection.url,
+                    "fnServerData": function (sSource, aoData, fnCallback) {
+                        $.ajax({
+                            "type": "GET",
+                            "url": sSource,
+                            "data": aoData,
+                            success: function (json) {
+                                self.collection.set(json.records);
+
+                                json.aaData = self.collection.map(function (position) {
+                                    function canEdit(position) {
+                                        return position.isEditableBy(App.loggedOnUser);
+                                    }
+
+                                    function getActions(position) {
+                                        var actions;
+                                        if (canEdit(position)) {
+                                            actions = '<a id="selectPosition" data-position-cid="' + position.cid + '" class="btn btn-primary btn-mini">' +
+                                                '<i class="icon-edit icon-white"></i>' + $.i18n.prop('btn_edit') + '</a>';
+                                        } else {
+                                            actions = '<a id="selectPosition" data-position-cid="' + position.cid + '" class="btn btn-mini">' +
+                                                '<i class="icon-eye-open"></i>' + $.i18n.prop('btn_view') + '</a>';
+                                        }
+
+                                        return actions;
+                                    }
+
+                                    return {
+                                        positionId: position.id,
+                                        positionName: position.get("name"),
+                                        institution: position.get("department") ? _.templates.department(position.get("department")) : '',
+                                        status:  $.i18n.prop('PositionStatus_' + position.get("phase").clientStatus),
+                                        actions: getActions(position)
+                                    };
+                                });
+                                fnCallback(json);
+                            },
+                            "error": function ( xhr, textStatus, error ) {
+                                var popup = new Views.PopupView({
+                                    type: "error",
+                                    message: $.i18n.prop("Error") + " (" + xhr.status + ") : " + $.i18n.prop("error." + xhr.getResponseHeader("X-Error-Code"))
+                                });
+                                popup.show();
+                            }
+
+                        });
                     }
                 });
-                self.$("table thead input").keyup(function () {
-                    self.$("table").dataTable().fnFilter(this.value, self.$("table thead input").index(this));
-                });
             }
+
+            self.$("table thead input").unbind();
+            self.$("table thead input").bind('keyup', function (e) {
+                // trigger filtering when pressing enter
+                if (e.keyCode == 13) {
+                    self.$("table").dataTable().fnFilter(this.value, self.$("table thead input").index(this));
+                }
+            });
+
+            self.$("table thead select").change(function () {
+                self.$("table").dataTable().fnFilter(this.value,3);
+            });
+
             // Actions
             self.renderActions();
             return self;
@@ -5346,8 +5396,6 @@ define(["jquery", "underscore", "backbone", "application", "models",
             _.bindAll(this, "addPhase", "showTab", "showMainTab", "showCandidaciesTab", "showCommitteeTab", "showEvaluationTab", "showNominationTab",
                 "showComplementaryDocumentsTab");
             this.template = _.template(tpl_position_edit);
-            this.model.bind('change', this.render, this);
-            this.model.bind("destroy", this.close, this);
         },
 
         events: {
@@ -6468,6 +6516,13 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 self.$("table").dataTable().fnClearTable();
                 return;
             }
+
+            var localeData = [];
+            localeData.push({
+                name: "locale",
+                value: App.locale
+            });
+
             self.$("table").dataTable().fnDestroy();
             self.$("table").dataTable({
                 "sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
@@ -6479,6 +6534,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     "sInfo": $.i18n.prop("dataTable_sInfo"),
                     "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
                     "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+                    "iDeferLoading": 0,
                     "oPaginate": {
                         sFirst: $.i18n.prop("dataTable_sFirst"),
                         sPrevious: $.i18n.prop("dataTable_sPrevious"),
@@ -6487,25 +6543,27 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     }
                 },
                 "aoColumns": [
-                    {"mData": "select"},
+                    {"mData": "select", "bSortable": false},
                     {"mData": "id"},
-                    {"mData": "external"},
+                    {"mData": "external",  "bSortable": false},
                     {"mData": "firstname"},
                     {"mData": "lastname"},
-                    {"mData": "role"},
-                    {"mData": "institution"},
-                    {"mData": "committees"}
+                    {"mData": "role", "bSortable": false},
+                    {"mData": "institution", "bSortable": false},
+                    {"mData": "committees", "bSortable": false}
                 ],
                 "bProcessing": true,
+                "bServerSide": true,
                 "sAjaxSource": self.model.url() + "/register/" + registerId + "/member",
                 "fnServerData": function (sSource, aoData, fnCallback) {
-                    self.collection.url = sSource;
-                    self.collection.fetch({
-                        reset: true,
-                        cache: true,
-                        success: function (collection) {
-                            var data = {
-                                aaData: collection.map(function (registerMember) {
+                    $.ajax({
+                        "type": "GET",
+                        "url": sSource, 
+                        "data": aoData.concat(localeData),
+                        success: function (json) {
+                            // Read Data
+                            self.collection.set(json.records);
+                            json.aaData = self.collection.map(function (registerMember) {
                                     var isMember = _.some(self.model.get("members"), function (member) {
                                         return _.isEqual(member.registerMember.professor.id, registerMember.get('professor').id);
                                     });
@@ -6513,25 +6571,37 @@ define(["jquery", "underscore", "backbone", "application", "models",
                                         select: isMember ? '' :
                                         '<select name="selectMember" class="input-small">' +
                                         '<option value="NONE">----</option>' +
-                                        '<option value="REGULAR" data-model-id="' + registerMember.get('id') + '" data-type="REGULAR">' + $.i18n.prop('PositionCommitteeMemberTypeREGULAR') + '</option>' +
-                                        '<option value="SUBSTITUTE" data-model-id="' + registerMember.get('id') + '" data-type="SUBSTITUTE">' + $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") + '</option>' +
+                                        '<option value="REGULAR" data-model-id="' + registerMember.id + '" data-type="REGULAR">' + $.i18n.prop('PositionCommitteeMemberTypeREGULAR') + '</option>' +
+                                        '<option value="SUBSTITUTE" data-model-id="' + registerMember.id + '" data-type="SUBSTITUTE">' + $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") + '</option>' +
                                         '</select>',
-                                        id: '<a href = "#user/' + registerMember.get('professor').user.id + '">' + registerMember.get('professor').user.id + '</a>',
-                                        external: registerMember.get('external') ? $.i18n.prop('RegisterMemberExternal') : $.i18n.prop('RegisterMemberInternal'),
-                                        firstname: registerMember.get('professor').user.firstname[App.locale],
-                                        lastname: registerMember.get('professor').user.lastname[App.locale],
-                                        role: $.i18n.prop(registerMember.get('professor').discriminator),
-                                        institution: registerMember.get('professor').discriminator === 'PROFESSOR_FOREIGN' ? registerMember.get('professor').institution : _.templates.department(registerMember.get('professor').department),
-                                        committees: registerMember.get('professor').committeesCount
+                                        id: '<a href = "#user/' + registerMember.get("professor").user.id + '">' + registerMember.get("professor").user.id + '</a>',
+                                        external: registerMember.external ? $.i18n.prop('RegisterMemberExternal') : $.i18n.prop('RegisterMemberInternal'),
+                                        firstname: registerMember.get("professor").user.firstname[App.locale],
+                                        lastname: registerMember.get("professor").user.lastname[App.locale],
+                                        role: $.i18n.prop(registerMember.get("professor").discriminator),
+                                        institution: registerMember.get("professor").discriminator === 'PROFESSOR_FOREIGN' ? registerMember.get("professor").institution : _.templates.department(registerMember.get("professor").department),
+                                        committees: registerMember.get("professor").committeesCount
                                     };
-
-                                })
-                            };
-                            fnCallback(data);
+                            });
+                            fnCallback(json);
+                        },
+                        "error": function ( xhr, textStatus, error ) {
+                            var popup = new Views.PopupView({
+                                type: "error",
+                                message: $.i18n.prop("Error") + " (" + xhr.status + ") : " + $.i18n.prop("error." + xhr.getResponseHeader("X-Error-Code"))
+                            });
+                            popup.show();
                         }
                     });
                 }
 
+            });
+
+            self.$(".dataTables_filter input").unbind();
+            self.$(".dataTables_filter input").bind('keyup', function (e) {
+                if (e.keyCode == 13) {
+                    self.$("table").dataTable().fnFilter($(this).val());
+                }
             });
         },
 
@@ -6549,7 +6619,9 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     return;
                 }
                 type = selectedOption.data('type');
+                
                 model = self.collection.get(id);
+
                 committeeMember = {
                     type: type,
                     registerMember: model.toJSON()
@@ -6927,6 +6999,13 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 self.$("table").dataTable().fnClearTable();
                 return;
             }
+
+            var localeData = [];
+            localeData.push({
+                name: "locale",
+                value: App.locale
+            });
+
             self.$("table").dataTable().fnDestroy();
             self.$("table").dataTable({
                 "sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
@@ -6938,6 +7017,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     "sInfo": $.i18n.prop("dataTable_sInfo"),
                     "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
                     "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+                    "iDeferLoading": 0,
                     "oPaginate": {
                         sFirst: $.i18n.prop("dataTable_sFirst"),
                         sPrevious: $.i18n.prop("dataTable_sPrevious"),
@@ -6947,54 +7027,67 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 },
                 "aoColumns": [
                     {"mData": "id"},
-                    {"mData": "external"},
+                    {"mData": "external", "bSortable": false},
                     {"mData": "firstname"},
                     {"mData": "lastname"},
-                    {"mData": "role"},
-                    {"mData": "institution"},
-                    {"mData": "select"}
+                    {"mData": "role", "bSortable": false},
+                    {"mData": "institution", "bSortable": false},
+                    {"mData": "select", "bSortable": false}
                 ],
                 "bProcessing": true,
+                "bServerSide": true,
                 "sAjaxSource": self.model.url() + "/register/" + registerId + "/member",
                 "fnServerData": function (sSource, aoData, fnCallback) {
-                    self.collection.url = sSource;
-                    self.collection.fetch({
-                        reset: true,
-                        cache: true,
-                        success: function (collection) {
-                            var data = {
-                                aaData: _.map(collection.filter(function (registerMember) {
-                                        // Keep only external members
-                                        return registerMember.get('external');
-                                    }),
-                                    function (registerMember) {
+                    $.ajax({
+                        "type": "GET",
+                        "url": sSource,
+                        "data": aoData.concat(localeData),
+                        success: function (json) {
+                            // Read Data
+                            self.collection.set(json.records);
+                            json.aaData = self.collection.map(function (registerMember) {
                                         var isMember = _.some(self.model.get("evaluators"), function (evaluator) {
-                                            return _.isEqual(evaluator.registerMember.professor.id, registerMember.get('professor').id);
+                                            return _.isEqual(evaluator.registerMember.professor.id, registerMember.get("professor").id);
                                         });
                                         return {
-                                            id: '<a href = "#user/' + registerMember.get('professor').user.id + '">' + registerMember.get('professor').user.id + '</a>',
-                                            external: registerMember.get('external') ? $.i18n.prop('RegisterMemberExternal') : $.i18n.prop('RegisterMemberInternal'),
-                                            firstname: registerMember.get('professor').user.firstname[App.locale],
-                                            lastname: registerMember.get('professor').user.lastname[App.locale],
-                                            role: $.i18n.prop(registerMember.get('professor').discriminator),
-                                            institution: registerMember.get('professor').discriminator === 'PROFESSOR_FOREIGN' ? registerMember.get('professor').institution : _.templates.department(registerMember.get('professor').department),
+                                            id: '<a href = "#user/' + registerMember.get("professor").user.id + '">' + registerMember.get("professor").user.id + '</a>',
+                                            external: registerMember.external ? $.i18n.prop('RegisterMemberExternal') : $.i18n.prop('RegisterMemberInternal'),
+                                            firstname: registerMember.get("professor").user.firstname[App.locale],
+                                            lastname: registerMember.get("professor").user.lastname[App.locale],
+                                            role: $.i18n.prop(registerMember.get("professor").discriminator),
+                                            institution: registerMember.get("professor").discriminator === 'PROFESSOR_FOREIGN' ? registerMember.get("professor").institution : _.templates.department(registerMember.get("professor").department),
                                             select: isMember ? '' :
                                             '<div class="btn-group">' +
                                             '<a class = "btn btn-small btn-success dropdown-toggle" data-toggle="dropdown" >' + $.i18n.prop('btn_select') + '<span class="caret"></span></a>' +
                                             '<ul class="dropdown-menu">' +
-                                            '<li><a id="addMember" data-model-id="' + registerMember.get('id') + '" data-position="0"><i class="icon-plus"></i>' + $.i18n.prop('PositionEvaluatorFirst') + '</a></li>' +
-                                            '<li><a id="addMember" data-model-id="' + registerMember.get('id') + '" data-position="1"><i class="icon-plus"></i>' + $.i18n.prop('PositionEvaluatorSecond') + '</a></li>' +
+                                            '<li><a id="addMember" data-model-id="' + registerMember.id + '" data-position="0"><i class="icon-plus"></i>' + $.i18n.prop('PositionEvaluatorFirst') + '</a></li>' +
+                                            '<li><a id="addMember" data-model-id="' + registerMember.id + '" data-position="1"><i class="icon-plus"></i>' + $.i18n.prop('PositionEvaluatorSecond') + '</a></li>' +
                                             '</ul>' +
                                             '</div>'
                                         };
-                                    })
-                            };
-                            fnCallback(data);
+                                    });
+
+                            fnCallback(json);
+                        },
+                        "error": function ( xhr, textStatus, error ) {
+                            var popup = new Views.PopupView({
+                                type: "error",
+                                message: $.i18n.prop("Error") + " (" + xhr.status + ") : " + $.i18n.prop("error." + xhr.getResponseHeader("X-Error-Code"))
+                            });
+                            popup.show();
                         }
                     });
                 }
-
             });
+
+            self.$(".dataTables_filter input").unbind();
+            self.$(".dataTables_filter input").bind('keyup', function (e) {
+                // trigger filtering when pressing enter
+                if (e.keyCode == 13) {
+                    self.$("table").dataTable().fnFilter($(this).val());
+                }
+            });
+
         },
 
         addMember: function (event) {
@@ -7641,10 +7734,6 @@ define(["jquery", "underscore", "backbone", "application", "models",
             this._super('initialize', [options]);
             _.bindAll(this, "renderActions", "selectRegister", "createRegister");
             this.template = _.template(tpl_register_list);
-            this.collection.bind("change", this.render, this);
-            this.collection.bind("reset", this.render, this);
-            this.collection.bind("add", this.render, this);
-            this.collection.bind("remove", this.render, this);
         },
 
         events: {
@@ -7657,30 +7746,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
             var tpl_data = {
                 canExportGeneric: App.loggedOnUser.hasRole("INSTITUTION_MANAGER") || App.loggedOnUser.hasRole("ADMINISTRATOR"),
                 exportGenericUrl: (new Models.Register()).urlRoot + "/professorsexport?X-Auth-Token=" + encodeURIComponent(App.authToken),
-                showAmMember: App.loggedOnUser.hasRole("PROFESSOR_DOMESTIC") || App.loggedOnUser.hasRole("PROFESSOR_FOREIGN"),
-                registries: (function () {
-                    var result = [];
-                    var gCanExport =
-                        App.loggedOnUser.hasRole("MINISTRY_MANAGER") ||
-                        App.loggedOnUser.hasRole("MINISTRY_ASSISTANT") ||
-                        App.loggedOnUser.hasRole("ADMINISTRATOR");
-
-                    self.collection.each(function (model) {
-                        var canEdit = model.isEditableBy(App.loggedOnUser);
-                        var canExport = App.loggedOnUser.isAssociatedWithInstitution(model.get("institution"));
-                        var item;
-                        if (model.has("id")) {
-                            item = model.toJSON();
-                            item.cid = model.cid;
-                            item.canExport = gCanExport || canExport;
-                            item.exportUrl = model.url() + "/export?X-Auth-Token=" + encodeURIComponent(App.authToken);
-                            item.canEdit = canEdit;
-
-                            result.push(item);
-                        }
-                    });
-                    return result;
-                }())
+                showAmMember: App.loggedOnUser.hasRole("PROFESSOR_DOMESTIC") || App.loggedOnUser.hasRole("PROFESSOR_FOREIGN")
             };
             self.closeInnerViews();
             self.$el.empty();
@@ -7698,17 +7764,92 @@ define(["jquery", "underscore", "backbone", "application", "models",
                         "sInfo": $.i18n.prop("dataTable_sInfo"),
                         "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
                         "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+                        "iDeferLoading": 0,
                         "oPaginate": {
                             sFirst: $.i18n.prop("dataTable_sFirst"),
                             sPrevious: $.i18n.prop("dataTable_sPrevious"),
                             sNext: $.i18n.prop("dataTable_sNext"),
                             sLast: $.i18n.prop("dataTable_sLast")
                         }
+                    },
+                    "aoColumns": [
+                        {"mData": "institution", "bSortable": false},
+                        {"mData": "subject"},
+                        {"mData": 'amMember', bVisible : tpl_data.showAmMember, "bSortable": false},
+                        {"mData": "actions", "bSortable": false}
+                    ],
+                    "bProcessing": true,
+                    "bServerSide": true,
+                    "sAjaxSource": self.collection.url,
+                    "fnServerData": function (sSource, aoData, fnCallback) {
+                        $.ajax({
+                            "type": "GET",
+                            "url": sSource,
+                            "data": aoData,
+                            success: function (json) {
+                                self.collection.set(json.records);
+                                json.aaData = self.collection.map(function (register) {
+
+                                    function canEdit(register) {
+                                        return register.isEditableBy(App.loggedOnUser);
+                                    }
+
+                                    function canExport(register) {
+                                        return App.loggedOnUser.isAssociatedWithInstitution(register.get("institution")) ||
+                                            App.loggedOnUser.hasRole("MINISTRY_MANAGER") ||
+                                            App.loggedOnUser.hasRole("MINISTRY_ASSISTANT") ||
+                                            App.loggedOnUser.hasRole("ADMINISTRATOR");
+                                    }
+
+                                    function getExportUrl(register) {
+                                        return register.url() + "/export?X-Auth-Token=" + encodeURIComponent(App.authToken);
+                                    }
+
+                                    function getActions(register) {
+                                        var actions;
+                                        if (canEdit(register)) {
+                                            actions = '<a id="select" data-register-cid="' + register.cid + '" class="btn btn-success btn-small">' +
+                                                '<i class="icon-edit icon-white"></i>' + $.i18n.prop('btn_edit') + '</a>';
+                                        } else {
+                                            actions = '<a id="select" data-register-cid="' + register.cid + '" class="btn btn-primary btn-small">' +
+                                                '<i class="icon-eye-open icon-white"></i>' + $.i18n.prop('btn_view') + '</a>';
+                                        }
+
+                                        if (canExport(register)) {
+                                            actions += '<a href="' + getExportUrl(register) + '" target="export" class="btn btn-small">' +
+                                                '<i class="icon-download"></i> ' + $.i18n.prop('btn_register_export') + '</a>';
+                                        }
+                                        return actions;
+                                    }
+
+                                    return {
+                                        institution: register.get("institution").name[App.locale],
+                                        subject: register.get("subject").name,
+                                        amMember: $.i18n.prop(register.get("amMember") ? 'Yes' : 'No'),
+                                        actions: getActions(register)
+                                    };
+                                });
+                                fnCallback(json);
+                            },
+                            "error": function ( xhr, textStatus, error ) {
+                                var popup = new Views.PopupView({
+                                    type: "error",
+                                    message: $.i18n.prop("Error") + " (" + xhr.status + ") : " + $.i18n.prop("error." + xhr.getResponseHeader("X-Error-Code"))
+                                });
+                                popup.show();
+                            }
+                        });
+                    }
+            });
+
+                self.$("table thead input").unbind();
+                self.$("table thead input").bind('keyup', function (e) {
+                    // trigger filtering when pressing enter
+                    if (e.keyCode == 13) {
+                        self.$("table").dataTable().fnFilter(this.value, self.$("table thead input").index(this));
                     }
                 });
-                self.$("table thead input").keyup(function () {
-                    self.$("table").dataTable().fnFilter(this.value, self.$("table thead input").index(this));
-                });
+
             }
             // Add Actions
             self.renderActions();
@@ -7792,8 +7933,6 @@ define(["jquery", "underscore", "backbone", "application", "models",
         initialize: function (options) {
             this._super('initialize', [options]);
             this.template = _.template(tpl_register);
-            this.model.bind('change', this.render, this);
-            this.model.bind("destroy", this.close, this);
         },
 
         events: {},
@@ -7806,17 +7945,15 @@ define(["jquery", "underscore", "backbone", "application", "models",
 
             // Prepare tpl_data
             tpl_data = self.model.toJSON();
-            if (App.loggedOnUser.isAssociatedWithInstitution(self.model.get("institution")) ||
-                App.loggedOnUser.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE") ||
-                App.loggedOnUser.hasRoleWithStatus("MINISTRY_ASSISTANT", "ACTIVE") ||
-                App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
-                _.each(tpl_data.members, function (member) {
-                    member.access = "READ_FULL";
-                });
-            }
 
             // Add to element
             self.$el.append(self.template(tpl_data));
+
+            var localeData = [];
+            localeData.push({
+                name: "locale",
+                value: App.locale
+            });
 
             // Init jQuery.widgets
             if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
@@ -7830,22 +7967,86 @@ define(["jquery", "underscore", "backbone", "application", "models",
                         "sInfo": $.i18n.prop("dataTable_sInfo"),
                         "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
                         "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+                        "iDeferLoading": 0,
                         "oPaginate": {
                             sFirst: $.i18n.prop("dataTable_sFirst"),
                             sPrevious: $.i18n.prop("dataTable_sPrevious"),
                             sNext: $.i18n.prop("dataTable_sNext"),
                             sLast: $.i18n.prop("dataTable_sLast")
                         }
+                    },
+                    "aoColumns": [
+                        {"mData": "registerMemberExternal", "bSortable": false},
+                        {"mData": "id"},
+                        {"mData": "firstName"},
+                        {"mData": "lastName"},
+                        {"mData": "profile", "bSortable": false},
+                        {"mData": 'rank', "bVisible": tpl_data.showAmMember, "bSortable": false},
+                        {"mData": "institution", "bSortable": false},
+                        {"mData": "subject", "bSortable": false}
+
+                    ],
+                    "bProcessing": true,
+                    "bServerSide": true,
+                    "sAjaxSource": self.collection.url(),
+                    "fnServerData": function (sSource, aoData, fnCallback) {
+                        $.ajax({
+                            "type": "GET",
+                            "url": sSource,
+                            "data": aoData.concat(localeData),
+                            success: function (json) {
+                                self.collection.set(json.records);
+                                json.aaData = self.collection.map(function (member) {
+
+                                    function getMemberAccess() {
+                                        if (App.loggedOnUser.isAssociatedWithInstitution(self.model.get("institution")) ||
+                                            App.loggedOnUser.hasRoleWithStatus("MINISTRY_MANAGER", "ACTIVE") ||
+                                            App.loggedOnUser.hasRoleWithStatus("MINISTRY_ASSISTANT", "ACTIVE") ||
+                                            App.loggedOnUser.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
+
+                                            return "READ_FULL";
+                                        }
+                                    }
+
+                                    return {
+                                        registerMemberExternal: $.i18n.prop(member.external ? "Yes" : "No"),
+                                        id: _.isEqual(getMemberAccess(), "READ_FULL") ? '<a data-committee-member-id="' + member.id + '" href="#user/' + member.get("professor").user.id +
+                                        '" target="user">' + member.get("professor").user.id + '</a>' : member.get("professor").user.id,
+                                        firstName: member.get("professor").user.firstname[App.locale],
+                                        lastName: member.get("professor").user.lastname[App.locale],
+                                        profile: $.i18n.prop(member.get("professor").discriminator),
+                                        rank: member.get("professor").rank.name[App.locale],
+                                        institution: _.isEqual(member.get("professor").discriminator, 'PROFESSOR_FOREIGN') ? member.get("professor").institution : _.templates.department(member.get("professor").department),
+                                        subject: _.isObject(member.get("professor").subject) ? member.get("professor").subject.name : member.get("professor").fekSubject.name
+                                    };
+                                });
+                                fnCallback(json);
+                            },
+                            "error": function ( xhr, textStatus, error ) {
+                            var popup = new Views.PopupView({
+                                type: "error",
+                                message: $.i18n.prop("Error") + " (" + xhr.status + ") : " + $.i18n.prop("error." + xhr.getResponseHeader("X-Error-Code"))
+                            });
+                            popup.show();
+                        }
+
+
+                    });
                     }
                 });
-            }
+
+                self.$(".dataTables_filter input").unbind();
+                self.$(".dataTables_filter input").bind('keyup', function (e) {
+                    if (e.keyCode == 13) {
+                        self.$("table").dataTable().fnFilter($(this).val());
+                    }
+                });
+                }
 
             return self;
         },
 
         close: function () {
-            this.model.unbind("change");
-            this.model.unbind("destroy");
             $(this.el).unbind();
             $(this.el).remove();
         }
@@ -7970,6 +8171,14 @@ define(["jquery", "underscore", "backbone", "application", "models",
 
         renderMembers: function () {
             var self = this;
+
+            var localeData = [];
+            localeData.push({
+                name: "locale",
+                value: App.locale
+            });
+
+
             if ($.fn.DataTable.fnIsDataTable(self.$("div#registerMembers table")[0])) {
                 self.$("div#registerMembers table").dataTable().fnDestroy();
             }
@@ -7983,6 +8192,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     "sInfo": $.i18n.prop("dataTable_sInfo"),
                     "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
                     "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+                    "iDeferLoading": 0,
                     "oPaginate": {
                         sFirst: $.i18n.prop("dataTable_sFirst"),
                         sPrevious: $.i18n.prop("dataTable_sPrevious"),
@@ -7991,31 +8201,60 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     }
                 },
                 "aoColumns": [
-                    {"mData": "firstname"},
-                    {"mData": "lastname"},
+                    {"mData": "firstName"},
+                    {"mData": "lastName"},
                     {"mData": "id", "sType": "html"},
-                    {"mData": "profile"},
-                    {"mData": "rank"},
-                    {"mData": "institution"},
-                    {"mData": "subject"},
-                    {"mData": "external"},
-                    {"mData": "options", "sType": "html"}
+                    {"mData": "profile", "bSortable": false},
+                    {"mData": "rank", "bSortable": false},
+                    {"mData": "institution", "bSortable": false},
+                    {"mData": "subject", "bSortable": false},
+                    {"mData": "external", "bSortable": false},
+                    {"mData": "options", "sType": "html", "bSortable": false}
                 ],
-                "aaData": _.map(self.model.get("members"), function (member) {
-                    return {
-                        external: $.i18n.prop(member.external ? "Yes" : "No"),
-                        id: '<a href="#user/' + member.professor.user.id + '" target="user">' + member.professor.user.id + '</a>',
-                        firstname: member.professor.user.firstname[App.locale],
-                        lastname: member.professor.user.lastname[App.locale],
-                        profile: $.i18n.prop(member.professor.discriminator),
-                        rank: member.professor.rank ? member.professor.rank.name[App.locale] : '',
-                        institution: _.isEqual(member.professor.discriminator,
-                            'PROFESSOR_FOREIGN') ? member.professor.institution : _.templates.department(member.professor.department),
-                        subject: ((_.isObject(member.professor.subject) ? member.professor.subject.name : '') + ' ' + (_.isObject(member.professor.fekSubject) ? member.professor.fekSubject.name : '')).trim(),
-                        options: member.canBeDeleted ? '<a id="removeMember" class="btn btn-mini btn-danger" data-professor-id="' + member.professor.id + '" data-toggle="tooltip" title="' + $.i18n.prop('btn_remove_member') + '"><i class="icon-remove icon-white"></i></a>' : ''
-                    };
-                })
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": self.collection.url(),
+                "fnServerData": function (sSource, aoData, fnCallback) {
+                    $.ajax({
+                        "type": "GET",
+                        "url": sSource,
+                        "data": aoData.concat(localeData),
+                        success: function (json) {
+                            self.collection.set(json.records);
+                            json.aaData = self.collection.map(function (member) {
+                                return {
+                                    external: $.i18n.prop(member.external ? "Yes" : "No"),
+                                    id: '<a href="#user/' + member.get("professor").user.id + '" target="user">' + member.get("professor").user.id + '</a>',
+                                    firstName: member.get("professor").user.firstname[App.locale],
+                                    lastName: member.get("professor").user.lastname[App.locale],
+                                    profile: $.i18n.prop(member.get("professor").discriminator),
+                                    rank: member.get("professor").rank ? member.get("professor").rank.name[App.locale] : '',
+                                    institution: _.isEqual(member.get("professor").discriminator,
+                                        'PROFESSOR_FOREIGN') ? member.get("professor").institution : _.templates.department(member.get("professor").department),
+                                    subject: ((_.isObject(member.get("professor").subject) ? member.get("professor").subject.name : '') + ' ' + (_.isObject(member.get("professor").fekSubject) ? member.get("professor").fekSubject.name : '')).trim(),
+                                    options: member.canBeDeleted ? '<a id="removeMember" class="btn btn-mini btn-danger" data-professor-id="' + member.get("professor").id + '" data-toggle="tooltip" title="' + $.i18n.prop('btn_remove_member') + '"><i class="icon-remove icon-white"></i></a>' : ''
+                                };
+                            });
+                            fnCallback(json);
+                        },
+                        "error": function ( xhr, textStatus, error ) {
+                            var popup = new Views.PopupView({
+                                type: "error",
+                                message: $.i18n.prop("Error") + " (" + xhr.status + ") : " + $.i18n.prop("error." + xhr.getResponseHeader("X-Error-Code"))
+                            });
+                            popup.show();
+                        }
+                    });
+                }
             });
+
+            self.$(".dataTables_filter input").unbind();
+            self.$(".dataTables_filter input").bind('keyup', function (e) {
+                if (e.keyCode == 13) {
+                    self.$("table").dataTable().fnFilter($(this).val());
+                }
+            });
+
         },
 
         change: function (event, data) {

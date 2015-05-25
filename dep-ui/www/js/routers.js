@@ -719,51 +719,9 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
 
             self.clear();
             self.refreshBreadcrumb([$.i18n.prop('menu_positions')]);
+
+            positionListView.render();
             $("#featured").html(positionListView.el);
-
-            // Refresh positions from server
-            positions.fetch({
-                cache: false,
-                reset: true,
-                wait: true,
-                success: function () {
-                    var selectedPosition;
-                    if (!_.isUndefined(positionId)) {
-                        selectedPosition = positions.get(positionId);
-                        if (!selectedPosition) {
-                            // Not permanent, so fetch it
-                            selectedPosition = new Models.Position({
-                                id: positionId
-                            });
-                            selectedPosition.fetch({
-                                cache: false,
-                                wait: true,
-                                success: function () {
-                                    positions.add(selectedPosition);
-                                    positions.trigger("position:selected", selectedPosition, tab);
-                                },
-                                error: function (model, resp, options) {
-                                    var popup = new Views.PopupView({
-                                        type: "error",
-                                        message: $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-                                    });
-                                    popup.show();
-                                }
-                            });
-                        } else {
-                            positions.trigger("position:selected", selectedPosition, tab);
-                        }
-                    }
-                },
-                error: function (model, resp, options) {
-                    var popup = new Views.PopupView({
-                        type: "error",
-                        message: $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-                    });
-                    popup.show();
-                }
-            });
-
             this.currentView = positionListView;
         },
 
@@ -810,16 +768,6 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
                 if (registerView) {
                     registerView.close();
                 }
-                // Select Edit or Simple View based on loggedOnUser
-                if (register.isEditableBy(App.loggedOnUser)) {
-                    registerView = new Views.RegisterEditView({
-                        model: register
-                    });
-                } else {
-                    registerView = new Views.RegisterView({
-                        model: register
-                    });
-                }
                 // Update history
                 if (register.id) {
                     App.router.navigate("registers/" + register.id, {
@@ -839,66 +787,36 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
                         $("#content").unbind();
                         $("#content").empty();
                         $("#content").html(registerView.el);
-                        registerView.render();
 
                         self.refreshBreadcrumb([$.i18n.prop('menu_registers'), register.get("title")]);
                         App.utils.scrollTo(registerView.$el);
                     }
                 });
+
+                // Select Edit or Simple View based on loggedOnUser
+                if (register.isEditableBy(App.loggedOnUser)) {
+                    registerView = new Views.RegisterEditView({
+                        model: register,
+                        collection: new Models.RegisterMembers({},{
+                            register: register.id
+                        })
+                    });
+                } else {
+                    registerView = new Views.RegisterView({
+                        model: register,
+                        collection: new Models.RegisterMembers({},{
+                            register: register.id
+                        })
+                    });
+                }
+
+                registerView.render();
             });
 
             self.clear();
             self.refreshBreadcrumb([$.i18n.prop('menu_registers')]);
             $("#featured").html(registerListView.el);
-            // Refresh registries from server
-            registries.fetch({
-                cache: false,
-                reset: true,
-                wait: true,
-                data: {
-                    institution: (function () {
-                        var institutions = App.loggedOnUser.getAssociatedInstitutions();
-                        if (institutions) {
-                            return institutions[0];
-                        }
-                    }())
-                },
-                success: function () {
-                    if (!_.isUndefined(registerId)) {
-                        var selectedRegister = registries.get(registerId);
-                        if (!selectedRegister) {
-                            selectedRegister = new Models.Register({
-                                id: registerId
-                            });
-                            selectedRegister.fetch({
-                                cache: false,
-                                wait: true,
-                                success: function () {
-                                    registries.add(selectedRegister);
-                                    registries.trigger("register:selected", selectedRegister);
-                                },
-                                error: function (model, resp, options) {
-                                    var popup = new Views.PopupView({
-                                        type: "error",
-                                        message: $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-                                    });
-                                    popup.show();
-                                }
-                            });
-                        } else {
-                            registries.trigger("register:selected", selectedRegister);
-                        }
-                    }
-                },
-                error: function (model, resp, options) {
-                    var popup = new Views.PopupView({
-                        type: "error",
-                        message: $.i18n.prop("Error") + " (" + resp.status + ") : " + $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
-                    });
-                    popup.show();
-                }
-            });
-
+            registerListView.render();
             this.currentView = registerListView;
         },
 
