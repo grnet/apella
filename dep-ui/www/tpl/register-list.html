@@ -14,7 +14,13 @@
                 <th><input name="f-institution" type="text" class="input-block-level"></th>
                 <th><input name="f-subject" type="text" class="input-block-level"></th>
                 <% if (showAmMember) { %>
-                <th></th>
+                <th>
+                    <select name="f-member" class="input-block-level" type="text">
+                        <option value="">----</option>
+                        <option value="true"><%= $.i18n.prop("Yes") %></option>
+                        <option value="false"><%= $.i18n.prop("No") %></option>
+                    </select>
+                </th>
                 <% } %>
                 <th width="1px"></th>
             </tr>

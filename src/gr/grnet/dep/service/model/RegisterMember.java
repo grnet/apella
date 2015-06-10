@@ -71,6 +71,9 @@ public class RegisterMember implements Serializable {
 	@OneToMany(mappedBy = "registerMember", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<CandidacyEvaluator> candidacyEvaluations = new HashSet<CandidacyEvaluator>();
 
+	@Transient
+	private boolean toBeDeleted = false;
+
 	public Long getId() {
 		return id;
 	}
@@ -160,4 +163,11 @@ public class RegisterMember implements Serializable {
 		this.canBeDeleted = canBeDeleted;
 	}
 
+	public boolean getToBeDeleted() {
+		return toBeDeleted;
+	}
+
+	public void setToBeDeleted(boolean toBeDeleted) {
+		this.toBeDeleted = toBeDeleted;
+	}
 }

@@ -14,8 +14,8 @@ define(["jquery", "underscore", "backbone", "application", "models",
     "text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-candidacies.html", "text!tpl/position-committee.html",
     "text!tpl/position-evaluation.html", "text!tpl/position-nomination.html", "text!tpl/position-complementaryDocuments.html", "text!tpl/position-nomination-edit.html",
     "text!tpl/position-complementaryDocuments-edit.html", "text!tpl/department-select.html", "text!tpl/department.html", "text!tpl/user-helpdesk.html",
-    "text!tpl/position-helpdesk.html", "text!tpl/jira-issue-edit.html", "text!tpl/jira-issue-list.html", "text!tpl/jira-issue.html", "text!tpl/jira-issue-public-edit.html", "text!tpl/data-exports.html", "text!tpl/statistics.html", "text!tpl/position-committee-edit-confirm.html", "text!tpl/incomplete-candidacy-list.html", "text!tpl/evaluator-select.html", "text!tpl/evaluator.html", "text!tpl/confirm-withdraw-candidacy.html", "text!tpl/domestic-professors-create.html", "text!tpl/domestic-professors-created-list.html", "text!tpl/candidate-candidacy-history-actions-list.html"
-], function ($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit, tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_edit_professor_list, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation, tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit, tpl_department_select, tpl_department, tpl_user_helpdesk, tpl_position_helpdesk, tpl_jira_issue_edit, tpl_jira_issue_list, tpl_jira_issue, tpl_jira_issue_public_edit, tpl_data_exports, tpl_statistics, tpl_position_committee_edit_confirm, tpl_incomplete_candidacy_list, tpl_evaluator_select, tpl_evaluator, tpl_confirm_withdraw_candidacy, tpl_domestic_professors_create, tpl_domestic_professors_created_list, candidate_candidacy_history_actions_list) {
+    "text!tpl/position-helpdesk.html", "text!tpl/jira-issue-edit.html", "text!tpl/jira-issue-list.html", "text!tpl/jira-issue.html", "text!tpl/jira-issue-public-edit.html", "text!tpl/data-exports.html", "text!tpl/statistics.html", "text!tpl/position-committee-edit-confirm.html", "text!tpl/incomplete-candidacy-list.html", "text!tpl/evaluator-select.html", "text!tpl/evaluator.html", "text!tpl/confirm-withdraw-candidacy.html", "text!tpl/domestic-professors-create.html", "text!tpl/domestic-professors-created-list.html", "text!tpl/candidate-candidacy-history-actions-list.html","text!tpl/register-add-delete-professor-list.html"
+], function ($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit, tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_edit_professor_list, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation, tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit, tpl_department_select, tpl_department, tpl_user_helpdesk, tpl_position_helpdesk, tpl_jira_issue_edit, tpl_jira_issue_list, tpl_jira_issue, tpl_jira_issue_public_edit, tpl_data_exports, tpl_statistics, tpl_position_committee_edit_confirm, tpl_incomplete_candidacy_list, tpl_evaluator_select, tpl_evaluator, tpl_confirm_withdraw_candidacy, tpl_domestic_professors_create, tpl_domestic_professors_created_list, candidate_candidacy_history_actions_list, tpl_register_add_delete_professor_list) {
 
     "use strict";
     /** ****************************************************************** */
@@ -6517,8 +6517,9 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 return;
             }
 
-            var localeData = [];
-            localeData.push({
+            var data = [];
+            // push locale
+            data.push({
                 name: "locale",
                 value: App.locale
             });
@@ -6559,7 +6560,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     $.ajax({
                         "type": "GET",
                         "url": sSource, 
-                        "data": aoData.concat(localeData),
+                        "data": aoData.concat(data),
                         success: function (json) {
                             // Read Data
                             self.collection.set(json.records);
@@ -6575,7 +6576,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                                         '<option value="SUBSTITUTE" data-model-id="' + registerMember.id + '" data-type="SUBSTITUTE">' + $.i18n.prop("PositionCommitteeMemberTypeSUBSTITUTE") + '</option>' +
                                         '</select>',
                                         id: '<a href = "#user/' + registerMember.get("professor").user.id + '">' + registerMember.get("professor").user.id + '</a>',
-                                        external: registerMember.external ? $.i18n.prop('RegisterMemberExternal') : $.i18n.prop('RegisterMemberInternal'),
+                                        external: registerMember.get("external") ? $.i18n.prop('RegisterMemberExternal') : $.i18n.prop('RegisterMemberInternal'),
                                         firstname: registerMember.get("professor").user.firstname[App.locale],
                                         lastname: registerMember.get("professor").user.lastname[App.locale],
                                         role: $.i18n.prop(registerMember.get("professor").discriminator),
@@ -7000,10 +7001,16 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 return;
             }
 
-            var localeData = [];
-            localeData.push({
+            var data = [];
+
+            data.push({
                 name: "locale",
                 value: App.locale
+            });
+            // indicate to server to retrieve only external members
+            data.push({
+                name: "external",
+                value: true
             });
 
             self.$("table").dataTable().fnDestroy();
@@ -7041,7 +7048,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     $.ajax({
                         "type": "GET",
                         "url": sSource,
-                        "data": aoData.concat(localeData),
+                        "data": aoData.concat(data),
                         success: function (json) {
                             // Read Data
                             self.collection.set(json.records);
@@ -7051,7 +7058,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                                         });
                                         return {
                                             id: '<a href = "#user/' + registerMember.get("professor").user.id + '">' + registerMember.get("professor").user.id + '</a>',
-                                            external: registerMember.external ? $.i18n.prop('RegisterMemberExternal') : $.i18n.prop('RegisterMemberInternal'),
+                                            external: registerMember.get('external')  ? $.i18n.prop('RegisterMemberExternal') : $.i18n.prop('RegisterMemberInternal'),
                                             firstname: registerMember.get("professor").user.firstname[App.locale],
                                             lastname: registerMember.get("professor").user.lastname[App.locale],
                                             role: $.i18n.prop(registerMember.get("professor").discriminator),
@@ -7850,6 +7857,10 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     }
                 });
 
+                self.$("table thead select").change(function () {
+                    self.$("table").dataTable().fnFilter(this.value,2);
+                });
+
             }
             // Add Actions
             self.renderActions();
@@ -8066,7 +8077,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
             var self = this;
 
             this._super('initialize', [options]);
-            _.bindAll(this, "change", "renderMembers", "toggleAddMember", "submit", "remove", "cancel", "addMembers", "removeMember");
+            _.bindAll(this, "change", "renderMembers", "toggleAddMember","toggleAddedDeletedMembers", "submit", "remove", "cancel", "removeMember");
             self.template = _.template(tpl_register_edit);
             self.model.bind('change', self.render, self);
             self.model.bind("destroy", self.close, self);
@@ -8074,7 +8085,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
             // Initialize Professor, no request is performed until render
             self.professors = new Models.Professors();
             self.professors.url = self.model.url() + "/professor";
-            self.professors.on("selected", self.addMembers);
+            self.professors.on("display", self.toggleAddedDeletedMembers);
         },
 
         events: {
@@ -8151,6 +8162,14 @@ define(["jquery", "underscore", "backbone", "application", "models",
             self.$("div#register-professor-list").hide();
             self.$("div#register-professor-list").html(self.professorListView.render().el);
 
+            self.addDeleteProfessorListView = new Views.RegisterAddDeleteProfessorView({
+                model: new Models.Professors(),
+                collection: self.professors
+            });
+
+            self.$("div#register-add-delete-professor-list").hide();
+            self.$("div#register-add-delete-professor-list").html(self.addDeleteProfessorListView.render().el);
+
             // Highlight Required
             if (self.validator) {
                 for (propName in self.validator.settings.rules) {
@@ -8167,6 +8186,19 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 self.$("a#save").attr("disabled", true);
             }
             return self;
+        },
+
+        toggleAddedDeletedMembers: function () {
+            var self = this;
+            self.$("div#register-professor-list").hide();
+            self.$("a#toggleAddMember").removeClass('active');
+            if (self.professors.toJSON().length > 0) {
+                self.$("div#register-add-delete-professor-list").show();
+                window.scrollTo(0, $("div#register-add-delete-professor-list").position().top);
+            } else {
+                self.$("div#register-add-delete-professor-list").hide();
+                window.scrollTo(0, $("div#registerMembers").position().top);
+            }
         },
 
         renderMembers: function () {
@@ -8223,7 +8255,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                             self.collection.set(json.records);
                             json.aaData = self.collection.map(function (member) {
                                 return {
-                                    external: $.i18n.prop(member.external ? "Yes" : "No"),
+                                    external: $.i18n.prop(member.get('external') ? "Yes" : "No"),
                                     id: '<a href="#user/' + member.get("professor").user.id + '" target="user">' + member.get("professor").user.id + '</a>',
                                     firstName: member.get("professor").user.firstname[App.locale],
                                     lastName: member.get("professor").user.lastname[App.locale],
@@ -8232,7 +8264,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                                     institution: _.isEqual(member.get("professor").discriminator,
                                         'PROFESSOR_FOREIGN') ? member.get("professor").institution : _.templates.department(member.get("professor").department),
                                     subject: ((_.isObject(member.get("professor").subject) ? member.get("professor").subject.name : '') + ' ' + (_.isObject(member.get("professor").fekSubject) ? member.get("professor").fekSubject.name : '')).trim(),
-                                    options: member.canBeDeleted ? '<a id="removeMember" class="btn btn-mini btn-danger" data-professor-id="' + member.get("professor").id + '" data-toggle="tooltip" title="' + $.i18n.prop('btn_remove_member') + '"><i class="icon-remove icon-white"></i></a>' : ''
+                                    options: member.get('canBeDeleted') ? '<a id="removeMember" class="btn btn-mini btn-danger" data-professor-id="' + member.get("professor").id + '" data-toggle="tooltip" title="' + $.i18n.prop('btn_remove_member') + '"><i class="icon-remove icon-white"></i></a>' : ''
                                 };
                             });
                             fnCallback(json);
@@ -8275,52 +8307,21 @@ define(["jquery", "underscore", "backbone", "application", "models",
             });
         },
 
-        addMembers: function (professors) {
-            var self = this;
-            var popup;
-            if (_.any(self.model.get("members"), function (existingMember) {
-                    return professors.some(function (professor) {
-                        return _.isEqual(existingMember.professor.id, professor.get("id"));
-                    });
-                })) {
-                popup = new Views.PopupView({
-                    type: "error",
-                    message: $.i18n.prop("error.member.already.exists")
-                });
-                popup.show();
-                return;
-            }
-            // Add new members
-            professors.each(function (professor) {
-                self.model.get("members").push({
-                    "register": {
-                        id: self.model.get("id")
-                    },
-                    "professor": professor.toJSON(),
-                    internal: undefined,
-                    canBeDeleted: true
-                });
-            });
-            self.model.trigger("change:members");
-            self.change($.Event("change"), {
-                triggeredBy: "user"
-            });
-            self.renderMembers();
-            // Scroll To top of table, to see added members
-            window.scrollTo(0, self.$("div#registerMembers").parent().position().top - 50);
-            self.toggleAddMember($.Event("click"));
-        },
-
         removeMember: function (event) {
             var self = this;
             var professorId = $(event.currentTarget).data("professorId");
-            var registerMembers = self.model.get("members");
+
+            var registerMembers = self.collection.toJSON();
             var index = _.indexOf(registerMembers, _.find(registerMembers, function (member) {
                 return _.isEqual(member.professor.id, professorId);
             }));
-            registerMembers.splice(index, 1);
-            self.model.trigger("change:members");
-            self.renderMembers();
+
+            var professor = self.collection.at(index).get('professor');
+            professor.toBeDeleted = true;
+
+            self.professors.push(professor);
+            self.professors.trigger("selected");
+            self.professors.trigger("display");
 
             self.change($.Event("change"), {
                 triggeredBy: "user"
@@ -8334,7 +8335,22 @@ define(["jquery", "underscore", "backbone", "application", "models",
             values.institution = {
                 "id": self.$('form input[name=institution]').val()
             };
-            values.members = self.model.get("members");
+
+            // the members going to be saved
+            var members = new Models.Professors();
+
+            self.professors.each(function (professor) {
+                members.push({
+                    "register": {
+                        id: self.model.get("id")
+                    },
+                    "professor": professor.toJSON(),
+                    internal: undefined,
+                    toBeDeleted: professor.get("toBeDeleted")
+                });
+            });
+
+            values.members = members.toJSON();
             values.subject = {
                 name: self.$('form input[name=subject]').val()
             };
@@ -8351,6 +8367,8 @@ define(["jquery", "underscore", "backbone", "application", "models",
                         message: $.i18n.prop("Success")
                     });
                     popup.show();
+                    // clear the collection after success
+                    self.professors.reset();
                 },
                 error: function (model, resp) {
                     var popup = new Views.PopupView({
@@ -8403,6 +8421,86 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 self.validator.resetForm();
             }
             self.render();
+        },
+
+        close: function () {
+            this.closeInnerViews();
+            $(this.el).unbind();
+            $(this.el).remove();
+        }
+    });
+
+    /***************************************************************************
+     * RegisterAddDeleteProfessorView ******************************************
+     **************************************************************************/
+
+    Views.RegisterAddDeleteProfessorView = Views.BaseView.extend({
+        tagName: "div",
+
+        initialize: function (options) {
+            var self = this;
+            this._super('initialize', [options]);
+            _.bindAll(this, "removeMember");
+            this.template = _.template(tpl_register_add_delete_professor_list);
+            self.collection.bind('add', self.render, self);
+            self.collection.bind('remove', self.render, self);
+
+            self.collection.on("selected", self.render);
+        },
+
+        events: {
+            "click a#removeDeletedMember": "removeMember",
+            "click a#removeAddedMember": "removeMember"
+        },
+
+        render: function () {
+            var self = this;
+            self.closeInnerViews();
+            self.addTitle();
+
+            var tpl_data = {
+                professorsToBeAdded: (function () {
+                    var result = [];
+                    self.collection.each(function (model) {
+                        if (model.get("toBeDeleted") !== true) {
+                            var professor = model.toJSON();
+                            professor.cid = model.cid;
+                            result.push(professor);
+                        }
+                    });
+                    return result;
+                }()),
+                professorsToBeDeleted: (function () {
+                    var result = [];
+                    self.collection.each(function (model) {
+                        if (model.get("toBeDeleted") === true) {
+                            var professor = model.toJSON();
+                            professor.cid = model.cid;
+                            result.push(professor);
+                        }
+                    });
+                    return result;
+                }())
+            };
+            self.$el.html(self.template(tpl_data));
+
+            return self;
+        },
+
+        removeMember: function (event) {
+            var self = this;
+            var professorId = $(event.currentTarget).data("professorId");
+
+            var registerMembers = self.collection.toJSON();
+
+            var index = _.indexOf(registerMembers, _.find(registerMembers, function (member) {
+                return _.isEqual(member.id, professorId);
+            }));
+
+            var professor = self.collection.at(index);
+
+            self.collection.remove(professor);
+            self.collection.trigger("display");
         },
 
         close: function () {
@@ -8570,9 +8668,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                                     rank: professor.rank ? professor.rank.name[App.locale] : '',
                                     institution: _.isEqual(professor.discriminator, 'PROFESSOR_FOREIGN') ? professor.institution : _.templates.department(professor.department),
                                     subject: ((_.isObject(professor.subject) ? professor.subject.name : '') + ' ' + (_.isObject(professor.fekSubject) ? professor.fekSubject.name : '')).trim(),
-                                    options: _.some(self.model.get("members"), function (member) {
-                                        return _.isEqual(member.professor.id, professor.id);
-                                    }) ? '' : '<input type="checkbox" value="' + professor.id + '" data-model-id="' + professor.id + '"/>'
+                                    options: '<input type="checkbox" value="' + professor.id + '" data-model-id="' + professor.id + '"/>'
                                 };
                             });
                             fnCallback(json);
@@ -8604,8 +8700,12 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 }
                 selectedProfessors.push(id);
             });
+
             if (selectedProfessors.length > 0) {
-                self.collection.fetch({
+                var addedProfessors = new Models.Professors();
+                addedProfessors.url = self.collection.url;
+
+                addedProfessors.fetch({
                     cache: false,
                     reset: true,
                     wait: true,
@@ -8614,7 +8714,12 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     },
                     processData: true,
                     success: function (collection) {
-                        self.collection.trigger("selected", collection);
+                        // add the fetched professors to the collection
+                        self.collection.add(collection.models);
+                        self.collection.trigger("selected");
+                        self.collection.trigger("display");
+                        // uncheck all checkboxes
+                        self.$('input[type=checkbox]').removeAttr('checked');
                     }
                 });
             }

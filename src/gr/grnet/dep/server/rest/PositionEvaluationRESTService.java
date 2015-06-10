@@ -1020,6 +1020,7 @@ public class PositionEvaluationRESTService extends RESTService {
 		int iDisplayStart = Integer.valueOf(request.getParameter("iDisplayStart"));
 		int iDisplayLength = Integer.valueOf(request.getParameter("iDisplayLength"));
 
+		String excludeInternal = request.getParameter("external");
 
 		StringBuilder searchQueryString = new StringBuilder();
 
@@ -1030,6 +1031,11 @@ public class PositionEvaluationRESTService extends RESTService {
 				"and m.register.institution.id = :institutionId " +
 				"and m.register.id = :registerId " +
 				"and m.professor.status = :status ");
+
+		// if not null, retrieve only external members
+		if (excludeInternal != null) {
+			searchQueryString.append("and m.external = true ");
+		}
 
 		if (StringUtils.isNotEmpty(filterText)) {
 			searchQueryString.append(" and ( UPPER(m.professor.user.basicInfo.lastname) like :filterText ");

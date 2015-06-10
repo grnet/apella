@@ -78,6 +78,7 @@ public class RegisterRESTService extends RESTService {
 
 		String institutionFilterText = request.getParameter("sSearch_0");
 		String subjectFilterText = request.getParameter("sSearch_1");
+		String amMemberFilterText = request.getParameter("sSearch_2");
 		String sEcho = request.getParameter("sEcho");
 		// Ordering
 		String orderNo = request.getParameter("iSortCol_0");
@@ -86,6 +87,14 @@ public class RegisterRESTService extends RESTService {
 		// Pagination
 		int iDisplayStart = Integer.valueOf(request.getParameter("iDisplayStart"));
 		int iDisplayLength = Integer.valueOf(request.getParameter("iDisplayLength"));
+
+		Collection<Long> loggedOnRegisterIds = em.createQuery(
+				"select distinct(rm.register.id) " +
+						"from RegisterMember rm " +
+						"where rm.deleted = false " +
+						"and rm.professor.user.id = :userId", Long.class)
+				.setParameter("userId", loggedOn.getId())
+				.getResultList();
 
 
 		StringBuilder searchQueryString = new StringBuilder();
@@ -101,6 +110,14 @@ public class RegisterRESTService extends RESTService {
 			searchQueryString.append(" and UPPER(r.subject.name) like :subjectFilterText ");
 		}
 
+		if (StringUtils.isNotEmpty(amMemberFilterText)) {
+			if (amMemberFilterText.equalsIgnoreCase("true")) {
+				searchQueryString.append(" and r.id in (:loggedOnRegisterIds) ");
+			} else {
+				searchQueryString.append(" and r.id not in (:loggedOnRegisterIds) ");
+			}
+		}
+
 		Query countQuery =  em.createQuery(" select count(distinct r.id) " +
 				searchQueryString.toString());
 
@@ -109,6 +126,9 @@ public class RegisterRESTService extends RESTService {
 		}
 		if (StringUtils.isNotEmpty(subjectFilterText)) {
 			countQuery.setParameter("subjectFilterText", "%" + subjectFilterText.toUpperCase() + "%");
+		}
+		if (StringUtils.isNotEmpty(amMemberFilterText)) {
+			countQuery.setParameter("loggedOnRegisterIds", loggedOnRegisterIds);
 		}
 
 		Long totalRecords = (Long) countQuery.getSingleResult();
@@ -133,20 +153,14 @@ public class RegisterRESTService extends RESTService {
 		if (StringUtils.isNotEmpty(subjectFilterText)) {
 			searchQuery.setParameter("subjectFilterText", "%" + subjectFilterText.toUpperCase() + "%");
 		}
+		if (StringUtils.isNotEmpty(amMemberFilterText)) {
+			searchQuery.setParameter("loggedOnRegisterIds", loggedOnRegisterIds);
+		}
 
 		// Prepare Query
 		List<Register> registers = searchQuery
 				.setFirstResult(iDisplayStart)
 				.setMaxResults(iDisplayLength)
-				.getResultList();
-
-
-		Collection<Long> loggedOnRegisterIds = em.createQuery(
-				"select distinct(rm.register.id) " +
-						"from RegisterMember rm " +
-						"where rm.deleted = false " +
-						"and rm.professor.user.id = :userId", Long.class)
-				.setParameter("userId", loggedOn.getId())
 				.getResultList();
 
 		for (Register r : registers) {
@@ -353,9 +367,21 @@ public class RegisterRESTService extends RESTService {
 		// Retrieve new Member Professor Ids
 		Set<Long> allProfessorIDs = new HashSet<Long>();
 		List<Professor> allProfessors = new ArrayList<Professor>();
+
+		// Calculate Added and Removed Professor IDs
+		Set<Long> additionProfessorIds = new HashSet<Long>();
+		Set<Long> removalProfessorIds = new HashSet<Long>();
+
 		for (RegisterMember newCommitteeMember : register.getMembers()) {
+			// retrieve the members going to be deleted
+			if (newCommitteeMember.getToBeDeleted()) {
+				removalProfessorIds.add(newCommitteeMember.getProfessor().getId());
+			} else {
+				additionProfessorIds.add(newCommitteeMember.getProfessor().getId());
+			}
 			allProfessorIDs.add(newCommitteeMember.getProfessor().getId());
 		}
+
 		if (!allProfessorIDs.isEmpty()) {
 			TypedQuery<Professor> query = em.createQuery(
 					"select distinct p from Professor p " +
@@ -366,13 +392,6 @@ public class RegisterRESTService extends RESTService {
 		if (allProfessorIDs.size() != allProfessors.size()) {
 			throw new RestException(Status.NOT_FOUND, "wrong.professor.id");
 		}
-		// Calculate Added and Removed Professor IDs
-		Set<Long> additionProfessorIds = new HashSet<Long>();
-		additionProfessorIds.addAll(allProfessorIDs);
-		additionProfessorIds.removeAll(existingMembersAsMap.keySet());
-		Set<Long> removalProfessorIds = new HashSet<Long>();
-		removalProfessorIds.addAll(existingMembersAsMap.keySet());
-		removalProfessorIds.removeAll(allProfessorIDs);
 
 		// Validate removal
 		if (removalProfessorIds.size() > 0) {
@@ -448,7 +467,7 @@ public class RegisterRESTService extends RESTService {
 			}
 			// Set deleted flags based on removalProfessorIds
 			for (RegisterMember rm : existingMembersAsMap.values()) {
-				if (removalProfessorIds.contains(rm.getProfessor().getId())) {
+				if (removalProfessorIds.contains(rm.getProfessor().getId()) || (rm.isDeleted() && !additionProfessorIds.contains(rm.getProfessor().getId()))) {
 					rm.setDeleted(true);
 				} else {
 					rm.setDeleted(false);
@@ -611,7 +630,7 @@ public class RegisterRESTService extends RESTService {
 	 */
 	@GET
 	@Path("/{id:[0-9]+}/members")
-	@JsonView({DetailedRegisterMemberView.class})
+	@JsonView({DetailedRegisterView.class})
 	public SearchData<RegisterMember> getRegisterMembers(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long registerId, @Context HttpServletRequest request) {
 		User loggedOn = getLoggedOn(authToken);
 
@@ -632,7 +651,8 @@ public class RegisterRESTService extends RESTService {
 				"left join rm.professor p " +
 				"left join p.user u " +
 				"left join u.roles rls " +
-				"where rm.register.id=:id");
+				"where rm.register.id=:id " +
+				"and rm.deleted is false");
 
 		if (StringUtils.isNotEmpty(filterText)) {
 			searchQueryString.append(" and ( UPPER(u.basicInfo.lastname) like :filterText ");
