@@ -117,7 +117,7 @@ public class DataExportRESTService extends RESTService {
 				//2. Create XLS
 				is = dataExportService.createRegisterExcel(registers, membersMap);
 			} else if (type.equals("register-member")) {
-				is = dataExportService.createRegisterMemberExcel(dataExportService.getRegisterMemberData());
+				is = dataExportService.createRegisterMemberExcel();
 			} else {
 				throw new RestException(Status.NOT_FOUND);
 			}

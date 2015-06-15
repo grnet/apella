@@ -35,10 +35,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -954,7 +951,7 @@ public class DataExportService {
 	}
 
 	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-	public List<RegisterMember> getRegisterMemberData() {
+	public List<RegisterMember> getRegisterMemberData(int offset, int maxResults) {
 		List<RegisterMember> data = em.createQuery(
 				"select rm from RegisterMember rm " +
 						"join fetch rm.register r " +
@@ -967,11 +964,29 @@ public class DataExportService {
 						"left join fetch p.subject sub " +
 						"left join fetch p.fekSubject fsub " +
 						"where rm.deleted = false ", RegisterMember.class)
+				.setMaxResults(maxResults)
+				.setFirstResult(offset)
 				.getResultList();
 		return data;
 	}
 
-	public static InputStream createRegisterMemberExcel(List<RegisterMember> members) {
+	public Long getRegisterMembeDataCount() {
+		return  em.createQuery(
+				"select count(distinct rm.id) from RegisterMember rm " +
+						"join  rm.register r " +
+						"join  r.subject rsub " +
+						"join  rm.professor p " +
+						"join  p.user u " +
+						"left join  p.department dep " +
+						"left join  dep.school sch " +
+						"left join  sch.institution inst " +
+						"left join  p.subject sub " +
+						"left join  p.fekSubject fsub " +
+						"where rm.deleted = false ", Long.class)
+				.getSingleResult();
+	}
+
+	public InputStream createRegisterMemberExcel() {
 		//1. Get Data
 		// List<RegisterMember> members = dataExportService.getRegisterMemberData();
 		//2. Create XLS
@@ -1024,50 +1039,70 @@ public class DataExportService {
 		addCell(row, colNum++, titleStyle, "Γνωστικό Αντικείμενο Μητρώου");
 		addCell(row, colNum++, titleStyle, "Εσωτερικό/Εξωτερικό μέλος");
 
-		Iterator<RegisterMember> iterator = members.iterator();
-		while (iterator.hasNext()) {
-			RegisterMember rm = iterator.next();
-			row = sheet.createRow(rowNum++);
-			colNum = 0;
+		int maxResults = 1000;
+		int offset = 0;
 
-			addCell(row, colNum++, intStyle, rm.getProfessor().getUser().getId());
-			addCell(row, colNum++, intStyle, rm.getProfessor().getUser().getFirstname("el"));
-			addCell(row, colNum++, intStyle, rm.getProfessor().getUser().getLastname("el"));
-			switch (rm.getProfessor().getDiscriminator()) {
-				case PROFESSOR_DOMESTIC:
-					ProfessorDomestic professorDomestic = (ProfessorDomestic) rm.getProfessor();
-					addCell(row, colNum++, textStyle, "Καθηγητής Ημεδαπής");
-					addCell(row, colNum++, intStyle, professorDomestic.getInstitution().getId());
-					addCell(row, colNum++, textStyle, professorDomestic.getInstitution().getName().get("el"));
-					addCell(row, colNum++, textStyle, professorDomestic.getFekSubject() != null ? professorDomestic.getFekSubject().getName() : professorDomestic.getSubject().getName());
-					break;
-				case PROFESSOR_FOREIGN:
-					ProfessorForeign professorForeign = (ProfessorForeign) rm.getProfessor();
-					addCell(row, colNum++, textStyle, "Καθηγητής Αλλοδαπής");
-					addCell(row, colNum++, intStyle, (Integer) null);
-					addCell(row, colNum++, textStyle, professorForeign.getInstitution());
-					addCell(row, colNum++, textStyle, professorForeign.getSubject().getName());
-				default:
-					// Won't happen
-					break;
+		Long count = getRegisterMembeDataCount();
+
+		while (offset < count)  {
+			List<RegisterMember> members = getRegisterMemberData(offset, maxResults);
+
+			Iterator<RegisterMember> iterator = members.iterator();
+			while (iterator.hasNext()) {
+				RegisterMember rm = iterator.next();
+				row = sheet.createRow(rowNum++);
+				colNum = 0;
+
+				addCell(row, colNum++, intStyle, rm.getProfessor().getUser().getId());
+				addCell(row, colNum++, intStyle, rm.getProfessor().getUser().getFirstname("el"));
+				addCell(row, colNum++, intStyle, rm.getProfessor().getUser().getLastname("el"));
+				switch (rm.getProfessor().getDiscriminator()) {
+					case PROFESSOR_DOMESTIC:
+						ProfessorDomestic professorDomestic = (ProfessorDomestic) rm.getProfessor();
+						addCell(row, colNum++, textStyle, "Καθηγητής Ημεδαπής");
+						addCell(row, colNum++, intStyle, professorDomestic.getInstitution().getId());
+						addCell(row, colNum++, textStyle, professorDomestic.getInstitution().getName().get("el"));
+						addCell(row, colNum++, textStyle, professorDomestic.getFekSubject() != null ? professorDomestic.getFekSubject().getName() : professorDomestic.getSubject().getName());
+						break;
+					case PROFESSOR_FOREIGN:
+						ProfessorForeign professorForeign = (ProfessorForeign) rm.getProfessor();
+						addCell(row, colNum++, textStyle, "Καθηγητής Αλλοδαπής");
+						addCell(row, colNum++, intStyle, (Integer) null);
+						addCell(row, colNum++, textStyle, professorForeign.getInstitution());
+						addCell(row, colNum++, textStyle, professorForeign.getSubject().getName());
+					default:
+						// Won't happen
+						break;
+				}
+				addCell(row, colNum++, intStyle, rm.getRegister().getInstitution().getId());
+				addCell(row, colNum++, textStyle, rm.getRegister().getInstitution().getName().get("el"));
+				addCell(row, colNum++, textStyle, rm.getRegister().getSubject().getName());
+				addCell(row, colNum++, textStyle, rm.isExternal() ? "ΕΞΩΤΕΡΙΚΟ" : "ΕΣΩΤΕΡΙΚΟ");
+
+				offset++;
+				iterator.remove();
 			}
-			addCell(row, colNum++, intStyle, rm.getRegister().getInstitution().getId());
-			addCell(row, colNum++, textStyle, rm.getRegister().getInstitution().getName().get("el"));
-			addCell(row, colNum++, textStyle, rm.getRegister().getSubject().getName());
-			addCell(row, colNum++, textStyle, rm.isExternal() ? "ΕΞΩΤΕΡΙΚΟ" : "ΕΣΩΤΕΡΙΚΟ");
-
-			iterator.remove();
 		}
 
+		FileOutputStream output = null;
 		try {
-			ByteArrayOutputStream output = new ByteArrayOutputStream();
+			File file = File.createTempFile("register-member", ".xlsx");
+			output = new FileOutputStream(file);
 			wb.write(output);
-			output.close();
 
-			return new ByteArrayInputStream(output.toByteArray());
+			return new FileInputStream(file);
 		} catch (IOException e) {
 			throw new EJBException(e);
+		} finally {
+			if (output != null) {
+				try {
+					output.close();
+				} catch (IOException e) {
+					throw new EJBException(e);
+				}
+			}
 		}
+
 	}
 
 	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
