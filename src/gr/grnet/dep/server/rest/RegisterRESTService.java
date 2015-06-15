@@ -650,7 +650,6 @@ public class RegisterRESTService extends RESTService {
 		searchQueryString.append(" from RegisterMember rm " +
 				"left join rm.professor p " +
 				"left join p.user u " +
-				"left join u.roles rls " +
 				"where rm.register.id=:id " +
 				"and rm.deleted is false");
 
@@ -720,7 +719,6 @@ public class RegisterRESTService extends RESTService {
 				" select rm from RegisterMember  rm " +
 						"left join rm.professor p " +
 						"left join p.user u " +
-						"left join u.roles rls " +
 						"where rm.id in ( " +
 						"select distinct rm.id " +
 						searchQueryString.toString() + ") " + orderByClause.toString(), RegisterMember.class);

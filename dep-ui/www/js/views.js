@@ -8020,7 +8020,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                                     }
 
                                     return {
-                                        registerMemberExternal: $.i18n.prop(member.external ? "Yes" : "No"),
+                                        registerMemberExternal: $.i18n.prop(member.get("external") ? "Yes" : "No"),
                                         id: _.isEqual(getMemberAccess(), "READ_FULL") ? '<a data-committee-member-id="' + member.id + '" href="#user/' + member.get("professor").user.id +
                                         '" target="user">' + member.get("professor").user.id + '</a>' : member.get("professor").user.id,
                                         firstName: member.get("professor").user.firstname[App.locale],
