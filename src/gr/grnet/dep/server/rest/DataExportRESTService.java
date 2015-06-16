@@ -17,10 +17,13 @@ import gr.grnet.dep.service.model.Register;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.FileType;
+import org.jboss.ejb3.annotation.TransactionTimeout;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -34,6 +37,7 @@ import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,6 +53,8 @@ public class DataExportRESTService extends RESTService {
 
 	@GET
 	@Path("/{type}")
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+	@TransactionTimeout(value = 60, unit = TimeUnit.MINUTES)
 	public Response getPositionsExport(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("type") String type) {
 		User loggedOn = getLoggedOn(authToken);
 		// Authorize
@@ -61,6 +67,7 @@ public class DataExportRESTService extends RESTService {
 		}
 		try {
 			InputStream is = null;
+			long now = System.currentTimeMillis();
 			if (type.equals("candidacy")) {
 				//1. Get Data
 				List<Candidacy> members = dataExportService.getCandidacyData();
@@ -121,6 +128,7 @@ public class DataExportRESTService extends RESTService {
 			} else {
 				throw new RestException(Status.NOT_FOUND);
 			}
+			logger.info("Data export " + type + " completed in " + (System.currentTimeMillis() - now));
 			// Return response
 			return Response.ok(is)
 					.type("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")

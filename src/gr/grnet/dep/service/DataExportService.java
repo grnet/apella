@@ -27,6 +27,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.jboss.ejb3.annotation.TransactionTimeout;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -44,6 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 @Stateless
@@ -986,6 +988,8 @@ public class DataExportService {
 				.getSingleResult();
 	}
 
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+	@TransactionTimeout(value = 60, unit = TimeUnit.MINUTES)
 	public InputStream createRegisterMemberExcel() {
 		//1. Get Data
 		// List<RegisterMember> members = dataExportService.getRegisterMemberData();
