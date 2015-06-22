@@ -268,8 +268,17 @@ public class CandidacyRESTService extends RESTService {
 			if (candidacy.getProposedEvaluators().size() > CandidacyEvaluator.MAX_MEMBERS) {
 				throw new RestException(Status.CONFLICT, "max.evaluators.exceeded");
 			}
+
+			// check if the evaluators are in the position commitee
+			for (PositionCommitteeMember committeeMember : position.getPhase().getCommittee().getMembers()) {
+				if (newRegisterMemberIds.contains(committeeMember.getRegisterMember().getId())) {
+					throw new RestException(Status.CONFLICT, "member.in.committe");
+				}
+			}
+
 			// Check files and candidate status
 			validateCandidacy(existingCandidacy, candidate, isNew);
+
 
 			//Check changes of Evaluators
 			Map<Long, CandidacyEvaluator> existingRegisterMembersAsMap = new HashMap<Long, CandidacyEvaluator>();

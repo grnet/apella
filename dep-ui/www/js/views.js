@@ -10878,10 +10878,6 @@ define(["jquery", "underscore", "backbone", "application", "models",
             var self = this;
             var tpl_data;
 
-            if (self.$input.val() !== '' && self.model === undefined) {
-                return self;
-            }
-
             // Prepare Data
             tpl_data = {
                 editable: self.options.editable
