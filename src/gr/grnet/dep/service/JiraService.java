@@ -228,9 +228,10 @@ public class JiraService {
 				JsonNode updateStatusData = toTransitionJSON(status, resolution, "Automatic transition");
 				response = doPost("/issue/" + issue.getKey() + "/transitions", updateStatusData);
 				// Response is empty if transition succeeds
-				issue.setStatus(status);
-				issue.setResolution(resolution);
 			}
+			// Restore status and resolution
+			issue.setStatus(status);
+			issue.setResolution(resolution);
 			// 3. Set Date (will be updated when quartz job refreshes all issues)
 			Date now = new Date();
 			issue.setCreated(now);
