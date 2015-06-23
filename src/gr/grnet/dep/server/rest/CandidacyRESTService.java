@@ -269,16 +269,8 @@ public class CandidacyRESTService extends RESTService {
 				throw new RestException(Status.CONFLICT, "max.evaluators.exceeded");
 			}
 
-			// check if the evaluators are in the position commitee
-			for (PositionCommitteeMember committeeMember : position.getPhase().getCommittee().getMembers()) {
-				if (newRegisterMemberIds.contains(committeeMember.getRegisterMember().getId())) {
-					throw new RestException(Status.CONFLICT, "member.in.committe");
-				}
-			}
-
 			// Check files and candidate status
 			validateCandidacy(existingCandidacy, candidate, isNew);
-
 
 			//Check changes of Evaluators
 			Map<Long, CandidacyEvaluator> existingRegisterMembersAsMap = new HashMap<Long, CandidacyEvaluator>();
@@ -294,12 +286,30 @@ public class CandidacyRESTService extends RESTService {
 								"and r.institution.id = :institutionId " +
 								"and m.deleted = false " +
 								"and m.professor.status = :status " +
-								"and m.id in (:registerIds)", RegisterMember.class)
+								"and m.id in (:registerMembersIds)", RegisterMember.class)
 						.setParameter("institutionId", candidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getId())
 						.setParameter("status", RoleStatus.ACTIVE)
-						.setParameter("registerIds", newRegisterMemberIds);
+						.setParameter("registerMembersIds", newRegisterMemberIds);
 				newRegisterMembers.addAll(query.getResultList());
 			}
+
+			Set<Long> newRegisterMemberProfessorIds = new HashSet<Long>();
+
+			for(RegisterMember member : newRegisterMembers) {
+				// check if there are duplicate professors
+				if (newRegisterMemberProfessorIds.contains(member.getProfessor().getId())) {
+					throw new RestException(Status.CONFLICT, "duplicate.evaluators");
+				}
+				newRegisterMemberProfessorIds.add(member.getProfessor().getId());
+			}
+
+			// check if the evaluators are in the position commitee
+			for (PositionCommitteeMember committeeMember : position.getPhase().getCommittee().getMembers()) {
+				if (newRegisterMemberProfessorIds.contains(committeeMember.getRegisterMember().getProfessor().getId())) {
+					throw new RestException(Status.CONFLICT, "member.in.committe");
+				}
+			}
+
 			Collection<CandidacyEvaluator> addedEvaluators = new ArrayList<CandidacyEvaluator>();
 
 			// Update
@@ -831,14 +841,14 @@ public class CandidacyRESTService extends RESTService {
         }
         // Prepare Data for Query
         Institution institution = existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution();
-        Set<Long> committeeMemberIds = new HashSet<Long>();
+        Set<Long> committeeMemberProfessorIds = new HashSet<Long>();
         if (existingCandidacy.getCandidacies().getPosition().getPhase().getCommittee() != null) {
             PositionCommittee committee = existingCandidacy.getCandidacies().getPosition().getPhase().getCommittee();
             for (PositionCommitteeMember member : committee.getMembers()) {
-                committeeMemberIds.add(member.getRegisterMember().getId());
+				committeeMemberProfessorIds.add(member.getRegisterMember().getProfessor().getId());
             }
         }
-        if (committeeMemberIds.isEmpty()) {
+        if (committeeMemberProfessorIds.isEmpty()) {
             // This should not happen, but just to avoid exceptions in case it does
             return new SearchData<>();
         }
@@ -862,7 +872,7 @@ public class CandidacyRESTService extends RESTService {
                 "and m.register.institution.id = :institutionId " +
                 "and m.deleted = false " +
                 "and p.status = :status " +
-                "and m.id not in (:committeeMemberIds) ");
+                "and p.id not in (:committeeMemberProfessorIds) ");
 
         if (StringUtils.isNotEmpty(filterText)) {
             searchQueryString.append(" and ( UPPER(m.professor.user.basicInfo.lastname) like :filterText ");
@@ -895,7 +905,7 @@ public class CandidacyRESTService extends RESTService {
 
         countQuery.setParameter("institutionId", institution.getId());
         countQuery.setParameter("status", RoleStatus.ACTIVE);
-        countQuery.setParameter("committeeMemberIds", committeeMemberIds);
+        countQuery.setParameter("committeeMemberProfessorIds", committeeMemberProfessorIds);
 
         if (StringUtils.isNotEmpty(filterText)) {
             countQuery.setParameter("filterText", filterText.toUpperCase() + "%");
@@ -934,7 +944,7 @@ public class CandidacyRESTService extends RESTService {
 
         searchQuery.setParameter("institutionId", institution.getId());
         searchQuery.setParameter("status", RoleStatus.ACTIVE);
-        searchQuery.setParameter("committeeMemberIds", committeeMemberIds);
+        searchQuery.setParameter("committeeMemberProfessorIds", committeeMemberProfessorIds);
         if (StringUtils.isNotEmpty(filterText)) {
             searchQuery.setParameter("filterText", filterText.toUpperCase() + "%");
         }
