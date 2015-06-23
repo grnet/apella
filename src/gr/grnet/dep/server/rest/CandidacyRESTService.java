@@ -304,9 +304,11 @@ public class CandidacyRESTService extends RESTService {
 			}
 
 			// check if the evaluators are in the position commitee
-			for (PositionCommitteeMember committeeMember : position.getPhase().getCommittee().getMembers()) {
-				if (newRegisterMemberProfessorIds.contains(committeeMember.getRegisterMember().getProfessor().getId())) {
-					throw new RestException(Status.CONFLICT, "member.in.committe");
+			if (position.getPhase().getCommittee() != null) {
+				for (PositionCommitteeMember committeeMember : position.getPhase().getCommittee().getMembers()) {
+					if (newRegisterMemberProfessorIds.contains(committeeMember.getRegisterMember().getProfessor().getId())) {
+						throw new RestException(Status.CONFLICT, "member.in.committe");
+					}
 				}
 			}
 
