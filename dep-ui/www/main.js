@@ -1,7 +1,7 @@
 // Sets the require.js configuration for your application.
 require.config({
 	waitSeconds : 30,
-	urlArgs : "v=20141212",
+	urlArgs : "v=20150623",
 	// Alias names
 	paths : {
 		// Core Libraries
