@@ -23,7 +23,7 @@
 
 		<div id="footer">
 			<p>
-				<a href="http://www.minedu.gov.gr/"><img alt="" style="height: 45px;" src="<c:url value='/css/images/logo_minedu.png'  />"/></a>
+				<a href="http://www.minedu.gov.gr/"><img alt="" src="<c:url value='/css/images/logo_minedu.png'  />"/></a>
 				<a href="https://www.grnet.gr/"><img alt="" src="<c:url value='/css/images/logo_grnet.png' />" /></a>
 				<a href="http://europa.eu"><img alt="" src="<c:url value='/css/images/logo_eu.jpeg' />" /></a>
 				<a href="http://www.epdm.gr/"><img alt="" src="<c:url value='/css/images/logo_epdm.jpg' />" /></a>
