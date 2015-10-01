@@ -3,13 +3,27 @@ package gr.grnet.dep.server.rest;
 import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.model.*;
+import gr.grnet.dep.service.model.Candidate;
+import gr.grnet.dep.service.model.Department;
+import gr.grnet.dep.service.model.Institution;
+import gr.grnet.dep.service.model.InstitutionAssistant;
+import gr.grnet.dep.service.model.InstitutionManager;
+import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.DetailedPositionView;
 import gr.grnet.dep.service.model.Position.PositionStatus;
 import gr.grnet.dep.service.model.Position.PositionView;
 import gr.grnet.dep.service.model.Position.PublicPositionView;
+import gr.grnet.dep.service.model.PositionCandidacies;
+import gr.grnet.dep.service.model.PositionCommittee;
+import gr.grnet.dep.service.model.PositionComplementaryDocuments;
+import gr.grnet.dep.service.model.PositionEvaluation;
+import gr.grnet.dep.service.model.PositionNomination;
+import gr.grnet.dep.service.model.PositionPhase;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
+import gr.grnet.dep.service.model.SearchData;
+import gr.grnet.dep.service.model.Sector;
+import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.User.UserView;
 import gr.grnet.dep.service.model.file.FileHeader;
@@ -836,40 +850,7 @@ public class PositionRESTService extends RESTService {
 					}
 					break;
 				case CANCELLED:
-					switch (newStatus) {
-						case ENTAGMENI:
-						case ANOIXTI:
-							throw new RestException(Status.CONFLICT, "wrong.position.status");
-						case EPILOGI:
-							// Validate: allow only if previous Status was not ANOIXTI
-							PositionPhase previousPhase = existingPosition.getPhases()
-									.get(Math.max(existingPosition.getPhases().size() - 2, 0));
-							if (previousPhase.getStatus().equals(PositionStatus.ANOIXTI)) {
-								throw new RestException(Status.CONFLICT, "wrong.position.status");
-							}
-							newPhase = new PositionPhase();
-							newPhase.setStatus(PositionStatus.EPILOGI);
-							newPhase.setCandidacies(existingPhase.getCandidacies());
-							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
-							newPhase.setCommittee(new PositionCommittee());
-							newPhase.getCommittee().setPosition(existingPosition);
-							newPhase.setEvaluation(new PositionEvaluation());
-							newPhase.getEvaluation().setPosition(existingPosition);
-							newPhase.setNomination(new PositionNomination());
-							newPhase.getNomination().setPosition(existingPosition);
-							// Add to Position
-							existingPosition.addPhase(newPhase);
-							break;
-						case ANAPOMPI:
-							throw new RestException(Status.CONFLICT, "wrong.position.status");
-						case STELEXOMENI:
-							throw new RestException(Status.CONFLICT, "wrong.position.status");
-						case CANCELLED:
-							throw new RestException(Status.CONFLICT, "wrong.position.status");
-
-					}
-					break;
-
+					throw new RestException(Status.CONFLICT, "wrong.position.status");
 			}
 			em.flush();
 			return existingPosition;

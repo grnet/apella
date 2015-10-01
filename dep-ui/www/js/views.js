@@ -5388,7 +5388,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
             "EPILOGI": ["ANAPOMPI", "STELEXOMENI", "CANCELLED"],
             "ANAPOMPI": ["EPILOGI"],
             "STELEXOMENI": ["CANCELLED"],
-            "CANCELLED": ["EPILOGI"]
+            "CANCELLED": []
         },
 
         initialize: function (options) {
@@ -5406,7 +5406,6 @@ define(["jquery", "underscore", "backbone", "application", "models",
         render: function () {
             var self = this;
             var positionStatus = self.model.get("phase").clientStatus;
-            var previousStatus = self.model.get("phasesMap")[Math.max(_.size(self.model.get("phasesMap")) - 2, 0)];
             var tpl_data = self.model.toJSON();
 
             self.closeInnerViews();
@@ -5417,16 +5416,12 @@ define(["jquery", "underscore", "backbone", "application", "models",
             // Phase:
             self.$("a#addPhase").each(function () {
                 var linkStatus = $(this).data("phaseStatus");
-                if (positionStatus === 'CANCELLED' && previousStatus === 'ANOIXTI') {
-                    //1. Check the special ANOIXTI->CANCELLED->nowhere case
+                //1. Check the transitions map
+                if (!_.any(self.phases[positionStatus], function (nextStatus) {
+                        return _.isEqual(linkStatus, nextStatus);
+                    })) {
+
                     $(this).hide();
-                } else {
-                    //2. Check the transitions map
-                    if (!_.any(self.phases[positionStatus], function (nextStatus) {
-                            return _.isEqual(linkStatus, nextStatus);
-                        })) {
-                        $(this).hide();
-                    }
                 }
             });
             // Tabs:
