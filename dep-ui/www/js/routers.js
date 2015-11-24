@@ -191,7 +191,7 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
             _.bindAll(self, "setTitle", "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showUserView", "showInstitutionAssistantsView",
                 "showMinistryAssistantsView", "showPositionView", "showPositionsView", "showRegistersView", "showProfessorCommitteesView", "showProfessorEvaluationsView",
                 "showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "showCandidacyView", "showUserSearchView", "showIssueListView", "showDataExportsView",
-                "showStatisticsView", "showAdminCandidaciesView", "showDomesticProfessorsCreateAccountsView", "start");
+                "showStatisticsView", "showAdminCandidaciesView", "showDomesticProfessorsCreateAccountsView", "showShibbolethUsersChangeAuthenticationView", "start");
 
             self.on("route", function (routefn) {
                 self.setTitle(routefn);
@@ -254,7 +254,8 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
             "dataExports": "showDataExportsView",
             "statistics": "showStatisticsView",
             "adminCandidacies": "showAdminCandidaciesView",
-            "createDomesticProfessorAccounts": "showDomesticProfessorsCreateAccountsView"
+            "createDomesticProfessorAccounts": "showDomesticProfessorsCreateAccountsView",
+            "revertShibbolethAuthentication": "showShibbolethUsersChangeAuthenticationView"
         },
 
         start: function (eventName, authToken) {
@@ -1271,6 +1272,22 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
             $("#content").html(showDomesticProfessorsCreateAccountsView.render().el);
 
             self.currentView = [showDomesticProfessorsCreateAccountsView];
+        },
+
+        showShibbolethUsersChangeAuthenticationView:  function () {
+            var self = this;
+            var showShibbolethUsersChangeAuthenticationView;
+
+            var users = new Models.Users();
+
+            self.clear();
+            showShibbolethUsersChangeAuthenticationView = new Views.ShowShibbolethUsersChangeAuthenticationView({
+                collection: users
+            });
+            self.refreshBreadcrumb([$.i18n.prop('menu_createDomesticProfessorAccounts')]);
+            $("#content").html(showShibbolethUsersChangeAuthenticationView.render().el);
+
+            self.currentView = [showShibbolethUsersChangeAuthenticationView];
         }
 
     });

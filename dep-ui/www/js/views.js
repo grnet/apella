@@ -14,8 +14,8 @@ define(["jquery", "underscore", "backbone", "application", "models",
     "text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-candidacies.html", "text!tpl/position-committee.html",
     "text!tpl/position-evaluation.html", "text!tpl/position-nomination.html", "text!tpl/position-complementaryDocuments.html", "text!tpl/position-nomination-edit.html",
     "text!tpl/position-complementaryDocuments-edit.html", "text!tpl/department-select.html", "text!tpl/department.html", "text!tpl/user-helpdesk.html",
-    "text!tpl/position-helpdesk.html", "text!tpl/jira-issue-edit.html", "text!tpl/jira-issue-list.html", "text!tpl/jira-issue.html", "text!tpl/jira-issue-public-edit.html", "text!tpl/data-exports.html", "text!tpl/statistics.html", "text!tpl/position-committee-edit-confirm.html", "text!tpl/incomplete-candidacy-list.html", "text!tpl/evaluator-select.html", "text!tpl/evaluator.html", "text!tpl/confirm-withdraw-candidacy.html", "text!tpl/domestic-professors-create.html", "text!tpl/domestic-professors-created-list.html", "text!tpl/candidate-candidacy-history-actions-list.html","text!tpl/register-add-delete-professor-list.html"
-], function ($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit, tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_edit_professor_list, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation, tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit, tpl_department_select, tpl_department, tpl_user_helpdesk, tpl_position_helpdesk, tpl_jira_issue_edit, tpl_jira_issue_list, tpl_jira_issue, tpl_jira_issue_public_edit, tpl_data_exports, tpl_statistics, tpl_position_committee_edit_confirm, tpl_incomplete_candidacy_list, tpl_evaluator_select, tpl_evaluator, tpl_confirm_withdraw_candidacy, tpl_domestic_professors_create, tpl_domestic_professors_created_list, candidate_candidacy_history_actions_list, tpl_register_add_delete_professor_list) {
+    "text!tpl/position-helpdesk.html", "text!tpl/jira-issue-edit.html", "text!tpl/jira-issue-list.html", "text!tpl/jira-issue.html", "text!tpl/jira-issue-public-edit.html", "text!tpl/data-exports.html", "text!tpl/statistics.html", "text!tpl/position-committee-edit-confirm.html", "text!tpl/incomplete-candidacy-list.html", "text!tpl/evaluator-select.html", "text!tpl/evaluator.html", "text!tpl/confirm-withdraw-candidacy.html", "text!tpl/domestic-professors-create.html", "text!tpl/domestic-professors-created-list.html", "text!tpl/candidate-candidacy-history-actions-list.html","text!tpl/register-add-delete-professor-list.html","text!tpl/shibboleth-domestic-professors-list.html"
+], function ($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit, tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_edit_professor_list, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation, tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit, tpl_department_select, tpl_department, tpl_user_helpdesk, tpl_position_helpdesk, tpl_jira_issue_edit, tpl_jira_issue_list, tpl_jira_issue, tpl_jira_issue_public_edit, tpl_data_exports, tpl_statistics, tpl_position_committee_edit_confirm, tpl_incomplete_candidacy_list, tpl_evaluator_select, tpl_evaluator, tpl_confirm_withdraw_candidacy, tpl_domestic_professors_create, tpl_domestic_professors_created_list, candidate_candidacy_history_actions_list, tpl_register_add_delete_professor_list, tpl_shibboleth_domestic_professors_list) {
 
     "use strict";
     /** ****************************************************************** */
@@ -255,6 +255,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     menuItems.push("administrators");
                     menuItems.push("dataExports");
                     menuItems.push("adminCandidacies");
+                    menuItems.push("revertShibbolethAuthentication");
                 }
                 menuItems.push("searchusers");
                 menuItems.push("statistics");
@@ -1560,6 +1561,9 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     });
                     tiles.push({
                         link: "dataExports"
+                    });
+                    tiles.push({
+                        link: "revertShibbolethAuthentication"
                     });
                 }
                 tiles.push({
@@ -11190,6 +11194,150 @@ define(["jquery", "underscore", "backbone", "application", "models",
             $(this.el).remove();
         }
     });
+
+    /***************************************************************************
+     * ShowShibbolethUsersChangeAuthenticationView ***************************
+     **************************************************************************/
+    Views.ShowShibbolethUsersChangeAuthenticationView = Views.BaseView.extend({
+
+        initialize: function (options) {
+            var self = this;
+            self._super('initialize', [options]);
+            _.bindAll(self, "onRevertAccount");
+
+            self.$input = $(self.el);
+            this.template = _.template(tpl_shibboleth_domestic_professors_list);
+            this.templateRoleInfo = _.template(tpl_user_role_info);
+        },
+
+        events: {
+            "click a#revertAccount": "onRevertAccount"
+        },
+
+        render: function () {
+            var self = this;
+
+            // Render
+            self.closeInnerViews();
+            self.$el.empty();
+            self.$el.append(this.template);
+
+            // Initialize Plugins
+            if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
+                self.$("table").dataTable({
+                    "sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+                    "sPaginationType": "bootstrap",
+                    "aaSorting": [[1, "asc"]],
+                    "oLanguage": {
+                        "sSearch": $.i18n.prop("dataTable_sSearch"),
+                        "sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+                        "sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+                        "sInfo": $.i18n.prop("dataTable_sInfo"),
+                        "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+                        "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+                        "iDeferLoading": 0,
+                        "oPaginate": {
+                            sFirst: $.i18n.prop("dataTable_sFirst"),
+                            sPrevious: $.i18n.prop("dataTable_sPrevious"),
+                            sNext: $.i18n.prop("dataTable_sNext"),
+                            sLast: $.i18n.prop("dataTable_sLast")
+                        }
+                    },
+                    "aoColumns": [
+                        {"mData": "id"},
+                        {"mData": "firstname"},
+                        {"mData": "lastname"},
+                        {"mData": "role", 'sWidth': '30%', "bSortable": false},
+                        {"mData": "roleStatus", "bSortable": false},
+                        {"mData": "options", "sType": "html", "bSortable": false}
+                    ],
+                    "bProcessing": true,
+                    "bServerSide": true,
+                    "sAjaxSource": self.collection.url + '/search/shibboleth',
+                    "fnServerData": function (sSource, aoData, fnCallback) {
+                        $.ajax({
+                            "type": "POST",
+                            "url": sSource,
+                            "data": aoData,
+                            "success": function (json) {
+                                // Read Data
+                                self.collection.set(json.records);
+                                json.aaData = _.map(json.records, function (user) {
+                                    return {
+                                        id: user.id,
+                                        firstname: user.firstname[App.locale],
+                                        lastname: user.lastname[App.locale],
+                                        "role": self.templateRoleInfo(user),
+                                        "roleStatus": $.i18n.prop('status' + _.find(user.roles, function (r) {
+                                                return r.discriminator === user.primaryRole;
+                                            }).status),
+                                        options: '<p align="center"><a id="revertAccount" class="btn btn-mini" data-user-id="' + user.id + '"><i class="icon-remove"></i>' + $.i18n.prop('btn_loginwithEmail') + '</a></p>'
+                                    };
+                                });
+                                fnCallback(json);
+                            }
+                        });
+                    }
+                });
+
+                self.$(".dataTables_filter input").unbind();
+                self.$(".dataTables_filter input").bind('keyup', function (e) {
+                    if (e.keyCode === 13) {
+                        self.$("table").dataTable().fnFilter($(this).val());
+                    }
+                });
+            }
+
+            // Return result
+            return self;
+        },
+
+        onRevertAccount: function (event) {
+
+            var self = this;
+            var id = $(event.currentTarget).attr('data-user-id');
+
+            if (!!id) {
+                var user = self.collection.get(id);
+
+                var confirm = new Views.ConfirmView({
+                    title: $.i18n.prop('Confirm'),
+                    message: $.i18n.prop('AreYouSure'),
+                    yes: function () {
+                        // if yes proceed to action
+                        user.save({}, {
+                            url: user.url() + "/revertaccount",
+                            dataType: 'text',
+                            wait: true,
+                            success: function () {
+                                var popup = new Views.PopupView({
+                                    type: "success",
+                                    message: $.i18n.prop("Success")
+                                });
+                                popup.show();
+                                self.render();
+                            },
+                            error: function (model, resp) {
+                                var popup = new Views.PopupView({
+                                    type: "error",
+                                    message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+                                });
+                                popup.show();
+                            }
+                        });
+                    }
+                });
+                confirm.show();
+            }
+        },
+
+        close: function () {
+            this.closeInnerViews();
+            $(this.el).unbind();
+            $(this.el).remove();
+        }
+    });
+
 
     return Views;
 

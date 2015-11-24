@@ -325,6 +325,37 @@ public class AuthenticationService {
 
 	/////////////////////////////////////////////////////////////////
 
+
+	public User revertShibbolethTotEmailAccount(Long userId) throws ServiceException {
+
+		// find user
+		User shibbolethAccount = em.find(User.class, userId);
+
+		if (shibbolethAccount == null) {
+			throw new ServiceException("no user found");
+		}
+
+		if (!shibbolethAccount.getAuthenticationType().equals(AuthenticationType.SHIBBOLETH)) {
+			throw new ServiceException(shibbolethAccount.getAuthenticationType().toString().toLowerCase() + ".login.required");
+		}
+
+		// update the user
+		shibbolethAccount.setAuthenticationType(AuthenticationType.EMAIL);
+		shibbolethAccount.setShibbolethInfo(null);
+		shibbolethAccount.setPermanentAuthToken(generatePermanentAuthenticationToken(shibbolethAccount.getId(), shibbolethAccount.getContactInfo().getEmail()));
+		shibbolethAccount.setAuthToken(null);
+
+		shibbolethAccount = em.merge(shibbolethAccount);
+
+		// send mail
+		mailService.sendLoginEmail(shibbolethAccount.getId(), true);
+
+		// return result
+		return shibbolethAccount;
+	}
+
+	/////////////////////////////////////////////////////////////////
+
 	public User doEmailLogin(String permanentAuthToken) throws ServiceException {
 		//1. Find User
 		User u = findAccountByPermanentAuthToken(permanentAuthToken);

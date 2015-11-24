@@ -21,6 +21,7 @@ import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.User.UserView;
 import gr.grnet.dep.service.model.User.UserWithLoginDataView;
 import gr.grnet.dep.service.util.StringUtil;
+import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
@@ -1077,5 +1078,120 @@ public class UserRESTService extends RESTService {
 		result.setRecords(paginatedUsers);
 
 		return result;
+	}
+
+	@POST
+	@Path("/search/shibboleth")
+	@JsonView({User.UserView.class})
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public SearchData<User> searchShibbolethAccountUsers(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @Context HttpServletRequest request) {
+		User loggedOn = getLoggedOn(authToken);
+
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+		// 1. Read parameters:
+		String filterText = request.getParameter("sSearch");
+		String sEcho = request.getParameter("sEcho");
+		// Ordering
+		String orderNo = request.getParameter("iSortCol_0");
+		String orderField = request.getParameter("mDataProp_" + orderNo);
+		String orderDirection = request.getParameter("sSortDir_0");
+		// Pagination
+		int iDisplayStart = Integer.valueOf(request.getParameter("iDisplayStart"));
+		int iDisplayLength = Integer.valueOf(request.getParameter("iDisplayLength"));
+
+		// 2. Prepare Query
+		StringBuilder searchQueryString = new StringBuilder();
+		searchQueryString.append(
+				" from User u where u.authenticationType = :shibboleth ");
+
+		if (StringUtils.isNotEmpty(filterText)) {
+			searchQueryString.append(" and ( UPPER(u.basicInfo.lastname) like :filterText ");
+			searchQueryString.append(" or UPPER(u.basicInfoLatin.lastname) like :filterText ");
+			searchQueryString.append(" or UPPER(u.basicInfo.firstname) like :filterText ");
+			searchQueryString.append(" or UPPER(u.basicInfoLatin.firstname) like :filterText ");
+			// treat the user id as text in order to filter it
+			searchQueryString.append(" or CAST(u.id AS text) like :filterText ) ");
+		}
+
+		// count query
+		Query countQuery = em.createQuery(
+				"select distinct count(u.id) " +
+						searchQueryString.toString());
+
+		countQuery.setParameter("shibboleth", AuthenticationType.SHIBBOLETH);
+
+		if (StringUtils.isNotEmpty(filterText)) {
+			countQuery.setParameter("filterText", filterText.toUpperCase() + "%");
+		}
+
+		// Get Result
+		Long totalRecords = (Long) countQuery.getSingleResult();
+
+		// Query Sorting
+		String orderString = null;
+
+		if (!StringUtils.isNotEmpty(orderField)) {
+			if (orderField.equals("firstname")) {
+				orderString = "order by usr.basicInfo.firstname " + orderDirection + ", usr.id ";
+			} else if (orderField.equals("lastname")) {
+				orderString = "order by usr.basicInfo.lastname " + orderDirection + ", usr.id ";
+			} else {
+				// id is default
+				orderString = "order by usr.id " + orderDirection + " ";
+			}
+		} else {
+			orderString = "order by usr.id " + orderDirection + " ";
+		}
+
+		// search query
+		TypedQuery<User> searchQuery = em.createQuery(
+				"select distinct usr from User usr " +
+						"where usr.id in ( select u.id " + searchQueryString.toString() + ") " +
+						orderString, User.class);
+
+		searchQuery.setParameter("shibboleth", AuthenticationType.SHIBBOLETH);
+
+		if (StringUtils.isNotEmpty(filterText)) {
+			searchQuery.setParameter("filterText", filterText.toUpperCase() + "%");
+		}
+
+		List<User> paginatedShibbolethUsers = searchQuery
+				.setFirstResult(iDisplayStart)
+				.setMaxResults(iDisplayLength)
+				.getResultList();
+
+		for (User shibbolethUser : paginatedShibbolethUsers) {
+			shibbolethUser.getRoles().size();
+		}
+
+		// Fill result
+		SearchData<User> result = new SearchData<User>();
+		result.setiTotalRecords(totalRecords);
+		result.setiTotalDisplayRecords(totalRecords);
+		result.setsEcho(Integer.valueOf(sEcho));
+		result.setRecords(paginatedShibbolethUsers);
+
+		return result;
+	}
+
+	@PUT
+	@Path("/{id:[0-9]+}/revertaccount")
+	public Response revertShibbolethAccount(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long userId, User user) {
+		User loggedOn = getLoggedOn(authToken);
+
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
+
+		try {
+			// revert the authentication from shibboleth to email
+			authenticationService.revertShibbolethTotEmailAccount(userId);
+		} catch (ServiceException e) {
+			throw new RestException(Status.CONFLICT, e.getMessage());
+		}
+
+		return Response.ok().build();
 	}
 }
