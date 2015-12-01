@@ -1346,10 +1346,7 @@ define([
 
     Models.Schools = Backbone.Collection.extend({
         url: "/dep/rest/school",
-        model: Models.School,
-        comparator: function (department) {
-            return department.getDescription();
-        }
+        model: Models.School
     });
 
     Models.Department = Backbone.Model.extend({

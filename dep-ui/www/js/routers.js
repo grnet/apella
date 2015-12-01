@@ -191,7 +191,7 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
             _.bindAll(self, "setTitle", "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showUserView", "showInstitutionAssistantsView",
                 "showMinistryAssistantsView", "showPositionView", "showPositionsView", "showRegistersView", "showProfessorCommitteesView", "showProfessorEvaluationsView",
                 "showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "showCandidacyView", "showUserSearchView", "showIssueListView", "showDataExportsView",
-                "showStatisticsView", "showAdminCandidaciesView", "showDomesticProfessorsCreateAccountsView", "showShibbolethUsersChangeAuthenticationView", "start");
+                "showStatisticsView", "showAdminCandidaciesView", "showDomesticProfessorsCreateAccountsView", "showShibbolethUsersChangeAuthenticationView", "showUpdateInstitutionAndDepartmentNamesView", "start");
 
             self.on("route", function (routefn) {
                 self.setTitle(routefn);
@@ -255,7 +255,8 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
             "statistics": "showStatisticsView",
             "adminCandidacies": "showAdminCandidaciesView",
             "createDomesticProfessorAccounts": "showDomesticProfessorsCreateAccountsView",
-            "revertShibbolethAuthentication": "showShibbolethUsersChangeAuthenticationView"
+            "revertShibbolethAuthentication": "showShibbolethUsersChangeAuthenticationView",
+            "updateInstitutionAndDepartmentNames": "showUpdateInstitutionAndDepartmentNamesView"
         },
 
         start: function (eventName, authToken) {
@@ -1288,7 +1289,23 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
             $("#content").html(showShibbolethUsersChangeAuthenticationView.render().el);
 
             self.currentView = [showShibbolethUsersChangeAuthenticationView];
+        },
+
+        showUpdateInstitutionAndDepartmentNamesView: function () {
+            var self = this;
+
+            var showInstitutionDepartmentListView = new Views.ShowInstitutionDepartmentListView();
+
+            self.clear();
+            $("#content").html(showInstitutionDepartmentListView.el);
+
+            self.refreshBreadcrumb([$.i18n.prop('menu_updateInstitutionAndDepartmentNames')]);
+
+            showInstitutionDepartmentListView.render();
+
+            self.currentView = [showInstitutionDepartmentListView];
         }
+
 
     });
 
