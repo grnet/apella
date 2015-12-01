@@ -6764,7 +6764,26 @@ define(["jquery", "underscore", "backbone", "application", "models",
                 return;
             }
 
-            self.model.get("evaluators")[evaluator.position] = evaluator;
+            var pos = -1;
+
+            // find the index of the array in which the relative evaluator is located
+            _.each(self.model.get("evaluators"), function (evalu, index) {
+                if (evalu.position  === evaluator.position) {
+                    pos = index;
+                }
+            });
+
+            if (pos !== -1) {
+                self.model.get("evaluators")[pos] = evaluator;
+            } else {
+                //in case there are no evaluators
+                if (self.model.get("evaluators").length == 0) {
+                    self.model.get("evaluators")[0] = evaluator;
+                } else {
+                    self.model.get("evaluators")[1] = evaluator;
+                }
+
+            }
 
             self.model.trigger("change:members");
             self.change($.Event("change"), {
