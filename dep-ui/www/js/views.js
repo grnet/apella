@@ -194,6 +194,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
         render: function () {
             var self = this;
             var menuItems = [];
+            var superAdminMenuItems = [];
             self.closeInnerViews();
             self.$el.empty();
             self.addTitle();
@@ -252,10 +253,10 @@ define(["jquery", "underscore", "backbone", "application", "models",
             }
             if (self.model.hasRoleWithStatus("ADMINISTRATOR", "ACTIVE")) {
                 if (self.model.getRole('ADMINISTRATOR').superAdministrator) {
-                    menuItems.push("administrators");
-                    menuItems.push("dataExports");
-                    menuItems.push("adminCandidacies");
-                    menuItems.push("revertShibbolethAuthentication");
+                    superAdminMenuItems.push("administrators");
+                    superAdminMenuItems.push("dataExports");
+                    superAdminMenuItems.push("adminCandidacies");
+                    superAdminMenuItems.push("revertShibbolethAuthentication");
                 }
                 menuItems.push("searchusers");
                 menuItems.push("statistics");
@@ -265,9 +266,22 @@ define(["jquery", "underscore", "backbone", "application", "models",
             }
 
             self.$el.append('<li><a href="#">' + $.i18n.prop('menu_home') + '</a></li>');
+
             _.each(_.uniq(menuItems), function (menuItem) {
                 self.$el.append('<li><a href="#' + menuItem + '">' + $.i18n.prop('menu_' + menuItem) + '</a></li>');
             });
+
+            if (superAdminMenuItems.length !== 0) {
+                var html = '<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">' + $.i18n.prop('menu_superAdminFunctions') + '<span class="caret"></span></a>';
+                html += '<ul class="dropdown-menu">';
+                _.each(_.uniq(superAdminMenuItems), function (menuItem) {
+                    html += '<li><a href="#' + menuItem + '">' + $.i18n.prop('menu_' + menuItem) + '</a></li>';
+                });
+
+                html += '</ul></li>';
+
+                self.$el.append(html);
+            }
 
             return self;
         },
