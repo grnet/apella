@@ -191,7 +191,8 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
             _.bindAll(self, "setTitle", "showLoginView", "showHomeView", "showAccountView", "showProfileView", "showUserView", "showInstitutionAssistantsView",
                 "showMinistryAssistantsView", "showPositionView", "showPositionsView", "showRegistersView", "showProfessorCommitteesView", "showProfessorEvaluationsView",
                 "showInstitutionRegulatoryFrameworkView", "showCandidateCandidacyView", "showCandidacyView", "showUserSearchView", "showIssueListView", "showDataExportsView",
-                "showStatisticsView", "showAdminCandidaciesView", "showDomesticProfessorsCreateAccountsView", "showShibbolethUsersChangeAuthenticationView", "showUpdateInstitutionAndDepartmentNamesView", "start");
+                "showStatisticsView", "showAdminCandidaciesView", "showDomesticProfessorsCreateAccountsView", "showShibbolethUsersChangeAuthenticationView", "showUpdateInstitutionAndDepartmentNamesView",
+                "showSectorsView" , "start");
 
             self.on("route", function (routefn) {
                 self.setTitle(routefn);
@@ -256,7 +257,9 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
             "adminCandidacies": "showAdminCandidaciesView",
             "createDomesticProfessorAccounts": "showDomesticProfessorsCreateAccountsView",
             "revertShibbolethAuthentication": "showShibbolethUsersChangeAuthenticationView",
-            "updateInstitutionAndDepartmentNames": "showUpdateInstitutionAndDepartmentNamesView"
+            "updateInstitutionAndDepartmentNames": "showUpdateInstitutionAndDepartmentNamesView",
+            "sectors": "showSectorsView",
+            "sectors/:sectorId": "showSectorsView"
         },
 
         start: function (eventName, authToken) {
@@ -1304,8 +1307,84 @@ define(["jquery", "underscore", "backbone", "application", "models", "views", "t
             showInstitutionDepartmentListView.render();
 
             self.currentView = [showInstitutionDepartmentListView];
-        }
+        },
 
+        showSectorsView: function (sectorId) {
+            var self = this;
+
+            var sectors = new Models.Sectors();
+            var sectorView;
+
+            var sectorListView = new Views.SectorListView({
+                collection: sectors
+            });
+
+            sectors.on("sector:selected", function (sector, sectors) {
+
+                if (sectorView) {
+                    sectorView.close();
+                }
+                // update history
+                if (sector.id) {
+                    App.router.navigate("sectors/" + sector.id, {
+                        trigger: false
+                    });
+                } else {
+                    App.router.navigate("sectors", {
+                        trigger: false
+                    });
+                }
+
+                //if (sector.id) {
+                sector.fetch({
+                    cache: false,
+                    silent: true,
+                    wait: true,
+                    success: function () {
+                        $("#content").unbind();
+                        $("#content").empty();
+                        $("#content").html(sectorView.el);
+
+                        self.refreshBreadcrumb([$.i18n.prop('menu_sectors')]);
+                        App.utils.scrollTo(sectorView.$el);
+                    }
+                });
+
+                sectorView = new Views.SectorEditView({
+                    model: sector,
+                    sectors: sectors
+                });
+
+                sectorView.render();
+            });
+
+            self.clear();
+            self.refreshBreadcrumb([$.i18n.prop('menu_sectors')]);
+            $("#featured").html(sectorListView.el);
+
+            sectors.fetch({
+                cache: false,
+                reset: true,
+                wait: true,
+                success: function (model, response, options) {
+                    if (!_.isUndefined(sectorId)) {
+                        var selectedSector = sectors.get(sectorId);
+                        if (selectedSector) {
+                            sectors.trigger("sector:selected", selectedSector, sectors);
+                        }
+                    }
+                },
+                error: function (model, resp) {
+                    var popup = new Views.PopupView({
+                        type: "error",
+                        message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+                    });
+                    popup.show();
+                }
+            });
+
+            this.currentView = sectorListView;
+        }
 
     });
 

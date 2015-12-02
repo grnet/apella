@@ -1,10 +1,6 @@
 package gr.grnet.dep.service.model;
 
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.MapKeyColumn;
+import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,5 +51,4 @@ public class Sector {
 	public void setName(Map<String, SectorName> name) {
 		this.name = name;
 	}
-
 }

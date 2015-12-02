@@ -14,8 +14,8 @@ define(["jquery", "underscore", "backbone", "application", "models",
     "text!tpl/position-committee-edit-register-member-list.html", "text!tpl/position.html", "text!tpl/position-candidacies.html", "text!tpl/position-committee.html",
     "text!tpl/position-evaluation.html", "text!tpl/position-nomination.html", "text!tpl/position-complementaryDocuments.html", "text!tpl/position-nomination-edit.html",
     "text!tpl/position-complementaryDocuments-edit.html", "text!tpl/department-select.html", "text!tpl/department.html", "text!tpl/user-helpdesk.html",
-    "text!tpl/position-helpdesk.html", "text!tpl/jira-issue-edit.html", "text!tpl/jira-issue-list.html", "text!tpl/jira-issue.html", "text!tpl/jira-issue-public-edit.html", "text!tpl/data-exports.html", "text!tpl/statistics.html", "text!tpl/position-committee-edit-confirm.html", "text!tpl/incomplete-candidacy-list.html", "text!tpl/evaluator-select.html", "text!tpl/evaluator.html", "text!tpl/confirm-withdraw-candidacy.html", "text!tpl/domestic-professors-create.html", "text!tpl/domestic-professors-created-list.html", "text!tpl/candidate-candidacy-history-actions-list.html","text!tpl/register-add-delete-professor-list.html","text!tpl/shibboleth-domestic-professors-list.html","text!tpl/institution-department-list.html","text!tpl/institution-department-edit.html"
-], function ($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit, tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_edit_professor_list, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation, tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit, tpl_department_select, tpl_department, tpl_user_helpdesk, tpl_position_helpdesk, tpl_jira_issue_edit, tpl_jira_issue_list, tpl_jira_issue, tpl_jira_issue_public_edit, tpl_data_exports, tpl_statistics, tpl_position_committee_edit_confirm, tpl_incomplete_candidacy_list, tpl_evaluator_select, tpl_evaluator, tpl_confirm_withdraw_candidacy, tpl_domestic_professors_create, tpl_domestic_professors_created_list, candidate_candidacy_history_actions_list, tpl_register_add_delete_professor_list, tpl_shibboleth_domestic_professors_list, tpl_institution_department_list, tpl_institution_department_edit ) {
+    "text!tpl/position-helpdesk.html", "text!tpl/jira-issue-edit.html", "text!tpl/jira-issue-list.html", "text!tpl/jira-issue.html", "text!tpl/jira-issue-public-edit.html", "text!tpl/data-exports.html", "text!tpl/statistics.html", "text!tpl/position-committee-edit-confirm.html", "text!tpl/incomplete-candidacy-list.html", "text!tpl/evaluator-select.html", "text!tpl/evaluator.html", "text!tpl/confirm-withdraw-candidacy.html", "text!tpl/domestic-professors-create.html", "text!tpl/domestic-professors-created-list.html", "text!tpl/candidate-candidacy-history-actions-list.html","text!tpl/register-add-delete-professor-list.html","text!tpl/shibboleth-domestic-professors-list.html","text!tpl/institution-department-list.html","text!tpl/institution-department-edit.html", "text!tpl/sector-list.html", "text!tpl/sector-edit.html"
+], function ($, _, Backbone, App, Models, tpl_announcement_list, tpl_confirm, tpl_file, tpl_file_edit, tpl_file_list, tpl_file_list_edit, tpl_home, tpl_login_admin, tpl_login_main, tpl_popup, tpl_professor_list, tpl_register_edit, tpl_register_list, tpl_role_edit, tpl_role_tabs, tpl_role, tpl_user_edit, tpl_user_list, tpl_user_registration_select, tpl_user_registration_success, tpl_user_registration, tpl_user_role_info, tpl_user_search, tpl_user_verification, tpl_user, tpl_language, tpl_professor_committees, tpl_professor_evaluations, tpl_register, tpl_institution_regulatory_framework, tpl_institution_regulatory_framework_edit, tpl_position_search_criteria, tpl_position_search_result, tpl_candidacy_edit, tpl_candidate_candidacy_list, tpl_candidacy, tpl_candidacy_update_confirm, tpl_institution_regulatory_framework_list, tpl_register_edit_professor_list, tpl_overlay, tpl_position_main_edit, tpl_position_candidacies_edit, tpl_position_committee_edit, tpl_position_committee_member_edit, tpl_position_evaluation_edit, tpl_position_evaluation_edit_register_member_list, tpl_position_evaluation_evaluator_edit, tpl_position_edit, tpl_position_list, tpl_position_committee_edit_register_member_list, tpl_position, tpl_position_candidacies, tpl_position_committee, tpl_position_evaluation, tpl_position_nomination, tpl_position_complementaryDocuments, tpl_position_nomination_edit, tpl_position_complementaryDocuments_edit, tpl_department_select, tpl_department, tpl_user_helpdesk, tpl_position_helpdesk, tpl_jira_issue_edit, tpl_jira_issue_list, tpl_jira_issue, tpl_jira_issue_public_edit, tpl_data_exports, tpl_statistics, tpl_position_committee_edit_confirm, tpl_incomplete_candidacy_list, tpl_evaluator_select, tpl_evaluator, tpl_confirm_withdraw_candidacy, tpl_domestic_professors_create, tpl_domestic_professors_created_list, candidate_candidacy_history_actions_list, tpl_register_add_delete_professor_list, tpl_shibboleth_domestic_professors_list, tpl_institution_department_list, tpl_institution_department_edit, tpl_sector_list, tpl_sector_edit) {
 
     "use strict";
     /** ****************************************************************** */
@@ -258,6 +258,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     superAdminMenuItems.push("adminCandidacies");
                     superAdminMenuItems.push("revertShibbolethAuthentication");
                     superAdminMenuItems.push("updateInstitutionAndDepartmentNames");
+                    superAdminMenuItems.push("sectors");
                 }
                 menuItems.push("searchusers");
                 menuItems.push("statistics");
@@ -1582,6 +1583,9 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     });
                     tiles.push({
                         link: "updateInstitutionAndDepartmentNames"
+                    });
+                    tiles.push({
+                        link: "sectors"
                     });
                 }
                 tiles.push({
@@ -11667,6 +11671,338 @@ define(["jquery", "underscore", "backbone", "application", "models",
             this.closeInnerViews();
             this.$el.unbind();
             this.$el.remove();
+        }
+    });
+
+    /***************************************************************************
+     * SectorListView **********************************************************
+     **************************************************************************/
+    Views.SectorListView = Views.BaseView.extend({
+        tagName: "div",
+
+        initialize: function (options) {
+            var self = this;
+            this._super('initialize', [options]);
+            _.bindAll(this, "renderActions", "selectSector", "createSector", "removeSector");
+            this.template = _.template(tpl_sector_list);
+
+            self.collection.bind('remove', self.render, self);
+            self.collection.bind('add', self.render, self);
+            self.collection.bind('reset', self.render, self);
+            self.collection.bind('change', self.render, self);
+        },
+
+        events: {
+            "click a#createSector": "createSector",
+            "click a#select": "selectSector",
+            "click a#remove": "removeSector"
+        },
+
+        render: function () {
+            var self = this;
+
+            self.closeInnerViews();
+            self.$el.empty();
+            self.addTitle();
+
+            var tpl_data = {
+              sectors: self.collection.toJSON()
+            };
+
+            self.$el.append(this.template(tpl_data));
+
+            if (!$.fn.DataTable.fnIsDataTable(self.$("table"))) {
+                self.$("table").dataTable({
+                    "sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+                    "sPaginationType": "bootstrap",
+                    "aaSorting": [[0, "asc"]],
+                    "oLanguage": {
+                        "sSearch": $.i18n.prop("dataTable_sSearch"),
+                        "sLengthMenu": $.i18n.prop("dataTable_sLengthMenu"),
+                        "sZeroRecords": $.i18n.prop("dataTable_sZeroRecords"),
+                        "sInfo": $.i18n.prop("dataTable_sInfo"),
+                        "sInfoEmpty": $.i18n.prop("dataTable_sInfoEmpty"),
+                        "sInfoFiltered": $.i18n.prop("dataTable_sInfoFiltered"),
+                        "oPaginate": {
+                            sFirst: $.i18n.prop("dataTable_sFirst"),
+                            sPrevious: $.i18n.prop("dataTable_sPrevious"),
+                            sNext: $.i18n.prop("dataTable_sNext"),
+                            sLast: $.i18n.prop("dataTable_sLast")
+                        }
+                    },
+                    "aoColumnDefs": [ {"bSortable": false, "aTargets": [2,3]}]
+                });
+            }
+
+            // Add Actions
+            self.renderActions();
+            return self;
+        },
+
+        renderActions: function () {
+            var self = this;
+
+            var displayView = App.loggedOnUser.hasRole("ADMINISTRATOR") ? App.loggedOnUser.getRole("ADMINISTRATOR").superAdministrator : false;
+
+            if (!displayView) {
+                return;
+            }
+            self.$("#actions").append("<div class=\"btn-group\"><a id=\"createSector\" class=\"btn\"><i class=\"icon-plus\"></i> " + $.i18n.prop('btn_create_sector') + " </a></div>");
+        },
+
+        selectSector: function (event, sector) {
+            var self = this;
+            var selectedModel = sector || this.collection.get($(event.currentTarget).data('sectorId'));
+
+            if (selectedModel) {
+                self.collection.trigger("sector:selected", selectedModel, self.collection);
+            }
+        },
+
+        createSector: function () {
+            var self = this;
+            var newSector = new Models.Sector({
+                name: {
+                    el: {
+                        area: null,
+                        subject: null
+                    },
+                    en: {
+                        area: null,
+                        subject: null
+                    }
+                }
+            });
+
+            self.selectSector(undefined, newSector);
+        },
+
+        removeSector: function (event) {
+            var self = this;
+
+            var selectedModel = self.collection.get($(event.currentTarget).data('sectorId'));
+
+            if (selectedModel) {
+                var confirm = new Views.ConfirmView({
+                    title: $.i18n.prop('Confirm'),
+                    message: $.i18n.prop('AreYouSure'),
+                    yes: function () {
+                        // if yes proceed to action
+                        selectedModel.destroy({
+                            wait: true,
+                            success: function () {
+                                var popup;
+                                popup = new Views.PopupView({
+                                    type: "success",
+                                    message: $.i18n.prop("Success")
+                                });
+                                popup.show();
+                                App.router.navigate("sectors", {
+                                    trigger: false
+                                });
+                            },
+                            error: function (model, resp) {
+                                var popup = new Views.PopupView({
+                                    type: "error",
+                                    message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+                                });
+                                popup.show();
+                            }
+                        });
+                    }
+                });
+                confirm.show();
+            }
+        },
+
+        close: function () {
+            this.closeInnerViews();
+            $(this.el).unbind();
+            $(this.el).remove();
+        }
+    });
+
+    /***************************************************************************
+     * SectorEditView **********************************************************
+     **************************************************************************/
+    Views.SectorEditView = Views.BaseView.extend({
+        tagName: "div",
+
+        id: "sectorview",
+
+        validator: undefined,
+
+        initialize: function (options) {
+            var self = this;
+
+            this._super('initialize', [options]);
+            _.bindAll(this, "submit", "renderCategories");
+            self.template = _.template(tpl_sector_edit);
+
+            self.model.bind('change', self.render, self);
+            self.model.bind("destroy", self.close, self);
+
+            self.sectors = self.options.sectors;
+        },
+
+        events: {
+            "click a#save": function (event) {
+                if ($(event.currentTarget).attr("disabled")) {
+                    event.preventDefault();
+                    return;
+                }
+                this.$("form").submit();
+            },
+            "submit form": "submit"
+        },
+
+        render: function () {
+            var self = this;
+
+            var propName;
+            self.closeInnerViews();
+            self.$el.empty();
+            self.addTitle();
+
+            var tpl_data = {
+                sector: self.model.toJSON()
+            };
+
+            self.$el.append(self.template(tpl_data));
+
+            self.renderCategories();
+
+            // Validation
+            self.validator = $("form", this.el).validate({
+                errorElement: "span",
+                errorClass: "help-inline",
+                highlight: function (element) {
+                    $(element).parent(".controls").parent(".control-group").addClass("error");
+                },
+                unhighlight: function (element) {
+                    $(element).parent(".controls").parent(".control-group").removeClass("error");
+                },
+                rules: {
+                    el_sector_subject: "required",
+                    en_sector_subject: "required",
+                    category: "required"
+
+                },
+                messages: {
+                    el_sector_subject: $.i18n.prop('validation_sectorName'),
+                    en_sector_subject: $.i18n.prop('validation_sectorName'),
+                    category: $.i18n.prop('validation_thematicCategory')
+                }
+            });
+            // Highlight Required
+            if (self.validator) {
+                for (propName in self.validator.settings.rules) {
+                    if (self.validator.settings.rules.hasOwnProperty(propName)) {
+                        if (self.validator.settings.rules[propName].required !== undefined) {
+                            self.$("label[for=" + propName + "]").addClass("strong");
+                        }
+                    }
+                }
+            }
+
+            return self;
+        },
+
+        renderCategories: function () {
+            var self = this;
+
+            var data = self.sectors.reduce(function (memo, sector) {
+                var areaId = sector.get("areaId");
+
+                if(!areaId) {
+                    return memo;
+                }
+
+                var node = _.find(memo, function (item) {
+                    return item.areaId === areaId;
+                });
+
+                if(!node) {
+                    memo.push(sector.toJSON());
+                }
+
+                return memo;
+
+            }, []);
+
+            var $select = self.$("select[name=category]");
+            $select.empty();
+            $select.append('<option value="">--</option>');
+
+            var selectedAreaId = self.model.get("areaId");
+
+            _.each(data, function (sector) {
+                var selected = sector.areaId === selectedAreaId ? 'selected' : '';
+                $select.append('<option value="' + sector.areaId + '"' + selected + ' >' + sector.name[App.locale].area + '</option>');
+            });
+        },
+
+        submit: function (event) {
+            var self = this;
+            var values = {};
+
+            var el_subjectName = self.$("form input[name=el_sector_subject]").val();
+            var en_subjectName = self.$("form input[name=en_sector_subject]").val();
+
+            var areaId = self.$("form select[name=category]").val();
+
+            var sector = self.sectors.find(function (sector){
+                return sector.get("areaId").toString() === areaId;
+            });
+
+            var el_areaName = sector.get("name").el.area;
+            var en_areaName = sector.get("name").en.area;
+
+            self.model.set({
+                areaId: areaId,
+                name: {
+                    el: {
+                        area: el_areaName,
+                        subject: el_subjectName
+                    },
+                    en: {
+                        area: en_areaName,
+                        subject: en_subjectName
+                    }
+                }
+            });
+
+            // Save to model
+            self.model.save(values, {
+                wait: true,
+                success: function () {
+                    var popup;
+                    App.router.navigate("sectors/" + self.model.id, {
+                        trigger: false
+                    });
+                    popup = new Views.PopupView({
+                        type: "success",
+                        message: $.i18n.prop("Success")
+                    });
+                    popup.show();
+                    self.sectors.add(self.model);
+                },
+                error: function (model, resp) {
+                    var popup = new Views.PopupView({
+                        type: "error",
+                        message: $.i18n.prop("error." + resp.getResponseHeader("X-Error-Code"))
+                    });
+                    popup.show();
+                }
+            });
+            event.preventDefault();
+            return false;
+        },
+
+        close: function () {
+            this.closeInnerViews();
+            $(this.el).unbind();
+            $(this.el).remove();
         }
     });
 
