@@ -292,6 +292,8 @@ public class PositionEvaluationRESTService extends RESTService {
 
 									put("assistants_el", extractAssistantsInfo(existingEvaluation.getPosition(), "el"));
 									put("assistants_en", extractAssistantsInfo(existingEvaluation.getPosition(), "en"));
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorEvaluations");
 								}
 
 								private String extractAssistantsInfo(Position position, String locale) {
@@ -389,6 +391,8 @@ public class PositionEvaluationRESTService extends RESTService {
 									put("institution_en", existingEvaluation.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 									put("school_en", existingEvaluation.getPosition().getDepartment().getSchool().getName().get("en"));
 									put("department_en", existingEvaluation.getPosition().getDepartment().getName().get("en"));
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorCommittees");
 								}
 							}));
 				}
@@ -415,6 +419,8 @@ public class PositionEvaluationRESTService extends RESTService {
 										put("institution_en", existingEvaluation.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 										put("school_en", existingEvaluation.getPosition().getDepartment().getSchool().getName().get("en"));
 										put("department_en", existingEvaluation.getPosition().getDepartment().getName().get("en"));
+
+										put("ref", WebConstants.conf.getString("home.url") + "/apella.html#candidateCandidacies");
 									}
 								}));
 					}
@@ -694,6 +700,8 @@ public class PositionEvaluationRESTService extends RESTService {
 									put("institution_en", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 									put("school_en", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getName().get("en"));
 									put("department_en", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getName().get("en"));
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorCommittees");
 								}
 							}));
 				}
@@ -719,6 +727,8 @@ public class PositionEvaluationRESTService extends RESTService {
 									put("institution_en", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 									put("school_en", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getName().get("en"));
 									put("department_en", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getName().get("en"));
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorEvaluations");
 								}
 							}));
 				}
@@ -745,6 +755,8 @@ public class PositionEvaluationRESTService extends RESTService {
 									put("institution_en", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 									put("school_en", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getName().get("en"));
 									put("department_en", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getName().get("en"));
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorCommittees");
 								}
 							}));
 				}
@@ -770,6 +782,8 @@ public class PositionEvaluationRESTService extends RESTService {
 									put("institution_en", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 									put("school_en", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getSchool().getName().get("en"));
 									put("department_en", eFile.getEvaluator().getEvaluation().getPosition().getDepartment().getName().get("en"));
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorEvaluations");
 								}
 							}));
 				}

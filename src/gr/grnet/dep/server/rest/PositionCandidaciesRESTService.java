@@ -490,6 +490,8 @@ public class PositionCandidaciesRESTService extends RESTService {
 									put("institution_en", existingEvaluator.getCandidacy().getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 									put("school_en", existingEvaluator.getCandidacy().getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
 									put("department_en", existingEvaluator.getCandidacy().getCandidacies().getPosition().getDepartment().getName().get("en"));
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorCommittees");
 								}
 							}));
 				}
@@ -519,6 +521,8 @@ public class PositionCandidaciesRESTService extends RESTService {
 									put("institution_en", existingEvaluator.getCandidacy().getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 									put("school_en", existingEvaluator.getCandidacy().getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
 									put("department_en", existingEvaluator.getCandidacy().getCandidacies().getPosition().getDepartment().getName().get("en"));
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorEvaluations");
 								}
 							}));
 				}
@@ -545,6 +549,8 @@ public class PositionCandidaciesRESTService extends RESTService {
 									put("institution_en", pcFile.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 									put("school_en", pcFile.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
 									put("department_en", pcFile.getCandidacies().getPosition().getDepartment().getName().get("en"));
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorCommittees");
 								}
 							}));
 				}
@@ -571,6 +577,8 @@ public class PositionCandidaciesRESTService extends RESTService {
 										put("institution_en", pcFile.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 										put("school_en", pcFile.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
 										put("department_en", pcFile.getCandidacies().getPosition().getDepartment().getName().get("en"));
+
+										put("ref", WebConstants.conf.getString("home.url") + "/apella.html#candidateCandidacies");
 									}
 								}));
 					}
@@ -597,6 +605,8 @@ public class PositionCandidaciesRESTService extends RESTService {
 									put("institution_en", pcFile.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 									put("school_en", pcFile.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
 									put("department_en", pcFile.getCandidacies().getPosition().getDepartment().getName().get("en"));
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorEvaluations");
 								}
 							}));
 				}

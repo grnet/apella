@@ -366,6 +366,8 @@ public class CandidacyRESTService extends RESTService {
 									put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 									put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
 									put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#positions");
 								}
 							}));
 				}
@@ -390,6 +392,10 @@ public class CandidacyRESTService extends RESTService {
 								put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 								put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
 								put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
+
+								put("ref", WebConstants.conf.getString("home.url") + "/apella.html#candidateCandidacies");
+
+
 							}
 						}));
 
@@ -423,6 +429,8 @@ public class CandidacyRESTService extends RESTService {
 									put("candidate_firstname_en", existingCandidacy.getSnapshot().getFirstname("en"));
 									put("candidate_lastname_en", existingCandidacy.getSnapshot().getLastname("en"));
 									put("assistants_en", extractAssistantsInfo(existingCandidacy.getCandidacies().getPosition(), "en"));
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorEvaluations");
 
 								}
 
@@ -491,6 +499,8 @@ public class CandidacyRESTService extends RESTService {
 									put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
 									put("candidate_firstname_en", existingCandidacy.getSnapshot().getFirstname("en"));
 									put("candidate_lastname_en", existingCandidacy.getSnapshot().getLastname("en"));
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#positions");
 
 									Iterator<CandidacyEvaluator> it = existingCandidacy.getProposedEvaluators().iterator();
 									if (it.hasNext()) {
@@ -613,6 +623,8 @@ public class CandidacyRESTService extends RESTService {
 									put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 									put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
 									put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#positions");
 								}
 							}));
 				}
@@ -669,6 +681,8 @@ public class CandidacyRESTService extends RESTService {
 										put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 										put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
 										put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
+
+										put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorCommittees");
 									}
 								}));
 					}
@@ -702,6 +716,8 @@ public class CandidacyRESTService extends RESTService {
 										put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 										put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
 										put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
+
+										put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorEvaluations");
 									}
 								}));
 					}
@@ -735,6 +751,9 @@ public class CandidacyRESTService extends RESTService {
 										put("institution_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 										put("school_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getName().get("en"));
 										put("department_en", existingCandidacy.getCandidacies().getPosition().getDepartment().getName().get("en"));
+
+										put("ref", WebConstants.conf.getString("home.url") + "/apella.html#candidateCandidacies");
+
 									}
 								}));
 					}

@@ -472,6 +472,8 @@ public class PositionRESTService extends RESTService {
 									put("institution_en", existingPosition.getDepartment().getSchool().getInstitution().getName().get("en"));
 									put("school_en", existingPosition.getDepartment().getSchool().getName().get("en"));
 									put("department_en", existingPosition.getDepartment().getName().get("en"));
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#positions");
 								}
 							}));
 				}
@@ -499,6 +501,8 @@ public class PositionRESTService extends RESTService {
 									put("institution_en", existingPosition.getDepartment().getSchool().getInstitution().getName().get("en"));
 									put("school_en", existingPosition.getDepartment().getSchool().getName().get("en"));
 									put("department_en", existingPosition.getDepartment().getName().get("en"));
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#positions");
 								}
 							}));
 					mailService.postEmail(im.getAlternateContactInfo().getEmail(),
@@ -521,6 +525,8 @@ public class PositionRESTService extends RESTService {
 									put("institution_en", existingPosition.getDepartment().getSchool().getInstitution().getName().get("en"));
 									put("school_en", existingPosition.getDepartment().getSchool().getName().get("en"));
 									put("department_en", existingPosition.getDepartment().getName().get("en"));
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#positions");
 								}
 							}));
 				}
@@ -577,6 +583,8 @@ public class PositionRESTService extends RESTService {
 								put("institution_en", position.getDepartment().getSchool().getInstitution().getName().get("en"));
 								put("school_en", position.getDepartment().getSchool().getName().get("en"));
 								put("department_en", position.getDepartment().getName().get("en"));
+
+								put("ref", WebConstants.conf.getString("home.url") + "/apella.html#positions");
 							}
 						}));
 			}

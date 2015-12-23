@@ -326,6 +326,8 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 									put("institution_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 									put("school_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getName().get("en"));
 									put("department_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName().get("en"));
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorCommittees");
 								}
 							}));
 				}
@@ -352,7 +354,9 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
                                     put("institution_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
                                     put("school_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getName().get("en"));
                                     put("department_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName().get("en"));
-                                }
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#candidateCandidacies");
+								}
                             }));
                 }
             }
@@ -379,6 +383,8 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 									put("institution_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 									put("school_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getName().get("en"));
 									put("department_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName().get("en"));
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorEvaluations");
 								}
 							}));
 				}

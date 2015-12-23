@@ -611,6 +611,8 @@ public class PositionCommitteeRESTService extends RESTService {
 										put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 										put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
 										put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
+
+										put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorCommittees");
 									}
 								}));
 					} else {
@@ -635,6 +637,8 @@ public class PositionCommitteeRESTService extends RESTService {
 										put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 										put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
 										put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
+
+										put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorCommittees");
 									}
 								}));
 					}
@@ -716,6 +720,8 @@ public class PositionCommitteeRESTService extends RESTService {
 										put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 										put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
 										put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
+
+										put("ref", WebConstants.conf.getString("home.url") + "/apella.html#candidateCandidacies");
 									}
 								}));
 					}
@@ -745,6 +751,8 @@ public class PositionCommitteeRESTService extends RESTService {
 										put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 										put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
 										put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
+
+										put("ref", WebConstants.conf.getString("home.url") + "/apella.html#candidateCandidacies");
 									}
 								}));
 					}
@@ -773,6 +781,8 @@ public class PositionCommitteeRESTService extends RESTService {
 										put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 										put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
 										put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
+
+										put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorEvaluations");
 									}
 								}));
 					}
@@ -799,6 +809,8 @@ public class PositionCommitteeRESTService extends RESTService {
 									put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 									put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
 									put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorCommittees");
 								}
 							}));
 				}
@@ -827,6 +839,8 @@ public class PositionCommitteeRESTService extends RESTService {
 									put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 									put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
 									put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorCommittees");
 								}
 							}));
 				}
@@ -853,6 +867,8 @@ public class PositionCommitteeRESTService extends RESTService {
 										put("institution_en", savedCommittee.getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 										put("school_en", savedCommittee.getPosition().getDepartment().getSchool().getName().get("en"));
 										put("department_en", savedCommittee.getPosition().getDepartment().getName().get("en"));
+
+										put("ref", WebConstants.conf.getString("home.url") + "/apella.html#candidateCandidacies");
 									}
 								}));
 					}
@@ -1113,6 +1129,8 @@ public class PositionCommitteeRESTService extends RESTService {
 								put("institution_en", pcFile.getCommittee().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 								put("school_en", pcFile.getCommittee().getPosition().getDepartment().getSchool().getName().get("en"));
 								put("department_en", pcFile.getCommittee().getPosition().getDepartment().getName().get("en"));
+
+								put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorCommittees");
 							}
 						}));
 			}
@@ -1138,6 +1156,8 @@ public class PositionCommitteeRESTService extends RESTService {
 									put("institution_en", pcFile.getCommittee().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 									put("school_en", pcFile.getCommittee().getPosition().getDepartment().getSchool().getName().get("en"));
 									put("department_en", pcFile.getCommittee().getPosition().getDepartment().getName().get("en"));
+
+									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#candidateCandidacies");
 								}
 							}));
 				}
@@ -1164,6 +1184,8 @@ public class PositionCommitteeRESTService extends RESTService {
 								put("institution_en", pcFile.getCommittee().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
 								put("school_en", pcFile.getCommittee().getPosition().getDepartment().getSchool().getName().get("en"));
 								put("department_en", pcFile.getCommittee().getPosition().getDepartment().getName().get("en"));
+
+								put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorEvaluations");
 							}
 						}));
 			}

@@ -1,5 +1,6 @@
 package gr.grnet.dep.service.job;
 
+import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.service.JiraService;
 import gr.grnet.dep.service.MailService;
 import gr.grnet.dep.service.model.Candidacy;
@@ -250,6 +251,8 @@ public class QuartzService {
 								put("institution_en", position.getDepartment().getSchool().getInstitution().getName().get("en"));
 								put("school_en", position.getDepartment().getSchool().getName().get("en"));
 								put("department_en", position.getDepartment().getName().get("en"));
+
+								put("ref", WebConstants.conf.getString("home.url") + "/apella.html#candidateCandidacies");
 							}
 						}));
 			}
