@@ -584,7 +584,7 @@ public class PositionRESTService extends RESTService {
 								put("school_en", position.getDepartment().getSchool().getName().get("en"));
 								put("department_en", position.getDepartment().getName().get("en"));
 
-								put("ref", WebConstants.conf.getString("home.url") + "/apella.html#positions");
+								put("ref", WebConstants.conf.getString("home.url") + "/apella.html#sposition");
 							}
 						}));
 			}
