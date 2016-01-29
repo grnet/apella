@@ -3,11 +3,22 @@ package gr.grnet.dep.server.rest;
 import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.model.*;
+import gr.grnet.dep.service.exceptions.ServiceException;
+import gr.grnet.dep.service.model.AuthenticationType;
+import gr.grnet.dep.service.model.Candidate;
+import gr.grnet.dep.service.model.InstitutionAssistant;
+import gr.grnet.dep.service.model.InstitutionManager;
+import gr.grnet.dep.service.model.JiraIssue;
 import gr.grnet.dep.service.model.Position.PositionStatus;
+import gr.grnet.dep.service.model.Professor;
+import gr.grnet.dep.service.model.ProfessorDomestic;
+import gr.grnet.dep.service.model.ProfessorForeign;
+import gr.grnet.dep.service.model.RegisterMember;
+import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.DetailedRoleView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
+import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.CandidateFile;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
@@ -169,7 +180,7 @@ public class RoleRESTService extends RESTService {
 	 * @return
 	 */
 	@GET
-	@JsonView({DetailedRoleView.class})
+	@JsonView({ DetailedRoleView.class })
 	public Collection<Role> getAll(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @QueryParam("user") Long userID, @QueryParam("discriminator") String discriminators, @QueryParam("status") String statuses) {
 		User loggedOn = getLoggedOn(authToken);
 		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
@@ -259,7 +270,7 @@ public class RoleRESTService extends RESTService {
 	 */
 	@GET
 	@Path("/{id:[0-9][0-9]*}")
-	@JsonView({DetailedRoleView.class})
+	@JsonView({ DetailedRoleView.class })
 	public Role get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
 		User loggedOn = getLoggedOn(authToken);
 		boolean roleBelongsToUser = false;
@@ -298,7 +309,7 @@ public class RoleRESTService extends RESTService {
 	 * @HTTP 409 X-Error-Code: incompatible.role
 	 */
 	@POST
-	@JsonView({DetailedRoleView.class})
+	@JsonView({ DetailedRoleView.class })
 	public Role create(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, Role newRole) {
 		User loggedOn = getLoggedOn(authToken);
 
@@ -361,7 +372,7 @@ public class RoleRESTService extends RESTService {
 	 */
 	@PUT
 	@Path("/{id:[0-9][0-9]*}")
-	@JsonView({DetailedRoleView.class})
+	@JsonView({ DetailedRoleView.class })
 	public Role update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, @QueryParam("updateCandidacies") Boolean updateCandidacies, Role role) {
 		User loggedOn = getLoggedOn(authToken);
 		Role existingRole = em.find(Role.class, id);
@@ -423,23 +434,23 @@ public class RoleRESTService extends RESTService {
 		}
 
 		// Update
-        try {
-            boolean institutionHasChanged = false;
-            if (existingRole.getDiscriminator() == RoleDiscriminator.PROFESSOR_DOMESTIC) {
-                institutionHasChanged = ((ProfessorDomestic) existingRole).getInstitution().getId().compareTo(((ProfessorDomestic) role).getInstitution().getId()) != 0;
-            }
-            existingRole = existingRole.copyFrom(role);
-            switch (existingRole.getDiscriminator()) {
-                case PROFESSOR_DOMESTIC:
-                    ProfessorDomestic professorDomestic = (ProfessorDomestic) existingRole;
-                    professorDomestic.setSubject(utilityService.supplementSubject(((ProfessorDomestic) role).getSubject()));
-                    professorDomestic.setFekSubject(utilityService.supplementSubject(((ProfessorDomestic) role).getFekSubject()));
+		try {
+			boolean institutionHasChanged = false;
+			if (existingRole.getDiscriminator() == RoleDiscriminator.PROFESSOR_DOMESTIC) {
+				institutionHasChanged = ((ProfessorDomestic) existingRole).getInstitution().getId().compareTo(((ProfessorDomestic) role).getInstitution().getId()) != 0;
+			}
+			existingRole = existingRole.copyFrom(role);
+			switch (existingRole.getDiscriminator()) {
+				case PROFESSOR_DOMESTIC:
+					ProfessorDomestic professorDomestic = (ProfessorDomestic) existingRole;
+					professorDomestic.setSubject(utilityService.supplementSubject(((ProfessorDomestic) role).getSubject()));
+					professorDomestic.setFekSubject(utilityService.supplementSubject(((ProfessorDomestic) role).getFekSubject()));
 
-                    if (institutionHasChanged) {
-                        for (RegisterMember member : professorDomestic.getRegisterMemberships()) {
-                            member.setExternal(professorDomestic.getInstitution().getId().compareTo(member.getRegister().getInstitution().getId()) != 0);
-                        }
-                    }
+					if (institutionHasChanged) {
+						for (RegisterMember member : professorDomestic.getRegisterMemberships()) {
+							member.setExternal(professorDomestic.getInstitution().getId().compareTo(member.getRegister().getInstitution().getId()) != 0);
+						}
+					}
 
 					// Activate if !misingRequiredFields and is not authenticated by username (needs helpdesk approval)
 					if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
@@ -492,6 +503,10 @@ public class RoleRESTService extends RESTService {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+		} catch (ServiceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "service.exception");
 		}
 	}
 
@@ -581,7 +596,7 @@ public class RoleRESTService extends RESTService {
 	 */
 	@GET
 	@Path("/{id:[0-9][0-9]*}/file")
-	@JsonView({SimpleFileHeaderView.class})
+	@JsonView({ SimpleFileHeaderView.class })
 	public Response getFiles(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
@@ -625,7 +640,7 @@ public class RoleRESTService extends RESTService {
 	 */
 	@GET
 	@Path("/{id:[0-9]+}/file/{fileId:[0-9]+}")
-	@JsonView({SimpleFileHeaderView.class})
+	@JsonView({ SimpleFileHeaderView.class })
 	public FileHeader getFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("fileId") Long fileId) {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
@@ -988,7 +1003,7 @@ public class RoleRESTService extends RESTService {
 	 */
 	@DELETE
 	@Path("/{id:[0-9]+}/file/{fileId:([0-9]+)?}")
-	@JsonView({SimpleFileHeaderView.class})
+	@JsonView({ SimpleFileHeaderView.class })
 	public Response deleteFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, @PathParam("fileId") Long fileId, @QueryParam("updateCandidacies") Boolean updateCandidacies) {
 		User loggedOn = getLoggedOn(authToken);
 		Role role = em.find(Role.class, id);
@@ -1096,7 +1111,7 @@ public class RoleRESTService extends RESTService {
 	 */
 	@PUT
 	@Path("/{id:[0-9][0-9]*}/status")
-	@JsonView({DetailedRoleView.class})
+	@JsonView({ DetailedRoleView.class })
 	public Role updateStatus(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, Role requestRole) {
 		final User loggedOn = getLoggedOn(authToken);
 		final Role primaryRole = em.find(Role.class, id);
@@ -1215,6 +1230,10 @@ public class RoleRESTService extends RESTService {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+		} catch (ServiceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "service.exception");
 		}
 	}
 }

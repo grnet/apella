@@ -9,17 +9,12 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 
 import javax.annotation.Resource;
+import javax.ejb.AsyncResult;
+import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.QueueConnectionFactory;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -28,8 +23,6 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
@@ -38,6 +31,7 @@ import java.net.URLEncoder;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -71,6 +65,10 @@ public class MailService {
 		mail.setToEmailAddr(aToEmailAddr);
 		mail.setSubject(aSubject);
 		mail.setBody(aBody);
+		pushEmail(mail);
+	}
+
+	public void pushEmail(MailRecord mail) {
 		try {
 			em.createQuery("select mr.id from MailRecord mr " +
 					"where mr.toEmailAddr = :toEmailAddr " +
@@ -124,13 +122,16 @@ public class MailService {
 		return i;
 	}
 
-	public void postEmail(String aToEmailAddr, String aSubjectKey, String aBodyKey, Map<String, String> parameters) {
-		postEmail(aToEmailAddr, aSubjectKey, aBodyKey, parameters, false);
+	@Asynchronous
+	public Future<MailRecord> postEmail(String aToEmailAddr, String aSubjectKey, String aBodyKey, Map<String, String> parameters) {
+		return postEmail(aToEmailAddr, aSubjectKey, aBodyKey, parameters, false);
 	}
 
-	public void postEmail(String aToEmailAddr, String aSubjectKey, String aBodyKey, Map<String, String> parameters, boolean sendNow) {
-
+	@Asynchronous
+	public Future<MailRecord> postEmail(String aToEmailAddr, String aSubjectKey, String aBodyKey, Map<String, String> parameters, boolean sendNow) {
+		// Subject
 		String aSubject = resources.getString(aSubjectKey);
+		// Body
 		String aBody = resources.getString(aBodyKey);
 		for (String key : parameters.keySet()) {
 			String value = parameters.get(key);
@@ -141,50 +142,21 @@ public class MailService {
 		}
 		// Replace login with link
 		aBody = aBody.replaceAll("\\[login\\]", "Είσοδο");
-
 		// Add footer
 		String aFooter = resources.getString("default.footer");
 		aBody = aBody.concat("<br/><br/>").concat(aFooter);
+		// end: Body
 
-		// Validate Email
-		Connection qConn = null;
-		javax.jms.Session session = null;
-		MessageProducer sender = null;
-		try {
-
-			javax.naming.Context jndiCtx = new InitialContext();
-
-			ConnectionFactory factory = (QueueConnectionFactory) jndiCtx.lookup("/ConnectionFactory");
-			Queue queue = (Queue) jndiCtx.lookup("queue/EMailQ");
-			qConn = factory.createConnection();
-			session = qConn.createSession(false, javax.jms.Session.AUTO_ACKNOWLEDGE);
-			sender = session.createProducer(queue);
-
-			MapMessage mailMessage = session.createMapMessage();
-			mailMessage.setJMSCorrelationID("mail");
-			mailMessage.setString("aToEmailAddr", aToEmailAddr);
-			mailMessage.setString("aSubject", aSubject);
-			mailMessage.setString("aBody", aBody);
-			mailMessage.setBoolean("sendNow", sendNow);
-
-			logger.log(Level.INFO, "Posting emailMessage to " + aToEmailAddr + " " + aSubject);
-			sender.send(mailMessage);
-		} catch (NamingException e) {
-			logger.log(Level.SEVERE, "Message not published: ", e);
-		} catch (JMSException e) {
-			logger.log(Level.SEVERE, "Message not published: ", e);
-		} finally {
-			try {
-				if (sender != null)
-					sender.close();
-				if (session != null)
-					session.close();
-				if (qConn != null)
-					qConn.close();
-			} catch (JMSException e) {
-				logger.log(Level.WARNING, "Message not published: ", e);
-			}
+		MailRecord mail = new MailRecord();
+		mail.setToEmailAddr(aToEmailAddr);
+		mail.setSubject(aSubject);
+		mail.setBody(aBody);
+		if (sendNow) {
+			sendEmail(mail);
+		} else {
+			pushEmail(mail);
 		}
+		return new AsyncResult<>(mail);
 	}
 
 	public void sendEmail(String aToEmailAddr, String aSubject, String aBody) {

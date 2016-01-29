@@ -67,7 +67,7 @@ public class UserRESTService extends RESTService {
 	private Logger log;
 
 	@GET
-	@JsonView({UserView.class})
+	@JsonView({ UserView.class })
 	public Collection<User> getAssistants(
 			@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken,
 			@QueryParam("user") Long userId,
@@ -202,7 +202,7 @@ public class UserRESTService extends RESTService {
 
 	@GET
 	@Path("/loggedon")
-	@JsonView({UserWithLoginDataView.class})
+	@JsonView({ UserWithLoginDataView.class })
 	public Response getLoggedOn(@Context HttpServletRequest request) {
 		String authToken = request.getHeader(WebConstants.AUTHENTICATION_TOKEN_HEADER);
 		if (authToken == null && request.getCookies() != null) {
@@ -280,7 +280,7 @@ public class UserRESTService extends RESTService {
 	}
 
 	@POST
-	@JsonView({UserWithLoginDataView.class})
+	@JsonView({ UserWithLoginDataView.class })
 	public User create(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, User newUser) {
 		try {
 			//1. Validate
@@ -467,6 +467,10 @@ public class UserRESTService extends RESTService {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.INTERNAL_SERVER_ERROR, "persistence.exception");
+		} catch (ServiceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "service.exception");
 		}
 	}
 
@@ -481,7 +485,7 @@ public class UserRESTService extends RESTService {
 
 	@PUT
 	@Path("/{id:[0-9][0-9]*}")
-	@JsonView({UserWithLoginDataView.class})
+	@JsonView({ UserWithLoginDataView.class })
 	public User update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id, User user) {
 		User loggedOn = getLoggedOn(authToken);
 		User existingUser = em.find(User.class, id);
@@ -609,7 +613,7 @@ public class UserRESTService extends RESTService {
 	@PUT
 	@Path("/login")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	@JsonView({UserWithLoginDataView.class})
+	@JsonView({ UserWithLoginDataView.class })
 	public Response login(@FormParam("username") String username, @FormParam("password") String password) {
 
 		try {
@@ -808,7 +812,7 @@ public class UserRESTService extends RESTService {
 
 	@PUT
 	@Path("/verify")
-	@JsonView({UserWithLoginDataView.class})
+	@JsonView({ UserWithLoginDataView.class })
 	public User verify(User user) {
 		try {
 			final User u = em.createQuery(
@@ -850,12 +854,16 @@ public class UserRESTService extends RESTService {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+		} catch (ServiceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "service.exception");
 		}
 	}
 
 	@PUT
 	@Path("/{id:[0-9][0-9]*}/status")
-	@JsonView({UserWithLoginDataView.class})
+	@JsonView({ UserWithLoginDataView.class })
 	public User updateStatus(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, User requestUser) {
 		final User loggedOn = getLoggedOn(authToken);
 		User existingUser = em.find(User.class, id);
@@ -901,12 +909,16 @@ public class UserRESTService extends RESTService {
 			log.log(Level.WARNING, e.getMessage(), e);
 			sc.setRollbackOnly();
 			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+		} catch (ServiceException e) {
+			log.log(Level.WARNING, e.getMessage(), e);
+			sc.setRollbackOnly();
+			throw new RestException(Status.BAD_REQUEST, "service.exception");
 		}
 	}
 
 	@POST
 	@Path("/search")
-	@JsonView({UserView.class})
+	@JsonView({ UserView.class })
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public SearchData<User> search(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @Context HttpServletRequest request) {
 		User loggedOn = getLoggedOn(authToken);
@@ -1082,7 +1094,7 @@ public class UserRESTService extends RESTService {
 
 	@POST
 	@Path("/search/shibboleth")
-	@JsonView({User.UserView.class})
+	@JsonView({ User.UserView.class })
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public SearchData<User> searchShibbolethAccountUsers(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @Context HttpServletRequest request) {
 		User loggedOn = getLoggedOn(authToken);

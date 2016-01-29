@@ -18,19 +18,12 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 
+import javax.ejb.AsyncResult;
+import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
-import javax.jms.Queue;
-import javax.jms.QueueConnectionFactory;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.ws.rs.client.Client;
@@ -46,6 +39,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -127,40 +121,10 @@ public class JiraService {
 		return new String(enc);
 	}
 
-	public void queueCreateIssue(JiraIssue issue) {
-		Connection qConn = null;
-		javax.jms.Session session = null;
-		MessageProducer sender = null;
-		try {
-			javax.naming.Context jndiCtx = new InitialContext();
-
-			ConnectionFactory factory = (QueueConnectionFactory) jndiCtx.lookup("/ConnectionFactory");
-			Queue queue = (Queue) jndiCtx.lookup("queue/JiraQ");
-			qConn = factory.createConnection();
-			session = qConn.createSession(false, javax.jms.Session.AUTO_ACKNOWLEDGE);
-			sender = session.createProducer(queue);
-
-			ObjectMessage jiraMessage = session.createObjectMessage();
-			jiraMessage.setJMSCorrelationID("jira");
-			jiraMessage.setObject(issue);
-
-			sender.send(jiraMessage);
-		} catch (NamingException e) {
-			logger.log(Level.SEVERE, "Message not published: ", e);
-		} catch (JMSException e) {
-			logger.log(Level.SEVERE, "Message not published: ", e);
-		} finally {
-			try {
-				if (sender != null)
-					sender.close();
-				if (session != null)
-					session.close();
-				if (qConn != null)
-					qConn.close();
-			} catch (JMSException e) {
-				logger.log(Level.WARNING, "Message not published: ", e);
-			}
-		}
+	@Asynchronous
+	public Future<JiraIssue> queueCreateIssue(JiraIssue issue) throws ServiceException {
+		JiraIssue result = createRemoteIssue(issue);
+		return new AsyncResult<>(result);
 	}
 
 	public JiraIssue getRemoteIssue(String issueKey) throws Exception {
