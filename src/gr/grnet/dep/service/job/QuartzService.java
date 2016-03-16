@@ -29,6 +29,8 @@ import javax.ejb.Startup;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.InvocationContext;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
@@ -108,6 +110,54 @@ public class QuartzService {
 		log.info("QuartzService(" + jndiName + ") destroyed.");
 	}
 
+	/***********************
+	 * Only for debugging **
+	 ***********************/
+	private static final int MIN_MEMORY = 512 * 1024 * 1024; // 512MB
+
+	private boolean isMemoryLogEnabled() {
+		boolean enabled = false;
+		try {
+			enabled = DEPConfigurationFactory.getServerConfiguration().getBoolean("debug.memory.enabled", false);
+		} catch (Exception e) {
+		}
+		return enabled;
+	}
+
+	@AroundInvoke
+	private Object memoryLog(InvocationContext invocationContext) throws Exception {
+		if (!isMemoryLogEnabled()) {
+			return invocationContext.proceed();
+		}
+		if (Runtime.getRuntime().freeMemory() > MIN_MEMORY) {
+			return invocationContext.proceed();
+		}
+		long start = System.currentTimeMillis();
+		log.info("StartCurrentTotalFreeMaxPath;" +
+				start + ";" +
+				System.currentTimeMillis() + ";" +
+				Runtime.getRuntime().totalMemory() + ";" +
+				Runtime.getRuntime().freeMemory() + ";" +
+				Runtime.getRuntime().maxMemory() + ";" +
+				"START;" +
+				invocationContext.getTarget().getClass().getSimpleName() + "." + invocationContext.getMethod().getName());
+
+		Object object = invocationContext.proceed();
+		log.info("StartCurrentTotalFreeMaxPath;" +
+				start + ";" +
+				System.currentTimeMillis() + ";" +
+				Runtime.getRuntime().totalMemory() + ";" +
+				Runtime.getRuntime().freeMemory() + ";" +
+				Runtime.getRuntime().maxMemory() + ";" +
+				"END;" +
+				invocationContext.getTarget().getClass().getSimpleName() + "." + invocationContext.getMethod().getName());
+		return object;
+	}
+
+	/****************************
+	 * end: Only for debugging **
+	 ****************************/
+
 	private Properties loadProperties(String propFileName) throws IOException {
 		Properties props = new Properties();
 		InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(propFileName);
@@ -119,24 +169,6 @@ public class QuartzService {
 	}
 
 	////////////////////////////////////////
-
-	public int deleteCandidacies() {
-		// May Contain files, delete files first
-		@SuppressWarnings("unchecked")
-		List<Candidacy> candidacies = em.createQuery(
-				"from Candidacy c where c.permanent is false")
-				.getResultList();
-
-		int i = 0;
-		for (Candidacy candidacy : candidacies) {
-			for (FileHeader fh : candidacy.getFiles()) {
-				deleteCompletely(fh);
-			}
-			em.remove(candidacy);
-			i++;
-		}
-		return i;
-	}
 
 	public int deletePositions() {
 		// Due to triggers (PositionPhase), cannot execute bulk delete

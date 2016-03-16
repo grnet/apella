@@ -45,11 +45,11 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Providers;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -65,7 +65,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Produces(MediaType.APPLICATION_JSON + "; charset=UTF-8")
-@Consumes({MediaType.APPLICATION_JSON})
+@Consumes({ MediaType.APPLICATION_JSON })
 public class RESTService {
 
 	@Resource
@@ -384,15 +384,42 @@ public class RESTService {
 
 	protected Response sendFileBody(FileBody fb) {
 		try {
-			String fullPath = WebConstants.FILES_PATH + File.separator + fb.getStoredFilePath();
-			return Response.ok(new FileInputStream(new File(fullPath)))
+			final String fullPath = WebConstants.FILES_PATH + File.separator + fb.getStoredFilePath();
+
+			StreamingOutput stream = new StreamingOutput() {
+				@Override
+				public void write(OutputStream outputStream) throws IOException {
+					final FileInputStream fileInputStream = new FileInputStream(new File(fullPath));
+					try {
+						// Buffer size set to 10MB
+						int bufferSize = 1024 * 1024 * 10;
+						int buffer = 1;
+						int rs = fileInputStream.read();
+
+						// Stream File
+						while (rs != -1) {
+							outputStream.write(rs);
+							rs = fileInputStream.read();
+							buffer++;
+							// Flush the output stream every 10MB
+							if (buffer == bufferSize) {
+								buffer = 1;
+								outputStream.flush();
+							}
+						}
+						outputStream.flush();
+					} finally {
+						// Close handlers:
+						fileInputStream.close();
+					}
+				}
+			};
+
+			return Response.ok(stream)
 					.type(MediaType.APPLICATION_OCTET_STREAM)
 					.header("charset", "UTF-8")
 					.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(fb.getOriginalFilename(), "UTF-8") + "\"")
 					.build();
-		} catch (FileNotFoundException e) {
-			logger.log(Level.SEVERE, "sendFileBody", e);
-			throw new EJBException(e);
 		} catch (UnsupportedEncodingException e) {
 			logger.log(Level.SEVERE, "sendFileBody", e);
 			throw new EJBException(e);
