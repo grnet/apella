@@ -3,7 +3,6 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.model.Department;
-import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.User;
 import org.apache.commons.lang.StringUtils;
@@ -11,12 +10,14 @@ import org.apache.commons.lang.StringUtils;
 import javax.ejb.Stateless;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.util.Collection;
-import java.util.Map;
-import java.util.logging.Level;
 
 @Path("/department")
 @Stateless
@@ -31,7 +32,12 @@ public class DepartmentRESTService extends RESTService {
 	@SuppressWarnings("unchecked")
 	public Collection<Department> getAll() {
 		return em.createQuery(
-				"select distinct d from Department d ", Department.class)
+				"select distinct d from Department d " +
+						"left join fetch d.name dname " +
+						"left join fetch d.school s " +
+						"left join fetch s.name sname " +
+						"left join fetch s.institution i " +
+						"left join fetch i.name iname ", Department.class)
 				.getResultList();
 	}
 
@@ -46,7 +52,12 @@ public class DepartmentRESTService extends RESTService {
 	public Department get(@PathParam("id") long id) {
 		try {
 			return em.createQuery(
-					"select d from Department d " +
+					"select distinct d from Department d " +
+							"left join fetch d.name dname " +
+							"left join fetch d.school s " +
+							"left join fetch s.name sname " +
+							"left join fetch s.institution i " +
+							"left join fetch i.name iname " +
 							"where d.id = :id", Department.class)
 					.setParameter("id", id)
 					.getSingleResult();
@@ -55,35 +66,35 @@ public class DepartmentRESTService extends RESTService {
 		}
 	}
 
-    @PUT
-    @Path("/{id:[0-9][0-9]*}")
-    public Department update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, Department departmentToUpdate) {
+	@PUT
+	@Path("/{id:[0-9][0-9]*}")
+	public Department update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, Department departmentToUpdate) {
 
-        User loggedOn = getLoggedOn(authToken);
+		User loggedOn = getLoggedOn(authToken);
 
-        if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR)) {
-            throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-        }
+		if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR)) {
+			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+		}
 
-        try {
-            Department department = em.find(Department.class, id);
+		try {
+			Department department = em.find(Department.class, id);
 
-            if (department == null) {
-                throw new RestException(Status.NOT_FOUND, "wrong.department.id");
-            }
+			if (department == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.department.id");
+			}
 
-            if (departmentToUpdate.getName() == null ||
-                    StringUtils.isEmpty(departmentToUpdate.getName().get("el")) || StringUtils.isEmpty(departmentToUpdate.getName().get("en"))) {
-                throw new RestException(Status.CONFLICT, "names.missing");
-            }
+			if (departmentToUpdate.getName() == null ||
+					StringUtils.isEmpty(departmentToUpdate.getName().get("el")) || StringUtils.isEmpty(departmentToUpdate.getName().get("en"))) {
+				throw new RestException(Status.CONFLICT, "names.missing");
+			}
 
-            department.setName(departmentToUpdate.getName());
+			department.setName(departmentToUpdate.getName());
 
-            return department;
+			return department;
 
-        } catch (PersistenceException e) {
-            sc.setRollbackOnly();
-            throw new RestException(Response.Status.BAD_REQUEST, "persistence.exception");
-        }
-    }
+		} catch (PersistenceException e) {
+			sc.setRollbackOnly();
+			throw new RestException(Response.Status.BAD_REQUEST, "persistence.exception");
+		}
+	}
 }

@@ -7,7 +7,6 @@ import gr.grnet.dep.service.model.JiraIssue;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
-import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -19,7 +18,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 @Path("/jira")
-@Stateless
 public class JiraRESTService extends RESTService {
 
 	@Inject
