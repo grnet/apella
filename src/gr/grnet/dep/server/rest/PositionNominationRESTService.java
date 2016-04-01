@@ -372,7 +372,7 @@ public class PositionNominationRESTService extends RESTService {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
 		// Return Result
-		return FileHeader.filterDeleted(position.getPhase().getNomination().getFiles());
+		return FileHeader.filterDeleted(existingNomination.getFiles());
 	}
 
 	/**
