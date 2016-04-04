@@ -11420,9 +11420,7 @@ define(["jquery", "underscore", "backbone", "application", "models",
                     $select.empty();
                     $select.append('<option value="">' + $.i18n.prop("chooseInstitution") + '</option>');
                     self.institutions.each(function (institution) {
-                        if (institution.get("category") !== 'RESEARCH_CENTER') {
-                            $select.append('<option value="' + institution.get('id') + '">' + institution.getName(App.locale) + '</option>');
-                        }
+                        $select.append('<option value="' + institution.get('id') + '">' + institution.getName(App.locale) + '</option>');
                     });
 
                     // update select options data
