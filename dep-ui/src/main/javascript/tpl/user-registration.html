@@ -1,0 +1,169 @@
+<div class="hero-unit">
+    <div class="row-fluid">
+        <div class="span2">
+            <img src="./css/images/apella_logo.png"/>
+        </div>
+        <div class="span10">
+            <h2><%= $.i18n.prop('RegistrationForm') %> - <%= $.i18n.prop(discriminator) %></h2>
+
+            <div id="shibbolethLoginInstructions">
+                <form class="form-signin" id="shibbolethloginForm" onsubmit="return false">
+                    <div class="control-group">
+                        <label class="control-label"></label>
+                        <span class="help-block"><%= $.i18n.prop('Instructions_ShibbolethRegistration') %></span>
+
+                        <div class="controls">
+                            <a href="/dep/shibboleth/login?nextURL=<%- window.location.protocol + '//' + window.location.host + '/apella.html' %>"
+                               class="btn btn-success"><%-
+                                $.i18n.prop('btn_shibbolethLogin') %></a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <form id="institutionForm" class="form-horizontal" onsubmit="return false">
+                <fieldset>
+                    <div class="control-group">
+                        <label class="control-label" for="institution"><%= $.i18n.prop('Institution') %></label>
+
+                        <div class="controls">
+                            <div class="input-append">
+                                <select class="input-large" name="institution"></select>
+                                <a id="selectInstitution" class="btn"><%= $.i18n.prop('btn_select') %></a>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+            <form id="userForm" class="form-horizontal" onsubmit="return false">
+                <fieldset>
+                    <legend><%= $.i18n.prop('Account') %></legend>
+                    <div class="control-group">
+                        <label class="control-label" for="username"><%= $.i18n.prop('Username') %>:</label>
+
+                        <div class="controls">
+                            <input type="text" class="input-xlarge" name="username"/>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="firstname"><%= $.i18n.prop('Name') %>:</label>
+
+                        <div class="controls">
+                            <input class="input-xlarge" type="text" name="firstname" style="text-transform: uppercase"/>
+                            <i class="icon-question-sign" rel="popover"
+                               data-content="<%= $.i18n.prop('UserFirstnameHelp') %>"></i>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="lastname"><%= $.i18n.prop('Surname') %>:</label>
+
+                        <div class="controls">
+                            <input class="input-xlarge" type="text" name="lastname" style="text-transform: uppercase"/>
+                            <i class="icon-question-sign" rel="popover"
+                               data-content="<%= $.i18n.prop('UserLastnameHelp') %>"></i>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="fathername"><%= $.i18n.prop('FatherName') %>:</label>
+
+                        <div class="controls">
+                            <input class="input-xlarge" type="text" name="fathername"
+                                   style="text-transform: uppercase"/>
+                            <i class="icon-question-sign" rel="popover"
+                               data-content="<%= $.i18n.prop('UserFathernameHelp') %>"></i>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="firstnamelatin"><%= $.i18n.prop('NameLatin') %>:</label>
+
+                        <div class="controls">
+                            <input class="input-xlarge" type="text" name="firstnamelatin"
+                                   style="text-transform: uppercase"/>
+                            <i class="icon-question-sign" rel="popover"
+                               data-content="<%= $.i18n.prop('UserFirstnameLatinHelp') %>"></i>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="lastnamelatin"><%= $.i18n.prop('SurnameLatin') %>:</label>
+
+                        <div class="controls">
+                            <input class="input-xlarge" type="text" name="lastnamelatin"
+                                   style="text-transform: uppercase"/>
+                            <i class="icon-question-sign" rel="popover"
+                               data-content="<%= $.i18n.prop('UserLastnameLatinHelp') %>"></i>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="fathernamelatin"><%= $.i18n.prop('FatherNameLatin')
+                            %>:</label>
+
+                        <div class="controls">
+                            <input class="input-xlarge" type="text" name="fathernamelatin"
+                                   style="text-transform: uppercase"/>
+                            <i class="icon-question-sign" rel="popover"
+                               data-content="<%= $.i18n.prop('UserFathernameLatinHelp') %>"></i>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="identification"><%= $.i18n.prop('Identification') %>:</label>
+
+                        <div class="controls">
+                            <input type="text" class="input-xlarge" name="identification"/>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="password"><%= $.i18n.prop('Password') %>:</label>
+
+                        <div class="controls">
+                            <input type="password" class="input-xlarge" name="password"/>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="confirm_password"><%= $.i18n.prop('ConfirmPassword')
+                            %>:</label>
+
+                        <div class="controls">
+                            <input type="password" class="input-xlarge" name="confirm_password"/>
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend><%= $.i18n.prop('ContactInformation') %></legend>
+                    <div class="control-group">
+                        <label class="control-label" for="email"><%- _.isEqual(discriminator, "PROFESSOR_FOREIGN") ?
+                            $.i18n.prop('InstitutionEmail') : $.i18n.prop('Email')
+                            %>:</label>
+
+                        <div class="controls">
+                            <input type="text" class="input-xlarge" name="email"/>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="mobile"><%= $.i18n.prop('Mobile') %>:</label>
+
+                        <div class="controls">
+                            <input type="text" class="input-xlarge" name="mobile"/>
+                            <i class="icon-question-sign" rel="popover"
+                               data-content="<%= $.i18n.prop('UserMobileHelp') %>"></i>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="phone"><%= $.i18n.prop('Phone') %>:</label>
+
+                        <div class="controls">
+                            <input type="text" class="input-xlarge" name="phone"/>
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <div class="form-actions">
+                        <a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%=
+                            $.i18n.prop('btn_register') %></a>
+                        <% if (discriminator === 'PROFESSOR_FOREIGN') { %>
+                        <span class="help-block"><%= $.i18n.prop('ProfessorForeignRegistrationNote') %></span>
+                        <% } %>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</div>

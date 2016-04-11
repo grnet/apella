@@ -1,0 +1,16 @@
+<div class="row-fluid">
+    <div class="span12">
+        <dl class="dl-glossary">
+            <dt><%= $.i18n.prop('Institution') %></dt>
+            <dd><%- institution.name[App.locale] %></dd>
+            <dt><%= $.i18n.prop('OrganismosFile') %></dt>
+            <dd>
+                <a href="<%- organismosURL %>" target="organismos"><%- organismosURL %></a>
+            </dd>
+            <dt><%= $.i18n.prop('EswterikosKanonismosFile') %></dt>
+            <dd>
+                <a href="<%- eswterikosKanonismosURL %>" target="kanonismos"><%- eswterikosKanonismosURL %></a>
+            </dd>
+        </dl>
+    </div>
+</div>

@@ -1,0 +1,106 @@
+<div class="row-fluid">
+    <div class="span12">
+        <h4><%= $.i18n.prop("ProfessorPositionEvaluator") %></h4>
+        <table id="position-evaluator-list" class="table table-striped table-bordered">
+            <thead>
+            <tr>
+                <th><%= $.i18n.prop("PositionID") %></th>
+                <th><%= $.i18n.prop("Position") %></th>
+                <th><%= $.i18n.prop("Institution") %></th>
+                <th><%= $.i18n.prop("Description") %></th>
+                <th><%= $.i18n.prop("Subject") %></th>
+                <th><%= $.i18n.prop("FEK") %></th>
+                <th><%= $.i18n.prop("PositionStatus") %></th>
+            </tr>
+            </thead>
+            <tbody>
+            <% _.each(positionEvaluations, function(evaluator) { %>
+            <% if (evaluator.id) { %>
+            <tr>
+                <td><%- App.utils.formatPositionID(evaluator.evaluation.position.id) %></td>
+                <td>
+                    <a target="external" href="#position/<%- evaluator.evaluation.position.id %>">
+                        <%- evaluator.evaluation.position.name %>
+                    </a>
+                </td>
+                <td><%= _.templates.department(evaluator.evaluation.position.department) %></td>
+                <td><%- evaluator.evaluation.position.description %></td>
+                <td><%- evaluator.evaluation.position.subject.name %></td>
+                <td>
+                    <a href="<%- evaluator.evaluation.position.fek %>">
+                        <%= $.i18n.prop("More") %>
+                    </a>
+                    <%- evaluator.evaluation.position.fekSentDate %>
+                </td>
+                <td><%= $.i18n.prop('PositionStatus_' + evaluator.evaluation.position.phase.clientStatus) %></td>
+            </tr>
+            <% } %>
+            <% }); %>
+            </tbody>
+            <tfoot>
+            </tfoot>
+        </table>
+        <hr/>
+
+        <h4><%= $.i18n.prop("ProfessorCandidacyEvaluator") %></h4>
+        <table id="candidacy-evaluator-list" class="table table-striped table-bordered">
+            <thead>
+            <tr>
+                <th><%= $.i18n.prop("PositionID") %></th>
+                <th><%= $.i18n.prop("Position") %></th>
+                <th><%= $.i18n.prop("Institution") %></th>
+                <th><%= $.i18n.prop("Description") %></th>
+                <th><%= $.i18n.prop("Candidate") %></th>
+                <th><%= $.i18n.prop("Subject") %></th>
+                <th><%= $.i18n.prop("FEK") %></th>
+                <th><%= $.i18n.prop("PositionStatus") %></th>
+                <th><%= $.i18n.prop("Candidacy") %></th>
+                <th width="126px"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <% _.each(candidacyEvaluations, function(evaluator) { %>
+            <% if (evaluator.id) { %>
+            <tr>
+                <td><%- App.utils.formatPositionID(evaluator.candidacy.candidacies.position.id) %></td>
+                <td><%- evaluator.candidacy.candidacies.position.name %></td>
+                <td><%= _.templates.department(evaluator.candidacy.candidacies.position.department) %></td>
+                <td><%- evaluator.candidacy.candidacies.position.description %></td>
+                <td>
+                    <a href="#candidacy/<%- evaluator.candidacy.id %>">
+                        <%- evaluator.candidacy.snapshot.firstname[App.locale] %>
+                        <%- evaluator.candidacy.snapshot.lastname[App.locale] %>
+                    </a>
+                </td>
+                <td><%- evaluator.candidacy.candidacies.position.subject.name %></td>
+                <td>
+                    <a target="external" href="<%- evaluator.candidacy.candidacies.position.fek %>">
+                        <%= $.i18n.prop("More") %>
+                    </a>
+                    <%- evaluator.candidacy.candidacies.position.fekSentDate %>
+                </td>
+                <td>
+                    <%= $.i18n.prop('PositionStatus_' + evaluator.candidacy.candidacies.position.phase.clientStatus) %>
+                </td>
+                <% if (evaluator.candidacy.withdrawn) { %>
+                <td class="text-error"><%- $.i18n.prop('removeCandidacy') + ' ' + evaluator.candidacy.withdrawnDate %></td>
+                <% } else { %>
+                <td><%- $.i18n.prop('currentCandidacy') + ' ' + evaluator.candidacy.date %></td>
+                <% } %>
+                <td width="126px">
+                    <p align="center">
+                        <a id="candidacyStatusActionsHistory"
+                           data-candidacy-id="<%- evaluator.candidacy.id %>" class="btn btn-mini"><i class="icon-eye-open"></i>
+                            <%= $.i18n.prop('btn_actionsHistory') %></a>
+                    </p>
+                </td>
+            </tr>
+            <% } %>
+            <% }); %>
+            </tbody>
+            <tfoot>
+            </tfoot>
+        </table>
+
+    </div>
+</div>

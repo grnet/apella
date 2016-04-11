@@ -1,0 +1,35 @@
+<table class="mini-table">
+    <tr>
+        <td id="evaluatorDescription" valign="top"></td>
+        <% if (editable) { %>
+        <td valign="top">
+            <a id="toggleEdit" class="btn btn-mini"><i class="icon-edit"></i> <%= $.i18n.prop('btn_edit') %></a>
+        </td>
+        <td valign="top">
+            <a id="clear" class="btn btn-mini"><i class="icon-remove"></i> <%= $.i18n.prop('btn_remove') %></a>
+        </td>
+        <% } %>
+    </tr>
+</table>
+
+<% if (editable) { %>
+<div>
+    <table class="evaluators-table table table-striped table-bordered table-condensed">
+        <thead>
+        <tr>
+            <th><%= $.i18n.prop("Register") %></th>
+            <th><%= $.i18n.prop("Surname") %></th>
+            <th><%= $.i18n.prop("Name") %></th>
+            <th><%= $.i18n.prop("RegisterMemberExternal") + " / " + $.i18n.prop("RegisterMemberInternal") %></th>
+            <th><%= $.i18n.prop("Institution") %></th>
+            <th width="96px"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <!--  -->
+        </tbody>
+        <tfoot>
+        </tfoot>
+    </table>
+</div>
+<% } %>

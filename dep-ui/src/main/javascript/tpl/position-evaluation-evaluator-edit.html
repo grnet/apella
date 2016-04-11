@@ -1,0 +1,49 @@
+<table class="table table-bordered table-striped">
+    <tr>
+        <td></td>
+        <td>
+            <a id="removeMember" data-register-member-id="<%- registerMember.id %>"
+               class="btn btn-mini btn-danger pull-right"><i class="icon-minus icon-white"></i> <%=
+                $.i18n.prop('btn_remove') %></a>
+        </td>
+    <tr>
+    <tr>
+        <th><%= $.i18n.prop("ID") %></th>
+        <td>
+            <input type="hidden" name="registerMemberId" value="<%- registerMember.id %>">
+            <input type="hidden" name="position" value="<%- position %>">
+            <a href="#user/<%- registerMember.professor.user.id %>" target="user"><%- registerMember.professor.user.id
+                %> </a>
+        </td>
+    </tr>
+    <tr>
+        <th><%= $.i18n.prop("Name") %></th>
+        <td><%- registerMember.professor.user.firstname[App.locale] %></td>
+    </tr>
+    <tr>
+        <th><%= $.i18n.prop("Surname") %></th>
+        <td><%- registerMember.professor.user.lastname[App.locale]%></td>
+    </tr>
+    <tr>
+        <th><%= $.i18n.prop("Profile") %></th>
+        <td><%= $.i18n.prop(registerMember.professor.discriminator) %></td>
+    </tr>
+    <tr>
+        <th><%= $.i18n.prop("Institution") %></th>
+        <td>
+            <% if (_.isEqual(registerMember.professor.discriminator, 'PROFESSOR_FOREIGN')) { %>
+            <%- registerMember.professor.institution %>
+            <% } else { %>
+            <%= _.templates.department(registerMember.professor.department) %>
+            <% } %>
+        </td>
+    </tr>
+    <tr>
+        <th colspan="2"><%= $.i18n.prop("AksiologisiFileList") %></th>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <input type="hidden" name="aksiologisiFileList"/>
+        </td>
+    </tr>
+</table>

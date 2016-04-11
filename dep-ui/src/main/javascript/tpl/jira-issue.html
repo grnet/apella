@@ -1,0 +1,47 @@
+<h3>[<%- key %>] <%- summary %></h3>
+<hr/>
+<div class="row-fluid">
+    <div class="span4">
+        <p>
+            <strong><%= $.i18n.prop('IssueStatus') %>: </strong><%= $.i18n.prop('IssueStatus_' + status) %>
+        </p>
+
+        <p>
+            <strong><%= $.i18n.prop('IssueCall') %>: </strong><%= $.i18n.prop('IssueCall_' + call) %>
+        </p>
+
+        <p>
+            <strong><%= $.i18n.prop('IssueType') %>: </strong><%= $.i18n.prop('IssueType_' + type) %>
+        </p>
+    </div>
+    <div class="span4">
+        <p>
+            <strong><%= $.i18n.prop('Name') %>: </strong><%- fullname %>
+        </p>
+
+        <p>
+            <strong><%= $.i18n.prop('Profile') %>: </strong><%= $.i18n.prop(role) %>
+        </p>
+    </div>
+    <div class="span4">
+        <p>
+            <strong><%= $.i18n.prop('Email') %>: </strong><%- email %>
+        </p>
+
+        <p>
+            <strong><%= $.i18n.prop('Mobile') %>: </strong><%- mobile %>
+        </p>
+    </div>
+</div>
+<hr/>
+<div class="row-fluid">
+    <div class="span12">
+        <strong><%= $.i18n.prop('Description') %>: </strong><%- description %>
+    </div>
+</div>
+<hr/>
+<div class="row-fluid">
+    <div class="span12">
+        <strong><%= $.i18n.prop('Comment') %>: </strong><%- comment %>
+    </div>
+</div>

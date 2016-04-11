@@ -1,0 +1,181 @@
+<form class="form-horizontal" onsubmit="return false">
+    <fieldset>
+        <legend><%= $.i18n.prop('Account') %></legend>
+        <div class="control-group">
+            <label class="control-label"><%= $.i18n.prop('UserStatus') %>:</label>
+
+            <div class="controls">
+                <div class="btn-group">
+                    <a id="status" class="btn btn-small"><i class="icon-user"></i> <%= $.i18n.prop('status' + status) %></a>
+                    <a id="status" class="btn btn-small dropdown-toggle" data-toggle="dropdown"><span
+                            class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a data-action="status" status="UNVERIFIED"> <%= $.i18n.prop('statusUNVERIFIED') %></a></li>
+                        <li><a data-action="status" status="ACTIVE"> <%= $.i18n.prop('statusACTIVE') %></a></li>
+                        <li><a data-action="status" status="BLOCKED"> <%= $.i18n.prop('statusBLOCKED') %></a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <% if (_.isEqual(authenticationType, 'USERNAME')) { %>
+        <div id='usernameInfo' class="control-group">
+            <label class="control-label" for="username"><%= $.i18n.prop('Username') %>:</label>
+
+            <div class="controls">
+                <input class="input-xlarge" type="text" name="username" value="<%- username %>"/>
+            </div>
+        </div>
+        <% } %>
+        <% if (_.isEqual(authenticationType, 'SHIBBOLETH')) { %>
+        <div id='shibbolethInfo' class="control-group">
+            <label class="control-label"><%= $.i18n.prop('ShibbolethFields') %>:</label>
+
+            <div class="controls">
+                <table>
+                    <tr>
+                        <td><%= $.i18n.prop('ShibbolethGivenName') %>:</td>
+                        <td><%- shibbolethInfo.givenName %></td>
+                    </tr>
+                    <tr>
+                        <td><%= $.i18n.prop('ShibbolethSN') %>:</td>
+                        <td><%- shibbolethInfo.sn %></td>
+                    </tr>
+                    <tr>
+                        <td><%= $.i18n.prop('ShibbolethSchacHomeOrganization') %>:</td>
+                        <td><%- shibbolethInfo.schacHomeOrganization %></td>
+                    </tr>
+                    <tr>
+                        <td><%= $.i18n.prop('ShibbolethAffiliation') %>:</td>
+                        <td><%- shibbolethInfo.affiliation %></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <% } %>
+        <% if (_.isEqual(authenticationType, 'EMAIL') && canConnectToShibboleth) { %>
+        <div id='emailInfo' class="control-group">
+            <label class="control-label"><%= $.i18n.prop('ConnectToShibboleth') %></label>
+
+            <div class="controls">
+                <span class="help-block"><%= $.i18n.prop('ConnectToShibbolethInstructions') %></span>
+                <a href="/dep/shibboleth/connect?nextURL=<%- encodeURIComponent(window.location.href) %>&user=<%- encodeURIComponent(permanentAuthToken) %>"><%=
+                    $.i18n.prop('btn_shibbolethConnect') %></a>
+            </div>
+        </div>
+        <% } %>
+        <div class="control-group">
+            <label class="control-label" for="firstname"><%= $.i18n.prop('Name') %>:</label>
+
+            <div class="controls">
+                <input class="input-xlarge" type="text" name="firstname" value="<%- basicInfo.firstname %>"
+                       style="text-transform: uppercase"/>
+                <i class="icon-question-sign" rel="popover" data-content="<%= $.i18n.prop('UserFirstnameHelp') %>"></i>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="lastname"><%= $.i18n.prop('Surname') %>:</label>
+
+            <div class="controls">
+                <input class="input-xlarge" type="text" name="lastname" value="<%- basicInfo.lastname %>"
+                       style="text-transform: uppercase"/>
+                <i class="icon-question-sign" rel="popover" data-content="<%= $.i18n.prop('UserLastnameHelp') %>"></i>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="fathername"><%= $.i18n.prop('FatherName') %>:</label>
+
+            <div class="controls">
+                <input class="input-xlarge" type="text" name="fathername" value="<%- basicInfo.fathername %>"
+                       style="text-transform: uppercase"/>
+                <i class="icon-question-sign" rel="popover" data-content="<%= $.i18n.prop('UserFathernameHelp') %>"></i>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="firstnamelatin"><%= $.i18n.prop('NameLatin') %>:</label>
+
+            <div class="controls">
+                <input class="input-xlarge" type="text" name="firstnamelatin" value="<%- basicInfoLatin.firstname %>"
+                       style="text-transform: uppercase"/>
+                <i class="icon-question-sign" rel="popover"
+                   data-content="<%= $.i18n.prop('UserFirstnameLatinHelp') %>"></i>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="lastnamelatin"><%= $.i18n.prop('SurnameLatin') %>:</label>
+
+            <div class="controls">
+                <input class="input-xlarge" type="text" name="lastnamelatin" value="<%- basicInfoLatin.lastname %>"
+                       style="text-transform: uppercase"/>
+                <i class="icon-question-sign" rel="popover"
+                   data-content="<%= $.i18n.prop('UserLastnameLatinHelp') %>"></i>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="fathernamelatin"><%= $.i18n.prop('FatherNameLatin') %>:</label>
+
+            <div class="controls">
+                <input class="input-xlarge" type="text" name="fathernamelatin" value="<%- basicInfoLatin.fathername %>"
+                       style="text-transform: uppercase"/>
+                <i class="icon-question-sign" rel="popover"
+                   data-content="<%= $.i18n.prop('UserFathernameLatinHelp') %>"></i>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="identification"><%= $.i18n.prop('Identification') %>:</label>
+
+            <div class="controls">
+                <input class="input-xlarge" name="identification" type="text" value="<%- identification %>"/>
+            </div>
+        </div>
+        <% if (_.isEqual(authenticationType, 'USERNAME')) { %>
+        <div class="control-group">
+            <label class="control-label" for="password"><%= $.i18n.prop('Password') %>:</label>
+
+            <div class="controls">
+                <input class="input-xlarge" type="password" name="password"/>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="confirm_password"><%= $.i18n.prop('ConfirmPassword') %>:</label>
+
+            <div class="controls">
+                <input class="input-xlarge" type="password" name="confirm_password"/>
+            </div>
+        </div>
+        <% } %>
+    </fieldset>
+    <fieldset>
+        <legend><%= $.i18n.prop('ContactInformation') %></legend>
+        <div class="control-group">
+            <label class="control-label" for="email"><%= $.i18n.prop('Email') %>:</label>
+
+            <div class="controls">
+                <input class="input-xlarge" type="text" name="email" value="<%- contactInfo.email %>"/>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="mobile"><%= $.i18n.prop('Mobile') %>:</label>
+
+            <div class="controls">
+                <input class="input-xlarge" type="text" name="mobile" value="<%- contactInfo.mobile %>"/>
+                <i class="icon-question-sign" rel="popover" data-content="<%= $.i18n.prop('UserMobileHelp') %>"></i>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="phone"><%= $.i18n.prop('Phone') %>:</label>
+
+            <div class="controls">
+                <input type="text" class="input-xlarge" name="phone" value="<%- contactInfo.phone %>"/>
+            </div>
+        </div>
+    </fieldset>
+    <fieldset>
+        <div class="form-actions">
+            <a id="save" class="btn btn-primary"><i class="icon-ok icon-white"></i> <%= $.i18n.prop('btn_save') %></a>
+            <a id="remove" class="btn btn-danger"><i class="icon-remove icon-white"></i> <%=
+                $.i18n.prop('btn_remove_user') %></a>
+            <span class="help-block"><%= $.i18n.prop('SaveInstructions') %></span>
+            <span id="accounthelpdesk" class="help-block"><%= $.i18n.prop('account_helpdesk_for_edit') %></span>
+        </div>
+    </fieldset>
+</form>

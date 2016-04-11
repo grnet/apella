@@ -1,0 +1,40 @@
+<table class="table table-striped table-bordered">
+    <thead>
+    <tr>
+        <th><%= $.i18n.prop("ID") %></th>
+        <th><%= $.i18n.prop("Name") %></th>
+        <th><%= $.i18n.prop("Surname") %></th>
+        <th><%= $.i18n.prop("Username") %></th>
+        <th><%= $.i18n.prop("UserStatus") %></th>
+        <th><%= $.i18n.prop("Profile") %></th>
+        <th><%= $.i18n.prop("RoleStatus") %></th>
+        <th width="100px"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <% _.each(users, function(user) { %>
+    <tr>
+        <td><%- user.id %></td>
+        <td><%- user.firstname[App.locale] %></td>
+        <td><%- user.lastname[App.locale]%></td>
+        <td><%- user.username %></td>
+        <td><%= $.i18n.prop('status' + user.status) %></td>
+        <td><%= user.roleInfo %></td>
+        <td><%= $.i18n.prop('status' + user.primaryRole.status) %></td>
+        <td width="100px">
+            <p align="center">
+                <a href="#user/<%- user.id %>" target="user"><%= $.i18n.prop('btn_view') %></a>
+            </p>
+        </td>
+    </tr>
+    <% }); %>
+    </tbody>
+    <tfoot>
+    <tr>
+        <td colspan="8">
+            <div class="btn-toolbar" id="actions">
+            </div>
+        </td>
+    </tr>
+    </tfoot>
+</table>

@@ -1,0 +1,30 @@
+<% _.each(roles, function(role) { %>
+<% if (role.discriminator === "PROFESSOR_DOMESTIC") { %>
+<%= $.i18n.prop('PROFESSOR_DOMESTIC') %>,
+<br/><%= $.i18n.prop('Institution') %>: <%- _.isObject(role.institution)? role.institution.name[App.locale] : "" %>
+<% } %>
+<% if (role.discriminator === "PROFESSOR_FOREIGN") { %>
+<%= $.i18n.prop('PROFESSOR_FOREIGN') %>,<br/><%= $.i18n.prop('Institution') %>: <%- role.institution %>
+<% } %>
+<% if (role.discriminator === "INSTITUTION_MANAGER") { %>
+<%= $.i18n.prop('INSTITUTION_MANAGER') %>,
+<br/><%= $.i18n.prop('Institution') %>: <%- _.isObject(role.institution)? role.institution.name[App.locale] : "" %>
+<% } %>
+<% if (role.discriminator === "INSTITUTION_ASSISTANT") { %>
+<%= $.i18n.prop('INSTITUTION_ASSISTANT') %>,
+<br/><%= $.i18n.prop('Institution') %>: <%- _.isObject(role.institution)? role.institution.name[App.locale] : "" %>
+<% } %>
+<% if (role.discriminator === "MINISTRY_MANAGER") { %>
+<%= $.i18n.prop('MINISTRY_MANAGER') %>,<br/><%= $.i18n.prop('Ministry') %>: <%- role.ministry %>
+<% } %>
+<% if (role.discriminator === "MINISTRY_ASSISTANT") { %>
+<%= $.i18n.prop('MINISTRY_ASSISTANT') %>
+<% } %>
+<% if (role.discriminator === "CANDIDATE") { %>
+<%= $.i18n.prop('CANDIDATE') %>
+<% } %>
+<% if (role.discriminator === "ADMINISTRATOR") { %>
+<%= $.i18n.prop('ADMINISTRATOR') %>
+<% } %>
+<br/>
+<% }); %>
