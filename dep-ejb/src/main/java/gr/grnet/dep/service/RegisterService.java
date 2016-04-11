@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 @Stateless
-public class RegisterService {
+public class RegisterService extends CommonService {
 
     @PersistenceContext(unitName = "apelladb")
     private EntityManager em;

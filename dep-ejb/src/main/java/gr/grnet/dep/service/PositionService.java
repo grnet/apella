@@ -10,7 +10,7 @@ import javax.persistence.PersistenceContext;
 import java.util.logging.Logger;
 
 @Stateless
-public class PositionService {
+public class PositionService extends CommonService {
 
     @PersistenceContext(unitName = "apelladb")
     protected EntityManager em;

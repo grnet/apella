@@ -2,11 +2,15 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.DepartmentService;
+import gr.grnet.dep.service.exceptions.NotFoundException;
+import gr.grnet.dep.service.exceptions.ValidationException;
 import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.User;
 import org.apache.commons.lang.StringUtils;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
@@ -18,10 +22,14 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.util.Collection;
+import java.util.List;
 
 @Path("/department")
 @Stateless
 public class DepartmentRESTService extends RESTService {
+
+	@EJB
+	private DepartmentService departmentService;
 
 	/**
 	 * Returns all Departments
@@ -31,14 +39,11 @@ public class DepartmentRESTService extends RESTService {
 	@GET
 	@SuppressWarnings("unchecked")
 	public Collection<Department> getAll() {
-		return em.createQuery(
-				"select distinct d from Department d " +
-						"left join fetch d.name dname " +
-						"left join fetch d.school s " +
-						"left join fetch s.name sname " +
-						"left join fetch s.institution i " +
-						"left join fetch i.name iname ", Department.class)
-				.getResultList();
+
+		// fetch departments
+		Collection<Department> departments = departmentService.getAll();
+
+		return departments;
 	}
 
 	/**
@@ -51,50 +56,33 @@ public class DepartmentRESTService extends RESTService {
 	@Path("/{id:[0-9][0-9]*}")
 	public Department get(@PathParam("id") long id) {
 		try {
-			return em.createQuery(
-					"select distinct d from Department d " +
-							"left join fetch d.name dname " +
-							"left join fetch d.school s " +
-							"left join fetch s.name sname " +
-							"left join fetch s.institution i " +
-							"left join fetch i.name iname " +
-							"where d.id = :id", Department.class)
-					.setParameter("id", id)
-					.getSingleResult();
-		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "wrong.department.id");
+			// fetch department
+			Department department = departmentService.get(id);
+
+			return department;
+
+		} catch (NotFoundException e) {
+			throw new RestException(Status.NOT_FOUND, e.getMessage());
 		}
 	}
 
 	@PUT
 	@Path("/{id:[0-9][0-9]*}")
 	public Department update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, Department departmentToUpdate) {
-
-		User loggedOn = getLoggedOn(authToken);
-
-		if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-
 		try {
-			Department department = em.find(Department.class, id);
+			User loggedOn = getLoggedOn(authToken);
 
-			if (department == null) {
-				throw new RestException(Status.NOT_FOUND, "wrong.department.id");
+			if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR)) {
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
-
-			if (departmentToUpdate.getName() == null ||
-					StringUtils.isEmpty(departmentToUpdate.getName().get("el")) || StringUtils.isEmpty(departmentToUpdate.getName().get("en"))) {
-				throw new RestException(Status.CONFLICT, "names.missing");
-			}
-
-			department.setName(departmentToUpdate.getName());
+			// update department
+			Department department = departmentService.update(id, departmentToUpdate);
 
 			return department;
-
-		} catch (PersistenceException e) {
-			sc.setRollbackOnly();
-			throw new RestException(Response.Status.BAD_REQUEST, "persistence.exception");
+		} catch (ValidationException e) {
+			throw new RestException(Status.CONFLICT, e.getMessage());
+		} catch (NotFoundException e) {
+			throw new RestException(Status.NOT_FOUND, e.getMessage());
 		}
 	}
 }
