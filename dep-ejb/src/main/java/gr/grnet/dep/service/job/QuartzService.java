@@ -16,6 +16,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.quartz.Scheduler;
 import org.quartz.impl.StdSchedulerFactory;
+import org.quartz.spi.JobFactory;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -77,6 +78,9 @@ public class QuartzService {
 	private Logger log;
 	private StdSchedulerFactory schedulerFactory;
 
+	@Inject
+	private JobFactory cdiJobFactory;
+
 	@PostConstruct
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	public void createQuartzService() throws IllegalStateException {
@@ -85,7 +89,9 @@ public class QuartzService {
 			Properties properties = loadProperties(propertiesFile);
 			schedulerFactory = new StdSchedulerFactory();
 			schedulerFactory.initialize(properties);
+
 			Scheduler scheduler = schedulerFactory.getScheduler();
+			scheduler.setJobFactory(cdiJobFactory);
 			scheduler.start();
 
 		} catch (Exception e) {

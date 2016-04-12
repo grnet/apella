@@ -84,10 +84,18 @@
 
         <dependency>
             <groupId>org.hibernate</groupId>
-            <artifactId>hibernate</artifactId>
-            <version>3.0.5</version>
+            <artifactId>hibernate-core</artifactId>
+            <version>3.5.6-Final</version>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-jpamodelgen</artifactId>
+            <version>1.2.0.Final</version>
+            <optional>true</optional>
+        </dependency>
+
         <!-- end: Import EJBS (until all are refactored in dep-ejb -->
 
         <!-- JSR-303 (Bean Validation) Implementation -->
