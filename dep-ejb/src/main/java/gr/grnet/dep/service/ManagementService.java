@@ -1,12 +1,12 @@
 package gr.grnet.dep.service;
 
-import gr.grnet.dep.service.model.AuthenticationType;
-import gr.grnet.dep.service.model.ProfessorDomesticData;
+import gr.grnet.dep.service.exceptions.NotFoundException;
+import gr.grnet.dep.service.exceptions.ValidationException;
+import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
-import gr.grnet.dep.service.model.Subject;
-import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.UserStatus;
+import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 import gr.grnet.dep.service.util.StringUtil;
 import org.apache.commons.configuration.Configuration;
@@ -26,7 +26,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 @Stateless
-public class ManagementService {
+public class ManagementService extends CommonService {
 
 	@Resource
 	SessionContext sc;
@@ -44,6 +44,15 @@ public class ManagementService {
 	protected Logger logger;
 
 	protected static Configuration conf;
+
+	@EJB
+	CandidateService candidateService;
+
+	@EJB
+	PositionService positionService;
+
+	@EJB
+	CandidacyService candidacyService;
 
 	static {
 		try {
@@ -293,4 +302,64 @@ public class ManagementService {
 			subject.setName(newName);
 		}
 	}
+
+	public Candidacy createCandidacy(Long positionId, Long candidateId) throws NotFoundException, ValidationException {
+		// find candidacy
+		Candidate candidate = candidateService.getCandidate(candidateId);
+		// find position
+		Position position = positionService.getPositionById(positionId);
+
+		try {
+			Candidacy existingCandidacy = em.createQuery(
+					"select c from Candidacy c " +
+							"where c.candidate.id = :candidateId " +
+							"and c.candidacies.position.id = :positionId", Candidacy.class)
+					.setParameter("candidateId", candidate.getId())
+					.setParameter("positionId", position.getId())
+					.getSingleResult();
+			// Return Results
+			existingCandidacy.getCandidacyEvalutionsDueDate();
+			return existingCandidacy;
+		} catch (NoResultException e) {
+		}
+
+		// Create
+		Candidacy candidacy = new Candidacy();
+		candidacy.setCandidate(candidate);
+		candidacy.setCandidacies(position.getPhase().getCandidacies());
+		candidacy.setDate(new Date());
+		candidacy.setOpenToOtherCandidates(false);
+		candidacy.setPermanent(false);
+		candidacy.getProposedEvaluators().clear();
+		validateCandidacy(candidacy, candidate, true); // isNew
+		updateSnapshot(candidacy, candidate);
+
+		em.persist(candidacy);
+		em.flush();
+
+		// Return Results
+		candidacy = em.find(Candidacy.class, candidacy.getId());
+		candidacy.getCandidacyEvalutionsDueDate();
+
+		return candidacy;
+	}
+
+	public void deleteCandidacy(Long id) throws NotFoundException, ValidationException {
+		// get candidacy
+		final Candidacy existingCandidacy = candidacyService.getCandidacy(id, false);
+
+		// Update
+		for (FileHeader fh : existingCandidacy.getFiles()) {
+			deleteCompletely(fh);
+		}
+		for (CandidacyEvaluator eval : existingCandidacy.getProposedEvaluators()) {
+			for (FileHeader fh : eval.getFiles()) {
+				deleteCompletely(fh);
+			}
+		}
+		existingCandidacy.getCandidacies().getCandidacies().remove(existingCandidacy);
+		em.remove(existingCandidacy);
+		em.flush();
+	}
+
 }

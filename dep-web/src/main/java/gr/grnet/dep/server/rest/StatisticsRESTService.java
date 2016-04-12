@@ -18,7 +18,6 @@ import javax.ws.rs.core.Response.Status;
 import java.util.logging.Logger;
 
 @Path("/statistics")
-@Stateless
 public class StatisticsRESTService extends RESTService {
 
 	@Inject

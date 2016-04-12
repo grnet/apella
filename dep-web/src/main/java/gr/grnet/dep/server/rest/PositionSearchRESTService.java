@@ -3,6 +3,9 @@ package gr.grnet.dep.server.rest;
 import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.PositionSearchService;
+import gr.grnet.dep.service.exceptions.NotFoundException;
+import gr.grnet.dep.service.exceptions.ValidationException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Department;
@@ -15,6 +18,7 @@ import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Sector;
 import gr.grnet.dep.service.model.User;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
@@ -38,11 +42,13 @@ import java.util.List;
 import java.util.logging.Logger;
 
 @Path("/position/criteria")
-@Stateless
 public class PositionSearchRESTService extends RESTService {
 
 	@Inject
 	private Logger log;
+
+	@EJB
+	private PositionSearchService positionSearchService;
 
 	/**
 	 * Searches for Positions given specific criteria
@@ -59,66 +65,13 @@ public class PositionSearchRESTService extends RESTService {
 	public Collection<Position> search(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @FormParam("criteria") String criteriaString) {
 		User loggedOn = getLoggedOn(authToken);
 		try {
-			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-			Date today = sdf.parse(sdf.format(new Date()));
 			PositionSearchCriteria criteria = fromJSON(PositionSearchCriteria.class, criteriaString);
+
 			if (criteria == null) {
 				throw new RestException(Status.BAD_REQUEST, "bad.criteria.format");
 			}
-
-			// Prepare Query
-			Collection<Long> departmentIds = new ArrayList<Long>();
-			departmentIds.add(-1L);
-			for (Department department : criteria.getDepartments()) {
-				departmentIds.add(department.getId());
-			}
-			Collection<Long> sectorIds = new ArrayList<Long>();
-			sectorIds.add(-1L);
-			for (Sector sector : criteria.getSectors()) {
-				sectorIds.add(sector.getId());
-			}
-			String queryString = "from Position p " +
-					"left join fetch p.assistants asts " +
-					"left join fetch asts.roles astsr " +
-					"where p.permanent = true " +
-					"and p.phase.candidacies.closingDate >= :today ";
-			if (departmentIds.size() > 1 || sectorIds.size() > 1) {
-				queryString += "and (" +
-						"	p.department.id in (:departmentIds) " +
-						"	or p.sector.id in (:sectorIds) " +
-						")";
-			}
-			TypedQuery<Position> query = em.createQuery(queryString, Position.class)
-					.setParameter("today", today);
-			if (departmentIds.size() > 1 || sectorIds.size() > 1) {
-				query = query
-						.setParameter("departmentIds", departmentIds)
-						.setParameter("sectorIds", sectorIds);
-			}
-
-			// Execute Query
-			List<Position> positions = query.getResultList();
-
-			// Calculate CanSubmitCandidacy => set false if already submitted
-			if (loggedOn.hasActiveRole(RoleDiscriminator.CANDIDATE)) {
-				Candidate candidate = (Candidate) loggedOn.getActiveRole(RoleDiscriminator.CANDIDATE);
-				for (Candidacy candidacy : candidate.getCandidacies()) {
-					if (candidacy.isPermanent() && !candidacy.isWithdrawn()) {
-						for (Position position : positions) {
-							if (position.getId().equals(candidacy.getCandidacies().getPosition().getId())) {
-								position.setCanSubmitCandidacy(Boolean.FALSE);
-								break;
-							}
-						}
-					}
-				}
-			}
-			for (Position position : positions) {
-				if (!position.getPhase().getClientStatus().equals(PositionStatus.ANOIXTI.toString())) {
-					position.setCanSubmitCandidacy(Boolean.FALSE);
-				}
-			}
-
+			// get positions
+			List<Position> positions = positionSearchService.search(criteria, loggedOn);
 			// Return Result
 			return positions;
 		} catch (ParseException e) {
@@ -139,18 +92,11 @@ public class PositionSearchRESTService extends RESTService {
 		if (!loggedOnUser.hasActiveRole(RoleDiscriminator.CANDIDATE)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
-		try {
-			Candidate candidate = (Candidate) loggedOnUser.getActiveRole(RoleDiscriminator.CANDIDATE);
-			PositionSearchCriteria criteria = em.createQuery(
-					"from PositionSearchCriteria c " +
-							"where c.candidate.id = :candidateId ", PositionSearchCriteria.class)
-					.setParameter("candidateId", candidate.getId())
-					.getSingleResult();
-			return criteria;
-		} catch (NoResultException e) {
-			PositionSearchCriteria criteria = new PositionSearchCriteria();
-			return criteria;
-		}
+		// cast to candidate
+		Candidate candidate = (Candidate) loggedOnUser.getActiveRole(RoleDiscriminator.CANDIDATE);
+		// get the criteria
+		PositionSearchCriteria criteria = positionSearchService.getByCandidate(candidate.getId());
+		return criteria;
 	}
 
 	/**
@@ -166,21 +112,23 @@ public class PositionSearchRESTService extends RESTService {
 	@Path("/{id:[0-9]+}")
 	@JsonView({PositionSearchCriteriaView.class})
 	public PositionSearchCriteria get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
-		User loggedOnUser = getLoggedOn(authToken);
-		// Validate
-		PositionSearchCriteria criteria = em.find(PositionSearchCriteria.class, id);
-		if (criteria == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.position.search.criteria.id");
+		try {
+			User loggedOnUser = getLoggedOn(authToken);
+			// Validate
+			PositionSearchCriteria criteria = positionSearchService.get(id);
+
+			if (!criteria.getCandidate().getUser().getId().equals(loggedOnUser.getId())) {
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+			}
+			// Return result
+			return criteria;
+		} catch (NotFoundException e) {
+			throw new RestException(Status.NOT_FOUND, e.getMessage());
 		}
-		if (!criteria.getCandidate().getUser().getId().equals(loggedOnUser.getId())) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		// Return result
-		return criteria;
 	}
 
 	/**
-	 * Creates search critera for logged user
+	 * Creates search criteria for logged user
 	 *
 	 * @param authToken
 	 * @param newCriteria
@@ -196,27 +144,17 @@ public class PositionSearchRESTService extends RESTService {
 		if (!loggedOnUser.hasActiveRole(RoleDiscriminator.CANDIDATE)) {
 			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 		}
+
 		Candidate candidate = (Candidate) loggedOnUser.getActiveRole(RoleDiscriminator.CANDIDATE);
 		try {
-			em.createQuery(
-					"from PositionSearchCriteria c " +
-							"where c.candidate.id = :candidateId ", PositionSearchCriteria.class)
-					.setParameter("candidateId", candidate.getId())
-					.getSingleResult();
-			throw new RestException(Status.CONFLICT, "already.exists");
-		} catch (NoResultException e) {
-			Collection<Department> departments = utilityService.supplementDepartments(newCriteria.getDepartments());
-			Collection<Sector> sectors = utilityService.supplementSectors(newCriteria.getSectors());
+			// create
+			newCriteria = positionSearchService.create(newCriteria, candidate.getId());
 
-			newCriteria.setCandidate(candidate);
-			newCriteria.getDepartments().clear();
-			newCriteria.getDepartments().addAll(departments);
-			newCriteria.getSectors().clear();
-			newCriteria.getSectors().addAll(sectors);
-
-			newCriteria = em.merge(newCriteria);
-			em.flush();
 			return newCriteria;
+		} catch (NotFoundException e) {
+			throw new RestException(Status.NOT_FOUND, e.getMessage());
+		} catch (ValidationException e) {
+			throw new RestException(Status.CONFLICT, e.getMessage());
 		}
 	}
 
@@ -236,23 +174,18 @@ public class PositionSearchRESTService extends RESTService {
 	public PositionSearchCriteria update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id, PositionSearchCriteria newCriteria) {
 		User loggedOnUser = getLoggedOn(authToken);
 		// Validate
-		PositionSearchCriteria criteria = em.find(PositionSearchCriteria.class, id);
-		if (criteria == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.position.search.criteria.id");
+		try {
+			PositionSearchCriteria criteria = positionSearchService.get(id);
+
+			if (!criteria.getCandidate().getUser().getId().equals(loggedOnUser.getId())) {
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+			}
+			// update
+			criteria = positionSearchService.update(id, criteria);
+
+			return criteria;
+		} catch (NotFoundException e) {
+			throw new RestException(Status.NOT_FOUND, e.getMessage());
 		}
-		if (!criteria.getCandidate().getUser().getId().equals(loggedOnUser.getId())) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		Collection<Department> departments = utilityService.supplementDepartments(newCriteria.getDepartments());
-		Collection<Sector> sectors = utilityService.supplementSectors(newCriteria.getSectors());
-
-		criteria.getDepartments().clear();
-		criteria.getDepartments().addAll(departments);
-		criteria.getSectors().clear();
-		criteria.getSectors().addAll(sectors);
-
-		em.flush();
-
-		return criteria;
 	}
 }

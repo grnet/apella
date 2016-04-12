@@ -3,6 +3,10 @@ package gr.grnet.dep.server.rest;
 import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.PositionService;
+import gr.grnet.dep.service.exceptions.NotEnabledException;
+import gr.grnet.dep.service.exceptions.NotFoundException;
+import gr.grnet.dep.service.exceptions.ValidationException;
 import gr.grnet.dep.service.model.Candidate;
 import gr.grnet.dep.service.model.Department;
 import gr.grnet.dep.service.model.Institution;
@@ -32,6 +36,7 @@ import gr.grnet.dep.service.util.DateUtil;
 import gr.grnet.dep.service.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
 
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -70,840 +75,244 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Path("/position")
-@Stateless
 public class PositionRESTService extends RESTService {
 
-	@Inject
-	private Logger log;
-
-	private Position getPosition(Long positionId) {
-		Position position = null;
-		try {
-			position = em.createQuery(
-					"from Position p " +
-							"left join fetch p.phases ph " +
-							"left join fetch ph.candidacies ca " +
-							"left join fetch ph.committee co " +
-							"left join fetch ph.evaluation ev " +
-							"left join fetch ph.nomination no " +
-							"left join fetch ph.complementaryDocuments cd " +
-							"where p.id = :positionId ", Position.class)
-					.setParameter("positionId", positionId)
-					.getSingleResult();
-			for (User assistant : position.getAssistants()) {
-				assistant.getRoles().size();
-			}
-			position.getCreatedBy().getRoles().size();
-			position.getManager().getUser().getRoles().size();
-		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
-		}
-		return position;
-	}
-
-	/**
-	 * Returns all positions
-	 *
-	 * @param authToken
-	 * @return A list of position
-	 */
-	@GET
-	@JsonView({PositionView.class})
-	public SearchData<Position> getAll(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @Context HttpServletRequest request) {
-		User loggedOnUser = getLoggedOn(authToken);
-
-		if (!loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) && !loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
-				!loggedOnUser.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && !loggedOnUser.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-				!loggedOnUser.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT)) {
-
-			throw new RestException(Status.UNAUTHORIZED, "insufficient.privileges");
-		}
-
-		String positionIdFilterText = request.getParameter("sSearch_0");
-		String positionTitleFilterText = request.getParameter("sSearch_1");
-		String institutionFilterText = request.getParameter("sSearch_2");
-		String statusFilterText = request.getParameter("sSearch_3");
-		String locale = request.getParameter("locale");
-		String sEcho = request.getParameter("sEcho");
-		// Ordering
-		String orderNo = request.getParameter("iSortCol_0");
-		String orderField = request.getParameter("mDataProp_" + orderNo);
-		String orderDirection = request.getParameter("sSortDir_0");
-		// Pagination
-		int iDisplayStart = Integer.valueOf(request.getParameter("iDisplayStart"));
-		int iDisplayLength = Integer.valueOf(request.getParameter("iDisplayLength"));
-
-		List<Institution> institutions = new ArrayList<Institution>();
-		institutions.addAll(loggedOnUser.getAssociatedInstitutions());
-
-		PositionStatus status = null;
-
-		StringBuilder searchQueryString = new StringBuilder();
-		searchQueryString.append(" from Position p " +
-				"join  p.phase ph " +
-				"join  ph.candidacies cs " +
-				"left join  p.assistants " +
-				"where p.permanent = true ");
-
-		if (loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) ||
-				loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
-			searchQueryString.append(" and p.department.school.institution in (:institutions) ");
-		}
-
-		if (StringUtils.isNotEmpty(positionIdFilterText)) {
-			searchQueryString.append(" and CAST(p.id AS text) like  :positionIdFilterText ");
-		}
-
-		if (StringUtils.isNotEmpty(positionTitleFilterText)) {
-			searchQueryString.append(" and UPPER(p.name) like :positionTitleFilterText ");
-		}
-		if (StringUtils.isNotEmpty(institutionFilterText)) {
-			searchQueryString.append(" and (" +
-					"	exists ( " +
-					"       select d from Department d" +
-					" join d.name dname " +
-					" join d.school.name sname " +
-					" join d.school.institution.name iname " +
-					" where p.department.id = d.id " +
-					" and ( dname like :institutionFilterText " +
-					" or sname like :institutionFilterText " +
-					" or iname like :institutionFilterText ) " +
-					"	) " +
-					" ) ");
-		}
-
-		// for back end there is one status for open and closed positions. The difference is that for closed positions
-		// the closing date has passed
-		if (StringUtils.isNotEmpty(statusFilterText)) {
-			// convert closed status to open
-			if (statusFilterText.equals("KLEISTI")) {
-				status = PositionStatus.ANOIXTI;
-				searchQueryString.append(" and ph.status = :status and now() > ph.candidacies.closingDate ");
-			} else {
-				// find if the input value is one of the position statuses
-				for (PositionStatus positionStatus : PositionStatus.values()) {
-					if (positionStatus.toString().equals(statusFilterText)) {
-						status = positionStatus;
-						searchQueryString.append(" and ph.status  = :status ");
-						if (status == PositionStatus.ANOIXTI) {
-							searchQueryString.append(" and now() <= ph.candidacies.closingDate ");
-						}
-						break;
-					}
-				}
-			}
-		}
-
-		Query countQuery = em.createQuery(" select count(distinct p.id) " +
-				searchQueryString.toString());
-
-		if (loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) ||
-				loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
-			countQuery.setParameter("institutions", institutions);
-		}
-
-		if (StringUtils.isNotEmpty(positionIdFilterText)) {
-			countQuery.setParameter("positionIdFilterText", positionIdFilterText.toUpperCase() + "%");
-		}
-
-		if (StringUtils.isNotEmpty(positionTitleFilterText)) {
-			countQuery.setParameter("positionTitleFilterText", "%" + positionTitleFilterText.toUpperCase() + "%");
-		}
-
-		if (StringUtils.isNotEmpty(institutionFilterText)) {
-			countQuery.setParameter("institutionFilterText", "%" + institutionFilterText.toUpperCase() + "%");
-		}
-
-		if (status != null) {
-			countQuery.setParameter("status", status);
-		}
-
-		Long totalRecords = (Long) countQuery.getSingleResult();
-
-		StringBuilder orderByClause = new StringBuilder();
-
-		if (StringUtils.isNotEmpty(orderField)) {
-			if (orderField.equals("positionId")) {
-				orderByClause.append(" order by p.id " + orderDirection);
-			} else if (orderField.equals("positionName")) {
-				orderByClause.append(" order by p.name " + orderDirection);
-			}
-		}
-
-		TypedQuery<Position> searchQuery = em.createQuery(
-				" select p from Position p " +
-						"where p.id in ( " +
-						"select distinct p.id " +
-						searchQueryString.toString() + ") " + orderByClause.toString(), Position.class);
-
-		if (loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) ||
-				loggedOnUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
-			searchQuery.setParameter("institutions", institutions);
-		}
-
-		if (StringUtils.isNotEmpty(positionIdFilterText)) {
-			searchQuery.setParameter("positionIdFilterText", positionIdFilterText.toUpperCase() + "%");
-		}
-
-		if (StringUtils.isNotEmpty(positionTitleFilterText)) {
-			searchQuery.setParameter("positionTitleFilterText", "%" + positionTitleFilterText.toUpperCase() + "%");
-		}
-
-		if (StringUtils.isNotEmpty(institutionFilterText)) {
-			searchQuery.setParameter("institutionFilterText", "%" + institutionFilterText.toUpperCase() + "%");
-		}
-
-		if (status != null) {
-			searchQuery.setParameter("status", status);
-		}
-
-		List<Position> positions = searchQuery
-				.setFirstResult(iDisplayStart)
-				.setMaxResults(iDisplayLength)
-				.getResultList();
-
-		SearchData<Position> result = new SearchData<>();
-		result.setiTotalRecords(totalRecords);
-		result.setiTotalDisplayRecords(totalRecords);
-		result.setsEcho(Integer.valueOf(sEcho));
-		result.setRecords(positions);
-
-		return result;
-	}
-
-	/**
-	 * Returns the list of public positions
-	 *
-	 * @return A list of position
-	 */
-	@GET
-	@Path("/public")
-	@JsonView({PublicPositionView.class})
-	public Collection<Position> getPublic() {
-		try {
-			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-			Date today = sdf.parse(sdf.format(new Date()));
-			List<Position> positions = em.createQuery(
-					"from Position p " +
-							"where p.phase.candidacies.closingDate >= :today " +
-							"and p.permanent = true ", Position.class)
-					.setParameter("today", today)
-					.getResultList();
-
-			return positions;
-		} catch (ParseException e) {
-			throw new RestException(Status.INTERNAL_SERVER_ERROR, "parse.exception");
-		}
-
-	}
-
-	/**
-	 * Return the full position description
-	 *
-	 * @param authToken
-	 * @param positionId
-	 * @param order      If specified a specific phase will be returned instead of
-	 *                   the last one
-	 * @returnWrapper gr.grnet.dep.service.model.Position
-	 */
-	@GET
-	@Path("/{id:[0-9][0-9]*}")
-	@Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-	public String get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @QueryParam("order") Integer order) {
-		User loggedOn = getLoggedOn(authToken);
-		// All logged in users can see the positions
-		Position p = getPosition(positionId);
-		String result = toJSON(order == null ? p : p.as(order), DetailedPositionView.class);
-		return result;
-	}
-
-	/**
-	 * Creates a non-finalized position entry
-	 *
-	 * @param authToken
-	 * @param position
-	 * @return
-	 * @HTTP 403 X-Error-Code: insufficient.privileges
-	 * @HTTP 404 X-Error-Code: wrong.department.id
-	 */
-	@POST
-	@JsonView({DetailedPositionView.class})
-	public Position create(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, Position position) {
-		User loggedOn = getLoggedOn(authToken);
-		try {
-			Department department = em.find(Department.class, position.getDepartment().getId());
-			if (department == null) {
-				throw new RestException(Status.NOT_FOUND, "wrong.department.id");
-			}
-			position.setDepartment(department);
-			if (!position.isUserAllowedToEdit(loggedOn)) {
-				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-			}
-			Date now = new Date();
-			position.setPermanent(false);
-			position.setCreatedBy(loggedOn);
-
-			position.setPhase(new PositionPhase());
-			position.getPhase().setPosition(position);
-			position.getPhase().setOrder(0);
-			position.getPhase().setStatus(PositionStatus.ENTAGMENI);
-			position.getPhase().setCreatedAt(now);
-			position.getPhase().setUpdatedAt(now);
-			position.getPhase().setCandidacies(new PositionCandidacies());
-			position.getPhase().getCandidacies().setPosition(position);
-			position.getPhase().getCandidacies().setCreatedAt(now);
-			position.getPhase().getCandidacies().setUpdatedAt(now);
-			position.getPhase().setCommittee(null);
-			position.getPhase().setComplementaryDocuments(new PositionComplementaryDocuments());
-			position.getPhase().getComplementaryDocuments().setPosition(position);
-			position.getPhase().getComplementaryDocuments().setCreatedAt(now);
-			position.getPhase().getComplementaryDocuments().setUpdatedAt(now);
-
-			position.getPhase().setNomination(null);
-
-			position = em.merge(position);
-			em.flush();
-
-			position = getPosition(position.getId());
-			return position;
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
-		}
-	}
-
-	/**
-	 * Updates and finalizes the position
-	 *
-	 * @param authToken
-	 * @param id
-	 * @param position
-	 * @return
-	 * @HTTP 403 X-Error-Code: insufficient.privileges
-	 * @HTTP 404 X-Error-Code: wrong.position.id
-	 * @HTTP 404 X-Error-Code: wrong.sector.id
-	 */
-	@PUT
-	@Path("/{id:[0-9]+}")
-	@JsonView({DetailedPositionView.class})
-	public Position update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, Position position) {
-		User loggedOn = getLoggedOn(authToken);
-		try {
-			final Position existingPosition = getPosition(id);
-			if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
-				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-			}
-			boolean isNew = !existingPosition.isPermanent();
-			// Validate
-			Sector sector = em.find(Sector.class, position.getSector().getId());
-			if (sector == null) {
-				throw new RestException(Status.NOT_FOUND, "wrong.sector.id");
-			}
-			// Validate that openingDate is greater than today for new position
-			if (isNew && DateUtil.compareDates(position.getPhase().getCandidacies().getOpeningDate(), new Date())  < 0) {
-				throw new RestException(Status.NOT_FOUND, "position.opening.date.greater.today");
-			}
-			// Only admin can change positionCandidacies dates if permanent, just ignore changes otherwise
-			if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) && existingPosition.isPermanent()) {
-				position.getPhase().getCandidacies().setOpeningDate(existingPosition.getPhase().getCandidacies().getOpeningDate());
-				position.getPhase().getCandidacies().setClosingDate(existingPosition.getPhase().getCandidacies().getClosingDate());
-			}
-			// Update
-
-			existingPosition.copyFrom(position);
-			existingPosition.setSector(sector);
-			existingPosition.setSubject(utilityService.supplementSubject(position.getSubject()));
-			if (isNew) {
-				// Managers
-				Set<Long> managerIds = new HashSet<Long>();
-				for (User manager : position.getAssistants()) {
-					managerIds.add(manager.getId());
-				}
-				if (managerIds.isEmpty()) {
-					existingPosition.getAssistants().clear();
-				} else {
-					@SuppressWarnings("unchecked")
-					List<User> assistants = em.createQuery(
-							"select usr from User usr " +
-									"left join fetch usr.roles rls " +
-									"where usr.id in ( " +
-									"	select u.id from User u " +
-									"	join u.roles r " +
-									"	where u.id in (:managerIds) " +
-									"	and r.discriminator = :discriminator " +
-									"	and u.status = :userStatus " +
-									"	and r.status = :roleStatus " +
-									")", User.class)
-							.setParameter("managerIds", managerIds)
-							.setParameter("discriminator", RoleDiscriminator.INSTITUTION_ASSISTANT)
-							.setParameter("userStatus", UserStatus.ACTIVE)
-							.setParameter("roleStatus", RoleStatus.ACTIVE)
-							.getResultList();
-					existingPosition.getAssistants().clear();
-					existingPosition.getAssistants().addAll(assistants);
-				}
-			}
-			existingPosition.setPermanent(true);
-			em.flush();
-
-			// Send E-Mails
-			if (isNew) {
-				sendNotificationsToInterestedCandidates(existingPosition);
-				// Send to Assistants
-				for (final User assistant : existingPosition.getAssistants()) {
-					mailService.postEmail(assistant.getContactInfo().getEmail(),
-							"default.subject",
-							"position.create@institutionAssistant",
-							Collections.unmodifiableMap(new HashMap<String, String>() {
-
-								{
-									put("positionID", StringUtil.formatPositionID(existingPosition.getId()));
-									put("position", existingPosition.getName());
-
-									put("firstname_el", assistant.getFirstname("el"));
-									put("lastname_el", assistant.getLastname("el"));
-									put("institution_el", existingPosition.getDepartment().getSchool().getInstitution().getName().get("el"));
-									put("school_el", existingPosition.getDepartment().getSchool().getName().get("el"));
-									put("department_el", existingPosition.getDepartment().getName().get("el"));
-
-									put("firstname_en", assistant.getFirstname("en"));
-									put("lastname_en", assistant.getLastname("en"));
-									put("institution_en", existingPosition.getDepartment().getSchool().getInstitution().getName().get("en"));
-									put("school_en", existingPosition.getDepartment().getSchool().getName().get("en"));
-									put("department_en", existingPosition.getDepartment().getName().get("en"));
-
-									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#positions");
-								}
-							}));
-				}
-
-				if (loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
-					// Send also to manager and alternateManager
-					final InstitutionManager im = existingPosition.getManager();
-					mailService.postEmail(im.getUser().getContactInfo().getEmail(),
-							"default.subject",
-							"position.create@institutionManager",
-							Collections.unmodifiableMap(new HashMap<String, String>() {
-
-								{
-									put("positionID", StringUtil.formatPositionID(existingPosition.getId()));
-									put("position", existingPosition.getName());
-
-									put("firstname_el", im.getUser().getFirstname("el"));
-									put("lastname_el", im.getUser().getLastname("el"));
-									put("institution_el", existingPosition.getDepartment().getSchool().getInstitution().getName().get("el"));
-									put("school_el", existingPosition.getDepartment().getSchool().getName().get("el"));
-									put("department_el", existingPosition.getDepartment().getName().get("el"));
-
-									put("firstname_en", im.getUser().getFirstname("en"));
-									put("lastname_en", im.getUser().getLastname("en"));
-									put("institution_en", existingPosition.getDepartment().getSchool().getInstitution().getName().get("en"));
-									put("school_en", existingPosition.getDepartment().getSchool().getName().get("en"));
-									put("department_en", existingPosition.getDepartment().getName().get("en"));
-
-									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#positions");
-								}
-							}));
-					mailService.postEmail(im.getAlternateContactInfo().getEmail(),
-							"default.subject",
-							"position.create@institutionManager",
-							Collections.unmodifiableMap(new HashMap<String, String>() {
-
-								{
-									put("positionID", StringUtil.formatPositionID(existingPosition.getId()));
-									put("position", existingPosition.getName());
-
-									put("firstname_el", im.getAlternateFirstname("el"));
-									put("lastname_el", im.getAlternateLastname("el"));
-									put("institution_el", existingPosition.getDepartment().getSchool().getInstitution().getName().get("el"));
-									put("school_el", existingPosition.getDepartment().getSchool().getName().get("el"));
-									put("department_el", existingPosition.getDepartment().getName().get("el"));
-
-									put("firstname_en", im.getAlternateFirstname("en"));
-									put("lastname_en", im.getAlternateLastname("en"));
-									put("institution_en", existingPosition.getDepartment().getSchool().getInstitution().getName().get("en"));
-									put("school_en", existingPosition.getDepartment().getSchool().getName().get("en"));
-									put("department_en", existingPosition.getDepartment().getName().get("en"));
-
-									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#positions");
-								}
-							}));
-				}
-			}
-
-			// Return result
-			return existingPosition;
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
-		}
-	}
-
-	private void sendNotificationsToInterestedCandidates(final Position position) {
-		try {
-			final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-			Date today = sdf.parse(sdf.format(new Date()));
-			// Execute Query
-			@SuppressWarnings("unchecked")
-			List<Candidate> candidates = em.createQuery(
-					"select distinct(c.candidate) from PositionSearchCriteria c " +
-							"left join c.departments d " +
-							"left join c.sectors s " +
-							"where ((s is null) and (d is not null) and (d.id = :departmentId)) " +
-							"or ((d is null) and (s is not null) and (s.id = :sectorId)) " +
-							"or ((s is not null) and (s.id = :sectorId) and (d is not null) and (d.id = :departmentId))", Candidate.class)
-					.setParameter("departmentId", position.getDepartment().getId())
-					.setParameter("sectorId", position.getSector().getId())
-					.getResultList();
-
-			// Send E-Mails
-			for (final Candidate c : candidates) {
-				mailService.postEmail(c.getUser().getContactInfo().getEmail(),
-						"default.subject",
-						"position.create@interested.candidates",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
-
-							{
-								put("positionID", StringUtil.formatPositionID(position.getId()));
-								put("position", position.getName());
-								put("discipline", position.getSubject() != null ? position.getSubject().getName() : "");
-								put("openingDate", sdf.format(position.getPhase().getCandidacies().getOpeningDate()));
-								put("closingDate", sdf.format(position.getPhase().getCandidacies().getClosingDate()));
-
-								put("firstname_el", c.getUser().getFirstname("el"));
-								put("lastname_el", c.getUser().getLastname("el"));
-								put("institution_el", position.getDepartment().getSchool().getInstitution().getName().get("el"));
-								put("school_el", position.getDepartment().getSchool().getName().get("el"));
-								put("department_el", position.getDepartment().getName().get("el"));
-
-								put("firstname_en", c.getUser().getFirstname("en"));
-								put("lastname_en", c.getUser().getLastname("en"));
-								put("institution_en", position.getDepartment().getSchool().getInstitution().getName().get("en"));
-								put("school_en", position.getDepartment().getSchool().getName().get("en"));
-								put("department_en", position.getDepartment().getName().get("en"));
-
-								put("ref", WebConstants.conf.getString("home.url") + "/apella.html#sposition");
-							}
-						}));
-			}
-		} catch (ParseException e) {
-			logger.log(Level.WARNING, "", e);
-		}
-
-	}
-
-	/**
-	 * Removes the position entry
-	 *
-	 * @param authToken
-	 * @param id
-	 * @HTTP 403 X-Error-Code: insufficient.privileges
-	 * @HTTP 404 X-Error-Code: wrong.position.id
-	 * @HTTP 409 X-Error-Code: wrong.position.status.cannot.delete
-	 */
-	@DELETE
-	@Path("/{id:[0-9][0-9]*}")
-	public void delete(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
-		User loggedOn = getLoggedOn(authToken);
-		try {
-			Position position = getPosition(id);
-			if (!position.isUserAllowedToEdit(loggedOn)) {
-				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-			}
-			if (!position.getPhase().getStatus().equals(PositionStatus.ENTAGMENI)) {
-				throw new RestException(Status.CONFLICT, "wrong.position.status.cannot.delete");
-			}
-			em.remove(position);
-			em.flush();
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
-		}
-	}
-
-	@GET
-	@Path("/{id:[0-9][0-9]*}/assistants")
-	@JsonView({UserView.class})
-	public Collection<User> getPositionAssistants(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long positionId) {
-		User loggedOn = getLoggedOn(authToken);
-		Position existingPosition = getPosition(positionId);
-		if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		List<User> managers = em.createQuery(
-				"select usr from User usr " +
-						"left join fetch usr.roles rls " +
-						"where usr.id in ( " +
-						"	select u.id from InstitutionAssistant ia " +
-						"	join ia.user u " +
-						"	where u.status = :userStatus " +
-						"	and ia.status = :roleStatus " +
-						"	and ia.institution.id = :institutionId  " +
-						")", User.class)
-				.setParameter("institutionId", existingPosition.getDepartment().getSchool().getInstitution().getId())
-				.setParameter("userStatus", UserStatus.ACTIVE)
-				.setParameter("roleStatus", RoleStatus.ACTIVE)
-				.getResultList();
-		return managers;
-	}
-
-	/**
-	 * Adds a new phase in the position
-	 *
-	 * @param authToken
-	 * @param positionId
-	 * @param position
-	 * @return
-	 * @HTTP 403 X-Error-Code: insufficient.privileges
-	 * @HTTP 404 X-Error-Code: wrong.position.id
-	 * @HTTP 409 X-Error-Code: position.phase.anoixti.wrong.closing.date
-	 * @HTTP 409 X-Error-Code: wrong.position.status
-	 * @HTTP 409 X-Error-Code: position.phase.epilogi.wrong.closing.date
-	 * @HTTP 409 X-Error-Code: position.phase.anapompi.missing.apofasi
-	 * @HTTP 409 X-Error-Code:
-	 * position.phase.stelexomeni.missing.nominated.candidacy
-	 * @HTTP 409 X-Error-Code:
-	 * position.phase.stelexomeni.missing.praktiko.epilogis
-	 */
-	@PUT
-	@Path("/{id:[0-9][0-9]*}/phase")
-	@JsonView({DetailedPositionView.class})
-	public Position addPhase(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long positionId, Position position) {
-		User loggedOn = getLoggedOn(authToken);
-		try {
-			PositionStatus newStatus = position.getPhase().getStatus();
-			Position existingPosition = getPosition(positionId);
-			if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
-				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-			}
-			if (!existingPosition.isPermanent()) {
-				throw new RestException(Status.CONFLICT, "wrong.position.status");
-			}
-			PositionPhase existingPhase = existingPosition.getPhase();
-			PositionPhase newPhase = null;
-			// Go through all transition scenarios,
-			// update when needed or throw exception if transition not allowed
-			switch (existingPhase.getStatus()) {
-				case ENTAGMENI:
-					switch (newStatus) {
-						case ENTAGMENI:
-							break;
-						case ANOIXTI:
-							// Validate:
-							if (existingPhase.getCandidacies().getOpeningDate().compareTo(new Date()) > 0) {
-								throw new RestException(Status.CONFLICT, "position.phase.anoixti.wrong.opening.date");
-							}
-							if (existingPhase.getCandidacies().getClosingDate().compareTo(new Date()) < 0) {
-								throw new RestException(Status.CONFLICT, "position.phase.anoixti.wrong.closing.date");
-							}
-							newPhase = new PositionPhase();
-							newPhase.setStatus(PositionStatus.ANOIXTI);
-							newPhase.setCandidacies(existingPhase.getCandidacies());
-							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
-							// Add to Position
-							existingPosition.addPhase(newPhase);
-							break;
-						case EPILOGI:
-						case ANAPOMPI:
-						case STELEXOMENI:
-						case CANCELLED:
-							throw new RestException(Status.CONFLICT, "wrong.position.status");
-					}
-					break;
-				case ANOIXTI:
-					switch (newStatus) {
-						case ENTAGMENI:
-							throw new RestException(Status.CONFLICT, "wrong.position.status");
-						case ANOIXTI:
-							break;
-						case EPILOGI:
-							// Validate
-							if (existingPhase.getCandidacies().getClosingDate().compareTo(new Date()) >= 0) {
-								throw new RestException(Status.CONFLICT, "position.phase.epilogi.wrong.closing.date");
-							}
-							// Update
-							newPhase = new PositionPhase();
-							newPhase.setStatus(PositionStatus.EPILOGI);
-							newPhase.setCandidacies(existingPhase.getCandidacies());
-							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
-							newPhase.setCommittee(new PositionCommittee());
-							newPhase.getCommittee().setPosition(existingPosition);
-							newPhase.setEvaluation(new PositionEvaluation());
-							newPhase.getEvaluation().setPosition(existingPosition);
-							newPhase.setNomination(new PositionNomination());
-							newPhase.getNomination().setPosition(existingPosition);
-							// Add to Position
-							existingPosition.addPhase(newPhase);
-							break;
-						case ANAPOMPI:
-						case STELEXOMENI:
-							throw new RestException(Status.CONFLICT, "wrong.position.status");
-						case CANCELLED:
-							// Validate:
-							newPhase = new PositionPhase();
-							newPhase.setStatus(PositionStatus.CANCELLED);
-							newPhase.setCandidacies(existingPhase.getCandidacies());
-							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
-							// Add to Position
-							existingPosition.addPhase(newPhase);
-							break;
-					}
-					break;
-				case EPILOGI:
-					switch (newStatus) {
-						case ENTAGMENI:
-						case ANOIXTI:
-							throw new RestException(Status.CONFLICT, "wrong.position.status");
-						case EPILOGI:
-							break;
-						case ANAPOMPI:
-							// Validate
-							if (FileHeader.filter(existingPhase.getNomination().getFiles(), FileType.APOFASI_ANAPOMPIS).size() == 0) {
-								throw new RestException(Status.CONFLICT, "position.phase.anapompi.missing.apofasi");
-							}
-							newPhase = new PositionPhase();
-							newPhase.setStatus(PositionStatus.ANAPOMPI);
-							newPhase.setCandidacies(existingPhase.getCandidacies());
-							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
-							newPhase.setCommittee(existingPhase.getCommittee());
-							newPhase.setEvaluation(existingPhase.getEvaluation());
-							newPhase.setNomination(existingPhase.getNomination());
-							// Add to Position
-							existingPosition.addPhase(newPhase);
-							break;
-						case STELEXOMENI:
-							// Validate
-							if (existingPhase.getNomination().getNominatedCandidacy() == null) {
-								throw new RestException(Status.CONFLICT, "position.phase.stelexomeni.missing.nominated.candidacy");
-							}
-							if (FileHeader.filter(existingPhase.getNomination().getFiles(), FileType.PRAKTIKO_EPILOGIS).size() == 0) {
-								throw new RestException(Status.CONFLICT, "position.phase.stelexomeni.missing.praktiko.epilogis");
-							}
-							// Update
-							newPhase = new PositionPhase();
-							newPhase.setStatus(PositionStatus.STELEXOMENI);
-							newPhase.setCandidacies(existingPhase.getCandidacies());
-							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
-							newPhase.setCommittee(existingPhase.getCommittee());
-							newPhase.setEvaluation(existingPhase.getEvaluation());
-							newPhase.setNomination(existingPhase.getNomination());
-							// Add to Position
-							existingPosition.addPhase(newPhase);
-							break;
-						case CANCELLED:
-							// Validate
-							newPhase = new PositionPhase();
-							newPhase.setStatus(PositionStatus.CANCELLED);
-							newPhase.setCandidacies(existingPhase.getCandidacies());
-							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
-							newPhase.setCommittee(existingPhase.getCommittee());
-							newPhase.setEvaluation(existingPhase.getEvaluation());
-							newPhase.setNomination(existingPhase.getNomination());
-							// Add to Position
-							existingPosition.addPhase(newPhase);
-							break;
-					}
-					break;
-				case STELEXOMENI:
-					switch (newStatus) {
-						case ENTAGMENI:
-						case ANOIXTI:
-						case EPILOGI:
-						case ANAPOMPI:
-						case STELEXOMENI:
-							throw new RestException(Status.CONFLICT, "wrong.position.status");
-						case CANCELLED:
-							// Validate
-							newPhase = new PositionPhase();
-							newPhase.setStatus(PositionStatus.CANCELLED);
-							newPhase.setCandidacies(existingPhase.getCandidacies());
-							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
-							newPhase.setCommittee(existingPhase.getCommittee());
-							newPhase.setEvaluation(existingPhase.getEvaluation());
-							newPhase.setNomination(existingPhase.getNomination());
-							// Add to Position
-							existingPosition.addPhase(newPhase);
-							break;
-					}
-					break;
-				case ANAPOMPI:
-					switch (newStatus) {
-						case ENTAGMENI:
-						case ANOIXTI:
-							throw new RestException(Status.CONFLICT, "wrong.position.status");
-						case EPILOGI:
-							newPhase = new PositionPhase();
-							newPhase.setStatus(PositionStatus.EPILOGI);
-							newPhase.setCandidacies(existingPhase.getCandidacies());
-							newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
-							newPhase.setCommittee(new PositionCommittee());
-							newPhase.getCommittee().setPosition(existingPosition);
-							newPhase.setEvaluation(new PositionEvaluation());
-							newPhase.getEvaluation().setPosition(existingPosition);
-							newPhase.setNomination(new PositionNomination());
-							newPhase.getNomination().setPosition(existingPosition);
-							// Add to Position
-							existingPosition.addPhase(newPhase);
-							break;
-						case ANAPOMPI:
-							throw new RestException(Status.CONFLICT, "wrong.position.status");
-						case STELEXOMENI:
-							throw new RestException(Status.CONFLICT, "wrong.position.status");
-						case CANCELLED:
-							throw new RestException(Status.CONFLICT, "wrong.position.status");
-
-					}
-					break;
-				case CANCELLED:
-					throw new RestException(Status.CONFLICT, "wrong.position.status");
-			}
-			em.flush();
-			return existingPosition;
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
-		}
-	}
-
-	@GET
-	@Path("/export")
-	public Response getPositionsExport(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
-		User loggedOn = getLoggedOn(authToken);
-		// Authorize
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-				!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) &&
-				!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		// Generate Document
-		Long institutionId = null;
-		if (loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER)) {
-			institutionId = ((InstitutionManager) loggedOn.getActiveRole(RoleDiscriminator.INSTITUTION_MANAGER)).getInstitution().getId();
-		}
-		if (institutionId == null &&
-				loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
-			institutionId = ((InstitutionAssistant) loggedOn.getActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)).getInstitution().getId();
-		}
-		try {
-			//1. Get Data
-			List<Position> positionsData = reportService.getPositionsExportData(institutionId);
-			//2. Create XLS
-			InputStream is = reportService.createPositionsExportExcel(positionsData);
-			// Return response
-			return Response.ok(is)
-					.type("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-					.header("charset", "UTF-8")
-					.header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode("positions.xlsx", "UTF-8") + "\"")
-					.build();
-		} catch (UnsupportedEncodingException e) {
-			logger.log(Level.SEVERE, "getDocument", e);
-			throw new EJBException(e);
-		}
-	}
+    @Inject
+    private Logger log;
+
+    @EJB
+    private PositionService positionService;
+
+
+    /**
+     * Returns all positions
+     *
+     * @param authToken
+     * @return A list of position
+     */
+    @GET
+    @JsonView({PositionView.class})
+    public SearchData<Position> getAll(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @Context HttpServletRequest request) {
+        try {
+            User loggedOnUser = getLoggedOn(authToken);
+            // get all
+            SearchData<Position> result = positionService.getAll(request, loggedOnUser);
+
+            return result;
+        } catch (NotEnabledException e) {
+            throw new RestException(Status.FORBIDDEN, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
+        }
+    }
+
+    /**
+     * Returns the list of public positions
+     *
+     * @return A list of position
+     */
+    @GET
+    @Path("/public")
+    @JsonView({PublicPositionView.class})
+    public Collection<Position> getPublic() {
+        try {
+            // get public positions
+            Collection<Position> positions = positionService.getPublic();
+
+            return positions;
+        } catch (Exception e) {
+            throw new RestException(Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+
+    }
+
+    /**
+     * Return the full position description
+     *
+     * @param authToken
+     * @param positionId
+     * @param order      If specified a specific phase will be returned instead of
+     *                   the last one
+     * @returnWrapper gr.grnet.dep.service.model.Position
+     */
+    @GET
+    @Path("/{id:[0-9][0-9]*}")
+    @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
+    public String get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @QueryParam("order") Integer order) {
+        try {
+            // All logged in users can see the positions
+            Position p = positionService.getPosition(positionId);
+            String result = toJSON(order == null ? p : p.as(order), DetailedPositionView.class);
+
+            return result;
+        } catch (NotFoundException e) {
+            throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
+        }
+    }
+
+
+    /**
+     * Creates a non-finalized position entry
+     *
+     * @param authToken
+     * @param position
+     * @return
+     * @HTTP 403 X-Error-Code: insufficient.privileges
+     * @HTTP 404 X-Error-Code: wrong.department.id
+     */
+    @POST
+    @JsonView({DetailedPositionView.class})
+    public Position create(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, Position position) {
+        try {
+            User loggedOn = getLoggedOn(authToken);
+            // create
+            position = positionService.create(position, loggedOn);
+
+            return position;
+        } catch (NotEnabledException e) {
+            throw new RestException(Status.FORBIDDEN, e.getMessage());
+        } catch (NotFoundException e) {
+            throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
+        }
+    }
+
+    /**
+     * Updates and finalizes the position
+     *
+     * @param authToken
+     * @param id
+     * @param position
+     * @return
+     * @HTTP 403 X-Error-Code: insufficient.privileges
+     * @HTTP 404 X-Error-Code: wrong.position.id
+     * @HTTP 404 X-Error-Code: wrong.sector.id
+     */
+    @PUT
+    @Path("/{id:[0-9]+}")
+    @JsonView({DetailedPositionView.class})
+    public Position update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, Position position) {
+        try {
+            User loggedOn = getLoggedOn(authToken);
+            // update
+            position = positionService.update(id, position, loggedOn);
+
+            return position;
+        } catch (NotFoundException e) {
+            throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
+        }
+    }
+
+    /**
+     * Removes the position entry
+     *
+     * @param authToken
+     * @param id
+     * @HTTP 403 X-Error-Code: insufficient.privileges
+     * @HTTP 404 X-Error-Code: wrong.position.id
+     * @HTTP 409 X-Error-Code: wrong.position.status.cannot.delete
+     */
+    @DELETE
+    @Path("/{id:[0-9][0-9]*}")
+    public void delete(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+        try {
+            User loggedOn = getLoggedOn(authToken);
+            // delete
+            positionService.delete(id, loggedOn);
+        } catch (NotFoundException e) {
+            throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (ValidationException e) {
+            throw new RestException(Status.BAD_REQUEST, e.getMessage());
+        } catch (NotEnabledException e) {
+            throw new RestException(Status.FORBIDDEN, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
+        }
+    }
+
+    @GET
+    @Path("/{id:[0-9][0-9]*}/assistants")
+    @JsonView({UserView.class})
+    public Collection<User> getPositionAssistants(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long positionId) {
+        try {
+            User loggedOn = getLoggedOn(authToken);
+            // get position assistants
+            Collection<User> managers = positionService.getPositionAssistants(positionId, loggedOn);
+
+            return managers;
+        } catch (NotFoundException e) {
+            throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (NotEnabledException e) {
+            throw new RestException(Status.FORBIDDEN, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
+        }
+    }
+
+    /**
+     * Adds a new phase in the position
+     *
+     * @param authToken
+     * @param positionId
+     * @param position
+     * @return
+     * @HTTP 403 X-Error-Code: insufficient.privileges
+     * @HTTP 404 X-Error-Code: wrong.position.id
+     * @HTTP 409 X-Error-Code: position.phase.anoixti.wrong.closing.date
+     * @HTTP 409 X-Error-Code: wrong.position.status
+     * @HTTP 409 X-Error-Code: position.phase.epilogi.wrong.closing.date
+     * @HTTP 409 X-Error-Code: position.phase.anapompi.missing.apofasi
+     * @HTTP 409 X-Error-Code:
+     * position.phase.stelexomeni.missing.nominated.candidacy
+     * @HTTP 409 X-Error-Code:
+     * position.phase.stelexomeni.missing.praktiko.epilogis
+     */
+    @PUT
+    @Path("/{id:[0-9][0-9]*}/phase")
+    @JsonView({DetailedPositionView.class})
+    public Position addPhase(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long positionId, Position position) {
+        try {
+            User loggedOn = getLoggedOn(authToken);
+            // add phase
+            position = positionService.addPhase(positionId, position, loggedOn);
+
+            return position;
+        } catch (NotFoundException e) {
+            throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (ValidationException e) {
+            throw new RestException(Status.BAD_REQUEST, e.getMessage());
+        } catch (NotEnabledException e) {
+            throw new RestException(Status.FORBIDDEN, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
+        }
+    }
+
+    @GET
+    @Path("/export")
+    public Response getPositionsExport(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
+        try {
+            User loggedOn = getLoggedOn(authToken);
+            // get stream
+            InputStream is = positionService.getPositionsExport(loggedOn);
+            // Return response
+            return Response.ok(is)
+                    .type("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    .header("charset", "UTF-8")
+                    .header("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode("positions.xlsx", "UTF-8") + "\"")
+                    .build();
+        } catch (UnsupportedEncodingException e) {
+            logger.log(Level.SEVERE, "getDocument", e);
+            throw new EJBException(e);
+        } catch (NotEnabledException e) {
+            throw new RestException(Status.FORBIDDEN, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
+        }
+    }
 }

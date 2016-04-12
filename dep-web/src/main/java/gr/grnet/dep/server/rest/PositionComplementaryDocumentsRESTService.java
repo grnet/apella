@@ -48,7 +48,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Path("/position/{id:[0-9]+}/complementaryDocuments")
-@Stateless
 public class PositionComplementaryDocumentsRESTService extends RESTService {
 
 	@Inject

@@ -1,8 +1,11 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.SubjectService;
+import gr.grnet.dep.service.exceptions.NotFoundException;
 import gr.grnet.dep.service.model.Subject;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
@@ -16,11 +19,13 @@ import java.util.List;
 import java.util.logging.Logger;
 
 @Path("/subject")
-@Stateless
 public class SubjectRESTService extends RESTService {
 
 	@Inject
 	private Logger log;
+
+	@EJB
+	private SubjectService subjectService;
 
 	/**
 	 * Returns all subjects
@@ -31,15 +36,9 @@ public class SubjectRESTService extends RESTService {
 	@GET
 	@SuppressWarnings("unchecked")
 	public Collection<Subject> get(@QueryParam("query") String query) {
-		List<Subject> result;
-		if (query == null) {
-			result = em.createQuery("select distinct s from Subject s ", Subject.class)
-					.getResultList();
-		} else {
-			result = em.createQuery("select s from Subject s where s.name like :query", Subject.class)
-					.setParameter("query", query + "%")
-					.getResultList();
-		}
+		// fetch the list with the subjects
+		Collection<Subject> result = subjectService.get(query);
+
 		return result;
 	}
 
@@ -55,12 +54,10 @@ public class SubjectRESTService extends RESTService {
 	@Path("/{id:[0-9]+}")
 	public Subject get(@PathParam("id") long id) {
 		try {
-			return em.createQuery(
-					"select i from Subject i " +
-							"where i.id = :id", Subject.class)
-					.setParameter("id", id)
-					.getSingleResult();
-		} catch (NoResultException e) {
+			Subject subject = subjectService.get(id);
+
+			return subject;
+		} catch (NotFoundException e) {
 			throw new RestException(Status.NOT_FOUND, "wrong.subject.id");
 		}
 	}

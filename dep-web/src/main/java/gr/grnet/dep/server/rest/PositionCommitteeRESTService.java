@@ -55,7 +55,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Path("/position/{id:[0-9][0-9]*}/committee")
-@Stateless
 public class PositionCommitteeRESTService extends RESTService {
 
 	@Inject

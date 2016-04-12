@@ -3,7 +3,11 @@ package gr.grnet.dep.server.rest;
 import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.UserService;
+import gr.grnet.dep.service.exceptions.NotEnabledException;
+import gr.grnet.dep.service.exceptions.NotFoundException;
 import gr.grnet.dep.service.exceptions.ServiceException;
+import gr.grnet.dep.service.exceptions.ValidationException;
 import gr.grnet.dep.service.model.Administrator;
 import gr.grnet.dep.service.model.AuthenticationType;
 import gr.grnet.dep.service.model.Candidate;
@@ -23,6 +27,7 @@ import gr.grnet.dep.service.model.User.UserWithLoginDataView;
 import gr.grnet.dep.service.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
 
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -60,1150 +65,409 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Path("/user")
-@Stateless
 public class UserRESTService extends RESTService {
 
-	@Inject
-	private Logger log;
-
-	@GET
-	@JsonView({ UserView.class })
-	public Collection<User> getAssistants(
-			@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken,
-			@QueryParam("user") Long userId,
-			@QueryParam("username") String username,
-			@QueryParam("firstname") String firstname,
-			@QueryParam("lastname") String lastname,
-			@QueryParam("mobile") String mobile,
-			@QueryParam("email") String email,
-			@QueryParam("status") String status,
-			@QueryParam("role") String role,
-			@QueryParam("roleStatus") String roleStatus,
-			@QueryParam("im") Long imId,
-			@QueryParam("mm") Long mmId) {
-
-		// Used in showAdministratorsView, showInstitutionAssistantsView, showMinistryAssistantsView
-		User loggedOn = getLoggedOn(authToken);
-		// Authorize
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-				!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		switch (loggedOn.getPrimaryRole()) {
-			case ADMINISTRATOR:
-				break;
-			case MINISTRY_MANAGER:
-				if (!loggedOn.getActiveRole(RoleDiscriminator.MINISTRY_MANAGER).getId().equals(mmId)) {
-					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-				}
-				;
-				break;
-			case INSTITUTION_MANAGER:
-				if (!loggedOn.getActiveRole(RoleDiscriminator.INSTITUTION_MANAGER).getId().equals(imId)) {
-					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-				}
-				;
-				break;
-			default:
-				// Will Not happen
-				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		// Prepare Query
-		StringBuilder sb = new StringBuilder();
-		sb.append("select usr from User usr " +
-				"left join fetch usr.roles rls " +
-				"where usr.id in (" +
-				"	select distinct u.id from User u " +
-				"	join u.roles r " +
-				"	where u.basicInfo.firstname like :firstname " +
-				"	and u.basicInfo.lastname like :lastname ");
-		// Query Params
-		if (userId != null) {
-			sb.append("	and u.id = :userId ");
-		}
-		if (username != null && !username.isEmpty()) {
-			sb.append("	and u.username like :username ");
-		}
-		if (mobile != null && !mobile.isEmpty()) {
-			sb.append("	and u.contactInfo.mobile = :mobile ");
-		}
-		if (email != null && !email.isEmpty()) {
-			sb.append("	and u.contactInfo.email = :email ");
-		}
-		if (status != null && !status.isEmpty()) {
-			sb.append("	and u.status = :status ");
-		}
-		if (role != null && !role.isEmpty()) {
-			sb.append("	and r.discriminator = :discriminator ");
-		}
-		if (roleStatus != null && !roleStatus.isEmpty()) {
-			sb.append("	and r.status = :roleStatus ");
-		}
-		if (imId != null) {
-			sb.append("	and (u.id in (select ia.user.id from InstitutionAssistant ia where ia.manager.id = :imId )) ");
-		}
-		if (mmId != null) {
-			sb.append("	and (u.id in (select ma.user.id from MinistryAssistant ma where ma.manager.id = :mmId )) ");
-		}
-		// Query Sorting, grouping
-		sb.append(") ");
-		sb.append("order by usr.basicInfo.lastname, usr.basicInfo.firstname");
-
-		TypedQuery<User> query = em.createQuery(sb.toString(), User.class)
-				.setParameter("firstname", "%" + (firstname != null ? StringUtil.toUppercaseNoTones(firstname, new Locale("el")) : "") + "%")
-				.setParameter("lastname", "%" + (lastname != null ? StringUtil.toUppercaseNoTones(lastname, new Locale("el")) : "") + "%");
-
-		if (userId != null) {
-			query.setParameter("userId", userId);
-		}
-		if (username != null && !username.isEmpty()) {
-			query.setParameter("username", "%" + username + "%");
-		}
-		if (mobile != null && !mobile.isEmpty()) {
-			query.setParameter("mobile", mobile);
-		}
-		if (email != null && !email.isEmpty()) {
-			query.setParameter("email", email);
-		}
-		if (status != null && !status.isEmpty()) {
-			query = query.setParameter("status", UserStatus.valueOf(status));
-		}
-		if (role != null && !role.isEmpty()) {
-			query = query.setParameter("discriminator", RoleDiscriminator.valueOf(role));
-		}
-		if (roleStatus != null && !roleStatus.isEmpty()) {
-			query = query.setParameter("roleStatus", RoleStatus.valueOf(roleStatus));
-		}
-		if (imId != null) {
-			query = query.setParameter("imId", imId);
-		}
-		if (mmId != null) {
-			query = query.setParameter("mmId", mmId);
-		}
-
-		// Get Result
-		List<User> result = query.getResultList();
-
-		// Filter results where role requested is not primary
-		if (role != null && !role.isEmpty()) {
-			Iterator<User> it = result.iterator();
-			while (it.hasNext()) {
-				User u = it.next();
-				if (!u.getPrimaryRole().equals(RoleDiscriminator.valueOf(role))) {
-					it.remove();
-				}
-			}
-		}
-
-		// Return result
-		return result;
-	}
-
-	@GET
-	@Path("/loggedon")
-	@JsonView({ UserWithLoginDataView.class })
-	public Response getLoggedOn(@Context HttpServletRequest request) {
-		String authToken = request.getHeader(WebConstants.AUTHENTICATION_TOKEN_HEADER);
-		if (authToken == null && request.getCookies() != null) {
-			for (Cookie c : request.getCookies()) {
-				if (c.getName().equals("_dep_a")) {
-					authToken = c.getValue();
-					break;
-				}
-			}
-		}
-		User u = super.getLoggedOn(authToken);
-		return Response.status(200)
-				.header(WebConstants.AUTHENTICATION_TOKEN_HEADER, u.getAuthToken())
-				.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, NewCookie.DEFAULT_MAX_AGE, false))
-				.entity(u)
-				.build();
-	}
-
-	@GET
-	@Path("/{id:[0-9][0-9]*}")
-	public String get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id) throws RestException {
-		// This is used mainly in user management, not in candidacies or registers
-		User loggedOn = getLoggedOn(authToken);
-		try {
-			User u = em.createQuery(
-					"from User u " +
-							"left join fetch u.roles " +
-							"where u.id=:id", User.class)
-					.setParameter("id", id)
-					.getSingleResult();
-			if (!loggedOn.getId().equals(id) &&
-					!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-					!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER)) {
-				// Check if other user can view this one
-				switch (u.getPrimaryRole()) {
-					case ADMINISTRATOR:
-						// Only other admins:
-						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-					case MINISTRY_MANAGER:
-					case MINISTRY_ASSISTANT:
-						// Other ministry managers:
-						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-					case INSTITUTION_MANAGER:
-					case INSTITUTION_ASSISTANT:
-						// Other institution managers:
-						if (!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER)) {
-							throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-						}
-						break;
-					case CANDIDATE:
-					case PROFESSOR_DOMESTIC:
-					case PROFESSOR_FOREIGN:
-						if (loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT)) {
-							// Do Nothing, allow
-						} else if (loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) ||
-								loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
-							// Check if verified users:
-							if (u.getStatus().equals(UserStatus.UNVERIFIED) ||
-									u.getRole(u.getPrimaryRole()).getStatus().equals(RoleStatus.UNAPPROVED)) {
-								throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-							}
-						}
-						break;
-				}
-			}
-
-			if (u.getId().equals(loggedOn.getId())) {
-				return toJSON(u, UserWithLoginDataView.class);
-			} else {
-				return toJSON(u, UserView.class);
-			}
-		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "wrong.id");
-		}
-	}
-
-	@POST
-	@JsonView({ UserWithLoginDataView.class })
-	public User create(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, User newUser) {
-		try {
-			//1. Validate
-			// Has one role
-			if (newUser.getRoles().isEmpty() || newUser.getRoles().size() > 1) {
-				throw new RestException(Status.CONFLICT, "one.role.required");
-			}
-			// Username availability
-			if (newUser.getUsername() == null || newUser.getUsername().trim().isEmpty()) {
-				throw new RestException(Status.BAD_REQUEST, "registration.username.required");
-			}
-			try {
-				em.createQuery(
-						"select u from User u" +
-								" where u.username = :username", User.class)
-						.setParameter("username", newUser.getUsername())
-						.getSingleResult();
-				throw new RestException(Status.FORBIDDEN, "username.not.available");
-			} catch (NoResultException e) {
-			}
-			// Contact mail availability
-			if (newUser.getContactInfo().getEmail() == null || newUser.getContactInfo().getEmail().trim().isEmpty()) {
-				throw new RestException(Status.BAD_REQUEST, "registration.email.required");
-			}
-			try {
-				em.createQuery(
-						"select u from User u " +
-								"where u.contactInfo.email = :email", User.class)
-						.setParameter("email", newUser.getContactInfo().getEmail())
-						.getSingleResult();
-				throw new RestException(Status.FORBIDDEN, "contact.email.not.available");
-			} catch (NoResultException e) {
-			}
-
-			//2. Set Fields
-			Role firstRole = newUser.getRoles().iterator().next();
-			firstRole.setStatus(RoleStatus.UNAPPROVED);
-			firstRole.setStatusDate(new Date());
-
-			newUser.setAuthenticationType(AuthenticationType.USERNAME);
-			newUser.setPasswordSalt(authenticationService.generatePasswordSalt());
-			newUser.setPassword(authenticationService.encodePassword(newUser.getPassword(), newUser.getPasswordSalt()));
-			newUser.setVerificationNumber(generateVerificationNumber());
-
-			newUser.setCreationDate(new Date());
-			newUser.setStatus(UserStatus.UNVERIFIED);
-			newUser.setStatusDate(new Date());
-
-			newUser.addRole(firstRole);
-
-			User loggedOn = null;
-			switch (firstRole.getDiscriminator()) {
-				case PROFESSOR_DOMESTIC:
-					// Add Second Role : CANDIDATE
-					Candidate secondRole = new Candidate();
-					secondRole.setStatus(RoleStatus.UNAPPROVED);
-					secondRole.setStatusDate(new Date());
-					newUser.addRole(secondRole);
-					break;
-				case PROFESSOR_FOREIGN:
-					break;
-				case CANDIDATE:
-					break;
-				case INSTITUTION_MANAGER:
-					// Validate Institution:
-					InstitutionManager newIM = (InstitutionManager) firstRole;
-					if (newIM.getInstitution() == null || newIM.getInstitution().getId() == null) {
-						throw new RestException(Status.BAD_REQUEST, "wrong.institution.id");
-					}
-					try {
-						em.createQuery(
-								"select im from InstitutionManager im " +
-										"where im.institution.id = :institutionId " +
-										"and im.status = :status ", InstitutionManager.class)
-								.setParameter("institutionId", newIM.getInstitution().getId())
-								.setParameter("status", RoleStatus.ACTIVE)
-								.setMaxResults(1)
-								.getSingleResult();
-						throw new RestException(Status.FORBIDDEN, "exists.active.institution.manager");
-					} catch (NoResultException e) {
-						//Not found, OK
-					}
-					break;
-				case INSTITUTION_ASSISTANT:
-					// CHECK LOGGEDON USER, ACTIVATE NEW USER
-					loggedOn = getLoggedOn(authToken);
-					if (!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER)) {
-						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-					}
-					((InstitutionAssistant) firstRole).setManager(((InstitutionManager) loggedOn.getActiveRole(RoleDiscriminator.INSTITUTION_MANAGER)));
-					newUser.setStatus(UserStatus.ACTIVE);
-					newUser.setVerificationNumber(null);
-					firstRole.setStatus(RoleStatus.ACTIVE);
-					break;
-				case MINISTRY_MANAGER:
-					throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-				case MINISTRY_ASSISTANT:
-					// CHECK LOGGEDON USER, ACTIVATE NEW USER
-					loggedOn = getLoggedOn(authToken);
-					if (!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER)) {
-						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-					}
-					((MinistryAssistant) firstRole).setManager(((MinistryManager) loggedOn.getActiveRole(RoleDiscriminator.MINISTRY_MANAGER)));
-					newUser.setStatus(UserStatus.ACTIVE);
-					newUser.setVerificationNumber(null);
-					firstRole.setStatus(RoleStatus.ACTIVE);
-					break;
-				case ADMINISTRATOR:
-					// CHECK LOGGEDON USER, ACTIVATE NEW USER
-					loggedOn = getLoggedOn(authToken);
-					if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
-						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-					}
-					Administrator admin = (Administrator) loggedOn.getActiveRole(RoleDiscriminator.ADMINISTRATOR);
-					if (!admin.isSuperAdministrator()) {
-						throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-					}
-					newUser.setStatus(UserStatus.ACTIVE);
-					newUser.setVerificationNumber(null);
-					firstRole.setStatus(RoleStatus.ACTIVE);
-			}
-
-			// Identification Required
-			if (!firstRole.getDiscriminator().equals(RoleDiscriminator.PROFESSOR_DOMESTIC) &&
-					!firstRole.getDiscriminator().equals(RoleDiscriminator.PROFESSOR_FOREIGN) &&
-					!firstRole.getDiscriminator().equals(RoleDiscriminator.ADMINISTRATOR) &&
-					(newUser.getIdentification() == null || newUser.getIdentification().trim().isEmpty())) {
-				throw new RestException(Status.BAD_REQUEST, "registration.identification.required");
-			}
-			// Identification availability
-			if (newUser.getIdentification() != null && newUser.getIdentification().trim().length() > 0) {
-				try {
-					em.createQuery(
-							"select identification from User u " +
-									"where u.identification = :identification", String.class)
-							.setParameter("identification", newUser.getIdentification())
-							.setMaxResults(1)
-							.getSingleResult();
-					throw new RestException(Status.CONFLICT, "existing.identification.number");
-				} catch (NoResultException e) {
-				}
-			}
-
-			// Capitalize names
-			newUser.getBasicInfo().toUppercase(new Locale("el"));
-			newUser.getBasicInfoLatin().toUppercase(Locale.ENGLISH);
-			//3. Update
-			final User savedUser = em.merge(newUser);
-			em.flush(); //To catch the exception
-
-			//4. Send Verification E-Mail
-			if (newUser.getStatus() == UserStatus.UNVERIFIED) {
-				mailService.postEmail(newUser.getContactInfo().getEmail(),
-						"verification.title",
-						"verification.body",
-						Collections.unmodifiableMap(new HashMap<String, String>() {
-
-							{
-								put("username", savedUser.getUsername());
-								put("verificationLink", WebConstants.conf.getString("home.url") + "/registration.html#username=" + savedUser.getUsername() + "&verification=" + savedUser.getVerificationNumber());
-							}
-						}), true);
-			}
-
-			//5. Post Issue:
-			if (firstRole.getDiscriminator().equals(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
-				String summary = jiraService.getResourceBundleString("institution.manager.created.assistant.summary");
-				String description = jiraService.getResourceBundleString("institution.manager.created.assistant.description",
-						"user", savedUser.getFullName("el") + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + savedUser.getId() + " )");
-				JiraIssue issue = JiraIssue.createRegistrationIssue(savedUser, summary, description);
-				jiraService.queueCreateIssue(issue);
-			} else if (!firstRole.getDiscriminator().equals(RoleDiscriminator.ADMINISTRATOR)) {
-				String summary = jiraService.getResourceBundleString("user.created.account.summary");
-				String description = jiraService.getResourceBundleString("user.created.account.description",
-						"user", savedUser.getFullName("el") + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + savedUser.getId() + " )");
-				JiraIssue issue = JiraIssue.createRegistrationIssue(savedUser, summary, description);
-				jiraService.queueCreateIssue(issue);
-			}
-
-			//6. Return result
-			newUser.getRoles().size();
-			return newUser;
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.INTERNAL_SERVER_ERROR, "persistence.exception");
-		} catch (ServiceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "service.exception");
-		}
-	}
-
-	private Long generateVerificationNumber() {
-		try {
-			SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
-			return Math.abs(sr.nextLong());
-		} catch (NoSuchAlgorithmException nsae) {
-			throw new EJBException(nsae);
-		}
-	}
-
-	@PUT
-	@Path("/{id:[0-9][0-9]*}")
-	@JsonView({ UserWithLoginDataView.class })
-	public User update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id, User user) {
-		User loggedOn = getLoggedOn(authToken);
-		User existingUser = em.find(User.class, id);
-		if (existingUser == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.user.id");
-		}
-		boolean canUpdate = loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR);
-		if (existingUser.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
-			canUpdate = loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR);
-			if (canUpdate) {
-				Administrator admin = (Administrator) loggedOn.getActiveRole(RoleDiscriminator.ADMINISTRATOR);
-				canUpdate = admin.isSuperAdministrator();
-			}
-		}
-		if (!canUpdate) {
-			canUpdate = loggedOn.getId().equals(id);
-		}
-		if (!canUpdate && existingUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
-			InstitutionAssistant ia = (InstitutionAssistant) existingUser.getActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT);
-			canUpdate = ia.getManager().getUser().getId().equals(loggedOn.getId());
-		}
-		if (!canUpdate && existingUser.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT)) {
-			MinistryAssistant ma = (MinistryAssistant) existingUser.getActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT);
-			canUpdate = ma.getManager().getUser().getId().equals(loggedOn.getId());
-		}
-		if (!canUpdate) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		// Contact mail availability
-		try {
-			em.createQuery("select u from User u " +
-					"where u.id != :id " +
-					"and u.contactInfo.email = :email", User.class)
-					.setParameter("id", user.getId())
-					.setParameter("email", user.getContactInfo().getEmail())
-					.getSingleResult();
-			throw new RestException(Status.FORBIDDEN, "contact.email.not.available");
-		} catch (NoResultException e) {
-		}
-		// Identification Required
-		if (!existingUser.getPrimaryRole().equals(RoleDiscriminator.PROFESSOR_DOMESTIC) &&
-				!existingUser.getPrimaryRole().equals(RoleDiscriminator.PROFESSOR_FOREIGN) &&
-				!existingUser.getPrimaryRole().equals(RoleDiscriminator.ADMINISTRATOR) &&
-				(user.getIdentification() == null || user.getIdentification().trim().isEmpty())) {
-			throw new RestException(Status.BAD_REQUEST, "registration.identification.required");
-		}
-		// Identification availability
-		if (user.getIdentification() != null && user.getIdentification().trim().length() > 0) {
-			try {
-				em.createQuery("select identification from User u " +
-						"where u.id != :id " +
-						"and u.identification = :identification")
-						.setParameter("id", user.getId())
-						.setParameter("identification", user.getIdentification())
-						.setMaxResults(1)
-						.getSingleResult();
-				throw new RestException(Status.CONFLICT, "existing.identification.number");
-			} catch (NoResultException e) {
-			}
-		}
-
-		try {
-
-			// Copy User Fields
-			existingUser.setIdentification(user.getIdentification());
-			if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-				existingUser.setPasswordSalt(authenticationService.generatePasswordSalt());
-				existingUser.setPassword(authenticationService.encodePassword(user.getPassword(), existingUser.getPasswordSalt()));
-			}
-			existingUser.setBasicInfo(user.getBasicInfo());
-			existingUser.setBasicInfoLatin(user.getBasicInfoLatin());
-			existingUser.setContactInfo(user.getContactInfo());
-			// Capitalize names
-			existingUser.getBasicInfo().toUppercase(new Locale("el"));
-			existingUser.getBasicInfoLatin().toUppercase(Locale.ENGLISH);
-			em.flush();
-			return existingUser;
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
-		}
-	}
-
-	@DELETE
-	@Path("/{id:[0-9][0-9]*}")
-	public void delete(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
-		User loggedOn = getLoggedOn(authToken);
-		User existingUser = em.find(User.class, id);
-		if (existingUser == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.user.id");
-		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-				(existingUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT) &&
-						!((InstitutionAssistant) existingUser.getActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)).getManager().getUser().getId().equals(loggedOn.getId())
-				)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		if (existingUser.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
-			if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
-				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-			}
-			Administrator admin = (Administrator) loggedOn.getActiveRole(RoleDiscriminator.ADMINISTRATOR);
-			if (!admin.isSuperAdministrator()) {
-				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-			}
-		}
-
-		try {
-			//Delete all associations
-			em.createQuery(
-					"delete from JiraIssue where user.id = :userId")
-					.setParameter("userId", id)
-					.executeUpdate();
-			//Do Delete:
-			em.remove(existingUser);
-			em.flush();
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
-		}
-	}
-
-	@PUT
-	@Path("/login")
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	@JsonView({ UserWithLoginDataView.class })
-	public Response login(@FormParam("username") String username, @FormParam("password") String password) {
-
-		try {
-			User u = authenticationService.doUsernameLogin(username, password);
-			return Response.status(200)
-					.header(WebConstants.AUTHENTICATION_TOKEN_HEADER, u.getAuthToken())
-					.cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, NewCookie.DEFAULT_MAX_AGE, false))
-					.entity(u)
-					.build();
-		} catch (ServiceException e) {
-			throw new RestException(Status.UNAUTHORIZED, e.getErrorKey());
-		}
-
-	}
-
-	@PUT
-	@Path("/logout")
-	public Response logout(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
-		try {
-			authenticationService.logout(authToken);
-			return Response.noContent().build();
-		} catch (ServiceException e) {
-			throw new RestException(Status.NOT_FOUND, e.getErrorKey());
-		}
-
-	}
-
-	@PUT
-	@Path("/resetPassword")
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	public Response resetPassword(@FormParam("email") String email) {
-		try {
-			final User u = em.createQuery(
-					"from User u " +
-							"left join fetch u.roles " +
-							"where u.contactInfo.email = :email", User.class)
-					.setParameter("email", email)
-					.getSingleResult();
-			// Validate:
-			if (!u.getAuthenticationType().equals(AuthenticationType.USERNAME)) {
-				throw new RestException(Status.NOT_FOUND, "login.wrong.registration.type");
-			}
-			// Reset password
-			final String newPassword = authenticationService.generatePassword();
-			u.setPasswordSalt(authenticationService.generatePasswordSalt());
-			u.setPassword(authenticationService.encodePassword(newPassword, u.getPasswordSalt()));
-
-			// Send email
-			mailService.postEmail(u.getContactInfo().getEmail(),
-					"password.reset.title",
-					"password.reset.body",
-					Collections.unmodifiableMap(new HashMap<String, String>() {
-
-						{
-							put("username", u.getUsername());
-							put("newPassword", newPassword);
-						}
-					}), true);
-			// Return Result
-			return Response.noContent().build();
-		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "login.wrong.email");
-		}
-	}
-
-	@PUT
-	@Path("/sendVerificationEmail")
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	public Response sendVerificationEmail(@FormParam("email") String email) {
-		try {
-			final User u = em.createQuery(
-					"from User u " +
-							"left join fetch u.roles " +
-							"where u.contactInfo.email = :email", User.class)
-					.setParameter("email", email)
-					.getSingleResult();
-
-			// Validate
-			if (!u.getAuthenticationType().equals(AuthenticationType.USERNAME)) {
-				throw new RestException(Status.NOT_FOUND, "login.wrong.registration.type");
-			}
-			switch (u.getStatus()) {
-				case UNVERIFIED:
-					// Send email
-					mailService.postEmail(u.getContactInfo().getEmail(),
-							"verification.title",
-							"verification.body",
-							Collections.unmodifiableMap(new HashMap<String, String>() {
-
-								{
-									put("username", u.getUsername());
-									put("verificationLink", WebConstants.conf.getString("home.url") + "/registration.html#username=" + u.getUsername() + "&verification=" + u.getVerificationNumber());
-								}
-							}), true);
-
-					// Return Result
-					return Response.noContent().build();
-				default:
-					throw new RestException(Status.CONFLICT, "verify.account.status." + u.getStatus().toString().toLowerCase());
-			}
-		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "login.wrong.email");
-		}
-	}
-
-	@PUT
-	@Path("/{id:[0-9][0-9]*}/sendLoginEmail")
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	public Response sendLoginEmail(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, @FormParam("createLoginLink") Boolean createLoginLink) {
-		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		try {
-			final User u = em.createQuery(
-					"from User u " +
-							"left join fetch u.roles " +
-							"where u.id = :id", User.class)
-					.setParameter("id", id)
-					.getSingleResult();
-
-			// Validate
-			if (!u.getAuthenticationType().equals(AuthenticationType.EMAIL)) {
-				throw new RestException(Status.NOT_FOUND, "login.wrong.registration.type");
-			}
-
-			if (createLoginLink != null && createLoginLink) {
-				// Create new AuthenticationToken
-				u.setPermanentAuthToken(authenticationService.generatePermanentAuthenticationToken(u.getId(), u.getContactInfo().getEmail()));
-				u.setLoginEmailSent(Boolean.FALSE);
-			}
-			mailService.sendLoginEmail(u.getId(), true);
-
-			return Response.noContent().build();
-		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "login.wrong.email");
-		}
-	}
-
-	@PUT
-	@Path("/{id:[0-9][0-9]*}/sendReminderLoginEmail")
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	public Response sendReminderLoginEmail(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, @FormParam("createLoginLink") Boolean createLoginLink) {
-		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		try {
-			final User u = em.createQuery(
-					"from User u " +
-							"left join fetch u.roles " +
-							"where u.id = :id", User.class)
-					.setParameter("id", id)
-					.getSingleResult();
-
-			// Validate
-			if (!u.getAuthenticationType().equals(AuthenticationType.EMAIL)) {
-				throw new RestException(Status.NOT_FOUND, "login.wrong.registration.type");
-			}
-			mailService.sendReminderLoginEmail(u.getId(), true);
-
-			return Response.noContent().build();
-		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "login.wrong.email");
-		}
-	}
-
-	@PUT
-	@Path("/{id:[0-9][0-9]*}/sendEvaluationEmail")
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	public Response sendEvaluationEmail(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
-		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		try {
-			final User u = em.createQuery(
-					"from User u " +
-							"left join fetch u.roles " +
-							"where u.id = :id", User.class)
-					.setParameter("id", id)
-					.getSingleResult();
-
-			// Validate
-			if (u.getStatus().equals(UserStatus.ACTIVE) && u.getRole(u.getPrimaryRole()).getStatus().equals(RoleStatus.ACTIVE)) {
-				mailService.sendEvaluationEmail(u.getId(), true);
-				return Response.noContent().build();
-			} else {
-				throw new RestException(Status.FORBIDDEN, "user.status.not.active");
-			}
-
-		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "login.wrong.email");
-		}
-	}
-
-	@PUT
-	@Path("/verify")
-	@JsonView({ UserWithLoginDataView.class })
-	public User verify(User user) {
-		try {
-			final User u = em.createQuery(
-					"from User u " +
-							"left join fetch u.roles " +
-							"where u.username = :username", User.class)
-					.setParameter("username", user.getUsername())
-					.getSingleResult();
-			// Validate
-			if (!u.getAuthenticationType().equals(AuthenticationType.USERNAME)) {
-				throw new RestException(Status.NOT_FOUND, "login.wrong.registration.type");
-			}
-			switch (u.getStatus()) {
-				case UNVERIFIED:
-					if (user.getVerificationNumber() == null || !user.getVerificationNumber().equals(u.getVerificationNumber())) {
-						throw new RestException(Status.FORBIDDEN, "verify.wrong.verification");
-					}
-					// Verify
-					u.setStatus(UserStatus.ACTIVE);
-					u.setStatusDate(new Date());
-					u.setVerificationNumber(null);
-
-					em.flush();
-
-					// Post to Jira
-					String summary = jiraService.getResourceBundleString("user.verified.email.summary");
-					String description = jiraService.getResourceBundleString("user.verified.email.description",
-							"user", u.getFullName("el") + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + u.getId() + " )");
-					JiraIssue issue = JiraIssue.createRegistrationIssue(u, summary, description);
-					jiraService.queueCreateIssue(issue);
-					return u;
-				default:
-					throw new RestException(Status.FORBIDDEN, "verify.account.status." + u.getStatus().toString().toLowerCase());
-			}
-
-		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "wrong.username");
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
-		} catch (ServiceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "service.exception");
-		}
-	}
-
-	@PUT
-	@Path("/{id:[0-9][0-9]*}/status")
-	@JsonView({ UserWithLoginDataView.class })
-	public User updateStatus(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, User requestUser) {
-		final User loggedOn = getLoggedOn(authToken);
-		User existingUser = em.find(User.class, id);
-		if (existingUser == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.user.id");
-		}
-		boolean canUpdate = loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR);
-		if (!canUpdate && existingUser.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
-			InstitutionAssistant ia = (InstitutionAssistant) existingUser.getActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT);
-			canUpdate = ia.getManager().getUser().getId().equals(loggedOn.getId());
-		}
-		if (!canUpdate && existingUser.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT)) {
-			MinistryAssistant ma = (MinistryAssistant) existingUser.getActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT);
-			canUpdate = ma.getManager().getUser().getId().equals(loggedOn.getId());
-		}
-		if (!canUpdate) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		try {
-			final User u = em.createQuery(
-					"from User u " +
-							"left join fetch u.roles " +
-							"where u.id=:id", User.class)
-					.setParameter("id", id)
-					.getSingleResult();
-			u.setStatus(requestUser.getStatus());
-			u.setStatusDate(new Date());
-			em.flush();
-
-			// Post to Jira
-			if (u.getStatus().equals(UserStatus.BLOCKED)) {
-				String summary = jiraService.getResourceBundleString("helpdesk.blocked.user.summary");
-				String description = jiraService.getResourceBundleString("helpdesk.blocked.user.description",
-						"user", u.getFullName("el") + " ( " + WebConstants.conf.getString("home.url") + "/apella.html#user/" + u.getId() + " )",
-						"admin", loggedOn.getFullName("el"));
-				JiraIssue issue = JiraIssue.createRegistrationIssue(u, summary, description);
-				jiraService.queueCreateIssue(issue);
-			}
-			return u;
-		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "wrong.user.id");
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
-		} catch (ServiceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "service.exception");
-		}
-	}
-
-	@POST
-	@Path("/search")
-	@JsonView({ UserView.class })
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	public SearchData<User> search(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @Context HttpServletRequest request) {
-		User loggedOn = getLoggedOn(authToken);
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		// 1. Read parameters:
-		Long userId = request.getParameter("user").matches("\\d+") ? Long.valueOf(request.getParameter("user")) : null;
-		String username = request.getParameter("username");
-		String firstname = request.getParameter("firstname");
-		String lastname = request.getParameter("lastname");
-		String mobile = request.getParameter("mobile");
-		String email = request.getParameter("email");
-		String status = request.getParameter("status");
-		String role = request.getParameter("role");
-		String roleStatus = request.getParameter("roleStatus");
-		Long institutionId = request.getParameter("institution").matches("\\d+") ? Long.valueOf(request.getParameter("institution")) : null;
-		// Ordering
-		String orderNo = request.getParameter("iSortCol_0");
-		String orderField = request.getParameter("mDataProp_" + orderNo);
-		String orderDirection = request.getParameter("sSortDir_0");
-		// Pagination
-		int iDisplayStart = Integer.valueOf(request.getParameter("iDisplayStart"));
-		int iDisplayLength = Integer.valueOf(request.getParameter("iDisplayLength"));
-		// DataTables:
-		String sEcho = request.getParameter("sEcho");
-
-		// 2. Prepare Query
-		StringBuilder searchQueryString = new StringBuilder();
-		searchQueryString.append(
-				"select u.id from User u " +
-						"join u.roles r " +
-						"where u.id != null ");
-		if (userId != null) {
-			searchQueryString.append(" and u.id = :userId ");
-		}
-		if (username != null && !username.isEmpty()) {
-			searchQueryString.append(" and u.username like :username ");
-		}
-		if (firstname != null && !firstname.isEmpty()) {
-			searchQueryString.append(" and u.basicInfo.firstname like :firstname ");
-		}
-		if (lastname != null && !lastname.isEmpty()) {
-			searchQueryString.append(" and u.basicInfo.lastname like :lastname ");
-		}
-		if (mobile != null && !mobile.isEmpty()) {
-			searchQueryString.append(" and u.contactInfo.mobile = :mobile ");
-		}
-		if (email != null && !email.isEmpty()) {
-			searchQueryString.append(" and u.contactInfo.email = :email ");
-		}
-		if (status != null && !status.isEmpty()) {
-			searchQueryString.append(" and u.status = :status ");
-		}
-		if (role != null && !role.isEmpty()) {
-			searchQueryString.append(" and r.discriminator = :discriminator ");
-			if (role.equals(RoleDiscriminator.CANDIDATE.toString())) {
-				// Skip Professors with Candidate role
-				searchQueryString.append(" and not exists (select sr.id from Role sr where sr.discriminator = :pdDiscriminator and sr.user.id = u.id) ");
-			}
-		}
-		if (roleStatus != null && !roleStatus.isEmpty()) {
-			searchQueryString.append("	and r.status = :roleStatus ");
-		}
-		if (institutionId != null) {
-			searchQueryString.append("	and exists (" +
-					"		select pd.id from ProfessorDomestic pd " +
-					"		where pd.id = r.id " +
-					"		and pd.institution.id = :institutionId " +
-					"	) ");
-		}
-
-		// Query Sorting
-		String orderString = null;
-		if (orderField != null && !orderField.isEmpty()) {
-			if (orderField.equals("firstname")) {
-				orderString = "order by usr.basicInfo.firstname " + orderDirection + ", usr.id ";
-			} else if (orderField.equals("lastname")) {
-				orderString = "order by usr.basicInfo.lastname " + orderDirection + ", usr.id ";
-			} else if (orderField.equals("username")) {
-				orderString = "order by usr.username " + orderDirection + ", usr.id ";
-			} else if (orderField.equals("status")) {
-				orderString = "order by usr.status " + orderDirection + ", usr.id ";
-			} else {
-				// id is default
-				orderString = "order by usr.id " + orderDirection + " ";
-			}
-		} else {
-			orderString = "order by usr.id " + orderDirection + " ";
-		}
-
-		Query countQuery = em.createQuery(
-				"select count(id) from User usr " +
-						"where usr.id in ( " +
-						searchQueryString.toString() +
-						" ) ");
-
-		TypedQuery<User> searchQuery = em.createQuery(
-				"select usr from User usr " +
-						"where usr.id in ( " +
-						searchQueryString.toString() +
-						" ) " +
-						orderString, User.class);
-
-		if (userId != null) {
-			searchQuery.setParameter("userId", userId);
-			countQuery.setParameter("userId", userId);
-		}
-		if (firstname != null && !firstname.isEmpty()) {
-			searchQuery.setParameter("firstname", "%" + (firstname != null ? StringUtil.toUppercaseNoTones(firstname, new Locale("el")) : "") + "%");
-			countQuery.setParameter("firstname", "%" + (firstname != null ? StringUtil.toUppercaseNoTones(firstname, new Locale("el")) : "") + "%");
-		}
-		if (lastname != null && !lastname.isEmpty()) {
-			searchQuery.setParameter("lastname", "%" + (lastname != null ? StringUtil.toUppercaseNoTones(lastname, new Locale("el")) : "") + "%");
-			countQuery.setParameter("lastname", "%" + (lastname != null ? StringUtil.toUppercaseNoTones(lastname, new Locale("el")) : "") + "%");
-		}
-		if (username != null && !username.isEmpty()) {
-			searchQuery.setParameter("username", "%" + username + "%");
-			countQuery.setParameter("username", "%" + username + "%");
-		}
-		if (mobile != null && !mobile.isEmpty()) {
-			searchQuery.setParameter("mobile", mobile);
-			countQuery.setParameter("mobile", mobile);
-		}
-		if (email != null && !email.isEmpty()) {
-			searchQuery.setParameter("email", email);
-			countQuery.setParameter("email", email);
-		}
-		if (status != null && !status.isEmpty()) {
-			searchQuery.setParameter("status", UserStatus.valueOf(status));
-			countQuery.setParameter("status", UserStatus.valueOf(status));
-		}
-		if (role != null && !role.isEmpty()) {
-			searchQuery.setParameter("discriminator", RoleDiscriminator.valueOf(role));
-			countQuery.setParameter("discriminator", RoleDiscriminator.valueOf(role));
-			if (role.equals(RoleDiscriminator.CANDIDATE.toString())) {
-				searchQuery.setParameter("pdDiscriminator", RoleDiscriminator.PROFESSOR_DOMESTIC);
-				countQuery.setParameter("pdDiscriminator", RoleDiscriminator.PROFESSOR_DOMESTIC);
-			}
-		}
-		if (roleStatus != null && !roleStatus.isEmpty()) {
-			searchQuery.setParameter("roleStatus", RoleStatus.valueOf(roleStatus));
-			countQuery.setParameter("roleStatus", RoleStatus.valueOf(roleStatus));
-		}
-		if (institutionId != null) {
-			searchQuery.setParameter("institutionId", institutionId);
-			countQuery.setParameter("institutionId", institutionId);
-		}
-
-		// Get Result
-		Long totalRecords = (Long) countQuery.getSingleResult();
-		@SuppressWarnings("unchecked")
-		List<User> paginatedUsers = searchQuery
-				.setFirstResult(iDisplayStart)
-				.setMaxResults(iDisplayLength)
-				.getResultList();
-		// Lazily load all Roles of Users,
-		// with join fetch, hibernate will bring all Users to memory and then apply ordering
-		for (User u : paginatedUsers) {
-			u.getRoles().size();
-		}
-		// Fill result
-		SearchData<User> result = new SearchData<User>();
-		result.setiTotalRecords(totalRecords);
-		result.setiTotalDisplayRecords(totalRecords);
-		result.setsEcho(Integer.valueOf(sEcho));
-		result.setRecords(paginatedUsers);
-
-		return result;
-	}
-
-	@POST
-	@Path("/search/shibboleth")
-	@JsonView({ User.UserView.class })
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	public SearchData<User> searchShibbolethAccountUsers(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @Context HttpServletRequest request) {
-		User loggedOn = getLoggedOn(authToken);
-
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		// 1. Read parameters:
-		String filterText = request.getParameter("sSearch");
-		String sEcho = request.getParameter("sEcho");
-		// Ordering
-		String orderNo = request.getParameter("iSortCol_0");
-		String orderField = request.getParameter("mDataProp_" + orderNo);
-		String orderDirection = request.getParameter("sSortDir_0");
-		// Pagination
-		int iDisplayStart = Integer.valueOf(request.getParameter("iDisplayStart"));
-		int iDisplayLength = Integer.valueOf(request.getParameter("iDisplayLength"));
-
-		// 2. Prepare Query
-		StringBuilder searchQueryString = new StringBuilder();
-		searchQueryString.append(
-				" from User u where u.authenticationType = :shibboleth ");
-
-		if (StringUtils.isNotEmpty(filterText)) {
-			searchQueryString.append(" and ( UPPER(u.basicInfo.lastname) like :filterText ");
-			searchQueryString.append(" or UPPER(u.basicInfoLatin.lastname) like :filterText ");
-			searchQueryString.append(" or UPPER(u.basicInfo.firstname) like :filterText ");
-			searchQueryString.append(" or UPPER(u.basicInfoLatin.firstname) like :filterText ");
-			// treat the user id as text in order to filter it
-			searchQueryString.append(" or CAST(u.id AS text) like :filterText ) ");
-		}
-
-		// count query
-		Query countQuery = em.createQuery(
-				"select distinct count(u.id) " +
-						searchQueryString.toString());
-
-		countQuery.setParameter("shibboleth", AuthenticationType.SHIBBOLETH);
-
-		if (StringUtils.isNotEmpty(filterText)) {
-			countQuery.setParameter("filterText", filterText.toUpperCase() + "%");
-		}
-
-		// Get Result
-		Long totalRecords = (Long) countQuery.getSingleResult();
-
-		// Query Sorting
-		String orderString = null;
-
-		if (!StringUtils.isNotEmpty(orderField)) {
-			if (orderField.equals("firstname")) {
-				orderString = "order by usr.basicInfo.firstname " + orderDirection + ", usr.id ";
-			} else if (orderField.equals("lastname")) {
-				orderString = "order by usr.basicInfo.lastname " + orderDirection + ", usr.id ";
-			} else {
-				// id is default
-				orderString = "order by usr.id " + orderDirection + " ";
-			}
-		} else {
-			orderString = "order by usr.id " + orderDirection + " ";
-		}
-
-		// search query
-		TypedQuery<User> searchQuery = em.createQuery(
-				"select distinct usr from User usr " +
-						"where usr.id in ( select u.id " + searchQueryString.toString() + ") " +
-						orderString, User.class);
-
-		searchQuery.setParameter("shibboleth", AuthenticationType.SHIBBOLETH);
-
-		if (StringUtils.isNotEmpty(filterText)) {
-			searchQuery.setParameter("filterText", filterText.toUpperCase() + "%");
-		}
-
-		List<User> paginatedShibbolethUsers = searchQuery
-				.setFirstResult(iDisplayStart)
-				.setMaxResults(iDisplayLength)
-				.getResultList();
-
-		for (User shibbolethUser : paginatedShibbolethUsers) {
-			shibbolethUser.getRoles().size();
-		}
-
-		// Fill result
-		SearchData<User> result = new SearchData<User>();
-		result.setiTotalRecords(totalRecords);
-		result.setiTotalDisplayRecords(totalRecords);
-		result.setsEcho(Integer.valueOf(sEcho));
-		result.setRecords(paginatedShibbolethUsers);
-
-		return result;
-	}
-
-	@PUT
-	@Path("/{id:[0-9]+}/revertaccount")
-	public Response revertShibbolethAccount(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long userId, User user) {
-		User loggedOn = getLoggedOn(authToken);
-
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-
-		try {
-			// revert the authentication from shibboleth to email
-			authenticationService.revertShibbolethTotEmailAccount(userId);
-		} catch (ServiceException e) {
-			throw new RestException(Status.CONFLICT, e.getMessage());
-		}
-
-		return Response.ok().build();
-	}
+    @Inject
+    private Logger log;
+
+    @EJB
+    private UserService userService;
+
+    @GET
+    @JsonView({UserView.class})
+    public Collection<User> getAssistants(
+            @HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken,
+            @QueryParam("user") Long userId,
+            @QueryParam("username") String username,
+            @QueryParam("firstname") String firstname,
+            @QueryParam("lastname") String lastname,
+            @QueryParam("mobile") String mobile,
+            @QueryParam("email") String email,
+            @QueryParam("status") String status,
+            @QueryParam("role") String role,
+            @QueryParam("roleStatus") String roleStatus,
+            @QueryParam("im") Long imId,
+            @QueryParam("mm") Long mmId) {
+
+        // Used in showAdministratorsView, showInstitutionAssistantsView, showMinistryAssistantsView
+        User loggedOn = getLoggedOn(authToken);
+        // Authorize
+        if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+                !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+                !loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER)) {
+            throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+        }
+        switch (loggedOn.getPrimaryRole()) {
+            case ADMINISTRATOR:
+                break;
+            case MINISTRY_MANAGER:
+                if (!loggedOn.getActiveRole(RoleDiscriminator.MINISTRY_MANAGER).getId().equals(mmId)) {
+                    throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+                }
+                ;
+                break;
+            case INSTITUTION_MANAGER:
+                if (!loggedOn.getActiveRole(RoleDiscriminator.INSTITUTION_MANAGER).getId().equals(imId)) {
+                    throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+                }
+                ;
+                break;
+            default:
+                // Will Not happen
+                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+        }
+
+        // get assistants
+        List<User> result = userService.getAssistants(userId, username, firstname, lastname, mobile, email, status, role, roleStatus, imId, mmId);
+
+        // Return result
+        return result;
+    }
+
+    @GET
+    @Path("/loggedon")
+    @JsonView({UserWithLoginDataView.class})
+    public Response getLoggedOn(@Context HttpServletRequest request) {
+        String authToken = request.getHeader(WebConstants.AUTHENTICATION_TOKEN_HEADER);
+        if (authToken == null && request.getCookies() != null) {
+            for (Cookie c : request.getCookies()) {
+                if (c.getName().equals("_dep_a")) {
+                    authToken = c.getValue();
+                    break;
+                }
+            }
+        }
+        User u = super.getLoggedOn(authToken);
+        return Response.status(200)
+                .header(WebConstants.AUTHENTICATION_TOKEN_HEADER, u.getAuthToken())
+                .cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, NewCookie.DEFAULT_MAX_AGE, false))
+                .entity(u)
+                .build();
+    }
+
+    @GET
+    @Path("/{id:[0-9][0-9]*}")
+    public String get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id) throws RestException {
+        // This is used mainly in user management, not in candidacies or registers
+        User loggedOn = getLoggedOn(authToken);
+        try {
+            // get user
+            User u = userService.get(id);
+
+            if (!loggedOn.getId().equals(id) &&
+                    !loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+                    !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER)) {
+                // Check if other user can view this one
+                switch (u.getPrimaryRole()) {
+                    case ADMINISTRATOR:
+                        // Only other admins:
+                        throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+                    case MINISTRY_MANAGER:
+                    case MINISTRY_ASSISTANT:
+                        // Other ministry managers:
+                        throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+                    case INSTITUTION_MANAGER:
+                    case INSTITUTION_ASSISTANT:
+                        // Other institution managers:
+                        if (!loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER)) {
+                            throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+                        }
+                        break;
+                    case CANDIDATE:
+                    case PROFESSOR_DOMESTIC:
+                    case PROFESSOR_FOREIGN:
+                        if (loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT)) {
+                            // Do Nothing, allow
+                        } else if (loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_MANAGER) ||
+                                loggedOn.hasActiveRole(RoleDiscriminator.INSTITUTION_ASSISTANT)) {
+                            // Check if verified users:
+                            if (u.getStatus().equals(UserStatus.UNVERIFIED) ||
+                                    u.getRole(u.getPrimaryRole()).getStatus().equals(RoleStatus.UNAPPROVED)) {
+                                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+                            }
+                        }
+                        break;
+                }
+            }
+
+            if (u.getId().equals(loggedOn.getId())) {
+                return toJSON(u, UserWithLoginDataView.class);
+            } else {
+                return toJSON(u, UserView.class);
+            }
+        } catch (NotFoundException e) {
+            throw new RestException(Status.NOT_FOUND, e.getMessage());
+        }
+    }
+
+    @POST
+    @JsonView({UserWithLoginDataView.class})
+    public User create(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, User newUser) {
+        try {
+            User loggedOn = getLoggedOn(authToken);
+            // create user
+            User user = userService.create(newUser, loggedOn);
+
+            return user;
+        } catch (NotEnabledException e) {
+            throw new RestException(Status.FORBIDDEN, e.getMessage());
+        } catch (ValidationException e) {
+            throw new RestException(Status.CONFLICT, e.getMessage());
+        } catch (ServiceException e) {
+            throw new RestException(Status.BAD_REQUEST, "service.exception");
+        } catch (Exception e) {
+            throw new RestException(Status.INTERNAL_SERVER_ERROR, "persistence.exception");
+        }
+    }
+
+
+    @PUT
+    @Path("/{id:[0-9][0-9]*}")
+    @JsonView({UserWithLoginDataView.class})
+    public User update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id, User user) {
+        try {
+            // get logged on user
+            User loggedOn = getLoggedOn(authToken);
+            // update user
+            user = userService.update(id, user, loggedOn);
+
+            return user;
+        } catch (NotEnabledException e) {
+            throw new RestException(Status.FORBIDDEN, e.getMessage());
+        } catch (ValidationException e) {
+            throw new RestException(Status.CONFLICT, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Status.INTERNAL_SERVER_ERROR, "persistence.exception");
+        }
+    }
+
+    @DELETE
+    @Path("/{id:[0-9][0-9]*}")
+    public void delete(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
+        try {
+            User loggedOn = getLoggedOn(authToken);
+            // delete user
+            userService.delete(id, loggedOn);
+
+        } catch (NotEnabledException e) {
+            throw new RestException(Status.FORBIDDEN, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Status.INTERNAL_SERVER_ERROR, "persistence.exception");
+        }
+    }
+
+    @PUT
+    @Path("/login")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @JsonView({UserWithLoginDataView.class})
+    public Response login(@FormParam("username") String username, @FormParam("password") String password) {
+        try {
+            User u = authenticationService.doUsernameLogin(username, password);
+            return Response.status(200)
+                    .header(WebConstants.AUTHENTICATION_TOKEN_HEADER, u.getAuthToken())
+                    .cookie(new NewCookie("_dep_a", u.getAuthToken(), "/", null, null, NewCookie.DEFAULT_MAX_AGE, false))
+                    .entity(u)
+                    .build();
+        } catch (ServiceException e) {
+            throw new RestException(Status.UNAUTHORIZED, e.getErrorKey());
+        }
+
+    }
+
+    @PUT
+    @Path("/logout")
+    public Response logout(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
+        try {
+            authenticationService.logout(authToken);
+            return Response.noContent().build();
+        } catch (ServiceException e) {
+            throw new RestException(Status.NOT_FOUND, e.getErrorKey());
+        }
+
+    }
+
+    @PUT
+    @Path("/resetPassword")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response resetPassword(@FormParam("email") String email) {
+        try {
+            userService.resetPassword(email);
+            // Return Result
+            return Response.noContent().build();
+        } catch (NotFoundException e) {
+            throw new RestException(Status.NOT_FOUND, e.getMessage());
+        }
+    }
+
+    @PUT
+    @Path("/sendVerificationEmail")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response sendVerificationEmail(@FormParam("email") String email) {
+        try {
+            // send verification mail
+            userService.sendVerificationEmail(email);
+            // Return Result
+            return Response.noContent().build();
+        } catch (NotFoundException e) {
+            throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (ValidationException e) {
+            throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Status.INTERNAL_SERVER_ERROR, "persistence.exception");
+        }
+    }
+
+    @PUT
+    @Path("/{id:[0-9][0-9]*}/sendLoginEmail")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response sendLoginEmail(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, @FormParam("createLoginLink") Boolean createLoginLink) {
+        User loggedOn = getLoggedOn(authToken);
+        try {
+            // send login mail
+            userService.sendLoginEmail(id, createLoginLink, loggedOn);
+            // Return Result
+            return Response.noContent().build();
+        } catch (NotFoundException e) {
+            throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Status.INTERNAL_SERVER_ERROR, "persistence.exception");
+        }
+    }
+
+
+    @PUT
+    @Path("/{id:[0-9][0-9]*}/sendReminderLoginEmail")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response sendReminderLoginEmail(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, @FormParam("createLoginLink") Boolean createLoginLink) {
+        User loggedOn = getLoggedOn(authToken);
+
+        try {
+            // send reminder login mail
+            userService.sendReminderLoginEmail(id, loggedOn);
+
+            return Response.noContent().build();
+        } catch (NotFoundException e) {
+            throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (NotEnabledException e) {
+            throw new RestException(Status.FORBIDDEN, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Status.INTERNAL_SERVER_ERROR, "persistence.exception");
+        }
+    }
+
+    @PUT
+    @Path("/{id:[0-9][0-9]*}/sendEvaluationEmail")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response sendEvaluationEmail(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
+        User loggedOn = getLoggedOn(authToken);
+
+        try {
+            // send evaluation mail
+            userService.sendEvaluationEmail(id, loggedOn);
+
+            return Response.noContent().build();
+        } catch (NotFoundException e) {
+            throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (NotEnabledException e) {
+            throw new RestException(Status.FORBIDDEN, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Status.INTERNAL_SERVER_ERROR, "persistence.exception");
+        }
+    }
+
+    @PUT
+    @Path("/verify")
+    @JsonView({UserWithLoginDataView.class})
+    public User verify(User user) {
+        try {
+            // verify user
+            user = userService.verify(user);
+
+            return user;
+        } catch (NotFoundException e) {
+            throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (NotEnabledException e) {
+            throw new RestException(Status.FORBIDDEN, e.getMessage());
+        } catch (ServiceException e) {
+            throw new RestException(Status.BAD_REQUEST, "service.exception");
+        } catch (Exception e) {
+            throw new RestException(Status.INTERNAL_SERVER_ERROR, "persistence.exception");
+        }
+
+    }
+
+    @PUT
+    @Path("/{id:[0-9][0-9]*}/status")
+    @JsonView({UserWithLoginDataView.class})
+    public User updateStatus(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, User requestUser) {
+        try {
+            final User loggedOn = getLoggedOn(authToken);
+            // update status
+            User u = userService.updateStatus(id, requestUser, loggedOn);
+            return u;
+        } catch (NotFoundException e) {
+            throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (NotEnabledException e) {
+            throw new RestException(Status.FORBIDDEN, e.getMessage());
+        } catch (ServiceException e) {
+            throw new RestException(Status.BAD_REQUEST, "service.exception");
+        } catch (Exception e) {
+            throw new RestException(Status.INTERNAL_SERVER_ERROR, "persistence.exception");
+        }
+    }
+
+    @POST
+    @Path("/search")
+    @JsonView({UserView.class})
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public SearchData<User> search(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @Context HttpServletRequest request) {
+        try {
+            User loggedOn = getLoggedOn(authToken);
+            // Fill result
+            SearchData<User> result = userService.search(request, loggedOn);
+
+            return result;
+        } catch (NotEnabledException e) {
+            throw new RestException(Status.FORBIDDEN, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Status.INTERNAL_SERVER_ERROR, "persistence.exception");
+        }
+    }
+
+    @POST
+    @Path("/search/shibboleth")
+    @JsonView({User.UserView.class})
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public SearchData<User> searchShibbolethAccountUsers(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @Context HttpServletRequest request) {
+        try {
+            User loggedOn = getLoggedOn(authToken);
+            // Fill result
+            SearchData<User> result = userService.searchShibbolethAccountUsers(request, loggedOn);
+
+            return result;
+        } catch (NotEnabledException e) {
+            throw new RestException(Status.FORBIDDEN, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Status.INTERNAL_SERVER_ERROR, "persistence.exception");
+        }
+    }
+
+    @PUT
+    @Path("/{id:[0-9]+}/revertaccount")
+    public Response revertShibbolethAccount(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long userId, User user) {
+        User loggedOn = getLoggedOn(authToken);
+
+        if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+            throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+        }
+
+        try {
+            // revert the authentication from shibboleth to email
+            authenticationService.revertShibbolethTotEmailAccount(userId);
+        } catch (ServiceException e) {
+            throw new RestException(Status.CONFLICT, e.getMessage());
+        }
+
+        return Response.ok().build();
+    }
 }

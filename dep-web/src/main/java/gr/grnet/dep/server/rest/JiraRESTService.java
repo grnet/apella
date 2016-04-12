@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 @Path("/jira")
-@Stateless
 public class JiraRESTService extends RESTService {
 
 	@Inject

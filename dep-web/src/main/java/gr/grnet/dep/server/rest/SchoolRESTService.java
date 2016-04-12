@@ -2,25 +2,28 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.SchoolService;
+import gr.grnet.dep.service.exceptions.NotEnabledException;
+import gr.grnet.dep.service.exceptions.NotFoundException;
+import gr.grnet.dep.service.exceptions.ValidationException;
 import gr.grnet.dep.service.model.*;
-import org.apache.commons.lang.StringUtils;
 
-import javax.ejb.Stateless;
+import javax.ejb.EJB;
 import javax.inject.Inject;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceException;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.util.Collection;
-import java.util.logging.Level;
+import java.util.List;
 import java.util.logging.Logger;
 
 @Path("/school")
-@Stateless
 public class SchoolRESTService extends RESTService {
 
     @Inject
     private Logger log;
+
+    @EJB
+    private SchoolService schoolService;
 
     /**
      * Returns all Schools
@@ -29,11 +32,11 @@ public class SchoolRESTService extends RESTService {
      */
 
     @GET
-    @SuppressWarnings("unchecked")
     public Collection<School> getAll() {
-        return em.createQuery(
-                "select distinct i from School i ", School.class)
-                .getResultList();
+        // get all schools
+        List<School> schools = schoolService.getAll();
+
+        return schools;
     }
 
     /**
@@ -47,12 +50,10 @@ public class SchoolRESTService extends RESTService {
     @Path("/{id:[0-9][0-9]*}")
     public School get(@PathParam("id") long id) {
         try {
-            return em.createQuery(
-                    "select i from School i " +
-                            "where i.id = :id", School.class)
-                    .setParameter("id", id)
-                    .getSingleResult();
-        } catch (NoResultException e) {
+            // find school
+            School school = schoolService.get(id);
+            return school;
+        } catch (NotFoundException e) {
             throw new RestException(Response.Status.NOT_FOUND, "wrong.school.id");
         }
     }
@@ -60,43 +61,30 @@ public class SchoolRESTService extends RESTService {
     @PUT
     @Path("/{id:[0-9][0-9]*}")
     public School update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, School schoolToUpdate) {
-
-        User loggedOn = getLoggedOn(authToken);
-
-        if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR)) {
-            throw new RestException(Response.Status.FORBIDDEN, "insufficient.privileges");
-        }
-
         try {
-            School school = em.find(School.class, id);
-            if (school == null) {
-                throw new RestException(Response.Status.NOT_FOUND, "wrong.school.id");
-            }
+            User loggedOn = getLoggedOn(authToken);
 
-            if (schoolToUpdate.getName() == null ||
-                    StringUtils.isEmpty(schoolToUpdate.getName().get("el")) || StringUtils.isEmpty(schoolToUpdate.getName().get("en"))) {
-                throw new RestException(Response.Status.CONFLICT, "names.missing");
-            }
-
-            school.setName(schoolToUpdate.getName());
-
+            // update school
+            School school = schoolService.update(id, schoolToUpdate, loggedOn);
             return school;
 
-        } catch (PersistenceException e) {
-            log.log(Level.WARNING, e.getMessage(), e);
-            sc.setRollbackOnly();
-            throw new RestException(Response.Status.BAD_REQUEST, "persistence.exception");
+        } catch (NotEnabledException e) {
+            throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
+        } catch (NotFoundException e) {
+            throw new RestException(Response.Status.NOT_FOUND, e.getMessage());
+        } catch (ValidationException e) {
+            throw new RestException(Response.Status.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 
     @GET
     @Path("/{id:[0-9][0-9]*}/departments")
     public Collection<Department> getDepartments(@PathParam("id") long id) {
+        // get departments
+        List<Department> departments = schoolService.getDepartments(id);
 
-        return em.createQuery(
-                "Select d from Department d " +
-                        "where d.school.id = :id", Department.class)
-                .setParameter("id", id)
-                .getResultList();
+        return departments;
     }
 }

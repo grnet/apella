@@ -42,7 +42,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Path("/exports")
-@Stateless
 public class DataExportRESTService extends RESTService {
 
 	@Inject

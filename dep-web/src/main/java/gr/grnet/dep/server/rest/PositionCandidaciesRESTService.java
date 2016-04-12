@@ -3,6 +3,8 @@ package gr.grnet.dep.server.rest;
 import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.PositionService;
+import gr.grnet.dep.service.exceptions.NotFoundException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidacy.CandidacyView;
 import gr.grnet.dep.service.model.CandidacyEvaluator;
@@ -24,7 +26,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.hibernate.Session;
 
-import javax.ejb.Stateless;
+import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
@@ -54,11 +56,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Path("/position/{id:[0-9][0-9]*}/candidacies")
-@Stateless
 public class PositionCandidaciesRESTService extends RESTService {
 
 	@Inject
 	private Logger log;
+
+	@EJB
+	private PositionService positionService;
 
 	/*********************
 	 * Candidacies *********
@@ -77,30 +81,33 @@ public class PositionCandidaciesRESTService extends RESTService {
 	@GET
 	@JsonView({CandidacyView.class})
 	public Set<Candidacy> getPositionCandidacies(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId) {
-		User loggedOn = getLoggedOn(authToken);
-		Position position = em.find(Position.class, positionId);
-		if (position == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
-		}
-		if (position.getPhase().getCandidacies() == null) {
-			throw new RestException(Status.CONFLICT, "wrong.position.id");
-		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-				!loggedOn.isAssociatedWithDepartment(position.getDepartment()) &&
-				!(position.getPhase().getCommittee() != null && position.getPhase().getCommittee().containsMember(loggedOn)) &&
-				!position.getPhase().getCandidacies().containsCandidate(loggedOn)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
+		try {
+			User loggedOn = getLoggedOn(authToken);
+			// get position
+			Position position = positionService.getPositionById(positionId);
 
-		Set<Candidacy> result = new HashSet<Candidacy>();
-		for (Candidacy candidacy : position.getPhase().getCandidacies().getCandidacies()) {
-			if (candidacy.isPermanent()) {
-				result.add(candidacy);
+			if (position.getPhase().getCandidacies() == null) {
+				throw new RestException(Status.CONFLICT, "wrong.position.id");
 			}
+			if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
+					!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
+					!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
+					!loggedOn.isAssociatedWithDepartment(position.getDepartment()) &&
+					!(position.getPhase().getCommittee() != null && position.getPhase().getCommittee().containsMember(loggedOn)) &&
+					!position.getPhase().getCandidacies().containsCandidate(loggedOn)) {
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+			}
+
+			Set<Candidacy> result = new HashSet<Candidacy>();
+			for (Candidacy candidacy : position.getPhase().getCandidacies().getCandidacies()) {
+				if (candidacy.isPermanent()) {
+					result.add(candidacy);
+				}
+			}
+			return result;
+		} catch (NotFoundException e) {
+			throw new RestException(Status.CONFLICT, e.getMessage());
 		}
-		return result;
 	}
 
 	/**********************************

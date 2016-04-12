@@ -1,7 +1,9 @@
 package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.WebConstants;
+import gr.grnet.dep.service.CheckConnectionService;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.NoResultException;
 import javax.ws.rs.GET;
@@ -14,21 +16,22 @@ import javax.ws.rs.core.Response;
  */
 
 @Path("/check")
-@Stateless
 public class CheckConnectionRESTService extends RESTService {
+
+    @EJB
+    private CheckConnectionService checkConnectionService;
 
     @GET
     public Response testConnection(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
-        try {
-            em.createQuery(
-                    "Select a.id from Administrator a ", Long.class)
-                    .setMaxResults(1)
-                    .getSingleResult();
 
+        // check connection
+        boolean ping = checkConnectionService.testConnection();
+
+        if (ping) {
             return Response.ok().build();
-        } catch (NoResultException e) {
-            return Response.status(Response.Status.SERVICE_UNAVAILABLE).build();
         }
+
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE).build();
     }
 
 }

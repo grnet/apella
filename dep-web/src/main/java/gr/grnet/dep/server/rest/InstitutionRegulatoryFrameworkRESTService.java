@@ -2,10 +2,15 @@ package gr.grnet.dep.server.rest;
 
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.InstitutionRegulatoryFrameworkService;
+import gr.grnet.dep.service.InstitutionService;
+import gr.grnet.dep.service.exceptions.NotFoundException;
+import gr.grnet.dep.service.exceptions.ValidationException;
 import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.InstitutionRegulatoryFramework;
 import gr.grnet.dep.service.model.User;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
@@ -24,11 +29,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Path("/institutionrf")
-@Stateless
 public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 
 	@Inject
 	private Logger log;
+
+	@EJB
+	private InstitutionRegulatoryFrameworkService regulatoryFrameworkService;
+
+	@EJB
+	private InstitutionService institutionService;
 
 	/**
 	 * Returns Regulatory Frameworks of all Institutions
@@ -38,10 +48,9 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 	@GET
 	@SuppressWarnings("unchecked")
 	public Collection<InstitutionRegulatoryFramework> getAll() {
-		return em.createQuery(
-				"select i from InstitutionRegulatoryFramework i " +
-						"where i.permanent = true", InstitutionRegulatoryFramework.class)
-				.getResultList();
+		// fetch
+		Collection<InstitutionRegulatoryFramework> institutionRegulatoryFrameworks = regulatoryFrameworkService.getAll();
+		return institutionRegulatoryFrameworks;
 	}
 
 	/**
@@ -54,13 +63,11 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 	@Path("/{id:[0-9]+}")
 	public InstitutionRegulatoryFramework get(@PathParam("id") long id) {
 		try {
-			return em.createQuery(
-					"select i from InstitutionRegulatoryFramework i " +
-							"where i.id = :id", InstitutionRegulatoryFramework.class)
-					.setParameter("id", id)
-					.getSingleResult();
-		} catch (NoResultException e) {
-			throw new RestException(Status.NOT_FOUND, "wrong.institutionregulatoryframework.id");
+			// fetch
+			InstitutionRegulatoryFramework institutionRegulatoryFramework = regulatoryFrameworkService.get(id);
+			return institutionRegulatoryFramework;
+		} catch (NotFoundException e) {
+			throw new RestException(Status.NOT_FOUND, e.getMessage());
 		}
 	}
 
@@ -76,38 +83,23 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 	 */
 	@POST
 	public InstitutionRegulatoryFramework create(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, InstitutionRegulatoryFramework newIRF) {
-		User loggedOn = getLoggedOn(authToken);
-		Institution institution = em.find(Institution.class, newIRF.getInstitution().getId());
-		if (institution == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.institution.id");
-		}
-		newIRF.setInstitution(institution);
-		if (!newIRF.isUserAllowedToEdit(loggedOn)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		// Validate
 		try {
-			em.createQuery(
-					"select irf from InstitutionRegulatoryFramework irf " +
-							"where irf.institution.id = :institutionId " +
-							"and irf.permanent = true ", InstitutionRegulatoryFramework.class)
-					.setParameter("institutionId", institution.getId())
-					.getSingleResult();
-			throw new RestException(Status.CONFLICT, "institutionrf.already.exists");
-		} catch (NoResultException ne) {
-		}
-		// Create
-		try {
-			newIRF.setCreatedAt(new Date());
-			newIRF.setUpdatedAt(new Date());
-			newIRF.setPermanent(false);
-			newIRF = em.merge(newIRF);
-			em.flush();
+			// get logged on user
+			User loggedOn = getLoggedOn(authToken);
+			// get institution
+			Institution institution = institutionService.getInstitution(newIRF.getInstitution().getId());
+			newIRF.setInstitution(institution);
+			// validation
+			if (!newIRF.isUserAllowedToEdit(loggedOn)) {
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+			}
+			// create
+			newIRF = regulatoryFrameworkService.create(newIRF);
 			return newIRF;
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+		} catch (NotFoundException e) {
+			throw new RestException(Status.NOT_FOUND, e.getMessage());
+		} catch (ValidationException e) {
+			throw new RestException(Status.CONFLICT, e.getMessage());
 		}
 	}
 
@@ -124,26 +116,21 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 	@PUT
 	@Path("/{id:[0-9]+}")
 	public InstitutionRegulatoryFramework update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id, InstitutionRegulatoryFramework newIRF) {
-		User loggedOn = getLoggedOn(authToken);
-		InstitutionRegulatoryFramework existing = em.find(InstitutionRegulatoryFramework.class, id);
-		if (existing == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.institutionregulatoryframework.id");
-		}
-		if (!existing.isUserAllowedToEdit(loggedOn)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
 		try {
-			existing.setEswterikosKanonismosURL(newIRF.getEswterikosKanonismosURL());
-			existing.setOrganismosURL(newIRF.getOrganismosURL());
-			existing.setUpdatedAt(new Date());
-			existing.setPermanent(true);
-			em.flush();
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+			User loggedOn = getLoggedOn(authToken);
+			// get
+			InstitutionRegulatoryFramework existing = regulatoryFrameworkService.get(id);
+
+			if (!existing.isUserAllowedToEdit(loggedOn)) {
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+			}
+			// update
+			existing = regulatoryFrameworkService.update(id, existing);
+
+			return existing;
+		} catch (NotFoundException e) {
+			throw new RestException(Status.NOT_FOUND, e.getMessage());
 		}
-		return existing;
 	}
 
 	/**
@@ -157,21 +144,20 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 	@DELETE
 	@Path("/{id:[0-9]+}")
 	public void delete(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
-		User loggedOn = getLoggedOn(authToken);
-		InstitutionRegulatoryFramework existing = em.find(InstitutionRegulatoryFramework.class, id);
-		if (existing == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.institutionregulatoryframework.id");
-		}
-		if (!existing.isUserAllowedToEdit(loggedOn)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
 		try {
-			em.remove(existing);
-			em.flush();
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+			User loggedOn = getLoggedOn(authToken);
+			InstitutionRegulatoryFramework existing = regulatoryFrameworkService.get(id);
+
+			if (!existing.isUserAllowedToEdit(loggedOn)) {
+				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+			}
+			// delete
+			regulatoryFrameworkService.delete(id);
+		} catch (NotFoundException e) {
+			throw new RestException(Status.NOT_FOUND, e.getMessage());
 		}
+
+
+
 	}
 }
