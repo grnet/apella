@@ -222,24 +222,6 @@ public class RoleRESTService extends RESTService {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @Path("/{id:[0-9]+}/documents/{fileName}")
     public Response getDocument(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("fileName") RoleService.DocumentDiscriminator fileName) {
-        Role role = em.find(Role.class, id);
-        // Validate:
-        if (role == null) {
-            throw new RestException(Status.NOT_FOUND, "wrong.role.id");
-        }
-        switch (fileName) {
-            case InstitutionManagerCertificationDean:
-            case InstitutionManagerCertificationPresident:
-                if (!(role instanceof InstitutionManager)) {
-                    throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-                }
-                break;
-            case CandidateRegistrationForm:
-                if (!(role instanceof Candidate)) {
-                    throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-                }
-                break;
-        }
         // Generate Document
         try {
             InputStream is = roleService.getDocument(id, fileName);

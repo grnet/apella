@@ -11,18 +11,14 @@ import gr.grnet.dep.service.model.file.PositionNominationFile;
 import gr.grnet.dep.service.util.DateUtil;
 import gr.grnet.dep.service.util.StringUtil;
 import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Stateless

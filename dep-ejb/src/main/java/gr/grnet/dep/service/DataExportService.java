@@ -1,50 +1,22 @@
 package gr.grnet.dep.service;
 
 import gr.grnet.dep.service.dto.Statistics;
-import gr.grnet.dep.service.model.Candidacy;
-import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.InstitutionAssistant;
-import gr.grnet.dep.service.model.InstitutionManager;
-import gr.grnet.dep.service.model.InstitutionRegulatoryFramework;
+import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.Position.PositionStatus;
-import gr.grnet.dep.service.model.PositionCommitteeMember;
-import gr.grnet.dep.service.model.PositionEvaluator;
-import gr.grnet.dep.service.model.ProfessorDomestic;
-import gr.grnet.dep.service.model.ProfessorForeign;
-import gr.grnet.dep.service.model.Rank;
-import gr.grnet.dep.service.model.Register;
-import gr.grnet.dep.service.model.RegisterMember;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.file.FileType;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.DataFormat;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import javax.ejb.*;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
 import java.util.logging.Logger;
 
 @Stateless

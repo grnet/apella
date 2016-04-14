@@ -2,15 +2,7 @@ package gr.grnet.dep.service.model.evaluation;
 
 import gr.grnet.dep.service.model.Role;
 
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.MapKeyColumn;
+import javax.persistence.*;
 import java.util.HashMap;
 import java.util.Map;
 

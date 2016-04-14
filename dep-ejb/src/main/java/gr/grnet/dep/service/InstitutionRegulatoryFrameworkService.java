@@ -4,7 +4,6 @@ import gr.grnet.dep.service.exceptions.NotFoundException;
 import gr.grnet.dep.service.exceptions.ValidationException;
 import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.InstitutionRegulatoryFramework;
-import gr.grnet.dep.service.model.User;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;

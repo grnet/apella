@@ -10,7 +10,6 @@ import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.file.PositionEvaluatorFile;
 import gr.grnet.dep.service.util.StringUtil;
 import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
@@ -18,9 +17,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.*;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Stateless

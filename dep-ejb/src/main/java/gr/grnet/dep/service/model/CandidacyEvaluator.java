@@ -6,13 +6,7 @@ import gr.grnet.dep.service.model.PositionCandidacies.DetailedPositionCandidacie
 import gr.grnet.dep.service.model.file.PositionCandidaciesFile;
 import gr.grnet.dep.service.util.CompareUtil;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Version;
+import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.HashSet;

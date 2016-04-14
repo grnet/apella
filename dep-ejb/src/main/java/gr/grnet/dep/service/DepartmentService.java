@@ -3,8 +3,6 @@ package gr.grnet.dep.service;
 import gr.grnet.dep.service.exceptions.NotFoundException;
 import gr.grnet.dep.service.exceptions.ValidationException;
 import gr.grnet.dep.service.model.Department;
-import gr.grnet.dep.service.model.Role;
-import gr.grnet.dep.service.model.User;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.Stateless;

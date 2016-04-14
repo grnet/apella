@@ -3,15 +3,7 @@ package gr.grnet.dep.service.model;
 import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.service.model.PositionCommittee.DetailedPositionCommitteeView;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.persistence.Version;
+import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 

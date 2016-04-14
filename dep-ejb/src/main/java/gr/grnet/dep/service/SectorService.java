@@ -2,9 +2,7 @@ package gr.grnet.dep.service;
 
 import gr.grnet.dep.service.exceptions.NotFoundException;
 import gr.grnet.dep.service.exceptions.ValidationException;
-import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Sector;
-import gr.grnet.dep.service.model.User;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.Stateless;
@@ -12,11 +10,8 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.ws.rs.core.Response;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Stateless

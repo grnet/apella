@@ -5,9 +5,6 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import java.util.logging.Logger;
 
 public class NotifyOnClosedPositionsJob implements Job {

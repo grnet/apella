@@ -3,6 +3,10 @@ package gr.grnet.dep.server.rest;
 import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.PositionComplementaryDocumentsService;
+import gr.grnet.dep.service.exceptions.NotEnabledException;
+import gr.grnet.dep.service.exceptions.NotFoundException;
+import gr.grnet.dep.service.exceptions.ValidationException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Position.PositionStatus;
@@ -21,6 +25,7 @@ import gr.grnet.dep.service.util.StringUtil;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.PersistenceException;
@@ -53,6 +58,9 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 	@Inject
 	private Logger log;
 
+	@EJB
+	private PositionComplementaryDocumentsService positionComplementaryDocumentsService;
+
 	/**
 	 * Retrieves the complementary documents parameter of the specified position
 	 *
@@ -68,25 +76,19 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 	@Path("/{cdId:[0-9]+}")
 	@JsonView({DetailedPositionComplementaryDocumentsView.class})
 	public PositionComplementaryDocuments get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cdId") Long cdId) {
-		User loggedOn = getLoggedOn(authToken);
-		PositionComplementaryDocuments existingComDocs = em.find(PositionComplementaryDocuments.class, cdId);
-		if (existingComDocs == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.position.complentaryDocuments.id");
+		try {
+			User loggedOn = getLoggedOn(authToken);
+			// get
+			PositionComplementaryDocuments existingComDocs = positionComplementaryDocumentsService.get(positionId, cdId, loggedOn);
+
+			return existingComDocs;
+		} catch (NotEnabledException e) {
+			throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
+		} catch (NotFoundException e) {
+			throw new RestException(Status.NOT_FOUND, e.getMessage());
+		} catch (Exception e) {
+			throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
 		}
-		Position existingPosition = existingComDocs.getPosition();
-		if (!existingPosition.getId().equals(positionId)) {
-			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
-		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-				!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
-				!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
-				!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-				!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		return existingComDocs;
 	}
 
 	/**********************
@@ -109,27 +111,19 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 	@Path("/{cdId:[0-9]+}/file")
 	@JsonView({SimpleFileHeaderView.class})
 	public Collection<ComplementaryDocumentsFile> getFiles(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cdId") Long cdId) {
-		User loggedOn = getLoggedOn(authToken);
-		PositionComplementaryDocuments existingComDocs = em.find(PositionComplementaryDocuments.class, cdId);
-		if (existingComDocs == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.position.complentaryDocuments.id");
+		try {
+
+			User loggedOn = getLoggedOn(authToken);
+			Collection<ComplementaryDocumentsFile> files = positionComplementaryDocumentsService.getFiles(positionId, cdId, loggedOn);
+
+			return files;
+		} catch (NotEnabledException e) {
+			throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
+		} catch (NotFoundException e) {
+			throw new RestException(Status.NOT_FOUND, e.getMessage());
+		} catch (Exception e) {
+			throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
 		}
-		Position existingPosition = existingComDocs.getPosition();
-		if (!existingPosition.getId().equals(positionId)) {
-			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
-		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-				!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
-				!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
-				!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-				!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		// Return Result
-		Collection<ComplementaryDocumentsFile> files = FileHeader.filterDeleted(existingPosition.getPhase().getComplementaryDocuments().getFiles());
-		return files;
 	}
 
 	/**
@@ -150,32 +144,22 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 	@Path("/{cdId:[0-9]+}/file/{fileId:[0-9]+}")
 	@JsonView({SimpleFileHeaderView.class})
 	public ComplementaryDocumentsFile getFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cdId") Long cdId, @PathParam("fileId") Long fileId) {
-		User loggedOn = getLoggedOn(authToken);
-		PositionComplementaryDocuments existingComDocs = em.find(PositionComplementaryDocuments.class, cdId);
-		if (existingComDocs == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.position.complentaryDocuments.id");
-		}
-		Position existingPosition = existingComDocs.getPosition();
-		if (!existingPosition.getId().equals(positionId)) {
-			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
-		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-				!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
-				!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
-				!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-				!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		// Return Result
-		Collection<ComplementaryDocumentsFile> files = FileHeader.filterDeleted(existingComDocs.getFiles());
-		for (ComplementaryDocumentsFile file : files) {
-			if (file.getId().equals(fileId)) {
-				return file;
+		try {
+			User loggedOn = getLoggedOn(authToken);
+			ComplementaryDocumentsFile file = positionComplementaryDocumentsService.getFile(positionId, cdId, fileId, loggedOn);
+
+			if (file == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 			}
+
+			return file;
+		} catch (NotEnabledException e) {
+			throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
+		} catch (NotFoundException e) {
+			throw new RestException(Status.NOT_FOUND, e.getMessage());
+		} catch (Exception e) {
+			throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
 		}
-		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 	}
 
 	/**
@@ -197,38 +181,20 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("/{cdId:[0-9]+}/file/{fileId:[0-9]+}/body/{bodyId:[0-9]+}")
 	public Response getFileBody(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cdId") Long cdId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
-		User loggedOn = getLoggedOn(authToken);
-		PositionComplementaryDocuments existingComDocs = em.find(PositionComplementaryDocuments.class, cdId);
-		if (existingComDocs == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.position.complentaryDocuments.id");
-		}
-		Position existingPosition = existingComDocs.getPosition();
-		if (!existingPosition.getId().equals(positionId)) {
-			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
-		}
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-				!loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-				!loggedOn.isAssociatedWithDepartment(existingPosition.getDepartment()) &&
-				!(existingPosition.getPhase().getCommittee() != null && existingPosition.getPhase().getCommittee().containsMember(loggedOn)) &&
-				!(existingPosition.getPhase().getEvaluation() != null && existingPosition.getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-				!existingPosition.getPhase().getCandidacies().containsCandidate(loggedOn)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		// Return Result
-		Collection<ComplementaryDocumentsFile> files = FileHeader.filterDeleted(existingComDocs.getFiles());
-		for (ComplementaryDocumentsFile file : files) {
-			if (file.getId().equals(fileId)) {
-				if (file.getId().equals(fileId)) {
-					for (FileBody fb : file.getBodies()) {
-						if (fb.getId().equals(bodyId)) {
-							return sendFileBody(fb);
-						}
-					}
-				}
+		try {
+			User loggedOn = getLoggedOn(authToken);
+			FileBody fileBody = positionComplementaryDocumentsService.getFileBody(positionId, cdId, fileId, bodyId, loggedOn);
+			if (fileBody == null) {
+				throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 			}
+			return sendFileBody(fileBody);
+		} catch (NotEnabledException e) {
+			throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
+		} catch (NotFoundException e) {
+			throw new RestException(Status.NOT_FOUND, e.getMessage());
+		} catch (Exception e) {
+			throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
 		}
-		throw new RestException(Status.NOT_FOUND, "wrong.file.id");
 	}
 
 	/**
@@ -254,147 +220,21 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 	@Consumes("multipart/form-data")
 	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
 	public String createFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cdId") Long cdId, @Context HttpServletRequest request) throws FileUploadException, IOException {
-		User loggedOn = getLoggedOn(authToken);
-		PositionComplementaryDocuments existingComDocs = em.find(PositionComplementaryDocuments.class, cdId);
-		if (existingComDocs == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.position.complentaryDocuments.id");
-		}
-		Position existingPosition = existingComDocs.getPosition();
-		if (!existingPosition.getId().equals(positionId)) {
-			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
-		}
-		if (!existingPosition.getPhase().getComplementaryDocuments().getId().equals(cdId)) {
-			throw new RestException(Status.FORBIDDEN, "wrong.position.complentaryDocuments.phase");
-		}
-		if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		if (existingPosition.getPhase().getStatus().equals(PositionStatus.CANCELLED)) {
-			throw new RestException(Status.CONFLICT, "wrong.position.status");
-		}
-		// Parse Request
-		List<FileItem> fileItems = readMultipartFormData(request);
-		// Find required type:
-		FileType type = null;
-		for (FileItem fileItem : fileItems) {
-			if (fileItem.isFormField() && fileItem.getFieldName().equals("type")) {
-				type = FileType.valueOf(fileItem.getString("UTF-8"));
-				break;
-			}
-		}
-		if (type == null) {
-			throw new RestException(Status.BAD_REQUEST, "missing.file.type");
-		}
 		try {
-			// Check number of file types
-			Set<ComplementaryDocumentsFile> cdFiles = FileHeader.filterIncludingDeleted(existingComDocs.getFiles(), type);
-			ComplementaryDocumentsFile existingFile3 = checkNumberOfFileTypes(ComplementaryDocumentsFile.fileTypes, type, cdFiles);
-			if (existingFile3 != null) {
-				return _updateFile(loggedOn, fileItems, existingFile3);
-			}
+			User loggedOn = getLoggedOn(authToken);
 
-			// Create
-			final ComplementaryDocumentsFile cdFile = new ComplementaryDocumentsFile();
-			cdFile.setComplementaryDocuments(existingComDocs);
-			cdFile.setOwner(loggedOn);
-			saveFile(loggedOn, fileItems, cdFile);
-			existingComDocs.addFile(cdFile);
-			em.flush();
+			// create file
+			FileHeader file = positionComplementaryDocumentsService.createFile(positionId, cdId, request, loggedOn);
 
-			// Send E-Mails
-			// position.upload@committee
-			if (cdFile.getComplementaryDocuments().getPosition().getPhase().getCommittee() != null) {
-				for (final PositionCommitteeMember member : cdFile.getComplementaryDocuments().getPosition().getPhase().getCommittee().getMembers()) {
-					mailService.postEmail(member.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
-							"default.subject",
-							"position.upload@committee",
-							Collections.unmodifiableMap(new HashMap<String, String>() {
-
-								{
-									put("positionID", StringUtil.formatPositionID(cdFile.getComplementaryDocuments().getPosition().getId()));
-									put("position", cdFile.getComplementaryDocuments().getPosition().getName());
-
-									put("firstname_el", member.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-									put("lastname_el", member.getRegisterMember().getProfessor().getUser().getLastname("el"));
-									put("institution_el", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-									put("school_el", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getName().get("el"));
-									put("department_el", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName().get("el"));
-
-									put("firstname_en", member.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-									put("lastname_en", member.getRegisterMember().getProfessor().getUser().getLastname("en"));
-									put("institution_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-									put("school_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getName().get("en"));
-									put("department_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName().get("en"));
-
-									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorCommittees");
-								}
-							}));
-				}
-			}
-			// position.upload@candidates
-			for (final Candidacy candidacy : cdFile.getComplementaryDocuments().getPosition().getPhase().getCandidacies().getCandidacies()) {
-                if (!candidacy.isWithdrawn() && candidacy.isPermanent()) {
-                    mailService.postEmail(candidacy.getCandidate().getUser().getContactInfo().getEmail(),
-                            "default.subject",
-                            "position.upload@candidates",
-                            Collections.unmodifiableMap(new HashMap<String, String>() {
-                                {
-                                    put("positionID", StringUtil.formatPositionID(cdFile.getComplementaryDocuments().getPosition().getId()));
-                                    put("position", cdFile.getComplementaryDocuments().getPosition().getName());
-
-                                    put("firstname_el", candidacy.getCandidate().getUser().getFirstname("el"));
-                                    put("lastname_el", candidacy.getCandidate().getUser().getLastname("el"));
-                                    put("institution_el", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-                                    put("school_el", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getName().get("el"));
-                                    put("department_el", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName().get("el"));
-
-                                    put("firstname_en", candidacy.getCandidate().getUser().getFirstname("en"));
-                                    put("lastname_en", candidacy.getCandidate().getUser().getLastname("en"));
-                                    put("institution_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-                                    put("school_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getName().get("en"));
-                                    put("department_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName().get("en"));
-
-									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#candidateCandidacies");
-								}
-                            }));
-                }
-            }
-			// position.upload@evaluators
-			if (cdFile.getComplementaryDocuments().getPosition().getPhase().getEvaluation() != null) {
-				for (final PositionEvaluator evaluator : cdFile.getComplementaryDocuments().getPosition().getPhase().getEvaluation().getEvaluators()) {
-					mailService.postEmail(evaluator.getRegisterMember().getProfessor().getUser().getContactInfo().getEmail(),
-							"default.subject",
-							"position.upload@evaluators",
-							Collections.unmodifiableMap(new HashMap<String, String>() {
-
-								{
-									put("positionID", StringUtil.formatPositionID(cdFile.getComplementaryDocuments().getPosition().getId()));
-									put("position", cdFile.getComplementaryDocuments().getPosition().getName());
-
-									put("firstname_el", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("el"));
-									put("lastname_el", evaluator.getRegisterMember().getProfessor().getUser().getLastname("el"));
-									put("institution_el", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName().get("el"));
-									put("school_el", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getName().get("el"));
-									put("department_el", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName().get("el"));
-
-									put("firstname_en", evaluator.getRegisterMember().getProfessor().getUser().getFirstname("en"));
-									put("lastname_en", evaluator.getRegisterMember().getProfessor().getUser().getLastname("en"));
-									put("institution_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getInstitution().getName().get("en"));
-									put("school_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getSchool().getName().get("en"));
-									put("department_en", cdFile.getComplementaryDocuments().getPosition().getDepartment().getName().get("en"));
-
-									put("ref", WebConstants.conf.getString("home.url") + "/apella.html#professorEvaluations");
-								}
-							}));
-				}
-			}
-			// End: Send E-Mails
-
-			return toJSON(cdFile, SimpleFileHeaderView.class);
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+			return toJSON(file, SimpleFileHeaderView.class);
+		} catch (NotEnabledException e) {
+			throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
+		} catch (NotFoundException e) {
+			throw new RestException(Status.NOT_FOUND, e.getMessage());
+		} catch (ValidationException e) {
+			throw new RestException(Status.BAD_REQUEST, e.getMessage());
+		} catch (Exception e) {
+			throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
 		}
 	}
 
@@ -424,58 +264,20 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 	@Consumes("multipart/form-data")
 	@Produces(MediaType.TEXT_PLAIN + ";charset=UTF-8")
 	public String updateFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cdId") Long cdId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
-		User loggedOn = getLoggedOn(authToken);
-		PositionComplementaryDocuments existingComDocs = em.find(PositionComplementaryDocuments.class, cdId);
-		if (existingComDocs == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.position.complentaryDocuments.id");
-		}
-		Position existingPosition = existingComDocs.getPosition();
-		if (!existingPosition.getId().equals(positionId)) {
-			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
-		}
-		if (!existingPosition.getPhase().getComplementaryDocuments().getId().equals(cdId)) {
-			throw new RestException(Status.FORBIDDEN, "wrong.position.complentaryDocuments.phase");
-		}
-		if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		if (existingPosition.getPhase().getStatus().equals(PositionStatus.CANCELLED)) {
-			throw new RestException(Status.CONFLICT, "wrong.position.status");
-		}
-		// Parse Request
-		List<FileItem> fileItems = readMultipartFormData(request);
-		// Find required type:
-		FileType type = null;
-		for (FileItem fileItem : fileItems) {
-			if (fileItem.isFormField() && fileItem.getFieldName().equals("type")) {
-				type = FileType.valueOf(fileItem.getString("UTF-8"));
-				break;
-			}
-		}
-		// Extra Validation
-		if (type == null) {
-			throw new RestException(Status.BAD_REQUEST, "missing.file.type");
-		}
 		try {
-			if (!ComplementaryDocumentsFile.fileTypes.containsKey(type)) {
-				throw new RestException(Status.CONFLICT, "wrong.file.type");
-			}
-			ComplementaryDocumentsFile complementaryDocumentsFile = null;
-			for (ComplementaryDocumentsFile file : existingComDocs.getFiles()) {
-				if (file.getId().equals(fileId)) {
-					complementaryDocumentsFile = file;
-					break;
-				}
-			}
-			if (complementaryDocumentsFile == null) {
-				throw new RestException(Status.NOT_FOUND, "wrong.file.id");
-			}
-			// Update
-			return _updateFile(loggedOn, fileItems, complementaryDocumentsFile);
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+			User loggedOn = getLoggedOn(authToken);
+			// update file
+			FileHeader file = positionComplementaryDocumentsService.updateFile(positionId, cdId, fileId, request, loggedOn);
+
+			return toJSON(file, SimpleFileHeaderView.class);
+		} catch (NotEnabledException e) {
+			throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
+		} catch (NotFoundException e) {
+			throw new RestException(Status.NOT_FOUND, e.getMessage());
+		} catch (ValidationException e) {
+			throw new RestException(Status.BAD_REQUEST, e.getMessage());
+		} catch (Exception e) {
+			throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
 		}
 	}
 
@@ -498,44 +300,19 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 	@Path("/{cdId:[0-9]+}/file/{fileId:([0-9]+)?}")
 	@JsonView({SimpleFileHeaderView.class})
 	public Response deleteFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("cdId") Long cdId, @PathParam("id") long positionId, @PathParam("fileId") Long fileId) {
-		User loggedOn = getLoggedOn(authToken);
-		PositionComplementaryDocuments existingComDocs = em.find(PositionComplementaryDocuments.class, cdId);
-		if (existingComDocs == null) {
-			throw new RestException(Status.NOT_FOUND, "wrong.position.complentaryDocuments.id");
-		}
-		Position existingPosition = existingComDocs.getPosition();
-		if (!existingPosition.getId().equals(positionId)) {
-			throw new RestException(Status.NOT_FOUND, "wrong.position.id");
-		}
-		if (!existingPosition.getPhase().getComplementaryDocuments().getId().equals(cdId)) {
-			throw new RestException(Status.FORBIDDEN, "wrong.position.complentaryDocuments.phase");
-		}
-		if (!existingPosition.isUserAllowedToEdit(loggedOn)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-		if (existingPosition.getPhase().getStatus().equals(PositionStatus.CANCELLED)) {
-			throw new RestException(Status.CONFLICT, "wrong.position.status");
-		}
 		try {
-			ComplementaryDocumentsFile complementaryDocumentsFile = null;
-			for (ComplementaryDocumentsFile file : existingComDocs.getFiles()) {
-				if (file.getId().equals(fileId)) {
-					complementaryDocumentsFile = file;
-					break;
-				}
-			}
-			if (complementaryDocumentsFile == null) {
-				throw new RestException(Status.NOT_FOUND, "wrong.file.id");
-			}
-			ComplementaryDocumentsFile cdf = deleteAsMuchAsPossible(complementaryDocumentsFile);
-			if (cdf == null) {
-				existingComDocs.getFiles().remove(complementaryDocumentsFile);
-			}
+			User loggedOn = getLoggedOn(authToken);
+			// delete file
+			positionComplementaryDocumentsService.deleteFile(cdId, positionId, fileId, loggedOn);
 			return Response.noContent().build();
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
-			throw new RestException(Status.BAD_REQUEST, "persistence.exception");
+		} catch (NotEnabledException e) {
+			throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
+		} catch (NotFoundException e) {
+			throw new RestException(Status.NOT_FOUND, e.getMessage());
+		} catch (ValidationException e) {
+			throw new RestException(Status.BAD_REQUEST, e.getMessage());
+		} catch (Exception e) {
+			throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
 		}
 	}
 }

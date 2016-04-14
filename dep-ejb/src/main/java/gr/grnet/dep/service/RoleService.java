@@ -8,21 +8,18 @@ import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.file.*;
 import gr.grnet.dep.service.util.PdfUtil;
 import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
 
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.persistence.*;
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
-import java.io.*;
-import java.net.URLEncoder;
+import java.io.File;
+import java.io.InputStream;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Stateless
