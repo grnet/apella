@@ -5,40 +5,14 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.AuthenticationService;
-import gr.grnet.dep.service.JiraService;
-import gr.grnet.dep.service.MailService;
-import gr.grnet.dep.service.ReportService;
-import gr.grnet.dep.service.UtilityService;
+import gr.grnet.dep.service.*;
 import gr.grnet.dep.service.exceptions.ServiceException;
-import gr.grnet.dep.service.model.Candidacy;
-import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.ProfessorDomestic;
-import gr.grnet.dep.service.model.ProfessorForeign;
-import gr.grnet.dep.service.model.Role.RoleDiscriminator;
-import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.FileBody;
-import gr.grnet.dep.service.model.file.FileHeader;
-import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
-import gr.grnet.dep.service.model.file.FileType;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadBase;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.lang.StringUtils;
 
-import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.ejb.SessionContext;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceException;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
@@ -48,19 +22,8 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Providers;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLEncoder;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -177,24 +140,6 @@ public class RESTService {
 		}
 	}
 
-
-	public List<FileItem> readMultipartFormData(HttpServletRequest request) {
-		try {
-			DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
-			ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
-			servletFileUpload.setFileSizeMax(50 * 1024 * 1024); // 54.428.800
-			servletFileUpload.setSizeMax(50 * 1024 * 1024);
-			servletFileUpload.setHeaderEncoding("UTF-8");
-			@SuppressWarnings("unchecked")
-			List<FileItem> fileItems = servletFileUpload.parseRequest(request);
-			return fileItems;
-		} catch (FileUploadBase.SizeLimitExceededException e) {
-			throw new RestException(Status.BAD_REQUEST, "file.size.exceeded");
-		} catch (FileUploadException e) {
-			logger.log(Level.SEVERE, "Error encountered while parsing the request", e);
-			throw new RestException(Status.INTERNAL_SERVER_ERROR, "generic");
-		}
-	}
 
 	/**
 	 * ***************************

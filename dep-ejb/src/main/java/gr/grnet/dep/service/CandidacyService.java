@@ -1,10 +1,11 @@
 package gr.grnet.dep.service;
 
+import gr.grnet.dep.service.exceptions.NotEnabledException;
 import gr.grnet.dep.service.exceptions.NotFoundException;
 import gr.grnet.dep.service.exceptions.ValidationException;
 import gr.grnet.dep.service.model.*;
-import gr.grnet.dep.service.model.file.CandidacyFile;
-import gr.grnet.dep.service.model.file.FileType;
+import gr.grnet.dep.service.model.file.*;
+import gr.grnet.dep.service.model.system.WebConstants;
 import gr.grnet.dep.service.util.DateUtil;
 import gr.grnet.dep.service.util.StringUtil;
 import org.apache.commons.fileupload.FileItem;
@@ -28,13 +29,19 @@ public class CandidacyService extends CommonService {
     private Logger log;
 
     @EJB
-    private CandidateService candidateService;
-
-    @EJB
     private RegisterService registerService;
 
     @EJB
     private MailService mailService;
+
+    @EJB
+    private CandidateService candidateService;
+
+    @EJB
+    private PositionService positionService;
+
+    @EJB
+    private PositionCandidaciesService positionCandidaciesService;
 
 
     public Candidacy getCandidacy(Long id, boolean loadSnapshotFiles) throws NotFoundException {
@@ -76,9 +83,16 @@ public class CandidacyService extends CommonService {
         }
     }
 
-    public List<Candidacy> getIncompleteCandidacies() {
+    public List<Candidacy> getIncompleteCandidacies(User loggedOn) throws NotEnabledException {
+        if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR)) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+        Administrator admin = (Administrator) loggedOn.getActiveRole(Role.RoleDiscriminator.ADMINISTRATOR);
+        if (!admin.isSuperAdministrator()) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
 
-        List<Candidacy> incompleteCandidacies = em.createQuery( "from Candidacy c " +
+        List<Candidacy> incompleteCandidacies = em.createQuery("from Candidacy c " +
                 "left join fetch c.candidate.user.roles cerls " +
                 "left join fetch c.candidacies ca " +
                 "left join fetch ca.position po " +
@@ -89,7 +103,26 @@ public class CandidacyService extends CommonService {
         return incompleteCandidacies;
     }
 
-    public List<CandidacyStatus> getCandidacyStatus(Long candidacyId) {
+    public List<CandidacyStatus> getCandidacyStatus(Long candidacyId, User loggedOn) throws NotFoundException, NotEnabledException {
+        // get candidacy
+        Candidacy candidacy = getCandidacy(candidacyId, false);
+
+        // Validate:
+        if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR) &&
+                !loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_MANAGER) &&
+                !loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_ASSISTANT) &&
+                !loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
+                (candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
+                (candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+                !candidacy.getCandidacies().containsCandidate(loggedOn) &&
+                !candidacy.containsEvaluator(loggedOn)) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+        if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
+                !candidacy.isOpenToOtherCandidates() &&
+                !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
 
         List<CandidacyStatus> statusList = em.createQuery("Select u " +
                 "from CandidacyStatus u " +
@@ -101,8 +134,75 @@ public class CandidacyService extends CommonService {
         return statusList;
     }
 
-    public Candidacy createCandidacy(Candidacy candidacy, Position position, Candidate candidate) throws ValidationException {
 
+    public Map<Candidacy, Class> get(Long id, User loggedOn) throws NotEnabledException, NotFoundException {
+
+        Map<Candidacy, Class> result = new HashMap<>();
+
+        // find candidacy
+        Candidacy candidacy = getCandidacy(id, false);
+        Candidate candidate = candidacy.getCandidate();
+
+        // Full Access ADMINISTRATOR, MINISTRY, ISNSTITUTION, OWNER
+        if (loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR) ||
+                loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_MANAGER) ||
+                loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_ASSISTANT) ||
+                loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) ||
+                candidate.getUser().getId().equals(loggedOn.getId())) {
+            // Full Access
+            candidacy.getCandidacyEvalutionsDueDate(); // Load this to avoid lazy exception
+            candidacy.setCanAddEvaluators(canAddEvaluators(candidacy));
+            candidacy.setNominationCommitteeConverged(hasNominationCommitteeConverged(candidacy));
+            result.put(candidacy, Candidacy.DetailedCandidacyView.class);
+            return result;
+        }
+        // Medium Access COMMITTEE MEMBER, EVALUATOR
+        if ((candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) ||
+                (candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn))) {
+            // Medium (without ContactInformation)
+            result.put(candidacy, Candidacy.MediumCandidacyView.class);
+            return result;
+        }
+        // Medium Access OTHER CANDIDATE if isOpenToOtherCandidates
+        if (candidacy.isOpenToOtherCandidates() && candidacy.getCandidacies().containsCandidate(loggedOn)) {
+            // Medium (without ContactInformation)
+            result.put(candidacy, Candidacy.MediumCandidacyView.class);
+            return result;
+        }
+        // Medium Access CANDIDACY EVALUATOR
+        if (candidacy.containsEvaluator(loggedOn)) {
+            // Medium (without ContactInformation)
+            result.put(candidacy, Candidacy.EvaluatorCandidacyView.class);
+            return result;
+        }
+        throw new NotEnabledException("insufficient.privileges");
+    }
+
+
+    public Candidacy createCandidacy(Candidacy candidacy, User loggedOn) throws ValidationException, NotFoundException, NotEnabledException {
+
+        Date now = new Date();
+        // get candidate
+        Candidate candidate = candidateService.getCandidate(candidacy.getCandidate().getId());
+
+        // Validate
+        if (!candidate.getUser().getId().equals(loggedOn.getId())) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+
+        // find position
+        Position position = positionService.getPositionById(candidacy.getCandidacies().getPosition().getId());
+
+        if (DateUtil.compareDates(position.getPhase().getCandidacies().getOpeningDate(), now) > 0) {
+            throw new NotEnabledException("wrong.position.candidacies.openingDate");
+        }
+        if (DateUtil.compareDates(position.getPhase().getCandidacies().getClosingDate(), now) < 0) {
+            throw new NotEnabledException("wrong.position.candidacies.closingDate");
+        }
+        if (!position.getPhase().getStatus().equals(Position.PositionStatus.ANOIXTI)) {
+            throw new NotEnabledException("wrong.position.status");
+        }
+        // create or update candidacy
         // get candidacy if exists
         Candidacy existingCandidacy = getCandidacyByIdAndPositionId(candidacy.getId(), position.getId());
 
@@ -144,10 +244,14 @@ public class CandidacyService extends CommonService {
         return candidacy;
     }
 
-    public Candidacy updateCandidacy(Long existingCandidacyId, Candidacy candidacyToUpdate) throws ValidationException, NotFoundException {
-
+    public Candidacy updateCandidacy(Long candidacyId, Candidacy candidacyToUpdate, User loggedOn) throws ValidationException, NotFoundException, NotEnabledException {
         // get candidacy
-        Candidacy existingCandidacy = getCandidacy(existingCandidacyId, false);
+        Candidacy existingCandidacy = getCandidacy(candidacyId, false);
+
+        if (!existingCandidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+
         Candidate candidate = existingCandidacy.getCandidate();
         // get position
         Position position = existingCandidacy.getCandidacies().getPosition();
@@ -180,7 +284,7 @@ public class CandidacyService extends CommonService {
         for (RegisterMember member : newRegisterMembers) {
             // check if there are duplicate professors
             if (newRegisterMemberProfessorIds.contains(member.getProfessor().getId())) {
-               // throw new RestException(Response.Status.CONFLICT, "duplicate.evaluators");
+                // throw new RestException(Response.Status.CONFLICT, "duplicate.evaluators");
                 throw new ValidationException("duplicate.evaluators");
             }
             newRegisterMemberProfessorIds.add(member.getProfessor().getId());
@@ -234,9 +338,15 @@ public class CandidacyService extends CommonService {
     }
 
 
-    public void deleteCandidacy(Long candidacyId) throws NotFoundException, ValidationException {
+    public void deleteCandidacy(Long candidacyId, User loggedOn) throws NotFoundException, ValidationException, NotEnabledException {
 
         Candidacy existingCandidacy = getCandidacy(candidacyId, false);
+        // get candidate
+        Candidate candidate = existingCandidacy.getCandidate();
+
+        if (!candidate.getUser().getId().equals(loggedOn.getId())) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
 
         Position position = existingCandidacy.getCandidacies().getPosition();
         if (!position.getPhase().getStatus().equals(Position.PositionStatus.ANOIXTI)
@@ -269,26 +379,57 @@ public class CandidacyService extends CommonService {
         em.flush();
     }
 
+    public Collection<RegisterMember> getCandidacyRegisterMembers(Long positionId, Long candidacyId, User loggedOn) throws NotFoundException, NotEnabledException {
+        // get candidacy
+        final Candidacy existingCandidacy = getCandidacy(candidacyId, false);
+        // get candidate
+        Candidate candidate = existingCandidacy.getCandidate();
 
-    public Candidacy submitCandidacy(Long candidacyId) throws NotFoundException, ValidationException {
+        if (!candidate.getUser().getId().equals(loggedOn.getId())) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+        // Return empty response while committee is not defined
+        if (!canAddEvaluators(existingCandidacy)) {
+            return new ArrayList<>();
+        }
+        // Prepare Data for Query
+        Institution institution = existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution();
+        Set<Long> committeeMemberIds = new HashSet<Long>();
+        if (existingCandidacy.getCandidacies().getPosition().getPhase().getCommittee() != null) {
+            PositionCommittee committee = existingCandidacy.getCandidacies().getPosition().getPhase().getCommittee();
+            for (PositionCommitteeMember member : committee.getMembers()) {
+                committeeMemberIds.add(member.getRegisterMember().getId());
+            }
+        }
+        if (committeeMemberIds.isEmpty()) {
+            // This should not happen, but just to avoid exceptions in case it does
+            return new ArrayList<>();
+        }
+        // get register members
+        List<RegisterMember> registerMembers = registerService.getRegisterMembers(institution.getId(), committeeMemberIds, false);
 
-        // get Candidacy
-        Candidacy candidacy = getCandidacy(candidacyId, false);
+        // Return result
+        return registerMembers;
+    }
+
+
+    public Candidacy submitCandidacy(Candidacy candidacy, User loggedOn) throws NotFoundException, ValidationException, NotEnabledException {
+        // Authenticate
+        if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR)) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
 
         User user = em.find(User.class, candidacy.getCandidate().getUser().getId());
         if (user == null) {
-            //throw new RestException(Status.NOT_FOUND, "wrong.user.id");
             throw new ValidationException("wrong.user.id");
         }
         // Validate
         Candidate candidate = em.find(Candidate.class, user.getRole(Role.RoleDiscriminator.CANDIDATE).getId());
         if (candidate == null) {
-            //  throw new RestException(Status.NOT_FOUND, "wrong.candidate.id");
             throw new ValidationException("wrong.candidate.id");
         }
         Position position = em.find(Position.class, candidacy.getCandidacies().getPosition().getId());
         if (position == null) {
-            //   throw new RestException(Status.NOT_FOUND, "wrong.position.id");
             throw new ValidationException("wrong.position.id");
         }
         Candidacy existingCandidacy = null;
@@ -345,9 +486,14 @@ public class CandidacyService extends CommonService {
         return candidacy;
     }
 
-    public SearchData<RegisterMember> search(Long candidacyId, HttpServletRequest request) throws NotFoundException {
+    public SearchData<RegisterMember> search(Long candidacyId, HttpServletRequest request, User loggedOn) throws NotFoundException, NotEnabledException {
 
         Candidacy existingCandidacy = getCandidacy(candidacyId, false);
+
+        Candidate candidate = existingCandidacy.getCandidate();
+        if (!candidate.getUser().getId().equals(loggedOn.getId())) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
 
         // Return empty response while committee is not defined
         if (!canAddEvaluators(existingCandidacy)) {
@@ -478,21 +624,205 @@ public class CandidacyService extends CommonService {
 
     }
 
-    public CandidacyFile createFile(FileType type, Long candidacyId, List<FileItem> fileItems, User loggedOn) throws Exception {
+    public Collection<CandidateFile> getSnapshotFiles(Long candidacyId, User loggedOn) throws NotEnabledException, NotFoundException {
+        try {
+
+            // get candidacy
+            Candidacy candidacy = getCandidacy(candidacyId, true);
+
+            if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR) &&
+                    !loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_MANAGER) &&
+                    !loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_ASSISTANT) &&
+                    !loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
+                    (candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
+                    (candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+                    !candidacy.getCandidacies().containsCandidate(loggedOn) &&
+                    !candidacy.containsEvaluator(loggedOn)) {
+                throw new NotEnabledException("insufficient.privileges");
+            }
+            if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
+                    !candidacy.isOpenToOtherCandidates() &&
+                    !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
+                throw new NotEnabledException("insufficient.privileges");
+            }
+            // Return Result
+            return candidacy.getSnapshotFiles();
+        } catch (NotFoundException e) {
+            throw new NotFoundException(e.getMessage());
+        }
+    }
+
+    public CandidateFile getSnapshotFile(Long candidacyId, Long fileId, User loggedOn) throws NotEnabledException, NotFoundException {
+        // get candidacy with the snapshot files
+        Candidacy candidacy = getCandidacy(candidacyId, true);
+
+        if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR) &&
+                !loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_MANAGER) &&
+                !loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_ASSISTANT) &&
+                !loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
+                (candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
+                (candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+                !candidacy.getCandidacies().containsCandidate(loggedOn) &&
+                !candidacy.containsEvaluator(loggedOn)) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+
+        if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
+                !candidacy.isOpenToOtherCandidates() &&
+                !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+        // Return Result
+        for (CandidateFile file : candidacy.getSnapshotFiles()) {
+            if (file.getId().equals(fileId)) {
+                return file;
+            }
+        }
+        throw new NotFoundException("wrong.file.id");
+    }
+
+    public FileBody getSnapshotFileBody(Long candidacyId, Long fileId, Long bodyId, User loggedOn) throws NotFoundException, NotEnabledException {
+        // get candidacy
+        Candidacy candidacy = getCandidacy(candidacyId, true);
+
+        if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR) &&
+                !loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_MANAGER) &&
+                !loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_ASSISTANT) &&
+                !loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
+                (candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
+                (candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+                !candidacy.getCandidacies().containsCandidate(loggedOn) &&
+                !candidacy.containsEvaluator(loggedOn)) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+        if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
+                !candidacy.isOpenToOtherCandidates() &&
+                !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+        // Return Result
+        for (CandidateFile file : candidacy.getSnapshotFiles()) {
+            if (file.getId().equals(fileId) && file.getCurrentBody().getId().equals(bodyId)) {
+                return file.getCurrentBody();
+            }
+        }
+        throw new NotFoundException("wrong.file.id");
+
+    }
+
+    public Collection<CandidacyFile> getFiles(Long candidacyId, User loggedOn) throws NotEnabledException, NotFoundException {
+
+        Candidacy candidacy = getCandidacy(candidacyId, false);
+
+        if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR) &&
+                !loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_MANAGER) &&
+                !loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_ASSISTANT) &&
+                !loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
+                (candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
+                (candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+                !candidacy.getCandidacies().containsCandidate(loggedOn) &&
+                !candidacy.containsEvaluator(loggedOn)) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+        if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
+                !candidacy.isOpenToOtherCandidates() &&
+                !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+        // Return Result
+        return FileHeader.filterDeleted(candidacy.getFiles());
+    }
+
+    public CandidacyFile getFile(Long candidacyId, Long fileId, User loggedOn) throws NotEnabledException, NotFoundException {
+        // get candidacy
+        Candidacy candidacy = getCandidacy(candidacyId, false);
+
+        if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR) &&
+                !loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_MANAGER) &&
+                !loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_ASSISTANT) &&
+                !loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
+                (candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
+                (candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+                !candidacy.getCandidacies().containsCandidate(loggedOn) &&
+                !candidacy.containsEvaluator(loggedOn)) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+        if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
+                !candidacy.isOpenToOtherCandidates() &&
+                !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+        // Return Result
+        for (CandidacyFile file : candidacy.getFiles()) {
+            if (file.getId().equals(fileId) && !file.isDeleted()) {
+                return file;
+            }
+        }
+        throw new NotFoundException("wrong.file.id");
+    }
+
+    public FileBody getFileBody(Long candidacyId, Long fileId, Long bodyId, User loggedOn) throws NotEnabledException, NotFoundException {
+        // get candidacy
+        Candidacy candidacy = getCandidacy(candidacyId, false);
+
+        if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR) &&
+                !loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_MANAGER) &&
+                !loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_ASSISTANT) &&
+                !loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
+                (candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
+                (candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+                !candidacy.getCandidacies().containsCandidate(loggedOn) &&
+                !candidacy.containsEvaluator(loggedOn)) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+        if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
+                !candidacy.isOpenToOtherCandidates() &&
+                !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+        // Return Result
+        for (CandidacyFile file : candidacy.getFiles()) {
+            if (file.getId().equals(fileId) && !file.isDeleted()) {
+                for (FileBody fb : file.getBodies()) {
+                    if (fb.getId().equals(bodyId)) {
+                        return fb;
+                    }
+                }
+            }
+        }
+        throw new NotFoundException("wrong.file.id");
+    }
+
+    public CandidacyFile createFile(Long candidacyId, HttpServletRequest request, User loggedOn) throws Exception {
 
         // get candidacy
         Candidacy candidacy = getCandidacy(candidacyId, false);
 
+        // Validate:
+        if (!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+        // Parse Request
+        List<FileItem> fileItems = readMultipartFormData(request);
+        // Find required type:
+        FileType type = null;
+        for (FileItem fileItem : fileItems) {
+            if (fileItem.isFormField() && fileItem.getFieldName().equals("type")) {
+                type = FileType.valueOf(fileItem.getString("UTF-8"));
+                break;
+            }
+        }
+        if (type == null) {
+            throw new ValidationException("missing.file.type");
+        }
         // Other files until closing date
         if (!type.equals(FileType.SYMPLIROMATIKA_EGGRAFA) &&
                 !candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(Position.PositionStatus.ANOIXTI) &&
                 DateUtil.compareDates(new Date(), candidacy.getCandidacies().getClosingDate()) >= 0) {
-            //throw new RestException(Status.CONFLICT, "wrong.position.status");
             throw new ValidationException("wrong.position.status");
         }
         //SYMPLIROMATIKA EGGRAFA until getNominationCommitteeConvergenceDate
         if (hasNominationCommitteeConverged(candidacy)) {
-            //throw new RestException(Status.CONFLICT, "wrong.position.status.committee.converged");
             throw new ValidationException("wrong.position.status.committee.converged");
         }
         // Check number of file types
@@ -511,10 +841,27 @@ public class CandidacyService extends CommonService {
         return candidacyFile;
     }
 
-    public CandidacyFile updateFile(FileType type, Long candidacyId, List<FileItem> fileItems, User loggedOn, Long fileId) throws Exception {
-
+    public CandidacyFile updateFile(Long candidacyId, Long fileId, HttpServletRequest request, User loggedOn) throws Exception {
         // get candidacy
         Candidacy candidacy = getCandidacy(candidacyId, false);
+
+        // Validate:
+        if (!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+        // Parse Request
+        List<FileItem> fileItems = readMultipartFormData(request);
+        // Find required type:
+        FileType type = null;
+        for (FileItem fileItem : fileItems) {
+            if (fileItem.isFormField() && fileItem.getFieldName().equals("type")) {
+                type = FileType.valueOf(fileItem.getString("UTF-8"));
+                break;
+            }
+        }
+        if (type == null) {
+            throw new ValidationException("missing.file.type");
+        }
 
         // Other files until closing date
         if (!type.equals(FileType.SYMPLIROMATIKA_EGGRAFA) &&
@@ -525,11 +872,9 @@ public class CandidacyService extends CommonService {
         }
         //SYMPLIROMATIKA EGGRAFA until getNominationCommitteeConvergenceDate
         if (hasNominationCommitteeConverged(candidacy)) {
-            //throw new RestException(Status.CONFLICT, "wrong.position.status.committee.converged");
             throw new ValidationException("wrong.position.status.committee.converged");
         }
         if (!CandidacyFile.fileTypes.containsKey(type)) {
-           // throw new RestException(Status.CONFLICT, "wrong.file.type");
             throw new ValidationException("wrong.file.type");
         }
         CandidacyFile candidacyFile = null;
@@ -547,21 +892,34 @@ public class CandidacyService extends CommonService {
         return _updateFile(loggedOn, fileItems, candidacyFile);
     }
 
-    public void deleteFile(FileType type, Long candidacyId, CandidacyFile candidacyFile) throws NotFoundException, ValidationException {
-
+    public void deleteFile(Long candidacyId, Long fileId, User loggedOn) throws NotFoundException, ValidationException, NotEnabledException {
         // get candidacy
         Candidacy candidacy = getCandidacy(candidacyId, false);
+
+        if (!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+
+        CandidacyFile candidacyFile = null;
+        for (CandidacyFile file : candidacy.getFiles()) {
+            if (file.getId().equals(fileId) && !file.isDeleted()) {
+                candidacyFile = file;
+                break;
+            }
+        }
+        if (candidacyFile == null) {
+            throw new NotFoundException("wrong.file.id");
+        }
+        FileType type = candidacyFile.getType();
 
         // Other files until closing date
         if (!type.equals(FileType.SYMPLIROMATIKA_EGGRAFA) &&
                 !candidacy.getCandidacies().getPosition().getPhase().getStatus().equals(Position.PositionStatus.ANOIXTI) &&
                 DateUtil.compareDates(new Date(), candidacy.getCandidacies().getClosingDate()) >= 0) {
-            //throw new RestException(Status.CONFLICT, "wrong.position.status");
             throw new ValidationException("wrong.position.status");
         }
         //SYMPLIROMATIKA EGGRAFA until getNominationCommitteeConvergenceDate
         if (hasNominationCommitteeConverged(candidacy)) {
-            //throw new RestException(Status.CONFLICT, "wrong.position.status.committee.converged");
             throw new ValidationException("wrong.position.status.committee.converged");
         }
         CandidacyFile cf = deleteAsMuchAsPossible(candidacyFile);
@@ -570,14 +928,111 @@ public class CandidacyService extends CommonService {
         }
     }
 
-    public boolean canAddEvaluators(Candidacy c) {
+    public Collection<PositionCandidaciesFile> getEvaluationFiles(Long candidacyId, User loggedOn) throws NotFoundException, ValidationException, NotEnabledException {
+        // get candidacy
+        Candidacy candidacy = getCandidacy(candidacyId, false);
+
+        PositionCandidacies existingCandidacies = candidacy.getCandidacies();
+        if (existingCandidacies == null) {
+            throw new NotFoundException("wrong.position.candidacies.id");
+        }
+        // Validate:
+        if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR) &&
+                !loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_MANAGER) &&
+                !loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_ASSISTANT) &&
+                !loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
+                (candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
+                (candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+                !candidacy.getCandidacies().containsCandidate(loggedOn)) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+        if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
+                !candidacy.isOpenToOtherCandidates() &&
+                !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+
+        // Search
+        List<PositionCandidaciesFile> result = positionCandidaciesService.getPositionCandidaciesFiles(existingCandidacies.getId(), candidacy.getId());
+
+        // Return Result
+        return result;
+    }
+
+    public PositionCandidaciesFile getEvaluationFile(Long candidacyId, Long fileId, User loggedOn) throws NotFoundException, ValidationException, NotEnabledException {
+        // get candidacy
+        Candidacy candidacy = getCandidacy(candidacyId, false);
+        // Validate:
+        PositionCandidacies existingCandidacies = candidacy.getCandidacies();
+        if (existingCandidacies == null) {
+            throw new NotFoundException("wrong.position.candidacies.id");
+        }
+        // Validate:
+        if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR) &&
+                !loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_MANAGER) &&
+                !loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_ASSISTANT) &&
+                !loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
+                (candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
+                (candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+                !candidacy.getCandidacies().containsCandidate(loggedOn)) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+        if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
+                !candidacy.isOpenToOtherCandidates() &&
+                !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+        // Find File
+        Collection<PositionCandidaciesFile> files = FileHeader.filterDeleted(existingCandidacies.getFiles());
+        for (PositionCandidaciesFile file : files) {
+            if (file.getId().equals(fileId)) {
+                return file;
+            }
+        }
+        throw new NotFoundException("wrong.file.id");
+    }
+
+    public FileBody getEvaluationFileBody(Long candidacyId, Long fileId, Long bodyId, User loggedOn) throws NotFoundException, ValidationException, NotEnabledException {
+        // get candidacy
+        Candidacy candidacy = getCandidacy(candidacyId, false);
+        // Validate:
+        PositionCandidacies existingCandidacies = candidacy.getCandidacies();
+        if (existingCandidacies == null) {
+            throw new NotFoundException("wrong.position.candidacies.id");
+        }
+        // Validate:
+        if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR) &&
+                !loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_MANAGER) &&
+                !loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_ASSISTANT) &&
+                !loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
+                (candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
+                (candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
+                !candidacy.getCandidacies().containsCandidate(loggedOn)) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+        if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
+                !candidacy.isOpenToOtherCandidates() &&
+                !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+        // Return Result
+        Collection<PositionCandidaciesFile> files = FileHeader.filterDeleted(existingCandidacies.getFiles());
+        for (PositionCandidaciesFile file : files) {
+            if (file.getId().equals(fileId) && file.getCurrentBody().getId().equals(bodyId)) {
+                return file.getCurrentBody();
+            }
+        }
+        throw new NotFoundException("wrong.file.id");
+    }
+
+    private boolean canAddEvaluators(Candidacy c) {
         PositionCommittee committee = c.getCandidacies().getPosition().getPhase().getCommittee();
         return committee != null &&
                 committee.getMembers().size() > 0 &&
                 DateUtil.compareDates(new Date(), committee.getCandidacyEvalutionsDueDate()) <= 0;
     }
 
-    public boolean hasNominationCommitteeConverged(Candidacy c) {
+    private boolean hasNominationCommitteeConverged(Candidacy c) {
         PositionNomination nomination = c.getCandidacies().getPosition().getPhase().getNomination();
         return nomination != null &&
                 nomination.getNominationCommitteeConvergenceDate() != null &&
@@ -622,7 +1077,7 @@ public class CandidacyService extends CommonService {
     }
 
 
-    private void sendEmailsPriorToUpdate(boolean isNew, final Candidacy existingCandidacy, Collection<CandidacyEvaluator> addedEvaluators ) {
+    private void sendEmailsPriorToUpdate(boolean isNew, final Candidacy existingCandidacy, Collection<CandidacyEvaluator> addedEvaluators) {
 
         if (isNew) {
             // Send E-Mails

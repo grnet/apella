@@ -6,6 +6,7 @@ import gr.grnet.dep.service.exceptions.ServiceException;
 import gr.grnet.dep.service.exceptions.ValidationException;
 import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.file.*;
+import gr.grnet.dep.service.model.system.WebConstants;
 import gr.grnet.dep.service.util.PdfUtil;
 import org.apache.commons.fileupload.FileItem;
 
@@ -688,6 +689,7 @@ public class RoleService extends CommonService {
                 if (updateCandidacies) {
                     updateOpenCandidacies(candidate);
                 }
+                return;
             } catch (NoResultException e) {
                 throw new NotFoundException("wrong.file.id");
             }
@@ -712,6 +714,7 @@ public class RoleService extends CommonService {
                     Candidate candidate = (Candidate) professor.getUser().getActiveRole(Role.RoleDiscriminator.CANDIDATE);
                     updateOpenCandidacies(candidate);
                 }
+                return;
             } catch (NoResultException e) {
                 throw new NotFoundException("wrong.file.id");
             }

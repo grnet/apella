@@ -1,5 +1,6 @@
 package gr.grnet.dep.service;
 
+import gr.grnet.dep.service.exceptions.NotEnabledException;
 import gr.grnet.dep.service.exceptions.NotFoundException;
 import gr.grnet.dep.service.exceptions.ValidationException;
 import gr.grnet.dep.service.model.*;
@@ -299,11 +300,16 @@ public class ManagementService extends CommonService {
 		}
 	}
 
-	public Candidacy createCandidacy(Long positionId, Long candidateId) throws NotFoundException, ValidationException {
+	public Candidacy createCandidacy(Long positionId, Long candidateId, User loggedOn) throws NotFoundException, ValidationException, NotEnabledException {
+		// Authenticate
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+			throw new NotEnabledException("insufficient.privileges");
+		}
 		// find candidacy
 		Candidate candidate = candidateService.getCandidate(candidateId);
 		// find position
 		Position position = positionService.getPositionById(positionId);
+
 
 		try {
 			Candidacy existingCandidacy = em.createQuery(
@@ -340,7 +346,11 @@ public class ManagementService extends CommonService {
 		return candidacy;
 	}
 
-	public void deleteCandidacy(Long id) throws NotFoundException, ValidationException {
+	public void deleteCandidacy(Long id, User loggedOn) throws NotFoundException, ValidationException, NotEnabledException {
+		// Authenticate
+		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
+			throw new NotEnabledException("insufficient.privileges");
+		}
 		// get candidacy
 		final Candidacy existingCandidacy = candidacyService.getCandidacy(id, false);
 

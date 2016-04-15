@@ -3,26 +3,17 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.DepartmentService;
+import gr.grnet.dep.service.exceptions.NotEnabledException;
 import gr.grnet.dep.service.exceptions.NotFoundException;
 import gr.grnet.dep.service.exceptions.ValidationException;
 import gr.grnet.dep.service.model.Department;
-import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.User;
-import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceException;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.util.Collection;
-import java.util.List;
 
 @Path("/department")
 public class DepartmentRESTService extends RESTService {
@@ -38,7 +29,6 @@ public class DepartmentRESTService extends RESTService {
 	@GET
 	@SuppressWarnings("unchecked")
 	public Collection<Department> getAll() {
-
 		// fetch departments
 		Collection<Department> departments = departmentService.getAll();
 
@@ -59,7 +49,6 @@ public class DepartmentRESTService extends RESTService {
 			Department department = departmentService.get(id);
 
 			return department;
-
 		} catch (NotFoundException e) {
 			throw new RestException(Status.NOT_FOUND, e.getMessage());
 		}
@@ -70,18 +59,18 @@ public class DepartmentRESTService extends RESTService {
 	public Department update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, Department departmentToUpdate) {
 		try {
 			User loggedOn = getLoggedOn(authToken);
-
-			if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR)) {
-				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-			}
 			// update department
-			Department department = departmentService.update(id, departmentToUpdate);
+			Department department = departmentService.update(id, departmentToUpdate, loggedOn);
 
 			return department;
-		} catch (ValidationException e) {
-			throw new RestException(Status.CONFLICT, e.getMessage());
+		} catch (NotEnabledException e) {
+			throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
 		} catch (NotFoundException e) {
 			throw new RestException(Status.NOT_FOUND, e.getMessage());
+		} catch (ValidationException e) {
+			throw new RestException(Status.BAD_REQUEST, e.getMessage());
+		} catch (Exception e) {
+			throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
 		}
 	}
 }

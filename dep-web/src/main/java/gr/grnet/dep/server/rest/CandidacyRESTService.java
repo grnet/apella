@@ -3,30 +3,19 @@ package gr.grnet.dep.server.rest;
 import com.fasterxml.jackson.annotation.JsonView;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.*;
+import gr.grnet.dep.service.CandidacyService;
 import gr.grnet.dep.service.exceptions.NotEnabledException;
 import gr.grnet.dep.service.exceptions.NotFoundException;
 import gr.grnet.dep.service.exceptions.ValidationException;
 import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
-import gr.grnet.dep.service.model.Candidacy.EvaluatorCandidacyView;
 import gr.grnet.dep.service.model.Candidacy.MediumCandidacyView;
-import gr.grnet.dep.service.model.Position.PositionStatus;
-import gr.grnet.dep.service.model.Role.RoleDiscriminator;
-import gr.grnet.dep.service.model.file.CandidacyFile;
-import gr.grnet.dep.service.model.file.CandidateFile;
-import gr.grnet.dep.service.model.file.FileBody;
-import gr.grnet.dep.service.model.file.FileHeader;
+import gr.grnet.dep.service.model.file.*;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
-import gr.grnet.dep.service.model.file.FileType;
-import gr.grnet.dep.service.model.file.PositionCandidaciesFile;
-import gr.grnet.dep.service.util.DateUtil;
-import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
-import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -34,12 +23,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.logging.Logger;
 
 @Path("/candidacy")
@@ -50,19 +36,6 @@ public class CandidacyRESTService extends RESTService {
 
     @EJB
     private CandidacyService candidacyService;
-
-    @EJB
-    private CandidateService candidateService;
-
-    @EJB
-    private PositionService positionService;
-
-    @EJB
-    private RegisterService registerService;
-
-    @EJB
-    private PositionCandidaciesService positionCandidaciesService;
-
 
     /**
      * Get Candidacy by it's ID
@@ -76,41 +49,17 @@ public class CandidacyRESTService extends RESTService {
     @GET
     @Path("/{id:[0-9]+}")
     public String get(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
-        User loggedOn = getLoggedOn(authToken);
         try {
-            // find candidacy
-            Candidacy candidacy = candidacyService.getCandidacy(id, false);
-            Candidate candidate = candidacy.getCandidate();
+            User loggedOn = getLoggedOn(authToken);
+            // get map
+            Map<Candidacy, Class> candidacyMap = candidacyService.get(id, loggedOn);
+            Map.Entry<Candidacy, Class> entry = candidacyMap.entrySet().iterator().next();
+            // get json view
+            String candidacyJSONView = toJSON(entry.getKey(), entry.getValue());
 
-            // Full Access ADMINISTRATOR, MINISTRY, ISNSTITUTION, OWNER
-            if (loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) ||
-                    loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) ||
-                    loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) ||
-                    loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) ||
-                    candidate.getUser().getId().equals(loggedOn.getId())) {
-                // Full Access
-                candidacy.getCandidacyEvalutionsDueDate(); // Load this to avoid lazy exception
-                candidacy.setCanAddEvaluators(candidacyService.canAddEvaluators(candidacy));
-                candidacy.setNominationCommitteeConverged(candidacyService.hasNominationCommitteeConverged(candidacy));
-                return toJSON(candidacy, DetailedCandidacyView.class);
-            }
-            // Medium Access COMMITTEE MEMBER, EVALUATOR
-            if ((candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) ||
-                    (candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn))) {
-                // Medium (without ContactInformation)
-                return toJSON(candidacy, MediumCandidacyView.class);
-            }
-            // Medium Access OTHER CANDIDATE if isOpenToOtherCandidates
-            if (candidacy.isOpenToOtherCandidates() && candidacy.getCandidacies().containsCandidate(loggedOn)) {
-                // Medium (without ContactInformation)
-                return toJSON(candidacy, MediumCandidacyView.class);
-            }
-            // Medium Access CANDIDACY EVALUATOR
-            if (candidacy.containsEvaluator(loggedOn)) {
-                // Medium (without ContactInformation)
-                return toJSON(candidacy, EvaluatorCandidacyView.class);
-            }
-            throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
+            return candidacyJSONView;
+        } catch (NotEnabledException e) {
+            throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
         } catch (NotFoundException e) {
             throw new RestException(Status.NOT_FOUND, e.getMessage());
         } catch (Exception e) {
@@ -135,32 +84,12 @@ public class CandidacyRESTService extends RESTService {
     public Candidacy create(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, Candidacy candidacy) {
         try {
             User loggedOn = getLoggedOn(authToken);
-            Date now = new Date();
-            // get candidate
-            Candidate candidate = candidateService.getCandidate(candidacy.getCandidate().getId());
-
-            // Validate
-            if (!candidate.getUser().getId().equals(loggedOn.getId())) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-
-            // find position
-            Position position = positionService.getPositionById(candidacy.getCandidacies().getPosition().getId());
-
-            if (DateUtil.compareDates(position.getPhase().getCandidacies().getOpeningDate(), now) > 0) {
-                throw new RestException(Status.FORBIDDEN, "wrong.position.candidacies.openingDate");
-            }
-            if (DateUtil.compareDates(position.getPhase().getCandidacies().getClosingDate(), now) < 0) {
-                throw new RestException(Status.FORBIDDEN, "wrong.position.candidacies.closingDate");
-            }
-            if (!position.getPhase().getStatus().equals(PositionStatus.ANOIXTI)) {
-                throw new RestException(Status.FORBIDDEN, "wrong.position.status");
-            }
-            // create or update candidacy
-            candidacy = candidacyService.createCandidacy(candidacy, position, candidate);
+            // create
+            candidacy = candidacyService.createCandidacy(candidacy, loggedOn);
 
             return candidacy;
-
+        } catch (NotEnabledException e) {
+            throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
         } catch (NotFoundException e) {
             throw new RestException(Status.NOT_FOUND, e.getMessage());
         } catch (ValidationException e) {
@@ -188,16 +117,12 @@ public class CandidacyRESTService extends RESTService {
     public Candidacy update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, Candidacy candidacy) {
         try {
             User loggedOn = getLoggedOn(authToken);
-            // get existing candidacy
-            Candidacy existingCandidacy = candidacyService.getCandidacy(id, false);
-
-            if (!existingCandidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-
-            existingCandidacy = candidacyService.updateCandidacy(existingCandidacy.getId(), candidacy);
+            // update
+            Candidacy existingCandidacy = candidacyService.updateCandidacy(id, candidacy, loggedOn);
 
             return existingCandidacy;
+        } catch (NotEnabledException e) {
+            throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
         } catch (NotFoundException e) {
             throw new RestException(Status.NOT_FOUND, e.getMessage());
         } catch (ValidationException e) {
@@ -222,17 +147,10 @@ public class CandidacyRESTService extends RESTService {
     public void delete(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
         try {
             User loggedOn = getLoggedOn(authToken);
-            // Validate
-            final Candidacy existingCandidacy = candidacyService.getCandidacy(id, false);
-
-            Candidate candidate = existingCandidacy.getCandidate();
-
-            if (!candidate.getUser().getId().equals(loggedOn.getId())) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-
-            candidacyService.deleteCandidacy(existingCandidacy.getId());
-
+            // delete
+            candidacyService.deleteCandidacy(id, loggedOn);
+        } catch (NotEnabledException e) {
+            throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
         } catch (NotFoundException e) {
             throw new RestException(Status.NOT_FOUND, e.getMessage());
         } catch (ValidationException e) {
@@ -261,37 +179,16 @@ public class CandidacyRESTService extends RESTService {
     public Collection<RegisterMember> getCandidacyRegisterMembers(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("id") Long candidacyId) {
         try {
             User loggedOn = getLoggedOn(authToken);
-
-            final Candidacy existingCandidacy = candidacyService.getCandidacy(candidacyId, false);
-
-            Candidate candidate = existingCandidacy.getCandidate();
-            if (!candidate.getUser().getId().equals(loggedOn.getId())) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-            // Return empty response while committee is not defined
-            if (!candidacyService.canAddEvaluators(existingCandidacy)) {
-                return new ArrayList<>();
-            }
-            // Prepare Data for Query
-            Institution institution = existingCandidacy.getCandidacies().getPosition().getDepartment().getSchool().getInstitution();
-            Set<Long> committeeMemberIds = new HashSet<Long>();
-            if (existingCandidacy.getCandidacies().getPosition().getPhase().getCommittee() != null) {
-                PositionCommittee committee = existingCandidacy.getCandidacies().getPosition().getPhase().getCommittee();
-                for (PositionCommitteeMember member : committee.getMembers()) {
-                    committeeMemberIds.add(member.getRegisterMember().getId());
-                }
-            }
-            if (committeeMemberIds.isEmpty()) {
-                // This should not happen, but just to avoid exceptions in case it does
-                return new ArrayList<>();
-            }
             // get register members
-            List<RegisterMember> registerMembers = registerService.getRegisterMembers(institution.getId(), committeeMemberIds, false);
+            Collection<RegisterMember> registerMembers = candidacyService.getCandidacyRegisterMembers(positionId, candidacyId, loggedOn);
 
-            // Return result
             return registerMembers;
+        } catch (NotEnabledException e) {
+            throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
         } catch (NotFoundException e) {
             throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
         }
     }
 
@@ -301,21 +198,18 @@ public class CandidacyRESTService extends RESTService {
     @JsonView({CandidacyEvaluator.CandidacyEvaluatorView.class})
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public SearchData<RegisterMember> search(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("id") Long candidacyId, @Context HttpServletRequest request) {
-        User loggedOn = getLoggedOn(authToken);
-
         try {
-            final Candidacy existingCandidacy = candidacyService.getCandidacy(candidacyId, false);
-
-            Candidate candidate = existingCandidacy.getCandidate();
-            if (!candidate.getUser().getId().equals(loggedOn.getId())) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
+            User loggedOn = getLoggedOn(authToken);
             // get the fetched data
-            SearchData<RegisterMember> result = candidacyService.search(candidacyId, request);
+            SearchData<RegisterMember> result = candidacyService.search(candidacyId, request, loggedOn);
             // Return result
             return result;
+        } catch (NotEnabledException e) {
+            throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
         } catch (NotFoundException e) {
             throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
         }
     }
 
@@ -340,28 +234,16 @@ public class CandidacyRESTService extends RESTService {
     public Collection<CandidateFile> getSnapshotFiles(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId) {
         try {
             User loggedOn = getLoggedOn(authToken);
-            // get candidacy
-            Candidacy candidacy = candidacyService.getCandidacy(candidacyId, true);
+            // get files
+            Collection<CandidateFile> snapshotFiles = candidacyService.getSnapshotFiles(candidacyId, loggedOn);
 
-            if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-                    !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-                    !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-                    !loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
-                    (candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
-                    (candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-                    !candidacy.getCandidacies().containsCandidate(loggedOn) &&
-                    !candidacy.containsEvaluator(loggedOn)) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-            if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
-                    !candidacy.isOpenToOtherCandidates() &&
-                    !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-            // Return Result
-            return candidacy.getSnapshotFiles();
+            return snapshotFiles;
+        } catch (NotEnabledException e) {
+            throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
         } catch (NotFoundException e) {
             throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
         }
     }
 
@@ -382,34 +264,16 @@ public class CandidacyRESTService extends RESTService {
     public CandidateFile getSnapshotFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId) {
         try {
             User loggedOn = getLoggedOn(authToken);
-            // get candidacy with the snapshot files
-            Candidacy candidacy = candidacyService.getCandidacy(candidacyId, true);
+            // get file
+            CandidateFile candidateFile = candidacyService.getSnapshotFile(candidacyId, fileId, loggedOn);
 
-            if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-                    !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-                    !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-                    !loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
-                    (candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
-                    (candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-                    !candidacy.getCandidacies().containsCandidate(loggedOn) &&
-                    !candidacy.containsEvaluator(loggedOn)) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-
-            if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
-                    !candidacy.isOpenToOtherCandidates() &&
-                    !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-            // Return Result
-            for (CandidateFile file : candidacy.getSnapshotFiles()) {
-                if (file.getId().equals(fileId)) {
-                    return file;
-                }
-            }
-            throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+            return candidateFile;
+        } catch (NotEnabledException e) {
+            throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
         } catch (NotFoundException e) {
             throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
         }
     }
 
@@ -431,35 +295,15 @@ public class CandidacyRESTService extends RESTService {
     public Response getSnapshotFileBody(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
         try {
             User loggedOn = getLoggedOn(authToken);
-            Candidacy candidacy = candidacyService.getCandidacy(candidacyId, true);
-            // Validate:
-            if (candidacy == null) {
-                throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
-            }
-            if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-                    !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-                    !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-                    !loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
-                    (candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
-                    (candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-                    !candidacy.getCandidacies().containsCandidate(loggedOn) &&
-                    !candidacy.containsEvaluator(loggedOn)) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-            if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
-                    !candidacy.isOpenToOtherCandidates() &&
-                    !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-            // Return Result
-            for (CandidateFile file : candidacy.getSnapshotFiles()) {
-                if (file.getId().equals(fileId) && file.getCurrentBody().getId().equals(bodyId)) {
-                    return sendFileBody(file.getCurrentBody());
-                }
-            }
-            throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+            FileBody fileBody = candidacyService.getSnapshotFileBody(candidacyId, fileId, bodyId, loggedOn);
+
+            return sendFileBody(fileBody);
+        } catch (NotEnabledException e) {
+            throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
         } catch (NotFoundException e) {
             throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
         }
     }
 
@@ -482,27 +326,16 @@ public class CandidacyRESTService extends RESTService {
     public Collection<CandidacyFile> getFiles(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId) {
         try {
             User loggedOn = getLoggedOn(authToken);
-            Candidacy candidacy = candidacyService.getCandidacy(candidacyId, false);
+            // get files
+            Collection<CandidacyFile> candidacyFiles = candidacyService.getFiles(candidacyId, loggedOn);
 
-            if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-                    !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-                    !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-                    !loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
-                    (candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
-                    (candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-                    !candidacy.getCandidacies().containsCandidate(loggedOn) &&
-                    !candidacy.containsEvaluator(loggedOn)) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-            if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
-                    !candidacy.isOpenToOtherCandidates() &&
-                    !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-            // Return Result
-            return FileHeader.filterDeleted(candidacy.getFiles());
+            return candidacyFiles;
+        } catch (NotEnabledException e) {
+            throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
         } catch (NotFoundException e) {
             throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
         }
     }
 
@@ -523,32 +356,15 @@ public class CandidacyRESTService extends RESTService {
     public CandidacyFile getFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId) {
         try {
             User loggedOn = getLoggedOn(authToken);
-            Candidacy candidacy = candidacyService.getCandidacy(candidacyId, false);
+            CandidacyFile candidacyFile = candidacyService.getFile(candidacyId, fileId, loggedOn);
 
-            if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-                    !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-                    !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-                    !loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
-                    (candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
-                    (candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-                    !candidacy.getCandidacies().containsCandidate(loggedOn) &&
-                    !candidacy.containsEvaluator(loggedOn)) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-            if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
-                    !candidacy.isOpenToOtherCandidates() &&
-                    !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-            // Return Result
-            for (CandidacyFile file : candidacy.getFiles()) {
-                if (file.getId().equals(fileId) && !file.isDeleted()) {
-                    return file;
-                }
-            }
-            throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+            return candidacyFile;
+        } catch (NotEnabledException e) {
+            throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
         } catch (NotFoundException e) {
             throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
         }
     }
 
@@ -570,36 +386,16 @@ public class CandidacyRESTService extends RESTService {
     public Response getFileBody(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
         try {
             User loggedOn = getLoggedOn(authToken);
-            Candidacy candidacy = candidacyService.getCandidacy(candidacyId, false);
+            // get file body
+            FileBody fileBody = candidacyService.getFileBody(candidacyId, fileId, bodyId, loggedOn);
 
-            if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-                    !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-                    !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-                    !loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
-                    (candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
-                    (candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-                    !candidacy.getCandidacies().containsCandidate(loggedOn) &&
-                    !candidacy.containsEvaluator(loggedOn)) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-            if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
-                    !candidacy.isOpenToOtherCandidates() &&
-                    !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-            // Return Result
-            for (CandidacyFile file : candidacy.getFiles()) {
-                if (file.getId().equals(fileId) && !file.isDeleted()) {
-                    for (FileBody fb : file.getBodies()) {
-                        if (fb.getId().equals(bodyId)) {
-                            return sendFileBody(fb);
-                        }
-                    }
-                }
-            }
-            throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+            return sendFileBody(fileBody);
+        } catch (NotEnabledException e) {
+            throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
         } catch (NotFoundException e) {
             throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
         }
     }
 
@@ -624,35 +420,18 @@ public class CandidacyRESTService extends RESTService {
     public String createFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @Context HttpServletRequest request) throws FileUploadException, IOException {
         try {
             User loggedOn = getLoggedOn(authToken);
-            Candidacy candidacy = candidacyService.getCandidacy(candidacyId, false);
-            // Validate:
-            if (!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-            // Parse Request
-            List<FileItem> fileItems = readMultipartFormData(request);
-            // Find required type:
-            FileType type = null;
-            for (FileItem fileItem : fileItems) {
-                if (fileItem.isFormField() && fileItem.getFieldName().equals("type")) {
-                    type = FileType.valueOf(fileItem.getString("UTF-8"));
-                    break;
-                }
-            }
-            if (type == null) {
-                throw new RestException(Status.BAD_REQUEST, "missing.file.type");
-            }
             // get candidacy file
-            CandidacyFile candidacyFile = candidacyService.createFile(type, candidacyId, fileItems, loggedOn);
+            CandidacyFile candidacyFile = candidacyService.createFile(candidacyId, request, loggedOn);
 
             return toJSON(candidacyFile, SimpleFileHeaderView.class);
-
+        } catch (NotEnabledException e) {
+            throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
         } catch (NotFoundException e) {
             throw new RestException(Status.NOT_FOUND, e.getMessage());
         } catch (ValidationException e) {
-            throw new RestException(Status.CONFLICT, e.getMessage());
+            throw new RestException(Status.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
-            throw new RestException(Status.INTERNAL_SERVER_ERROR, e.getMessage());
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
         }
     }
 
@@ -678,38 +457,18 @@ public class CandidacyRESTService extends RESTService {
     public String updateFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
         try {
             User loggedOn = getLoggedOn(authToken);
-            Candidacy candidacy = candidacyService.getCandidacy(candidacyId, false);
-            // Validate:
-            if (candidacy == null) {
-                throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
-            }
-            if (!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-            // Parse Request
-            List<FileItem> fileItems = readMultipartFormData(request);
-            // Find required type:
-            FileType type = null;
-            for (FileItem fileItem : fileItems) {
-                if (fileItem.isFormField() && fileItem.getFieldName().equals("type")) {
-                    type = FileType.valueOf(fileItem.getString("UTF-8"));
-                    break;
-                }
-            }
-            if (type == null) {
-                throw new RestException(Status.BAD_REQUEST, "missing.file.type");
-            }
-            // Update
-            CandidacyFile candidacyFile = candidacyService.updateFile(type, candidacyId, fileItems, loggedOn, fileId);
+            // update file
+            CandidacyFile candidacyFile = candidacyService.updateFile(candidacyId, fileId, request, loggedOn);
 
-            // TODO fix return
-            return candidacyFile.toString();
+            return toJSON(candidacyFile, FileHeader.SimpleFileHeaderView.class);
+        } catch (NotEnabledException e) {
+            throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
         } catch (NotFoundException e) {
             throw new RestException(Status.NOT_FOUND, e.getMessage());
         } catch (ValidationException e) {
-            throw new RestException(Status.CONFLICT, e.getMessage());
+            throw new RestException(Status.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
-            throw new RestException(Status.INTERNAL_SERVER_ERROR, e.getMessage());
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
         }
     }
 
@@ -731,33 +490,18 @@ public class CandidacyRESTService extends RESTService {
     public Response deleteFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long candidacyId, @PathParam("fileId") Long fileId) {
         try {
             User loggedOn = getLoggedOn(authToken);
-            Candidacy candidacy = candidacyService.getCandidacy(candidacyId, false);
-
-            if (!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-
-            CandidacyFile candidacyFile = null;
-            for (CandidacyFile file : candidacy.getFiles()) {
-                if (file.getId().equals(fileId) && !file.isDeleted()) {
-                    candidacyFile = file;
-                    break;
-                }
-            }
-            if (candidacyFile == null) {
-                throw new RestException(Status.NOT_FOUND, "wrong.file.id");
-            }
-            FileType type = candidacyFile.getType();
-
             //delete file
-            candidacyService.deleteFile(type, candidacyId, candidacyFile);
+            candidacyService.deleteFile(candidacyId, fileId, loggedOn);
 
             return Response.noContent().build();
-
+        } catch (NotEnabledException e) {
+            throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
         } catch (NotFoundException e) {
             throw new RestException(Status.NOT_FOUND, e.getMessage());
         } catch (ValidationException e) {
-            throw new RestException(Status.CONFLICT, e.getMessage());
+            throw new RestException(Status.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
         }
     }
 
@@ -781,35 +525,18 @@ public class CandidacyRESTService extends RESTService {
     public Collection<PositionCandidaciesFile> getEvaluationFiles(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId) {
         try {
             User loggedOn = getLoggedOn(authToken);
-            Candidacy candidacy = candidacyService.getCandidacy(candidacyId, false);
+            // get evaluation files
+            Collection<PositionCandidaciesFile> positionCandidaciesFiles = candidacyService.getEvaluationFiles(candidacyId, loggedOn);
 
-            PositionCandidacies existingCandidacies = candidacy.getCandidacies();
-            if (existingCandidacies == null) {
-                throw new RestException(Status.NOT_FOUND, "wrong.position.candidacies.id");
-            }
-            // Validate:
-            if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-                    !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-                    !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-                    !loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
-                    (candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
-                    (candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-                    !candidacy.getCandidacies().containsCandidate(loggedOn)) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-            if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
-                    !candidacy.isOpenToOtherCandidates() &&
-                    !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-
-            // Search
-            List<PositionCandidaciesFile> result = positionCandidaciesService.getPositionCandidaciesFiles(existingCandidacies.getId(), candidacy.getId());
-
-            // Return Result
-            return result;
+            return positionCandidaciesFiles;
+        } catch (NotEnabledException e) {
+            throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
         } catch (NotFoundException e) {
             throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (ValidationException e) {
+            throw new RestException(Status.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
         }
     }
 
@@ -830,40 +557,17 @@ public class CandidacyRESTService extends RESTService {
     public PositionCandidaciesFile getEvaluationFile(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId) {
         try {
             User loggedOn = getLoggedOn(authToken);
-            Candidacy candidacy = candidacyService.getCandidacy(candidacyId, false);
-            // Validate:
-            if (candidacy == null) {
-                throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
-            }
-            PositionCandidacies existingCandidacies = candidacy.getCandidacies();
-            if (existingCandidacies == null) {
-                throw new RestException(Status.NOT_FOUND, "wrong.position.candidacies.id");
-            }
-            // Validate:
-            if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-                    !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-                    !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-                    !loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
-                    (candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
-                    (candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-                    !candidacy.getCandidacies().containsCandidate(loggedOn)) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-            if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
-                    !candidacy.isOpenToOtherCandidates() &&
-                    !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-            // Find File
-            Collection<PositionCandidaciesFile> files = FileHeader.filterDeleted(existingCandidacies.getFiles());
-            for (PositionCandidaciesFile file : files) {
-                if (file.getId().equals(fileId)) {
-                    return file;
-                }
-            }
-            throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+            PositionCandidaciesFile positionCandidaciesFile = candidacyService.getEvaluationFile(candidacyId, fileId, loggedOn);
+
+            return positionCandidaciesFile;
+        } catch (NotEnabledException e) {
+            throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
         } catch (NotFoundException e) {
             throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (ValidationException e) {
+            throw new RestException(Status.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
         }
     }
 
@@ -885,40 +589,18 @@ public class CandidacyRESTService extends RESTService {
     public Response getEvaluationFileBody(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId, @PathParam("bodyId") Long bodyId) {
         try {
             User loggedOn = getLoggedOn(authToken);
-            Candidacy candidacy = candidacyService.getCandidacy(candidacyId, false);
-            // Validate:
-            if (candidacy == null) {
-                throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
-            }
-            PositionCandidacies existingCandidacies = candidacy.getCandidacies();
-            if (existingCandidacies == null) {
-                throw new RestException(Status.NOT_FOUND, "wrong.position.candidacies.id");
-            }
-            // Validate:
-            if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-                    !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-                    !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-                    !loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
-                    (candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
-                    (candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-                    !candidacy.getCandidacies().containsCandidate(loggedOn)) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-            if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
-                    !candidacy.isOpenToOtherCandidates() &&
-                    !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-            // Return Result
-            Collection<PositionCandidaciesFile> files = FileHeader.filterDeleted(existingCandidacies.getFiles());
-            for (PositionCandidaciesFile file : files) {
-                if (file.getId().equals(fileId) && file.getCurrentBody().getId().equals(bodyId)) {
-                    return sendFileBody(file.getCurrentBody());
-                }
-            }
-            throw new RestException(Status.NOT_FOUND, "wrong.file.id");
+            // get file body
+            FileBody evaluationFileBody = candidacyService.getEvaluationFileBody(candidacyId, fileId, bodyId, loggedOn);
+
+            return sendFileBody(evaluationFileBody);
+        } catch (NotEnabledException e) {
+            throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
         } catch (NotFoundException e) {
             throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (ValidationException e) {
+            throw new RestException(Status.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
         }
     }
 
@@ -926,20 +608,18 @@ public class CandidacyRESTService extends RESTService {
     @Path("/incompletecandidacies")
     @JsonView({MediumCandidacyView.class})
     public Collection<Candidacy> getIncompleteCandidacies(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken) {
-        User loggedOn = getLoggedOn(authToken);
-        if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
-            throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-        }
-        Administrator admin = (Administrator) loggedOn.getActiveRole(RoleDiscriminator.ADMINISTRATOR);
-        if (!admin.isSuperAdministrator()) {
-            throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-        }
+        try {
+            User loggedOn = getLoggedOn(authToken);
+            // get incomplete candidacies
+            List<Candidacy> retv = candidacyService.getIncompleteCandidacies(loggedOn);
 
-        List<Candidacy> retv = candidacyService.getIncompleteCandidacies();
-
-        return retv;
+            return retv;
+        } catch (NotEnabledException e) {
+            throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
+        }
     }
-
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -948,18 +628,18 @@ public class CandidacyRESTService extends RESTService {
     public Candidacy createCandidacy(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, Candidacy candidacy) {
         try {
             User loggedOn = getLoggedOn(authToken);
-            // Authenticate
-            if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
             // submit candidacy
-            candidacy = candidacyService.submitCandidacy(candidacy.getId());
+            candidacy = candidacyService.submitCandidacy(candidacy, loggedOn);
 
             return candidacy;
+        } catch (NotEnabledException e) {
+            throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
         } catch (NotFoundException e) {
             throw new RestException(Status.NOT_FOUND, e.getMessage());
         } catch (ValidationException e) {
-            throw new RestException(Status.CONFLICT, e.getMessage());
+            throw new RestException(Status.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
         }
     }
 
@@ -969,31 +649,15 @@ public class CandidacyRESTService extends RESTService {
     public Response getCandidacyStatusHistoryList(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId) {
         try {
             User loggedOn = getLoggedOn(authToken);
-            Candidacy candidacy = candidacyService.getCandidacy(candidacyId, false);
-            if (candidacy == null) {
-                throw new RestException(Status.NOT_FOUND, "wrong.candidacy.id");
-            }
-            // Validate:
-            if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR) &&
-                    !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_MANAGER) &&
-                    !loggedOn.hasActiveRole(RoleDiscriminator.MINISTRY_ASSISTANT) &&
-                    !loggedOn.isAssociatedWithDepartment(candidacy.getCandidacies().getPosition().getDepartment()) &&
-                    (candidacy.getCandidacies().getPosition().getPhase().getCommittee() != null && !candidacy.getCandidacies().getPosition().getPhase().getCommittee().containsMember(loggedOn)) &&
-                    (candidacy.getCandidacies().getPosition().getPhase().getEvaluation() != null && !candidacy.getCandidacies().getPosition().getPhase().getEvaluation().containsEvaluator(loggedOn)) &&
-                    !candidacy.getCandidacies().containsCandidate(loggedOn) &&
-                    !candidacy.containsEvaluator(loggedOn)) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-            if (candidacy.getCandidacies().containsCandidate(loggedOn) &&
-                    !candidacy.isOpenToOtherCandidates() &&
-                    !candidacy.getCandidate().getUser().getId().equals(loggedOn.getId())) {
-                throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-            }
-            List<CandidacyStatus> statusList = candidacyService.getCandidacyStatus(candidacyId);
+            List<CandidacyStatus> statusList = candidacyService.getCandidacyStatus(candidacyId, loggedOn);
 
             return Response.ok(statusList).build();
+        } catch (NotEnabledException e) {
+            throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
         } catch (NotFoundException e) {
             throw new RestException(Status.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
         }
     }
 

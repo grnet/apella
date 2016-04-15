@@ -60,6 +60,8 @@ public class EmailLogin extends BaseHttpServlet {
 		} catch (ServiceException e1) {
 			String message = resources.getString("error." + e1.getErrorKey());
 			sendErrorPage(request, response, message);
+		} catch (Exception e) {
+			sendErrorPage(request, response, "error.persistence.exception");
 		}
 	}
 }

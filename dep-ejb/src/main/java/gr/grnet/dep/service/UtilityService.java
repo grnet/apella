@@ -45,6 +45,7 @@ public class UtilityService {
 								"where s.name = :name ")
 						.setParameter("name", name)
 						.getSingleResult();
+
 				return existingSubject;
 			} catch (NoResultException e) {
 				Subject newSubject = new Subject();

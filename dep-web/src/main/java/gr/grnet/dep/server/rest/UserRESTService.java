@@ -8,15 +8,6 @@ import gr.grnet.dep.service.exceptions.NotEnabledException;
 import gr.grnet.dep.service.exceptions.NotFoundException;
 import gr.grnet.dep.service.exceptions.ServiceException;
 import gr.grnet.dep.service.exceptions.ValidationException;
-import gr.grnet.dep.service.model.Administrator;
-import gr.grnet.dep.service.model.AuthenticationType;
-import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.InstitutionAssistant;
-import gr.grnet.dep.service.model.InstitutionManager;
-import gr.grnet.dep.service.model.JiraIssue;
-import gr.grnet.dep.service.model.MinistryAssistant;
-import gr.grnet.dep.service.model.MinistryManager;
-import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.Role.RoleStatus;
 import gr.grnet.dep.service.model.SearchData;
@@ -24,44 +15,19 @@ import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.User.UserStatus;
 import gr.grnet.dep.service.model.User.UserView;
 import gr.grnet.dep.service.model.User.UserWithLoginDataView;
-import gr.grnet.dep.service.util.StringUtil;
-import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceException;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Path("/user")
@@ -204,9 +170,8 @@ public class UserRESTService extends RESTService {
     @JsonView({UserWithLoginDataView.class})
     public User create(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, User newUser) {
         try {
-            User loggedOn = getLoggedOn(authToken);
             // create user
-            User user = userService.create(newUser, loggedOn);
+            User user = userService.create(authToken, newUser);
 
             return user;
         } catch (NotEnabledException e) {
@@ -270,8 +235,9 @@ public class UserRESTService extends RESTService {
                     .build();
         } catch (ServiceException e) {
             throw new RestException(Status.UNAUTHORIZED, e.getErrorKey());
+        } catch (Exception e) {
+            throw new RestException(Status.INTERNAL_SERVER_ERROR, "persistence.exception");
         }
-
     }
 
     @PUT

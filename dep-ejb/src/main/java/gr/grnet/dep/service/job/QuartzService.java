@@ -27,7 +27,6 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.InvocationContext;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -206,25 +205,21 @@ public class QuartzService {
 				.setParameter("now", now)
 				.getResultList();
 		int i = 0;
-		try {
-			for (Position position : positions) {
-				log.log(Level.INFO, "Opening Position " + position.getId());
 
-				// Same code exists in AddPhase of PositionRestService
-				PositionPhase existingPhase = position.getPhase();
-				PositionPhase newPhase = new PositionPhase();
-				newPhase.setStatus(PositionStatus.ANOIXTI);
-				newPhase.setCandidacies(existingPhase.getCandidacies());
-				newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
-				position.addPhase(newPhase);
+		for (Position position : positions) {
+			log.log(Level.INFO, "Opening Position " + position.getId());
 
-				i++;
-			}
-			em.flush();
-		} catch (PersistenceException e) {
-			log.log(Level.WARNING, e.getMessage(), e);
-			sc.setRollbackOnly();
+			// Same code exists in AddPhase of PositionRestService
+			PositionPhase existingPhase = position.getPhase();
+			PositionPhase newPhase = new PositionPhase();
+			newPhase.setStatus(PositionStatus.ANOIXTI);
+			newPhase.setCandidacies(existingPhase.getCandidacies());
+			newPhase.setComplementaryDocuments(existingPhase.getComplementaryDocuments());
+			position.addPhase(newPhase);
+
+			i++;
 		}
+		em.flush();
 		return i;
 	}
 

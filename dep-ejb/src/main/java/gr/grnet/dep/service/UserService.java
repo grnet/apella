@@ -5,6 +5,7 @@ import gr.grnet.dep.service.exceptions.NotFoundException;
 import gr.grnet.dep.service.exceptions.ServiceException;
 import gr.grnet.dep.service.exceptions.ValidationException;
 import gr.grnet.dep.service.model.*;
+import gr.grnet.dep.service.model.system.WebConstants;
 import gr.grnet.dep.service.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
 
@@ -145,7 +146,7 @@ public class UserService extends CommonService {
         }
     }
 
-    public User create(User newUser, User loggedOn) throws ValidationException, NotEnabledException, ServiceException {
+    public User create(String authToken, User newUser) throws ValidationException, NotEnabledException, ServiceException {
         //1. Validate
         // Has one role
         if (newUser.getRoles().isEmpty() || newUser.getRoles().size() > 1) {
@@ -197,6 +198,7 @@ public class UserService extends CommonService {
 
         newUser.addRole(firstRole);
 
+        User loggedOn = null;
         switch (firstRole.getDiscriminator()) {
             case PROFESSOR_DOMESTIC:
                 // Add Second Role : CANDIDATE
@@ -230,6 +232,7 @@ public class UserService extends CommonService {
                 }
                 break;
             case INSTITUTION_ASSISTANT:
+                loggedOn = authenticationService.getLoggedOn(authToken);
                 if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.INSTITUTION_MANAGER)) {
                     throw new NotEnabledException("insufficient.privileges");
                 }
@@ -241,6 +244,7 @@ public class UserService extends CommonService {
             case MINISTRY_MANAGER:
                 throw new NotEnabledException("insufficient.privileges");
             case MINISTRY_ASSISTANT:
+                loggedOn = authenticationService.getLoggedOn(authToken);
                 // CHECK LOGGEDON USER, ACTIVATE NEW USER
                 if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.MINISTRY_MANAGER)) {
                     throw new NotEnabledException("insufficient.privileges");
@@ -251,6 +255,7 @@ public class UserService extends CommonService {
                 firstRole.setStatus(Role.RoleStatus.ACTIVE);
                 break;
             case ADMINISTRATOR:
+                loggedOn = authenticationService.getLoggedOn(authToken);
                 // CHECK LOGGEDON USER, ACTIVATE NEW USER
                 if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR)) {
                     throw new NotEnabledException("insufficient.privileges");

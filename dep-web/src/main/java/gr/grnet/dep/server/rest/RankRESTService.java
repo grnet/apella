@@ -7,14 +7,11 @@ import gr.grnet.dep.service.exceptions.NotFoundException;
 import gr.grnet.dep.service.model.Rank;
 
 import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.persistence.NoResultException;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response.Status;
-import java.util.Collection;
 import java.util.List;
 
 @Path("/rank")

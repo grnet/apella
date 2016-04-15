@@ -5,6 +5,7 @@ import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileType;
+import gr.grnet.dep.service.model.system.WebConstants;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.commons.fileupload.FileUploadException;
@@ -17,7 +18,6 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
@@ -48,20 +48,16 @@ public class CommonService {
      */
     protected void validateCandidacy(Candidacy candidacy, Candidate candidate, boolean isNew) throws ValidationException {
         if (!candidate.getStatus().equals(Role.RoleStatus.ACTIVE)) {
-           // throw new RestException(Response.Status.CONFLICT, "validation.candidacy.inactive.role");
             throw new ValidationException("validation.candidacy.inactive.role");
         }
         if (isNew) {
             if (FileHeader.filter(candidate.getFiles(), FileType.DIMOSIEYSI).size() == 0) {
-               // throw new RestException(Response.Status.CONFLICT, "validation.candidacy.no.dimosieysi");
                 throw new ValidationException("validation.candidacy.no.dimosieysi");
             }
             if (FileHeader.filter(candidate.getFiles(), FileType.BIOGRAFIKO).size() == 0) {
-                //throw new RestException(Response.Status.CONFLICT, "validation.candidacy.no.cv");
                 throw new ValidationException("validation.candidacy.no.cv");
             }
             if (FileHeader.filter(candidate.getFiles(), FileType.PTYXIO).size() == 0) {
-               // throw new RestException(Response.Status.CONFLICT, "validation.candidacy.no.ptyxio");
                 throw new ValidationException("validation.candidacy.no.ptyxio");
             }
         } else {
@@ -70,15 +66,12 @@ public class CommonService {
             }
 
             if (FileHeader.filterIncludingDeleted(candidacy.getSnapshotFiles(), FileType.DIMOSIEYSI).size() == 0) {
-               // throw new RestException(Response.Status.CONFLICT, "validation.candidacy.no.dimosieysi");
                 throw new ValidationException("validation.candidacy.no.dimosieysi");
             }
             if (FileHeader.filterIncludingDeleted(candidacy.getSnapshotFiles(), FileType.BIOGRAFIKO).size() == 0) {
-               // throw new RestException(Response.Status.CONFLICT, "validation.candidacy.no.cv");
                 throw new ValidationException("validation.candidacy.no.cv");
             }
             if (FileHeader.filterIncludingDeleted(candidacy.getSnapshotFiles(), FileType.PTYXIO).size() == 0) {
-               // throw new RestException(Response.Status.CONFLICT, "validation.candidacy.no.ptyxio");
                 throw new ValidationException("validation.candidacy.no.ptyxio");
             }
         }
@@ -134,11 +127,9 @@ public class CommonService {
             List<FileItem> fileItems = servletFileUpload.parseRequest(request);
             return fileItems;
         } catch (FileUploadBase.SizeLimitExceededException e) {
-           // throw new RestException(Response.Status.BAD_REQUEST, "file.size.exceeded");
             throw new ValidationException("file.size.exceeded");
         } catch (FileUploadException e) {
-            log.log(Level.SEVERE, "Error encountered while parsing the request", e);
-            //throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "generic");
+            log.log(Level.SEVERE, "Error encountered while parsing the request");
             throw new ValidationException("generic");
         }
     }
@@ -199,12 +190,10 @@ public class CommonService {
 
             return file;
         } catch (FileUploadException ex) {
-            log.log(Level.SEVERE, "Error encountered while parsing the request", ex);
-           // throw new RestException(Status.INTERNAL_SERVER_ERROR, "generic");
+            log.log(Level.SEVERE, "Error encountered while parsing the request");
             throw new Exception("generic");
         } catch (Exception e) {
-            log.log(Level.SEVERE, "Error encountered while uploading file", e);
-            //throw new RestException(Status.INTERNAL_SERVER_ERROR, "generic");
+            log.log(Level.SEVERE, "Error encountered while uploading file");
             throw new Exception("generic");
         }
     }
@@ -222,10 +211,9 @@ public class CommonService {
      */
     protected <T extends FileHeader> T checkNumberOfFileTypes(Map<FileType, Integer> fileTypes, FileType type, Set<T> files) throws ValidationException {
         if (!fileTypes.containsKey(type)) {
-            // throw new RestException(Response.Status.CONFLICT, "wrong.file.type");
             throw new ValidationException("wrong.file.type");
         }
-        Set<T> existingFiles = null;
+        Set<T> existingFiles;
         if (fileTypes.get(type) == 1) {
             existingFiles = FileHeader.filterIncludingDeleted(files, type);
             if (existingFiles.size() >= 1) {
@@ -235,35 +223,23 @@ public class CommonService {
                     existingFile.undelete();
                     return existingFile;
                 } else {
-                    // throw new RestException(Response.Status.CONFLICT, "wrong.file.type");
                     throw new ValidationException("wrong.file.type");
                 }
             }
         } else {
             existingFiles = FileHeader.filter(files, type);
             if (existingFiles.size() >= fileTypes.get(type))
-                //throw new RestException(Response.Status.CONFLICT, "wrong.file.type");
                 throw new ValidationException("wrong.file.type");
         }
         return null;
     }
 
     <T extends FileHeader> T _updateFile(User loggedOn, List<FileItem> fileItems, T file) throws Exception {
-        try {
-            saveFile(loggedOn, fileItems, file);
-            em.flush();
-            file.getBodies().size();
+        saveFile(loggedOn, fileItems, file);
+        em.flush();
+        file.getBodies().size();
 
-            //TODO remove null
-            return null;
-
-            //return toJSON(file, FileHeader.SimpleFileHeaderView.class);
-        } catch (PersistenceException e) {
-            log.log(Level.WARNING, e.getMessage(), e);
-           // sc.setRollbackOnly();
-           // throw new RestException(Status.BAD_REQUEST, "persistence.exception");
-            throw new ValidationException("");
-        }
+        return file;
     }
 
     /**
@@ -348,7 +324,7 @@ public class CommonService {
      *
      * @param fh FileHeader
      * @throws ValidationException (Status.CONFLICT) if FileHeader cannot be deleted
-     *                       because some body is in use
+     *                             because some body is in use
      */
     protected void deleteCompletely(FileHeader fh) throws ValidationException {
         List<FileBody> fileBodies = fh.getBodies();
@@ -365,7 +341,7 @@ public class CommonService {
      * @param fh
      * @return
      * @throws ValidationException (Status.CONFLICT) if body cannot be deleted because
-     *                       it is in use
+     *                             it is in use
      */
     protected <T extends FileHeader> File deleteFileBody(T fh) throws ValidationException {
         int size = fh.getBodies().size();
@@ -381,7 +357,6 @@ public class CommonService {
                     .setMaxResults(1)
                     .getSingleResult();
             log.log(Level.INFO, "Could not delete FileBody id=" + fb.getId() + ". Constraint violation. ");
-            //throw new RestException(Response.Status.CONFLICT, "file.in.use");
             throw new ValidationException("file.in.use");
         } catch (NoResultException e) {
         }
@@ -400,11 +375,6 @@ public class CommonService {
         //Return physical file, should be deleted by caller of function
         return file;
     }
-
-
-
-
-
 
 
 }

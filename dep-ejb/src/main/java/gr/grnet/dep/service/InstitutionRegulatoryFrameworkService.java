@@ -1,9 +1,11 @@
 package gr.grnet.dep.service;
 
+import gr.grnet.dep.service.exceptions.NotEnabledException;
 import gr.grnet.dep.service.exceptions.NotFoundException;
 import gr.grnet.dep.service.exceptions.ValidationException;
 import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.InstitutionRegulatoryFramework;
+import gr.grnet.dep.service.model.User;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -46,13 +48,15 @@ public class InstitutionRegulatoryFrameworkService extends CommonService {
         }
     }
 
-    public InstitutionRegulatoryFramework create(InstitutionRegulatoryFramework newIRF) throws NotFoundException, ValidationException {
-
+    public InstitutionRegulatoryFramework create(InstitutionRegulatoryFramework newIRF, User loggedOn) throws NotFoundException, ValidationException, NotEnabledException {
         // get institution
         Institution institution = institutionService.getInstitution(newIRF.getInstitution().getId());
-
         // set institution
         newIRF.setInstitution(institution);
+        // validation
+        if (!newIRF.isUserAllowedToEdit(loggedOn)) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
 
         // Validate
         try {
@@ -76,9 +80,13 @@ public class InstitutionRegulatoryFrameworkService extends CommonService {
         return newIRF;
     }
 
-    public InstitutionRegulatoryFramework update(Long id, InstitutionRegulatoryFramework newIRF) throws NotFoundException {
+    public InstitutionRegulatoryFramework update(Long id, InstitutionRegulatoryFramework newIRF, User loggedOn) throws NotFoundException, NotEnabledException {
         // get
         InstitutionRegulatoryFramework existing = get(id);
+
+        if (!existing.isUserAllowedToEdit(loggedOn)) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
 
         existing.setEswterikosKanonismosURL(newIRF.getEswterikosKanonismosURL());
         existing.setOrganismosURL(newIRF.getOrganismosURL());
@@ -89,9 +97,13 @@ public class InstitutionRegulatoryFrameworkService extends CommonService {
         return existing;
     }
 
-    public void delete(Long id) throws NotFoundException {
+    public void delete(Long id, User loggedOn) throws NotFoundException, NotEnabledException {
         // get the existing entity
         InstitutionRegulatoryFramework existing = get(id);
+
+        if (!existing.isUserAllowedToEdit(loggedOn)) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
 
         // remove the object
         em.remove(existing);

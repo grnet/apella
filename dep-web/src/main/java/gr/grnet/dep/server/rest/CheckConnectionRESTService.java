@@ -4,8 +4,6 @@ import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.service.CheckConnectionService;
 
 import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.persistence.NoResultException;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;

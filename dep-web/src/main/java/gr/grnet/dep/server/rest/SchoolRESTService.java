@@ -6,7 +6,9 @@ import gr.grnet.dep.service.SchoolService;
 import gr.grnet.dep.service.exceptions.NotEnabledException;
 import gr.grnet.dep.service.exceptions.NotFoundException;
 import gr.grnet.dep.service.exceptions.ValidationException;
-import gr.grnet.dep.service.model.*;
+import gr.grnet.dep.service.model.Department;
+import gr.grnet.dep.service.model.School;
+import gr.grnet.dep.service.model.User;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;

@@ -4,28 +4,18 @@ import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.InstitutionRegulatoryFrameworkService;
 import gr.grnet.dep.service.InstitutionService;
+import gr.grnet.dep.service.exceptions.NotEnabledException;
 import gr.grnet.dep.service.exceptions.NotFoundException;
 import gr.grnet.dep.service.exceptions.ValidationException;
-import gr.grnet.dep.service.model.Institution;
 import gr.grnet.dep.service.model.InstitutionRegulatoryFramework;
 import gr.grnet.dep.service.model.User;
 
 import javax.ejb.EJB;
-import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceException;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.util.Collection;
-import java.util.Date;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Path("/institutionrf")
@@ -86,20 +76,16 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 		try {
 			// get logged on user
 			User loggedOn = getLoggedOn(authToken);
-			// get institution
-			Institution institution = institutionService.getInstitution(newIRF.getInstitution().getId());
-			newIRF.setInstitution(institution);
-			// validation
-			if (!newIRF.isUserAllowedToEdit(loggedOn)) {
-				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-			}
-			// create
-			newIRF = regulatoryFrameworkService.create(newIRF);
+			newIRF = regulatoryFrameworkService.create(newIRF, loggedOn);
 			return newIRF;
+		} catch (NotEnabledException e) {
+			throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
 		} catch (NotFoundException e) {
 			throw new RestException(Status.NOT_FOUND, e.getMessage());
 		} catch (ValidationException e) {
-			throw new RestException(Status.CONFLICT, e.getMessage());
+			throw new RestException(Status.BAD_REQUEST, e.getMessage());
+		} catch (Exception e) {
+			throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
 		}
 	}
 
@@ -118,18 +104,16 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 	public InstitutionRegulatoryFramework update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id, InstitutionRegulatoryFramework newIRF) {
 		try {
 			User loggedOn = getLoggedOn(authToken);
-			// get
-			InstitutionRegulatoryFramework existing = regulatoryFrameworkService.get(id);
-
-			if (!existing.isUserAllowedToEdit(loggedOn)) {
-				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-			}
 			// update
-			existing = regulatoryFrameworkService.update(id, existing);
+			InstitutionRegulatoryFramework existing = regulatoryFrameworkService.update(id, newIRF, loggedOn);
 
 			return existing;
+		} catch (NotEnabledException e) {
+			throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
 		} catch (NotFoundException e) {
 			throw new RestException(Status.NOT_FOUND, e.getMessage());
+		} catch (Exception e) {
+			throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
 		}
 	}
 
@@ -146,18 +130,15 @@ public class InstitutionRegulatoryFrameworkRESTService extends RESTService {
 	public void delete(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id) {
 		try {
 			User loggedOn = getLoggedOn(authToken);
-			InstitutionRegulatoryFramework existing = regulatoryFrameworkService.get(id);
 
-			if (!existing.isUserAllowedToEdit(loggedOn)) {
-				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-			}
 			// delete
-			regulatoryFrameworkService.delete(id);
+			regulatoryFrameworkService.delete(id, loggedOn);
+		} catch (NotEnabledException e) {
+			throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
 		} catch (NotFoundException e) {
 			throw new RestException(Status.NOT_FOUND, e.getMessage());
+		} catch (Exception e) {
+			throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
 		}
-
-
-
 	}
 }

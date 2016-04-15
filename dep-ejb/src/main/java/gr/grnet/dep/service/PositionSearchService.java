@@ -108,6 +108,8 @@ public class PositionSearchService extends CommonService {
         // Calculate CanSubmitCandidacy => set false if already submitted
         if (loggedOn.hasActiveRole(Role.RoleDiscriminator.CANDIDATE)) {
             Candidate candidate = (Candidate) loggedOn.getActiveRole(Role.RoleDiscriminator.CANDIDATE);
+            // attach the candidate to the persistence context in order to avoid lazy loading exceptions
+            candidate = em.merge(candidate);
             for (Candidacy candidacy : candidate.getCandidacies()) {
                 if (candidacy.isPermanent() && !candidacy.isWithdrawn()) {
                     for (Position position : positions) {

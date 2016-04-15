@@ -1,4 +1,4 @@
-package gr.grnet.dep.service;
+package gr.grnet.dep.service.model.system;
 
 import gr.grnet.dep.service.util.DEPConfigurationFactory;
 import org.apache.commons.configuration.Configuration;

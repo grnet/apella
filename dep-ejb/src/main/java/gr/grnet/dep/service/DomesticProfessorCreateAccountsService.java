@@ -1,10 +1,8 @@
 package gr.grnet.dep.service;
 
+import gr.grnet.dep.service.exceptions.NotEnabledException;
 import gr.grnet.dep.service.exceptions.ValidationException;
-import gr.grnet.dep.service.model.Department;
-import gr.grnet.dep.service.model.Institution;
-import gr.grnet.dep.service.model.ProfessorDomesticData;
-import gr.grnet.dep.service.model.Rank;
+import gr.grnet.dep.service.model.*;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -53,7 +51,16 @@ public class DomesticProfessorCreateAccountsService extends CommonService {
     private static final char DOUBLE_QUOTE = '"';
     private static final char FULL_STOP = '.';
 
-    public List<ProfessorDomesticData> createAccounts(HttpServletRequest request) throws ValidationException {
+    public List<ProfessorDomesticData> createAccounts(HttpServletRequest request, User loggedOn) throws ValidationException, NotEnabledException {
+
+        if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR)) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+
+        Administrator admin = (Administrator) loggedOn.getActiveRole(Role.RoleDiscriminator.ADMINISTRATOR);
+        if (!admin.isSuperAdministrator()) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
 
         Reader reader = null;
         CSVParser csvParser = null;
@@ -83,11 +90,9 @@ public class DomesticProfessorCreateAccountsService extends CommonService {
 
         } catch (IllegalArgumentException e) {
             log.info("IllegalArgument Exception");
-           // throw new RestException(Response.Status.CONFLICT, e.getMessage());
             throw new ValidationException(e.getMessage());
         } catch (Exception e) {
             log.info("Generic Exception");
-            //throw new RestException(Response.Status.CONFLICT, "csvFile.fileParsing.failed");
             throw new ValidationException("csvFile.fileParsing.failed");
         } finally {
             try {
@@ -95,7 +100,6 @@ public class DomesticProfessorCreateAccountsService extends CommonService {
                 csvParser.close();
             } catch (IOException e) {
                 log.info("Error while closing fileReader/csvFileParser !!!");
-                //throw new RestException(Response.Status.CONFLICT, "csvFile.closingResources.failed");
                 throw new ValidationException("csvFile.closingResources.failed");
             }
         }

@@ -6,6 +6,7 @@ import gr.grnet.dep.service.exceptions.ValidationException;
 import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileType;
+import gr.grnet.dep.service.model.system.WebConstants;
 import gr.grnet.dep.service.util.DateUtil;
 import gr.grnet.dep.service.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
@@ -746,7 +747,7 @@ public class PositionService extends CommonService {
                         }));
             }
         } catch (ParseException e) {
-            log.log(Level.WARNING, "", e);
+            log.log(Level.WARNING, "parse exception");
         }
 
     }

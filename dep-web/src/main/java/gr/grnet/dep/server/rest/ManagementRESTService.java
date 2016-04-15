@@ -5,35 +5,20 @@ import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.ManagementService;
 import gr.grnet.dep.service.SubjectService;
+import gr.grnet.dep.service.exceptions.NotEnabledException;
 import gr.grnet.dep.service.exceptions.NotFoundException;
 import gr.grnet.dep.service.exceptions.ValidationException;
 import gr.grnet.dep.service.model.Candidacy;
-import gr.grnet.dep.service.model.CandidacyEvaluator;
-import gr.grnet.dep.service.model.Candidate;
-import gr.grnet.dep.service.model.Position;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
-import gr.grnet.dep.service.model.file.FileHeader;
 
 import javax.ejb.EJB;
-import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -147,38 +132,38 @@ public class ManagementRESTService extends RESTService {
 	public Candidacy createCandidacy(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken,
 									 @FormParam("position") Long positionId,
 									 @FormParam("candidate") Long candidateId) {
-		User loggedOn = getLoggedOn(authToken);
-		// Authenticate
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
 		try {
+			User loggedOn = getLoggedOn(authToken);
 			// create candidacy
-			Candidacy candidacy = mgmtService.createCandidacy(positionId, candidateId);
+			Candidacy candidacy = mgmtService.createCandidacy(positionId, candidateId, loggedOn);
+
 			return candidacy;
+		} catch (NotEnabledException e) {
+			throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
 		} catch (NotFoundException e) {
 			throw new RestException(Status.NOT_FOUND, e.getMessage());
 		} catch (ValidationException e) {
-			throw new RestException(Status.CONFLICT, e.getMessage());
+			throw new RestException(Status.BAD_REQUEST, e.getMessage());
+		} catch (Exception e) {
+			throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
 		}
 	}
 
 	@DELETE
 	@Path("/candidacy/{id:[0-9][0-9]*}")
 	public void deleteCandidacy(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id) {
-		User loggedOn = getLoggedOn(authToken);
-		// Authenticate
-		if (!loggedOn.hasActiveRole(RoleDiscriminator.ADMINISTRATOR)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
-
 		try {
-			// delete
-			mgmtService.deleteCandidacy(id);
+			User loggedOn = getLoggedOn(authToken);
+			// delete candidacy
+			mgmtService.deleteCandidacy(id, loggedOn);
+		} catch (NotEnabledException e) {
+			throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
 		} catch (NotFoundException e) {
 			throw new RestException(Status.NOT_FOUND, e.getMessage());
 		} catch (ValidationException e) {
-			throw new RestException(Status.CONFLICT, e.getMessage());
+			throw new RestException(Status.BAD_REQUEST, e.getMessage());
+		} catch (Exception e) {
+			throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
 		}
 	}
 }

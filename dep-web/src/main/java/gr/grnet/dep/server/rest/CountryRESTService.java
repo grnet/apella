@@ -4,7 +4,6 @@ import gr.grnet.dep.service.CountryService;
 import gr.grnet.dep.service.model.Country;
 
 import javax.ejb.EJB;
-import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -28,7 +27,7 @@ public class CountryRESTService extends RESTService {
 	 */
 	@GET
 	public Collection<Country> getAll() {
-
+		// get all
 		List<Country> countryList = countryService.getAll();
 
 		return countryList;

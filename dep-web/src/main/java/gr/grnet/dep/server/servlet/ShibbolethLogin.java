@@ -14,11 +14,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.Locale;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.logging.Level;
 
 @WebServlet(
@@ -92,6 +88,8 @@ public class ShibbolethLogin extends BaseHttpServlet {
 		} catch (ServiceException e1) {
 			String message = resources.getString("error." + e1.getErrorKey());
 			sendErrorPage(request, response, message);
+		} catch (Exception e) {
+			sendErrorPage(request, response, "error.persistence.exception");
 		}
 	}
 
@@ -120,6 +118,8 @@ public class ShibbolethLogin extends BaseHttpServlet {
 		} catch (ServiceException e1) {
 			String message = resources.getString("error." + e1.getErrorKey());
 			sendErrorPage(request, response, message);
+		} catch (Exception e) {
+			sendErrorPage(request, response, "error.persistence.exception");
 		}
 	}
 

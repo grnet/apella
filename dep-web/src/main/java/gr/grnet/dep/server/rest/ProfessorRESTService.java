@@ -5,17 +5,12 @@ import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.ProfessorService;
 import gr.grnet.dep.service.exceptions.NotFoundException;
-import gr.grnet.dep.service.model.CandidacyEvaluator;
-import gr.grnet.dep.service.model.PositionCommitteeMember;
+import gr.grnet.dep.service.model.*;
 import gr.grnet.dep.service.model.PositionCommitteeMember.PositionCommitteeMemberView;
-import gr.grnet.dep.service.model.PositionEvaluator;
 import gr.grnet.dep.service.model.PositionEvaluator.PositionEvaluatorView;
-import gr.grnet.dep.service.model.Professor;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
-import gr.grnet.dep.service.model.User;
 
 import javax.ejb.EJB;
-import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;

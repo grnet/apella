@@ -1,9 +1,12 @@
 package gr.grnet.dep.service;
 
+import gr.grnet.dep.service.exceptions.NotEnabledException;
 import gr.grnet.dep.service.exceptions.NotFoundException;
 import gr.grnet.dep.service.exceptions.ValidationException;
 import gr.grnet.dep.service.model.Institution;
+import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.School;
+import gr.grnet.dep.service.model.User;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.Stateless;
@@ -40,8 +43,13 @@ public class InstitutionService extends CommonService {
         return institution;
     }
 
-    public Institution update(Long id, Institution institutionToUpdate) throws NotFoundException, ValidationException {
+    public Institution update(Long id, Institution institutionToUpdate, User loggedOn) throws NotFoundException, ValidationException, NotEnabledException {
 
+        if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR)) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
+
+        // get institution
         Institution institution = getInstitution(id);
 
         if (institutionToUpdate.getName() == null ||

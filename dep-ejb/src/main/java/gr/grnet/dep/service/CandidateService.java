@@ -1,8 +1,10 @@
 package gr.grnet.dep.service;
 
+import gr.grnet.dep.service.exceptions.NotEnabledException;
 import gr.grnet.dep.service.exceptions.NotFoundException;
 import gr.grnet.dep.service.model.Candidacy;
 import gr.grnet.dep.service.model.Candidate;
+import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.User;
 
 import javax.ejb.Stateless;
@@ -34,10 +36,14 @@ public class CandidateService extends CommonService {
         return candidate;
     }
 
-    public List<Candidacy> getCandidaciesForSpecificCandidate(Long candidateId, String open, User loggedOn) throws NotFoundException {
-
+    public List<Candidacy> getCandidaciesForSpecificCandidate(Long candidateId, String open, User loggedOn) throws NotFoundException, NotEnabledException {
         // get candidate
         Candidate candidate = getCandidate(candidateId);
+
+        if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR) &&
+                !candidate.getUser().getId().equals(loggedOn.getId())) {
+            throw new NotEnabledException("insufficient.privileges");
+        }
 
         String queryString = "from Candidacy c " +
                 "left join fetch c.candidate.user.roles cerls " +

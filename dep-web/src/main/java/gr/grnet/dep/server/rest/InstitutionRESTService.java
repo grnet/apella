@@ -3,16 +3,17 @@ package gr.grnet.dep.server.rest;
 import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.InstitutionService;
+import gr.grnet.dep.service.exceptions.NotEnabledException;
 import gr.grnet.dep.service.exceptions.NotFoundException;
 import gr.grnet.dep.service.exceptions.ValidationException;
 import gr.grnet.dep.service.model.Institution;
-import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.School;
 import gr.grnet.dep.service.model.User;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.util.Collection;
 import java.util.logging.Logger;
@@ -60,20 +61,19 @@ public class InstitutionRESTService extends RESTService {
     @PUT
 	@Path("/{id:[0-9][0-9]*}")
 	public Institution update(@HeaderParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") long id, Institution institutionToUpdate) {
-
-		User loggedOn = getLoggedOn(authToken);
-
-		if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR)) {
-			throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
-		}
 		try {
+			User loggedOn = getLoggedOn(authToken);
 			// update
-			Institution institution = institutionService.update(id, institutionToUpdate);
+			Institution institution = institutionService.update(id, institutionToUpdate, loggedOn);
 			return institution;
+		} catch (NotEnabledException e) {
+			throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
 		} catch (NotFoundException e) {
 			throw new RestException(Status.NOT_FOUND, e.getMessage());
 		} catch (ValidationException e) {
-			throw new RestException(Status.CONFLICT, e.getMessage());
+			throw new RestException(Status.BAD_REQUEST, e.getMessage());
+		} catch (Exception e) {
+			throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
 		}
 	}
 
