@@ -302,6 +302,10 @@ public class PositionService extends CommonService {
         final Position existingPosition = getPosition(id);
 
         boolean isNew = !existingPosition.isPermanent();
+        // value for checking if the user can modify the position's assistants
+        boolean allowedToEditPositionAssistants = false;
+        // Set Collection which contains the assistant ids before the update - needed only when the assistants can be modified
+        Set<Long> currentPositionAssistantIds = new HashSet<>();
         // Validate
         Sector sector = em.find(Sector.class, position.getSector().getId());
         if (sector == null) {
@@ -316,12 +320,22 @@ public class PositionService extends CommonService {
             position.getPhase().getCandidacies().setOpeningDate(existingPosition.getPhase().getCandidacies().getOpeningDate());
             position.getPhase().getCandidacies().setClosingDate(existingPosition.getPhase().getCandidacies().getClosingDate());
         }
+        // only admin can change assistants for the position when the position is permanent
+        if (loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR) && existingPosition.isPermanent()) {
+            // only for position status ANOIXTI and ENTAGMENI the assistants can be modified
+            if (existingPosition.getPhase().getStatus() == Position.PositionStatus.ANOIXTI || existingPosition.getPhase().getStatus() == Position.PositionStatus.ENTAGMENI) {
+                allowedToEditPositionAssistants = true;
+                // find the current position assistants
+                for (User assistant : existingPosition.getAssistants()) {
+                    currentPositionAssistantIds.add(assistant.getId());
+                }
+            }
+        }
         // Update
-
         existingPosition.copyFrom(position);
         existingPosition.setSector(sector);
         existingPosition.setSubject(utilityService.supplementSubject(position.getSubject()));
-        if (isNew) {
+        if (isNew || allowedToEditPositionAssistants) {
             // Managers
             Set<Long> managerIds = new HashSet<Long>();
             for (User manager : position.getAssistants()) {
@@ -359,30 +373,7 @@ public class PositionService extends CommonService {
             sendNotificationsToInterestedCandidates(existingPosition);
             // Send to Assistants
             for (final User assistant : existingPosition.getAssistants()) {
-                mailService.postEmail(assistant.getContactInfo().getEmail(),
-                        "default.subject",
-                        "position.create@institutionAssistant",
-                        Collections.unmodifiableMap(new HashMap<String, String>() {
-
-                            {
-                                put("positionID", StringUtil.formatPositionID(existingPosition.getId()));
-                                put("position", existingPosition.getName());
-
-                                put("firstname_el", assistant.getFirstname("el"));
-                                put("lastname_el", assistant.getLastname("el"));
-                                put("institution_el", existingPosition.getDepartment().getSchool().getInstitution().getName().get("el"));
-                                put("school_el", existingPosition.getDepartment().getSchool().getName().get("el"));
-                                put("department_el", existingPosition.getDepartment().getName().get("el"));
-
-                                put("firstname_en", assistant.getFirstname("en"));
-                                put("lastname_en", assistant.getLastname("en"));
-                                put("institution_en", existingPosition.getDepartment().getSchool().getInstitution().getName().get("en"));
-                                put("school_en", existingPosition.getDepartment().getSchool().getName().get("en"));
-                                put("department_en", existingPosition.getDepartment().getName().get("en"));
-
-                                put("ref", WebConstants.conf.getString("home.url") + "/apella.html#positions");
-                            }
-                        }));
+                sendNotificationToAssistant(assistant, existingPosition);
             }
 
             if (loggedOn.hasActiveRole(Role.RoleDiscriminator.INSTITUTION_ASSISTANT)) {
@@ -436,6 +427,13 @@ public class PositionService extends CommonService {
                                 put("ref", WebConstants.conf.getString("home.url") + "/apella.html#positions");
                             }
                         }));
+            }
+        } else if (allowedToEditPositionAssistants) {
+            // check if any new assistants have been added and if yes send notification mail to each one
+            for (User newAssistant : existingPosition.getAssistants()) {
+                if (!currentPositionAssistantIds.contains(newAssistant.getId())) {
+                    sendNotificationToAssistant(newAssistant, existingPosition);
+                }
             }
         }
 
@@ -751,6 +749,35 @@ public class PositionService extends CommonService {
         }
 
     }
+
+    private void sendNotificationToAssistant(final User assistant, final Position existingPosition) {
+        mailService.postEmail(assistant.getContactInfo().getEmail(),
+                "default.subject",
+                "position.create@institutionAssistant",
+                Collections.unmodifiableMap(new HashMap<String, String>() {
+
+                    {
+                        put("positionID", StringUtil.formatPositionID(existingPosition.getId()));
+                        put("position", existingPosition.getName());
+
+                        put("firstname_el", assistant.getFirstname("el"));
+                        put("lastname_el", assistant.getLastname("el"));
+                        put("institution_el", existingPosition.getDepartment().getSchool().getInstitution().getName().get("el"));
+                        put("school_el", existingPosition.getDepartment().getSchool().getName().get("el"));
+                        put("department_el", existingPosition.getDepartment().getName().get("el"));
+
+                        put("firstname_en", assistant.getFirstname("en"));
+                        put("lastname_en", assistant.getLastname("en"));
+                        put("institution_en", existingPosition.getDepartment().getSchool().getInstitution().getName().get("en"));
+                        put("school_en", existingPosition.getDepartment().getSchool().getName().get("en"));
+                        put("department_en", existingPosition.getDepartment().getName().get("en"));
+
+                        put("ref", WebConstants.conf.getString("home.url") + "/apella.html#positions");
+                    }
+                }));
+    }
+
+
 
 
 }
