@@ -82,8 +82,8 @@ public class RESTService {
 				public void write(OutputStream outputStream) throws IOException {
 					final FileInputStream fileInputStream = new FileInputStream(new File(fullPath));
 					try {
-						// Buffer size set to 10MB
-						int bufferSize = 1024 * 1024 * 10;
+						// Buffer size set to 1MB
+						int bufferSize = 1024 * 1024 * 1;
 						int buffer = 1;
 						int rs = fileInputStream.read();
 
