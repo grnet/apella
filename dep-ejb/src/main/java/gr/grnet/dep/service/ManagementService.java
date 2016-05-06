@@ -77,16 +77,16 @@ public class ManagementService extends CommonService {
 
         List<ProfessorDomesticData> createdAccountsList = new ArrayList<>();
 
-        logger.info("CREATING " + pdData.size() + " PROFESSOR DOMESTIC ACCOUNTS");
+        logger.fine("CREATING " + pdData.size() + " PROFESSOR DOMESTIC ACCOUNTS");
         for (ProfessorDomesticData data : pdData) {
             User u = authenticationService.findAccountByProfessorDomesticData(data);
             if (u == null) {
-                logger.info("CREATING PROFESSOR DOMESTIC: " + data.getEmail());
+                logger.fine("CREATING PROFESSOR DOMESTIC: " + data.getEmail());
                 u = authenticationService.createProfessorDomesticAccount(data);
                 createdAccountsList.add(data);
-                logger.info("CREATING PROFESSOR DOMESTIC: " + u.getId() + " " + u.getPrimaryRole() + " " + u.getRoles().size());
+                logger.fine("CREATING PROFESSOR DOMESTIC: " + u.getId() + " " + u.getPrimaryRole() + " " + u.getRoles().size());
             } else {
-                logger.info("SKIPPING PROFESSOR DOMESTIC: " + data.getEmail());
+                logger.fine("SKIPPING PROFESSOR DOMESTIC: " + data.getEmail());
             }
         }
         return createdAccountsList;
@@ -133,10 +133,10 @@ public class ManagementService extends CommonService {
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	public void massSendShibbolethConnectEmails(Collection<Long> institutionIds) {
 		if (institutionIds.isEmpty()) {
-			logger.info("massSendShibbolethConnectEmails: Empty Institutions Array");
+			logger.fine("massSendShibbolethConnectEmails: Empty Institutions Array");
 			return;
 		}
-		logger.info("massSendShibbolethConnectEmails: Institutions = " + Arrays.toString(institutionIds.toArray()));
+		logger.fine("massSendShibbolethConnectEmails: Institutions = " + Arrays.toString(institutionIds.toArray()));
 		@SuppressWarnings("unchecked")
 		List<Long> users = em.createQuery(
 				"select u.id from ProfessorDomestic pd " +
@@ -151,7 +151,7 @@ public class ManagementService extends CommonService {
 				.setParameter("userStatus", UserStatus.ACTIVE)
 				.setParameter("institutionIds", institutionIds)
 				.getResultList();
-		logger.info("massSendShibbolethConnectEmails: Sending to " + users.size() + " users");
+		logger.fine("massSendShibbolethConnectEmails: Sending to " + users.size() + " users");
 		for (Long userId : users) {
 			mailService.sendShibbolethConnectEmail(userId, false);
 		}
@@ -170,7 +170,7 @@ public class ManagementService extends CommonService {
 				.setParameter("userStatus", UserStatus.ACTIVE)
 				.setParameter("roleStatus", RoleStatus.UNAPPROVED)
 				.getResultList();
-		logger.info("massSendReminderFinalizeRegistrationEmails: Sending to " + users.size() + " users");
+		logger.fine("massSendReminderFinalizeRegistrationEmails: Sending to " + users.size() + " users");
 		for (Long userId : users) {
 			mailService.sendReminderFinalizeRegistrationEmail(userId, false);
 		}
@@ -179,7 +179,7 @@ public class ManagementService extends CommonService {
 
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	public void massSendEvaluationEmails() {
-		logger.info("massSendEvaluationEmails:");
+		logger.fine("massSendEvaluationEmails:");
 		Set<Long> users = new HashSet<>();
 
 		// 1. Candidates
@@ -225,7 +225,7 @@ public class ManagementService extends CommonService {
 				"select e.user.id from Evaluation e ", Long.class)
 				.getResultList());
 
-		logger.info("massSendEvaluationEmails: Sending to " + users.size() + " users");
+		logger.fine("massSendEvaluationEmails: Sending to " + users.size() + " users");
 		for (Long userId : users) {
 			mailService.sendEvaluationEmail(userId, false);
 		}
@@ -236,7 +236,7 @@ public class ManagementService extends CommonService {
 		Subject subject = em.find(Subject.class, subjectId);
 		String newName = StringUtil.toUppercaseNoTones(subject.getName(), new Locale("el"));
 		if (newName.equals(subject.getName())) {
-			logger.info("upperCaseSubject - Skipping    [" + subject.getId() + "]\t" + subject.getName());
+			logger.fine("upperCaseSubject - Skipping    [" + subject.getId() + "]\t" + subject.getName());
 			return;
 		}
 		// 1. Search if another with the new name exists
@@ -247,55 +247,55 @@ public class ManagementService extends CommonService {
 					.setParameter("name", newName)
 					.getSingleResult();
 			// Transfer all entities to this otherSubject
-			logger.info("upperCaseSubject - Transfering [" + subject.getId() + "]\t" + subject.getName() + "\t-> [" + otherSubject.getId() + "]\t" + otherSubject.getName());
+			logger.fine("upperCaseSubject - Transfering [" + subject.getId() + "]\t" + subject.getName() + "\t-> [" + otherSubject.getId() + "]\t" + otherSubject.getName());
 
 			int i = em.createNativeQuery("update ProfessorDomestic set subject_id = :otherSubject where subject_id = :subject")
 					.setParameter("otherSubject", otherSubject.getId())
 					.setParameter("subject", subject.getId())
 					.executeUpdate();
-			logger.info("upperCaseSubject - Updated " + i + " ProfessorDomestic.subject");
+			logger.fine("upperCaseSubject - Updated " + i + " ProfessorDomestic.subject");
 
 			i = em.createNativeQuery("update ProfessorDomestic set fekSubject_id = :otherSubject where fekSubject_id = :subject")
 					.setParameter("otherSubject", otherSubject.getId())
 					.setParameter("subject", subject.getId())
 					.executeUpdate();
-			logger.info("upperCaseSubject - Updated " + i + " ProfessorDomestic.fekSubject");
+			logger.fine("upperCaseSubject - Updated " + i + " ProfessorDomestic.fekSubject");
 
 			i = em.createNativeQuery("update ProfessorForeign p set subject_id = :otherSubject where subject_id = :subject")
 					.setParameter("otherSubject", otherSubject.getId())
 					.setParameter("subject", subject.getId())
 					.executeUpdate();
-			logger.info("upperCaseSubject - Updated " + i + " ProfessorForeign.subject");
+			logger.fine("upperCaseSubject - Updated " + i + " ProfessorForeign.subject");
 
 			i = em.createNativeQuery("update Candidacy set snapshot_subject_id = :otherSubject where snapshot_subject_id = :subject")
 					.setParameter("otherSubject", otherSubject.getId())
 					.setParameter("subject", subject.getId())
 					.executeUpdate();
-			logger.info("upperCaseSubject - Updated " + i + " Candidacy.subject");
+			logger.fine("upperCaseSubject - Updated " + i + " Candidacy.subject");
 
 			i = em.createNativeQuery("update Candidacy set snapshot_fekSubject_id = :otherSubject where snapshot_fekSubject_id = :subject")
 					.setParameter("otherSubject", otherSubject.getId())
 					.setParameter("subject", subject.getId())
 					.executeUpdate();
-			logger.info("upperCaseSubject - Updated " + i + " Candidacy.fekSubject");
+			logger.fine("upperCaseSubject - Updated " + i + " Candidacy.fekSubject");
 
 			i = em.createNativeQuery("update Position set subject_id = :otherSubject where subject_id = :subject")
 					.setParameter("otherSubject", otherSubject.getId())
 					.setParameter("subject", subject.getId())
 					.executeUpdate();
-			logger.info("upperCaseSubject - Updated " + i + " Position.subject");
+			logger.fine("upperCaseSubject - Updated " + i + " Position.subject");
 
 			i = em.createNativeQuery("update Register set subject_id = :otherSubject where subject_id = :subject")
 					.setParameter("otherSubject", otherSubject.getId())
 					.setParameter("subject", subject.getId())
 					.executeUpdate();
-			logger.info("upperCaseSubject - Updated " + i + " Candidacy.subject");
+			logger.fine("upperCaseSubject - Updated " + i + " Candidacy.subject");
 
 			// Delete old subject
 			em.remove(subject);
 		} catch (NoResultException e) {
 			// Just save with uppercase letter
-			logger.info("upperCaseSubject - Updating    [" + subject.getId() + "]\t" + subject.getName() + "\t-> " + newName);
+			logger.fine("upperCaseSubject - Updating    [" + subject.getId() + "]\t" + subject.getName() + "\t-> " + newName);
 			subject.setName(newName);
 		}
 	}

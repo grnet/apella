@@ -203,12 +203,12 @@ public class MailService {
 					pushEmail(aToEmailAddr, aSubject, aBody);
 				}
 				u.setLoginEmailSent(Boolean.TRUE);
-				logger.log(Level.INFO, "Sent login email to user with id " + u.getId() + " " + getloginLink(u.getPermanentAuthToken()));
+				logger.log(Level.FINE, "Sent login email to user with id " + u.getId() + " " + getloginLink(u.getPermanentAuthToken()));
 			} else {
-				logger.log(Level.INFO, "Skipped login email for user with id " + u.getId());
+				logger.log(Level.FINE, "Skipped login email for user with id " + u.getId());
 			}
 		} catch (UnsupportedEncodingException e) {
-			logger.log(Level.WARNING, "Failed to send login email", e.getMessage());
+			logger.log(Level.WARNING, "Failed to send login email");
 		}
 	}
 
@@ -238,12 +238,12 @@ public class MailService {
 					pushEmail(aToEmailAddr, aSubject, aBody);
 				}
 				u.setLoginEmailSent(Boolean.TRUE);
-				logger.log(Level.INFO, "Sent login email to user with id " + u.getId() + " " + getloginLink(u.getPermanentAuthToken()));
+				logger.log(Level.FINE, "Sent login email to user with id " + u.getId() + " " + getloginLink(u.getPermanentAuthToken()));
 			} else {
-				logger.log(Level.INFO, "Skipped login email for user with id " + u.getId());
+				logger.log(Level.FINE, "Skipped login email for user with id " + u.getId());
 			}
 		} catch (UnsupportedEncodingException e) {
-			logger.log(Level.WARNING, "Failed to send login email", e.getMessage());
+			logger.log(Level.WARNING, "Failed to send login email");
 		}
 	}
 
@@ -273,12 +273,12 @@ public class MailService {
 					pushEmail(aToEmailAddr, aSubject, aBody);
 				}
 				u.setLoginEmailSent(Boolean.TRUE);
-				logger.log(Level.INFO, "Sent connect to shibboleth email to user with id " + u.getId() + " " + getloginLink(u.getPermanentAuthToken()));
+				logger.log(Level.FINE, "Sent connect to shibboleth email to user with id " + u.getId() + " " + getloginLink(u.getPermanentAuthToken()));
 			} else {
-				logger.log(Level.INFO, "Skipped Sent connect to shibboleth email for user with id " + u.getId());
+				logger.log(Level.FINE, "Skipped Sent connect to shibboleth email for user with id " + u.getId());
 			}
 		} catch (UnsupportedEncodingException e) {
-			logger.log(Level.WARNING, "Failed to send login email", e.getMessage());
+			logger.log(Level.WARNING, "Failed to send login email");
 		}
 	}
 
@@ -308,12 +308,12 @@ public class MailService {
 					pushEmail(aToEmailAddr, aSubject, aBody);
 				}
 				u.setLoginEmailSent(Boolean.TRUE);
-				logger.log(Level.INFO, "Sent ReminderFinalizeRegistrationEmail email to user with id " + u.getId() + " " + getloginLink(u.getPermanentAuthToken()));
+				logger.log(Level.FINE, "Sent ReminderFinalizeRegistrationEmail email to user with id " + u.getId() + " " + getloginLink(u.getPermanentAuthToken()));
 			} else {
-				logger.log(Level.INFO, "Skipped ReminderFinalizeRegistrationEmail for user with id " + u.getId());
+				logger.log(Level.FINE, "Skipped ReminderFinalizeRegistrationEmail for user with id " + u.getId());
 			}
 		} catch (UnsupportedEncodingException e) {
-			logger.log(Level.WARNING, "Failed to send ReminderFinalizeRegistrationEmail", e.getMessage());
+			logger.log(Level.WARNING, "Failed to send ReminderFinalizeRegistrationEmail");
 		}
 	}
 
@@ -349,12 +349,12 @@ public class MailService {
 					pushEmail(aToEmailAddr, aSubject, aBody);
 				}
 				u.setLoginEmailSent(Boolean.TRUE);
-				logger.log(Level.INFO, "Sent sendEvaluationEmail email to user with id " + u.getId() + " " + getEvaluationLink(u.getId()));
+				logger.log(Level.FINE, "Sent sendEvaluationEmail email to user with id " + u.getId() + " " + getEvaluationLink(u.getId()));
 			} else {
-				logger.log(Level.INFO, "Skipped sendEvaluationEmail for user with id " + u.getId());
+				logger.log(Level.FINE, "Skipped sendEvaluationEmail for user with id " + u.getId());
 			}
 		} catch (UnsupportedEncodingException e) {
-			logger.log(Level.WARNING, "Failed to send sendEvaluationEmail", e.getMessage());
+			logger.log(Level.WARNING, "Failed to send sendEvaluationEmail");
 		}
 	}
 

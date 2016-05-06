@@ -8,19 +8,14 @@ import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import java.util.logging.Logger;
 
 @Path("/statistics")
 public class StatisticsRESTService extends RESTService {
-
-	@Inject
-	private Logger log;
 
 	@EJB
 	DataExportService dataExportService;

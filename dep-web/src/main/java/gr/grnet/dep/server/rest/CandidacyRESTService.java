@@ -15,7 +15,6 @@ import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import org.apache.commons.fileupload.FileUploadException;
 
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -26,13 +25,9 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 @Path("/candidacy")
 public class CandidacyRESTService extends RESTService {
-
-    @Inject
-    private Logger log;
 
     @EJB
     private CandidacyService candidacyService;

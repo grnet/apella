@@ -13,20 +13,15 @@ import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Logger;
 
 @Path("/management")
 public class ManagementRESTService extends RESTService {
-
-	@Inject
-	private Logger log;
 
 	@EJB
 	ManagementService mgmtService;

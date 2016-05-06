@@ -17,7 +17,6 @@ import gr.grnet.dep.service.model.User.UserView;
 import gr.grnet.dep.service.model.User.UserWithLoginDataView;
 
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -28,13 +27,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Logger;
 
 @Path("/user")
 public class UserRESTService extends RESTService {
-
-    @Inject
-    private Logger log;
 
     @EJB
     private UserService userService;

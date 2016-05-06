@@ -34,7 +34,7 @@ public class DataExportService {
 	 * ***************************************************
 	 */
 
-	private static void addCell(Row row, int col, CellStyle style, String value) {
+	private void addCell(Row row, int col, CellStyle style, String value) {
 		Cell cell = row.createCell(col);
 		cell.setCellStyle(style);
 		if (value != null) {
@@ -42,7 +42,7 @@ public class DataExportService {
 		}
 	}
 
-	private static void addCell(Row row, int col, CellStyle style, Integer value) {
+	private void addCell(Row row, int col, CellStyle style, Integer value) {
 		Cell cell = row.createCell(col);
 		cell.setCellStyle(style);
 		if (value != null) {
@@ -50,7 +50,7 @@ public class DataExportService {
 		}
 	}
 
-	private static void addCell(Row row, int col, CellStyle style, Long value) {
+	private void addCell(Row row, int col, CellStyle style, Long value) {
 		Cell cell = row.createCell(col);
 		cell.setCellStyle(style);
 		if (value != null) {
@@ -58,7 +58,7 @@ public class DataExportService {
 		}
 	}
 
-	private static void addCell(Row row, int col, CellStyle style, Date value) {
+	private void addCell(Row row, int col, CellStyle style, Date value) {
 		Cell cell = row.createCell(col);
 		cell.setCellStyle(style);
 		if (value != null) {
@@ -106,7 +106,7 @@ public class DataExportService {
 	}
 
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-	public static InputStream createProfessorDomesticExcel(List<ProfessorDomestic> professors, Map<Long, Map<FileType, Long>> pFilesMap) {
+	public InputStream createProfessorDomesticExcel(List<ProfessorDomestic> professors, Map<Long, Map<FileType, Long>> pFilesMap) {
 		//2. Create XLS
 		Workbook wb = new SXSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");
@@ -244,7 +244,7 @@ public class DataExportService {
 	}
 
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-	public static InputStream createProfessorForeignExcel(List<ProfessorForeign> professors, Map<Long, Map<FileType, Long>> pFilesMap) {
+	public InputStream createProfessorForeignExcel(List<ProfessorForeign> professors, Map<Long, Map<FileType, Long>> pFilesMap) {
 		Workbook wb = new SXSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");
 		DataFormat df = wb.createDataFormat();
@@ -417,7 +417,7 @@ public class DataExportService {
 	}
 
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-	public static InputStream createCandidateExcel(List<Candidate> candidates, Map<Long, Map<FileType, Set<Long>>> filesMap, Map<Long, Long> candidaciesMap) {
+	public InputStream createCandidateExcel(List<Candidate> candidates, Map<Long, Map<FileType, Set<Long>>> filesMap, Map<Long, Long> candidaciesMap) {
 		Workbook wb = new SXSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");
 		DataFormat df = wb.createDataFormat();
@@ -538,7 +538,7 @@ public class DataExportService {
 		return data;
 	}
 
-	public static InputStream createInstitutionManagerExcel(List<InstitutionManager> managers) {
+	public InputStream createInstitutionManagerExcel(List<InstitutionManager> managers) {
 		Workbook wb = new SXSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");
 		DataFormat df = wb.createDataFormat();
@@ -667,7 +667,7 @@ public class DataExportService {
 	}
 
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-	public static InputStream createInstitutionAssistantExcel(List<InstitutionAssistant> assistants) {
+	public InputStream createInstitutionAssistantExcel(List<InstitutionAssistant> assistants) {
 		Workbook wb = new SXSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");
 		DataFormat df = wb.createDataFormat();
@@ -769,7 +769,7 @@ public class DataExportService {
 	}
 
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-	public static InputStream createInstitutionRegulatoryFrameworkExcel(List<InstitutionRegulatoryFramework> frameworks) {
+	public InputStream createInstitutionRegulatoryFrameworkExcel(List<InstitutionRegulatoryFramework> frameworks) {
 
 		Workbook wb = new SXSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");
@@ -858,7 +858,7 @@ public class DataExportService {
 	}
 
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-	public static InputStream createRegisterExcel(List<Register> registers, Map<Long, Long> membersMap) {
+	public InputStream createRegisterExcel(List<Register> registers, Map<Long, Long> membersMap) {
 
 		Workbook wb = new SXSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");
@@ -1097,7 +1097,7 @@ public class DataExportService {
 		return data;
 	}
 
-	public static InputStream createPositionCommitteeMemberExcel(List<PositionCommitteeMember> members) {
+	public InputStream createPositionCommitteeMemberExcel(List<PositionCommitteeMember> members) {
 
 		Workbook wb = new SXSSFWorkbook(100); // keep 100 rows in memory, exceeding rows will be flushed to disk
 		//Workbook wb = new SXSSFWorkbook();
@@ -1214,7 +1214,7 @@ public class DataExportService {
 		return data;
 	}
 
-	public static InputStream createPositionEvaluatorExcel(List<PositionEvaluator> members) {
+	public InputStream createPositionEvaluatorExcel(List<PositionEvaluator> members) {
 
 		Workbook wb = new SXSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");
@@ -1325,7 +1325,7 @@ public class DataExportService {
 	}
 
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-	public static InputStream createCandidacyExcel(List<Candidacy> members) {
+	public InputStream createCandidacyExcel(List<Candidacy> members) {
 
 		Workbook wb = new SXSSFWorkbook();
 		Sheet sheet = wb.createSheet("Sheet1");

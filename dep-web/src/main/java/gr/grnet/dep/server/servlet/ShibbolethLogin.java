@@ -156,7 +156,7 @@ public class ShibbolethLogin extends BaseHttpServlet {
 			}
 			return field;
 		} catch (UnsupportedEncodingException e) {
-			logger.log(Level.WARNING, "decodeAttribute: ", e);
+			logger.log(Level.WARNING, "decodeAttribute");
 			return null;
 		}
 	}

@@ -7,20 +7,15 @@ import gr.grnet.dep.service.model.PositionEvaluator;
 import gr.grnet.dep.service.model.Professor;
 
 import javax.ejb.Stateless;
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
-import java.util.logging.Logger;
 
 @Stateless
 public class ProfessorService {
 
     @PersistenceContext(unitName = "apelladb")
     protected EntityManager em;
-
-    @Inject
-    private Logger log;
 
     public Professor getProfessor(Long id) throws NotFoundException {
         // find professor

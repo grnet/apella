@@ -13,20 +13,15 @@ import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.inject.Inject;
 import javax.persistence.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
-import java.util.logging.Logger;
 
 @Stateless
 public class CandidacyService extends CommonService {
 
     @PersistenceContext(unitName = "apelladb")
     protected EntityManager em;
-
-    @Inject
-    private Logger log;
 
     @EJB
     private RegisterService registerService;

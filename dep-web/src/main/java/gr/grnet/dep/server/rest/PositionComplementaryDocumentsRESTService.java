@@ -17,7 +17,6 @@ import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import org.apache.commons.fileupload.FileUploadException;
 
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -26,13 +25,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.logging.Logger;
 
 @Path("/position/{id:[0-9]+}/complementaryDocuments")
 public class PositionComplementaryDocumentsRESTService extends RESTService {
-
-	@Inject
-	private Logger log;
 
 	@EJB
 	private PositionComplementaryDocumentsService positionComplementaryDocumentsService;

@@ -16,14 +16,14 @@ public class OpenPositionsJob implements Job {
 
 	@Override
 	public void execute(JobExecutionContext ctx) throws JobExecutionException {
-		log.info("OpenPositionsJob: Starting ...");
+		log.fine("OpenPositionsJob: Starting ...");
 		long duration = System.currentTimeMillis();
 		int removed = 0;
 		// 1. Remove Candidacy
 		removed = service.openPositions();
-		log.info("OpenPositionsJob: Opened " + removed + " Positions");
+		log.fine("OpenPositionsJob: Opened " + removed + " Positions");
 		duration = System.currentTimeMillis() - duration;
-		log.info("OpenPositionsJob: Finished in " + duration + " msec");
+		log.fine("OpenPositionsJob: Finished in " + duration + " msec");
 	}
 
 }

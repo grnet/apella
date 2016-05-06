@@ -7,17 +7,12 @@ import gr.grnet.dep.service.model.JiraIssue;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 import gr.grnet.dep.service.model.User;
 
-import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response.Status;
 import java.util.List;
-import java.util.logging.Logger;
 
 @Path("/jira")
 public class JiraRESTService extends RESTService {
-
-	@Inject
-	private Logger log;
 
 	@GET
 	@Path("/user/{id:[0-9]+}/issue")

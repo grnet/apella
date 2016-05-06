@@ -9,21 +9,16 @@ import gr.grnet.dep.service.model.User;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.Stateless;
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import java.util.Collection;
-import java.util.logging.Logger;
 
 @Stateless
 public class DepartmentService extends CommonService {
 
     @PersistenceContext(unitName = "apelladb")
     protected EntityManager em;
-
-    @Inject
-    private Logger log;
 
     public Collection<Department> getAll() {
         return em.createQuery(

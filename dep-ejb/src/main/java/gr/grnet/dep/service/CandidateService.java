@@ -8,22 +8,16 @@ import gr.grnet.dep.service.model.Role;
 import gr.grnet.dep.service.model.User;
 
 import javax.ejb.Stateless;
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import java.util.*;
-import java.util.logging.Logger;
 
 @Stateless
 public class CandidateService extends CommonService {
 
     @PersistenceContext(unitName = "apelladb")
     protected EntityManager em;
-
-    @Inject
-    private Logger log;
-
 
     public Candidate getCandidate(Long id) throws NotFoundException {
 

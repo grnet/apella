@@ -34,7 +34,6 @@ public class CommonService {
     @Inject
     private Logger log;
 
-
     /******************************
      * Candidacy Snapshot *********
      ******************************/
@@ -62,7 +61,7 @@ public class CommonService {
             }
         } else {
             for (FileHeader fh : candidacy.getSnapshotFiles()) {
-                log.info(fh.getId() + " " + fh.getType() + " " + fh.isDeleted());
+                log.fine(fh.getId() + " " + fh.getType() + " " + fh.isDeleted());
             }
 
             if (FileHeader.filterIncludingDeleted(candidacy.getSnapshotFiles(), FileType.DIMOSIEYSI).size() == 0) {
@@ -129,7 +128,7 @@ public class CommonService {
         } catch (FileUploadBase.SizeLimitExceededException e) {
             throw new ValidationException("file.size.exceeded");
         } catch (FileUploadException e) {
-            log.log(Level.SEVERE, "Error encountered while parsing the request");
+            log.log(Level.SEVERE, "Error encountered while parsing the request", e);
             throw new ValidationException("generic");
         }
     }
@@ -146,7 +145,7 @@ public class CommonService {
             File file = null;
             for (FileItem fileItem : fileItems) {
                 if (fileItem.isFormField()) {
-                    log.info("Incoming text data: '" + fileItem.getFieldName() + "'=" + fileItem.getString("UTF-8") + "\n");
+                    log.fine("Incoming text data: '" + fileItem.getFieldName() + "'=" + fileItem.getString("UTF-8") + "\n");
                     if (fileItem.getFieldName().equals("type")) {
                         header.setType(FileType.valueOf(fileItem.getString("UTF-8")));
                     } else if (fileItem.getFieldName().equals("name")) {
@@ -190,10 +189,10 @@ public class CommonService {
 
             return file;
         } catch (FileUploadException ex) {
-            log.log(Level.SEVERE, "Error encountered while parsing the request");
+            log.log(Level.SEVERE, "Error encountered while parsing the request", ex);
             throw new Exception("generic");
         } catch (Exception e) {
-            log.log(Level.SEVERE, "Error encountered while uploading file");
+            log.log(Level.SEVERE, "Error encountered while uploading file", e);
             throw new Exception("generic");
         }
     }
@@ -356,7 +355,7 @@ public class CommonService {
                     .setParameter("bodyId", fb.getId())
                     .setMaxResults(1)
                     .getSingleResult();
-            log.log(Level.INFO, "Could not delete FileBody id=" + fb.getId() + ". Constraint violation. ");
+            log.log(Level.FINE, "Could not delete FileBody id=" + fb.getId() + ". Constraint violation. ");
             throw new ValidationException("file.in.use");
         } catch (NoResultException e) {
         }

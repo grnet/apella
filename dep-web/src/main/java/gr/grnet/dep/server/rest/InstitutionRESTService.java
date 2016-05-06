@@ -11,18 +11,13 @@ import gr.grnet.dep.service.model.School;
 import gr.grnet.dep.service.model.User;
 
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.util.Collection;
-import java.util.logging.Logger;
 
 @Path("/institution")
 public class InstitutionRESTService extends RESTService {
-
-	@Inject
-	private Logger log;
 
 	@EJB
 	private InstitutionService institutionService;

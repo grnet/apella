@@ -17,10 +17,10 @@ public class NotifyOnClosedPositionsJob implements Job {
 	@Override
 	public void execute(JobExecutionContext ctx) throws JobExecutionException {
 		long duration = System.currentTimeMillis();
-		log.info("NotifyOnClosedPositionsJob: Sending emails.");
+		log.fine("NotifyOnClosedPositionsJob: Sending emails.");
 		int notifications = service.notifyOnClosedPositions();
 		duration = System.currentTimeMillis() - duration;
-		log.info("NotifyOnClosedPositionsJob: Sent email for " + notifications + " positions in " + duration + " msec");
+		log.fine("NotifyOnClosedPositionsJob: Sent email for " + notifications + " positions in " + duration + " msec");
 	}
 
 }

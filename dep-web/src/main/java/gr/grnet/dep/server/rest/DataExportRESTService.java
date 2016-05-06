@@ -9,7 +9,6 @@ import gr.grnet.dep.service.model.file.FileType;
 import org.jboss.ejb3.annotation.TransactionTimeout;
 
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
@@ -115,7 +114,7 @@ public class DataExportRESTService extends RESTService {
 			} else {
 				throw new RestException(Status.NOT_FOUND);
 			}
-			logger.info("Data export " + type + " completed in " + (System.currentTimeMillis() - now));
+			logger.fine("Data export " + type + " completed in " + (System.currentTimeMillis() - now));
 			// Return response
 			return Response.ok(is)
 					.type("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -124,7 +123,7 @@ public class DataExportRESTService extends RESTService {
 					.build();
 		} catch (UnsupportedEncodingException e) {
 			logger.log(Level.SEVERE, "getDocument", e);
-			throw new EJBException(e);
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
 		}
 	}
 }

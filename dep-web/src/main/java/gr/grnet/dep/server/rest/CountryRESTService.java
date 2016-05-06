@@ -4,18 +4,13 @@ import gr.grnet.dep.service.CountryService;
 import gr.grnet.dep.service.model.Country;
 
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Logger;
 
 @Path("/country")
 public class CountryRESTService extends RESTService {
-
-	@Inject
-	private Logger log;
 
 	@EJB
 	private CountryService countryService;

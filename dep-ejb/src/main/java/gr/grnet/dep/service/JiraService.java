@@ -80,24 +80,24 @@ public class JiraService {
 
 	private JsonNode doGet(String path) throws Exception {
 		Client client = ClientBuilder.newClient();
-		logger.info("GET REQUEST: " + path);
+		logger.fine("GET REQUEST: " + path);
 		JsonNode jsonNode = client.target(REST_URL + path)
 				.request(MediaType.APPLICATION_JSON)
 				.header("Authorization", "Basic " + authenticationString())
 				.get(JsonNode.class);
-		logger.info("GET RESPONSE: " + path + " SUCCESS");
+		logger.fine("GET RESPONSE: " + path + " SUCCESS");
 		client.close();
 		return jsonNode;
 	}
 
 	private JsonNode doPost(String path, JsonNode data) {
 		Client client = ClientBuilder.newClient();
-		logger.info("POST REQUEST: " + path + " " + data.toString());
+		logger.fine("POST REQUEST: " + path + " " + data.toString());
 		JsonNode jsonNode = client.target(REST_URL + path)
 				.request(MediaType.APPLICATION_JSON)
 				.header("Authorization", "Basic " + authenticationString())
 				.post(Entity.json(data), JsonNode.class);
-		logger.info("POST RESPONSE: " + path + " SUCCESS");
+		logger.fine("POST RESPONSE: " + path + " SUCCESS");
 		client.close();
 		return jsonNode;
 	}
@@ -188,7 +188,7 @@ public class JiraService {
 			issue.setUpdated(now);
 			return issue;
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "", e);
+			logger.log(Level.WARNING, "jira.communication.problem");
 			throw new ServiceException("jira.communication.problem", e);
 		}
 

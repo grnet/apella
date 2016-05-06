@@ -89,17 +89,17 @@ public class DomesticProfessorCreateAccountsService extends CommonService {
             return createdAccountsList;
 
         } catch (IllegalArgumentException e) {
-            log.info("IllegalArgument Exception");
+            log.fine("IllegalArgument Exception");
             throw new ValidationException(e.getMessage());
         } catch (Exception e) {
-            log.info("Generic Exception");
+            log.fine("Generic Exception");
             throw new ValidationException("csvFile.fileParsing.failed");
         } finally {
             try {
                 reader.close();
                 csvParser.close();
             } catch (IOException e) {
-                log.info("Error while closing fileReader/csvFileParser !!!");
+                log.fine("Error while closing fileReader/csvFileParser !!!");
                 throw new ValidationException("csvFile.closingResources.failed");
             }
         }
@@ -145,11 +145,11 @@ public class DomesticProfessorCreateAccountsService extends CommonService {
             Institution institution = em.find(Institution.class, Long.parseLong(record.get(INSTITUTION_ID)));
             Rank rank = em.find(Rank.class, Long.parseLong(record.get(RANK_ID)));
             if (department == null || institution == null || rank == null) {
-                log.info("Ivalid values are contained for record with department id = " + record.get(DEPARTMENT_ID) + " and institution id = " + record.get(INSTITUTION_ID));
+                log.fine("Ivalid values are contained for record with department id = " + record.get(DEPARTMENT_ID) + " and institution id = " + record.get(INSTITUTION_ID));
                 throw new IllegalArgumentException("csvFile.values.not.exist");
             }
             if (department.getSchool().getInstitution().getId().compareTo(institution.getId()) != 0) {
-                log.info("The department does not belong to institution for record with department id = " + record.get(DEPARTMENT_ID) + " and institution id = " + record.get(INSTITUTION_ID));
+                log.fine("The department does not belong to institution for record with department id = " + record.get(DEPARTMENT_ID) + " and institution id = " + record.get(INSTITUTION_ID));
                 throw new IllegalArgumentException("csvFile.department.notBelong.to.declared.institution");
             }
             professorDomesticData.setDepartment(department);

@@ -13,7 +13,6 @@ import gr.grnet.dep.service.model.Register.RegisterView;
 import gr.grnet.dep.service.model.RegisterMember.DetailedRegisterMemberView;
 
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -280,7 +279,7 @@ public class RegisterRESTService extends RESTService {
                     .build();
         } catch (UnsupportedEncodingException e) {
             logger.log(Level.SEVERE, "getDocument", e);
-            throw new EJBException(e);
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
         } catch (NotEnabledException e) {
             throw new RestException(Status.FORBIDDEN, e.getMessage());
         } catch (Exception e) {
@@ -311,7 +310,7 @@ public class RegisterRESTService extends RESTService {
                     .build();
         } catch (UnsupportedEncodingException e) {
             logger.log(Level.SEVERE, "getDocument", e);
-            throw new EJBException(e);
+            throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
         } catch (NotEnabledException e) {
             throw new RestException(Status.FORBIDDEN, e.getMessage());
         } catch (NotFoundException e) {

@@ -6,20 +6,15 @@ import gr.grnet.dep.service.exceptions.NotFoundException;
 import gr.grnet.dep.service.model.Subject;
 
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response.Status;
 import java.util.Collection;
-import java.util.logging.Logger;
 
 @Path("/subject")
 public class SubjectRESTService extends RESTService {
-
-	@Inject
-	private Logger log;
 
 	@EJB
 	private SubjectService subjectService;

@@ -16,13 +16,13 @@ public class SynchronizeJiraIssuesJob implements Job {
 
 	@Override
 	public void execute(JobExecutionContext ctx) throws JobExecutionException {
-		log.info("SynchronizeJiraIssuesJob: Starting.");
+		log.fine("SynchronizeJiraIssuesJob: Starting.");
 		long duration = System.currentTimeMillis();
 		int removed = 0;
 		// 1. Remove Candidacy
 		service.synchronizeJiraIssuesJob();
 		duration = System.currentTimeMillis() - duration;
-		log.info("SynchronizeJiraIssuesJob: Finished in " + duration + " msec");
+		log.fine("SynchronizeJiraIssuesJob: Finished in " + duration + " msec");
 	}
 
 }

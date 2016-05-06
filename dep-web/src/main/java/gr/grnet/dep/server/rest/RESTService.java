@@ -11,7 +11,6 @@ import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.FileBody;
 
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
@@ -113,7 +112,7 @@ public class RESTService {
 					.build();
 		} catch (UnsupportedEncodingException e) {
 			logger.log(Level.SEVERE, "sendFileBody", e);
-			throw new EJBException(e);
+			throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
 		}
 	}
 
@@ -150,7 +149,7 @@ public class RESTService {
 	public String toJSON(Object object, Class<?> view) {
 		try {
 			ContextResolver<ObjectMapper> resolver = providers.getContextResolver(ObjectMapper.class, MediaType.APPLICATION_JSON_TYPE);
-			logger.info(resolver.getClass().toString());
+			logger.fine(resolver.getClass().toString());
 			ObjectMapper mapper = resolver.getContext(object.getClass());
 			String result;
 			if (view == null) {

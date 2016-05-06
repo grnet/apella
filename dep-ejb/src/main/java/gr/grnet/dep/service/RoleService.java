@@ -12,7 +12,6 @@ import org.apache.commons.fileupload.FileItem;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
@@ -21,16 +20,12 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.InputStream;
 import java.util.*;
-import java.util.logging.Logger;
 
 @Stateless
 public class RoleService extends CommonService {
 
     @PersistenceContext(unitName = "apelladb")
     protected EntityManager em;
-
-    @Inject
-    private Logger log;
 
     @EJB
     private UtilityService utilityService;

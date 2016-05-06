@@ -16,7 +16,10 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.ejb.*;
 import javax.inject.Inject;
-import javax.persistence.*;
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
+import javax.persistence.PersistenceContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.ext.Providers;
 import java.io.UnsupportedEncodingException;
@@ -25,7 +28,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Date;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Stateless
@@ -205,7 +207,7 @@ public class AuthenticationService {
 
     public User doShibbolethLogin(ShibbolethInformation shibbolethInfo) throws ServiceException {
         //1. Validate
-        logger.info("Read shibboleth: " + shibbolethInfo.toString());
+        logger.fine("Read shibboleth: " + shibbolethInfo.toString());
         if (shibbolethInfo.isMissingRequiredFields()) {
             throw new ServiceException("shibboleth.fields.error");
         }
@@ -251,7 +253,7 @@ public class AuthenticationService {
 
     public User connectEmailToShibbolethAccount(String permanentAuthToken, ShibbolethInformation shibbolethInfo) throws ServiceException {
         //1. Read and Validate Shibboleth Fields
-        logger.info("Read shibboleth: " + shibbolethInfo.toString());
+        logger.fine("Read shibboleth: " + shibbolethInfo.toString());
         if (shibbolethInfo.isMissingRequiredFields()) {
             throw new ServiceException("shibboleth.fields.error");
         }
@@ -284,7 +286,7 @@ public class AuthenticationService {
             throw new ServiceException(emailAccount.getAuthenticationType().toString().toLowerCase() + ".login.required");
         }
         // 4. Compare email and shibboleth fields
-        logger.info("Connecting: [" + emailAccount.getId() + "]" + emailAccount.getPrimaryRole() + " to " + shibbolethInfo.toString());
+        logger.fine("Connecting: [" + emailAccount.getId() + "]" + emailAccount.getPrimaryRole() + " to " + shibbolethInfo.toString());
         Institution emailUserInstitution = ((ProfessorDomestic) emailAccount.getRole(RoleDiscriminator.PROFESSOR_DOMESTIC)).getInstitution();
         if (emailUserInstitution == null || !emailUserInstitution.getId().equals(shibbolethInstitution.getId())) {
             throw new ServiceException("mismatch.home.organization");

@@ -38,7 +38,7 @@ public class MemoryLogger implements Filter {
 		}
 
 		long start = System.currentTimeMillis();
-		logger.info("StartCurrentTotalFreeMaxPath;" +
+		logger.fine("StartCurrentTotalFreeMaxPath;" +
 				start + ";" +
 				System.currentTimeMillis() + ";" +
 				Runtime.getRuntime().totalMemory() + ";" +
@@ -50,7 +50,7 @@ public class MemoryLogger implements Filter {
 
 		filterChain.doFilter(servletRequest, servletResponse);
 
-		logger.info("StartCurrentTotalFreeMaxPath;" +
+		logger.fine("StartCurrentTotalFreeMaxPath;" +
 				start + ";" +
 				System.currentTimeMillis() + ";" +
 				Runtime.getRuntime().totalMemory() + ";" +

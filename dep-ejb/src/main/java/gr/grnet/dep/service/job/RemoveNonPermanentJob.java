@@ -16,23 +16,23 @@ public class RemoveNonPermanentJob implements Job {
 
 	@Override
 	public void execute(JobExecutionContext ctx) throws JobExecutionException {
-		log.info("RemoveNonPermanentJob: Starting cleanup.");
+		log.fine("RemoveNonPermanentJob: Starting cleanup.");
 		long duration = System.currentTimeMillis();
 		int removed = 0;
 		// 1. Remove Candidacy
 		//removed = service().deleteCandidacies();
-		log.info("RemoveNonPermanentJob: Removed " + removed + " Candidacies");
+		log.fine("RemoveNonPermanentJob: Removed " + removed + " Candidacies");
 		// 2. Remove InstitutionRegulatoryFramework
 		removed = service.deleteInstitutionRegulatoryFrameworks();
-		log.info("RemoveNonPermanentJob: Removed " + removed + " InstitutionRegulatoryFrameworks");
+		log.fine("RemoveNonPermanentJob: Removed " + removed + " InstitutionRegulatoryFrameworks");
 		// 3. Remove Position
 		removed = service.deletePositions();
-		log.info("RemoveNonPermanentJob: Removed " + removed + " Positions");
+		log.fine("RemoveNonPermanentJob: Removed " + removed + " Positions");
 		// 4. Remove Register
 		removed = service.deleteRegisters();
-		log.info("RemoveNonPermanentJob: Removed " + removed + " Registers");
+		log.fine("RemoveNonPermanentJob: Removed " + removed + " Registers");
 		duration = System.currentTimeMillis() - duration;
-		log.info("RemoveNonPermanentJob: Finished clean up in " + duration + " msec");
+		log.fine("RemoveNonPermanentJob: Finished clean up in " + duration + " msec");
 	}
 
 }

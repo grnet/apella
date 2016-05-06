@@ -72,7 +72,7 @@ public class QuartzService {
 	@PostConstruct
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	public void createQuartzService() throws IllegalStateException {
-		log.info("Create QuartzService(" + jndiName + ")...");
+		log.fine("Create QuartzService(" + jndiName + ")...");
 		try {
 			Properties properties = loadProperties(propertiesFile);
 			schedulerFactory = new StdSchedulerFactory();
@@ -86,14 +86,14 @@ public class QuartzService {
 			log.log(Level.SEVERE, "Failed to initialize Scheduler", e);
 			throw new IllegalStateException("Failed to initialize Scheduler - ", e);
 		}
-		log.info("QuartzService(" + jndiName + ") created.");
+		log.fine("QuartzService(" + jndiName + ") created.");
 	}
 
 	@PreDestroy
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	public void destroyService() throws IllegalStateException {
 		try {
-			log.info("Destroy QuartzService(" + jndiName + ")...");
+			log.fine("Destroy QuartzService(" + jndiName + ")...");
 			Scheduler scheduler = schedulerFactory.getScheduler();
 			scheduler.shutdown();
 			schedulerFactory = null;
@@ -101,7 +101,7 @@ public class QuartzService {
 			log.log(Level.SEVERE, "Failed to initialize Scheduler", e);
 			throw new IllegalStateException("Failed to destroy Scheduler - ", e);
 		}
-		log.info("QuartzService(" + jndiName + ") destroyed.");
+		log.fine("QuartzService(" + jndiName + ") destroyed.");
 	}
 
 	/***********************
@@ -127,7 +127,7 @@ public class QuartzService {
 			return invocationContext.proceed();
 		}
 		long start = System.currentTimeMillis();
-		log.info("StartCurrentTotalFreeMaxPath;" +
+		log.fine("StartCurrentTotalFreeMaxPath;" +
 				start + ";" +
 				System.currentTimeMillis() + ";" +
 				Runtime.getRuntime().totalMemory() + ";" +
@@ -137,7 +137,7 @@ public class QuartzService {
 				invocationContext.getTarget().getClass().getSimpleName() + "." + invocationContext.getMethod().getName());
 
 		Object object = invocationContext.proceed();
-		log.info("StartCurrentTotalFreeMaxPath;" +
+		log.fine("StartCurrentTotalFreeMaxPath;" +
 				start + ";" +
 				System.currentTimeMillis() + ";" +
 				Runtime.getRuntime().totalMemory() + ";" +
@@ -207,7 +207,7 @@ public class QuartzService {
 		int i = 0;
 
 		for (Position position : positions) {
-			log.log(Level.INFO, "Opening Position " + position.getId());
+			log.log(Level.FINE, "Opening Position " + position.getId());
 
 			// Same code exists in AddPhase of PositionRestService
 			PositionPhase existingPhase = position.getPhase();

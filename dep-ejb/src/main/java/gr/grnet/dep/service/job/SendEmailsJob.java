@@ -16,13 +16,13 @@ public class SendEmailsJob implements Job {
 
 	@Override
 	public void execute(JobExecutionContext ctx) throws JobExecutionException {
-		log.info("SendEmailsJob: Starting ...");
+		log.fine("SendEmailsJob: Starting ...");
 		long duration = System.currentTimeMillis();
 		int sent = 0;
 		sent = service.sendEmails();
-		log.info("SendEmailsJob: Sent " + sent + " Emails");
+		log.fine("SendEmailsJob: Sent " + sent + " Emails");
 		duration = System.currentTimeMillis() - duration;
-		log.info("SendEmailsJob: Finished in " + duration + " msec");
+		log.fine("SendEmailsJob: Finished in " + duration + " msec");
 	}
 
 }

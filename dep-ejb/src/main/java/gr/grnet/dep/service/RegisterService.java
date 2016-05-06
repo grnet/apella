@@ -11,21 +11,16 @@ import org.hibernate.Session;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.inject.Inject;
 import javax.persistence.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
 import java.util.*;
-import java.util.logging.Logger;
 
 @Stateless
 public class RegisterService extends CommonService {
 
     @PersistenceContext(unitName = "apelladb")
     private EntityManager em;
-
-    @Inject
-    private Logger log;
 
     @EJB
     private UtilityService utilityService;

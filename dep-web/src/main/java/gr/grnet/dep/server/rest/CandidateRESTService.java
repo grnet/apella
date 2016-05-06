@@ -11,19 +11,14 @@ import gr.grnet.dep.service.model.Candidacy.MediumCandidacyView;
 import gr.grnet.dep.service.model.User;
 
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Logger;
 
 @Path("/candidate")
 public class CandidateRESTService extends RESTService {
-
-    @Inject
-    private Logger log;
 
     @EJB
     private CandidateService candidateService;

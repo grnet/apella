@@ -11,7 +11,6 @@ import gr.grnet.dep.service.model.PositionEvaluator.PositionEvaluatorView;
 import gr.grnet.dep.service.model.Role.RoleDiscriminator;
 
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
@@ -19,13 +18,9 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response.Status;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Logger;
 
 @Path("/professor")
 public class ProfessorRESTService extends RESTService {
-
-	@Inject
-	private Logger log;
 
 	@EJB
 	private ProfessorService professorService;

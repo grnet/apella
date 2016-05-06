@@ -20,7 +20,6 @@ import gr.grnet.dep.service.model.file.PositionCandidaciesFile;
 import org.apache.commons.fileupload.FileUploadException;
 
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -30,13 +29,9 @@ import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
-import java.util.logging.Logger;
 
 @Path("/position/{id:[0-9][0-9]*}/candidacies")
 public class PositionCandidaciesRESTService extends RESTService {
-
-    @Inject
-    private Logger log;
 
     @EJB
     private PositionService positionService;
