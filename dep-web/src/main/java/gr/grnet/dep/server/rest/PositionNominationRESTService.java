@@ -14,6 +14,7 @@ import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.PositionNominationFile;
+import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 
 import javax.ejb.EJB;
@@ -25,6 +26,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 @Path("/position/{id:[0-9][0-9]*}/nomination")
 public class PositionNominationRESTService extends RESTService {
@@ -233,7 +235,9 @@ public class PositionNominationRESTService extends RESTService {
     public String createFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("nominationId") Long nominationId, @Context HttpServletRequest request) throws FileUploadException, IOException {
         try {
             User loggedOn = getLoggedOn(authToken);
-            FileHeader file = positionNominationService.createFile(positionId, nominationId, request, loggedOn);
+            // Parse Request
+            List<FileItem> fileItems = readMultipartFormData(request);
+            FileHeader file = positionNominationService.createFile(positionId, nominationId, fileItems, loggedOn);
 
             return toJSON(file, SimpleFileHeaderView.class);
         } catch (NotEnabledException e) {
@@ -275,8 +279,10 @@ public class PositionNominationRESTService extends RESTService {
     public String updateFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("nominationId") Long nominationId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
         try {
             User loggedOn = getLoggedOn(authToken);
+            // Parse Request
+            List<FileItem> fileItems = readMultipartFormData(request);
             // update file
-            FileHeader file = positionNominationService.updateFile(positionId, nominationId, fileId, request, loggedOn);
+            FileHeader file = positionNominationService.updateFile(positionId, nominationId, fileId, loggedOn, fileItems);
 
             return toJSON(file, SimpleFileHeaderView.class);
         } catch (NotEnabledException e) {

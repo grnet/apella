@@ -14,6 +14,7 @@ import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.PositionCommitteeFile;
+import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 
 import javax.ejb.EJB;
@@ -25,6 +26,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 @Path("/position/{id:[0-9][0-9]*}/committee")
 public class PositionCommitteeRESTService extends RESTService {
@@ -349,8 +351,10 @@ public class PositionCommitteeRESTService extends RESTService {
 	public String createFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		try {
 			User loggedOn = getLoggedOn(authToken);
+			// Parse Request
+			List<FileItem> fileItems = readMultipartFormData(request);
 			// create file
-			FileHeader file = positionCommitteeService.createFile(positionId, committeeId, request, loggedOn);
+			FileHeader file = positionCommitteeService.createFile(positionId, committeeId, fileItems, loggedOn);
 
 			return toJSON(file, SimpleFileHeaderView.class);
 		} catch (NotEnabledException e) {
@@ -392,8 +396,10 @@ public class PositionCommitteeRESTService extends RESTService {
 	public String updateFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("committeeId") Long committeeId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		try {
 			User loggedOn = getLoggedOn(authToken);
+			// Parse Request
+			List<FileItem> fileItems = readMultipartFormData(request);
 			// update file
-			FileHeader file = positionCommitteeService.updateFile(positionId, committeeId, fileId, request, loggedOn);
+			FileHeader file = positionCommitteeService.updateFile(positionId, committeeId, fileId, fileItems, loggedOn);
 
 			return toJSON(file, SimpleFileHeaderView.class);
 		} catch (NotEnabledException e) {

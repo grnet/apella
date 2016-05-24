@@ -142,7 +142,7 @@ public class PositionComplementaryDocumentsService extends CommonService {
         return null;
     }
 
-    public ComplementaryDocumentsFile createFile(Long positionId, Long cdId, HttpServletRequest request, User loggedOn) throws Exception {
+    public ComplementaryDocumentsFile createFile(Long positionId, Long cdId, List<FileItem> fileItems, User loggedOn) throws Exception {
 
         PositionComplementaryDocuments existingComDocs = getById(cdId);
         // get position
@@ -159,8 +159,6 @@ public class PositionComplementaryDocumentsService extends CommonService {
         if (existingPosition.getPhase().getStatus().equals(Position.PositionStatus.CANCELLED)) {
             throw new ValidationException("wrong.position.status");
         }
-        // Parse Request
-        List<FileItem> fileItems = readMultipartFormData(request);
         // Find required type:
         FileType type = null;
         for (FileItem fileItem : fileItems) {
@@ -280,7 +278,7 @@ public class PositionComplementaryDocumentsService extends CommonService {
         return cdFile;
     }
 
-    public ComplementaryDocumentsFile updateFile(Long positionId, Long cdId, Long fileId, HttpServletRequest request, User loggedOn) throws Exception {
+    public ComplementaryDocumentsFile updateFile(Long positionId, Long cdId, Long fileId, List<FileItem> fileItems, User loggedOn) throws Exception {
         PositionComplementaryDocuments existingComDocs = getById(cdId);
         // get position
         Position existingPosition = existingComDocs.getPosition();
@@ -296,8 +294,6 @@ public class PositionComplementaryDocumentsService extends CommonService {
         if (existingPosition.getPhase().getStatus().equals(Position.PositionStatus.CANCELLED)) {
             throw new ValidationException("wrong.position.status");
         }
-        // Parse Request
-        List<FileItem> fileItems = readMultipartFormData(request);
         // Find required type:
         FileType type = null;
         for (FileItem fileItem : fileItems) {

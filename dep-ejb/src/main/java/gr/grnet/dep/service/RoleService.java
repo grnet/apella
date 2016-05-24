@@ -16,7 +16,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.InputStream;
 import java.util.*;
@@ -494,15 +493,13 @@ public class RoleService extends CommonService {
         return null;
     }
 
-    public FileHeader createFile(Long id, HttpServletRequest request, User loggedOn) throws Exception {
+    public FileHeader createFile(Long id, List<FileItem> fileItems, User loggedOn) throws Exception {
         // get role
         Role role = get(id);
         // Validate:
         if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
             throw new NotEnabledException("insufficient.privileges");
         }
-        // Parse Request
-        List<FileItem> fileItems = readMultipartFormData(request);
         // Find required type:
         FileType type = null;
         Boolean updateCandidacies = false;
@@ -577,15 +574,13 @@ public class RoleService extends CommonService {
         }
     }
 
-    public FileHeader updateFile(Long id, Long fileId, HttpServletRequest request, User loggedOn) throws Exception {
+    public FileHeader updateFile(Long id, Long fileId, List<FileItem> fileItems, User loggedOn) throws Exception {
         // get role
         Role role = get(id);
         // Validate:
         if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR) && !role.getUser().getId().equals(loggedOn.getId())) {
             throw new NotEnabledException("insufficient.privileges");
         }
-        // Parse Request
-        List<FileItem> fileItems = readMultipartFormData(request);
         // Find required type:
         FileType type = null;
         Boolean updateCandidacies = false;

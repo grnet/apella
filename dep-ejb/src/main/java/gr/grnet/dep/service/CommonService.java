@@ -7,10 +7,7 @@ import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileType;
 import gr.grnet.dep.service.model.system.WebConstants;
 import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.Stateless;
@@ -18,7 +15,6 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -114,25 +110,6 @@ public class CommonService {
             updateSnapshot(candidacy, candidate);
         }
     }
-
-    public List<FileItem> readMultipartFormData(HttpServletRequest request) throws ValidationException {
-        try {
-            DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
-            ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
-            servletFileUpload.setFileSizeMax(50 * 1024 * 1024); // 54.428.800
-            servletFileUpload.setSizeMax(50 * 1024 * 1024);
-            servletFileUpload.setHeaderEncoding("UTF-8");
-            @SuppressWarnings("unchecked")
-            List<FileItem> fileItems = servletFileUpload.parseRequest(request);
-            return fileItems;
-        } catch (FileUploadBase.SizeLimitExceededException e) {
-            throw new ValidationException("file.size.exceeded");
-        } catch (FileUploadException e) {
-            log.log(Level.SEVERE, "Error encountered while parsing the request", e);
-            throw new ValidationException("generic");
-        }
-    }
-
 
     /**
      * ***************************

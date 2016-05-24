@@ -12,6 +12,7 @@ import gr.grnet.dep.service.model.Candidacy.DetailedCandidacyView;
 import gr.grnet.dep.service.model.Candidacy.MediumCandidacyView;
 import gr.grnet.dep.service.model.file.*;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
+import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 
 import javax.ejb.EJB;
@@ -415,8 +416,10 @@ public class CandidacyRESTService extends RESTService {
     public String createFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @Context HttpServletRequest request) throws FileUploadException, IOException {
         try {
             User loggedOn = getLoggedOn(authToken);
+            // Parse Request
+            List<FileItem> fileItems = readMultipartFormData(request);
             // get candidacy file
-            CandidacyFile candidacyFile = candidacyService.createFile(candidacyId, request, loggedOn);
+            CandidacyFile candidacyFile = candidacyService.createFile(candidacyId, fileItems, loggedOn);
 
             return toJSON(candidacyFile, SimpleFileHeaderView.class);
         } catch (NotEnabledException e) {
@@ -452,8 +455,10 @@ public class CandidacyRESTService extends RESTService {
     public String updateFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long candidacyId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
         try {
             User loggedOn = getLoggedOn(authToken);
+            // Parse Request
+            List<FileItem> fileItems = readMultipartFormData(request);
             // update file
-            CandidacyFile candidacyFile = candidacyService.updateFile(candidacyId, fileId, request, loggedOn);
+            CandidacyFile candidacyFile = candidacyService.updateFile(candidacyId, fileId, fileItems, loggedOn);
 
             return toJSON(candidacyFile, FileHeader.SimpleFileHeaderView.class);
         } catch (NotEnabledException e) {

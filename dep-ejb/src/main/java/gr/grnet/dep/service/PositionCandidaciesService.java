@@ -233,7 +233,7 @@ public class PositionCandidaciesService extends CommonService {
         return null;
     }
 
-    public FileHeader createFile(Long positionId, Long candidaciesId, HttpServletRequest request, User loggedOn) throws Exception {
+    public FileHeader createFile(Long positionId, Long candidaciesId, List<FileItem> fileItems, User loggedOn) throws Exception {
         PositionCandidacies existingCandidacies = getById(candidaciesId);
         // get position
         Position existingPosition = existingCandidacies.getPosition();
@@ -250,8 +250,6 @@ public class PositionCandidaciesService extends CommonService {
         if (!existingPosition.getPhase().getStatus().equals(Position.PositionStatus.EPILOGI)) {
             throw new ValidationException("wrong.position.status");
         }
-        // Parse Request
-        List<FileItem> fileItems = readMultipartFormData(request);
         // Find required type and candidacy evaluator:
         FileType type = null;
         Long candidacyEvaluatorId = null;
@@ -489,7 +487,7 @@ public class PositionCandidaciesService extends CommonService {
     }
 
 
-    public FileHeader updateFile(Long positionId, Long candidaciesId, Long fileId, HttpServletRequest request, User loggedOn) throws Exception {
+    public FileHeader updateFile(Long positionId, Long candidaciesId, Long fileId, List<FileItem> fileItems, User loggedOn) throws Exception {
         PositionCandidacies existingCandidacies = getById(candidaciesId);
         // get position
         Position existingPosition = existingCandidacies.getPosition();
@@ -505,8 +503,6 @@ public class PositionCandidaciesService extends CommonService {
         if (!existingPosition.getPhase().getStatus().equals(Position.PositionStatus.EPILOGI)) {
             throw new ValidationException("wrong.position.status");
         }
-        // Parse Request
-        List<FileItem> fileItems = readMultipartFormData(request);
         // Find required type and candidacy evaluator:
         FileType type = null;
         Long candidacyEvaluatorId = null;

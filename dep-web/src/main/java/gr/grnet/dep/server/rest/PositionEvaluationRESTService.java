@@ -16,6 +16,7 @@ import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.PositionEvaluatorFile;
+import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 
 import javax.ejb.EJB;
@@ -27,6 +28,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 @Path("/position/{id:[0-9][0-9]*}/evaluation")
 public class PositionEvaluationRESTService extends RESTService {
@@ -271,7 +273,9 @@ public class PositionEvaluationRESTService extends RESTService {
     public String createFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("evaluatorId") Long evaluatorId, @Context HttpServletRequest request) throws FileUploadException, IOException {
         try {
             User loggedOn = getLoggedOn(authToken);
-            FileHeader file = positionEvaluationService.createFile(positionId, evaluationId, evaluatorId, request, loggedOn);
+            // Parse Request
+            List<FileItem> fileItems = readMultipartFormData(request);
+            FileHeader file = positionEvaluationService.createFile(positionId, evaluationId, evaluatorId, fileItems, loggedOn);
             return toJSON(file, SimpleFileHeaderView.class);
         } catch (NotEnabledException e) {
             throw new RestException(Response.Status.FORBIDDEN, e.getMessage());
@@ -314,8 +318,10 @@ public class PositionEvaluationRESTService extends RESTService {
     public String updateFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("evaluationId") Long evaluationId, @PathParam("evaluatorId") Long evaluatorId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
         try {
             User loggedOn = getLoggedOn(authToken);
+            // Parse Request
+            List<FileItem> fileItems = readMultipartFormData(request);
             // update file
-            FileHeader file = positionEvaluationService.updateFile(positionId, evaluationId, evaluatorId, fileId, request, loggedOn);
+            FileHeader file = positionEvaluationService.updateFile(positionId, evaluationId, evaluatorId, fileId, fileItems, loggedOn);
 
             return toJSON(file, SimpleFileHeaderView.class);
         } catch (NotEnabledException e) {

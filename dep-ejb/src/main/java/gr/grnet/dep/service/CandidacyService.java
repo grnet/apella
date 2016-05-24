@@ -788,7 +788,7 @@ public class CandidacyService extends CommonService {
         throw new NotFoundException("wrong.file.id");
     }
 
-    public CandidacyFile createFile(Long candidacyId, HttpServletRequest request, User loggedOn) throws Exception {
+    public CandidacyFile createFile(Long candidacyId, List<FileItem> fileItems, User loggedOn) throws Exception {
 
         // get candidacy
         Candidacy candidacy = getCandidacy(candidacyId, false);
@@ -797,8 +797,6 @@ public class CandidacyService extends CommonService {
         if (!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
             throw new NotEnabledException("insufficient.privileges");
         }
-        // Parse Request
-        List<FileItem> fileItems = readMultipartFormData(request);
         // Find required type:
         FileType type = null;
         for (FileItem fileItem : fileItems) {
@@ -836,7 +834,7 @@ public class CandidacyService extends CommonService {
         return candidacyFile;
     }
 
-    public CandidacyFile updateFile(Long candidacyId, Long fileId, HttpServletRequest request, User loggedOn) throws Exception {
+    public CandidacyFile updateFile(Long candidacyId, Long fileId, List<FileItem> fileItems, User loggedOn) throws Exception {
         // get candidacy
         Candidacy candidacy = getCandidacy(candidacyId, false);
 
@@ -844,8 +842,6 @@ public class CandidacyService extends CommonService {
         if (!loggedOn.getId().equals(candidacy.getCandidate().getUser().getId())) {
             throw new NotEnabledException("insufficient.privileges");
         }
-        // Parse Request
-        List<FileItem> fileItems = readMultipartFormData(request);
         // Find required type:
         FileType type = null;
         for (FileItem fileItem : fileItems) {

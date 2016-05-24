@@ -17,7 +17,6 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 @Stateless
@@ -357,7 +356,7 @@ public class PositionNominationService extends CommonService {
         return null;
     }
 
-    public FileHeader createFile(Long positionId, Long nominationId, HttpServletRequest request, User loggedOn) throws Exception {
+    public FileHeader createFile(Long positionId, Long nominationId, List<FileItem> fileItems, User loggedOn) throws Exception {
         // get nomination
         PositionNomination existingNomination = getById(nominationId);
         // get position
@@ -376,8 +375,6 @@ public class PositionNominationService extends CommonService {
                 !position.getPhase().getStatus().equals(Position.PositionStatus.STELEXOMENI)) {
             throw new ValidationException("wrong.position.status");
         }
-        // Parse Request
-        List<FileItem> fileItems = readMultipartFormData(request);
         // Find required type:
         FileType type = null;
         for (FileItem fileItem : fileItems) {
@@ -589,7 +586,7 @@ public class PositionNominationService extends CommonService {
         return nominationFile;
     }
 
-    public FileHeader updateFile(Long positionId, Long nominationId, Long fileId, HttpServletRequest request, User loggedOn) throws Exception {
+    public FileHeader updateFile(Long positionId, Long nominationId, Long fileId, User loggedOn,  List<FileItem> fileItems) throws Exception {
         // get nomination
         PositionNomination existingNomination = getById(nominationId);
         // get position
@@ -608,9 +605,6 @@ public class PositionNominationService extends CommonService {
                 !position.getPhase().getStatus().equals(Position.PositionStatus.STELEXOMENI)) {
             throw new ValidationException("wrong.position.status");
         }
-        // Parse Request
-        List<FileItem> fileItems = readMultipartFormData(request);
-        // Find required type:
         FileType type = null;
         for (FileItem fileItem : fileItems) {
             if (fileItem.isFormField() && fileItem.getFieldName().equals("type")) {

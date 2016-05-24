@@ -7,11 +7,18 @@ import gr.grnet.dep.server.WebConstants;
 import gr.grnet.dep.server.rest.exceptions.RestException;
 import gr.grnet.dep.service.*;
 import gr.grnet.dep.service.exceptions.ServiceException;
+import gr.grnet.dep.service.exceptions.ValidationException;
 import gr.grnet.dep.service.model.User;
 import gr.grnet.dep.service.model.file.FileBody;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadBase;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
@@ -23,6 +30,7 @@ import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Providers;
 import java.io.*;
 import java.net.URLEncoder;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -187,6 +195,24 @@ public class RESTService {
 			logger.log(Level.SEVERE, "", e);
 		}
 		return null;
+	}
+
+	public List<FileItem> readMultipartFormData(HttpServletRequest request) throws ValidationException {
+		try {
+			DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
+			ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
+			servletFileUpload.setFileSizeMax(50 * 1024 * 1024); // 54.428.800
+			servletFileUpload.setSizeMax(50 * 1024 * 1024);
+			servletFileUpload.setHeaderEncoding("UTF-8");
+			@SuppressWarnings("unchecked")
+			List<FileItem> fileItems = servletFileUpload.parseRequest(request);
+			return fileItems;
+		} catch (FileUploadBase.SizeLimitExceededException e) {
+			throw new ValidationException("file.size.exceeded");
+		} catch (FileUploadException e) {
+			logger.log(Level.SEVERE, "Error encountered while parsing the request", e);
+			throw new ValidationException("generic");
+		}
 	}
 
 }

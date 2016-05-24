@@ -453,7 +453,7 @@ public class PositionEvaluationService extends CommonService {
         return null;
     }
 
-    public FileHeader createFile(Long positionId, Long evaluationId, Long evaluatorId, HttpServletRequest request, User loggedOn) throws Exception {
+    public FileHeader createFile(Long positionId, Long evaluationId, Long evaluatorId, List<FileItem> fileItems, User loggedOn) throws Exception {
         // get evaluator
         PositionEvaluator existingEvaluator = em.find(PositionEvaluator.class, evaluatorId);
         if (existingEvaluator == null) {
@@ -480,8 +480,6 @@ public class PositionEvaluationService extends CommonService {
             throw new ValidationException("committee.missing.aitima.epitropis.pros.aksiologites");
         }
 
-        // Parse Request
-        List<FileItem> fileItems = readMultipartFormData(request);
         // Find required type:
         FileType type = null;
         for (FileItem fileItem : fileItems) {
@@ -625,7 +623,7 @@ public class PositionEvaluationService extends CommonService {
         return eFile;
     }
 
-    public FileHeader updateFile(Long positionId, Long evaluationId, Long evaluatorId, Long fileId, HttpServletRequest request, User loggedOn) throws Exception {
+    public FileHeader updateFile(Long positionId, Long evaluationId, Long evaluatorId, Long fileId, List<FileItem> fileItems, User loggedOn) throws Exception {
         // get existing evaluator
         PositionEvaluator existingEvaluator = em.find(PositionEvaluator.class, evaluatorId);
         if (existingEvaluator == null) {
@@ -648,8 +646,6 @@ public class PositionEvaluationService extends CommonService {
         if (!existingPosition.getPhase().getStatus().equals(Position.PositionStatus.EPILOGI)) {
             throw new ValidationException("wrong.position.status");
         }
-        // Parse Request
-        List<FileItem> fileItems = readMultipartFormData(request);
         // Find required type:
         FileType type = null;
         for (FileItem fileItem : fileItems) {

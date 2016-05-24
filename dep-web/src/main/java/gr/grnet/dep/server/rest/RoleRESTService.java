@@ -18,6 +18,7 @@ import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
 import gr.grnet.dep.service.model.file.ProfessorFile;
+import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 
 import javax.ejb.EJB;
@@ -349,8 +350,10 @@ public class RoleRESTService extends RESTService {
     public String createFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id, @Context HttpServletRequest request) throws FileUploadException, IOException {
         try {
             User loggedOn = getLoggedOn(authToken);
+            // Parse Request
+            List<FileItem> fileItems = readMultipartFormData(request);
             // create file
-            FileHeader file = roleService.createFile(id, request, loggedOn);
+            FileHeader file = roleService.createFile(id, fileItems, loggedOn);
 
             if (file == null) {
                 throw new RestException(Status.CONFLICT, "wrong.file.type");
@@ -392,8 +395,10 @@ public class RoleRESTService extends RESTService {
     public String updateFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long id, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
         try {
             User loggedOn = getLoggedOn(authToken);
+            // Parse Request
+            List<FileItem> fileItems = readMultipartFormData(request);
             // update file
-            FileHeader file = roleService.updateFile(id, fileId, request, loggedOn);
+            FileHeader file = roleService.updateFile(id, fileId, fileItems, loggedOn);
 
             if (file == null) {
                 throw new RestException(Status.CONFLICT, "wrong.file.type");

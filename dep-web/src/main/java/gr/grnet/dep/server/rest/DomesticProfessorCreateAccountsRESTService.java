@@ -9,6 +9,7 @@ import gr.grnet.dep.service.exceptions.NotEnabledException;
 import gr.grnet.dep.service.exceptions.ValidationException;
 import gr.grnet.dep.service.model.ProfessorDomesticData;
 import gr.grnet.dep.service.model.User;
+import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 
 import javax.ejb.EJB;
@@ -37,8 +38,10 @@ public class DomesticProfessorCreateAccountsRESTService extends RESTService {
     public Response createFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @Context HttpServletRequest request) throws FileUploadException, IOException {
         try {
             User loggedOn = getLoggedOn(authToken);
+            // Parse Request
+            List<FileItem> fileItems = readMultipartFormData(request);
             // create accounts
-            List<ProfessorDomesticData> createdAccountsList = domesticProfessorCreateAccountsService.createAccounts(request, loggedOn);
+            List<ProfessorDomesticData> createdAccountsList = domesticProfessorCreateAccountsService.createAccounts(fileItems, loggedOn);
 
             //send mass login emails
             managementService.massSendLoginEmails();

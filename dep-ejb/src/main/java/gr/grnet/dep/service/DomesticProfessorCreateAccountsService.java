@@ -51,7 +51,7 @@ public class DomesticProfessorCreateAccountsService extends CommonService {
     private static final char DOUBLE_QUOTE = '"';
     private static final char FULL_STOP = '.';
 
-    public List<ProfessorDomesticData> createAccounts(HttpServletRequest request, User loggedOn) throws ValidationException, NotEnabledException {
+    public List<ProfessorDomesticData> createAccounts(List<FileItem> fileItems, User loggedOn) throws ValidationException, NotEnabledException {
 
         if (!loggedOn.hasActiveRole(Role.RoleDiscriminator.ADMINISTRATOR)) {
             throw new NotEnabledException("insufficient.privileges");
@@ -66,7 +66,6 @@ public class DomesticProfessorCreateAccountsService extends CommonService {
         CSVParser csvParser = null;
 
         CSVFormat csvFormat = CSVFormat.newFormat(CSV_DELIMITER).withHeader(FILE_HEADER_MAPPING).withQuote(DOUBLE_QUOTE);
-        List<FileItem> fileItems = readMultipartFormData(request);
 
         //In our case the fileΙtems list has always has one upload file
         String name = fileItems.get(0).getName();

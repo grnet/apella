@@ -830,7 +830,7 @@ public class PositionCommitteeService extends CommonService {
         return null;
     }
 
-    public FileHeader createFile(Long positionId, Long committeeId, HttpServletRequest request, User loggedOn) throws Exception {
+    public FileHeader createFile(Long positionId, Long committeeId, List<FileItem> fileItems, User loggedOn) throws Exception {
         // get committee
         PositionCommittee existingCommittee = getById(committeeId);
         // get position
@@ -848,8 +848,6 @@ public class PositionCommitteeService extends CommonService {
         if (!existingPosition.getPhase().getStatus().equals(Position.PositionStatus.EPILOGI)) {
             throw new ValidationException("wrong.position.status");
         }
-        // Parse Request
-        List<FileItem> fileItems = readMultipartFormData(request);
         // Find required type:
         FileType type = null;
         for (FileItem fileItem : fileItems) {
@@ -969,7 +967,7 @@ public class PositionCommitteeService extends CommonService {
         return pcFile;
     }
 
-    public FileHeader updateFile(Long positionId, Long committeeId, Long fileId, HttpServletRequest request, User loggedOn) throws Exception {
+    public FileHeader updateFile(Long positionId, Long committeeId, Long fileId, List<FileItem> fileItems, User loggedOn) throws Exception {
         PositionCommittee existingCommittee = getById(committeeId);
         // get position
         Position existingPosition = existingCommittee.getPosition();
@@ -985,8 +983,6 @@ public class PositionCommitteeService extends CommonService {
         if (!existingPosition.getPhase().getStatus().equals(Position.PositionStatus.EPILOGI)) {
             throw new ValidationException("wrong.position.status");
         }
-        // Parse Request
-        List<FileItem> fileItems = readMultipartFormData(request);
         // Find required type:
         FileType type = null;
         for (FileItem fileItem : fileItems) {

@@ -14,6 +14,7 @@ import gr.grnet.dep.service.model.file.ComplementaryDocumentsFile;
 import gr.grnet.dep.service.model.file.FileBody;
 import gr.grnet.dep.service.model.file.FileHeader;
 import gr.grnet.dep.service.model.file.FileHeader.SimpleFileHeaderView;
+import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 
 import javax.ejb.EJB;
@@ -25,6 +26,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 @Path("/position/{id:[0-9]+}/complementaryDocuments")
 public class PositionComplementaryDocumentsRESTService extends RESTService {
@@ -193,9 +195,10 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 	public String createFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cdId") Long cdId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		try {
 			User loggedOn = getLoggedOn(authToken);
-
+			// Parse Request
+			List<FileItem> fileItems = readMultipartFormData(request);
 			// create file
-			FileHeader file = positionComplementaryDocumentsService.createFile(positionId, cdId, request, loggedOn);
+			FileHeader file = positionComplementaryDocumentsService.createFile(positionId, cdId, fileItems, loggedOn);
 
 			return toJSON(file, SimpleFileHeaderView.class);
 		} catch (NotEnabledException e) {
@@ -237,8 +240,10 @@ public class PositionComplementaryDocumentsRESTService extends RESTService {
 	public String updateFile(@QueryParam(WebConstants.AUTHENTICATION_TOKEN_HEADER) String authToken, @PathParam("id") Long positionId, @PathParam("cdId") Long cdId, @PathParam("fileId") Long fileId, @Context HttpServletRequest request) throws FileUploadException, IOException {
 		try {
 			User loggedOn = getLoggedOn(authToken);
+			// Parse Request
+			List<FileItem> fileItems = readMultipartFormData(request);
 			// update file
-			FileHeader file = positionComplementaryDocumentsService.updateFile(positionId, cdId, fileId, request, loggedOn);
+			FileHeader file = positionComplementaryDocumentsService.updateFile(positionId, cdId, fileId, fileItems, loggedOn);
 
 			return toJSON(file, SimpleFileHeaderView.class);
 		} catch (NotEnabledException e) {
