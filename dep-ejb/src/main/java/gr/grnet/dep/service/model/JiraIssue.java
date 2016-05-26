@@ -94,6 +94,7 @@ public class JiraIssue implements Serializable {
 	private String email;
 
 	//	Θέμα / Subject
+	@Column(columnDefinition = "TEXT")
 	private String summary;
 
 	//	Περιγραφή / Description
@@ -101,6 +102,7 @@ public class JiraIssue implements Serializable {
 	private String description;
 
 	// Σχόλιο που βλέπει ο χρήστης
+	@Column(columnDefinition = "TEXT")
 	private String comment;
 
 	// Καταγραφή από
