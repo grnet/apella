@@ -159,7 +159,7 @@ public class PositionSearchRESTService extends RESTService {
 				throw new RestException(Status.FORBIDDEN, "insufficient.privileges");
 			}
 			// update
-			criteria = positionSearchService.update(id, criteria);
+			criteria = positionSearchService.update(id, newCriteria);
 
 			return criteria;
 		} catch (NotFoundException e) {
