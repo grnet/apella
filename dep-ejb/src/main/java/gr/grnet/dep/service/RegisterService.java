@@ -1,20 +1,42 @@
 package gr.grnet.dep.service;
 
-import gr.grnet.dep.service.exceptions.NotEnabledException;
-import gr.grnet.dep.service.exceptions.NotFoundException;
-import gr.grnet.dep.service.exceptions.ValidationException;
-import gr.grnet.dep.service.model.*;
-import gr.grnet.dep.service.util.CompareUtil;
-import gr.grnet.dep.service.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Session;
 
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.persistence.*;
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.servlet.http.HttpServletRequest;
-import java.io.InputStream;
-import java.util.*;
+
+import gr.grnet.dep.service.exceptions.NotEnabledException;
+import gr.grnet.dep.service.exceptions.NotFoundException;
+import gr.grnet.dep.service.exceptions.ValidationException;
+import gr.grnet.dep.service.model.Institution;
+import gr.grnet.dep.service.model.Position;
+import gr.grnet.dep.service.model.Professor;
+import gr.grnet.dep.service.model.ProfessorDomestic;
+import gr.grnet.dep.service.model.Register;
+import gr.grnet.dep.service.model.RegisterMember;
+import gr.grnet.dep.service.model.Role;
+import gr.grnet.dep.service.model.SearchData;
+import gr.grnet.dep.service.model.User;
+import gr.grnet.dep.service.util.CompareUtil;
+import gr.grnet.dep.service.util.StringUtil;
 
 @Stateless
 public class RegisterService extends CommonService {
@@ -104,7 +126,7 @@ public class RegisterService extends CommonService {
             }
         }
 
-        Query countQuery =  em.createQuery(" select count(distinct r.id) " +
+        Query countQuery = em.createQuery(" select count(distinct r.id) " +
                 searchQueryString.toString());
 
         if (StringUtils.isNotEmpty(institutionFilterText)) {
@@ -134,7 +156,7 @@ public class RegisterService extends CommonService {
                         searchQueryString.toString() + ") " + orderByClause.toString(), Register.class);
 
         if (StringUtils.isNotEmpty(institutionFilterText)) {
-            searchQuery.setParameter("institutionFilterText",  "%" + institutionFilterText.toUpperCase() + "%");
+            searchQuery.setParameter("institutionFilterText", "%" + institutionFilterText.toUpperCase() + "%");
         }
         if (StringUtils.isNotEmpty(subjectFilterText)) {
             searchQuery.setParameter("subjectFilterText", "%" + subjectFilterText.toUpperCase() + "%");
@@ -475,15 +497,30 @@ public class RegisterService extends CommonService {
         return getRegisterById(existingRegister.getId());
     }
 
-    public void delete(Long id, User loggedOn) throws NotFoundException, NotEnabledException {
+    public void delete(Long id, User loggedOn) throws ValidationException, NotFoundException, NotEnabledException {
         // find register
         Register register = getById(id);
-        // validate
+
+        // 1. Authorize
         if (!register.isUserAllowedToEdit(loggedOn)) {
             throw new NotEnabledException("insufficient.privileges");
         }
+        // 2. Validate if can be deleted
+        addCanBeDeletedInfo(register);
+        for (RegisterMember rm : register.getMembers()) {
+            if (!rm.getCanBeDeleted()) {
+                throw new ValidationException("register.cannot.remove");
+            }
+        }
 
-        em.remove(register);
+        // 3. Remove by setting permanent to false and deleted to true for members
+        register.setPermanent(false);
+        register = em.merge(register);
+        for (RegisterMember rm : register.getMembers()) {
+            rm.setDeleted(true);
+            em.merge(rm);
+        }
+
         em.flush();
     }
 
@@ -589,7 +626,7 @@ public class RegisterService extends CommonService {
                     ") ) ");
         }
 
-        Query countQuery =  em.createQuery(" select count(distinct rm.id) " +
+        Query countQuery = em.createQuery(" select count(distinct rm.id) " +
                 searchQueryString.toString())
                 .setParameter("id", registerId);
 

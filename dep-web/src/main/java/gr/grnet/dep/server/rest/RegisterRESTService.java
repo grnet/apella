@@ -1,25 +1,7 @@
 package gr.grnet.dep.server.rest;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import gr.grnet.dep.server.WebConstants;
-import gr.grnet.dep.server.rest.exceptions.RestException;
-import gr.grnet.dep.service.RegisterService;
-import gr.grnet.dep.service.exceptions.NotEnabledException;
-import gr.grnet.dep.service.exceptions.NotFoundException;
-import gr.grnet.dep.service.exceptions.ValidationException;
-import gr.grnet.dep.service.model.*;
-import gr.grnet.dep.service.model.Register.DetailedRegisterView;
-import gr.grnet.dep.service.model.Register.RegisterView;
-import gr.grnet.dep.service.model.RegisterMember.DetailedRegisterMemberView;
 
-import javax.ejb.EJB;
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -27,6 +9,38 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.ejb.EJB;
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+
+import gr.grnet.dep.server.WebConstants;
+import gr.grnet.dep.server.rest.exceptions.RestException;
+import gr.grnet.dep.service.RegisterService;
+import gr.grnet.dep.service.exceptions.NotEnabledException;
+import gr.grnet.dep.service.exceptions.NotFoundException;
+import gr.grnet.dep.service.exceptions.ValidationException;
+import gr.grnet.dep.service.model.Register;
+import gr.grnet.dep.service.model.Register.DetailedRegisterView;
+import gr.grnet.dep.service.model.Register.RegisterView;
+import gr.grnet.dep.service.model.RegisterMember;
+import gr.grnet.dep.service.model.RegisterMember.DetailedRegisterMemberView;
+import gr.grnet.dep.service.model.Role;
+import gr.grnet.dep.service.model.SearchData;
+import gr.grnet.dep.service.model.User;
 
 @Path("/register")
 public class RegisterRESTService extends RESTService {
@@ -39,9 +53,6 @@ public class RegisterRESTService extends RESTService {
 
     /**
      * Returns all registers
-     *
-     * @param authToken
-     * @return
      */
     @GET
     @JsonView({RegisterView.class})
@@ -61,9 +72,6 @@ public class RegisterRESTService extends RESTService {
      * Returns register with given ID
      * without the lazy collections!
      *
-     * @param authToken
-     * @param id
-     * @return
      * @HTTP 404 X-Error-Code: wrong.register.id
      */
     @GET
@@ -86,9 +94,6 @@ public class RegisterRESTService extends RESTService {
     /**
      * Creates a new Register, non-finalized
      *
-     * @param authToken
-     * @param newRegister
-     * @return
      * @HTTP 403 X-Error-Code: insufficient.privileges
      * @HTTP 404 X-Error-Code: wrong.department.id
      * @HTTP 409 X-Error-Code: register.already.exists
@@ -114,10 +119,6 @@ public class RegisterRESTService extends RESTService {
     /**
      * Updates and finalizes the Register with the given ID
      *
-     * @param authToken
-     * @param id
-     * @param register
-     * @return
      * @HTTP 403 X-Error-Code: insufficient.privileges
      * @HTTP 404 X-Error-Code: wrong.register.id
      * @HTTP 404 X-Error-Code: wrong.professor.id
@@ -147,8 +148,6 @@ public class RegisterRESTService extends RESTService {
     /**
      * Removes the Register with the given ID
      *
-     * @param authToken
-     * @param id
      * @HTTP 403 X-Error-Code: insufficient.privileges
      * @HTTP 404 X-Error-Code: wrong.register.id
      */
@@ -164,6 +163,8 @@ public class RegisterRESTService extends RESTService {
             throw new RestException(Status.NOT_FOUND, e.getMessage());
         } catch (NotEnabledException e) {
             throw new RestException(Status.FORBIDDEN, e.getMessage());
+        } catch (ValidationException e) {
+            throw new RestException(Status.CONFLICT, e.getMessage());
         } catch (Exception e) {
             throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, "persistence.exception");
         }
@@ -176,9 +177,6 @@ public class RegisterRESTService extends RESTService {
     /**
      * Returns the list of Register Members of this Register
      *
-     * @param authToken
-     * @param registerId
-     * @return
      * @HTTP 404 X-Error-Code: wrong.register.id
      */
     @GET
@@ -197,10 +195,6 @@ public class RegisterRESTService extends RESTService {
     /**
      * Returns the specific member of this register with the given ID
      *
-     * @param authToken
-     * @param registerId
-     * @param memberId
-     * @return
      * @HTTP 404 X-Error-Code: wrong.register.id
      * @HTTP 404 X-Error-Code: wrong.register.member.id
      */
@@ -238,9 +232,6 @@ public class RegisterRESTService extends RESTService {
     /**
      * Returns a paginated list of professors that can be added in this register
      *
-     * @param authToken
-     * @param registerId
-     * @return
      * @HTTP 403 X-Error-Code: insufficient.privileges
      * @HTTP 404 X-Error-Code: wrong.register.id
      */
