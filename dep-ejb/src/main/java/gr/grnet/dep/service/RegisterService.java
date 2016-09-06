@@ -395,6 +395,9 @@ public class RegisterService extends CommonService {
         existingRegister.getMembers().clear();
         for (RegisterMember member : existingMembersAsMap.values()) {
             existingRegister.addMember(member);
+            if (member.getId() == null) {
+                em.persist(member);
+            }
         }
         existingRegister.setPermanent(true);
         existingRegister = em.merge(existingRegister);
