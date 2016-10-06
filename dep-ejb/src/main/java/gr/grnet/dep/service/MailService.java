@@ -73,10 +73,20 @@ public class MailService {
 
     public void pushEmail(MailRecord mail) {
         try {
+            em.createQuery("select m.id from MailRecord m " +
+                    "where m.toEmailAddr = :toEmailAddr " +
+                    "and m.subject = :subject " +
+                    "and m.body = :body", Long.class)
+                    .setParameter("toEmailAddr", mail.getToEmailAddr())
+                    .setParameter("subject", mail.getSubject())
+                    .setParameter("body", mail.getBody())
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            // Not found, so persist
             em.persist(mail);
         } catch (EJBTransactionRolledbackException e) {
-            // Email already exists, do nothing, but log a warning
-            logger.log(Level.WARNING, "Attempted to push duplicate email: " + e.getMessage());
+            // Email already exists, do nothing, but log a message
+            logger.log(Level.FINE, "Attempted to push duplicate email: " + mail.toString() + " " + e.getMessage());
         }
     }
 

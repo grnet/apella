@@ -51,4 +51,12 @@ public class MailRecord {
 		this.body = body;
 	}
 
+	@Override
+	public String toString() {
+		return "MailRecord{" +
+				"toEmailAddr='" + toEmailAddr + '\'' +
+				", subject='" + subject + '\'' +
+				", body='" + body + '\'' +
+				'}';
+	}
 }
